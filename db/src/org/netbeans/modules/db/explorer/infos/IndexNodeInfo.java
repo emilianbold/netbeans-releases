@@ -7,25 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
-import java.sql.*;
-import java.util.*;
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Vector;
 
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
-import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.lib.ddl.impl.DropIndex;
+import org.netbeans.lib.ddl.impl.Specification;
+
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class IndexNodeInfo extends TableNodeInfo {
     static final long serialVersionUID =-8633867970381524742L;
@@ -38,10 +42,8 @@ public class IndexNodeInfo extends TableNodeInfo {
             drvSpec.getIndexInfo(table, false, false);
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {
-                Hashtable ixmap = new Hashtable();
                 HashMap rset = new HashMap();
                 DatabaseNodeInfo info;
-                Object value;
                 while (rs.next()) {
                     rset = drvSpec.getRow();
                     String ixname = (String)get("index"); //NOI18N
@@ -71,8 +73,7 @@ public class IndexNodeInfo extends TableNodeInfo {
         }
     }
 
-    public void refreshChildren() throws DatabaseException
-    {
+    public void refreshChildren() throws DatabaseException {
         // create list (infos)
         Vector charr = new Vector();
         put(DatabaseNodeInfo.CHILDREN, charr);
@@ -80,7 +81,6 @@ public class IndexNodeInfo extends TableNodeInfo {
         
         // create sub-tree (by infos)
         try {
-
             Node[] subTreeNodes = new Node[charr.size()];
 
             // current sub-tree
@@ -95,7 +95,6 @@ public class IndexNodeInfo extends TableNodeInfo {
 
             // add built sub-tree
             children.add(subTreeNodes);
-
         } catch (Exception ex) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
@@ -103,7 +102,6 @@ public class IndexNodeInfo extends TableNodeInfo {
 
     public void delete() throws IOException {
         try {
-            String code = getCode();
             String table = (String)get(DatabaseNode.TABLE);
             Specification spec = (Specification)getSpecification();
             DropIndex cmd = (DropIndex)spec.createCommandDropIndex(getName());
@@ -113,7 +111,7 @@ public class IndexNodeInfo extends TableNodeInfo {
             //refresh list of columns due to the column's icons
             getParent(DatabaseNode.TABLE).refreshChildren();
         } catch (DDLException e) {
-            
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
