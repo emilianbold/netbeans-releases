@@ -31,6 +31,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 
 //import org.netbeans.api.project.FileOwnerQuery;
@@ -71,20 +72,53 @@ public class DataObjectSearchGroup extends SearchGroup {
     /**
      * Actual search implementation. Fires PROP_FOUND notifications.
      * Implements superclass abstract method.
+     *
+     * @throws RuntimeException annotated at USER level by reason (on low memory condition)
      */
     public void doSearch() {
         Node[] nodes = normalizeNodes(
                 (Node[]) searchRoots.toArray(new Node[searchRoots.size()]));
+
+        lowMemoryWarning = false;
+        lowMemoryWarningCount = 0;
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
             SearchInfo info = getSearchInfo(node);
             if (info != null) {
                 for (Iterator j = info.objectsToSearch(); j.hasNext(); ) {
                     if (stopped) return;
+                    assureMemory();
                     processSearchObject(/*DataObject*/ j.next());
                 }
             }
         }
+    }
+
+
+    private static boolean lowMemoryWarning = false;
+    private static int lowMemoryWarningCount = 0;
+
+    /** throws RuntimeException if low memory condition happens */
+    private void assureMemory() {
+        Runtime rt = Runtime.getRuntime();
+        long total = rt.totalMemory();
+        long max = rt.maxMemory();  // XXX on some 1.4.1 returns heap&native instead of -Xmx
+        long required = Math.max(total/13, 9*1024*1024);
+        if (total ==  max && rt.freeMemory() < required) {
+            // System.err.println("MEM " + max + " " +  total + " " + rt.freeMemory());
+            lowMemoryWarning = true;
+        } else if (lowMemoryWarning) {
+            lowMemoryWarning = false;
+            lowMemoryWarningCount ++;
+        }
+        // gc is getting into corner
+        if (lowMemoryWarningCount > 7 || (total == max && rt.freeMemory() < 7*1024*1024)) {
+            RuntimeException ex = new RuntimeException("Low memory condition"); // NOI18N
+            String msg = NbBundle.getMessage(DataObjectSearchGroup.class, "EX_memory");
+            ErrorManager.getDefault().annotate(ex, ErrorManager.USER, null, msg, null, null);
+            throw ex;
+        }
+
     }
 
     /**
