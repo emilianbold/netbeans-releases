@@ -457,8 +457,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             }
         } catch (Throwable e) {
-            InvalidExpressionException iee = new InvalidExpressionException 
-                (e.getMessage ());
+            InvalidExpressionException iee = new InvalidExpressionException (e);
             iee.initCause (e);
             throw iee;
         }

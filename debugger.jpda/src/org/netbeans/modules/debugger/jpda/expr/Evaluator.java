@@ -19,6 +19,7 @@ import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -522,7 +523,11 @@ public class Evaluator implements JavaParserVisitor {
             args.add(vm.mirrorOf(typeName));
             args.add(vm.mirrorOf(true));
             args.add(executingClassloader);
-            if (verbose) throw new UnsupportedOperationException (); 
+            if (verbose) 
+                throw new UnsupportedOperationException (NbBundle.getMessage (
+                    Evaluator.class, 
+                    "CTL_UnsupportedOperationException"
+                )); 
             ClassObjectReference cor = (ClassObjectReference) executingClass.invokeMethod(frameThread, forName, args, 0);
             return cor.reflectedType();
         } catch (Exception e) {
@@ -787,7 +792,11 @@ public class Evaluator implements JavaParserVisitor {
 
         if (method.instanceContext != null) {
             try {
-                if (verbose) throw new UnsupportedOperationException (); 
+                if (verbose) 
+                    throw new UnsupportedOperationException (NbBundle.getMessage (
+                        Evaluator.class, 
+                        "CTL_UnsupportedOperationException"
+                    )); 
                 return method.instanceContext.invokeMethod(frameThread, method.method, method.args,
                                                         ObjectReference.INVOKE_SINGLE_THREADED | ObjectReference.INVOKE_NONVIRTUAL);
             } catch (InvalidTypeException e) {
@@ -813,10 +822,18 @@ public class Evaluator implements JavaParserVisitor {
             ClassType classContext = (ClassType) method.typeContext;
             try {
                 if (method.method.isConstructor()) {
-                    if (verbose) throw new UnsupportedOperationException (); 
+                    if (verbose) 
+                        throw new UnsupportedOperationException (NbBundle.getMessage (
+                            Evaluator.class, 
+                            "CTL_UnsupportedOperationException"
+                        )); 
                     return classContext.newInstance(frameThread, method.method, method.args, ClassType.INVOKE_SINGLE_THREADED);
                 } else {
-                    if (verbose) throw new UnsupportedOperationException (); 
+                    if (verbose) 
+                        throw new UnsupportedOperationException (NbBundle.getMessage (
+                            Evaluator.class, 
+                            "CTL_UnsupportedOperationException"
+                        )); 
                     return classContext.invokeMethod(frameThread, method.method, method.args, ClassType.INVOKE_SINGLE_THREADED);
                 }
             } catch (InvalidTypeException e) {
@@ -1149,7 +1166,11 @@ public class Evaluator implements JavaParserVisitor {
     private PrimitiveValue invokeUnboxingMethod(ObjectReference reference, String methodName) {
         Method toCall = (Method) reference.referenceType().methodsByName(methodName).get(0);
         try {
-            if (verbose) throw new UnsupportedOperationException (); 
+            if (verbose) 
+                throw new UnsupportedOperationException (NbBundle.getMessage (
+                    Evaluator.class, 
+                    "CTL_UnsupportedOperationException"
+                )); 
             return (PrimitiveValue) reference.invokeMethod(frameThread, toCall, new ArrayList(0), ObjectReference.INVOKE_SINGLE_THREADED);
         } catch (Exception e) {
             // this should never happen, indicates an internal error
@@ -1544,7 +1565,11 @@ public class Evaluator implements JavaParserVisitor {
 
         public void run() {
             try {
-                if (verbose) throw new UnsupportedOperationException (); 
+                if (verbose) 
+                    throw new UnsupportedOperationException (NbBundle.getMessage (
+                        Evaluator.class, 
+                        "CTL_UnsupportedOperationException"
+                    )); 
                 value = obj.invokeMethod(evaluationThread, method, args, options);
             } catch (ThreadDeath e) {
                 return; // killed by the caller, no need to notify

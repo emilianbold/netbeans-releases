@@ -62,6 +62,8 @@ public class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         this.model = model;
         this.watch = watch;
         this.exceptionDescription = exception.getLocalizedMessage ();
+        if (exceptionDescription == null)
+            exceptionDescription = exception.getMessage ();
     }
     
     /**
