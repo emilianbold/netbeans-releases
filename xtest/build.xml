@@ -14,12 +14,19 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="xtest" default="netbeans" basedir=".">
 
+  <property name="binroot" value=".." />
+
   <target name="compile">
     <javac srcdir="src" destdir="src">
       <classpath>
-        <fileset dir="${netbeans.test.home}/lib">
-          <include name="**/*.jar" />
+	<pathelement location="../openide/openide-13javac-workaround.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
         </fileset>
+	<pathelement location="../core/netbeans/lib/core.jar"/>
+	<pathelement location="${binroot}/core/release/lib/ext/junit.jar"/>
+	<pathelement location="${binroot}/core/release/lib/ext/xalan.jar"/>
+	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
       </classpath>
     </javac>
   </target>
@@ -31,9 +38,9 @@ Microsystems, Inc. All Rights Reserved.
     <jar jarfile="lib/xtest.jar"
             manifest="manifest-subst.mf"
             basedir="src"
+            excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false">
     </jar>
-    excludesfile="standard-jar-excludes.txt"
   </target>
 
   <target name="netbeans" depends="jars"/>
@@ -45,8 +52,7 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <delete file="lib/xtest.jar"/>
-    <delete dir="Info"/>
+    <delete file="lib"/>
   </target>
 
 </project>
