@@ -19,7 +19,9 @@ import java.util.Hashtable;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
+import org.openide.TopManager;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 import org.netbeans.core.windows.dnd.WindowDragDropKeyPropertyEditor;
 import org.netbeans.core.windows.nodes.TabbedContainerUIPropertyEditor;
@@ -30,19 +32,14 @@ import org.netbeans.core.windows.nodes.UIModePropertyEditor;
 * @author Ian Formanek
 */
 public class IDESettingsBeanInfo extends SimpleBeanInfo {
-    /** Icons for compiler settings objects. */
-    private static Image icon;
-    private static Image icon32;
 
-    /** Array of property descriptors. */
-    private static PropertyDescriptor[] desc;
-
-    // initialization of the array of descriptors
-    static {
-        ResourceBundle bundleUIMode = NbBundle.getBundle(UIModePropertyEditor.class);
-        ResourceBundle bundleTabbedContainerUI = NbBundle.getBundle(TabbedContainerUIPropertyEditor.class);
+    /** Provides an explicit property info. */
+    public PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            desc = new PropertyDescriptor[] {
+    	    ResourceBundle bundleUIMode = NbBundle.getBundle(UIModePropertyEditor.class);
+    	    ResourceBundle bundleTabbedContainerUI = NbBundle.getBundle(TabbedContainerUIPropertyEditor.class);
+
+            PropertyDescriptor[] desc = new PropertyDescriptor[] {
                        new PropertyDescriptor (IDESettings.PROP_SHOW_TIPS_ON_STARTUP, IDESettings.class,
                                                "getShowTipsOnStartup", "setShowTipsOnStartup"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_LAST_TIP, IDESettings.class,
@@ -115,26 +112,20 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[13].setShortDescription(Main.getString("HINT_WindowsDragDropKey"));
             desc[13].setPropertyEditorClass(WindowDragDropKeyPropertyEditor.class);
 
+	    return desc;
         } catch (IntrospectionException ex) {
-            if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
+	    TopManager.getDefault().getErrorManager().notify(ex);
+	    return null;
         }
-    }
 
-    /** Provides an explicit property info. */
-    public PropertyDescriptor[] getPropertyDescriptors() {
-        return desc;
     }
 
     /** Returns the IDESettings' icon */
     public Image getIcon(int type) {
-        if (icon == null) {
-            icon = loadImage("/org/netbeans/core/resources/ideSettings.gif"); // NOI18N
-            icon32 = loadImage ("/org/netbeans/core/resources/ideSettings32.gif"); // NOI18N
-        }
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-            return icon;
+	    return Utilities.loadImage("org/netbeans/core/resources/ideSettings.gif"); // NOI18N
         else
-            return icon32;
+            return Utilities.loadImage ("org/netbeans/core/resources/ideSettings32.gif"); // NOI18N
     }
 
 }
