@@ -89,5 +89,22 @@ public final class J2SEAntLogger extends AntLogger {
             }
         }
     }
+
+    public void messageLogged(AntEvent event) {
+        // #43968 - filter out following message
+        if (!event.isConsumed() && event.getLogLevel() == AntEvent.LOG_WARN &&
+            event.getMessage().startsWith("Trying to override old definition of " + // NOI18N
+                "task http://www.netbeans.org/ns/j2se-project/1:")) { // NOI18N
+            event.consume();
+        }
+    }
+
+    public boolean interestedInAllScripts(AntSession session) {
+        return true;
+    }
+
+    public int[] interestedInLogLevels(AntSession session) {
+        return new int[]{AntEvent.LOG_WARN};
+    }
     
 }
