@@ -17,9 +17,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.openide.ErrorManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -27,6 +24,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 import org.netbeans.modules.projectimport.ProjectImporterException;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.XMLReader;
 
 /**
  * Parses default JRE containers from Eclipse workspace.
@@ -70,18 +69,11 @@ final class PreferredVMParser extends DefaultHandler {
     /** Parses a given InputSource and fills up jdk vmMap */
     private void load(InputSource vmXMLIS) throws ProjectImporterException{
         try {
-            /* parser creation */
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            SAXParser parser = factory.newSAXParser();
-            
-            /* initialization */
-            chars = new StringBuffer();
-            
-            /* start parsing */
-            parser.parse(vmXMLIS, this);
-        } catch (ParserConfigurationException e) {
-            throw new ProjectImporterException(e);
+            XMLReader reader = XMLUtil.createXMLReader(false, true);
+            reader.setContentHandler(this);
+            reader.setErrorHandler(this);
+            chars = new StringBuffer(); // initialization
+            reader.parse(vmXMLIS); // start parsing
         } catch (IOException e) {
             throw new ProjectImporterException(e);
         } catch (SAXException e) {

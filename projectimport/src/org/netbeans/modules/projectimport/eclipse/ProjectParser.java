@@ -13,16 +13,19 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import java.io.InputStream;
 import org.openide.ErrorManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 import org.netbeans.modules.projectimport.ProjectImporterException;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 /**
  * Parses given project's .project file and fills up the project with found
@@ -76,23 +79,28 @@ final class ProjectParser extends DefaultHandler {
     
     /** Parses a given InputSource and fills up a EclipseProject */
     private void load() throws ProjectImporterException {
+        InputStream projectIS = null;
         try {
-            /* parser creation */
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            SAXParser parser = factory.newSAXParser();
-            
-            /* initialization */
-            chars = new StringBuffer();
-            
-            /* start parsing */
-            parser.parse(project.getProjectFile(), this);
-        } catch (ParserConfigurationException e) {
-            throw new ProjectImporterException(e);
+            projectIS = new BufferedInputStream(
+                    new FileInputStream(project.getProjectFile()));
+            XMLReader reader = XMLUtil.createXMLReader(false, true);
+            reader.setContentHandler(this);
+            reader.setErrorHandler(this);
+            chars = new StringBuffer(); // initialization
+            reader.parse(new InputSource(projectIS)); // start parsing
         } catch (IOException e) {
             throw new ProjectImporterException(e);
         } catch (SAXException e) {
             throw new ProjectImporterException(e);
+        } finally {
+            if (projectIS != null) {
+                try {
+                    projectIS.close();
+                } catch (IOException e) {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                            "Unable to close projectInputStream: " + e);
+                }
+            }
         }
     }
     

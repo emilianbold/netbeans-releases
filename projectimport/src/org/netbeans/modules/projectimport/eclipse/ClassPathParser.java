@@ -18,15 +18,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.openide.ErrorManager;
+import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.netbeans.modules.projectimport.ProjectImporterException;
 
@@ -61,7 +61,7 @@ final class ClassPathParser extends DefaultHandler {
     static ClassPath parse(File classPathFile) throws ProjectImporterException {
         
         ClassPathParser parser = new ClassPathParser();
-        BufferedInputStream classPathIS = null;
+        InputStream classPathIS = null;
         try {
             classPathIS = new BufferedInputStream(
                     new FileInputStream(classPathFile));
@@ -73,7 +73,7 @@ final class ClassPathParser extends DefaultHandler {
                 try {
                     classPathIS.close();
                 } catch (IOException e) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                    ErrorManager.getDefault().log(ErrorManager.WARNING,
                             "Unable to close classPathStream: " + e);
                 }
             }
@@ -92,17 +92,11 @@ final class ClassPathParser extends DefaultHandler {
     private void load(InputSource projectIS) throws ProjectImporterException{
         try {
             /* parser creation */
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            SAXParser parser = factory.newSAXParser();
-            
-            /* initialization */
-            chars = new StringBuffer();
-            
-            /* start parsing */
-            parser.parse(projectIS, this);
-        } catch (ParserConfigurationException e) {
-            throw new ProjectImporterException(e);
+            XMLReader reader = XMLUtil.createXMLReader(false, true);
+            reader.setContentHandler(this);
+            reader.setErrorHandler(this);
+            chars = new StringBuffer(); // initialization
+            reader.parse(projectIS); // start parsing
         } catch (IOException e) {
             throw new ProjectImporterException(e);
         } catch (SAXException e) {
@@ -154,7 +148,7 @@ final class ClassPathParser extends DefaultHandler {
                 position = POSITION_CLASSPATH;
                 break;
             default:
-                ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                ErrorManager.getDefault().log(ErrorManager.WARNING,
                         "Unknown state reached in ClassPathParser, " +
                         "position: " + position);
         }
