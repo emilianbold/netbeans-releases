@@ -47,11 +47,15 @@ public class CreationFactory {
 
         public InstanceSource(Class cls) {
             instClass = cls;
+            exchangeClass();
         }
 
-        public InstanceSource(InstanceCookie ic) throws java.io.IOException,
-                                                        ClassNotFoundException {
+        public InstanceSource(InstanceCookie ic)
+            throws java.io.IOException, ClassNotFoundException
+        {
             instClass = ic.instanceClass();
+            exchangeClass();
+
             if (!(ic instanceof org.openide.loaders.InstanceDataObject))
                 instCookie = ic; // don't treat InstanceDataObject as instances
         }
@@ -62,6 +66,25 @@ public class CreationFactory {
 
         public InstanceCookie getInstanceCookie() {
             return instCookie;
+        }
+
+        private void exchangeClass() {
+            // hack - use the class loaded by TopManager.currentClassLoader,
+            // avoid using class loaded by another loader from InstanceSupport
+            String name = instClass.getName();
+            if (!name.startsWith("javax.") && !name.startsWith("java.")) { // NOI18N
+                ClassLoader filesysClassLoader =
+                    org.openide.TopManager.getDefault().currentClassLoader();
+                if (instClass.getClassLoader() != filesysClassLoader) {
+                    try {
+                        instClass = filesysClassLoader.loadClass(name);
+                    }
+                    catch (Throwable th) {
+                        if (th instanceof ThreadDeath)
+                            throw (ThreadDeath)th;
+                    }
+                }
+            }
         }
     }
 

@@ -96,7 +96,7 @@ final class BeanCodeManager
                                       var.getAssignment(beanExpression) : null;
 
         isVariableSet = variableStatement != null;
-        variableType = var != null ? var.getType() : 0;
+        variableType = var != null ? var.getType() : CodeVariable.LOCAL;
 
         // find creation descriptor
         creationDesc = CreationFactory.getDescriptor(beanClass);

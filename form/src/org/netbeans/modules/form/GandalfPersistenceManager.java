@@ -1919,10 +1919,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 (RADVisualContainer) container : null;
 
         RADComponent[] children = null;
+        int convIndex = -1; // index of layout in conversion table
 
         if (visualContainer != null) {
             saveVisualComponent(visualContainer, buf, indent);
-            layoutConvIndex = saveLayout(visualContainer, buf, indent);
+            convIndex = saveLayout(visualContainer, buf, indent);
 
             // compatibility hack for saving form's menu bar (part II)
             if (container instanceof RADVisualFormContainer)
@@ -1946,7 +1947,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             addElementClose(buf, XML_SUB_COMPONENTS);
         }
 
-        if (visualContainer != null && layoutConvIndex < 0)
+        if (visualContainer != null && convIndex < 0)
             saveLayoutCode(visualContainer.getLayoutSupport(), buf, indent);
     }
 
@@ -3770,8 +3771,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return Boolean.TYPE;
         else if ("char".equals(type)) // NOI18N
             return Character.TYPE;
-        else
+        else {
+            if (type.startsWith("[")) { // NOI18N
+                // load array element class first to avoid failure
+                for (int i=1, n=type.length(); i < n; i++) {
+                    char c = type.charAt(i);
+                    if (c == 'L' && type.endsWith(";")) { // NOI18N
+                        String clsName = type.substring(i+1, n-1);
+                        PersistenceObjectRegistry.loadClass(clsName);
+                        break;
+                    }
+                    else if (c != '[')
+                        break;
+                }
+            }
+
             return PersistenceObjectRegistry.loadClass(type);
+        }
     }
 
     /** Decodes a value of given type from the specified String. Supported types are: <UL>

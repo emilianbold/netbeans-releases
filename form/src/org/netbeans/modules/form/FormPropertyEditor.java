@@ -15,6 +15,7 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.lang.ref.WeakReference;
+import java.security.*;
 
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -87,7 +88,15 @@ public class FormPropertyEditor implements PropertyEditor,
 
     public void propertyChange(PropertyChangeEvent evt) {
         value = modifiedEditor.getValue();
-        firePropertyChange();
+
+        // we run this as privileged to avoid security problems - because
+        // the property change can be fired from untrusted property editor code
+        AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                FormPropertyEditor.this.firePropertyChange();
+                return null;
+            }
+        });
     }
 
     // -----------------------------------------------------------------------------
