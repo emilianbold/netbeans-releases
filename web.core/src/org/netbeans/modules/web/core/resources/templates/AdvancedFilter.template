@@ -389,7 +389,7 @@ public class AdvancedFilter implements Filter {
 	
 	//
 	// You might, for example, wish to know what cookies were set on the response
-	// as it went throught the filter chain. Since HtytpServletRequest doesn't
+	// as it went throught the filter chain. Since HttpServletRequest doesn't
 	// have a get cookies method, we will need to store them locally as they
 	// are being set.
 	//
