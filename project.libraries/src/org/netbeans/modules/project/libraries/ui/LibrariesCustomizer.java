@@ -56,7 +56,7 @@ import org.openide.nodes.NodeOp;
  */
 public final class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.Provider {
     
-    private static final Dimension PREFERRED_SIZE = new Dimension (600,400);
+    private static final Dimension PREFERRED_SIZE = new Dimension (720,400);
     
     private ExplorerManager manager;
     private LibrariesModel model;
@@ -272,7 +272,7 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 2, 6);
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 12, 6);
         add(jLabel1, gridBagConstraints);
 
         libraryName.setEditable(false);
@@ -280,9 +280,9 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 2, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.6;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 12);
         add(libraryName, gridBagConstraints);
 
         properties.setPreferredSize(new java.awt.Dimension(400, 300));
@@ -291,10 +291,10 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(2, 6, 6, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 0.8;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 6, 12);
         add(properties, gridBagConstraints);
 
         createButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("CTL_NewLibrary"));
@@ -308,8 +308,8 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 6);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(createButton, gridBagConstraints);
 
         deleteButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("CTL_DeleteLibrary"));
@@ -323,22 +323,22 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 6);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(deleteButton, gridBagConstraints);
 
         libsPanel.setLayout(new java.awt.GridBagLayout());
 
+        libsPanel.setBorder(new javax.swing.border.EtchedBorder());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 0.2;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 6);
         add(libsPanel, gridBagConstraints);
 
     }//GEN-END:initComponents

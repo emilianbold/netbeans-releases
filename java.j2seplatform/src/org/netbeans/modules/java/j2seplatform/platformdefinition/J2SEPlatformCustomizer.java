@@ -286,19 +286,22 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             String title = null;
             String message = null;
             String approveButtonName = null;
+            String approveButtonNameMne = null;
             if (this.type == SOURCES) {
                 title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
                 message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Sources");
                 approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
+                approveButtonNameMne = NbBundle.getMessage (J2SEPlatformCustomizer.class,"MNE_OpenSources");
             }
             else if (this.type == JAVADOC) {
                 title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
                 message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Javadoc");
                 approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
+                approveButtonNameMne = NbBundle.getMessage (J2SEPlatformCustomizer.class,"MNE_OpenJavadoc");
             }
             chooser.setDialogTitle(title);
             chooser.setApproveButtonText(approveButtonName);
-            chooser.setApproveButtonMnemonic (NbBundle.getMessage (J2SEPlatformCustomizer.class,"MNE_Add").charAt(0));
+            chooser.setApproveButtonMnemonic (approveButtonNameMne.charAt(0));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             chooser.setFileFilter (new SimpleFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
             if (chooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
