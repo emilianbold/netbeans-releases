@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -10,9 +10,7 @@ http://www.sun.com/
 The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
--->
-
-<project name="qa-functional Test Type Script" basedir="." default="all">
+--><project basedir="." default="all" name="qa-functional Test Type Script">
 
     <!-- =================== -->
     <!-- Setting classpaths -->
@@ -25,8 +23,8 @@ Microsystems, Inc. All Rights Reserved.
 	     or <module>/netbeans isn't available. 
           -->            
          
-        <property name="jemmy.home" location="../../../nbextra/jemmy"/>
-        <property name="jelly.home" location="../../../nbextra/jellytools"/>
+        <property location="../../../nbextra/jemmy" name="jemmy.home"/>
+        <property location="../../../nbextra/jellytools" name="jelly.home"/>
 		 
         <!-- List of directories where jars will be searched. -->
         <property name="xtest.extra.jars.path" value="${jemmy.home};${jelly.home}"/>
@@ -74,9 +72,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="default-compiler" depends="set_classpath">
-       <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="buildtests">
+    <target depends="set_classpath" name="default-compiler">
+       <ant antfile="${xtest.module_harness.antfile}" dir="." target="buildtests">
            <!-- This property contains directories to compile.
     	        These directories will be compiled separately. 
                    example: <property name="compile.srcdir" value="unit/src1;unit/src2"/>
@@ -94,9 +91,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidetest" depends="set_classpath">
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="test">
+    <target depends="set_classpath" name="runidetest">
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="test">
            <property name="xtest.exectype" value="ide"/>
            <property name="xtest.ide.winsys" value="sdi"/>
        </ant>
@@ -105,9 +101,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes standalone tests -->
-    <target name="runcodetest" depends="set_classpath">
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="test">
+    <target depends="set_classpath" name="runcodetest">
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="test">
            <property name="xtest.exectype" value="code"/>
         </ant>
     </target>
