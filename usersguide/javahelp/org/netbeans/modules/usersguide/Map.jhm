@@ -38,8 +38,6 @@
 <mapID target="project.switching" url="project/project_switching.html" />
 <mapID target="project.deleting" url="project/project_deleting.html" />
 
-<mapID target="objects" url="objects/objects.html" />
-
 <mapID target="explorer" url="objects/explorer.html" />
 
 <mapID target="filesystems.classpath" url="filesystems/filesystems_classpath.html" />
@@ -867,7 +865,6 @@
   <!--TODO: future: instance objects could use their own topic-->
   <mapID target="org.openide.loaders.InstanceDataObject" url="pending.html" />
   
-  <mapID target="org.openide.loaders.XMLDataObject" url="objects/objects.html" />
   <mapID target="org.openide.nodes.BeanNode" url="pending.html" />
   <!--TODO provide reasonable mapping for BeanNode-->
   <mapID target="org.openide.src.nodes.ElementNode" url="pending.html" />
@@ -1045,9 +1042,9 @@
    <mapID target="org.openide.src.InitializerProperties" url="java/nodes/constructors_props.html" />
    <mapID target="org.openide.src.FieldProperties" url="java/nodes/fields_props.html" />
 
-   <mapID target="org.netbeans.modules.text.TXTDataObject" url="objects/objects.html" />
+   <mapID target="org.netbeans.modules.text.TXTDataObject" url="objects/objects_icons.html" />
    <mapID target="org.netbeans.modules.text.ConvertToTextAction" url="objects/objects_treat-as-text.html" />
-   <mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="objects/objects.html" />
+   <mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="objects/objects_icons.html" />
    <mapID target="org.netbeans.modules.beans.EventSetPatternNode" url="java/nodes/beanprop.html" />
    <mapID target="org.netbeans.modules.beans.IdxPropertyPatternNode" url="java/nodes/beanprop.html" />
    <mapID target="org.netbeans.modules.beans.PatternGroupNode" url="java/nodes/beanprop.html" />
@@ -1529,7 +1526,7 @@
   <mapID target="org.openide.actions.UndoAction" url="pending.html" />
 
   <mapID target="org.openide.loaders.DataFolder$NewFolder" url="pending.html" />
-  <mapID target="org.openide.loaders.DefaultDataObject" url="objects/objects.html" />
+  <mapID target="org.openide.loaders.DefaultDataObject" url="objects/objects_icons.html" />
   <mapID target="org.openide.explorer.propertysheet.editors.IconEditor$IconPanel" url="pending.html" />
   <mapID target="org.openide.explorer.propertysheet.editors.StringArrayCustomEditor" url="pending.html" />
    <mapID target="org.openide.awt.MenuBar$MenuFolder.File" url="pending.html" /> 
