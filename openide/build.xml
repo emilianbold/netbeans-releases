@@ -165,8 +165,8 @@ Microsystems, Inc. All Rights Reserved.
            <include name="org/openide/**" />
       	   <exclude name="org/openide/filesystems/**" />
            <exclude name="org/openide/util/**"/>
-<!--           <exclude name="org/openide/nodes/**"/>
-           <exclude name="org/openide/cookies/**"/>-->
+           <exclude name="org/openide/nodes/**"/>
+           <exclude name="org/openide/cookies/**"/>
            
            <!-- Part of openide-util.jar -->
            <exclude name="org/openide/ErrorManager*class"/> 
