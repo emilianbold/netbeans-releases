@@ -167,6 +167,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         Installer.err.log("displayHelpInFrame");
         if (jh == null) jh = lastJH;
         if (jh == null) throw new IllegalStateException();
+        boolean newFrameViewer = (frameViewer == null);
         ensureFrameViewer();
         if (dialogViewer != null) {
             Installer.err.log("\tdisposing old dialog");
@@ -186,28 +187,33 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             frameViewer.setTitle(jh.getModel().getHelpSet().getTitle());
             frameViewer.pack();
         }
-        Dimension screenSize = Utilities.getUsableScreenBounds().getSize();
-        Dimension frameSize = frameViewer.getSize();
-        // #11018: have mercy on little screens
-        if (frameSize.width > screenSize.width) {
-            frameSize.width = screenSize.width;
-            frameViewer.setSize(frameSize);
+        if (newFrameViewer) {
+            // #22445: only do this stuff once when frame is made.
+            // After that we need to remember the size and position.
+            Dimension screenSize = Utilities.getUsableScreenBounds().getSize();
+            Dimension frameSize = frameViewer.getSize();
+            // #11018: have mercy on little screens
+            if (frameSize.width > screenSize.width) {
+                frameSize.width = screenSize.width;
+                frameViewer.setSize(frameSize);
+            }
+            if (frameSize.height > screenSize.height) {
+                frameSize.height = screenSize.height;
+                frameViewer.setSize(frameSize);
+            }
+            // Now center it.
+            frameViewer.setBounds(Utilities.findCenterBounds(frameSize));
         }
-        if (frameSize.height > screenSize.height) {
-            frameSize.height = screenSize.height;
-            frameViewer.setSize(frameSize);
-        }
-        // Now center it.
-        frameViewer.setBounds(Utilities.findCenterBounds(frameSize));
 
         frameViewer.setState(Frame.NORMAL);
         if (frameViewer.isVisible()) {
             frameViewer.repaint();
+            frameViewer.toFront(); // #20048
             Installer.err.log("\talready visible, just repainting");
         } else {
             frameViewer.setVisible(true);
-            frameViewer.requestFocus();
         }
+        frameViewer.requestFocus();
         lastJH = jh;
     }
     private void displayHelpInDialog(JHelp jh) {
