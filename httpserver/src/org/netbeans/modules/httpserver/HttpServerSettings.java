@@ -99,6 +99,11 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   
   public HttpServerSettings() {
   }
+  
+  /** This is a project option. */
+  private boolean isGlobal() {
+    return false;
+  }
 
   /** human presentable name */
   public String displayName() {
@@ -474,6 +479,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  27   Gandalf   1.26        1/4/00   Petr Jiricka    Added to project options
  *  26   Gandalf   1.25        1/3/00   Petr Jiricka    Bugfix 5133
  *  25   Gandalf   1.24        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
