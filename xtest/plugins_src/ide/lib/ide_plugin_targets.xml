@@ -193,12 +193,6 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </property>
         
-        <!-- this property can be used to turn off the IDE security ... -->
-        <!--
-        <property name="xtest.ide.security" value="-J-Dnetbeans.security.nocheck=true"/>
-        -->
-        <property name="xtest.ide.security" value=""/>
-        
         <!-- to  be removed -->
         <property name="test.propertyfile" value=""/>
         
@@ -234,7 +228,7 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dxtest.userdir=&quot;${xtest.userdir}&quot;
 -J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}
 -J-Dprebuilt.storage.dir=&quot;${xtest.ide.mdrstorage}&quot;
-${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
+${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
 
 <!--
 http://www.netbeans.org/issues/show_bug.cgi?id=52385
