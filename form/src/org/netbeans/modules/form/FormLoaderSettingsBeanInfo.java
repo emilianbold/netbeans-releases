@@ -117,7 +117,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
       desc[15].setShortDescription (formBundle.getString ("HINT_REGISTERED_EDITORS"));
       desc[16].setDisplayName (formBundle.getString ("PROP_OUTPUT_LEVEL"));
       desc[16].setShortDescription (formBundle.getString ("HINT_OUTPUT_LEVEL"));
-      desc[16].setPropertyEditorClass (IDESettingsBeanInfo.OutputLevelEditor.class);
+      desc[16].setPropertyEditorClass (FormLoaderSettingsBeanInfo.OutputLevelEditor.class);
 
 
     } catch (IntrospectionException ex) {
@@ -232,6 +232,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  13   Gandalf   1.12        8/1/99   Ian Formanek    Fixed last change
  *  12   Gandalf   1.11        8/1/99   Ian Formanek    Output Details property 
  *       added
  *  11   Gandalf   1.10        7/13/99  Petr Hamernik   ConstrainedModifiers 
