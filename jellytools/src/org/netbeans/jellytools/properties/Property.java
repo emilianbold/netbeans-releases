@@ -388,8 +388,11 @@ public class Property {
             for(int row=0;row<table.getRowCount();row++) {
                 if(table.getValueAt(row, 1) instanceof Node.Property) {
                     if(this.property == (Node.Property)table.getValueAt(row, 1)) {
+                        // Need to request focus before selection because invokeCustomEditor action works
+                        // only when table is focused
+                        table.requestFocus();
                         // need to select property first
-                        table.selectCell(row, 0);
+                        ((javax.swing.JTable)table.getSource()).changeSelection(row, 0, false, false);
                         // find action
                         final Action customEditorAction = ((JComponent)table.getSource()).getActionMap().get("invokeCustomEditor");  // NOI18N
                         // run action in a separate thread (no block)
