@@ -19,13 +19,10 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-
-import java.beans.PropertyVetoException;
 /**
  * XmlMultiviewElement.java
  *
@@ -53,20 +50,12 @@ public class XmlMultiViewElement implements MultiViewElement {
             Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(DataObject.class,
                     "MSG_SaveFile",
                     new Object[]{dataObject.getPrimaryFile().getNameExt()}),
-                    NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                    NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE));
-            if(result == NotifyDescriptor.NO_OPTION) {
-                dataObject.updateDocument();
-            } else if(result == NotifyDescriptor.CANCEL_OPTION) {
-                try {
-                    dataObject.setValid(false);
-                } catch (PropertyVetoException e) {
-                    ErrorManager.getDefault().notify (org.openide.ErrorManager.INFORMATIONAL, e);
-                    return MultiViewFactory.createUnsafeCloseState("Data object modified", null, null);
-                }
-            } else {
+            if (result != NotifyDescriptor.OK_OPTION) {
                 return MultiViewFactory.createUnsafeCloseState("Data object modified", null, null);
             }
+            dataObject.updateDocument();
         }
         return CloseOperationState.STATE_OK;
     }
