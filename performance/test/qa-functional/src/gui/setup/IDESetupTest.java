@@ -18,6 +18,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 
 import org.netbeans.junit.ide.ProjectSupport;
 
+import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
@@ -58,7 +59,13 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
             org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
             org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
         
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|"); //NOI18N 
+        JMenuBarOperator menuBar = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
+        JMenuItemOperator menuItem = menuBar.showMenuItem(MENU,"|");
+        
+        if(menuItem.isSelected())
+            menuItem.push();
+        else
+            menuItem.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
         
     }
     
