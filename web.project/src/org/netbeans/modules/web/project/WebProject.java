@@ -649,16 +649,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                             // TODO inform the user that no server is set
                         }
                     }
-                } else {
-                    //not 4.0 project
-                    //should we create test folder if it doesn't exist?
-                    wpp.put("test.src.dir", "");
-                    wpp.put("build.test.classes.dir", "");
-                    wpp.put("build.test.results.dir", "");
-                    //store() opens update project dialog (incompatible metadata changes);
-                    //it seems strange to user to show this dialog if he doesn't change anything;
-                    //need to solve with HIE, provide more descriptive message at least
-//                    wpp.store ();
                 }
                 
             } catch (IOException e) {
