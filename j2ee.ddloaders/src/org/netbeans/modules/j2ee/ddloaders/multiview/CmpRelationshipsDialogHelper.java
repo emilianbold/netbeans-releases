@@ -92,11 +92,8 @@ class CmpRelationshipsDialogHelper {
         private void processResult(RelationshipHelper.RelationshipRoleHelper helper) {
             String ejbName = getEjbName();
             String roleName = getRoleName();
-            if (roleName.length() == 0) {
-                roleName = ejbName;
-            }
             helper.setEjbName(ejbName);
-            helper.setRoleName(ejbName);
+            helper.setRoleName(roleName);
             helper.setMultiple(isMultiple());
             helper.setCascadeDelete(isCascadeDelete());
             String fieldName;
@@ -210,7 +207,12 @@ class CmpRelationshipsDialogHelper {
         }
 
         private String getRoleName() {
-            return roleNameTextField.getText().trim();
+            String roleName = roleNameTextField.getText().trim();
+            if (roleName.length() == 0) {
+                return getEjbName();
+            } else {
+                return roleName;
+            }
         }
 
         private void setRoleName(String roleName) {
@@ -370,6 +372,9 @@ class CmpRelationshipsDialogHelper {
         form.getFieldNameTextField().getDocument().addDocumentListener(dialogListener);
         form.getFieldNameTextField2().getDocument().addDocumentListener(dialogListener);
         form.getCreateCmrFieldCheckBox().addActionListener(dialogListener);
+        form.getRoleNameTextField().getDocument().addDocumentListener(dialogListener);
+        form.getRoleNameTextField2().getDocument().addDocumentListener(dialogListener);
+        dialogListener.validateFields();
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
 //            listener.validate();
@@ -486,22 +491,22 @@ class CmpRelationshipsDialogHelper {
         }
 
         public void changedUpdate(DocumentEvent e) {
-            validateFieldNames();
+            validateFields();
         }
 
         public void insertUpdate(DocumentEvent e) {
-            validateFieldNames();
+            validateFields();
         }
 
         public void removeUpdate(DocumentEvent e) {
-            validateFieldNames();
+            validateFields();
         }
 
         public void actionPerformed(ActionEvent e) {
-            validateFieldNames();
+            validateFields();
         }
 
-        private void validateFieldNames() {
+        private void validateFields() {
             String s1 = roleA.validateFieldName();
             if (s1 != null) {
                 errorLabel.setText(s1);
@@ -510,6 +515,9 @@ class CmpRelationshipsDialogHelper {
                 String s2 = roleB.validateFieldName();
                 if (s2 != null) {
                     errorLabel.setText(s2);
+                    dialogDescriptor.setValid(false);
+                } else if (roleA.getRoleName().equals(roleB.getRoleName())) {
+                    errorLabel.setText(Utils.getBundleMessage("MSG_SameRoleNames"));
                     dialogDescriptor.setValid(false);
                 } else {
                     errorLabel.setText(" ");
