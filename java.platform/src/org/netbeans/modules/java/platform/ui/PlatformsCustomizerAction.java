@@ -21,6 +21,10 @@ import org.openide.util.actions.CallableSystemAction;
 
 public class PlatformsCustomizerAction extends CallableSystemAction {
 
+    public PlatformsCustomizerAction () {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
+    
     public void performAction() {
         org.netbeans.api.java.platform.PlatformsCustomizer.showCustomizer(null);
     }

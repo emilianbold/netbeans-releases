@@ -21,6 +21,7 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.KeyStroke;
+import javax.swing.MenuElement;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.*;
@@ -61,7 +62,10 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
     /** the folder which represents and loads content of the menubar */
     private MenuBarFolder menuBarFolder;
-    
+
+    private static final Icon BLANK_ICON = new ImageIcon(
+        Utilities.loadImage("org/openide/resources/empty.gif")); // NOI18N            
+
     static final long serialVersionUID =-4721949937356581268L;
 
     /** Don't call this constructor or this class will not get
@@ -474,7 +478,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
 	 * from the given <code>DataFolder</code>.
 	 */
 	private class MenuFolder extends FolderInstance {
-
+            
     	    /**
              * Start tracking the content of the master folder.
 	     * It will cause initial update of the Menu
@@ -538,7 +542,8 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	     * @return a <code>Menu.Folder</code> for the specified folder
     	     */
     	    protected InstanceCookie acceptFolder(DataFolder df) {
-		return new InstanceSupport.Instance(new LazyMenu(df, true));
+                boolean hasIcon = df.getPrimaryFile().getAttribute("SystemFileSystem.icon") != null;
+		return new InstanceSupport.Instance(new LazyMenu(df, hasIcon));
     	    }
 
     	    /** Updates the <code>JMenu</code> represented by this folder.
@@ -570,38 +575,84 @@ public class MenuBar extends JMenuBar implements Externalizable {
 	    
         	// clear first - refresh the menu's content
         	boolean addSeparator = false;
-
-        	// sync to prevent from concurrent modifications of
-        	// cookie instances list 
+                // is menu with some ityem with icon or not
+                boolean isWithIcons = false;
+                Icon curIcon = null;
         	Iterator it = cInstances.iterator();
+                List menuItems = new ArrayList(cInstances.size());
         	while (it.hasNext()) {
             	    Object obj = it.next();
-
             	    if (obj instanceof Presenter.Menu) {
                 	obj = ((Presenter.Menu)obj).getMenuPresenter();
             	    }
 		
 		    if (obj instanceof JMenuItem) {
                 	if(addSeparator) {
-                	    m.addSeparator();
+                	    menuItems.add(null);
                     	    addSeparator = false;
                 	}
-            		m.add((JMenuItem)obj);
+                        // check icon
+                        if (!isWithIcons) {
+                            curIcon = ((JMenuItem)obj).getIcon();
+                            if (curIcon != null) {
+                                isWithIcons = true;
+                            }
+                        }
+            		menuItems.add((JMenuItem)obj);
             	    } else if (obj instanceof JSeparator) {
-                	addSeparator = getMenuComponentCount() > 0;
+                	addSeparator = menuItems.size() > 0;
             	    } else if (obj instanceof Action) {
                 	if(addSeparator) {
-                	    m.addSeparator();
+                	    menuItems.add(null);
                     	    addSeparator = false;
                 	}
                 	Action a = (Action)obj;
-                	JMenuItem item = new JMenuItem ();
+                	JMenuItem item = new JMenuItem();
                 	Actions.connect (item, a, false);
-                	m.add (item);
+                        // check icon
+                        if (!isWithIcons) {
+                            curIcon = item.getIcon();
+                            if (curIcon != null) {
+                                isWithIcons = true;
+                            }
+                        }
+                	menuItems.add (item);
             	    }
         	}
+
+                if (isWithIcons) {
+                    menuItems = alignVertically(menuItems);
+                }
+                
+                // fill menu with built items
+                JMenuItem curItem = null;
+                for (Iterator iter = menuItems.iterator(); iter.hasNext(); ) {
+                    curItem = (JMenuItem)iter.next();
+                    if (curItem != null) {
+                        m.add(curItem);
+                    } else {
+                        // null means separator
+                        m.addSeparator();
+                    }
+                }
+                
         	return m;
     	    }
+            
+            /** Removes icons from all direct menu items of this menu.
+             * Not recursive, */
+            private List alignVertically (List menuItems) {
+                List result = new ArrayList(menuItems.size());
+                JMenuItem curItem = null;
+                for (Iterator iter = menuItems.iterator(); iter.hasNext(); ) {
+                    curItem = (JMenuItem)iter.next();
+                    if (curItem != null && curItem.getIcon() == null) {
+                        curItem.setIcon(BLANK_ICON);
+                    }
+                    result.add(curItem);
+                }
+                return result;
+            }
 
     	    /** Recreate the instance in AWT thread.
     	     */
@@ -610,4 +661,5 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	    }
 	}
     }
+    
 }

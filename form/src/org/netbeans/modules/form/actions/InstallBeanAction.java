@@ -25,6 +25,10 @@ import org.netbeans.modules.form.palette.PaletteManager;
 public class InstallBeanAction extends CallableSystemAction {
 
     private static String name;
+    
+    public InstallBeanAction () {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
 
     protected boolean asynchronous() {
         return false;

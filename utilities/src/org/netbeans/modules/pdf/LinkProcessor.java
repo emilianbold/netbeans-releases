@@ -111,6 +111,7 @@ public class LinkProcessor implements InstanceCookie,
 
     /* Implements interface <code>InstanceCookie</code>. */
     public Object instanceCreate() throws IOException, ClassNotFoundException {
+        /*
         Image icon = Utilities.loadImage(
                 "org/netbeans/modules/pdf/PDFDataIcon.gif");           //NOI18N
         try {
@@ -120,11 +121,12 @@ public class LinkProcessor implements InstanceCookie,
                                          BeanInfo.ICON_COLOR_16x16,
                                          xmlDataObject.files());
         } catch (FileStateInvalidException fsie) {
-            /* OK, so we use the default icon */
-        }
+            // OK, so we use the default icon
+        } */
+            
         String name = xmlDataObject.getNodeDelegate().getDisplayName();
         
-        JMenuItem menuItem = new JMenuItem(new ImageIcon(icon));
+        JMenuItem menuItem = new JMenuItem(/*new ImageIcon(icon)*/);
         Mnemonics.setLocalizedText(menuItem, name);
         menuItem.addActionListener(this);
         

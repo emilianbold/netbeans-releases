@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="master-help.xml_hidden"/>
             <file name="org-netbeans-modules-usersguide-master.xml" url="master.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>
             <attr name="org-netbeans-modules-usersguide-master.xml/Separator1.instance" boolvalue="true"/>
         </folder>

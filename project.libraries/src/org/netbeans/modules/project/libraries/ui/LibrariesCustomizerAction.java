@@ -21,7 +21,10 @@ import org.openide.util.actions.CallableSystemAction;
 
 public class LibrariesCustomizerAction extends CallableSystemAction {
 
-
+    public LibrariesCustomizerAction () {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
+    
     public void performAction() {
         org.netbeans.api.project.libraries.LibrariesCustomizer.showCustomizer(null);
     }

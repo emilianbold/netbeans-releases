@@ -83,7 +83,6 @@ public class EditorsAction extends AbstractAction
     public JMenuItem getMenuPresenter() {
         String label = NbBundle.getMessage(EditorsAction.class, "CTL_EditorsAction");
         menu = new JMenu(label);
-        menu.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
         Mnemonics.setLocalizedText(menu, label);
         updateMenu();
         return menu;

@@ -30,6 +30,10 @@ import org.netbeans.core.Splash;
 * @author Ian Formanek
 */
 public class AboutAction extends CallableSystemAction {
+    
+    public AboutAction () {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
 
     public void performAction () {
         Splash.showSplashDialog ();
@@ -37,10 +41,6 @@ public class AboutAction extends CallableSystemAction {
     
     protected boolean asynchronous() {
         return false;
-    }
-    
-    public String iconResource () {
-        return "org/openide/resources/actions/empty.gif"; // NOI18N
     }
     
     public HelpCtx getHelpCtx() {

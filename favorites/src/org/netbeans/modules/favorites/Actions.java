@@ -231,6 +231,10 @@ public final class Actions extends Object {
             return ADD;
         }
         
+        private Add () {
+            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        }
+        
         /** Enabled only if the current project is ProjectDataObject.
         */
         public boolean enable (Node[] arr) {

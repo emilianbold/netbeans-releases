@@ -49,18 +49,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
                 
         <folder name="View">
-            <file name="org-netbeans-modules-editor-NbCodeFoldingAction.instance">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/empty.gif"/>
-            </file>
+            <file name="org-netbeans-modules-editor-NbCodeFoldingAction.instance"/>
             <attr name="org-netbeans-core-multiview-EditorsAction.instance/org-netbeans-modules-editor-NbCodeFoldingAction.instance" boolvalue="true"/>
             <attr name="org-netbeans-modules-editor-NbCodeFoldingAction.instance/Separator1.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-editor-MainMenuAction$ShowLineNumbersAction.instance">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/empty.gif"/>
-            </file>
+            <file name="org-netbeans-modules-editor-MainMenuAction$ShowLineNumbersAction.instance"/>
             <attr name="org-netbeans-core-windows-actions-ToolbarsListAction.instance/org-netbeans-modules-editor-MainMenuAction$ShowLineNumbersAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/empty.gif"/>
-            </file>
+            <file name="org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance"/>
             <attr name="org-netbeans-modules-editor-MainMenuAction$ShowLineNumbersAction.instance/org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance" boolvalue="true"/>
         </folder>
     </folder>

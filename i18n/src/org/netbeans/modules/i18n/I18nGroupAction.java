@@ -152,16 +152,6 @@ public final class I18nGroupAction extends SystemAction
             Actions.setMenuText(this, action.getName(), isMenu);
             
             this.isMenu = isMenu;
-            
-            if(isMenu) {
-                // Binary-incompatible across SystemAction.icon ImageIcon -> Icon change:
-                //menu.setIcon (getIcon ());
-                if(icon == null) {
-                    icon = new ImageIcon(I18nGroupAction.class.getResource("/org/netbeans/modules/i18n/empty.gif")); // NOI18N
-                }
-
-                setIcon(icon);
-            }
         }
 
         /** Creates <code>LazyPopup</code> menu item. */

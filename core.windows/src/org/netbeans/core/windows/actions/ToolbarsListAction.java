@@ -33,6 +33,7 @@ public class ToolbarsListAction extends AbstractAction
     
     public ToolbarsListAction() {
         putValue(NAME,NbBundle.getMessage(ToolbarsListAction.class, "CTL_ToolbarsListAction"));
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
     /** Perform the action. Tries the performer and then scans the ActionMap
@@ -46,7 +47,7 @@ public class ToolbarsListAction extends AbstractAction
         String label = NbBundle.getMessage(ToolbarsListAction.class, "CTL_ToolbarsListAction");
         JMenu menu = new JMenu(label);
         //#40584 fix start setting the empty, transparent icon for the menu item to align it correctly with other items
-        menu.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
+        //menu.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
         //#40584 fix end
         Mnemonics.setLocalizedText(menu, label);
         ToolbarConfiguration curConf = 

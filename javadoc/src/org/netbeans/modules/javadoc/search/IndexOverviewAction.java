@@ -79,7 +79,7 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
         
         public IndexMenu() {
             Mnemonics.setLocalizedText(this, IndexOverviewAction.this.getName());
-            setIcon(IndexOverviewAction.this.getIcon());
+            //setIcon(IndexOverviewAction.this.getIcon());
         }
         
         public HelpCtx getHelpCtx() {

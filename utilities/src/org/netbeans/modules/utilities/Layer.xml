@@ -114,26 +114,22 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="Separator1.instance/Tutorials" boolvalue="true"/>
             <folder name="Tutorials">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
+          <!--      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/> -->
                 <file name="quick-start.url" url="nbresloc:/org/netbeans/modules/utilities/quick-start.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
                 </file>
                 <attr name="quick-start.url/prj-import-guide.url" boolvalue="true"/>
                 <file name="prj-import-guide.url" url="nbresloc:/org/netbeans/modules/utilities/prj-import-guide.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
                 </file>
                 <attr name="prj-import-guide.url/using-netbeans.url" boolvalue="true"/>
                 <file name="using-netbeans.url" url="nbresloc:/org/netbeans/modules/utilities/using-netbeans.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
                 </file>
             </folder>
             <attr name="Tutorials/shortcuts.xml" boolvalue="true"/>
             <file name="shortcuts.xml" url="nbresloc:/org/netbeans/modules/utilities/shortcuts.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>
             <attr name="shortcuts.xml/utilities-sep-2.instance" boolvalue="true"/>
             <file name="utilities-sep-2.instance">
@@ -142,12 +138,10 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="utilities-sep-2.instance/netbeans-kb.url" boolvalue="true"/>
             <file name="netbeans-kb.url" url="nbresloc:/org/netbeans/modules/utilities/netbeans-kb.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>         
             <attr name="netbeans-kb.url/relnotes.url" boolvalue="true"/>
             <file name="relnotes.url" url="nbresloc:/org/netbeans/modules/utilities/relnotes.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>
             <attr name="relnotes.url/utilities-sep-3.instance" boolvalue="true"/>
             <file name="utilities-sep-3.instance">

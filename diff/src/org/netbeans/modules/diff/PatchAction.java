@@ -70,6 +70,7 @@ public class PatchAction extends NodeAction {
 
     /** Creates a new instance of PatchAction */
     public PatchAction() {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
     public String getName() {

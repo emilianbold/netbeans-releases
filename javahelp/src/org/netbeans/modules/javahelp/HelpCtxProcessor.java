@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.javahelp;
 
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.beans.*;
@@ -157,6 +158,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             this.obj = obj;
             this.helpID = helpID;
             this.showmaster = showmaster;
+            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
             Installer.err.log("new ShortcutAction: " + obj + " " + helpID + " showmaster=" + showmaster);
             updateText();
             updateIcon();
@@ -232,7 +234,10 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
          */
         private void updateIcon() {
             if (obj.isValid()) {
-                putValue(Action.SMALL_ICON, new ImageIcon(obj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)));
+                Image icon = obj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
+                if (icon != null) {
+                    putValue(Action.SMALL_ICON, new ImageIcon(icon));
+                }
             }
         }
 

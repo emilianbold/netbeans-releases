@@ -62,21 +62,21 @@ final class URLPresenter implements Presenter.Menu,
     /* implements interface Presenter.Menu */
     public JMenuItem getMenuPresenter() {
         JMenuItem menuItem = new JMenuItem();
-        initialize(menuItem);
+        initialize(menuItem, false);
         return menuItem;
     }
 
     /* implements interface Presenter.Popup */
     public JMenuItem getPopupPresenter() {
         JMenuItem menuItem = new JMenuItem();
-        initialize(menuItem);
+        initialize(menuItem, false);
         return menuItem;
     }
 
     /* implements interface Presenter.Toolbar */
     public Component getToolbarPresenter() {
         JButton toolbarButton = new JButton();
-        initialize(toolbarButton);
+        initialize(toolbarButton, true);
         return toolbarButton;
     }
 
@@ -85,21 +85,23 @@ final class URLPresenter implements Presenter.Menu,
      *
      * @param  presenter  presenter to initialize
      */
-    private void initialize(AbstractButton presenter) {
+    private void initialize(AbstractButton presenter, boolean useIcons) {
 
-        /* set the presenter's icon: */
-        Image icon = Utilities.loadImage(
-                "org/netbeans/modules/url/urlObject.gif");              //NOI18N
-        try {
-            FileObject file = dataObject.getPrimaryFile();
-            FileSystem.Status fsStatus = file.getFileSystem().getStatus();
-            icon = fsStatus.annotateIcon(icon,
-                                         BeanInfo.ICON_COLOR_16x16,
-                                         dataObject.files());
-        } catch (FileStateInvalidException fsie) {
-            /* OK, so we use the default icon */
+        if (useIcons) {
+            // set the presenter's icon:
+            Image icon = Utilities.loadImage(
+                    "org/netbeans/modules/url/urlObject.gif");              //NOI18N
+            try {
+                FileObject file = dataObject.getPrimaryFile();
+                FileSystem.Status fsStatus = file.getFileSystem().getStatus();
+                icon = fsStatus.annotateIcon(icon,
+                                             BeanInfo.ICON_COLOR_16x16,
+                                             dataObject.files());
+            } catch (FileStateInvalidException fsie) {
+                // OK, so we use the default icon
+            }
+            presenter.setIcon(new ImageIcon(icon));
         }
-        presenter.setIcon(new ImageIcon(icon));
 
         /* set the presenter's text and ensure it is maintained up-to-date: */
         NameChangeListener listener = new NameChangeListener(presenter);

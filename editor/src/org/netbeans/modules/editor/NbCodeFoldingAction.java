@@ -110,7 +110,7 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
         public CodeFoldsMenu(String s){
             super(s);
             //#40585 fix start - setting the empty, transparent icon for the menu item to align it correctly with other items
-            setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/resources/empty.gif"))); //NOI18N
+            //setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/resources/empty.gif"))); //NOI18N
             //#40585 fix end
             org.openide.awt.Mnemonics.setLocalizedText(this, s);
         }

@@ -18,7 +18,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Help">
           <file name="master-help.xml" url="master-help.xml">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javahelp.resources.Bundle"/>
-              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
           </file>
           <attr name="master-help.xml/HelpShortcuts" boolvalue="true"/>
           <attr name="HelpShortcuts\SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javahelp.resources.Bundle"/>

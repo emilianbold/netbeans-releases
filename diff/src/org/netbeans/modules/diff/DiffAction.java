@@ -60,6 +60,7 @@ public class DiffAction extends NodeAction {
 
     /** Creates new DiffAction */
     public DiffAction() {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
     public String getName() {

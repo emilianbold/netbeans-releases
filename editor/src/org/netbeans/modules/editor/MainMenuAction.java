@@ -163,7 +163,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
 
         if (!menuInitialized){
             Mnemonics.setLocalizedText(presenter, getMenuItemText());
-            presenter.setIcon(BLANK_ICON);
+            //presenter.setIcon(BLANK_ICON);
             menuInitialized = true;
         }
         
@@ -194,7 +194,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             
         public ShowToolBarAction(){
             super();
-            SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText(), BLANK_ICON);
+            SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -231,7 +231,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         
         public ShowLineNumbersAction(){
             super();
-            SHOW_LINE_MENU  = new JCheckBoxMenuItem(getMenuItemText(), BLANK_ICON);
+            SHOW_LINE_MENU  = new JCheckBoxMenuItem(getMenuItemText());
             setMenu();
         }
         

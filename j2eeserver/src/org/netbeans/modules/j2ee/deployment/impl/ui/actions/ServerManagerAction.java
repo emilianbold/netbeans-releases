@@ -25,6 +25,10 @@ import org.openide.util.actions.CallableSystemAction;
  * @author  Stepan Herold
  */
 public class ServerManagerAction extends CallableSystemAction {
+
+    public ServerManagerAction () {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
     
     public void performAction() {
         ServerManagerDialog.showCustomizer();

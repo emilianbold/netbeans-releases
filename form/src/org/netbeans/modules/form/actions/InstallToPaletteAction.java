@@ -29,6 +29,10 @@ public class InstallToPaletteAction extends CookieAction {
 
     private static String name;
 
+    public InstallToPaletteAction () {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
+    
     protected int mode() {
         return MODE_ALL;
     }
