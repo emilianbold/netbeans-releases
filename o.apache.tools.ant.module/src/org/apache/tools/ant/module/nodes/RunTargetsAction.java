@@ -1,46 +1,56 @@
 /*
- *                         Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License Version
- * 1.0 (the "License"). You may not use this file except in compliance with 
- * the License. A copy of the License is available at http://www.sun.com/
- *
- * The Original Code is the Ant module
- * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2001.
- * All Rights Reserved.
- *
- * Contributor(s): Jesse Glick.
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
- 
+
 package org.apache.tools.ant.module.nodes;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.awt.Actions;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.actions.*;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.run.TargetExecutor;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+
+
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 
-// XXX nicer to show a submenu for other targets
-// XXX rewrite to use a plain JMenu and listen to button activation events to populate popup menu
-// (or just impl ContextAwareAction and put the getPopupPresenter method into that)
+import org.openide.awt.Actions;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.actions.Presenter;
 
-/** Submenu to run certain targets in a project.
+/**
+ * Submenu which permits the user to run various targets from the project.
+ * Distinction made between the main target, other documented targets, and other
+ * undocumented targets.
  */
-public final class RunTargetsAction extends CookieAction implements Presenter.Popup {
+public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
 
     public String getName () {
         return NbBundle.getMessage (RunTargetsAction.class, "LBL_run_targets_action");
@@ -50,156 +60,197 @@ public final class RunTargetsAction extends CookieAction implements Presenter.Po
         return new HelpCtx ("org.apache.tools.ant.module.executing-target"); // NOI18N
     }
 
-    public JMenuItem getPopupPresenter() {
-        return new SpecialSubMenu (this, new ActSubMenuModel (this), true);
+    public void actionPerformed(ActionEvent e) {
+        assert false : "Action should never be called without a context";
     }
 
-    protected int mode () {
-        return MODE_EXACTLY_ONE;
-    }
-    
-    protected Class[] cookieClasses () {
-        return new Class[] { AntProjectCookie.class };
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new ContextAction(actionContext);
     }
     
-    protected void performAction (Node[] activatedNodes) {
-        // do nothing, should not happen
-    }
-    
-    /** Special submenu which notifies model when it is added as a component.
-    */
-    private static final class SpecialSubMenu extends Actions.SubMenu {
-
-        private final ActSubMenuModel model;
-
-        SpecialSubMenu (SystemAction action, ActSubMenuModel model, boolean popup) {
-            super (action, model, popup);
-            this.model = model;
-        }
-
-        public void addNotify () {
-            model.addNotify ();
-            super.addNotify ();
-        }
-
-        // removeNotify not useful--might be called before action is invoked
-
-    }
-
-    /** Model to use for the submenu.
-    */
-    private static final class ActSubMenuModel implements Actions.SubMenuModel {
-
-        private List/*<String>*/ targets = null;
-        private AntProjectCookie project = null;
-
-        private final NodeAction action;
+    /**
+     * The particular instance of this action for a given project.
+     */
+    private static final class ContextAction extends AbstractAction implements Presenter.Popup {
         
-        ActSubMenuModel (NodeAction action) {
-            this.action = action;
-        }
-
-        public int getCount () {
-            // Apparently when >1 Ant script is selected and you right-click,
-            // it gets here though targets==null (as it should since the action
-            // should not be enabled!). Not clear why this happens.
-            if (targets == null) return 0;
-            return targets.size ();
-        }
-
-        public String getLabel (int index) {
-            return (String) targets.get (index);
-        }
-
-        public HelpCtx getHelpCtx (int index) {
-            return new HelpCtx ("org.apache.tools.ant.module.executing-target"); // NOI18N
-        }
-
-        public void performActionAt (final int index) {
-            // #16720 part 2: don't do this in the event thread...
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    String target = (String) targets.get (index);
-                    try {
-                        TargetExecutor te = new TargetExecutor(project, new String[] {target});
-                        te.execute();
-                    } catch (IOException ioe) {
-                        AntModule.err.notify (ioe);
-                    }
-                }
-            });
-        }
-
-        void addNotify () {
-            project = null;
-            targets = Collections.singletonList(null);
-            Node[] nodes = action.getActivatedNodes ();
-            if (nodes.length != 1) return;
-            project = (AntProjectCookie) nodes[0].getCookie (AntProjectCookie.class);
-            if (project == null) return;
-            if (project.getParseException () != null) return;
-            Set/*<TargetLister.Target>*/ allTargets;
-            try {
-                allTargets = TargetLister.getTargets(project);
-            } catch (IOException e) {
-                // XXX how to notify properly?
-                AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
-                return;
-            }
-            String defaultTarget = null;
-            SortedSet/*<String>*/ describedTargets = new TreeSet(Collator.getInstance());
-            SortedSet/*<String>*/ otherTargets = new TreeSet(Collator.getInstance());
-            Iterator it = allTargets.iterator();
-            while (it.hasNext()) {
-                TargetLister.Target t = (TargetLister.Target) it.next();
-                if (t.isOverridden()) {
-                    // Cannot be called.
-                    continue;
-                }
-                if (t.isInternal()) {
-                    // Don't present in GUI.
-                    continue;
-                }
-                String name = t.getName();
-                if (t.isDefault()) {
-                    defaultTarget = name;
-                } else if (t.isDescribed()) {
-                    describedTargets.add(name);
-                } else {
-                    otherTargets.add(name);
+        private final AntProjectCookie project;
+        
+        public ContextAction(Lookup lkp) {
+            super(SystemAction.get(RunTargetsAction.class).getName());
+            Collection/*<AntProjectCookie>*/ apcs = lkp.lookup(new Lookup.Template(AntProjectCookie.class)).allInstances();
+            AntProjectCookie _project = null;
+            if (apcs.size() == 1) {
+                _project = (AntProjectCookie) apcs.iterator().next();
+                if (_project.getParseException() != null) {
+                    _project = null;
                 }
             }
-            targets = new ArrayList();
-            if (defaultTarget != null) {
-                targets.add(defaultTarget);
-            }
-            if (!describedTargets.isEmpty()) {
-                if (!targets.isEmpty()) {
-                    // XXX it seems the separators are not really displayed, at least on GTK...
-                    targets.add(null);
-                }
-                targets.addAll(describedTargets);
-            }
-            if (!otherTargets.isEmpty()) {
-                if (!targets.isEmpty()) {
-                    targets.add(null);
-                }
-                targets.addAll(otherTargets);
-            }
-            // Ensure there are >1 items (workaround for
-            // undesired behavior of Actions.SubMenu):
-            while (targets.size() < 2) {
-                // The extra separator will not actually be displayed:
-                targets.add (null);
+            project = _project;
+            super.setEnabled(project != null);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            assert false : "Action should not be called directly";
+        }
+
+        public JMenuItem getPopupPresenter() {
+            if (project != null) {
+                return createMenu(project);
+            } else {
+                return new Actions.MenuItem(this, false);
             }
         }
 
-        public synchronized void addChangeListener (ChangeListener l) {
+        public void setEnabled(boolean b) {
+            assert false : "No modifications to enablement status permitted";
         }
-
-        public synchronized void removeChangeListener (ChangeListener l) {
-        }
-
+        
     }
 
+    /**
+     * Create the submenu.
+     */
+    private static JMenu createMenu(AntProjectCookie project) {
+        // XXX for efficiency, could delay creation of the menu until it is shown...
+        // either using getPopupMenu, or HierarchyEvent.DISPLAYABILITY_CHANGED or
+        // .SHOWING_CHANGED or ButtonModel or something... tboudreau would know.
+        Set/*<TargetLister.Target>*/ allTargets;
+        try {
+            allTargets = TargetLister.getTargets(project);
+        } catch (IOException e) {
+            // XXX how to notify properly?
+            AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+            allTargets = Collections.EMPTY_SET;
+        }
+        String defaultTarget = null;
+        SortedSet/*<String>*/ describedTargets = new TreeSet(Collator.getInstance());
+        SortedSet/*<String>*/ otherTargets = new TreeSet(Collator.getInstance());
+        Iterator it = allTargets.iterator();
+        while (it.hasNext()) {
+            TargetLister.Target t = (TargetLister.Target) it.next();
+            if (t.isOverridden()) {
+                // Cannot be called.
+                continue;
+            }
+            if (t.isInternal()) {
+                // Don't present in GUI.
+                continue;
+            }
+            String name = t.getName();
+            if (t.isDefault()) {
+                defaultTarget = name;
+            } else if (t.isDescribed()) {
+                describedTargets.add(name);
+            } else {
+                otherTargets.add(name);
+            }
+        }
+        JMenu menu = new JMenu(SystemAction.get(RunTargetsAction.class).getName());
+        boolean needsep = false;
+        if (defaultTarget != null) {
+            needsep = true;
+            JMenuItem menuitem = new JMenuItem(defaultTarget);
+            menuitem.addActionListener(new TargetMenuItemHandler(project, defaultTarget));
+            menu.add(menuitem);
+        }
+        if (needsep) {
+            needsep = false;
+            menu.addSeparator();
+        }
+        if (!describedTargets.isEmpty()) {
+            needsep = true;
+            it = describedTargets.iterator();
+            while (it.hasNext()) {
+                String target = (String) it.next();
+                JMenuItem menuitem = new JMenuItem(target);
+                menuitem.addActionListener(new TargetMenuItemHandler(project, target));
+                menu.add(menuitem);
+            }
+        }
+        if (needsep) {
+            needsep = false;
+            menu.addSeparator();
+        }
+        if (!otherTargets.isEmpty()) {
+            needsep = true;
+            JMenu submenu = new JMenu(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_other_targets"));
+            it = otherTargets.iterator();
+            while (it.hasNext()) {
+                String target = (String) it.next();
+                JMenuItem menuitem = new JMenuItem(target);
+                menuitem.addActionListener(new TargetMenuItemHandler(project, target));
+                submenu.add(menuitem);
+            }
+            menu.add(submenu);
+        }
+        if (needsep) {
+            needsep = false;
+            menu.addSeparator();
+        }
+        menu.add(new AdvancedAction(project, allTargets));
+        return menu;
+    }
+
+    /**
+     * Action handler for a menu item representing one target.
+     */
+    private static final class TargetMenuItemHandler implements ActionListener, Runnable {
+        
+        private final AntProjectCookie project;
+        private final String target;
+        
+        public TargetMenuItemHandler(AntProjectCookie project, String target) {
+            this.project = project;
+            this.target = target;
+        }
+        
+        public void actionPerformed(ActionEvent ev) {
+            // #16720 part 2: don't do this in the event thread...
+            RequestProcessor.getDefault().post(this);
+        }
+        
+        public void run() {
+            try {
+                TargetExecutor te = new TargetExecutor(project, new String[] {target});
+                te.execute();
+            } catch (IOException ioe) {
+                AntModule.err.notify(ioe);
+            }
+        }
+        
+    }
+    
+    /**
+     * Menu item to let the user select a random target(s), and set properties and verbosity.
+     */
+    private static final class AdvancedAction extends AbstractAction {
+        
+        private final AntProjectCookie project;
+        private final Set/*<TargetLister.Target>*/ allTargets;
+        
+        public AdvancedAction(AntProjectCookie project, Set/*<TargetLister.Target>*/ allTargets) {
+            super(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_advanced"));
+            this.project = project;
+            this.allTargets = allTargets;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String title = NbBundle.getMessage(RunTargetsAction.class, "TITLE_run_advanced");
+            AdvancedActionPanel panel = new AdvancedActionPanel(project, allTargets);
+            DialogDescriptor dd = new DialogDescriptor(panel, title);
+            dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+            dd.setModal(true);
+            // XXX help?
+            Object result = DialogDisplayer.getDefault().notify(dd);
+            if (result.equals(NotifyDescriptor.OK_OPTION)) {
+                try {
+                    panel.run();
+                } catch (IOException x) {
+                    AntModule.err.notify(x);
+                }
+            }
+        }
+        
+    }
+    
 }
