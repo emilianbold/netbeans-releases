@@ -141,14 +141,15 @@ public class LocaleNodeCustomizer extends JPanel {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
         nameLabel = new javax.swing.JLabel();
-        nameText = new javax.swing.JTextField();
         keyLabel = new javax.swing.JLabel();
+        keyLabel.setDisplayedMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Keys_Mnem")).charAt(0));
         jScrollPane1 = new javax.swing.JScrollPane();
         keyList = new JList(retrieveKeys(entry));
         addKeyButton = new javax.swing.JButton();
         removeKeyButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        nameText = new javax.swing.JTextField();
         changeNameButton = new javax.swing.JButton();
-        dummyLabel = new javax.swing.JLabel();
         
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
@@ -161,25 +162,17 @@ public class LocaleNodeCustomizer extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(nameLabel, gridBagConstraints1);
         
-        nameText.setEditable(false);
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.gridwidth = 2;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 7, 0, 0);
-        gridBagConstraints1.weightx = 1.0;
-        add(nameText, gridBagConstraints1);
-        
         keyLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Keys"));
+        keyLabel.setLabelFor(keyList);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(keyLabel, gridBagConstraints1);
         
+        keyList.setPreferredSize(new java.awt.Dimension(250, 0));
         keyList.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(
             JList list,
@@ -197,6 +190,7 @@ public class LocaleNodeCustomizer extends JPanel {
                 return label;
             }
         });
+        keyList.setMinimumSize(new java.awt.Dimension(250, 0));
         keyList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 keyListValueChanged(evt);
@@ -210,11 +204,12 @@ public class LocaleNodeCustomizer extends JPanel {
         gridBagConstraints1.gridy = 1;
         gridBagConstraints1.gridheight = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(11, 5, 11, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 11, 5, 0);
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints1);
         
+        addKeyButton.setMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString("CTL_AddKey_Mnem")).charAt(0));
         addKeyButton.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("CTL_AddKey"));
         addKeyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -225,12 +220,12 @@ public class LocaleNodeCustomizer extends JPanel {
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
         gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHEAST;
         add(addKeyButton, gridBagConstraints1);
         
+        removeKeyButton.setMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString("CTL_RemoveKey_Mnem")).charAt(0));
         removeKeyButton.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("CTL_RemoveKey"));
         removeKeyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -241,12 +236,21 @@ public class LocaleNodeCustomizer extends JPanel {
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
         gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(5, 11, 11, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(5, 11, 5, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints1.weighty = 1.0;
         add(removeKeyButton, gridBagConstraints1);
+        
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+        java.awt.GridBagConstraints gridBagConstraints2;
+        
+        nameText.setEditable(false);
+        gridBagConstraints2 = new java.awt.GridBagConstraints();
+        gridBagConstraints2.gridx = 0;
+        gridBagConstraints2.gridy = 0;
+        gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints2.weightx = 1.0;
+        jPanel1.add(nameText, gridBagConstraints2);
         
         changeNameButton.setText("...");
         changeNameButton.addActionListener(new java.awt.event.ActionListener() {
@@ -255,19 +259,18 @@ public class LocaleNodeCustomizer extends JPanel {
             }
         });
         
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 3;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 0, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
-        add(changeNameButton, gridBagConstraints1);
+        gridBagConstraints2 = new java.awt.GridBagConstraints();
+        gridBagConstraints2.gridx = 1;
+        gridBagConstraints2.gridy = 0;
+        gridBagConstraints2.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel1.add(changeNameButton, gridBagConstraints2);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 3;
+        gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.weightx = 1.0;
-        add(dummyLabel, gridBagConstraints1);
+        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
+        add(jPanel1, gridBagConstraints1);
         
     }//GEN-END:initComponents
 
@@ -341,14 +344,14 @@ public class LocaleNodeCustomizer extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel nameLabel;
-    private javax.swing.JTextField nameText;
     private javax.swing.JLabel keyLabel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList keyList;
     private javax.swing.JButton addKeyButton;
     private javax.swing.JButton removeKeyButton;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JTextField nameText;
     private javax.swing.JButton changeNameButton;
-    private javax.swing.JLabel dummyLabel;
     // End of variables declaration//GEN-END:variables
 
 }

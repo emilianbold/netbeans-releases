@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -59,6 +60,8 @@ public class BundleNodeCustomizer extends JPanel {
         localesList.setListData(retrieveLocales(propDataObject));
         
         removeLocales.setEnabled(false);
+        
+        HelpCtx.setHelpIDString(this, Util.HELP_ID_ADDLOCALE);
     }
 
     /** Utility method. Gets icon for key item in key list. */    
@@ -93,55 +96,54 @@ public class BundleNodeCustomizer extends JPanel {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
         nameLabel = new javax.swing.JLabel();
+        nameLabel.setDisplayedMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Name_Mnem")).charAt(0));
         nameText = new javax.swing.JTextField();
         localesLabel = new javax.swing.JLabel();
+        localesLabel.setDisplayedMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Locales_Mnem")).charAt(0));
         jScrollPane1 = new javax.swing.JScrollPane();
         localesList = new javax.swing.JList();
         addLocale = new javax.swing.JButton();
         removeLocales = new javax.swing.JButton();
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
         nameLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Name"));
-        
+        nameLabel.setLabelFor(nameText);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(nameLabel, gridBagConstraints1);
         
-        
         nameText.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nameTextActionPerformed(evt);
             }
-        }
-        );
+        });
+        
         nameText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 nameTextFocusLost(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 7, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(nameText, gridBagConstraints1);
         
-        
         localesLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Locales"));
-        
+        localesLabel.setLabelFor(localesList);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.insets = new java.awt.Insets(17, 12, 0, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(localesLabel, gridBagConstraints1);
         
-        
-        
+        localesList.setPreferredSize(new java.awt.Dimension(250, 0));
         localesList.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(
             JList list,
@@ -169,56 +171,54 @@ public class BundleNodeCustomizer extends JPanel {
                 return label;
             }
         });
+        localesList.setMinimumSize(new java.awt.Dimension(250, 0));
         localesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 localesListValueChanged(evt);
             }
-        }
-        );
-        jScrollPane1.setViewportView(localesList);
+        });
         
+        jScrollPane1.setViewportView(localesList);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 1;
         gridBagConstraints1.gridheight = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(17, 7, 11, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 5, 0);
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints1);
         
-        
+        addLocale.setMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString("CTL_AddLocale_Mnem")).charAt(0) );
         addLocale.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("CTL_AddLocale"));
         addLocale.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addLocaleActionPerformed(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
         gridBagConstraints1.gridy = 1;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(17, 11, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTH;
         add(addLocale, gridBagConstraints1);
         
-        
+        removeLocales.setMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString("CTL_RemoveLocale_Mnem")).charAt(0));
         removeLocales.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("CTL_RemoveLocale"));
         removeLocales.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeLocalesActionPerformed(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
         gridBagConstraints1.gridy = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(5, 11, 11, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(5, 11, 5, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints1.weighty = 1.0;
         add(removeLocales, gridBagConstraints1);
