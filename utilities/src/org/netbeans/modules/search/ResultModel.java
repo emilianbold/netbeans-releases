@@ -105,6 +105,10 @@ public class ResultModel implements TaskListener {
         root = new ResultRootNode();
     }
 
+    /** Clean the allocated resources. */
+    public void close() {
+        root.clear();
+    }
     
     /** Accept nodes. Some nodes were found by engine. */
     public synchronized boolean acceptFoundObjects(Object[] foundObjects) {
@@ -311,6 +315,15 @@ public class ResultModel implements TaskListener {
             setDisplayName(NbBundle.getBundle(ResultModel.class).getString("TEXT_SEARCHING___"));
         }
 
+        /** Cleanup. */ 
+        public void clear() {
+            ResultRootChildren children = (ResultRootChildren)getChildren();
+            Node nodes[] = children.getNodes();
+            for (int i=0; i<nodes.length; i++)
+                if (nodes[i] instanceof FoundNode)
+                    ((FoundNode)nodes[i]).removeFromSearch();
+            children.remove (nodes);
+        }
 
         /** Adds founds objects to root node. */
         public void addFoundObjects(Object[] foundObjects) {

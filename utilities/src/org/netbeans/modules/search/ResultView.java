@@ -395,6 +395,7 @@ final class ResultView extends TopComponent
     void setModel(ResultModel resultModel) {
         if (this.resultModel != null) {
             this.resultModel.removeChangeListener(this);
+            this.resultModel.close();
         }
         
         this.resultModel = resultModel;
