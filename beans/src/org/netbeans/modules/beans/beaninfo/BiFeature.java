@@ -502,11 +502,24 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
         String getCreationString () {
             StringBuffer sb = new StringBuffer( 100 );
 
+            java.lang.reflect.Method[] listenerMethods;
+
+            try {
+                listenerMethods = pattern.getType().toClass().getMethods();
+            } catch (ClassNotFoundException e) {
+                throw new InternalError("Listener class not found.");
+            }
+
             sb.append( "new EventSetDescriptor ( " ); // NOI18N
             sb.append( pattern.getDeclaringClass().getName().getName() + ".class, " ); // NOI18N
             sb.append( "\"" + this.getName() + "\", " ); // NOI18N
             sb.append( pattern.getType().toString() + ".class, " ); // NOI18N
-            sb.append( "new String[0], " ); // NOI18N
+            sb.append( "new String[] {" ); // NOI18N
+            for (int i = 0; i < listenerMethods.length; i++) {
+                if (i > 0) sb.append(", "); // NOI18N
+                sb.append( "\"" + listenerMethods[i++].getName() + "\"" ); // NOI18N
+            }
+            sb.append( "}, "); // NOI18N
             sb.append( "\"" + pattern.getAddListenerMethod().getName().getName() + "\", " ); // NOI18N
             sb.append( "\"" + pattern.getRemoveListenerMethod().getName().getName() + "\" )" ); // NOI18N
 
