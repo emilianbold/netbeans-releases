@@ -46,10 +46,6 @@ public class IDESettings extends SystemOption {
   public static String PROP_SHOW_TIPS_ON_STARTUP = "showTipsOnStartup";
   /** lastTip property name */
   public static String PROP_LAST_TIP = "lastTip";
-  /** beanInfoSearchPath property name */
-  public static String PROP_BEANINFO_SEARCH_PATH = "beanInfoSearchPath";
-  /** propertyEditorSearchPath property name */
-  public static String PROP_PROPERTYEDITOR_SEARCH_PATH = "propertyEditorSearchPath";
   /** confirmDelete property name */
   public static String PROP_CONFIRM_DELETE = "confirmDelete";
   /** home page property name */
@@ -161,38 +157,6 @@ public class IDESettings extends SystemOption {
     firePropertyChange (PROP_LAST_TIP, oldValue, new Integer (lastTip));
   }
 
-  /** Getter for beanInfoSearchPath property
-   * @return The list of packages in which the BeanInfo is searched */
-  public String[] getBeanInfoSearchPath () {
-    return Introspector.getBeanInfoSearchPath ();
-  }
-
-  /** Setter for beanInfoSearchPath property
-   * @param value The list of packages in which the BeanInfo is searched */
-  public void setBeanInfoSearchPath (String[] value) {
-    if (Utilities.compareObjects (value, Introspector.getBeanInfoSearchPath ())) return;
-    String[] oldValue = Introspector.getBeanInfoSearchPath ();
-    Introspector.setBeanInfoSearchPath (value);
-    // fire the PropertyChange
-    firePropertyChange (PROP_BEANINFO_SEARCH_PATH, oldValue, value);
-  }
-
-  /** Getter for propertyEditorSearchPath property
-   * @return The list of packages in which the PropertyEditor is searched */
-  public String[] getPropertyEditorSearchPath () {
-    return PropertyEditorManager.getEditorSearchPath ();
-  }
-
-  /** Setter for propertyEditorSearchPath property
-   * @param value The list of packages in which the PropertyEditor is searched */
-  public void setPropertyEditorSearchPath (String[] value) {
-    if (Utilities.compareObjects (value, PropertyEditorManager.getEditorSearchPath ())) return;
-    String[] oldValue = PropertyEditorManager.getEditorSearchPath ();
-    PropertyEditorManager.setEditorSearchPath (value);
-    // fire the PropertyChange
-    firePropertyChange (PROP_PROPERTYEDITOR_SEARCH_PATH, oldValue, value);
-  }
-
   /** Getter for ConfirmDelete
    * @param true if the user should asked for confirmation of object delete, false otherwise */
   public boolean getConfirmDelete() {
@@ -250,6 +214,8 @@ public class IDESettings extends SystemOption {
 
 /*
  * Log
+ *  8    Gandalf   1.7         7/20/99  Ian Formanek    Removed 
+ *       PropertyEditorSearchPath and BeanInfoSearchPath properties
  *  7    Gandalf   1.6         7/19/99  Jan Jancura     
  *  6    Gandalf   1.5         7/2/99   Jesse Glick     More help IDs.
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
