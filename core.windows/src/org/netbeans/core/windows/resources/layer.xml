@@ -61,39 +61,18 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator4.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
-            <attr name="Separator4.instance/CloseWindowAction.instance" boolvalue="true" />
-            <file name="CloseWindowAction.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.Action"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.actions.ActionFactory.createGlobalCallback"/>
-                <attr name="actionKey" stringvalue="closeWindow"/>
-                <attr name="localizingBundle" stringvalue="org.netbeans.core.windows.actions.Bundle"/>
-                <!--<attr name="iconResource" stringvalue="org/openide/resources/actions/clone.gif"/>-->
-            </file>
-            <attr name="CloseWindowAction.instance/org-netbeans-core-windows-actions-MaximizeWindowAction.instance" boolvalue="true" />
+            <attr name="Separator4.instance/org-netbeans-core-windows-actions-CloseWindowAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-windows-actions-CloseWindowAction.instance" />
+            <attr name="org-netbeans-core-windows-actions-CloseWindowAction.instance/org-netbeans-core-windows-actions-MaximizeWindowAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-windows-actions-MaximizeWindowAction.instance" />
             <attr name="org-netbeans-core-windows-actions-MaximizeWindowAction.instance/Separator5.instance" boolvalue="true" />
             <file name="Separator5.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
-            <attr name="Separator5.instance/CloneWindowAction.instance" boolvalue="true" />
-            <file name="CloneWindowAction.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.Action"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.actions.ActionFactory.createGlobalCallback"/>
-                <attr name="actionKey" stringvalue="cloneWindow"/>
-                <attr name="localizingBundle" stringvalue="org.netbeans.core.windows.actions.Bundle"/>
-            </file>
-            <attr name="CloneWindowAction.instance/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance" boolvalue="true" />
+            <attr name="Separator5.instance/org-netbeans-core-windows-actions-CloneDocumentAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-windows-actions-CloneDocumentAction.instance" />
+            <attr name="org-netbeans-core-windows-actions-CloneDocumentAction.instance/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance" />
-            <!--<attr name="CloneWindowAction.instance/Separator5.instance" boolvalue="true" />
-            <file name="Separator5.instance">
-	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
-            <attr name="Separator5.instance/org-netbeans-core-windows-actions-AttachWindowAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-windows-actions-AttachWindowAction.instance" />
-            <attr name="org-netbeans-core-windows-actions-AttachWindowAction.instance/Separator6.instance" boolvalue="true" />
-            <file name="Separator6.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>-->
             <attr name="org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance/org-netbeans-core-windows-actions-DocumentsAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-windows-actions-DocumentsAction.instance" />
         </folder>
@@ -113,7 +92,7 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
         
         <file name="C-F4.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/CloseWindowAction.instance"/>
+	    <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
 	</file>
         <file name="S-ESCAPE.shadow">
 	    <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
