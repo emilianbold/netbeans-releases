@@ -87,8 +87,6 @@ public class GenerateDTDSupportTest extends XTest {
         m.setAccessible(true);
         String result = (String) m.invoke(gen, new Object[] {name, encoding});
         
-        // first comment contains variable informations - remove it
-        result = TestUtil.replaceString(result, "<!--", "-->", "<!-- REMOVED -->");
         ref(result);
         compareReferenceFiles();
     }
