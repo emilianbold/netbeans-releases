@@ -62,9 +62,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
     setIconBase(PROPERTIES_ICON_BASE2);
     setDefaultAction (SystemAction.get(OpenAction.class));
 
-    // edit as a viewcookie
-    getCookieSet().add(((PropertiesDataObject)fe.getDataObject()).getOpenSupport());
-    getCookieSet().add (((PropertiesFileEntry)getFileEntry()).getPropertiesEditor());
+    getCookieSet().add(((PropertiesDataObject)getFileEntry().getDataObject()).getOpenSupport());
   }
   
   /** Lazily initialize set of node's actions (overridable).
@@ -254,6 +252,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
 
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         10/12/99 Petr Jiricka    Changes in cookies
  *  9    Gandalf   1.8         7/16/99  Petr Jiricka    
  *  8    Gandalf   1.7         6/30/99  Ian Formanek    NodeTransfer related 
  *       changes to make it compilable
