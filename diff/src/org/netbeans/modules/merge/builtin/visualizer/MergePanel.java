@@ -14,6 +14,7 @@
 package org.netbeans.modules.merge.builtin.visualizer;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.BorderLayout;
@@ -40,7 +41,16 @@ import org.netbeans.modules.diff.builtin.visualizer.LinesComponent;
  * by a different color.
  * @author  Martin Entlicher
  */
-public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopComponent { */
+public class MergePanel extends javax.swing.JPanel {
+    
+    public static final String ACTION_FIRST_CONFLICT = "firstConflict"; // NOI18N
+    public static final String ACTION_LAST_CONFLICT = "lastConflict"; // NOI18N
+    public static final String ACTION_PREVIOUS_CONFLICT = "previousConflict"; // NOI18N
+    public static final String ACTION_NEXT_CONFLICT = "nextConflict"; // NOI18N
+    public static final String ACTION_ACCEPT_RIGHT = "acceptRight";
+    //public static final String ACTION_ACCEPT_RIGHT_AND_NEXT = "acceptRightAndNext";
+    public static final String ACTION_ACCEPT_LEFT = "acceptLeft";
+    //public static final String ACTION_ACCEPT_LEFT_AND_NEXT = "acceptLeftAndNext";
     
     // scroll 4 lines vertically
     private static final double VERTICAL_SCROLL_NUM_LINES = 4.0;
@@ -64,8 +74,10 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
     private LinesComponent linesComp1;
     private LinesComponent linesComp2;
     private LinesComponent linesComp3;
+    
+    private int[] resultLineNumbers;
 
-    private ArrayList closeListeners = new ArrayList();
+    private ArrayList controlListeners = new ArrayList();
 
     /**
      * Used for deserialization.
@@ -368,34 +380,44 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
 
     private void firstConflictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firstConflictButtonActionPerformed
         // Add your handling code here:
+        fireControlActionCommand(ACTION_FIRST_CONFLICT);
     }//GEN-LAST:event_firstConflictButtonActionPerformed
 
     private void prevConflictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prevConflictButtonActionPerformed
         // Add your handling code here:
+        fireControlActionCommand(ACTION_PREVIOUS_CONFLICT);
     }//GEN-LAST:event_prevConflictButtonActionPerformed
 
     private void nextConflictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextConflictButtonActionPerformed
         // Add your handling code here:
+        fireControlActionCommand(ACTION_NEXT_CONFLICT);
     }//GEN-LAST:event_nextConflictButtonActionPerformed
 
     private void lastConflictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lastConflictButtonActionPerformed
         // Add your handling code here:
+        fireControlActionCommand(ACTION_LAST_CONFLICT);
     }//GEN-LAST:event_lastConflictButtonActionPerformed
 
     private void acceptRightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptRightButtonActionPerformed
         // Add your handling code here:
+        fireControlActionCommand(ACTION_ACCEPT_RIGHT);
     }//GEN-LAST:event_acceptRightButtonActionPerformed
 
     private void acceptAndNextRightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptAndNextRightButtonActionPerformed
         // Add your handling code here:
+        fireControlActionCommand(ACTION_ACCEPT_RIGHT);
+        fireControlActionCommand(ACTION_NEXT_CONFLICT);
     }//GEN-LAST:event_acceptAndNextRightButtonActionPerformed
 
     private void acceptAndNextLeftButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptAndNextLeftButtonActionPerformed
         // Add your handling code here:
+        fireControlActionCommand(ACTION_ACCEPT_LEFT);
+        fireControlActionCommand(ACTION_NEXT_CONFLICT);
     }//GEN-LAST:event_acceptAndNextLeftButtonActionPerformed
 
     private void acceptLeftButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptLeftButtonActionPerformed
         // Add your handling code here:
+        fireControlActionCommand(ACTION_ACCEPT_LEFT);
     }//GEN-LAST:event_acceptLeftButtonActionPerformed
 
   private void jEditorPane1CaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_jEditorPane1CaretUpdate
@@ -425,20 +447,27 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
   public void setCurrentLine(int line, int diffLength) {
       if (line > 0) showLine(line, diffLength);
   }
-
-  public void addFirstLineButtonListener(java.awt.event.ActionListener listener) {
-      firstConflictButton.addActionListener(listener);
-  }
-  public void addPrevLineButtonListener(java.awt.event.ActionListener listener) {
-      prevConflictButton.addActionListener(listener);
-  }
-  public void addNextLineButtonListener(java.awt.event.ActionListener listener) {
-      nextConflictButton.addActionListener(listener);
-  }
-  public void addLastLineButtonListener(java.awt.event.ActionListener listener) {
-      lastConflictButton.addActionListener(listener);
+  
+  public synchronized void addControlActionListener(ActionListener listener) {
+      controlListeners.add(listener);
   }
   
+  public synchronized void removeControlActionListener(ActionListener listener) {
+      controlListeners.remove(listener);
+  }
+  
+  private void fireControlActionCommand(String command) {
+      ArrayList listeners;
+      synchronized (this) {
+          listeners = new ArrayList(controlListeners);
+      }
+      ActionEvent evt = new ActionEvent(this, 0, command);
+      for (Iterator it = listeners.iterator(); it.hasNext(); ) {
+          ActionListener l = (ActionListener) it.next();
+          l.actionPerformed(evt);
+      }
+  }
+
   /*
   public void goToNextLine(int line, int diffLength) {
       if (line > 0) showLine(line, diffLength);      
@@ -821,24 +850,25 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
             }
             editor.setDocument(doc);
         }
-        int lastOffset = doc.getEndPosition().getOffset();
-        int numLines = org.openide.text.NbDocument.findLineNumber(doc, lastOffset);
-        int numLength = Integer.toString(numLines).length();
+        //int lastOffset = doc.getEndPosition().getOffset();
+        //int numLines = org.openide.text.NbDocument.findLineNumber(doc, lastOffset);
+        //int numLength = Integer.toString(numLines).length();
         //        textLines.setForeground(numForegroundColor);
         //        textLines.setBackground(numBackgroundColor);
+        /*
         for (int line = 0; line <= numLines; line++) {
             int offset = org.openide.text.NbDocument.findLineOffset(doc, line);
             String lineStr = Integer.toString(line+1);
             if (lineStr.length() < numLength) lineStr = strCharacters(' ', numLength - lineStr.length()) + lineStr;
             //lineStr = " "+lineStr+" "; // NOI18N
-/*            try {
+            try {
                 if (line < numLines) lineStr += "\n"; // NOI18N
                 docLines.insertString(docLines.getLength(), lineStr, null);
             } catch (BadLocationException e) {
                 E.deb("Internal ERROR: "+e.getMessage()); // NOI18N
             }
- */
         }
+         */
         //        joinScrollBars();
     }
     
@@ -959,12 +989,31 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         jEditorPane3.setDocument(doc);
         //jEditorPane2.setPage(url);
         jEditorPane3.setEditable(false);
+        customizeEditor(jEditorPane3);
         linesComp3 = new LinesComponent(jEditorPane3);
         resultScrollPane.setRowHeaderView(linesComp3);
+        resultLineNumbers = new int[1];
+        assureResultLineNumbersLength(
+            org.openide.text.NbDocument.findLineNumber((StyledDocument) doc,
+                                                       doc.getEndPosition().getOffset()) + 1);
+        for (int i = 0; i < resultLineNumbers.length; i++) resultLineNumbers[i] = i;
+    }
+    
+    private static final int EXTRA_CAPACITY = 50;
+    private void assureResultLineNumbersLength(int length) {
+        if (length > resultLineNumbers.length) {
+            int[] newrln = new int[length + EXTRA_CAPACITY];
+            System.arraycopy(resultLineNumbers, 0, newrln, 0, resultLineNumbers.length);
+            resultLineNumbers = newrln;
+        }
     }
     
     /**
      * Copy a part of first document into the result document.
+     * @param line1 The starting line in the first source
+     * @param line2 The ending line in the first source or <code>null</code>
+     *              when the part ends at the end of the document
+     * @param line3 The starting line in the result
      */
     public void copySource1ToResult(int line1, int line2, int line3) {
         StyledDocument doc1 = (StyledDocument) jEditorPane1.getDocument();
@@ -978,6 +1027,10 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
     
     /**
      * Copy a part of second document into the result document.
+     * @param line1 The starting line in the second source
+     * @param line2 The ending line in the second source or <code>null</code>
+     *              when the part ends at the end of the document
+     * @param line3 The starting line in the result
      */
     public void copySource2ToResult(int line1, int line2, int line3) {
         StyledDocument doc1 = (StyledDocument) jEditorPane2.getDocument();
@@ -994,12 +1047,135 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         int offset1 = org.openide.text.NbDocument.findLineOffset(doc1, line1);
         int offset2 = (line2 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc1, line2)
                                    : (doc1.getLength() - 1);
+        if (offset1 >= offset2) return ;
         int offset3 = org.openide.text.NbDocument.findLineOffset(doc2, line3);
         int length = offset2 - offset1;
         if (line2 < 0) length++;
         String text = doc1.getText(offset1, length);
+        //System.out.println("copy: offset1 = "+offset1+", offset2 = "+offset2);
         //System.out.println(">> copy text: at "+offset3+" <<\n"+text+">>  <<");
         doc2.insertString(offset3, text, null);
+        // Adjust the line numbers
+        if (line2 < 0) line2 = org.openide.text.NbDocument.findLineNumber(doc1, doc1.getLength());
+        int numLines = line2 - line1;
+        //System.out.println("copy("+line1+", "+line2+", "+line3+"): resultLineNumbers.length = "+resultLineNumbers.length);
+        /*
+        if (line3 >= resultLineNumbers.length) {
+            int oldLength = resultLineNumbers.length;
+            int oldLine = resultLineNumbers[oldLength - 1] + 1;
+            assureResultLineNumbersLength(line3 + numLines);
+            for (int i = oldLength; i <= line3; i++, oldLine++) {
+                resultLineNumbers[i] = oldLine;
+            }
+        } else {
+            assureResultLineNumbersLength(line3 + numLines);
+        }
+        int resultLine = resultLineNumbers[line3];
+        System.out.println("resultLine = rln["+line3+"] = "+resultLine);
+        linesComp3.insertNumbers(line3, resultLine, numLines);
+        for (int i = 0; i < numLines; i++) resultLineNumbers[line3 + i] = resultLine + i;
+         */
+        assureResultLineNumbersLength(line3 + numLines);
+        if (resultLineNumbers[line3] == 0 && line3 > 0) resultLineNumbers[line3] = resultLineNumbers[line3 - 1] + 1;
+        int resultLine = resultLineNumbers[line3];
+        //System.out.println("resultLine = rln["+line3+"] = "+resultLine);
+        linesComp3.insertNumbers(line3, resultLine, numLines);
+        linesComp3.repaint();
+        for (int i = 0; i < numLines; i++) resultLineNumbers[line3 + i] = resultLine + i;
+    }
+    
+    /**
+     * Replace a part of result with a part of the first source.
+     * @param line1 The starting line in the first source
+     * @param line2 The ending line in the first source or <code>null</code>
+     *              when the part ends at the end of the document
+     * @param line3 The starting line in the result
+     * @param line4 The ending line in the result
+     */
+    public void replaceSource1InResult(int line1, int line2, int line3, int line4) {
+        StyledDocument doc1 = (StyledDocument) jEditorPane1.getDocument();
+        StyledDocument doc2 = (StyledDocument) jEditorPane3.getDocument();
+        try {
+            replace(doc1, line1, line2, doc2, line3, line4);
+        } catch (BadLocationException e) {
+            org.openide.TopManager.getDefault().notifyException(e);
+        }
+    }
+    
+    /**
+     * Replace a part of result with a part of the second source.
+     * @param line1 The starting line in the second source
+     * @param line2 The ending line in the second source or <code>null</code>
+     *              when the part ends at the end of the document
+     * @param line3 The starting line in the result
+     * @param line4 The ending line in the result
+     */
+    public void replaceSource2InResult(int line1, int line2, int line3, int line4) {
+        StyledDocument doc1 = (StyledDocument) jEditorPane2.getDocument();
+        StyledDocument doc2 = (StyledDocument) jEditorPane3.getDocument();
+        try {
+            replace(doc1, line1, line2, doc2, line3, line4);
+        } catch (BadLocationException e) {
+            org.openide.TopManager.getDefault().notifyException(e);
+        }
+    }
+    
+    public void replace(StyledDocument doc1, int line1, int line2,
+                        StyledDocument doc2, int line3, int line4) throws BadLocationException {
+        //System.out.println("replace("+line1+", "+line2+", "+line3+", "+line4+")");
+        int offset1 = org.openide.text.NbDocument.findLineOffset(doc1, line1);
+        int offset2 = (line2 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc1, line2)
+                                   : (doc1.getLength() - 1);
+        int offset3 = org.openide.text.NbDocument.findLineOffset(doc2, line3);
+        int offset4 = (line4 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc2, line4)
+                                   : (doc2.getLength() - 1);
+        int length = offset2 - offset1;
+        if (line2 < 0) length++;
+        String text = doc1.getText(offset1, length);
+        doc2.remove(offset3, offset4 - offset3);
+        doc2.insertString(offset3, text, null);
+        // Adjust the line numbers
+        assureResultLineNumbersLength(line4);
+        int lineDiff;
+        if (resultLineNumbers[line3 + 1] <= resultLineNumbers[line3]) {
+            // There are no line numbers defined.
+            int n = resultLineNumbers[line3];
+            for (int i = line3 + 1; i <= line4; i++) resultLineNumbers[i] = ++n;
+            lineDiff = line2 - line1;
+            //System.out.println("insertNumbers("+line3+", "+resultLineNumbers[line3]+", "+lineDiff+")");
+            linesComp3.insertNumbers(line3 + 1, resultLineNumbers[line3 + 1], lineDiff);
+            linesComp3.repaint();
+        } else {
+            lineDiff = line2 - line1 - (line4 - line3);
+        }
+        adjustLineNumbers(line4, lineDiff);
+    }
+    
+    private void adjustLineNumbers(int startLine, int shift) {
+        //System.out.println("adjustLineNumbers("+startLine+", "+shift+")");
+        int end = resultLineNumbers.length;
+        while (end > 0 && resultLineNumbers[end - 1] == 0) end--;
+        int startSetLine = -1;
+        for (int i = startLine; i < end; i++) {
+            if (resultLineNumbers[i] <= resultLineNumbers[i - 1]) {
+                if (startLine < 0) {
+                    startLine = i - 1;
+                }
+            } else {
+                if (startLine > 0) {
+                    //System.out.println("insertNumbers("+startLine+", "+resultLineNumbers[startLine]+", "+(i - startLine)+")");
+                    linesComp3.insertNumbers(startLine, resultLineNumbers[startLine], i - startLine);
+                    linesComp3.repaint();
+                    startLine = -1;
+                }
+            }
+            resultLineNumbers[i] += shift;
+        }
+        if (startLine > 0) {
+            //System.out.println("insertNumbers("+startLine+", "+resultLineNumbers[startLine]+", "+(end - startLine)+" (END))");
+            linesComp3.insertNumbers(startLine, resultLineNumbers[startLine], end - startLine - 1);
+            linesComp3.repaint();
+        }
     }
     
     public void setSource1Title(String title) {
@@ -1182,6 +1358,26 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         //System.out.println("addEmptyLines3: line = "+line+", numLines = "+numLines); // NOI18N
         addEmptyLines(doc, line, numLines);
         linesComp3.addEmptyLines(line, numLines);
+/*
+        if (line >= resultLineNumbers.length) {
+            int oldLength = resultLineNumbers.length;
+            int oldLine = resultLineNumbers[oldLength - 1] + 1;
+            assureResultLineNumbersLength(line + numLines);
+            for (int i = oldLength; i <= line; i++, oldLine++) {
+                resultLineNumbers[i] = oldLine;
+            }
+        } else {
+            assureResultLineNumbersLength(line + numLines);
+        }
+ 
+        int resultLine = resultLineNumbers[line];
+        assureResultLineNumbersLength(resultLine + numLines);
+        for (int i = 1; i < numLines; i++) resultLineNumbers[line + i] = resultLine;
+ */
+        assureResultLineNumbersLength(line + numLines);
+        if (resultLineNumbers[line] == 0 && line > 0) resultLineNumbers[line] = resultLineNumbers[line - 1];
+        int resultLine = resultLineNumbers[line];
+        for (int i = 1; i < numLines; i++) resultLineNumbers[line + i] = resultLine;
     }
     
     
@@ -1240,16 +1436,22 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         panel.highlightRegion2(38, 39, new java.awt.Color(180, 255, 180));
         panel.highlightRegion1(45, 45, new java.awt.Color(160, 200, 255));
         panel.highlightRegion2(45, 45, new java.awt.Color(160, 200, 255));
-        panel.addPrevLineButtonListener(new java.awt.event.ActionListener() {
+        panel.addControlActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                panel.setCurrentLine(38, 2);
+                if (ACTION_PREVIOUS_CONFLICT.equals(evt.getActionCommand())) {
+                    panel.setCurrentLine(38, 2);
+                } else if (ACTION_NEXT_CONFLICT.equals(evt.getActionCommand())) {
+                    panel.setCurrentLine(45, 1);
+                }
             }
         });
+        /*
         panel.addNextLineButtonListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 panel.setCurrentLine(45, 1);
             }
         });
+         */
         panel.setSource1Title("Working File");
         panel.setSource2Title("Revision 1.2");
         panel.setResultSourceTitle("Merge Result");
@@ -1277,6 +1479,16 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         panel.highlightRegion1(45, 45, new java.awt.Color(255, 160, 180));
         panel.highlightRegion2(45, 45, new java.awt.Color(255, 160, 180));
         panel.highlightRegion3(45, 45, new java.awt.Color(255, 160, 180));
+        panel.addControlActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                if (ACTION_PREVIOUS_CONFLICT.equals(evt.getActionCommand())) {
+                    panel.setCurrentLine(38, 2);
+                } else if (ACTION_NEXT_CONFLICT.equals(evt.getActionCommand())) {
+                    panel.setCurrentLine(45, 1);
+                }
+            }
+        });
+        /*
         panel.addPrevLineButtonListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 panel.setCurrentLine(38, 2);
@@ -1287,6 +1499,7 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
                 panel.setCurrentLine(45, 1);
             }
         });
+         */
         panel.setSource1Title("Working File");
         panel.setSource2Title("Revision 1.2");
         panel.setResultSourceTitle("Merge Result");

@@ -14,9 +14,13 @@
 package org.netbeans.modules.merge.builtin.visualizer;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.netbeans.api.diff.Difference;
 
@@ -25,7 +29,7 @@ import org.netbeans.api.diff.Difference;
  *
  * @author  Martin Entlicher
  */
-public class MergeControl extends Object {
+public class MergeControl extends Object implements ActionListener {
     
     private Color colorAdded;
     private Color colorMissing;
@@ -38,6 +42,8 @@ public class MergeControl extends Object {
     private int[][] diffShifts;
     /** The current diff */
     private int currentDiffLine = 0;
+    private int[] resultDiffLocations;
+    private Set resolvedConflicts = new HashSet();
     
     /** Creates a new instance of MergeControl */
     public MergeControl(/*MergeDialogComponent component, */MergePanel panel) {
@@ -51,6 +57,7 @@ public class MergeControl extends Object {
                            Color colorAdded, Color colorChanged, Color colorMissing) {
         this.diffs = diffs;
         this.diffShifts = new int[diffs.length][2];
+        this.resultDiffLocations = new int[diffs.length];
         panel.setMimeType1(mimeType);
         panel.setMimeType2(mimeType);
         panel.setMimeType3(mimeType);
@@ -70,6 +77,7 @@ public class MergeControl extends Object {
         insertEmptyLines(true);
         setDiffHighlight(true);
         copyToResult();
+        panel.addControlActionListener(this);
     }
     
     private void insertEmptyLines(boolean updateActionLines) {
@@ -164,6 +172,7 @@ public class MergeControl extends Object {
             int length = Math.max(n2 - n1, n4 - n3);
             panel.addEmptyLines3(line3, length + 1);
             panel.highlightRegion3(line3, line3 + length, colorMissing);
+            resultDiffLocations[i] = line3;
             line3 += length + 1;
             line1 = n2 + 1;
         }
@@ -179,6 +188,68 @@ public class MergeControl extends Object {
         int lf2 = diff.getSecondEnd() - diff.getSecondStart() + 1;
         int length = Math.max(lf1, lf2);
         panel.setCurrentLine(line, length);
+    }
+    
+    /**
+     * Resolve the merge conflict with left or right part.
+     * This will reduce the number of conflicts by one.
+     * @param right If true, use the right part, left otherwise
+     * @param conflNum The number of conflict.
+     */
+    private void doResolveConflict(boolean right, int conflNum) {
+        Difference diff = diffs[conflNum];
+        int[] shifts = diffShifts[conflNum];
+        int line1 = diff.getFirstStart() + shifts[0];
+        int line2 = (diff.getType() != Difference.ADD) ? diff.getFirstEnd() + shifts[0]
+                                                       : line1;
+        int line3 = diff.getSecondStart() + shifts[1];
+        int line4 = (diff.getType() != Difference.DELETE) ? diff.getSecondEnd() + shifts[1]
+                                                          : line3;
+        int rlength;
+        if (resolvedConflicts.contains(diff)) {
+            rlength = (right) ? (line2 - line1) : (line4 - line3);
+        } else {
+            rlength = Math.max(line2 - line1, line4 - line3);
+        }
+        int shift;
+        if (right) {
+            panel.replaceSource2InResult(line3 - 1, line4,
+                                         resultDiffLocations[conflNum] - 1,
+                                         resultDiffLocations[conflNum] + rlength);
+            shift = rlength - (line4 - line3);
+        } else {
+            panel.replaceSource1InResult(line1 - 1, line2,
+                                         resultDiffLocations[conflNum] - 1,
+                                         resultDiffLocations[conflNum] + rlength);
+            shift = rlength - (line2 - line1);
+        }
+        for (int i = conflNum + 1; i < diffs.length; i++) {
+            resultDiffLocations[i] += shift;
+        }
+        resolvedConflicts.add(diff);
+    }
+    
+    public void actionPerformed(ActionEvent actionEvent) {
+        String actionCommand = actionEvent.getActionCommand();
+        if (MergePanel.ACTION_FIRST_CONFLICT.equals(actionCommand)) {
+            currentDiffLine = 0;
+            showCurrentLine();
+        } else if (MergePanel.ACTION_LAST_CONFLICT.equals(actionCommand)) {
+            currentDiffLine = diffs.length - 1;
+            showCurrentLine();
+        } else if (MergePanel.ACTION_PREVIOUS_CONFLICT.equals(actionCommand)) {
+            currentDiffLine--;
+            if (currentDiffLine < 0) currentDiffLine = diffs.length - 1;
+            showCurrentLine();
+        } else if (MergePanel.ACTION_NEXT_CONFLICT.equals(actionCommand)) {
+            currentDiffLine++;
+            if (currentDiffLine >= diffs.length) currentDiffLine = 0;
+            showCurrentLine();
+        } else if (MergePanel.ACTION_ACCEPT_RIGHT.equals(actionCommand)) {
+            doResolveConflict(true, currentDiffLine);
+        } else if (MergePanel.ACTION_ACCEPT_LEFT.equals(actionCommand)) {
+            doResolveConflict(false, currentDiffLine);
+        }
     }
     
 }
