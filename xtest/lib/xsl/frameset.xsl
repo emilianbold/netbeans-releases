@@ -29,12 +29,12 @@
 		<!--
 		<FRAMESET rows="30%,70%">
 		-->
-			<FRAME src="main-navigator.html" name="mainNavigator"/>
+			<FRAME src="htmlresults/main-navigator.html" name="mainNavigator"/>
 		<!--			
 			<FRAME src="" name="contextNavigator"/>
 		</FRAMESET>
 		-->
-		<FRAME src="testreport.html" name="report"/>
+		<FRAME src="htmlresults/testreport.html" name="report"/>
 	</FRAMESET>
 	<NOFRAMES>
 	<H2>Frame Alert</H2>

@@ -69,7 +69,7 @@
 								<xsl:choose>
 									<xsl:when test="@result">										
 										<TD class="{@result}">
-											<A HREF="{@path}"><xsl:value-of select="@result"/></A>
+											<A HREF="../{@path}"><xsl:value-of select="@result"/></A>
 										</TD>
 									</xsl:when>
 									<xsl:otherwise>

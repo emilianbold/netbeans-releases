@@ -101,17 +101,17 @@
 							<xsl:variable name="testsTotal" select="sum($expression/@testsTotal)"/>							
 							<xsl:if test="$testsTotal &gt; 0">								
 								<TD class="pass">
-									<A HREF="{$currentProject}-{$currentTestingGroup}-{$currentTestedType}.html">
+									<A HREF="{$currentProject}/{$currentTestingGroup}-{$currentTestedType}.html">
 										<xsl:value-of select="$expression/@build"/>
 									</A>
 								</TD>
 								<TD class="pass">
-									<A HREF="{$currentProject}-{$currentTestingGroup}-{$currentTestedType}.html">
+									<A HREF="{$currentProject}/{$currentTestingGroup}-{$currentTestedType}.html">
 										<xsl:value-of select="format-number(sum(($expression)/@testsPass) div sum(($expression)/@testsTotal),'0.00%')"/>
 									</A>
 								</TD>
 								<TD class="pass">
-									<A HREF="{$currentProject}-{$currentTestingGroup}-{$currentTestedType}.html">
+									<A HREF="{$currentProject}/{$currentTestingGroup}-{$currentTestedType}.html">
 										<xsl:value-of select="sum($expression/@testsTotal)"/>
 									</A>
 								</TD>

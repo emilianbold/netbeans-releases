@@ -45,12 +45,16 @@
 		tested by <xsl:value-of select="//ManagedReport/@testingGroup"/>
 	</H2>	
 
-	<BR/>
-	
-	<BLOCKQUOTE>
-		<A HREF="#history">History Matrices</A>
-	</BLOCKQUOTE>
-	
+	<UL>
+		<LI><A HREF="../index.html">XTest Overall Results</A></LI>
+		<xsl:if test="not(@oldBuilds)">
+			<LI><A HREF="#history">History Matrices</A></LI>
+			<LI><A HREF="old-{ManagedReport/@testingGroup}-{ManagedReport/@testedType}.html">Older Builds</A></LI>
+		</xsl:if>
+		<xsl:if test="@oldBuilds">
+			<LI><A HREF="{ManagedReport/@testingGroup}-{ManagedReport/@testedType}.html">Current builds</A></LI>
+		</xsl:if>
+	</UL>
 	<BR/>
 
 	<TABLE width="98%" cellspacing="2" cellpadding="5" border="0" >		
@@ -96,12 +100,19 @@
 			<xsl:variable name="currentBuild" select="@build"/>
 			<xsl:variable name="uniquePlatormsInBuild" select="//ManagedReport[generate-id(.)=generate-id(key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))[1])]"/>			
 			<xsl:variable name="platformCount" select="count($uniquePlatormsInBuild)"/>
-
+			
+			<!--
+			<TR>
+			<TD colspan="9">
+			<TABLE cellspacing="2" cellpadding="5" border="0" WIDTH="100%">
+			-->
+			<TR></TR>
 			
 			<xsl:for-each select="$uniquePlatormsInBuild">
 				<xsl:sort select="@osName"/>
 				<xsl:sort select="@osVersion"/>
 				<xsl:sort select="@osArch"/>
+				
 				<TR align="center">
 					<xsl:if test="position() = 1">
 						<TD bgcolor="#A6CAF0" rowspan="{$platformCount}"><B><xsl:value-of select="@build"/></B></TD>
@@ -131,15 +142,21 @@
 					</TD>
 					<TD class="pass">
 						<xsl:for-each select="key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))">
-							<A HREF="{@webLink}">
+							<A HREF="../{@webLink}/index.html">
 								<xsl:value-of select="@host"/>
 							</A>
 							<BR/>
 						</xsl:for-each>
 					</TD>
 				</TR>
+				
+				
 			</xsl:for-each>
-			
+			<!--
+			</TABLE>
+			</TD>
+			</TR>
+			-->
 		</xsl:for-each>
 		
 	</TABLE>
@@ -156,19 +173,20 @@
 	-->
 	<BR/>
 	<HR width="90%"/>
-	<A name="history">
-	<H5>History Matrices for:</H5>
-	</A>
-	<UL>
-		<xsl:variable name="differentHosts" select="//ManagedReport[generate-id(.)=generate-id(key('host',./@host)[1])]"/>
-		<xsl:for-each select="$differentHosts">
-			<xsl:sort select="@host"/>
-			<LI>				
-				<B><A HREF="matrix-{@project}-{@testingGroup}-{@testedType}-{@host}.html"><xsl:value-of select="@host"/></A></B>
-			</LI>
-		</xsl:for-each>
-	</UL>
-	
+	<xsl:if test="not(//XTestWebReport/@oldBuilds)">
+		<A name="history">
+		<H5>History Matrices for:</H5>
+		</A>
+		<UL>
+			<xsl:variable name="differentHosts" select="//ManagedReport[generate-id(.)=generate-id(key('host',./@host)[1])]"/>
+			<xsl:for-each select="$differentHosts">
+				<xsl:sort select="@host"/>
+				<LI>				
+					<B><A HREF="matrix-{@testingGroup}-{@testedType}-{@host}.html"><xsl:value-of select="@host"/></A></B>
+				</LI>
+			</xsl:for-each>
+		</UL>
+	</xsl:if>	
 </xsl:template>
 
 </xsl:stylesheet>

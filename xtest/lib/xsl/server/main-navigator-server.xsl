@@ -14,7 +14,7 @@
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-<xsl:include href="library.xsl"/>
+<xsl:include href="../library.xsl"/>
 
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
@@ -82,8 +82,11 @@
 				</xsl:for-each>
 			</UL>
 		</UL>
-		<UL>
-			<LI><A HREF="../index.html" TARGET="_top">Home</A></LI>
+		<UL>			
+			<LI><A HREF="../index.html" TARGET="_top">Back to report home</A></LI>				
+			<LI><A HREF="../../../../../../matrix-{/XTestResultsReport/@testingGroup}-{/XTestResultsReport/@testedType}-{/XTestResultsReport/@host}.html" TARGET="_top">Builds history matrix</A></LI>
+			<LI><A HREF="../../../../../../{/XTestResultsReport/@testingGroup}-{/XTestResultsReport/@testedType}.html" TARGET="_top">Back to builds overview</A></LI>
+			<LI><A HREF="../../../../../../../index.html" TARGET="_top">Back to overall results</A></LI>
 		</UL>
 	</H4>	
 </xsl:template>
