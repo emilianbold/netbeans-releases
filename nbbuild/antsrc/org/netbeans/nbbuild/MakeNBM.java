@@ -100,8 +100,8 @@ public class MakeNBM extends Task {
 	}
     }
 
-    private String file = null;
-    private String topdir = ".";
+    private File file = null;
+    private File topdir = null;
     private File manifest = null;
     private String homepage = null;
     private String distribution = null;
@@ -110,10 +110,10 @@ public class MakeNBM extends Task {
     private Signature signature = null;
     long mostRecentInput = 0L;
 
-    public void setFile (String file) {
+    public void setFile (File file) {
 	this.file = file;
     }
-    public void setTopdir (String topdir) {
+    public void setTopdir (File topdir) {
 	this.topdir = topdir;
     }
     public void setManifest (File manifest) {
@@ -143,89 +143,95 @@ public class MakeNBM extends Task {
 	if (manifest == null)
 	    throw new BuildException ("must set manifest for makenbm", location);
 	// Will create a file Info/info.xml to be stored alongside netbeans/ contents.
-	File infodir = project.resolveFile (topdir + "/Info");
+	File infodir = new File (topdir, "Info");
 	infodir.mkdirs ();
 	File infofile = new File (infodir, "info.xml");
+	boolean skipInfo = false;
 	if (infofile.exists ()) {
 	    // Check for up-to-date w.r.t. manifest and maybe license file.
 	    long iMod = infofile.lastModified ();
 	    if (mostRecentInput < iMod)
-		return;
+		skipInfo = true;
 	}
-	Attributes attr;
-	// Read module manifest for main attributes.
-	try {
-	    InputStream manifestStream = new FileInputStream (manifest);
+	if (! skipInfo) {
+	    log ("Creating NBM info file " + infofile);
+	    Attributes attr;
+	    // Read module manifest for main attributes.
 	    try {
-		attr = new Manifest (manifestStream).getMainAttributes ();
-	    } finally {
-		manifestStream.close ();
+		InputStream manifestStream = new FileInputStream (manifest);
+		try {
+		    attr = new Manifest (manifestStream).getMainAttributes ();
+		} finally {
+		    manifestStream.close ();
+		}
+	    } catch (IOException e) {
+		throw new BuildException ("exception when reading manifest " + manifest, e, location);
 	    }
-	} catch (IOException e) {
-	    throw new BuildException ("exception when reading manifest " + manifest, e, location);
-	}
-	try {
-	    OutputStream infoStream = new FileOutputStream (infofile);
 	    try {
-		PrintStream ps = new PrintStream (infoStream);
-		// Begin writing XML.
-		ps.println ("<?xml version='1.0'?>");
-		ps.println ();
-		String codenamebase = attr.getValue ("OpenIDE-Module");
-		if (codenamebase == null)
-		    throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
-		// Strip major release number if any.
-		int idx = codenamebase.lastIndexOf ('/');
-		if (idx != -1) codenamebase = codenamebase.substring (0, idx);
-		ps.println ("<module codenamebase=\"" + codenamebase + "\"");
-		if (homepage != null)
-		    ps.println ("        homepage=\"" + homepage + "\"");
-		if (distribution != null)
-		    ps.println ("        distribution=\"" + distribution + "\"");
-		// Here we only write a name for the license.
-		if (license != null) {
-		    String name = license.getName ();
-		    if (name == null)
-			throw new BuildException ("Every license must have a name or file attribute", location);
-		    ps.println ("        license=\"" + name + "\"");
+		OutputStream infoStream = new FileOutputStream (infofile);
+		try {
+		    PrintStream ps = new PrintStream (infoStream);
+		    // Begin writing XML.
+		    ps.println ("<?xml version='1.0'?>");
+		    ps.println ();
+		    String codenamebase = attr.getValue ("OpenIDE-Module");
+		    if (codenamebase == null)
+			throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
+		    // Strip major release number if any.
+		    int idx = codenamebase.lastIndexOf ('/');
+		    if (idx != -1) codenamebase = codenamebase.substring (0, idx);
+		    ps.println ("<module codenamebase=\"" + codenamebase + "\"");
+		    if (homepage != null)
+			ps.println ("        homepage=\"" + homepage + "\"");
+		    if (distribution != null)
+			ps.println ("        distribution=\"" + distribution + "\"");
+		    // Here we only write a name for the license.
+		    if (license != null) {
+			String name = license.getName ();
+			if (name == null)
+			    throw new BuildException ("Every license must have a name or file attribute", location);
+			ps.println ("        license=\"" + name + "\"");
+		    }
+		    ps.println ("        downloadsize=\"0\"");
+		    ps.println (">");
+		    if (description != null) {
+			ps.print ("  <description>");
+			ps.print (description.getText ());
+			ps.println ("</description>");
+		    }
+		    // Write manifest attributes.
+		    ps.print ("  <manifest ");
+		    boolean firstline = true;
+		    Iterator it = attr.entrySet ().iterator ();
+		    while (it.hasNext ()) {
+			if (firstline)
+			    firstline = false;
+			else
+			    ps.print ("            ");
+			Map.Entry entry = (Map.Entry) it.next ();
+			ps.println (entry.getKey () + "=\"" + entry.getValue () + "\"");
+		    }
+		    ps.println ("  />");
+		    // Maybe write out license text.
+		    if (license != null) {
+			ps.print ("  <license name=\"" + license.getName () + "\">");
+			ps.print (license.getText ());
+			ps.println ("</license>");
+		    }
+		    ps.println ("</module>");
+		} finally {
+		    infoStream.close ();
 		}
-		ps.println ("        downloadsize=\"0\"");
-		ps.println (">");
-		if (description != null) {
-		    ps.print ("  <description>");
-		    ps.print (description.getText ());
-		    ps.println ("</description>");
-		}
-		// Write manifest attributes.
-		ps.print ("  <manifest ");
-		boolean firstline = true;
-		Iterator it = attr.entrySet ().iterator ();
-		while (it.hasNext ()) {
-		    if (firstline)
-			firstline = false;
-		    else
-			ps.print ("            ");
-		    Map.Entry entry = (Map.Entry) it.next ();
-		    ps.println (entry.getKey () + "=\"" + entry.getValue () + "\"");
-		}
-		ps.println ("  />");
-		// Maybe write out license text.
-		if (license != null) {
-		    ps.print ("  <license name=\"" + license.getName () + "\">");
-		    ps.print (license.getText ());
-		    ps.println ("</license>");
-		}
-		ps.println ("</module>");
-	    } finally {
-		infoStream.close ();
+	    } catch (IOException e) {
+		throw new BuildException ("exception when creating Info/info.xml", e, location);
 	    }
-	} catch (IOException e) {
-	    throw new BuildException ("exception when creating Info/info.xml", e, location);
 	}
 	// JAR it all up together.
+	long jarModified = file.lastModified (); // may be 0
+	//log ("Ensuring existence of NBM file " + file);
 	Jar jar = (Jar) project.createTask ("jar");
-	jar.setJarfile (file);
-	jar.setBasedir (topdir);
+	jar.setJarfile (file.getAbsolutePath ());
+	jar.setBasedir (topdir.getAbsolutePath ());
 	jar.setCompress ("true");
 	jar.createInclude ().setName ("netbeans/");
 	jar.createInclude ().setName ("Info/info.xml");
@@ -233,17 +239,18 @@ public class MakeNBM extends Task {
 	jar.init ();
 	jar.execute ();
 	// Maybe sign it.
-	if (signature != null) {
+	if (signature != null && file.lastModified () != jarModified) {
 	    if (signature.keystore == null)
 		throw new BuildException ("must define keystore attribute on <signature/>");
 	    if (signature.storepass == null)
 		throw new BuildException ("must define storepass attribute on <signature/>");
 	    if (signature.alias == null)
 		throw new BuildException ("must define alias attribute on <signature/>");
+	    log ("Signing NBM file " + file);
 	    Java java = (Java) project.createTask ("java");
 	    java.setClassname ("sun.security.tools.JarSigner");
 	    java.setArgs ("-keystore " + signature.keystore + " -storepass " + signature.storepass +
-			  " " + file + " " + signature.alias);
+			  " " + file.getAbsolutePath () + " " + signature.alias);
 	    java.setLocation (location);
 	    java.init ();
 	    java.execute ();

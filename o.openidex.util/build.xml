@@ -14,7 +14,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <!-- ToDo: may need to ensure that SearchTask.java is compiled before Utilities2.java -->
 <!--       due to an obscure 1.3 compiler bug                                         -->
-<project name="openidex" default="nbm" basedir=".">
+<project name="openidex" default="netbeans" basedir=".">
+
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+
   <target name="compile">
     <javac srcdir="src" destdir="src">
       <classpath>
@@ -22,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
     </javac>
   </target>
+
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -32,9 +36,24 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
-  <target name="nbm" depends="jars">
-    <zip zipfile="openidex.nbm" includes="netbeans/" basedir="."/>
+
+  <target name="netbeans" depends="jars"/>
+
+  <target name="nbm" depends="netbeans">
+    <makenbm file="openidex.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://openidex.netbeans.org/"
+	     distribution="http://www.netbeans.org/downloads/nbms/40/openidex.nbm">
+      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <description>
+        Common utility classes needed by many other modules. API
+        extensions.
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+    </makenbm>
   </target>
+
   <target name="clean">
     <delete dir="src">
       <include name="**/*.class"/>
@@ -42,5 +61,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="openidex.nbm"/>
     <deltree dir="netbeans"/>
+    <deltree dir="Info"/>
   </target>
+
 </project>

@@ -13,12 +13,17 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="image" default="netbeans" basedir=".">
+
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+
   <target name="compile">
-    <javac srcdir="src"
-           destdir="src"
-           classpath="../openide/netbeans/lib/openide.jar"/>
+    <javac srcdir="src" destdir="src">
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      </classpath>
+    </javac>
   </target>
+
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -29,7 +34,9 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
+
   <target name="netbeans" depends="jars"/>
+
   <target name="nbm" depends="netbeans">
     <makenbm file="image.nbm"
              topdir="."
@@ -43,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
   </target>
+
   <target name="clean">
     <delete dir="src">
       <include name="**/*.class"/>
@@ -52,4 +60,5 @@ Microsystems, Inc. All Rights Reserved.
     <deltree dir="netbeans"/>
     <deltree dir="Info"/>
   </target>
+
 </project>

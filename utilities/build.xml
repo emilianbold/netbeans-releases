@@ -12,17 +12,26 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="utilities" default="nbm" basedir=".">
+<project name="utilities" default="netbeans" basedir=".">
+
+  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+
   <target name="compile">
-    <javac srcdir="src"
-           destdir="src"
-           classpath="../editor/netbeans/lib/ext/nb-editor.jar:../openide/netbeans/lib/openide.jar:../openidex/netbeans/modules/openidex.jar:../core/release/lib/ext/regexp.jar"/>
+    <javac srcdir="src" destdir="src">
+      <classpath>
+        <pathelement location="../editor/netbeans/lib/ext/nb-editor.jar"/>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
+        <pathelement location="../core/release/lib/ext/regexp.jar"/>
+      </classpath>
+    </javac>
   </target>
+
   <target name="tojar">
-    <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
-    <tojar srcdir="src"
-           unpackeddir="tojar"/>
+    <tojar srcdir="src" unpackeddir="tojar"/>
   </target>
+
   <target name="jars" depends="compile,tojar">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -33,11 +42,24 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
-  <target name="nbm" depends="jars">
-    <zip zipfile="utilities.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+
+  <target name="netbeans" depends="jars"/>
+
+  <target name="nbm" depends="netbeans">
+    <makenbm file="utilities.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://utilities.netbeans.org/"
+	     distribution="http://www.netbeans.org/downloads/nbms/40/utilities.nbm">
+      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <description>
+        Various smaller features collected: groups of files, open
+        file, searching, URL bookmarks.
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+    </makenbm>
   </target>
+
   <target name="clean">
     <delete dir="src">
       <include name="**/*.class"/>
@@ -46,5 +68,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="utilities.nbm"/>
     <deltree dir="netbeans"/>
+    <deltree dir="Info"/>
   </target>
+
 </project>

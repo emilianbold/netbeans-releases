@@ -14,9 +14,12 @@ Microsystems, Inc. All Rights Reserved.
 
 <!-- Special properties: -->
 <!-- -Dproxy=proxy.netbeans.com:3128 to use an HTTP proxy for building APIs -->
-<!-- Special targets: apiexamples -->
+<!-- -Djdkdocs=.../api (optional) -->
+<!-- Special targets: apiexamples, open-apis -->
 
 <project name="openide" default="netbeans" basedir=".">
+
+  <property name="jdkdocs" value="public"/>
 
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
 
@@ -60,14 +63,14 @@ Microsystems, Inc. All Rights Reserved.
   <!-- XXX preferably would be a special task to do all this stuff... -->
   <target name="open-apis" depends="open-apis-premessage,open-apis-noproxy,open-apis-proxy"/>
   <target name="open-apis-noproxy" unless="proxy">
-    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl public --zip zip --zipbare --zipandkill --nofastlinks" os="Linux" output="OpenAPIs.log" failonerror="yes"/>
-    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl public --zip zip --zipbare --zipandkill --nofastlinks" os="SunOS" output="OpenAPIs.log" failonerror="yes"/>
+    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks" os="Linux" output="OpenAPIs.log" failonerror="yes"/>
+    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks" os="SunOS" output="OpenAPIs.log" failonerror="yes"/>
     <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="Windows NT" output="con:"/>
     <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="Windows 2000" output="con:"/>
   </target>
   <target name="open-apis-proxy" if="proxy">
-    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl public --zip zip --zipbare --zipandkill --nofastlinks --proxy ${proxy}" os="Linux" output="OpenAPIs.log" failonerror="yes"/>
-    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl public --zip zip --zipbare --zipandkill --nofastlinks --proxy ${proxy}" os="SunOS" output="OpenAPIs.log" failonerror="yes"/>
+    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks --proxy ${proxy}" os="Linux" output="OpenAPIs.log" failonerror="yes"/>
+    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks --proxy ${proxy}" os="SunOS" output="OpenAPIs.log" failonerror="yes"/>
     <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="Windows NT" output="con:"/>
     <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="Windows 2000" output="con:"/>
   </target>

@@ -12,17 +12,23 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="html" default="nbm" basedir=".">
+<project name="html" default="netbeans" basedir=".">
+
+  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+
   <target name="compile">
-    <javac srcdir="src"
-           destdir="src"
-           classpath="../openide/netbeans/lib/openide.jar"/>
+    <javac srcdir="src" destdir="src">
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      </classpath>
+    </javac>
   </target>
+
   <target name="tojar">
-    <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
-    <tojar srcdir="src"
-           unpackeddir="tojar"/>
+    <tojar srcdir="src" unpackeddir="tojar"/>
   </target>
+
   <target name="jars" depends="compile,tojar">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -33,11 +39,24 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
-  <target name="nbm" depends="jars">
-    <zip zipfile="html.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+
+  <target name="netbeans" depends="jars"/>
+
+  <target name="nbm" depends="netbeans">
+    <makenbm file="html.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://html.netbeans.org/"
+	     distribution="http://www.netbeans.org/downloads/nbms/40/html.nbm">
+      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <description>
+        Editing of HTML files and viewing them in the internal
+	web browser.
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+    </makenbm>
   </target>
+
   <target name="clean">
     <delete dir="src">
       <include name="**/*.class"/>
@@ -46,5 +65,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="html.nbm"/>
     <deltree dir="netbeans"/>
+    <deltree dir="Info"/>
   </target>
+
 </project>

@@ -12,7 +12,10 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="usersguide" default="nbm" basedir=".">
+<project name="usersguide" default="netbeans" basedir=".">
+
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+
   <target name="compile">
     <javac srcdir="src" destdir="src">
       <classpath>
@@ -20,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
     </javac>
   </target>
+
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -30,9 +34,11 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
+
   <target name="release">
     <copydir src="release" dest="netbeans"/>
   </target>
+
   <target name="javahelp">
     <copydir src="javahelp" dest="netbeans/docs">
       <!-- Temporary files, or preprocessing scripts: -->
@@ -44,9 +50,23 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="**/usergdto.xml"/>
     </copydir>
   </target>
-  <target name="nbm" depends="jars,release,javahelp">
-    <zip zipfile="usersguide.nbm" includes="netbeans/" basedir="."/>
+
+  <target name="netbeans" depends="jars,release,javahelp"/>
+
+  <target name="nbm" depends="netbeans">
+    <makenbm file="usersguide.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://usersguide.netbeans.org/"
+	     distribution="http://www.netbeans.org/downloads/nbms/40/usersguide.nbm">
+      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <description>
+        The User's Guide (just documentation).
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+    </makenbm>
   </target>
+
   <target name="clean">
     <delete dir="src">
       <include name="**/*.class"/>
@@ -54,5 +74,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="usersguide.nbm"/>
     <deltree dir="netbeans"/>
+    <deltree dir="Info"/>
   </target>
+
 </project>

@@ -19,42 +19,47 @@ ToDo:
   should it export, or should there be support for updating as well?
   Updating is complicated by the fact that a root CVS dir must be
   created specially (CVSROOT/Emptydir).
-- use nested classpath tags in javac for modules:
-  html httpserver icebrowser image jarpackager java javadoc
-  objectbrowser projects properties utilities vcscvs web
 - handle Japanese sanely (consider branding too)
-- NBM tasks for all modules; do for:
-  debuggertools editor form html httpserver i18n icebrowser jarpackager
-  java javacvs javadoc objectbrowser openidex projects properties
-  text usersguide utilities vcscvs web
-- NBM-based module group file task
 - build validator DTD for this build system
 - see how many JARs can actually be moved from lib/ext/ (or modules/patches/) to modules/ext/
 - delete obsolete jars.cfg (from trunk anyway)
-- tasks to create: source zip; API examples
+- tasks to create: source zip
+- refine the license text for various modules, esp. those with
+  binaries with specific license requirements
 Modules:
-ant (has build system, but not integrated into master)
-emacs
-innertesters
-javacvs
-makefile
-multicompile
-remotefs
-scripting
-treefs
+ant (only provisional integration)
+emacs (currently will conflict with editor if installed)
+javacvs (is it stable enough to include?)
+scripting (bins may not be available yet)
+treefs (complete yet?)
 -->
 
 <project name="nbbuild" default="depucelee" basedir=".">
 
   <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll"/>
   <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge"/>
+  <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules"/>
+  <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc"/>
 
-  <!-- Override this with the Ant command, e.g. -Dmodules=... -->
-  <property name="modules" value="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
-  <!-- Optional: crosscompile,sysprops,serialversion -->
+  <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
+  <property name="moduleconfig" value="stable"/>
+
+  <!-- You can also explicitly set a particular list of modules if you prefer: -->
+  <!-- -Dmodules=foo,bar,... (do not include core or openide) -->
+  <target name="init">
+    <configmods property="modules" selectedconfig="${moduleconfig}">
+      <config name="superslim" modules="clazz,editor,html,icebrowser,image,java,openidex,projects,text,utilities"/>
+      <config name="slim" modules="autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,icebrowser,image,java,objectbrowser,openidex,projects,text,utilities"/>
+      <config name="stable" modules="applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
+      <config name="stable-with-apisupport" modules="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
+      <config name="ide-hacker" modules="apisupport,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,serialversion,sysprops,text,utilities,vcscvs"/>
+      <config name="jesses-pick" modules="ant,apisupport,beans,clazz,editor,html,icebrowser,image,java,javadoc,openidex,projects,properties,serialversion,sysprops,text,utilities"/>
+      <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,serialversion,sysprops,text,usersguide,utilities,vcscvs,web"/>
+    </configmods>
+  </target>
 
   <!-- Ditto (note: need not necessarily be a number at all): -->
-  <property name="buildnumber" value="123"/>
+  <property name="buildnumber" value="dev-000"/>
 
   <!-- Best to leave this alone, though, unless you know what you are doing: -->
   <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true"/>
@@ -68,133 +73,163 @@ treefs
     <echo message="       Please see: http://www.netbeans.org/downloads.html"/>
   </target>
 
-  <!-- XXX specifically request target netbeans in subbuilds when ready -->
-
   <!-- How to build the IDE core: -->
   <target name="all-openide" depends="check-for-binaries">
     <echo message="Building Open APIs..."/>
-    <ant dir="../openide"/>
+    <ant dir="../openide" target="netbeans"/>
   </target>
   <target name="all-core" depends="all-openide">
     <echo message="Building IDE core implementation..."/>
-    <ant dir="../core"/>
+    <ant dir="../core" target="netbeans"/>
   </target>
 
   <!-- And the modules: -->
+  <target name="all-ant" depends="all-openide">
+    <echo message="Building module ant..."/>
+    <ant dir="../ant" target="netbeans"/>
+  </target>
   <target name="all-apisupport" depends="all-openide,all-openidex,all-core">
     <echo message="Building module apisupport..."/>
-    <ant dir="../apisupport"/>
+    <ant dir="../apisupport" target="netbeans"/>
   </target>
   <target name="all-applet" depends="all-openide,all-debuggercore">
     <echo message="Building module applet..."/>
-    <ant dir="../applet"/>
+    <ant dir="../applet" target="netbeans"/>
   </target>
   <target name="all-autoupdate" depends="all-openide,all-core,all-openidex">
     <echo message="Building module autoupdate..."/>
-    <ant dir="../autoupdate"/>
+    <ant dir="../autoupdate" target="netbeans"/>
   </target>
   <target name="all-beans" depends="all-openide,all-java">
     <echo message="Building module beans..."/>
-    <ant dir="../beans"/>
+    <ant dir="../beans" target="netbeans"/>
   </target>
   <target name="all-clazz" depends="all-openide">
     <echo message="Building module clazz..."/>
-    <ant dir="../clazz"/>
+    <ant dir="../clazz" target="netbeans"/>
+  </target>
+  <target name="all-crosscompile" depends="all-openide">
+    <echo message="Building module crosscompile..."/>
+    <ant dir="../crosscompile" target="netbeans"/>
   </target>
   <target name="all-debuggercore" depends="all-openide,all-openidex">
     <echo message="Building module debuggercore..."/>
-    <ant dir="../debuggercore"/>
+    <ant dir="../debuggercore" target="netbeans"/>
   </target>
   <target name="all-debuggerjpda" depends="all-openide,all-debuggercore">
     <echo message="Building module debuggerjpda..."/>
-    <ant dir="../debuggerjpda"/>
+    <ant dir="../debuggerjpda" target="netbeans"/>
   </target>
   <target name="all-debuggertools" depends="all-openide,all-debuggercore">
     <echo message="Building module debuggertools..."/>
-    <ant dir="../debuggertools"/>
+    <ant dir="../debuggertools" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
   <target name="all-editor" depends="all-openide,all-openidex,all-core">
     <echo message="Building module editor..."/>
-    <ant dir="../editor"/>
+    <ant dir="../editor" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
   <target name="all-form" depends="all-openide,all-openidex,all-java,all-clazz,all-core">
     <echo message="Building module form..."/>
-    <ant dir="../form"/>
+    <ant dir="../form" target="netbeans"/>
   </target>
   <target name="all-html" depends="all-openide">
     <echo message="Building module html..."/>
-    <ant dir="../html"/>
+    <ant dir="../html" target="netbeans"/>
   </target>
   <target name="all-httpserver" depends="all-openide">
     <echo message="Building module httpserver..."/>
-    <ant dir="../httpserver"/>
+    <ant dir="../httpserver" target="netbeans"/>
   </target>
   <target name="all-i18n" depends="all-openide,all-properties,all-form,all-editor">
     <echo message="Building module i18n..."/>
-    <ant dir="../i18n"/>
+    <ant dir="../i18n" target="netbeans"/>
   </target>
   <target name="all-icebrowser" depends="all-openide">
     <echo message="Building module icebrowser..."/>
-    <ant dir="../icebrowser"/>
+    <ant dir="../icebrowser" target="netbeans"/>
   </target>
   <target name="all-image" depends="all-openide">
     <echo message="Building module image..."/>
-    <ant dir="../image"/>
+    <ant dir="../image" target="netbeans"/>
+  </target>
+  <target name="all-innertesters" depends="all-openide">
+    <echo message="Building module innertesters..."/>
+    <ant dir="../innertesters" target="netbeans"/>
   </target>
   <target name="all-jarpackager" depends="all-openide,all-openidex">
     <echo message="Building module jarpackager..."/>
-    <ant dir="../jarpackager"/>
+    <ant dir="../jarpackager" target="netbeans"/>
   </target>
   <target name="all-java" depends="all-openide,all-openidex">
     <echo message="Building module java..."/>
-    <ant dir="../java"/>
+    <ant dir="../java" target="netbeans"/>
   </target>
   <target name="all-javadoc" depends="all-openide,all-openidex,all-java">
     <echo message="Building module javadoc..."/>
-    <ant dir="../javadoc"/>
+    <ant dir="../javadoc" target="netbeans"/>
+  </target>
+  <target name="all-makefile" depends="all-openide">
+    <echo message="Building module makefile..."/>
+    <ant dir="../makefile" target="netbeans"/>
+  </target>
+  <target name="all-multicompile" depends="all-openide">
+    <echo message="Building module multicompile..."/>
+    <ant dir="../multicompile" target="netbeans"/>
   </target>
   <target name="all-objectbrowser" depends="all-openide,all-openidex">
     <echo message="Building module objectbrowser..."/>
-    <ant dir="../objectbrowser"/>
+    <ant dir="../objectbrowser" target="netbeans"/>
   </target>
   <target name="all-openidex" depends="all-openide">
     <echo message="Building module openidex..."/>
-    <ant dir="../openidex"/>
+    <ant dir="../openidex" target="netbeans"/>
   </target>
   <target name="all-projects" depends="all-openide,all-openidex,all-java">
     <echo message="Building module projects..."/>
-    <ant dir="../projects"/>
+    <ant dir="../projects" target="netbeans"/>
   </target>
   <target name="all-properties" depends="all-openide,all-editor">
     <echo message="Building module properties..."/>
-    <ant dir="../properties"/>
+    <ant dir="../properties" target="netbeans"/>
+  </target>
+  <target name="all-remotefs" depends="all-openide">
+    <echo message="Building module remotefs..."/>
+    <ant dir="../remotefs" target="netbeans"/>
+  </target>
+  <target name="all-serialversion" depends="all-openide">
+    <echo message="Building module serialversion..."/>
+    <ant dir="../serialversion" target="netbeans"/>
+  </target>
+  <target name="all-sysprops" depends="all-openide">
+    <echo message="Building module sysprops..."/>
+    <ant dir="../sysprops" target="netbeans"/>
   </target>
   <target name="all-text" depends="all-openide">
     <echo message="Building module text..."/>
-    <ant dir="../text"/>
+    <ant dir="../text" target="netbeans"/>
   </target>
   <target name="all-usersguide" depends="all-openide">
     <echo message="Building module usersguide..."/>
-    <ant dir="../usersguide"/>
+    <ant dir="../usersguide" target="netbeans"/>
   </target>
   <target name="all-utilities" depends="all-openide,all-openidex,all-editor">
     <echo message="Building module utilities..."/>
-    <ant dir="../utilities"/>
+    <ant dir="../utilities" target="netbeans"/>
   </target>
   <target name="all-vcscvs" depends="all-openide,all-openidex,all-editor,all-utilities">
     <echo message="Building module vcscvs..."/>
-    <ant dir="../vcscvs"/>
+    <ant dir="../vcscvs" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
   <target name="all-web" depends="all-openide,all-openidex,all-java,all-core,all-editor">
     <echo message="Building module web..."/>
-    <ant dir="../web"/>
+    <ant dir="../web" target="netbeans"/>
   </target>
 
-  <target name="build-messaging">
-    <echo message="Starting a build for NetBeans (build ${buildnumber}) ..."/>
+  <target name="build-messaging" depends="init">
+    <echo message="Starting a build for NetBeans (build ${buildnumber}, config '${moduleconfig}') ..."/>
     <echo message="Selected modules: ${modules}"/>
     <echo message="OS: ${os.name} ${os.version}  Locale: ${user.language}_${user.region}"/>
     <echo message="Java: ${java.vendor} ${java.version} in ${java.home}"/>
@@ -208,14 +243,14 @@ treefs
   <!-- should also create empty lib/patches/ dir (but again zip task will ignore it) -->
   <!-- or just make lib/patches/.exists which is otherwise harmless -->
 
-  <target name="virgin" depends="build-messaging">
+  <target name="virgin" depends="init,build-messaging">
     <!-- Automatically include openide and core, these are mandatory -->
     <nbmerge dest="virgin" topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
     <zip zipfile="NetBeans-${buildnumber}-virgin.zip" basedir="virgin"/>
     <echo message="Virgin build created; see NetBeans-${buildnumber}-virgin.zip (in nbbuild/)."/>
   </target>
 
-  <target name="firststart" depends="build-messaging">
+  <target name="firststart" depends="init,build-messaging">
     <nbmerge dest="firststart" topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
     <!-- XXX chmod does not work reliably...investigate -->
     <chmod file="firststart/bin/runide.sh" perm="ugo+x"/>
@@ -247,6 +282,127 @@ treefs
     <echo message="Build created; see NetBeans-${buildnumber}.zip (in nbbuild/)."/>
     <echo message="If you like, you may run the IDE straight from"/>
     <echo message="the nbbuild/firststart/bin/ directory."/>
+  </target>
+
+  <target name="update-info" depends="all-openide,all-core">
+    <!-- Note: partially sorted in dependency order -->
+    <!-- (this could also be done with separate targets). -->
+    <echo message="Making NBM for module ant..."/>
+    <ant dir="../ant" target="nbm"/>
+    <echo message="Making NBM for module openidex..."/>
+    <ant dir="../openidex" target="nbm"/>
+    <echo message="Making NBM for module apisupport..."/>
+    <ant dir="../apisupport" target="nbm"/>
+    <echo message="Making NBM for module debuggercore..."/>
+    <ant dir="../debuggercore" target="nbm"/>
+    <echo message="Making NBM for module applet..."/>
+    <ant dir="../applet" target="nbm"/>
+    <echo message="Making NBM for module autoupdate..."/>
+    <ant dir="../autoupdate" target="nbm"/>
+    <echo message="Making NBM for module java..."/>
+    <ant dir="../java" target="nbm"/>
+    <echo message="Making NBM for module beans..."/>
+    <ant dir="../beans" target="nbm"/>
+    <echo message="Making NBM for module clazz..."/>
+    <ant dir="../clazz" target="nbm"/>
+    <echo message="Making NBM for module crosscompile..."/>
+    <ant dir="../crosscompile" target="nbm"/>
+    <echo message="Making NBM for module debuggerjpda..."/>
+    <ant dir="../debuggerjpda" target="nbm"/>
+    <echo message="Making NBM for module debuggertools..."/>
+    <ant dir="../debuggertools" target="nbm"/>
+    <echo message="Making NBM for module editor..."/>
+    <ant dir="../editor" target="nbm"/>
+    <echo message="Making NBM for module form..."/>
+    <ant dir="../form" target="nbm"/>
+    <echo message="Making NBM for module html..."/>
+    <ant dir="../html" target="nbm"/>
+    <echo message="Making NBM for module httpserver..."/>
+    <ant dir="../httpserver" target="nbm"/>
+    <echo message="Making NBM for module properties..."/>
+    <ant dir="../properties" target="nbm"/>
+    <echo message="Making NBM for module i18n..."/>
+    <ant dir="../i18n" target="nbm"/>
+    <echo message="Making NBM for module icebrowser..."/>
+    <ant dir="../icebrowser" target="nbm"/>
+    <echo message="Making NBM for module image..."/>
+    <ant dir="../image" target="nbm"/>
+    <echo message="Making NBM for module innertesters..."/>
+    <ant dir="../innertesters" target="nbm"/>
+    <echo message="Making NBM for module jarpackager..."/>
+    <ant dir="../jarpackager" target="nbm"/>
+    <echo message="Making NBM for module javadoc..."/>
+    <ant dir="../javadoc" target="nbm"/>
+    <echo message="Making NBM for module makefile..."/>
+    <ant dir="../makefile" target="nbm"/>
+    <echo message="Making NBM for module multicompile..."/>
+    <ant dir="../multicompile" target="nbm"/>
+    <echo message="Making NBM for module objectbrowser..."/>
+    <ant dir="../objectbrowser" target="nbm"/>
+    <echo message="Making NBM for module projects..."/>
+    <ant dir="../projects" target="nbm"/>
+    <echo message="Making NBM for module remotefs..."/>
+    <ant dir="../remotefs" target="nbm"/>
+    <echo message="Making NBM for module serialversion..."/>
+    <ant dir="../serialversion" target="nbm"/>
+    <echo message="Making NBM for module sysprops..."/>
+    <ant dir="../sysprops" target="nbm"/>
+    <echo message="Making NBM for module text..."/>
+    <ant dir="../text" target="nbm"/>
+    <echo message="Making NBM for module usersguide..."/>
+    <ant dir="../usersguide" target="nbm"/>
+    <echo message="Making NBM for module utilities..."/>
+    <ant dir="../utilities" target="nbm"/>
+    <echo message="Making NBM for module vcscvs..."/>
+    <ant dir="../vcscvs" target="nbm"/>
+    <echo message="Making NBM for module web..."/>
+    <ant dir="../web" target="nbm"/>
+    <!-- [PENDING] not quite ready to do it to the real file yet... -->
+    <makeupdatedesc desc="../www/www/updates/TEST-40_1.1_.xml">
+      <group name="Standard">
+        <nbm file="../applet/applet.nbm"/>
+        <nbm file="../autoupdate/autoupdate.nbm"/>
+        <nbm file="../beans/beans.nbm"/>
+        <nbm file="../clazz/clazz.nbm"/>
+        <nbm file="../debuggercore/debuggercore.nbm"/>
+        <nbm file="../debuggerjpda/debuggerjpda.nbm"/>
+        <nbm file="../debuggertools/debuggertools.nbm"/>
+        <nbm file="../editor/editor.nbm"/>
+        <nbm file="../form/form.nbm"/>
+        <nbm file="../html/html.nbm"/>
+        <nbm file="../httpserver/httpserver.nbm"/>
+        <nbm file="../i18n/i18n.nbm"/>
+        <nbm file="../icebrowser/icebrowser.nbm"/>
+        <nbm file="../image/image.nbm"/>
+        <nbm file="../jarpackager/jarpackager.nbm"/>
+        <nbm file="../java/java.nbm"/>
+        <nbm file="../javadoc/javadoc.nbm"/>
+        <nbm file="../objectbrowser/objectbrowser.nbm"/>
+        <nbm file="../openidex/openidex.nbm"/>
+        <nbm file="../projects/projects.nbm"/>
+        <nbm file="../properties/properties.nbm"/>
+        <nbm file="../text/text.nbm"/>
+        <nbm file="../usersguide/usersguide.nbm"/>
+        <nbm file="../utilities/utilities.nbm"/>
+        <nbm file="../vcscvs/vcscvs.nbm"/>
+	<!-- Careful! -->
+        <nbm file="../web/web-jsp.nbm"/>
+        <nbm file="../web/web-wizard.nbm"/>
+      </group>
+      <group name="Extensions">
+        <nbm file="../apisupport/apisupport.nbm"/>
+        <nbm file="../crosscompile/crosscompile.nbm"/>
+        <nbm file="../innertesters/innertesters.nbm"/>
+        <nbm file="../makefile/makefile.nbm"/>
+      </group>
+      <group name="Experimental">
+        <nbm file="../ant/ant.nbm"/>
+        <nbm file="../multicompile/multicompile.nbm"/>
+        <nbm file="../remotefs/remotefs.nbm"/>
+        <nbm file="../serialversion/serialversion.nbm"/>
+        <nbm file="../sysprops/sysprops.nbm"/>
+      </group>
+    </makeupdatedesc>
   </target>
 
   <target name="localclean">

@@ -18,7 +18,7 @@
     <property name="module.src" value="src"/>
     <property name="build.classpath" value="${module.src};${module.ext}${file.separator}ant.jar;${module.ext}${file.separator}xml.jar;${module.ext}${file.separator}xerces.jar;${module.ext}${file.separator}xalan.jar;${module.ext}${file.separator}openide.jar"/>
   </target>
-  <target name="clean" depends="setProps">
+  <target name="preClean" depends="setProps">
     <deltree dir="${dist.classes}"/>
   </target>
   <target name="postClean" depends="setProps">
@@ -38,5 +38,87 @@
     <copydir src="${module.javahelp}" dest="${module.classes}${file.separator}docs"/>
     <jar jarfile="${module.libs}${file.separator}antmodule.jar" basedir="${dist.classes}" manifest="manifest.mf" includes="${module.package}${file.separator}**" excludes="**/*.jar.MAKEME"/>
   </target>
-  <target name="all" depends="clean,prepare,build,packTemplates,packModule,postClean"/>
+  <target name="all" depends="preClean,prepare,build,packTemplates,packModule,postClean"/>
+
+  <!-- For including in an IDE build: -->
+
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
+
+  <target name="compile">
+    <javac srcdir="src" destdir="src">
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+	<!-- [PENDING] these should all be in modules/ext with a Class-Path entry in the manifest: -->
+	<pathelement location="release/lib/ext/ant.jar"/>
+	<pathelement location="release/lib/ext/xalan.jar"/>
+	<pathelement location="release/lib/ext/xerces.jar"/>
+	<!-- Using IDE's version of jaxp + parser, these cannot be overridden: -->
+	<pathelement location="../core/release/lib/ext/jaxp.jar"/>
+	<pathelement location="../core/release/lib/ext/parser.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="tojar">
+    <tojar srcdir="src" unpackeddir="tojar"/>
+  </target>
+
+  <target name="jars" depends="compile,tojar">
+    <mkdir dir="netbeans/modules"/>
+    <!-- [PENDING] manifest.mf should have OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@ -->
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copyfile src="manifest.mf" dest="manifest-subst.mf" filtering="on"/>
+    <jar jarfile="netbeans/modules/ant.jar"
+         manifest="manifest-subst.mf"
+         basedir="src"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false">
+      <exclude name="README.txt"/>
+    </jar>
+  </target>
+
+  <target name="release">
+    <copydir src="release" dest="netbeans">
+      <!-- [PENDING] not the correct location anyway: -->
+      <exclude name="lib/antmodule.jar"/>
+      <!-- [PENDING] these should probably just be removed: -->
+      <exclude name="lib/ext/jaxp.jar"/>
+      <exclude name="lib/ext/parser.jar"/>
+      <exclude name="lib/ext/xml.jar"/>
+    </copydir>
+  </target>
+
+  <target name="javahelp">
+    <copydir src="javahelp" dest="netbeans/docs"/>
+  </target>
+
+  <target name="netbeans" depends="jars,release,javahelp"/>
+
+  <target name="nbm" depends="netbeans">
+    <makenbm file="ant.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://ant.netbeans.org/"
+	     distribution="http://www.netbeans.org/downloads/nbms/40/ant.nbm">
+      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <description>
+        Support for Ant build scripts.
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+    </makenbm>
+  </target>
+
+  <target name="clean">
+    <delete dir="src">
+      <include name="**/*.class"/>
+      <include name="**/*.jar"/>
+    </delete>
+    <!-- [PENDING] should be a .cvsignore listing these... -->
+    <delete file="manifest-subst.mf"/>
+    <delete file="ant.nbm"/>
+    <deltree dir="netbeans"/>
+    <deltree dir="Info"/>
+  </target>
+
 </project>

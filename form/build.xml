@@ -16,7 +16,11 @@ Microsystems, Inc. All Rights Reserved.
 <!-- Ditto AbsoluteLayout.jar (and move the sources into libsrc/ where they belong). -->
 <!-- Also should beans/beans.properties really be there, since firststart removes them afterwards? -->
 
-<project name="form" default="nbm" basedir=".">
+<project name="form" default="netbeans" basedir=".">
+
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
+
   <!-- See core/build.xml for explanation. -->
   <target name="compile">
     <ant dir="../form" target="compile-with-classic-Javac">
@@ -38,10 +42,11 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
     </javac>
   </target>
+
   <target name="tojar">
-    <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
     <tojar srcdir="src" unpackeddir="tojar"/>
   </target>
+
   <target name="jars" depends="compile,tojar">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -52,12 +57,27 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
+
   <target name="release">
     <copydir src="release" dest="netbeans"/>
   </target>
-  <target name="nbm" depends="jars,release">
-    <zip zipfile="form.nbm" includes="netbeans/" basedir="."/>
+
+  <target name="netbeans" depends="jars,release"/>
+
+  <target name="nbm" depends="netbeans">
+    <makenbm file="form.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://form.netbeans.org/"
+	     distribution="http://www.netbeans.org/downloads/nbms/40/form.nbm">
+      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <description>
+        The visual Form Editor.
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+    </makenbm>
   </target>
+
   <target name="clean">
     <delete dir="src">
       <include name="**/*.class"/>
@@ -66,5 +86,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="form.nbm"/>
     <deltree dir="netbeans"/>
+    <deltree dir="Info"/>
   </target>
+
 </project>
