@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
@@ -56,6 +57,8 @@ public class JPDAThreadImpl implements JPDAThread {
     public String getName () {
         try {
             return threadReference.name ();
+        } catch (ObjectCollectedException ex) {
+            return "";
         } catch (VMDisconnectedException ex) {
             return "";
         }
@@ -71,6 +74,8 @@ public class JPDAThreadImpl implements JPDAThread {
             ThreadGroupReference tgr = threadReference.threadGroup ();
             if (tgr == null) return null;
             return (JPDAThreadGroup) ttm.translate (tgr);
+        } catch (ObjectCollectedException ex) {
+            return null;
         } catch (VMDisconnectedException ex) {
             return null;
         } catch (UnknownTypeException e) {
@@ -92,6 +97,7 @@ public class JPDAThreadImpl implements JPDAThread {
         try {
             if (threadReference.frameCount () < 1) return -1;
             return threadReference.frame (0).location ().lineNumber (stratum);
+        } catch (ObjectCollectedException ex) {
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
         } catch (VMDisconnectedException ex) {
@@ -107,6 +113,7 @@ public class JPDAThreadImpl implements JPDAThread {
     public int getState () {
         try {
             return threadReference.status ();
+        } catch (ObjectCollectedException ex) {
         } catch (VMDisconnectedException ex) {
         }
         return STATE_UNKNOWN;
@@ -120,6 +127,7 @@ public class JPDAThreadImpl implements JPDAThread {
     public boolean isSuspended () {
         try {
             return threadReference.isSuspended ();
+        } catch (ObjectCollectedException ex) {
         } catch (VMDisconnectedException ex) {
         }
         return false;
@@ -134,6 +142,7 @@ public class JPDAThreadImpl implements JPDAThread {
         try {
             if (threadReference.frameCount () < 1) return "";
             return threadReference.frame (0).location ().declaringType ().name ();
+        } catch (ObjectCollectedException ex) {
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
         } catch (VMDisconnectedException ex) {
@@ -150,6 +159,7 @@ public class JPDAThreadImpl implements JPDAThread {
         try {
             if (threadReference.frameCount () < 1) return "";
             return threadReference.frame (0).location ().method ().name ();
+        } catch (ObjectCollectedException ex) {
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
         } catch (VMDisconnectedException ex) {
@@ -166,6 +176,7 @@ public class JPDAThreadImpl implements JPDAThread {
         try {
             if (threadReference.frameCount () < 1) return "";
             return threadReference.frame (0).location ().sourceName (stratum);
+        } catch (ObjectCollectedException ex) {
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
         } catch (VMDisconnectedException ex) {
@@ -183,6 +194,7 @@ public class JPDAThreadImpl implements JPDAThread {
         try {
             if (threadReference.frameCount () < 1) return "";
             return threadReference.frame (0).location ().sourcePath (stratum);
+        } catch (ObjectCollectedException ex) {
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
         } catch (VMDisconnectedException ex) {
@@ -235,6 +247,7 @@ public class JPDAThreadImpl implements JPDAThread {
     public int getStackDepth () {
         try {
             return threadReference.frameCount ();
+        } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
         }
         return 0;
@@ -247,6 +260,7 @@ public class JPDAThreadImpl implements JPDAThread {
         try {
             if (isSuspended ()) return;
             threadReference.suspend ();
+        } catch (ObjectCollectedException ex) {
         } catch (VMDisconnectedException ex) {
         }
     }
@@ -258,6 +272,7 @@ public class JPDAThreadImpl implements JPDAThread {
         try {
             if (!isSuspended ()) return;
             threadReference.resume ();
+        } catch (ObjectCollectedException ex) {
         } catch (VMDisconnectedException ex) {
         }
         
@@ -283,6 +298,7 @@ public class JPDAThreadImpl implements JPDAThread {
             if (or == null) return null;
             LocalsTreeModel ltm = ttm.getLocalsTreeModel ();
             return ltm.getThis (or, "");
+        } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
         } catch (UnsupportedOperationException e) {
             // if JVM deos not support this feature - not a problem
@@ -305,6 +321,7 @@ public class JPDAThreadImpl implements JPDAThread {
                 vs [i] = ltm.getThis ((ObjectReference) l.get (i), "");
             }
             return vs;
+        } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
         } catch (UnsupportedOperationException e) {
         }
