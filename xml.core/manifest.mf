@@ -12,7 +12,6 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.api.xml/1 > ${xml.api.spec.version},
  org.openide.io > 1.0
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
-Class-Path: docs/xml-core.jar
 
 Name: org/netbeans/modules/xml/core/XMLDataLoader.class
 OpenIDE-Module-Class: Loader

@@ -133,15 +133,6 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-xml-core-settings-CoreSettings.settings" url="CoreSettings.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.settings.Bundle"/>
         </file>
-        
-        <!-- register helpset -->
-        <folder name="JavaHelp">
-            <!-- Merge after Core IDE Help: -->
-            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-xml-core-docs-helpset.xml" boolvalue="true"/>
-            <file name="org-netbeans-modules-xml-core-docs-helpset.xml" url="XMLHelpSetRef.xml"/>
-            <!-- Merge before 3rd party help: -->
-            <attr name="org-netbeans-modules-xml-core-docs-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
-        </folder>
 
     </folder> <!-- Services -->          
 
