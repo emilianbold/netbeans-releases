@@ -58,6 +58,8 @@ import org.openide.nodes.NodeTransfer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
@@ -78,287 +80,288 @@ public class DataViewWindow extends TopComponent {
     private ResourceBundle bundle;
     private Node node;
     private JPopupMenu tablePopupMenu;
-    
     static final long serialVersionUID = 6855188441469780252L;
 
     public DataViewWindow(DatabaseNodeInfo info, String query) throws SQLException {
         node = info.getNode();
 
-        try {
-            bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+        bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
-            this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewWindowA11yDesc")); //NOI18N
+        this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewWindowA11yDesc")); //NOI18N
 
-            Node tempNode = node;
-            while(!(tempNode instanceof ConnectionNode))
-                tempNode = tempNode.getParentNode();
-            
-            String title = tempNode.getDisplayName();
-            int idx = title.indexOf(" ["); //NOI18N
-            title = title.substring(0, idx);
-            setName(title);
-            setToolTipText(bundle.getString("CommandEditorTitle") + " " + tempNode.getDisplayName()); //NOI18N
+        Node tempNode = node;
+        while(!(tempNode instanceof ConnectionNode))
+            tempNode = tempNode.getParentNode();
 
-            GridBagLayout layout = new GridBagLayout();
-            GridBagConstraints con = new GridBagConstraints ();
-            setLayout (layout);
+        String title = tempNode.getDisplayName();
+        int idx = title.indexOf(" ["); //NOI18N
+        title = title.substring(0, idx);
+        setName(title);
+        setToolTipText(bundle.getString("CommandEditorTitle") + " " + tempNode.getDisplayName()); //NOI18N
 
-            // Data model
-            dbadaptor = new DataModel(info);
+        GridBagLayout layout = new GridBagLayout();
+        GridBagConstraints con = new GridBagConstraints ();
+        setLayout (layout);
 
-            // Query area and button
-            JPanel subpane = new JPanel();
-            GridBagLayout sublayout = new GridBagLayout();
-            GridBagConstraints subcon = new GridBagConstraints ();
-            subpane.setLayout(sublayout);
+        // Data model
+        dbadaptor = new DataModel(info);
 
-            // query label
-            subcon.fill = GridBagConstraints.HORIZONTAL;
-            subcon.weightx = 0.0;
-            subcon.weighty = 0.0;
-            subcon.gridx = 0;
-            subcon.gridy = 0;
-            subcon.gridwidth = 3;
-            subcon.insets = new Insets (0, 0, 5, 0);
-            subcon.anchor = GridBagConstraints.SOUTH;
-            JLabel queryLabel = new JLabel(bundle.getString("QueryLabel")); //NOI18N
-            queryLabel.setDisplayedMnemonic(bundle.getString("QueryLabel_Mnemonic").charAt(0)); //NOI18N
-            queryLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewQueryLabelA11yDesc")); //NOI18N
-            sublayout.setConstraints(queryLabel, subcon);
-            subpane.add(queryLabel);
+        // Query area and button
+        JPanel subpane = new JPanel();
+        GridBagLayout sublayout = new GridBagLayout();
+        GridBagConstraints subcon = new GridBagConstraints ();
+        subpane.setLayout(sublayout);
 
-            // query area
-            subcon.fill = GridBagConstraints.BOTH;
-            subcon.weightx = 1.0;
-            subcon.weighty = 1.0;
-            subcon.gridx = 0;
-            subcon.gridwidth = 3;
-            subcon.gridy = 1;
-            queryarea = new JTextArea(query, 3, 70);
-            queryarea.setLineWrap(true);
-            queryarea.setWrapStyleWord(true);
-            queryarea.setDropTarget(new DropTarget(queryarea, new ViewDropTarget()));
-            queryarea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTextAreaA11yName")); //NOI18N
-            queryarea.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewTextAreaA11yDesc")); //NOI18N
-            queryarea.setToolTipText(bundle.getString("ACS_DataViewTextAreaA11yDesc")); //NOI18N
-            queryLabel.setLabelFor(queryarea);
+        // query label
+        subcon.fill = GridBagConstraints.HORIZONTAL;
+        subcon.weightx = 0.0;
+        subcon.weighty = 0.0;
+        subcon.gridx = 0;
+        subcon.gridy = 0;
+        subcon.gridwidth = 3;
+        subcon.insets = new Insets (0, 0, 5, 0);
+        subcon.anchor = GridBagConstraints.SOUTH;
+        JLabel queryLabel = new JLabel(bundle.getString("QueryLabel")); //NOI18N
+        queryLabel.setDisplayedMnemonic(bundle.getString("QueryLabel_Mnemonic").charAt(0)); //NOI18N
+        queryLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewQueryLabelA11yDesc")); //NOI18N
+        sublayout.setConstraints(queryLabel, subcon);
+        subpane.add(queryLabel);
 
-            JScrollPane scrollpane = new JScrollPane(queryarea);
-            subcon.insets = new Insets (0, 0, 5, 0);
-            sublayout.setConstraints(scrollpane, subcon);
-            subpane.add(scrollpane);
+        // query area
+        subcon.fill = GridBagConstraints.BOTH;
+        subcon.weightx = 1.0;
+        subcon.weighty = 1.0;
+        subcon.gridx = 0;
+        subcon.gridwidth = 3;
+        subcon.gridy = 1;
+        queryarea = new JTextArea(query, 3, 70);
+        queryarea.setLineWrap(true);
+        queryarea.setWrapStyleWord(true);
+        queryarea.setDropTarget(new DropTarget(queryarea, new ViewDropTarget()));
+        queryarea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTextAreaA11yName")); //NOI18N
+        queryarea.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewTextAreaA11yDesc")); //NOI18N
+        queryarea.setToolTipText(bundle.getString("ACS_DataViewTextAreaA11yDesc")); //NOI18N
+        queryLabel.setLabelFor(queryarea);
 
-            // combo label
-            subcon.fill = GridBagConstraints.HORIZONTAL;
-            subcon.weightx = 0.0;
-            subcon.weighty = 0.0;
-            subcon.gridx = 0;
-            subcon.gridy = 2;
-            subcon.gridwidth = 1;
-            subcon.insets = new Insets (0, 0, 5, 5);
-            subcon.anchor = GridBagConstraints.CENTER;
-            JLabel comboLabel = new JLabel(bundle.getString("HistoryLabel")); //NOI18N
-            comboLabel.setDisplayedMnemonic(bundle.getString("HistoryLabel_Mnemonic").charAt(0)); //NOI18N
-            comboLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewHistoryLabelA11yDesc")); //NOI18N
-            sublayout.setConstraints(comboLabel, subcon);
-            subpane.add(comboLabel);
+        JScrollPane scrollpane = new JScrollPane(queryarea);
+        subcon.insets = new Insets (0, 0, 5, 0);
+        sublayout.setConstraints(scrollpane, subcon);
+        subpane.add(scrollpane);
 
-            // Combo recent commands
-            subcon.fill = GridBagConstraints.HORIZONTAL;
-            subcon.weightx = 1.0;
-            subcon.weighty = 0.0;
-            subcon.gridx = 1;
-            subcon.gridy = 2;
-            subcon.gridwidth = 1;
-            subcon.insets = new Insets (0, 0, 5, 5);
-            subcon.anchor = GridBagConstraints.SOUTH;
-            rcmdscombo = new JComboBox(new ComboModel());
-            rcmdscombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewComboBoxA11yName")); //NOI18N
-            rcmdscombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewComboBoxA11yDesc")); //NOI18N
-            rcmdscombo.setToolTipText(bundle.getString("ACS_DataViewComboBoxA11yDesc")); //NOI18N
-            comboLabel.setLabelFor(rcmdscombo);
-            sublayout.setConstraints(rcmdscombo, subcon);
-            subpane.add(rcmdscombo);
-            rcmdscombo.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JComboBox source = (JComboBox)e.getSource();
-                    RecentCommand cmd = (RecentCommand)source.getSelectedItem();
-                    if (cmd != null)
-                        setCommand(cmd.getCommand());
-                }
-            });
+        // combo label
+        subcon.fill = GridBagConstraints.HORIZONTAL;
+        subcon.weightx = 0.0;
+        subcon.weighty = 0.0;
+        subcon.gridx = 0;
+        subcon.gridy = 2;
+        subcon.gridwidth = 1;
+        subcon.insets = new Insets (0, 0, 5, 5);
+        subcon.anchor = GridBagConstraints.CENTER;
+        JLabel comboLabel = new JLabel(bundle.getString("HistoryLabel")); //NOI18N
+        comboLabel.setDisplayedMnemonic(bundle.getString("HistoryLabel_Mnemonic").charAt(0)); //NOI18N
+        comboLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewHistoryLabelA11yDesc")); //NOI18N
+        sublayout.setConstraints(comboLabel, subcon);
+        subpane.add(comboLabel);
 
-            // Button Execute
-            subcon.gridx = 2;
-            subcon.gridy = 2;
-            subcon.weightx = 0.0;
-            subcon.weighty = 0.0;
-            subcon.insets = new Insets (0, 0, 5, 0);
-            subcon.fill = GridBagConstraints.HORIZONTAL;
-            subcon.anchor = GridBagConstraints.SOUTH;
-            JButton fetchbtn = new JButton(bundle.getString("ExecuteButton")); //NOI18N
-            fetchbtn.setToolTipText(bundle.getString("ACS_ExecuteButtonA11yDesc")); //NOI18N
-            fetchbtn.setMnemonic(bundle.getString("ExecuteButton_Mnemonic").charAt(0)); //NOI18N
-            sublayout.setConstraints(fetchbtn, subcon);
-            subpane.add(fetchbtn);
-            fetchbtn.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run () {
-                            executeCommand();
-                        }
-                    }, 0);
-                }
-            });
+        // Combo recent commands
+        subcon.fill = GridBagConstraints.HORIZONTAL;
+        subcon.weightx = 1.0;
+        subcon.weighty = 0.0;
+        subcon.gridx = 1;
+        subcon.gridy = 2;
+        subcon.gridwidth = 1;
+        subcon.insets = new Insets (0, 0, 5, 5);
+        subcon.anchor = GridBagConstraints.SOUTH;
+        rcmdscombo = new JComboBox(new ComboModel());
+        rcmdscombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewComboBoxA11yName")); //NOI18N
+        rcmdscombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewComboBoxA11yDesc")); //NOI18N
+        rcmdscombo.setToolTipText(bundle.getString("ACS_DataViewComboBoxA11yDesc")); //NOI18N
+        comboLabel.setLabelFor(rcmdscombo);
+        sublayout.setConstraints(rcmdscombo, subcon);
+        subpane.add(rcmdscombo);
+        rcmdscombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JComboBox source = (JComboBox)e.getSource();
+                RecentCommand cmd = (RecentCommand)source.getSelectedItem();
+                if (cmd != null)
+                    setCommand(cmd.getCommand());
+            }
+        });
 
-            // status line
-            subcon.fill = GridBagConstraints.HORIZONTAL;
-            subcon.weightx = 1.0;
-            subcon.weighty = 0.0;
-            subcon.gridx = 0;
-            subcon.gridy = 3;
-            subcon.gridwidth = 3;
-            subcon.insets = new Insets (0, 0, 5, 0);
-            subcon.anchor = GridBagConstraints.SOUTH;
-            status = new JLabel(" "); //NOI18N
-            status.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray));
-            status.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewStatusLabelA11yDesc")); //NOI18N
-            sublayout.setConstraints(status, subcon);
-            subpane.add(status);
-
-            JPanel subpane2 = new JPanel();
-            GridBagLayout sublayout2 = new GridBagLayout();
-            GridBagConstraints subcon2 = new GridBagConstraints ();
-            subpane2.setLayout(sublayout2);
-
-            // table label
-            subcon2.fill = GridBagConstraints.HORIZONTAL;
-            subcon2.weightx = 0.0;
-            subcon2.weighty = 0.0;
-            subcon2.gridx = 0;
-            subcon2.gridy = 0;
-            subcon2.gridwidth = 1;
-            subcon2.insets = new Insets (5, 0, 0, 0);
-            subcon2.anchor = GridBagConstraints.SOUTH;
-            JLabel tableLabel = new JLabel(bundle.getString("ResultsLabel")); //NOI18N
-            tableLabel.setDisplayedMnemonic(bundle.getString("ResultsLabel_Mnemonic").charAt(0)); //NOI18N
-            tableLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewResultsLabelA11yDesc")); //NOI18N
-            sublayout2.setConstraints(tableLabel, subcon2);
-            subpane2.add(tableLabel);
-
-            // content popup menu on table with results
-            tablePopupMenu = new JPopupMenu ();
-            JMenuItem miCopyValue = new JMenuItem (bundle.getString ("CopyCellValue")); //NOI18N
-            miCopyValue.addActionListener(new ActionListener () {
-                public void actionPerformed (ActionEvent e) {
-                    try {
-                        Object o = jtable.getValueAt(jtable.getSelectedRow(), jtable.getSelectedColumn());
-                        String output = (o != null) ? o.toString () : ""; //NOI18N
-                        ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup (ExClipboard.class);
-                        StringSelection strSel = new StringSelection (output);
-                        clipboard.setContents (strSel, strSel);
-                    } catch (ArrayIndexOutOfBoundsException exc) {
+        // Button Execute
+        subcon.gridx = 2;
+        subcon.gridy = 2;
+        subcon.weightx = 0.0;
+        subcon.weighty = 0.0;
+        subcon.insets = new Insets (0, 0, 5, 0);
+        subcon.fill = GridBagConstraints.HORIZONTAL;
+        subcon.anchor = GridBagConstraints.SOUTH;
+        final JButton fetchbtn = new JButton(bundle.getString("ExecuteButton")); //NOI18N
+        fetchbtn.setToolTipText(bundle.getString("ACS_ExecuteButtonA11yDesc")); //NOI18N
+        fetchbtn.setMnemonic(bundle.getString("ExecuteButton_Mnemonic").charAt(0)); //NOI18N
+        sublayout.setConstraints(fetchbtn, subcon);
+        subpane.add(fetchbtn);
+        fetchbtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                fetchbtn.setEnabled(false);
+                Task t = RequestProcessor.getDefault().create(new Runnable() {
+                    public void run () {
+                        executeCommand();
                     }
+                });
+                t.addTaskListener(new TaskListener() {
+                    public void taskFinished(Task task) {
+                        fetchbtn.setEnabled(true);
+                    }
+                });
+                RequestProcessor.getDefault().post(t, 0);
+            }
+        });
+        // status line
+        subcon.fill = GridBagConstraints.HORIZONTAL;
+        subcon.weightx = 1.0;
+        subcon.weighty = 0.0;
+        subcon.gridx = 0;
+        subcon.gridy = 3;
+        subcon.gridwidth = 3;
+        subcon.insets = new Insets (0, 0, 5, 0);
+        subcon.anchor = GridBagConstraints.SOUTH;
+        status = new JLabel(" "); //NOI18N
+        status.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray));
+        status.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewStatusLabelA11yDesc")); //NOI18N
+        sublayout.setConstraints(status, subcon);
+        subpane.add(status);
+
+        JPanel subpane2 = new JPanel();
+        GridBagLayout sublayout2 = new GridBagLayout();
+        GridBagConstraints subcon2 = new GridBagConstraints ();
+        subpane2.setLayout(sublayout2);
+
+        // table label
+        subcon2.fill = GridBagConstraints.HORIZONTAL;
+        subcon2.weightx = 0.0;
+        subcon2.weighty = 0.0;
+        subcon2.gridx = 0;
+        subcon2.gridy = 0;
+        subcon2.gridwidth = 1;
+        subcon2.insets = new Insets (5, 0, 0, 0);
+        subcon2.anchor = GridBagConstraints.SOUTH;
+        JLabel tableLabel = new JLabel(bundle.getString("ResultsLabel")); //NOI18N
+        tableLabel.setDisplayedMnemonic(bundle.getString("ResultsLabel_Mnemonic").charAt(0)); //NOI18N
+        tableLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewResultsLabelA11yDesc")); //NOI18N
+        sublayout2.setConstraints(tableLabel, subcon2);
+        subpane2.add(tableLabel);
+
+        // content popup menu on table with results
+        tablePopupMenu = new JPopupMenu ();
+        JMenuItem miCopyValue = new JMenuItem (bundle.getString ("CopyCellValue")); //NOI18N
+        miCopyValue.addActionListener(new ActionListener () {
+            public void actionPerformed (ActionEvent e) {
+                try {
+                    Object o = jtable.getValueAt(jtable.getSelectedRow(), jtable.getSelectedColumn());
+                    String output = (o != null) ? o.toString () : ""; //NOI18N
+                    ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup (ExClipboard.class);
+                    StringSelection strSel = new StringSelection (output);
+                    clipboard.setContents (strSel, strSel);
+                } catch (ArrayIndexOutOfBoundsException exc) {
                 }
-            });
-            tablePopupMenu.add (miCopyValue);
-            
-            JMenuItem miCopyRowValues = new JMenuItem (bundle.getString ("CopyRowValues")); //NOI18N
-            miCopyRowValues.addActionListener(new ActionListener () {
-                public void actionPerformed (ActionEvent e) {
-                    try {
-                    	int[] rows = jtable.getSelectedRows ();
-                    	int[] columns;
-                    	if (jtable.getRowSelectionAllowed ()) {
-                            columns = new int[jtable.getColumnCount ()];
-                    	    for (int a = 0; a < columns.length; a ++)
-                                columns[a] = a;
-                    	} else {
-                    	    columns = jtable.getSelectedColumns ();
-                    	}
-                    	if (rows != null  &&  columns != null) {
-                            StringBuffer output = new StringBuffer ();
-                            for (int row = 0; row < rows.length; row ++) {
-                                for (int column = 0; column < columns.length; column ++) {
-                                    if (column > 0)
-                                        output.append ('\t'); //NOI18N
-                                    Object o = jtable.getValueAt(rows[row], columns[column]);
-                                    output.append (o != null ? o.toString () : ""); //NOI18N
-                                }
-                                output.append ('\n'); //NOI18N
+            }
+        });
+        tablePopupMenu.add (miCopyValue);
+
+        JMenuItem miCopyRowValues = new JMenuItem (bundle.getString ("CopyRowValues")); //NOI18N
+        miCopyRowValues.addActionListener(new ActionListener () {
+            public void actionPerformed (ActionEvent e) {
+                try {
+                    int[] rows = jtable.getSelectedRows ();
+                    int[] columns;
+                    if (jtable.getRowSelectionAllowed ()) {
+                        columns = new int[jtable.getColumnCount ()];
+                        for (int a = 0; a < columns.length; a ++)
+                            columns[a] = a;
+                    } else {
+                        columns = jtable.getSelectedColumns ();
+                    }
+                    if (rows != null  &&  columns != null) {
+                        StringBuffer output = new StringBuffer ();
+                        for (int row = 0; row < rows.length; row ++) {
+                            for (int column = 0; column < columns.length; column ++) {
+                                if (column > 0)
+                                    output.append ('\t'); //NOI18N
+                                Object o = jtable.getValueAt(rows[row], columns[column]);
+                                output.append (o != null ? o.toString () : ""); //NOI18N
                             }
-                	    ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup (ExClipboard.class);
-                            StringSelection strSel = new StringSelection (output.toString ());
-	                    clipboard.setContents (strSel, strSel);
-	                }
-                    } catch (ArrayIndexOutOfBoundsException exc) {
+                            output.append ('\n'); //NOI18N
+                        }
+                        ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup (ExClipboard.class);
+                        StringSelection strSel = new StringSelection (output.toString ());
+                        clipboard.setContents (strSel, strSel);
                     }
+                } catch (ArrayIndexOutOfBoundsException exc) {
                 }
-            });
-            tablePopupMenu.add (miCopyRowValues);
+            }
+        });
+        tablePopupMenu.add (miCopyRowValues);
 
-            // Table with results
-            //      TableSorter sorter = new TableSorter();
-            jtable = new JTable(dbadaptor/*sorter*/);
-            jtable.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTableA11yName")); //NOI18N
-            jtable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewTableA11yDesc")); //NOI18N
-            jtable.setToolTipText(bundle.getString("ACS_DataViewTableA11yDesc")); //NOI18N
-            jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            //    	sorter.addMouseListenerToHeaderInTable(table);
-            jtable.addMouseListener (new MouseAdapter () {
-                public void mouseReleased (MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON3) {
-                    	int row = jtable.rowAtPoint (e.getPoint ());
-                    	int column = jtable.columnAtPoint (e.getPoint ());
-                    	boolean inSelection = false;
-                        int[] rows = jtable.getSelectedRows ();
-                        for (int a = 0; a < rows.length; a ++)
-                            if (rows[a] == row) {
+        // Table with results
+        //      TableSorter sorter = new TableSorter();
+        jtable = new JTable(dbadaptor/*sorter*/);
+        jtable.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTableA11yName")); //NOI18N
+        jtable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewTableA11yDesc")); //NOI18N
+        jtable.setToolTipText(bundle.getString("ACS_DataViewTableA11yDesc")); //NOI18N
+        jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        //    	sorter.addMouseListenerToHeaderInTable(table);
+        jtable.addMouseListener (new MouseAdapter () {
+            public void mouseReleased (MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    int row = jtable.rowAtPoint (e.getPoint ());
+                    int column = jtable.columnAtPoint (e.getPoint ());
+                    boolean inSelection = false;
+                    int[] rows = jtable.getSelectedRows ();
+                    for (int a = 0; a < rows.length; a ++)
+                        if (rows[a] == row) {
+                            inSelection = true;
+                            break;
+                        }
+                    if (!jtable.getRowSelectionAllowed ()) {
+                        inSelection = false;
+                        int[] columns = jtable.getSelectedColumns ();
+                        for (int a = 0; a < columns.length; a ++)
+                            if (columns[a] == column) {
                                 inSelection = true;
                                 break;
                             }
-                        if (!jtable.getRowSelectionAllowed ()) {
-                            inSelection = false;
-                            int[] columns = jtable.getSelectedColumns ();
-                            for (int a = 0; a < columns.length; a ++)
-                                if (columns[a] == column) {
-                                    inSelection = true;
-                                    break;
-                                }
-                        }
-                        if (!inSelection)
-                            jtable.changeSelection (row, column, false, false);
-                        tablePopupMenu.show(jtable, e.getX (), e.getY ());
                     }
+                    if (!inSelection)
+                        jtable.changeSelection (row, column, false, false);
+                    tablePopupMenu.show(jtable, e.getX (), e.getY ());
                 }
-            });
-            tableLabel.setLabelFor(jtable);
+            }
+        });
+        tableLabel.setLabelFor(jtable);
 
-            scrollpane = new JScrollPane(jtable);
-            subcon2.fill = GridBagConstraints.BOTH;
-            subcon2.weightx = 1.0;
-            subcon2.weighty = 1.0;
-            subcon2.gridx = 0;
-            subcon2.gridy = 1;
-            subcon2.gridwidth = 1;
-            sublayout2.setConstraints(scrollpane, subcon2);
-            subpane2.add(scrollpane);
+        scrollpane = new JScrollPane(jtable);
+        subcon2.fill = GridBagConstraints.BOTH;
+        subcon2.weightx = 1.0;
+        subcon2.weighty = 1.0;
+        subcon2.gridx = 0;
+        subcon2.gridy = 1;
+        subcon2.gridwidth = 1;
+        sublayout2.setConstraints(scrollpane, subcon2);
+        subpane2.add(scrollpane);
 
-            // Add it into splitview
-            con.weightx = 1.0;
-            con.weighty = 1.0;
-            con.fill = GridBagConstraints.BOTH;
-            con.gridx = 0;
-            con.gridwidth = 1;
-            con.gridy = 1;
-            con.insets = new Insets (12, 12, 11, 11);
+        // Add it into splitview
+        con.weightx = 1.0;
+        con.weighty = 1.0;
+        con.fill = GridBagConstraints.BOTH;
+        con.gridx = 0;
+        con.gridwidth = 1;
+        con.gridy = 1;
+        con.insets = new Insets (12, 12, 11, 11);
 
-            JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, subpane, subpane2);
-            layout.setConstraints(split, con);
-            add(split);
-        } catch (MissingResourceException e) {
-            //    	e.printStackTrace();
-        }
+        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, subpane, subpane2);
+        layout.setConstraints(split, con);
+        add(split);
     }
     
     /**Overriden to provide preferred value
