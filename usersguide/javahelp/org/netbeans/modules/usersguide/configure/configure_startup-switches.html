@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * 
+ *     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ * 
+ *     Copyright 2001 Sun Microsystems, Inc. Tous droits réservés.
+ *     L'utilisation est régie par les termes de cette licence.
+ *
+ *
+-->
+<html>
+<head>
+<title>IDE Startup Parameters</title>
+<link rel="stylesheet" href="../ide.css" type="text/css"></head>
+<body>
+<h2>IDE Startup Parameters</h2>
+
+<P>You can pass startup parameters to the IDE launcher using the 
+<tt>${IDE_HOME>/bin/ide.cfg</tt> file. The launcher tries to read this file before it
+starts parsing the command line options. You can break the
+options into multiple lines.
+
+<p>The following options are available:
+
+<table border="1" cellpadding="5" cellspacing="0">
+<tr>
+<th><b>Parameter</b></th>
+<th><b>Description</b></th>
+</tr>
+
+<tr><td><tt>-h</tt><BR>
+      <tt>-help</tt></td>
+<td>Print descriptions of common startup parameters.</td></tr>
+<tr><td><tt>-jdkhome <I>jdk_home_dir</I></tt></td>
+<td>Use the specified version of the Java(TM) 2 SDK instead of the default SDK. By default on Windows 
+  systems, the loader looks into the Windows registry and uses the latest SDK available.</td></tr>
+<tr><td><tt>-classic</tt></td><td>use the classic JVM, instead of the default Java HotSpot Client VM.</td></tr>
+<tr><td><tt>-cp:p <I>additional_classpath</I></tt></td><td>Prepend the specified classpath to the IDE's classpath.</td></tr>
+<tr><td><tt>-cp:a <I>additional_classpath</I></tt></td><td>Append the specified classpath to the IDE's classpath.</td></tr>
+<tr><td><tt>-J<I>jvm_flags</I></tt></td><td>Pass the specified flags directly to the JVM.</td></tr>
+<tr><td><tt>-ui <I>UI_class_name</I></tt></td><td>Selects the given class as the  IDE's  look  and  feel. 
+The  following  are  two  examples  of  look  and  feel classes:<br>
+<ul><li>com.sun.java.swing.plaf.motif.MotifLookAndFeel</li>
+<li>javax.swing.plaf.metal.MetalLookAndFeel</li></ul>
+If this option is not used, the IDE uses the javax.swing.plaf.metal.MetalLookAndFeel class.</td></tr>
+<tr><td><tt>-fontsize <I>size</I></tt></td><td>Sets the font size, expressed in points, in 
+the IDE's user interface. If this option is not used, the fontsize is 11 points.</td></tr>
+<tr><td><tt>-locale <I>language[:country[:variant]]</I></tt></td><td>Use the specified locale.</td></tr>
+<tr><td><tt>-userdir <I>userdir</I></tt></td><td>Explicitly specify the user directory,
+ which is the location where user settings are stored.  If this option is not used on UNIX, the
+      location is ${HOME}/nbuser33. On Microsoft Windows systems, the launcher asks the user
+      to specify the userdir and stores the value in the registry for later use.</td></tr>
+</table>
+
+
+
+<HR>
+<small><a href="../credits.html">Legal Notices</a></small>
+
+</body>
+</html>
