@@ -108,7 +108,7 @@ public class WrappedTextViewTest extends TestCase {
     
     public class Shower implements Runnable {
         public void run() {
-            jf.show();
+            jf.setVisible(true);
         }
     }
     

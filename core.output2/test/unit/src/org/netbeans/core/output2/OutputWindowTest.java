@@ -86,7 +86,7 @@ public class OutputWindowTest extends TestCase {
     
     public class Shower implements Runnable {
         public void run() {
-            jf.show();
+            jf.setVisible(true);
         }
     }
 
