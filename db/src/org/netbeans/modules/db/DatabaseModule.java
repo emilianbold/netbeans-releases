@@ -34,6 +34,8 @@ public class DatabaseModule extends ModuleInstall {
     static final long serialVersionUID =5426465356344170725L;
 
     public void installed() {
+        System.setProperty("pointbase.ini", System.getProperty("netbeans.home") + java.io.File.separator + "pointbase\\pointbase.ini");
+
         TopManager tm = TopManager.getDefault();
 
         try {
@@ -55,23 +57,13 @@ public class DatabaseModule extends ModuleInstall {
                 tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
-}
+    
+    public void uninstalled() {
+        System.setProperty("pointbase.ini", System.getProperty("netbeans.home") + java.io.File.separator + "pointbase\\pointbase.ini");
+    }
+    
+    public void restored() {
+        System.setProperty("pointbase.ini", System.getProperty("netbeans.home") + java.io.File.separator + "pointbase\\pointbase.ini");
+    }
 
-/*
-* <<Log>>
-*  10   Gandalf   1.9         3/3/00   Radko Najman    
-*  9    Gandalf   1.8         11/27/99 Patrik Knakal   
-*  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  7    Gandalf   1.6         10/12/99 Radko Najman    debug messages removed
-*  6    Gandalf   1.5         10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
-*        changed to class + some methods added
-*  5    Gandalf   1.4         9/27/99  Slavek Psenicka new Database/Adaptors 
-*       folder
-*  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
-*  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
-* $
-*/
+}
