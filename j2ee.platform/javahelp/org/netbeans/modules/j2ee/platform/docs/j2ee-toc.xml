@@ -178,7 +178,7 @@
     	    <tocitem text="Compiling a JSP File" target="jsp_compile" /> 
 	    <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
 	    <tocitem text="Debugging a Web Application" target="debug_webapp" /> 
-	    <tocitem text="Writing A Debug Target for a Free-Form Web Project" target="debug_freeform" />
+	    <tocitem text="Creating A Debug Target for a Free-Form Web Project" target="debug_freeform" />
      </tocitem>
     
 <!-- End of web applications -->

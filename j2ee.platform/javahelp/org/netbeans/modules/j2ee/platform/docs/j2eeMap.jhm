@@ -110,7 +110,7 @@
         <mapID target="about_deploy" url="web/deploy/about_deploy.html" />
         <mapID target="deploy_quickref" url="web/deploy/deploy_quickref.html" />
 	<mapID target="deploy_webapp" url="web/deploy/deploy_webapp.html" />
-	<mapID target="deploy_changebrowser" url="nbdocs:/org/netbeans/modules/usersguide/webbrowser/default.html" />
+	<mapID target="deploy_changebrowser" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/default.html" />
 	<mapID target="deploy_changeserver" url="web/deploy/deploy_changeserver.html" />
 <mapID target="deploy_tomcat_manager" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html" />
 	<!-- End of "Deploy" section -->
