@@ -63,8 +63,7 @@ public class AllOptionsFolder extends org.openide.loaders.FolderInstance{
     /** instance of this class */
     private static AllOptionsFolder settingsFolder;
     
-    /** MIME Option */
-    private static BaseOptions base;
+    private static boolean baseInitialized = false;
     
     private static Map subFolders = new Hashtable();
     private static Map defaultKeyBindings;
@@ -79,14 +78,7 @@ public class AllOptionsFolder extends org.openide.loaders.FolderInstance{
     /** Creates new AllOptionsFolder */
     private AllOptionsFolder(DataFolder fld) {
         super(fld);
-        
         folder = fld;
-        
-        base = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
-        
-        // Add the initializer for the base options. It will not be removed
-        Settings.addInitializer(base.getSettingsInitializer(),
-        Settings.OPTION_LEVEL);
         recreate();
         instanceFinished();
     }
@@ -128,7 +120,7 @@ public class AllOptionsFolder extends org.openide.loaders.FolderInstance{
                 DataObject d = DataObject.find(f);
                 DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
                 if (df != null) {
-                    mimeFolder = new MIMEOptionFolder(df, base);
+                    mimeFolder = new MIMEOptionFolder(df, getBase());
                     return mimeFolder;
                 }
             } catch (org.openide.loaders.DataObjectNotFoundException ex) {
@@ -167,21 +159,39 @@ public class AllOptionsFolder extends org.openide.loaders.FolderInstance{
     
     /** Getter for KeyBingings */
     public List getKeyBindingList() {
-        return base.getKeyBindingList();
+        return getBase().getKeyBindingList();
     }
     
     /** Setter for KeyBindings */
     public void setKeyBindingList(List list) {
-        base.setKeyBindingList(list);
+        getBase().setKeyBindingList(list);
     }
     
     /** Loads default global keyBindings List and initializes it.
      *  It is used mainly by other options for initializing global keyBindings */
     protected void loadDefaultKeyBindings(){
-        base.getKeyBindingList();
+        getBase().getKeyBindingList();
     }
     
-    /** Gets */
+    /** Gets the singleton of BaseOptions and register it in Settings initializer,
+     * if it wasn't been done before. */
+    private BaseOptions getBase(){
+        
+        BaseOptions ret = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
+        
+        synchronized (this){
+            if (baseInitialized == false){
+                // Add the initializer for the base options. It will not be removed
+                Settings.addInitializer(ret.getSettingsInitializer(),
+                Settings.OPTION_LEVEL);
+                baseInitialized = true;
+            }
+        }
+        
+        return ret;
+    }
+    
+    /** Gets the instance of BaseOptions from InstanceCookie */
     protected synchronized BaseOptions getBO(InstanceCookie ic){
         initInstance(ic);
         BaseOptions ret = null;
