@@ -85,6 +85,8 @@ public final class JavaAntLogger extends AntLogger {
     private static final String[] TASKS_OF_INTEREST = {
         // XXX should this really be restricted? what about stack traces printed during shutdown?
         "java", // NOI18N
+        // #44328: unit tests run a different task:
+        "junit", // NOI18N
     };
     
     private static final int[] LEVELS_OF_INTEREST = {
