@@ -76,10 +76,7 @@ public class NbClipboardNativeTest extends NbTestCase implements org.openide.uti
         assertEquals ("No changes still", 0, listenerCalls);
         
         // just simulate initial switch to NetBeans main window
-        ec.eventDispatched(new java.awt.event.WindowEvent (
-            new javax.swing.JFrame (),
-            java.awt.event.WindowEvent.WINDOW_ACTIVATED
-        ));
+        ec.activateWindowHack (true);
         ec.waitFinished ();
         
         assertEquals ("This generated a change", 1, listenerCalls);
@@ -104,11 +101,9 @@ public class NbClipboardNativeTest extends NbTestCase implements org.openide.uti
         s = (String)t.getTransferData(DataFlavor.stringFlavor);
         if (slowClipboardHack ()) {
             assertEquals ("The getContents rechecked the clipboard just for the first time, not now, so the content is the same", "data2", s);
-            
-            ec.eventDispatched(new java.awt.event.WindowEvent (
-                new javax.swing.JFrame (),
-                java.awt.event.WindowEvent.WINDOW_ACTIVATED
-            ));
+
+            ec.activateWindowHack (true);
+            Thread.sleep (200);
 
             t = this.ec.getContents(this);
             s = (String)t.getTransferData(DataFlavor.stringFlavor);

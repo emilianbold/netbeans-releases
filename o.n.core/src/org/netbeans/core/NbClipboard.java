@@ -248,6 +248,16 @@ public final class NbClipboard extends ExClipboard
     final void waitFinished () {
         syncTask.waitFinished ();
     }
+    
+    final void activateWindowHack (boolean reschedule) {
+        // if WINDOW_DEACTIVATED is followed immediatelly with
+        // WINDOW_ACTIVATED then it is JDK bug described in 
+        // issue 41098.
+        lastWindowActivated = System.currentTimeMillis();
+        if (reschedule) {
+            syncTask.schedule (0);
+        }
+    }
 
     public void eventDispatched(AWTEvent ev) {
         if (!(ev instanceof WindowEvent))
@@ -260,10 +270,7 @@ public final class NbClipboard extends ExClipboard
         if (ev.getID() == WindowEvent.WINDOW_ACTIVATED) {
             if (System.currentTimeMillis() - lastWindowDeactivated < 100 &&
                 ev.getSource() == lastWindowDeactivatedSource) {
-                // if WINDOW_DEACTIVATED is followed immediatelly with
-                // WINDOW_ACTIVATED then it is JDK bug described in 
-                // issue 41098.
-                lastWindowActivated = System.currentTimeMillis();
+                activateWindowHack (false);
             }
             if (log.isLoggable (log.INFORMATIONAL)) {
                 log.log (log.INFORMATIONAL, "window activated scheduling update"); // NOI18N
