@@ -164,7 +164,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         }
 
         public LayoutConstraints cloneConstraints() {
-            return new GridBagLayoutConstraints(constraints);
+            return new GridBagLayoutConstraints((GridBagConstraints)
+                                                constraints.clone());
         }
 
         // -------
