@@ -12,6 +12,7 @@ import javax.enterprise.deploy.model.DeployableObject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.config.DDCommon;
+import org.netbeans.modules.j2ee.deployment.config.StandardDDImpl;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,6 +96,9 @@ public abstract class SourceFileMap {
     public static final SourceFileMap findSourceMap(DDBean ddbean) {
         if (ddbean instanceof DDCommon) {
             DDCommon dd = (DDCommon) ddbean;
+            return dd.getModuleProvider().getSourceFileMap();
+        } else if (ddbean instanceof StandardDDImpl) {
+            StandardDDImpl dd = (StandardDDImpl) ddbean;
             return dd.getModuleProvider().getSourceFileMap();
         }
         return null;
