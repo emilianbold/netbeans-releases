@@ -16,6 +16,7 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -77,7 +78,11 @@ public class MainClassChooser extends JPanel {
                 if (possibleMainClasses.isEmpty ()) {
                     jMainClassList.setListData (new String[] { NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE") } ); // NOI18N
                 } else {
-                    jMainClassList.setListData (possibleMainClasses.toArray ());
+                    Object[] arr = possibleMainClasses.toArray ();
+                    // #46861, sort name of classes
+                    Arrays.sort (arr);
+                    jMainClassList.setListData (arr);
+                    jMainClassList.setSelectedIndex (0);
                 }
             }
         });
@@ -166,10 +171,10 @@ public class MainClassChooser extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(400, 270));
+        setPreferredSize(new java.awt.Dimension(380, 300));
         getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_MainClassChooser"));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_AvaialableMainClasses"));
         jLabel1.setLabelFor(jMainClassList);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_AvaialableMainClasses"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -177,7 +182,7 @@ public class MainClassChooser extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 2, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 4, 12);
         add(jLabel1, gridBagConstraints);
 
         jScrollPane1.setMinimumSize(new java.awt.Dimension(100, 200));
