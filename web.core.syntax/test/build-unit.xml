@@ -41,6 +41,14 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
                 <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain.jar"/>
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain-lib.jar"/>
+                
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-html-editor.jar"/>
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-html-editor-lib.jar"/>
+                
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor-lib.jar"/>
                 
                 <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-modules-web-core-syntax.jar"/>
                 
@@ -65,6 +73,14 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
                 <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain.jar"/>
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain-lib.jar"/>
+                
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-html-editor.jar"/>
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-html-editor-lib.jar"/>
+                
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor-lib.jar"/>
                 
                 <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-modules-web-core-syntax.jar"/>
                 
