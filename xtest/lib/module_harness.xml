@@ -154,9 +154,6 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.runmessage" value="testbags: ${xtest.testbags}"/>
         <echo message="Running ${xtest.module} tests, testtype: ${xtest.testtype}, ${xtest.runmessage}"/>
 
-        <property name="test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
-   	<write-property propertyPrefix="xtest.userdata" attribs="${xtest.attribs}" file="${test.propertyfile}"/>
-
         <!-- prepare result dir and produce some informatino about this testrun -->
         <mkdir dir="${xtest.results}"/>
         <getResultsDirs testRunDirProperty="xtest.results.testrun.dir"/>
@@ -186,6 +183,9 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${xtest.workdir}/sys/tests"/>
         <mkdir dir="${xtest.workdir}/sys/ide"/>
         <mkdir dir="${xtest.workdir}/user"/>
+
+        <property name="test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
+   	<write-property propertyPrefix="xtest.userdata" attribs="${xtest.attribs}" file="${test.propertyfile}"/>
 
         <!-- create testbag info for report -->
         <testbaginfo name="${tbag.name}" testType="${tbag.testtype}" testAttribs="${xtest.attribs}"
