@@ -326,7 +326,6 @@ class TransactionView extends ExplorerPanel implements
 	}
 	//PENDING ...
 	controller.checkServer(false);
-        requestFocus();
     }
 
     protected void updateTitle() {
