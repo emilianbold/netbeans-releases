@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="init">
@@ -52,11 +51,7 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
 
-  <target name="tojar">
-<!--    <tojar srcdir="src" unpackeddir="tojar"/>-->
-  </target>
-
-  <target name="jars" depends="init,tojar,compile">
+  <target name="jars" depends="init,compile">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
