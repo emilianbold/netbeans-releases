@@ -21,6 +21,7 @@ import org.netbeans.spi.looks.*;
 import org.openide.actions.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.lookup.AbstractLookup;
@@ -31,43 +32,51 @@ import threaddemo.model.*;
  * A look which wraps phadhails.
  * @author Jesse Glick
  */
-final class PhadhailLook extends DefaultLook {
+final class PhadhailLook extends DefaultLook implements PhadhailListener {
     
     PhadhailLook() {
         super("PhadhailLook");
     }
     
-    public Look.NodeSubstitute attachTo(Object o) {
+    public void attachTo(Object o) {
         Phadhail ph = (Phadhail)o;
-        return new PhadhailWrapper(ph, this);
+        //System.err.println("attached to " + ph);
+        ph.addPhadhailListener((PhadhailListener)WeakListener.create(PhadhailListener.class, this, ph));
     }
     
-    public boolean isLeaf(Look.NodeSubstitute substitute) {
-        Phadhail ph = (Phadhail)substitute.getRepresentedObject();
+    /* Uncomment if present in Look; then also remove WeakListener usage from attachTo:
+    public void unregister(Object o) {
+        Phadhail ph = (Phadhail)o;
+        ph.removePhadhailListener(this);
+    }
+     */
+    
+    public boolean isLeaf(Object o) {
+        Phadhail ph = (Phadhail)o;
         return !ph.hasChildren();
     }
     
-    public List getChildObjects(Look.NodeSubstitute substitute) {
-        Phadhail ph = (Phadhail)substitute.getRepresentedObject();
+    public List getChildObjects(Object o) {
+        Phadhail ph = (Phadhail)o;
         return ph.getChildren();
     }
     
-    public String getName(Look.NodeSubstitute substitute) {
-        Phadhail ph = (Phadhail)substitute.getRepresentedObject();
+    public String getName(Object o) {
+        Phadhail ph = (Phadhail)o;
         return ph.getName();
     }
 
-    public String getDisplayName(Look.NodeSubstitute substitute) {
-        Phadhail ph = (Phadhail)substitute.getRepresentedObject();
+    public String getDisplayName(Object o) {
+        Phadhail ph = (Phadhail)o;
         return ph.getPath();
     }
     
-    public boolean canRename(Look.NodeSubstitute substitute) {
+    public boolean canRename(Object o) {
         return true;
     }
     
-    public void setName(Look.NodeSubstitute substitute, String newName) {
-        Phadhail ph = (Phadhail)substitute.getRepresentedObject();
+    public void setName(Object o, String newName) {
+        Phadhail ph = (Phadhail)o;
         try {
             ph.rename(newName);
         } catch (IOException e) {
@@ -75,16 +84,16 @@ final class PhadhailLook extends DefaultLook {
         }
     }
     
-    public boolean canDestroy(Look.NodeSubstitute substitute) {
+    public boolean canDestroy(Object o) {
         return true;
     }
     
-    public void destroy(Look.NodeSubstitute substitute) throws IOException {
-        Phadhail ph = (Phadhail)substitute.getRepresentedObject();
+    public void destroy(Object o) throws IOException {
+        Phadhail ph = (Phadhail)o;
         ph.delete();
     }
     
-    public Action[] getActions(Look.NodeSubstitute substitute) {
+    public Action[] getActions(Object o) {
         return new Action[] {
             SystemAction.get(OpenAction.class),
             SystemAction.get(SaveAction.class),
@@ -97,8 +106,8 @@ final class PhadhailLook extends DefaultLook {
         };
     }
     
-    public NewType[] getNewTypes(Look.NodeSubstitute substitute) {
-        Phadhail ph = (Phadhail)substitute.getRepresentedObject();
+    public NewType[] getNewTypes(Object o) {
+        Phadhail ph = (Phadhail)o;
         if (ph.hasChildren()) {
             return new NewType[] {
                 new PhadhailNewType(ph, false),
@@ -109,36 +118,37 @@ final class PhadhailLook extends DefaultLook {
         }
     }
     
-    private static final class PhadhailWrapper extends Look.NodeSubstitute implements InstanceContent.Convertor, PhadhailEditorSupport.Saver, PhadhailListener {
+    /* XXX currently Look does not define these:
+    public Lookup getLookup(Object o) {
+        Phadhail ph = (Phadhail)o;
+        return new PhadhailLookup(ph);
+    }
+    
+    // XXX currently there is nothing lighter-weight than AbstractLookup: #32203
+    private static final class PhadhailLookup extends AbstractLookup implements InstanceContent.Convertor, PhadhailEditorSupport.Saver {
         
         private static final Object ED_KEY = "editorSupport";
         
-        private final InstanceContent c;
+        private final InstanceContent ic;
+
+        private final Phadhail ph;
         
-        public PhadhailWrapper(Phadhail ph, Look l) {
-            this(ph, l, new InstanceContent());
+        public PhadhailLookup(Phadhail ph) {
+            this(ph, new InstanceContent());
         }
         
-        private PhadhailWrapper(Phadhail ph, Look l, InstanceContent c) {
-            // XXX currently there is nothing lighter-weight than AbstractLookup: #32203
-            super(ph, l, new AbstractLookup(c));
-            this.c = c;
+        private PhadhailLookup(Phadhail ph, InstanceContent ic) {
+            super(ic);
+            this.ic = ic;
+            this.ph = ph;
             if (!ph.hasChildren()) {
-                c.add(ED_KEY, this);
+                ic.add(ED_KEY, this);
             }
-            ph.addPhadhailListener(this);
-            //System.err.println("Created " + this);
-            //Thread.dumpStack();
-        }
-        
-        protected void unregister() {
-            ((Phadhail)getRepresentedObject()).removePhadhailListener(this);
-            //System.err.println("Disposed of " + this);
         }
         
         public Object convert(Object obj) {
             if (obj == ED_KEY) {
-                return new PhadhailEditorSupport((Phadhail)getRepresentedObject(), this);
+                return new PhadhailEditorSupport(ph, this);
             } else {
                 throw new IllegalStateException();
             }
@@ -153,30 +163,42 @@ final class PhadhailLook extends DefaultLook {
         }
         
         public Class type(Object obj) {
-            return PhadhailEditorSupport.class;
+            if (obj == ED_KEY) {
+                return PhadhailEditorSupport.class;
+            } else {
+                throw new IllegalStateException();
+            }
         }
         
         public void addSaveCookie(SaveCookie s) {
-            c.add(s);
+            ic.add(s);
         }
         
         public void removeSaveCookie() {
-            c.remove(getLookup().lookup(SaveCookie.class));
-        }
-        
-        public void childrenChanged(PhadhailEvent ev) {
-            refreshChildren();
-        }
-        
-        public void nameChanged(PhadhailNameEvent ev) {
-            fireNameChange(ev.getOldName(), ev.getNewName());
-            fireDisplayNameChange(ev.getOldName(), ev.getNewName());
+            ic.remove(lookup(SaveCookie.class));
         }
         
         public String toString() {
-            return "PhadhailWrapper<" + getRepresentedObject() + ">";
+            return "PhadhailLookup<" + ph + ">";
         }
         
+    }
+    
+    public Lookup getLookupForChildren(Object o) {
+        return Lookup.EMPTY;
+    }
+     */
+    
+    public void childrenChanged(PhadhailEvent ev) {
+        if (!java.awt.EventQueue.isDispatchThread()) Thread.dumpStack();//XXX
+        //System.err.println("firing childrenChanged on " + ev.getPhadhail());
+        refreshChildren(ev.getPhadhail());
+    }
+    
+    public void nameChanged(PhadhailNameEvent ev) {
+        if (!java.awt.EventQueue.isDispatchThread()) Thread.dumpStack();//XXX
+        fireNameChange(ev.getPhadhail(), ev.getOldName(), ev.getNewName());
+        fireDisplayNameChange(ev.getPhadhail(), ev.getOldName(), ev.getNewName());
     }
     
 }
