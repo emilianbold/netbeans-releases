@@ -139,7 +139,8 @@ class CopySupport {
             if (sourceComponent == null)
                 return null;
 
-            if (!fromCut) { // pasting copy of RADComponent
+            if (!fromCut || sourceComponent.getCodeExpression() == null) {
+                // pasting copy of RADComponent
                 targetForm.getComponentCreator()
                               .copyComponent(sourceComponent, targetComponent);
                 return null;
@@ -166,10 +167,8 @@ class CopySupport {
                                                targetComponent))
                     return transferable; // ignore paste
 
-                if (sourceComponent.getCodeExpression() == null)
-                    sourceComponent.createCodeExpression(); // might be removed
-                else // remove source component from its parent
-                    sourceForm.removeComponentFromContainer(sourceComponent);
+                // remove source component from its parent
+                sourceForm.removeComponentFromContainer(sourceComponent);
 
                 if (sourceComponent instanceof RADVisualComponent
                     && targetComponent instanceof RADVisualContainer)
