@@ -1491,12 +1491,11 @@ public class Evaluator implements JavaParserVisitor {
 
         public void run() {
             synchronized (this) {
-//                try {
-                    //value = obj.invokeMethod(evaluationThread, method, args, options);
-                    exception = new UnsupportedOperationException ();
-//                } catch (Throwable e) {
-//                    exception = e;
-//                }
+                try {
+                    value = obj.invokeMethod(evaluationThread, method, args, options);
+                } catch (Throwable e) {
+                    exception = e;
+                }
                 finished = true;
                 notify();
             }
