@@ -23,8 +23,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="binroot" location="${nbroot}/../nbextra"/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
-    <property name="parserimpl" value="${binroot}/xml/tax/release/modules/ext/xerces2.jar"/> <!-- parser implementation used internally by module -->
-
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
@@ -54,11 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     </target>
 
-<!--    <target name="tax.compile">
-        <ant dir="${tax_root}" target="compile"/>
-    </target>-->
-
-    <target name="compile"><!-- depends="tax.compile">-->
+    <target name="compile">
         <echo message="Compiling XML core module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
@@ -67,7 +61,6 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="openide*.jar"/>
                 </fileset>
                 <pathelement location="${nbroot}/openidex/netbeans/modules/autoload/openidex.jar"/>
-                <pathelement location="${parserimpl}"/>
                 <pathelement location="${tax_lib_root}/src/"/>
                 <pathelement location="${api_root}/src/"/>
                 <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>

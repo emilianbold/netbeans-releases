@@ -122,7 +122,7 @@ Microsystems, Inc. All Rights Reserved.
         -->
         <pathelement location="${netbeans.home}/lib/openide.jar"/>
         <pathelement location="${netbeans.home}/lib/core.jar"/>
-        <pathelement location="${netbeans.home}/modules/ext/tax.jar"/>
+        <pathelement location="${netbeans.home}/modules/autoload/ext/tax.jar"/>
         <pathelement location="${netbeans.home}/modules/xml-core.jar"/>
         <pathelement location="${netbeans.home}/modules/css.jar"/>
         <!--

@@ -53,11 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     </target>
 
-<!--    <target name="xml-core.compile">
-        <ant dir="${core_root}" target="compile"/>
-    </target>-->
-
-    <target name="compile"><!-- depends="xml-core.compile">-->
+    <target name="compile">
         <echo message="Compiling XML text-edit module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
