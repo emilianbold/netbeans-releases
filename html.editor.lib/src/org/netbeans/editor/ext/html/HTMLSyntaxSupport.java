@@ -101,23 +101,35 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             if (token != null && token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_SYMBOL_ID)
                 token = token.getPrevious();
             boolean isInside = false;  // flag, whether the carret is somewhere in a HTML tag
-            if (token != null && isTag(token)) {
+            if( token != null ) {
+                if (isTagButNotSymbol(token)) {
                     isInside = true; // the carret is somewhere in '<htmltag' or '</htmltag' 
-            }
-            else {  
-                // find out whether the carret is inside an HTML tag
-                if (token != null){
-                    token = token.getPrevious();
-                    //try to find the beginning of the tag. 
-                    while (token!=null && !isTag(token) && token.getTokenID().getNumericID() != HTMLTokenContext.TAG_CLOSE_SYMBOL_ID)
+                } else {
+                    if(token.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL) {
+                        //we are on opening symbol < or </
+                        //so go to the next token which should be a TAG
+                        token = token.getNext();
+                        //if the token is null or nor TAG there is nothing to match
+                        if(token != null 
+                                && ((token.getTokenID() == HTMLTokenContext.TAG_CLOSE) 
+                                    || (token.getTokenID() == HTMLTokenContext.TAG_OPEN))) isInside = true; // we found a tag
+                        else return null; 
+                        
+                    } else {
+                        //we are on closing symbol > or />
+                        // find out whether the carret is inside an HTML tag
                         token = token.getPrevious();
-                    if (token!=null && isTag(token))
-                        isInside = true;
+                        //try to find the beginning of the tag. 
+                        while (token!=null && !isTagButNotSymbol(token) && token.getTokenID().getNumericID() != HTMLTokenContext.TAG_CLOSE_SYMBOL_ID)
+                            token = token.getPrevious();
+                        if (token!=null && isTagButNotSymbol(token))
+                            isInside = true;
+                    }
                 }
             }
             
             
-	    if (token != null && isTag(token) && isInside){
+	    if (token != null && isTagButNotSymbol(token) && isInside){
 		int start; // possition where the matched tag starts
 		int end;   // possition where the matched tag ends
 		int poss = -1; // how many the same tags is inside the mathed tag
@@ -127,7 +139,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                     //we are in a close tag
 		    String tag = token.getImage().trim().toLowerCase();
 		    while ( token != null){
-			if (isTag(token)) {
+			if (isTagButNotSymbol(token)) {
 			    if (token.getImage().trim().toLowerCase().equals(tag) &&
                                 token.getTokenID() == HTMLTokenContext.TAG_OPEN){
                                 //it's an open tag
@@ -165,7 +177,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 			return null;
 		    String tag = token.getImage().toLowerCase();
 		    while ( token != null){
-			if (isTag(token)) {
+			if (isTagButNotSymbol(token)) {
                             if (token.getImage().trim().toLowerCase().equals(tag) &&
                                 token.getTokenID() == HTMLTokenContext.TAG_CLOSE){
 				if (poss == 0) {
@@ -530,6 +542,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 ( ti.getTokenID() == HTMLTokenContext.TAG_CLOSE ) ||
                 ( ti.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL) ||
                 ( ti.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL));
+    }
+    
+    public static boolean isTagButNotSymbol(TokenItem ti) {
+        return (( ti.getTokenID() == HTMLTokenContext.TAG_OPEN ) ||
+                ( ti.getTokenID() == HTMLTokenContext.TAG_CLOSE ));
     }
     
 }
