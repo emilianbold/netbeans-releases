@@ -63,6 +63,7 @@ import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 public class JSPKit extends NbEditorKit {
 
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
+    public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
     
     /** serialVersionUID */
     private static final long serialVersionUID = 8933974837050367142L;
@@ -202,10 +203,10 @@ public class JSPKit extends NbEditorKit {
         }
         
         String mimeType = NbEditorUtilities.getMimeType(doc);
-        Completion contentCompletion = (!mimeType.equals(JSP_MIME_TYPE)) ? 
+        Completion contentCompletion = (!(mimeType.equals(JSP_MIME_TYPE) || mimeType.equals(TAG_MIME_TYPE))) ? 
             null :
             getCompletionForLanguage(extEditorUI, JspUtils.getContentLanguage());
-        Completion scriptingCompletion = (!mimeType.equals(JSP_MIME_TYPE)) ? 
+        Completion scriptingCompletion = (!(mimeType.equals(JSP_MIME_TYPE) || mimeType.equals(TAG_MIME_TYPE))) ? 
             null : 
             getCompletionForLanguage(extEditorUI, JspUtils.getScriptingLanguage());
         final JspCompletion completion = 
