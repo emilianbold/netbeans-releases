@@ -131,18 +131,28 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
             this.manager=manager;
             // same as before...
             
-            //setLayout(new javax.swing.BoxLayout(this,javax.swing.BoxLayout.X_AXIS));
+            setLayout(new java.awt.GridBagLayout());
             ActionMap map = getActionMap();
             // ...and initialization of lookup variable
             lookup = ExplorerUtils.createLookup (manager, map);
 
             ChoiceView cView = new ChoiceView();
             ((NodeListModel)(cView.getModel())).setNode(root);
-            //cView.setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
-
-            cView.setPreferredSize(new java.awt.Dimension(250,19));
+            setFloatable(false);
             ((NodeListModel)(cView.getModel())).setDepth(5);
-            add(cView);
+            
+            java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.insets = new java.awt.Insets(0, 2, 4, 0);
+            add(cView,gridBagConstraints);
+            
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.weightx = 1.0;
+            JPanel filler = new JPanel();
+            add(filler,gridBagConstraints);
         }
         // ...method as before and getLookup
         public ExplorerManager getExplorerManager() {

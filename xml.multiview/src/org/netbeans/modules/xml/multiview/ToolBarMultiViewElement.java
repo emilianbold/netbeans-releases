@@ -31,7 +31,6 @@ import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 public abstract class ToolBarMultiViewElement implements MultiViewElement {
     //private static final long serialVersionUID = 12345L;  
     MultiViewElementCallback observer;
-    private UndoRedo undoRedo;
     private javax.swing.JComponent toolbar;
     ToolBarDesignEditor editor;
     
@@ -82,33 +81,15 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     }
     
     public javax.swing.JComponent getToolbarRepresentation() {
-    
-        /*
-        if (toolbar==null) {
-            toolbar=getToolBar();
-        }
-        return toolbar;
-        */
-        return getToolBar();
-         
+        return editor.getStructureView();
     }
     
     public org.openide.awt.UndoRedo getUndoRedo() {
-        return undoRedo;
+        return null;
     }
     
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         observer=callback;
-    }
-    
-    private javax.swing.JPanel getToolBar() {
-        
-        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT,5,0));
-        javax.swing.JComponent c  = editor.getStructureView();
-        c.setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
-        panel.add(c);
-        panel.setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
-        return panel;
     }
 
     public javax.swing.JComponent getVisualRepresentation() {
