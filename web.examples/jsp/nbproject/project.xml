@@ -2,7 +2,7 @@
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.web.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/web-project/1">
+        <data xmlns="http://www.netbeans.org/ns/web-project/2">
             <name>TomcatJSPExample</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <web-module-libraries>
@@ -18,6 +18,12 @@
                 </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
+            <source-roots>
+                <root id="src.dir"/>
+            </source-roots>
+            <test-roots>
+                <root id="test.src.dir"/>
+            </test-roots>           
         </data>
     </configuration>
 </project>
