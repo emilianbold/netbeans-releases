@@ -32,9 +32,7 @@ import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.enum.ArrayEnumeration;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.actions.ReorderAction;
 
@@ -61,11 +59,13 @@ public final class LoaderPoolNode extends AbstractNode {
 
   private static LoaderChildren myChildren = new LoaderChildren ();
 
-  /** Array of sections to create loaders from */
-  private static ArrayList sections = new ArrayList ();
-  
   /** Array of DataLoader objects */
   private static List loaders = new ArrayList ();
+  
+  /** Map from loader class names to arrays of class names for Install-Before's */
+  private static Map installBefores = new HashMap ();
+  /** Map from loader class names to arrays of class names for Install-After's */
+  private static Map installAfters = new HashMap ();
 
   /** copy of the loaders to prevent copying */
   private static Object[] loadersArray;
@@ -125,22 +125,126 @@ public final class LoaderPoolNode extends AbstractNode {
   }
 
   /** Adds new loader when previous and following are specified.
-  * If the loader cannot find the right position it adds it to the latest
-  * one that nearly satisfies.
-  *
+  * An attempt will be made to (re-)order the loader pool according to specified
+  * dependencies.
+  * <p>If a loader of the same class already existed in the pool, that will be <b>removed</b>
+  * and replaced with the new one.
   * @param s adds loader section
-  * @exception IllegalArgumentException if the loader is already there
   */
   public static synchronized void add (ManifestSection.LoaderSection s) throws InstantiationException {
-    if (sections == null) {
-      add (s.getLoader (), s.getInstallBefore (), s.getInstallAfter ());
-    } else {
-      // tries to create the instance
-      s.getLoader ();
-      sections.add (s);
-    }
+    DataLoader l = s.getLoader ();
+    Iterator it = loaders.iterator ();
+    while (it.hasNext ())
+      if (it.next ().getClass ().equals (l.getClass ()))
+        it.remove ();
+    loaders.add (l);
+    installBefores.put (l.getClass ().getName (), s.getInstallBefore ());
+    installAfters.put (l.getClass ().getName (), s.getInstallAfter ());
+    resort ();
   }
-
+  
+  
+  /** Resort the loader pool according to stated dependencies.
+  * Attempts to keep a stable order whenever possible, i.e. more-recently-installed
+  * loaders will tend to stay near the end unless they need to be moved forward.
+  * Note that dependencies on nonexistent (or unloadable) representation classes are simply
+  * ignored and have no effect on ordering.
+  * If there is a cycle (contradictory set of dependencies) in the loader pool,
+  * its order is not changed.
+  * In any case, a change event is fired afterwards.
+  */
+  private static synchronized void resort () {
+    // A partial ordering over loaders based on their Install-* tags:
+    Comparator c = new Comparator () {
+      public int compare (Object o1, Object o2) {
+        if (o1 == o2) return 0;
+        String l1 = o1.getClass ().getName ();
+        String l2 = o2.getClass ().getName ();
+        String rep1 = ((DataLoader) o1).getRepresentationClass ().getName ();
+        String rep2 = ((DataLoader) o2).getRepresentationClass ().getName ();
+        // Determine if either of them specify an Install-After or Install-Before on the other.
+        boolean mustbe12 = false;
+        String[] befores1 = (String[]) installBefores.get (l1);
+        if (befores1 != null) {
+          for (int i = 0; i < befores1.length; i++) {
+            if (befores1[i].equals (rep2)) {
+              mustbe12 = true;
+              break;
+            }
+            if (befores1[i].equals (l2)) warn (l1, l2, rep2);
+          }
+        }
+        if (! mustbe12) {
+          String[] afters2 = (String[]) installAfters.get (l2);
+          if (afters2 != null) {
+            for (int i = 0; i < afters2.length; i++) {
+              if (afters2[i].equals (rep1)) {
+                mustbe12 = true;
+                break;
+              }
+              if (afters2[i].equals (l1)) warn (l2, l1, rep1);
+            }
+          }
+        }
+        boolean mustbe21 = false;
+        String[] befores2 = (String[]) installBefores.get (l2);
+        if (befores2 != null) {
+          for (int i = 0; i < befores2.length; i++) {
+            if (befores2[i].equals (rep1)) {
+              mustbe21 = true;
+              break;
+            }
+            if (befores2[i].equals (l1)) warn (l2, l1, rep1);
+          }
+        }
+        if (! mustbe21) {
+          String[] afters1 = (String[]) installAfters.get (l1);
+          if (afters1 != null) {
+            for (int i = 0; i < afters1.length; i++) {
+              if (afters1[i].equals (rep2)) {
+                mustbe21 = true;
+                break;
+              }
+              if (afters1[i].equals (l2)) warn (l1, l2, rep2);
+            }
+          }
+        }
+        // Compute resulting order.
+        if (mustbe12) {
+          if (mustbe21) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+              // PLEASE DO NOT COMMENT OUT:
+              System.err.println ("Warning: mutually contradictory loader ordering will be ignored; " +
+                                  l1 + " and " + l2);
+            return 0;
+          } else {
+            return -1;
+          }
+        } else {
+          if (mustbe21) {
+            return 1;
+          } else {
+            return 0;
+          }
+        }
+      }
+      private void warn (String yourLoader, String otherLoader, String otherRepn) {
+        // PLEASE DO NOT COMMENT OUT:
+        System.err.println ("Warning: a possible error in the manifest containing " + yourLoader + "was found.");
+        System.err.println ("The loader specified an Install-{After,Before} on " + otherLoader + ", but this is a DataLoader class.");
+        System.err.println ("Probably you wanted " + otherRepn + " which is the loader's representation class.");
+      }
+    };
+    try {
+      loaders = Utilities.partialSort (loaders, c, true);
+    } catch (Utilities.UnorderableException uue) {
+      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+        uue.printStackTrace ();
+      // leave order as it was
+    }
+    update ();
+  }
+  
   /** Allows to stop notifications about adding of new loaders.
   * This is used from auto install of modules to disable notifications till
   * all modules are installed.
@@ -158,12 +262,10 @@ public final class LoaderPoolNode extends AbstractNode {
   }
   
   /** Notification to finish installation of nodes during startup.
+  * @deprecated no longer does anything, please remove calls to it
   */
   static synchronized void finishInstallation () {
-    loaders = initialize (sections);
-    sections = null;
-    
-    update ();
+    // do nothing
   }
   
   /** Stores all the objects into stream.
@@ -171,6 +273,9 @@ public final class LoaderPoolNode extends AbstractNode {
   */
   private static synchronized void writePool (ObjectOutputStream oos) 
   throws IOException {
+    oos.writeObject (installBefores);
+    oos.writeObject (installAfters);
+    
     Iterator it = loaders.iterator ();
     
     while (it.hasNext ()) {
@@ -196,6 +301,9 @@ public final class LoaderPoolNode extends AbstractNode {
   */
   private static synchronized void readPool (ObjectInputStream ois) 
   throws IOException, ClassNotFoundException {
+    installBefores = (Map) ois.readObject ();
+    installAfters = (Map) ois.readObject ();
+    
     HashSet classes = new HashSet ();
     LinkedList l = new LinkedList ();
     
@@ -234,47 +342,6 @@ public final class LoaderPoolNode extends AbstractNode {
   }
   
   
-  /** Adds new loader when previous and following are specified.
-  * If the loader cannot find the right position it adds it to the latest
-  * one that nearly satisfies.
-  *
-  * @param dl data loader to add
-  * @param before class to be before (or null)
-  * @param after class to be installed after (or null)
-  * @exception IllegalArgumentException if the loader is already there
-  */
-  private static void add (DataLoader dl, Class before, Class after) {
-    // insert algorithm
-    int first = -1;
-    int last = -1;
-    Iterator loadersIter = loaders.iterator();
-    for (int i = 0; loadersIter.hasNext(); i++) {
-      Class repr = ((DataLoader)loadersIter.next()).getRepresentationClass();
-      if (first == -1 && before != null && before.isAssignableFrom(repr)) {
-        first = i;
-      }
-      if (after != null && after.isAssignableFrom (repr)) {
-        // if we should be installed after the representation class of
-        // this class loader, rememeber its index
-        last = i;
-      }
-    }
-    if (last == -1) {
-      if (first != -1) {
-        // install the loader before given
-        loaders.add (first, dl);
-      } else {
-        // add the loader to the end
-        loaders.add (dl);
-      }
-    } else {
-      // install the element after the last index found
-      loaders.add (last + 1, dl);
-    }
-
-    update ();
-  }
-
   /** Notification that the state of pool has changed
   */
   private static void update () {
@@ -306,13 +373,15 @@ public final class LoaderPoolNode extends AbstractNode {
   * <P>
   * So the only difference is that when a DataObject is searched
   * for a FileObject this loader will not be taken into account.
-  *
+  * <P>The loader pool may be resorted.
   * @param dl data loader to remove
   * @return true if the loader was registered and false if not
   */
   public static synchronized boolean remove (DataLoader dl) {
     if (loaders.remove (dl)) {
-      update ();
+      installBefores.remove (dl.getClass ().getName ());
+      installAfters.remove (dl.getClass ().getName ());
+      resort ();
       return true;
     }
     return false;
@@ -341,140 +410,6 @@ public final class LoaderPoolNode extends AbstractNode {
   }
 
 
-  //
-  //
-  // Initialization of loaders
-  //
-  //
-
-  /** Method for initialization of loaders. Initializes the loaders by the
-  * ones provided in the sections and reflects their mutual dependences.
-  *
-  * @param sections collection of ManifestSection.LoaderSection objects
-  * @return list of loaders
-  */
-  private static List initialize (Collection sections) {
-    // dependencies between loaders (Class, Dep)
-    HashMap deps = new HashMap (sections.size ());
-
-    Iterator it = sections.iterator ();
-    while (it.hasNext ()) {
-      ManifestSection.LoaderSection s = (ManifestSection.LoaderSection)it.next ();
-
-      DataLoader l;
-      try {
-        l = s.getLoader ();
-      } catch (InstantiationException e) {
-        // go on with next loader
-        continue;
-      }
-
-      // add a Dep for this loader, if it is not already there
-      Class repr = l.getRepresentationClass ();
-      Dep d = findDep (deps, repr, l);
-
-      // now add dependencies we depend on
-      Class b = s.getInstallBefore ();
-      if (b != null) {
-        Dep depBef = findDep (deps, b, null);
-        depBef.deps.add (d);
-      }
-      
-      Class a = s.getInstallAfter ();
-      if (a != null) {
-        Dep depAft = findDep (deps, a, null);
-        d.deps.add (a);
-      }
-    }
-
-    //
-    // use created dependencies to produce the ordered array
-    //
-
-    LinkedList list = new LinkedList ();
-    
-    while (!deps.isEmpty ()) {
-      // take an member
-      it = deps.values ().iterator ();
-      Dep d = (Dep)it.next ();
-
-      // create the list
-      depthFirst (list, d, deps);
-    }
-
-    return list;
-  }
-
-  /** Getter for dependencies for given class and loader.
-  * @param map (Class, Dep) map
-  * @param c representation class
-  * @param l loader or null
-  * @return Dep object associated with c
-  */
-  private static Dep findDep (Map map, Class c, DataLoader l) {
-    Dep d = (Dep)map.get (c);
-    if (d == null) {
-      d = new Dep (c, l);
-      map.put (c, d);
-    } else {
-      if (l != null) {
-        d.loader = l;
-      }
-    }
-    return d;
-  }
-
-  /** Scans dependencies to the depth.
-  * @param c to add loaders to
-  * @param d depth to start at
-  * @param map map to remove Deps from
-  */
-  private static void depthFirst (Collection c, Dep d, Map m) {
-
-    if (!m.containsKey (d.repr)) {
-      // already processed
-      return;
-    }
-    
-    
-    Collection deps = d.deps;
-
-    if (deps == null) {
-      // cyclic reference
-      throw new IllegalStateException ();
-    }
-    
-    // mark the Dep as being used
-    d.deps = null;
-
-    Iterator it = deps.iterator ();
-    while (it.hasNext ()) {
-      depthFirst (c, (Dep)it.next (), m);
-    }
-    
-    // ok all we reference to has been processed
-    if (d.loader != null) {
-      c.add (d.loader);
-    }
-    
-    m.remove (d.repr);
-  }
-                              
-  /** Dependencies between loaders */
-  private static class Dep {
-    /** representation class for this dep */
-    Class repr;
-    /** a set of dependencies that has to be before me */
-    Collection deps = new HashSet (2);
-    /** the loader assigned to this class or null */
-    DataLoader loader;
-
-    public Dep (Class c, DataLoader l) {
-      repr = c;
-      loader = l;
-    }
-  }
-                              
 /***** Inner classes **************/
 
   /** Node representing one loader in Loader Pool */
@@ -499,6 +434,8 @@ public final class LoaderPoolNode extends AbstractNode {
         SystemAction.get(MoveUpAction.class),
         SystemAction.get(MoveDownAction.class),
         null,
+        SystemAction.get(DeleteAction.class),
+        null,
         SystemAction.get(ToolsAction.class),
         SystemAction.get(PropertiesAction.class),
       };
@@ -510,10 +447,14 @@ public final class LoaderPoolNode extends AbstractNode {
       return SystemAction.get (PropertiesAction.class);
     }
 
-    /** Cannot be removed
+    /** Can be deleted.
     */
-    public boolean canRemove () {
-      return false;
+    public boolean canDelete () {
+      return true;
+    }
+    
+    public void destroy () throws IOException {
+      remove ((DataLoader) getBean ());
     }
 
     /** Cannot be copied
@@ -553,12 +494,12 @@ public final class LoaderPoolNode extends AbstractNode {
     protected Node[] createNodes (Object loader) {
       Node n;
       try {
-        n = new LoaderPoolItemNode ((DataLoader)loader);
+        return new Node[] { new LoaderPoolItemNode ((DataLoader)loader) };
       } catch (IntrospectionException e) {
-        n = new AbstractNode (Children.LEAF);
-        // PENDING
+        if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+          e.printStackTrace ();
+        return new Node[] { };
       }
-      return new Node[] { n };
     }
 
   } // end of LoaderPoolChildren
@@ -585,7 +526,7 @@ public final class LoaderPoolNode extends AbstractNode {
           arr = loadersArray = loaders.toArray ();
         }
       }
-      return new ArrayEnumeration (loadersArray);
+      return new ArrayEnumeration (arr);
     }
 
     /** Listener to property changes.
@@ -605,7 +546,7 @@ public final class LoaderPoolNode extends AbstractNode {
     * Accessor for inner classes only.
     * @param che change event
    */
-    protected void superFireChangeEvent (ChangeEvent che) {
+    void superFireChangeEvent (ChangeEvent che) {
       super.fireChangeEvent(che);
 //      System.out.println ("Loaders Change event fired....");
     }
@@ -678,6 +619,11 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  29   Gandalf   1.28        11/25/99 Jesse Glick     Rewrite of 
+*       LoaderPoolNode, specifically the management of loader ordering. Now 
+*       permits multiple -before and -after dependencies, and should be more 
+*       robust. Also made LoaderPoolItemNode's properly deletable and fixed a 
+*       timing-related NullPointerException when uninstalling modules.
 *  28   Gandalf   1.27        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  27   Gandalf   1.26        10/8/99  Jaroslav Tulach Prints exceptions only to
