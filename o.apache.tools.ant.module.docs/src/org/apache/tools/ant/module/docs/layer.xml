@@ -19,12 +19,4 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-apache-tools-ant-module-helpset.xml" url="helpset-decl.xml"/>
         </folder>
     </folder>
-    <folder name="Mount">
-        <folder name="Javadoc">
-            <file name="org-apache-tools-ant-module-javadoc.xml" url="javadoc.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.docs.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-            </file>
-        </folder>
-    </folder>
 </filesystem>
