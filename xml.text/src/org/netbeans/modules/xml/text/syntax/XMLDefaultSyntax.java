@@ -610,6 +610,7 @@ public class XMLDefaultSyntax extends Syntax {
                     break;
 
                 case ISA_INIT_BR:
+                    if (isWS(actChar)) break;
                     if (actChar == '>') {
                         offset++;
                         state = INIT;
@@ -875,6 +876,16 @@ public class XMLDefaultSyntax extends Syntax {
             case ISP_PI_CONTENT_QMARK:
                 return "ISP_PI_CONTENT_QMARK";// NOI18N                
                 
+            case ISI_DECL_CHARS:
+                return "ISI_DECL_CHARS";
+            case ISI_DECL_STRING:
+                return "ISI_DECL_STRING";
+            case ISP_DECL_CHARS:
+                return "ISP_DECL_CHARS";
+            case ISP_DECL_STRING:
+                return "ISP_DECL_STRING";
+            case ISA_INIT_BR:
+                return "ISA_INIT_BR";                
             default:
                 return super.getStateName(stateNumber);
         }
