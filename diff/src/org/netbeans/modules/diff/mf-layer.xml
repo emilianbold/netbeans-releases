@@ -76,32 +76,22 @@ Microsystems, Inc. All Rights Reserved.
           -->
 
           <file name="org-netbeans-modules-diff-DiffSettings.shadow">
-<![CDATA[Services/Hidden/org-netbeans-modules-diff-DiffSettings.settings
-SystemFileSystem
-]]>
+              <attr name="originalFile" stringvalue="Services/Hidden/org-netbeans-modules-diff-DiffSettings.settings"/>
           </file>
           <folder name="DiffTypes">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
             <file name="Diffs.shadow">
-<![CDATA[Services/Diffs
-SystemFileSystem
-]]>
+                <attr name="originalFile" stringvalue="Services/Diffs"/>
             </file>
             <file name="DiffProviders.shadow">
-<![CDATA[Services/DiffProviders
-SystemFileSystem
-]]>
+                <attr name="originalFile" stringvalue="Services/DiffProviders"/>
             </file>
             <file name="DiffVisualizers.shadow">
-<![CDATA[Services/DiffVisualizers
-SystemFileSystem
-]]>
+                <attr name="originalFile" stringvalue="Services/DiffVisualizers"/>
             </file>
             <file name="MergeVisualizers.shadow">
-<![CDATA[Services/MergeVisualizers
-SystemFileSystem
-]]>
+                <attr name="originalFile" stringvalue="Services/MergeVisualizers"/>
             </file>
             <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.types"/>
           </folder>

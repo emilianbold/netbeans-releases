@@ -3,7 +3,7 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/diff/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.4
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/diff/mf-layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.4
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.23
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor/1 > 1.7
 OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
 
