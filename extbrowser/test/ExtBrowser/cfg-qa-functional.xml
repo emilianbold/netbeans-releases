@@ -52,7 +52,22 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+    <testbag testattribs="all" executor="ide" name="SystemSettings tests">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/settings/SystemSettings.class"/>
+            </patternset>
+        </testset>
+    </testbag>
 
+    <testbag testattribs="ss" executor="ide" name="SystemSettings tests">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/settings/SystemSettings.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+							    
     <testbag testattribs="extunix" executor="ide" name="External Unix Browser">
         <testset dir="qa-functional/src">
             <patternset>
