@@ -47,6 +47,8 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
                 <!-- x -->
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart1"/>
+                <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart3"/>
+                <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart4"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
@@ -112,6 +114,8 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>                
                 <!-- See above. -->
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart1"/>
+                <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart3"/>
+                <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart4"/>
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
