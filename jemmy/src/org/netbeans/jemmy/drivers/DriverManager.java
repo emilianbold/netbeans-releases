@@ -63,11 +63,13 @@ public class DriverManager {
     public static void setDriver(String id, Driver driver, Class operatorClass) {
 	JemmyProperties.
 	    setCurrentProperty(makeID(id, operatorClass), driver);
-	JemmyProperties.getCurrentOutput().printLine("Installing " +
-						     driver.getClass().getName() +
-						     " drifer for " +
-						     operatorClass.getName() +
-						     " operators.");
+	if(Boolean.getBoolean(DRIVER_ID + "trace_output")) {
+	    JemmyProperties.getCurrentOutput().printLine("Installing " +
+							 driver.getClass().getName() +
+							 " drifer for " +
+							 operatorClass.getName() +
+							 " operators.");
+	}
     }
     public static void setDriver(String id, Driver driver) {
 	Class[] supported = driver.getSupported();
@@ -78,9 +80,11 @@ public class DriverManager {
     public static void removeDriver(String id, Class operatorClass) {
 	JemmyProperties.
 	    removeCurrentProperty(makeID(id, operatorClass));
-	JemmyProperties.getCurrentOutput().printLine("Uninstalling a drifer for " +
-						     operatorClass.getName() +
-						     " operators.");
+	if(Boolean.getBoolean(DRIVER_ID + "trace_output")) {
+	    JemmyProperties.getCurrentOutput().printLine("Uninstalling a drifer for " +
+							 operatorClass.getName() +
+							 " operators.");
+	}
     }
     public static void removeDriver(String id, Class[] operatorClasses) {
 	for(int i = 0; i < operatorClasses.length; i++) {
