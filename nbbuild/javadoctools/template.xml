@@ -109,10 +109,15 @@ cause it to fail.
     <target name="javadoc-check-timestamps" depends="javadoc-init">
         <uptodate targetfile="${javadoc.out.zip}" property="javadoc.up.to.date">
             <srcfiles dir="${javadoc.src}">
-                <and>
-                    <selector refid="${javadoc.files}" />
-                    <filename name="**/*.java" />
-                </and>
+                <or>
+                    <and>
+                        <selector refid="${javadoc.files}" />
+                        <filename name="**/*.java"/>
+                    </and>
+                    <!-- Can have inline docs too: -->
+                    <filename name="**/package.html"/>
+                    <filename name="**/doc-files/"/>
+                </or>
             </srcfiles>
             <srcfiles dir="${javadoc.docfiles}"/>
             <srcfiles refid="javadoc.css.files"/>
@@ -131,11 +136,7 @@ cause it to fail.
                 <equals arg1="${javadoc.packages}" arg2="" />
             </or>
         </condition>
-        <!--
-        <echo message="AAA: ${javadoc.should.not.be.generated}" />
-        <echo message="BBB: ${javadoc.up.to.date}" />
-        <echo message="CCC: ${javadoc.packages}" />
-        -->
+        <echo level="verbose">javadoc.up.to.date=${javadoc.up.to.date} javadoc.should.not.be.generated=${javadoc.should.not.be.generated} javadoc.packages=${javadoc.packages}</echo>
     </target>
 
     <target name="javadoc-make-plain-title" unless="javadoc.main.page">
