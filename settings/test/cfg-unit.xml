@@ -46,6 +46,12 @@ Microsystems, Inc. All Rights Reserved.
 <!--        </testset>-->
 <!--    </testbag>-->
 
+    <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
+    <!-- (either on cmd line or in the script) to explicitly define which test       -->
+    <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
+    <testbag testattribs="empty" executor="code" name="testbag_empty" resultsprocessor="unit">
+        <testset dir="unit/src"/>
+    </testbag>
 
     <!-- code excecutor - use this one if you plan to run your tests in standard 
                           JVM. You can also write your own executor, which will 
