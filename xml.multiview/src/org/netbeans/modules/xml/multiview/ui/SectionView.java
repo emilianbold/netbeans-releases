@@ -215,12 +215,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
             return;
         }
         if (nodes!=null && nodes.length>0) {
-         final Node n = nodes[0];
-         Utils.runInAwtDispatchThread(new Runnable () {
-             public void run() {
-                 openSection(n);
-             }
-         });
+            openSection(nodes[0]);
         }
     }
     

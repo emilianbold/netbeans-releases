@@ -180,9 +180,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
      * Method from NodeSectionPanel interface
      */
     public void scroll() {
-        Point location = SwingUtilities.convertPoint(this, getLocation(), sectionView.scrollPane);
-        location.x = 0;
-        sectionView.scrollPane.getViewport().setViewPosition(location);
+        Utils.scrollToVisible(this);
     }
 
     /**

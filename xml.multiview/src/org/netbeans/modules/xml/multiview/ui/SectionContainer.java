@@ -22,6 +22,8 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import org.openide.nodes.Node;
 
+import org.netbeans.modules.xml.multiview.Utils;
+
 /**
  *
  * @author  mkuchtiak
@@ -95,9 +97,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
 
     /** Method from NodeSectionPanel interface */
     public void scroll() {
-        Point location = SwingUtilities.convertPoint(this, getLocation(),sectionView.scrollPane);
-        location.x=0;
-        sectionView.scrollPane.getViewport().setViewPosition(location);
+        Utils.scrollToVisible(this);
     }
     
     /** Method from NodeSectionPanel interface */
