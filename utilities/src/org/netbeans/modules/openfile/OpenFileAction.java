@@ -30,6 +30,7 @@ import org.openide.filesystems.Repository;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
+import org.openide.windows.WindowManager;
 
 
 /** 
@@ -128,7 +129,9 @@ public class OpenFileAction extends CallableSystemAction {
             throws UserCancelException {
         File[] files;
         do {
-            int selectedOption = chooser.showOpenDialog(null);
+            int selectedOption = chooser.showOpenDialog(
+                WindowManager.getDefault().getMainWindow());
+            
             if (selectedOption != JFileChooser.APPROVE_OPTION) {
                 throw new UserCancelException();
             }
