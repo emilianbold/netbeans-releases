@@ -145,6 +145,9 @@ final class Favorites extends FilterNode {
                 java.util.ArrayList list = new java.util.ArrayList ();
                 for (int i = 0; i < roots.length; i++) {
                     FileObject r = org.openide.filesystems.FileUtil.toFileObject (roots[i]);
+                    if (r == null) {
+                        continue;
+                    }
                     try {
                         DataObject obj = DataObject.find (r);
                         list.add (
