@@ -131,7 +131,9 @@ public class ReplaceTest extends EditorTestCase {
             
             editor.setCaretPosition(1,1);
             new ReplaceAction().perform();
-            Replace replace = new Replace();
+            Replace replace = new Replace();            
+            replace.cboFindWhat().removeAllItems();
+            replace.cboReplaceWith().removeAllItems();
             
             // check only selected checkboxes
             uncheckAll();
