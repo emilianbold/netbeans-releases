@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -52,7 +52,9 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         }
     }
     void deactivate() {
-        //Toolkit.getDefaultToolkit().removeAWTEventListener(this);
+        if (!isModalExcludedSupported()) {
+            Toolkit.getDefaultToolkit().removeAWTEventListener(this);
+        }
     }
 
     // [PENDING] hold help sets weakly? softly? try to conserve memory...
@@ -834,21 +836,4 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             modalExcludedSupported = 0;
         }
     }
-    
-    /** Obsolete component, only here for deserialization safety.
-     * @deprecated do not use
-     */
-    public static class HelpComponent extends CloneableTopComponent {
-
-        private static final long serialVersionUID = 882544693090803112L;
-
-        public HelpComponent() {
-        }
-
-        public Object readResolve() throws ObjectStreamException {
-            return null;
-        }
-
-    }
-
 }
