@@ -541,7 +541,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <!-- XXX illegal dependence on core! -->
-  <target name="all-cpp" depends="all-openide,all-editor,all-core">
+  <target name="all-cpp" depends="all-openide,all-editor,all-core,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module cpp..."/>
     <ant dir="../cpp" target="netbeans"/>
   </target>
