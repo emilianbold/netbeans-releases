@@ -56,12 +56,14 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
       String fileName = new String( "index-" + fileNumber.toString() );
       this.fo = fo.getFileObject( fileName, "html" );
-
-      try {
-        contextURL = this.fo.getURL();
-      }
-      catch ( org.openide.filesystems.FileStateInvalidException e ) {
-        throw new InternalError( "Can't create documentation folder URL - file state invalid" );
+  
+      if ( this.fo != null ) {
+        try {
+          contextURL = this.fo.getURL();
+        }
+        catch ( org.openide.filesystems.FileStateInvalidException e ) {
+          throw new InternalError( "Can't create documentation folder URL - file state invalid" );
+        }
       }
     }
     else {
