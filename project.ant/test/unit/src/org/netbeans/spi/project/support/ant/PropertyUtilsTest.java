@@ -518,6 +518,32 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("Corrected property name does match", good.toString(), PropertyUtils.getUsablePropertyName(bad.toString()));
     }
     
+    public void testSequentialPropertyEvaluatorStringAllocation() throws Exception {
+        // #48449: too many String instances.
+        // String constants used in the test are interned; make sure the results are the same.
+        // Not necessary for the provider to intern strings, just to not copy them.
+        Map/*<String,String>*/ defs = new HashMap();
+        defs.put("pre-a", "pre-a-val");
+        defs.put("pre-b", "pre-b-val");
+        PropertyProvider preprovider = PropertyUtils.fixedPropertyProvider(defs);
+        defs = new HashMap();
+        defs.put("main-1-a", "main-1-a-val");
+        defs.put("main-1-b", "main-1-b-val+${pre-b}");
+        PropertyProvider provider1 = PropertyUtils.fixedPropertyProvider(defs);
+        defs = new HashMap();
+        defs.put("main-2-a", "main-2-a-val");
+        defs.put("main-2-b", "main-2-b-val+${main-1-b}");
+        PropertyProvider provider2 = PropertyUtils.fixedPropertyProvider(defs);
+        PropertyEvaluator pp = PropertyUtils.sequentialPropertyEvaluator(preprovider, new PropertyProvider[] {provider1, provider2});
+        defs = pp.getProperties();
+        assertSame("uncopied pre-a", "pre-a-val", defs.get("pre-a"));
+        assertSame("uncopied pre-b", "pre-b-val", defs.get("pre-b"));
+        assertSame("uncopied main-1-a", "main-1-a-val", defs.get("main-1-a"));
+        assertEquals("right main-1-b", "main-1-b-val+pre-b-val", defs.get("main-1-b"));
+        assertSame("uncopied main-2-a", "main-2-a-val", defs.get("main-2-a"));
+        assertEquals("right main-2-b", "main-2-b-val+main-1-b-val+pre-b-val", defs.get("main-2-b"));
+    }
+    
     private static final class TestMutablePropertyProvider implements PropertyProvider {
         
         public final Map/*<String,String>*/ defs;
