@@ -668,7 +668,9 @@ implements Serializable, DataObject.Container {
                 countDown--;
                 try {
                     // resolve temporary object for moving into
-                    DataLoaderPool.FolderLoader folderLoader = (DataLoaderPool.FolderLoader) getMultiFileLoader ();
+                    Object loader = getMultiFileLoader ();
+                    assert loader instanceof DataLoaderPool.FolderLoader : "This has to be FolderLoader: " + loader + " for " + getPrimaryFile (); // NOI18N
+                    DataLoaderPool.FolderLoader folderLoader = (DataLoaderPool.FolderLoader) loader;
                     newFolder = (DataFolder) DataObjectPool.createMultiObject (folderLoader, newFile, this);
                     dispose = false;
                     break;
