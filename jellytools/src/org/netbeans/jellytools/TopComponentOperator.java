@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -19,6 +19,7 @@ import java.awt.Rectangle;
 import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.jemmy.TestOut;
 import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.jellytools.actions.AttachWindowAction;
@@ -42,6 +43,7 @@ import org.netbeans.jemmy.operators.Operator;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
+import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 
 /** Represents org.openide.windows.TopComponent. It is IDE wrapper for a lot of
  * panels in IDE. TopComponent is for example Filesystems panel, every editor 
@@ -366,30 +368,68 @@ public class TopComponentOperator extends JComponentOperator {
         Object tc[]=TopComponent.getRegistry().getOpened().toArray();
         StringComparator comparator=cont==null?Operator.getDefaultStringComparator():cont.getComparator();
         TopComponent c;
+        // loop through showing TopComponents
         for (int i=0; i<tc.length; i++) {
             c=(TopComponent)tc[i];
             if (c.isShowing() && 
                     (comparator.equals(c.getName(), name) || comparator.equals(c.getDisplayName(), name)) &&
-                    isUnder(cont, c) && 
-                    (subchooser==null || subchooser.checkComponent(c))) {
-                index--;
-                if (index<0)
-                    return c;
+                    isUnder(cont, c)) {
+
+                JComponent result = checkSubchooser(c, subchooser);
+                if(result != null) {
+                    if (--index<0) {
+                        return result;
+                    }
+                }
             }
         }
+        // loop through NOT showing TopComponents but parent has to be showing
         for (int i=0; i<tc.length; i++) {
             c=(TopComponent)tc[i];
             if ((!c.isShowing()) && isParentShowing(c) && 
                     (comparator.equals(c.getName(), name) || comparator.equals(c.getDisplayName(), name)) &&
-                    isUnder(cont, c) && (subchooser==null || subchooser.checkComponent(c))) {
-                index--;
-                if (index<0)
-                    return c;
+                    isUnder(cont, c)) {
+                
+                JComponent result = checkSubchooser(c, subchooser);
+                if(result != null) {
+                    if (--index<0) {
+                        return result;
+                    }
+                }
             }
         }
         return null;
     }
 
+    /** If subchooser is null, return TopComponent.
+     * Else if c is instance of MultiViewCloneableTopComponent try to find
+     * and return sub component in MVCTC corresponding to sub chooser. Else 
+     * check TC in sub chooser and return it if matches. MVCTC can host
+     * several views, e.g. source and design view in form editor or xml, servlets,
+     * overview views in web.xml editor. Then EditorOperator is able to find
+     * appropriate CloneableEditor in MVCTC.
+     * @param c TopComponent to check
+     * @param subchooser ComponentChooser to check if matches
+     * @return given TopComponent or appropriate sub component
+     */
+    private static JComponent checkSubchooser(TopComponent c, ComponentChooser subchooser) {
+        if(subchooser == null) {
+            return c;
+        } else {
+            if(c instanceof MultiViewCloneableTopComponent) {
+                TopComponentOperator tco = new TopComponentOperator((JComponent)c);
+                // suppress output when finding sub component
+                tco.setOutput(TestOut.getNullOutput());
+                return (JComponent)tco.findSubComponent(subchooser);
+            } else {
+                if(subchooser.checkComponent(c)) {
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
+    
     private static boolean isParentShowing(Component c) {
         while (c!=null) {
             if (c.isShowing()) return true;
