@@ -15,6 +15,7 @@ package org.netbeans.modules.editor;
 
 import java.util.ResourceBundle;
 import java.awt.*;
+import java.awt.datatransfer.*;
 
 import org.openide.util.NbBundle;
 import org.netbeans.editor.ImplementationProvider;
@@ -38,6 +39,12 @@ public class NbImplementationProvider extends ImplementationProvider {
     /** Ask NbBundle for the resource bundle */
     public ResourceBundle getResourceBundle(String localizer) {
         return NbBundle.getBundle(localizer);
+    }
+
+    public boolean isPasteEnabled() {
+        Clipboard clipboard = (Clipboard)Lookup.getDefault().lookup(Clipboard.class);
+        Transferable clipData = clipboard.getContents(clipboard);
+        return ((clipData != null) && (clipData.isDataFlavorSupported(DataFlavor.stringFlavor)));
     }
 
     public Action getToggleBreakpointAction() {
