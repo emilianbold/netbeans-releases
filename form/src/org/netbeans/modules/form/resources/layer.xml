@@ -705,11 +705,8 @@ SystemFileSystem
             <folder name="Visual">
                 <file name="explorer.wsmode" url="windowmanager/Visual/explorer.wsmode" />
                 <folder name="explorer">
-                    <attr name="filesystems.wstcref/Project Default.wstcref" boolvalue="true" />
-                    <attr name="project.wstcref/Javadoc.wstcref" boolvalue="true" />
+                    <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
                     <file name="filesystems.wstcref" url="windowmanager/Visual/explorer/filesystems.wstcref" />
-                    <file name="project.wstcref" url="windowmanager/Visual/explorer/project.wstcref" />
-                    <file name="Javadoc.wstcref" url="windowmanager/Visual/explorer/Javadoc.wstcref" />
                     <file name="runtime.wstcref" url="windowmanager/Visual/explorer/runtime.wstcref" />
                 </folder>
                 <file name="properties.wsmode" url="windowmanager/Visual/properties.wsmode" />
