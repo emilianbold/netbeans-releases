@@ -19,7 +19,10 @@
 
 package org.netbeans.xtest.pe;
 
+import org.netbeans.xtest.pe.xmlbeans.*;
+import org.w3c.dom.*;
 import java.io.*;
+import java.util.*;
 
 /**
  *
@@ -204,4 +207,90 @@ public class ResultsUtils {
             }
         }        
     }    
+
+   public static Document getDOMDocFromFile(File file) throws IOException {
+        //return SerializeDOM.parseFile(file);
+        return SerializeDOM.parseFile(file);
+    }
+    
+    public static XTestResultsReport getXTestResultsReport(File reportFile)    {
+        try {
+            debugInfo("getXTestResultsReport(): file="+reportFile);
+            Document doc = getDOMDocFromFile(reportFile);
+            debugInfo("getXTestResultsReport(): god Document");
+            //XMLBean.DEBUG=true;
+            XMLBean xmlBean = XMLBean.getXMLBean(doc);    
+            //XMLBean.DEBUG=false;
+            debugInfo("getXTestResultsReport(): got XMLBean");  
+            if (xmlBean instanceof XTestResultsReport) {
+                debugInfo("getXTestResultsReport(): got XTestResultsReport");  
+                return (XTestResultsReport)xmlBean;
+            } else {
+                debugInfo("getXTestResultsReport(): have to create new XTestResultsReport (XMLBean is not the required type)");  
+                return new XTestResultsReport();
+            }
+        } catch (Exception e) {
+            debugInfo("getXTestResultsReport(): EXCEPTION!!!"+e);
+            //e.printStackTrace();
+            //XMLBean.DEBUG=false;
+            debugInfo("getXTestResultsReport(): have to create new XTestResultsReport!");  
+            return new XTestResultsReport();
+        }
+    }
+    
+    public static TestRun getTestRun(File testRunFile) {
+        try {
+            Document doc = getDOMDocFromFile(testRunFile);
+            XMLBean xmlBean = XMLBean.getXMLBean(doc);    
+            if (xmlBean instanceof TestRun) {
+                return (TestRun)xmlBean;
+            } else {
+                return new TestRun();
+            }
+        } catch (Exception e) {
+            return new TestRun();
+        }
+    }
+    
+    
+    public static TestBag getTestBag(File testBag) throws Exception {
+        Document doc = getDOMDocFromFile(testBag);
+        XMLBean xmlBean = XMLBean.getXMLBean(doc);    
+        if (xmlBean instanceof TestBag) {
+            return (TestBag)xmlBean;
+        } else {
+            return new TestBag();
+        }
+    }
+    
+    
+    public static UnitTestSuite getUnitTestSuite(File suiteFile) throws Exception {
+        Document doc = getDOMDocFromFile(suiteFile);
+        XMLBean xmlBean = XMLBean.getXMLBean(doc);    
+        if (xmlBean instanceof UnitTestSuite) {
+            return (UnitTestSuite)xmlBean;
+        } else {
+            System.out.println("getUnitTestSuite():xmlBean:"+xmlBean);
+            return null;
+        }
+    }
+    
+    
+    
+    public static UnitTestSuite[] getUnitTestSuites(File suiteDir) throws Exception {       
+        //File suiteDir = inputDir;
+        // scan directory
+        File[] suiteFiles = suiteDir.listFiles();
+        debugInfo("getUnitTestSuites(File):"+suiteFiles);
+        ArrayList suiteList = new ArrayList();
+        for (int i=0; i< suiteFiles.length; i++) {
+            try {
+                suiteList.add(getUnitTestSuite(suiteFiles[i]));
+            } catch (Exception e) {
+                // exception !!!
+            }
+        }
+        // now convert the arraylist into plain array
+        return (UnitTestSuite[])(suiteList.toArray(new UnitTestSuite[0]));
+    }
 }

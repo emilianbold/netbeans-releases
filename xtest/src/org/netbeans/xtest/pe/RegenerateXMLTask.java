@@ -65,29 +65,16 @@ public class RegenerateXMLTask extends Task{
         this.inputDir = inputDir;
     }
     
-    public static Document getDOMDocFromFile(File file) throws IOException {
-        //return SerializeDOM.parseFile(file);
-        return SerializeDOM.parseFile(file);
-    }
     
     public TestBag getTestBag() throws Exception {
-        return getTestBag(new File(inputDir,PEConstants.TESTBAG_XML_FILE));
+        return ResultsUtils.getTestBag(new File(inputDir,PEConstants.TESTBAG_XML_FILE));
     }
     
     
-    public static TestBag getTestBag(File testBag) throws Exception {
-        Document doc = getDOMDocFromFile(testBag);
-        XMLBean xmlBean = XMLBean.getXMLBean(doc);    
-        if (xmlBean instanceof TestBag) {
-            return (TestBag)xmlBean;
-        } else {
-            return new TestBag();
-        }
-    }
     
     public SystemInfo getSystemInfo() {
         try {
-            Document doc = getDOMDocFromFile(new File(inputDir,"systeminfo.xml"));
+            Document doc = ResultsUtils.getDOMDocFromFile(new File(inputDir,"systeminfo.xml"));
             XMLBean xmlBean = XMLBean.getXMLBean(doc);    
             if (xmlBean instanceof SystemInfo) {
                 return (SystemInfo)xmlBean;
@@ -100,86 +87,20 @@ public class RegenerateXMLTask extends Task{
     }
     
     public TestRun getTestRun() {
-       return getTestRun(new File(inputDir,PEConstants.TESTRUN_XML_FILE));
+       return ResultsUtils.getTestRun(new File(inputDir,PEConstants.TESTRUN_XML_FILE));
     }
     
-    public static TestRun getTestRun(File testRunFile) {
-        try {
-            Document doc = getDOMDocFromFile(testRunFile);
-            XMLBean xmlBean = XMLBean.getXMLBean(doc);    
-            if (xmlBean instanceof TestRun) {
-                return (TestRun)xmlBean;
-            } else {
-                return new TestRun();
-            }
-        } catch (Exception e) {
-            return new TestRun();
-        }
-    }
     
     public XTestResultsReport getXTestResultsReport()    {
-        return getXTestResultsReport(new File(inputDir,PEConstants.TESTREPORT_XML_FILE));
-    }
-    
-    public static XTestResultsReport getXTestResultsReport(File reportFile)    {
-        try {
-            debugInfo("getXTestResultsReport(): file="+reportFile);
-            Document doc = getDOMDocFromFile(reportFile);
-            debugInfo("getXTestResultsReport(): god Document");
-            //XMLBean.DEBUG=true;
-            XMLBean xmlBean = XMLBean.getXMLBean(doc);    
-            //XMLBean.DEBUG=false;
-            debugInfo("getXTestResultsReport(): got XMLBean");  
-            if (xmlBean instanceof XTestResultsReport) {
-                debugInfo("getXTestResultsReport(): got XTestResultsReport");  
-                return (XTestResultsReport)xmlBean;
-            } else {
-                debugInfo("getXTestResultsReport(): have to create new XTestResultsReport (XMLBean is not the required type)");  
-                return new XTestResultsReport();
-            }
-        } catch (Exception e) {
-            debugInfo("getXTestResultsReport(): EXCEPTION!!!"+e);
-            //e.printStackTrace();
-            //XMLBean.DEBUG=false;
-            debugInfo("getXTestResultsReport(): have to create new XTestResultsReport!");  
-            return new XTestResultsReport();
-        }
-    }
-    
-    
-    public static UnitTestSuite getUnitTestSuite(File suiteFile) throws Exception {
-        Document doc = getDOMDocFromFile(suiteFile);
-        XMLBean xmlBean = XMLBean.getXMLBean(doc);    
-        if (xmlBean instanceof UnitTestSuite) {
-            return (UnitTestSuite)xmlBean;
-        } else {
-            System.out.println("getUnitTestSuite():xmlBean:"+xmlBean);
-            return null;
-        }
-    }
-    
+        return ResultsUtils.getXTestResultsReport(new File(inputDir,PEConstants.TESTREPORT_XML_FILE));
+    }    
     
     public UnitTestSuite[] getUnitTestSuites() throws Exception {
          File suiteDir = new File(inputDir,"suites");
-         return getUnitTestSuites(suiteDir);
+         return ResultsUtils.getUnitTestSuites(suiteDir);
     }
     
-    public static UnitTestSuite[] getUnitTestSuites(File suiteDir) throws Exception {       
-        //File suiteDir = inputDir;
-        // scan directory
-        File[] suiteFiles = suiteDir.listFiles();
-        debugInfo("getUnitTestSuites(File):"+suiteFiles);
-        ArrayList suiteList = new ArrayList();
-        for (int i=0; i< suiteFiles.length; i++) {
-            try {
-                suiteList.add(getUnitTestSuite(suiteFiles[i]));
-            } catch (Exception e) {
-                // exception !!!
-            }
-        }
-        // now convert the arraylist into plain array
-        return (UnitTestSuite[])(suiteList.toArray(new UnitTestSuite[0]));
-    }
+
     
     public void execute () throws BuildException {
         try {
@@ -239,7 +160,7 @@ public class RegenerateXMLTask extends Task{
         File testBagResultDir = new File(testBagRoot,PEConstants.XMLRESULTS_DIR);
         File testBagFile = new File(testBagResultDir,PEConstants.TESTBAG_XML_FILE);
         File testBagFailuresFile = new File(testBagResultDir,PEConstants.TESTBAG_FAILURES_XML_FILE);
-        TestBag testBag = (TestBag)getTestBag(testBagFile);
+        TestBag testBag = (TestBag)ResultsUtils.getTestBag(testBagFile);
         debugInfo("regenerateTestBag(): got testBag from testbag.xml");
         // now scan the directory and get a list of test suites available in suite directory
         if ((!fullRegenerate)&(!produceBigReportOnly)) {
@@ -277,7 +198,7 @@ public class RegenerateXMLTask extends Task{
         }
         
         debugInfo("regenerateTestBag(): regenerating testbag.xml");
-        UnitTestSuite[] testSuites = getUnitTestSuites(new File(testBagResultDir,PEConstants.TESTSUITES_SUBDIR)); 
+        UnitTestSuite[] testSuites = ResultsUtils.getUnitTestSuites(new File(testBagResultDir,PEConstants.TESTSUITES_SUBDIR)); 
         UnitTestSuite[] failingTestSuites = new UnitTestSuite[testSuites.length];
         // clean old values
         testBag.xmlat_testsPass = 0;
@@ -353,7 +274,7 @@ public class RegenerateXMLTask extends Task{
         }
         File testRunFile = new File(testRunResultsDir,PEConstants.TESTRUN_XML_FILE);
         File testRunFailuresFile = new File(testRunResultsDir,PEConstants.TESTRUN_FAILURES_XML_FILE);
-        TestRun testRun = (TestRun)getTestRun(testRunFile);
+        TestRun testRun = (TestRun)ResultsUtils.getTestRun(testRunFile);
         debugInfo("regenerateTestRun(): regenerating testrun.xml");
         File[] testBagsDirs = ResultsUtils.listTestBags(testRunRoot);
         TestBag[] testBags = new TestBag[testBagsDirs.length];       
@@ -392,7 +313,7 @@ public class RegenerateXMLTask extends Task{
             for (int i=0;i<testRun.xmlel_TestBag.length;i++) {
                 TestBag aTestBag = testRun.xmlel_TestBag[i];
                 if (aTestBag.xmlat_testsTotal != aTestBag.xmlat_testsPass) {
-                   testBagsWithFailures[i] = getTestBag(new File(testBagsDirs[i],PEConstants.XMLRESULTS_DIR+File.separator+PEConstants.TESTBAG_FAILURES_XML_FILE));
+                   testBagsWithFailures[i] = ResultsUtils.getTestBag(new File(testBagsDirs[i],PEConstants.XMLRESULTS_DIR+File.separator+PEConstants.TESTBAG_FAILURES_XML_FILE));
                 }                
             }
             debugInfo("regenerateTestRun(): serializing new testrun with failures");
@@ -424,7 +345,7 @@ public class RegenerateXMLTask extends Task{
             }
         }
         File testReportFile = new File(testReportResultsDir,PEConstants.TESTREPORT_XML_FILE);
-        XTestResultsReport testReport = (XTestResultsReport)getXTestResultsReport(testReportFile);
+        XTestResultsReport testReport = (XTestResultsReport)ResultsUtils.getXTestResultsReport(testReportFile);
         debugInfo("regenerateTestReport(): regenerating testreport.xml");
         File[] testRunsDirs = ResultsUtils.listTestRuns(testReportRoot);
         TestRun[] testRuns = new TestRun[testRunsDirs.length];
@@ -471,7 +392,7 @@ public class RegenerateXMLTask extends Task{
             for (int i=0;i<testReport.xmlel_TestRun.length;i++) {
                 TestRun aTestRun = testReport.xmlel_TestRun[i];
                 if (aTestRun.xmlat_testsTotal != aTestRun.xmlat_testsPass) {
-                   testRunsWithFailures[i] = getTestRun(new File(testRunsDirs[i],PEConstants.XMLRESULTS_DIR+File.separator+PEConstants.TESTRUN_FAILURES_XML_FILE));
+                   testRunsWithFailures[i] = ResultsUtils.getTestRun(new File(testRunsDirs[i],PEConstants.XMLRESULTS_DIR+File.separator+PEConstants.TESTRUN_FAILURES_XML_FILE));
                 }                
             }
             debugInfo("regenerateTestReport(): serializing new testrun with failures");

@@ -40,6 +40,7 @@ public class XTestResultsReportTask extends Task{
     private String build;
     private String testingGroup;
     private String testedType;
+    private String host;
     
     
     public void setTestingGroup(String testingGroup) {
@@ -62,12 +63,17 @@ public class XTestResultsReportTask extends Task{
         this.build = build;
     }
     
+    public void setHost(String host) {
+        this.host = host;
+    }
+    
     public XTestResultsReport getReport() {
         XTestResultsReport report = new XTestResultsReport();
         report.xmlat_project = project;
         report.xmlat_build = build;
         report.xmlat_testingGroup = testingGroup;
         report.xmlat_testedType = testedType;
+        report.xmlat_host = host;
         report.xmlat_timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
         return report;
     }
