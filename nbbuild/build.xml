@@ -51,17 +51,15 @@ ToDo:
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <ant dir="external" target="unscramble"/>
     <ant dir="../core/external" target="unscramble"/>
-    <ant dir="../libs/external" target="unscramble"/>
     <ant dir="../xml/external" target="unscramble"/>
     <path id="bootstrap-cp">
      <!-- cmdline Ant -->
      <pathelement location="${ant.home}/lib/ant.jar"/>
      <!-- Ant in NB -->
-     <!-- Note: in NB 4.0, ${ant.home}/lib/ant.jar will work as is -->
+     <!-- Note: in NB 3.6, ${ant.home}/lib/ant.jar will work as is -->
+     <!-- XXX so delete the following line when NB 3.6 is released: -->
      <pathelement path="${netbeans.library.path}"/>
      <fileset dir="..">
-        <!-- XML Serializer: -->
-        <include name="libs/external/xerces*.jar"/>
         <!-- For JavaHelp indexing: -->
         <include name="nbbuild/external/jhall*.jar"/>
         <!-- For XMLValidate Ant task: -->
@@ -1237,6 +1235,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="bootstrap-javadoc"
           depends="bootstrap"
           description="Generate Javadoc for Ant extensions.">
+    <!-- XXX this ought to be deleted at some point. -->
+    <!-- Can be done anyway by apisupport/ant, and published as regular module Javadoc -->
+    <!-- by the regular daily Javadoc build process. -->
+    <!-- Then all of this stuff can be deleted from the www part of CVS. -->
     <mkdir dir="www/nbantext-javadoc"/>
     <tstamp/>
     <javadoc sourcepath="antsrc"
