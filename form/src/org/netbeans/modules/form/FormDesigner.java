@@ -589,9 +589,12 @@ public class FormDesigner extends TopComponent
     // in-place editing
 
     public void startInPlaceEditing(RADComponent metacomp) {
-        if (formModel.isReadOnly()) return;
-        if (!isEditableInPlace(metacomp)) return;
-        if (textEditLayer != null && textEditLayer.isVisible()) return;
+        if (formModel.isReadOnly())
+            return;
+        if (textEditLayer != null && textEditLayer.isVisible())
+            return;
+        if (!isEditableInPlace(metacomp)) // check for sure
+            return;
 
         Component comp = (Component) getComponent(metacomp);
         if (comp == null) { // component is not visible
@@ -662,9 +665,23 @@ public class FormDesigner extends TopComponent
         editedProperty = null;
     }
 
-    public static boolean isEditableInPlace(RADComponent metacomp) {
-        Object bean = metacomp.getBeanInstance();
-        return InPlaceEditLayer.supportsEditingFor(bean.getClass());
+    public boolean isEditableInPlace(RADComponent metacomp) {
+        Component comp = (Component) getComponent(metacomp);
+        if (comp == null)
+            return false;
+
+        boolean requireLayer = false; // if the original component cannot be used
+        comp = comp.getParent();
+        while (comp != null && comp.getClass() != ComponentLayer.class) {
+            if (!JComponent.class.isAssignableFrom(comp.getClass())) {
+                requireLayer = true;
+                break;
+            }
+            comp = comp.getParent();
+        }
+
+        return InPlaceEditLayer.supportsEditingFor(metacomp.getBeanClass(),
+                                                   requireLayer);
     }
 
     private void notifyCannotEditInPlace() {

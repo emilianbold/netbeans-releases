@@ -102,11 +102,12 @@ class InPlaceEditLayer extends JPanel
 
     // ------------
 
-    static boolean supportsEditingFor(Class compClass) {
+    static boolean supportsEditingFor(Class compClass, boolean layerRequired) {
         return JLabel.class.isAssignableFrom(compClass)
                || AbstractButton.class.isAssignableFrom(compClass)
-               || JTextField.class.isAssignableFrom(compClass)
-               || JTextArea.class.isAssignableFrom(compClass);
+               || (!layerRequired
+                   && (JTextField.class.isAssignableFrom(compClass)
+                       || JTextArea.class.isAssignableFrom(compClass)));
     }
 
     boolean isEditingInitialized() {
