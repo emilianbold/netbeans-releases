@@ -47,14 +47,13 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
         putClientProperty("HelpID", "jsp_breakpoint");//NOI18N
 
         Listener l = new Listener(this);
+        cboxJspSourcePath.setEditable(false);
         cboxJspSourcePath.getEditor().getEditorComponent().addKeyListener(l);
         cboxJspSourcePath.addActionListener(l);
         
         // a11y
         getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_LineBreakpointPanel")); // NOI18N
-        cboxJspSourcePath.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Source_name")); // NOI18N
-        tfLineNumber.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Line_number")); // NOI18N
-
+ 
         Object[] objs = Utils.getJsps();
         if (objs != null) {
             if (objs.length != 0) {
@@ -78,12 +77,42 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        lblLineNumber = new javax.swing.JLabel();
-        tfLineNumber = new javax.swing.JTextField();
         lblJspSourcePath = new javax.swing.JLabel();
         cboxJspSourcePath = new javax.swing.JComboBox();
+        lblLineNumber = new javax.swing.JLabel();
+        tfLineNumber = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
+
+        lblJspSourcePath.setText(NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Source_name"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
+        add(lblJspSourcePath, gridBagConstraints);
+        lblJspSourcePath.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSN_CTL_Source_name"));
+
+        cboxJspSourcePath.setEditable(true);
+        cboxJspSourcePath.getEditor().getEditorComponent().addFocusListener(new java.awt.event.FocusListener() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                cboxJspSourcePathFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                cboxJspSourcePathFocusLost(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 2);
+        add(cboxJspSourcePath, gridBagConstraints);
+        cboxJspSourcePath.getAccessibleContext().setAccessibleName(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSN_CTL_Source_name"));
+        cboxJspSourcePath.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Source_name"));
 
         lblLineNumber.setLabelFor(tfLineNumber);
         lblLineNumber.setText(NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Line_number"));
@@ -94,6 +123,7 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
         add(lblLineNumber, gridBagConstraints);
+        lblLineNumber.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Line_number"));
 
         tfLineNumber.setColumns(7);
         tfLineNumber.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -118,33 +148,8 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 2);
         add(tfLineNumber, gridBagConstraints);
-
-        lblJspSourcePath.setText(NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Source_name"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
-        add(lblJspSourcePath, gridBagConstraints);
-
-        cboxJspSourcePath.setEditable(true);
-        cboxJspSourcePath.getEditor().getEditorComponent().addFocusListener(new java.awt.event.FocusListener() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                cboxJspSourcePathFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                cboxJspSourcePathFocusLost(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 2);
-        add(cboxJspSourcePath, gridBagConstraints);
+        tfLineNumber.getAccessibleContext().setAccessibleName(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSN_CTL_Line_number"));
+        tfLineNumber.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Line_number"));
 
     }//GEN-END:initComponents
 
