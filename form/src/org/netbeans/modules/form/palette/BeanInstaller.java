@@ -98,6 +98,13 @@ public final class BeanInstaller extends Object {
           String pal = selectPaletteCategory();
           if (pal != null) {
             finishInstall(jar, sel.getSelectedBeans(), pal);
+            java.awt.EventQueue.invokeLater (
+              new Runnable () {
+                public void run () {
+                  ComponentPalette.getDefault ().updatePalette ();
+                }
+              }
+            );
           }
         }
       }
@@ -618,6 +625,8 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  14   Gandalf   1.13        8/9/99   Ian Formanek    Fixed bug which cused 
+ *       newly installed beans not to be visible in the palette
  *  13   Gandalf   1.12        7/25/99  Ian Formanek    Fixed bug 2582 - Beans 
  *       tab is empty although the COmponent Palette node shows that there is 
  *       the Timer bean
