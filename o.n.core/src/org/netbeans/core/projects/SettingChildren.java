@@ -339,21 +339,21 @@ public final class SettingChildren extends FilterNode.Children {
         protected NodeListener createNodeListener () {
             return new NA (this);
         }
-        
-        /** commented out - waiting for nbui decision
-         * Hacked to remove customize bean action from original nodes.
-         */
-        /*public SystemAction[] getActions () {
-            SystemAction[] actions = super.getActions();
-            List actList = new ArrayList(actions.length);
-            for (int i = 0; i < actions.length; i++) {
-                if (actions[i] instanceof CustomizeBeanAction) {
-                    continue;
-                }
-                actList.add(actions[i]);
+
+        // #24766 Exclude Customize Bean action.
+        /** Overrides superclass method, excludes the CustomizeBeanAction from the node. */
+        public SystemAction[] getActions() {
+            SystemAction[] as = super.getActions();
+            List actions = java.util.Arrays.asList(as);
+            SystemAction customizeBean = SystemAction.get(CustomizeBeanAction.class);
+            if(actions.contains(customizeBean)) {
+                actions = new ArrayList(actions); // to be mutable
+                actions.remove(customizeBean);
+                return (SystemAction[])actions.toArray(new SystemAction[0]);
+            } else {
+                return as;
             }
-            return (SystemAction[])actList.toArray(new SystemAction[actList.size()]);
-        }*/
+        }
 
         private static class NA extends NodeAdapter {
             public NA (SettingFilterNode sfn) {
