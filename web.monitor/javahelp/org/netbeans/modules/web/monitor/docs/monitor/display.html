@@ -37,8 +37,11 @@ Monitor (Ctrl+7) from the main menu.</p></li></ul>
 Servers node.</li>
 <li>Choose Properties.</li>
 <li>Select the Enable HTTP Monitor checkbox.</li>
-<li>If the server is running, stop and restart it.</li></ol>
-<b>To enable the HTTP Monitor for servers that are started outside the IDE:</b>
+<li>If the server is running, stop and restart it.</li>
+<li>For the SJS Application Server, right-click the HTTP Server node
+ in the Runtime window and choose Start HTTP Server.</li></ol>
+<p>The HTTP Monitor is now enabled and will appear when you deploy your application.</p>
+<p><b>To enable the HTTP Monitor for servers that are started outside the IDE:</b></p>
 <ol>
 	<li>Copy the following two files to your web application's <tt>WEB-INF/lib</tt> folder:
 	<ul><li><i>IDE-install-directory</i><tt>/ide5/config/modules/org-netbeans-modules-schema2beans.jar</tt></li> 
@@ -46,8 +49,8 @@ Servers node.</li>
 	<table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top"> 
     <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    Note that the Sun Java System Application Server 8 has its own <tt>schema2beans.jar</tt>.
-    Therefore, when you are using the Sun Java System Application Server 8, 
+    The SJS Application Server has its own <tt>schema2beans.jar</tt>.
+    Therefore, when you are using the SJS Application Server, 
     only copy <tt>httpmonitor.jar</tt> to your web application's <tt>WEB-INF/lib</tt> folder.</td>
   </tr>
 </table></li>
@@ -109,6 +112,8 @@ To monitor the data records from a web application using more than one
 </pre>
       </li>
   </tr>
+  <li>Right-click the HTTP Server node
+in the Runtime window and choose Start HTTP Server.</li>
   </ol>
 </table>
 <table>
@@ -116,7 +121,7 @@ To monitor the data records from a web application using more than one
     <td valign="top"><img src="../images/warn.gif" alt="Tip"></td>
     <td valign=top align=left> 
         When you deploy the web application to a production server, remember to remove 
-        the jar files from your <tt>WEB-INF/lib</tt> directory and remove 
+        the jar files from your <tt>WEB-INF/lib</tt> folder and remove 
         the filter and filter mapping declarations from the web application's deployment 
         descriptor.
 </td>
