@@ -146,6 +146,9 @@ public final class LoaderPoolNode extends AbstractNode {
             if (it.next ().getClass ().equals (l.getClass ()))
                 it.remove ();
         loaders.add (l);
+        l.removePropertyChangeListener (loaderPool);
+        l.addPropertyChangeListener (loaderPool);
+        
         installBefores.put (l.getClass ().getName (), s.getInstallBefore ());
         installAfters.put (l.getClass ().getName (), s.getInstallAfter ());
         resort ();
@@ -418,6 +421,8 @@ public final class LoaderPoolNode extends AbstractNode {
         if (loaders.remove (dl)) {
             installBefores.remove (dl.getClass ().getName ());
             installAfters.remove (dl.getClass ().getName ());
+            dl.removePropertyChangeListener (loaderPool);
+        
             resort ();
             return true;
         }
