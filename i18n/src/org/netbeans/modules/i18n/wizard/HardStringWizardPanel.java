@@ -39,6 +39,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -52,6 +54,7 @@ import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.PropertyPanel;
 
 import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -150,8 +153,23 @@ final class HardStringWizardPanel extends JPanel {
         if(sourceData == null)
             return null;
         
-        if(sourceData.getRemovedStrings() == null)
-            sourceData.setRemovedStrings(new HashSet());
+        if(sourceData.getRemovedStrings() == null) {
+            // init removed string for the first time
+            Set removed = new HashSet();
+            
+            // add all strings with empty keys
+            Map stringMap = sourceData.getStringMap(); // map<HardCodedString, I18nString>
+            Iterator hcsIt = stringMap.keySet().iterator(); // hard
+
+            while (hcsIt.hasNext()) {
+                HardCodedString hcString = (HardCodedString)hcsIt.next();
+                I18nString i18nString = (I18nString)stringMap.get(hcString);
+
+                if (i18nString.getKey().equals("")) 
+                    removed.add(hcString);
+            }
+            sourceData.setRemovedStrings(removed);
+        }
         
         return sourceData.getRemovedStrings();                    
     }
@@ -326,6 +344,7 @@ final class HardStringWizardPanel extends JPanel {
         }
         
         
+        
         /** Implements superclass abstract method. */
         public int getColumnCount() {
             return 5;
@@ -345,7 +364,11 @@ final class HardStringWizardPanel extends JPanel {
                 return null;
             
             if(columnIndex == COLUMN_INDEX_CHECK) {
-                return !getRemovedStrings().contains(stringMap.keySet().toArray()[rowIndex]) ? Boolean.TRUE : Boolean.FALSE;
+                if (getRemovedStrings().contains(stringMap.keySet().toArray()[rowIndex]))
+                    return Boolean.FALSE ;
+                else
+                    return Boolean.TRUE;
+                
             } else if(columnIndex == COLUMN_INDEX_HARDSTRING) {
                 return stringMap.keySet().toArray()[rowIndex];
             } else {
@@ -356,39 +379,65 @@ final class HardStringWizardPanel extends JPanel {
         /** Overrides superclass method.
          * @ return true for all columns but first */
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            if(columnIndex != COLUMN_INDEX_HARDSTRING)
-                return true;
-            else
-                return false;
+            return (columnIndex != COLUMN_INDEX_HARDSTRING);
         }
         
         /** Overrides superclass method. */
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
-            if(columnIndex == COLUMN_INDEX_HARDSTRING)
-                return;
-
             Map stringMap = getStringMap();
-            
-            if(stringMap == null)
-                return;
-            
-            if(columnIndex == COLUMN_INDEX_CHECK && value instanceof Boolean) {
-                Object hardString = stringMap.keySet().toArray()[rowIndex];
-                
-                Set removedStrings = getRemovedStrings();
-                
-                if(((Boolean)value).booleanValue())
-                    removedStrings.remove(hardString);
-                else
-                    removedStrings.add(hardString);
-            }
-                
-            I18nString i18nString = (I18nString)stringMap.values().toArray()[rowIndex];
+            if(stringMap == null) return;
 
-            if(columnIndex == COLUMN_INDEX_KEY)
-                i18nString.setKey(value.toString());
-            else if(columnIndex == COLUMN_INDEX_VALUE)
-                i18nString.setValue(value.toString());
+            switch (columnIndex) {
+                case COLUMN_INDEX_HARDSTRING: return;
+                case COLUMN_INDEX_CUSTOM:
+                    I18nString otherValue = (I18nString)getValueAt(rowIndex, COLUMN_INDEX_KEY);
+                    if (!((I18nString)value).getKey().equals("")) 
+                        setValueAt(Boolean.TRUE, rowIndex, COLUMN_INDEX_CHECK);
+                    else 
+                        setValueAt(Boolean.FALSE, rowIndex, COLUMN_INDEX_CHECK);
+                    break;
+                case COLUMN_INDEX_CHECK : 
+                    if(value instanceof Boolean) {
+
+                        // check that the key is not empty and thus it is allowed
+                        // to change the value. Display a notification otherwise.
+                        if ((((Boolean)value).booleanValue()==true) && 
+                            ((I18nString)getValueAt(rowIndex, COLUMN_INDEX_KEY)).getKey().equals("")) 
+                        { // empty,not allowed
+                            String message = NbBundle.getMessage(HardStringWizardPanel.class, "MSG_CANNOT_INSERT_EMPTY_KEYS");
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.INFORMATION_MESSAGE);
+                            DialogDisplayer.getDefault().notify(nd);
+                        } else {               
+                            Object hardString = stringMap.keySet().toArray()[rowIndex];
+
+                            Set removedStrings = getRemovedStrings();
+
+                            if(((Boolean)value).booleanValue())
+                                removedStrings.remove(hardString);
+                            else
+                                removedStrings.add(hardString);
+                        }
+                    } 
+                    break;
+                case COLUMN_INDEX_KEY :  {
+                    I18nString i18nString = (I18nString)stringMap.values().toArray()[rowIndex];
+                    i18nString.setKey(value.toString());
+                    if (!value.toString().equals("")) 
+                        setValueAt(Boolean.TRUE, rowIndex, COLUMN_INDEX_CHECK);
+                    else 
+                        setValueAt(Boolean.FALSE, rowIndex, COLUMN_INDEX_CHECK);
+                    break;
+                }
+
+                case COLUMN_INDEX_VALUE: {
+                    I18nString i18nString = (I18nString)stringMap.values().toArray()[rowIndex];
+                    i18nString.setValue(value.toString());
+                    if (!i18nString.getKey().equals("")) setValueAt(Boolean.TRUE, rowIndex, COLUMN_INDEX_CHECK);                    
+                    break;
+                }
+            } // switch (columnIndex)
+            
+            fireTableRowsUpdated(rowIndex, rowIndex);
         }
         
         /** Overrides superclass method. 
@@ -439,7 +488,7 @@ final class HardStringWizardPanel extends JPanel {
                 public void actionPerformed(ActionEvent evt) {
                     PropertyPanel panel = i18nString.getSupport().getPropertyPanel();
                     I18nString clone = (I18nString) i18nString.clone();
-                    panel.setI18nString(clone);
+                    panel.setI18nString(i18nString);
 
                     String title = Util.getString("PROP_cust_dialog_name");
                     DialogDescriptor dd = new DialogDescriptor(panel, title);
@@ -457,7 +506,7 @@ final class HardStringWizardPanel extends JPanel {
 
                     Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
                     dialog.setVisible(true);
-                    if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+                    if (dd.getValue() == DialogDescriptor.CANCEL_OPTION) {
                         i18nString.become(clone);
                     }
                 }

@@ -441,30 +441,23 @@ final class ResourceWizardPanel extends JPanel {
                 progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_Loading") 
                     + " " + cp.getResourceName( source.getPrimaryFile(), '.', false )); // NOI18N
 
-                // Get source data.
+
+                // retrieve existing sourcedata -- will provide the resource for the new instance
                 SourceData sourceData = (SourceData)sourceMap.get(source);
                 
+                // prepare new sourcedata
                 // Get i18n support for this source.
-                I18nSupport support = sourceData.getSupport();
-
-                if(support == null) {
-                    // Invalid sourceData.                    
-                    try {
-                        support = FactoryRegistry.getFactory(source.getClass()).create(source);
-                    } catch(IOException ioe) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-
-                        // Remove source from settings.
-                        sourceMap.remove(source);
-                        
-                        continue;
-                    }
-
-                    sourceData = new SourceData(sourceData.getResource(), support);
-                    
-                    sourceMap.put(source, sourceData);
+                I18nSupport support;
+                try {
+                    support = FactoryRegistry.getFactory(source.getClass()).create(source);
+                } catch(IOException ioe) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                    // Remove source from settings.
+                    sourceMap.remove(source);
+                    continue;
                 }
-
+                sourceData = new SourceData(sourceData.getResource(), support);
+                sourceMap.put(source, sourceData);
                 
                 cp = ClassPath.getClassPath( source.getPrimaryFile(), ClassPath.SOURCE );
                 progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SearchingIn")
