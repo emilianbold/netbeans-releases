@@ -41,16 +41,8 @@ Microsystems, Inc. All Rights Reserved.
         </echo>
     </target>
 
-    <target name="compile" depends="init,generate-user-handler,projectized.compile">
-        <delete file="src/org/w3c/dom/UserDataHandler.java"/>
-        <delete file="src/org/w3c/dom/TypeInfo.java"/>
-        <delete file="src/org/w3c/dom/DOMConfiguration.java"/>
-    </target>
-
-    <target name="clean" depends="clean-w3c, projectized.clean"/>
-
-    <target name="clean-w3c">
-        <delete dir="src/org/w3c"/> <!-- TMP DOM3 -->
+    <target name="compile" depends="generate-user-handler,projectized.compile">
+        <delete dir="src/org/w3c"/>
     </target>
 
     <target name="javadoc" depends="init">
