@@ -24,6 +24,13 @@ All Rights Reserved.
     <property name="jnlp.signjar.alias" value="jnlp" />
     <property name="jnlp.signjar.keystore" location="default.keystore" />
     <property name="jnlp.signjar.password" value="netbeans" />
+    <property name="jnlp.codebase.base" location="release" />
+    <property name="jnlp.codebase" value="file:${jnlp.codebase.base}/" />
+    <property name="jnlp.static" value="true" />
+    <property name="allmodules" value="${nb.cluster.platform}" />
+    
+    
+    <taskdef name="moduleinfo" classpath="${nb_all}/nbbuild/nbantext.jar" classname="org.netbeans.nbbuild.ModuleInfo" />
     
     <target name="compile">
         <delete file="src/META-INF/netbeans-location.properties"/>
@@ -166,175 +173,31 @@ All Rights Reserved.
              <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
              </fileset>
         </jar>
+        <delete file="jars/jh*.jar" />
 
     </target>
 
     <!-- copies and conditionally repackages all jars -->
     <target name="buildjar">
         <echo message="buildjar running with property maindir == ${maindir}"/>
-        
-        
-        <mkdir dir="jars/${maindir}"/>
-        
-        <fileset dir="../../${maindir}" id="modules">
-            <include name="netbeans/modules/*.jar"/>
-        </fileset>
-        
-        <fileset dir="../../${maindir}" id="modules-locale">
-            <include name="netbeans/modules/locale/*.jar"/>
-        </fileset>
-        
-        <fileset dir="../../${maindir}" id="modules-ext">
-            <include name="netbeans/modules/ext/*.jar"/>
-        </fileset>
-        
-        <fileset dir="../../${maindir}" id="modules-autoload">
-            <include name="netbeans/modules/autoload/*.jar"/>
-        </fileset>
-        
-        <fileset dir="../../${maindir}" id="modules-autoload-locale">
-            <include name="netbeans/modules/autoload/locale/*.jar"/>
-        </fileset>
-        
-        <fileset dir="../../${maindir}" id="modules-autoload-ext">
-            <include name="netbeans/modules/autoload/ext/*.jar"/>
-        </fileset>
-        
-        <fileset dir="../../${maindir}" id="modules-eager">
-            <include name="netbeans/modules/eager/*.jar"/>
-        </fileset>
-        
-        <fileset dir="../../${maindir}" id="modules-eager-locale">
-            <include name="netbeans/modules/eager/locale/*.jar"/>
-        </fileset>
-        
-        <fileset dir="../../${maindir}" id="modules-eager-ext">
-            <include name="netbeans/modules/eager/ext/*.jar"/>
-        </fileset>
 
-        <fileset dir="../../${maindir}" id="lib">
-            <include name="netbeans/lib/*.jar"/>
-        </fileset>
-
-        <fileset dir="../../${maindir}" id="lib-ext">
-            <include name="netbeans/lib/ext/*.jar"/>
-        </fileset>
-
-        <fileset dir="../../${maindir}" id="lib-locale">
-            <include name="netbeans/lib/locale/*.jar"/>
-        </fileset> 
-
-        <pathconvert pathsep="," property="f1" refid="modules" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="modules"/>
-            <param name="forconversion" value="${f1}"/>
-        </antcall>
+        <moduleinfo 
+            module="${maindir}" 
+            filesetname="buildjar.files" 
+            clusterdirname="buildjar.cluster" 
+            trackingpath="${netbeans.dest.dir}" 
+            failonerror="false"
+        />
         
-        <pathconvert pathsep="," property="f2" refid="modules-ext" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="modules/ext"/>
-            <param name="forconversion" value="${f2}"/>
-        </antcall>
+        <mkdir dir="jars"/>
         
-        <pathconvert pathsep="," property="f3" refid="modules-autoload" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="modules/autoload"/>
-            <param name="forconversion" value="${f3}"/>
-        </antcall>
+        <copy todir="jars" flatten="true" >
+            <fileset refid="buildjar.files" >
+            </fileset>
+        </copy>
         
-        <pathconvert pathsep="," property="f4" refid="modules-autoload-ext" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="modules/autoload/ext"/>
-            <param name="forconversion" value="${f4}"/>
-        </antcall>
-        
-        <pathconvert pathsep="," property="f5" refid="modules-eager" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="modules/eager"/>
-            <param name="forconversion" value="${f5}"/>
-        </antcall>
-        
-        <pathconvert pathsep="," property="f6" refid="modules-eager-ext" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="modules/eager/ext"/>
-            <param name="forconversion" value="${f6}"/>
-        </antcall>
-
-        <pathconvert pathsep="," property="f7" refid="modules-locale" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="modules/locale"/>
-            <param name="forconversion" value="${f7}"/>
-        </antcall>
-
-        <pathconvert pathsep="," property="f8" refid="modules-eager-locale" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="modules/eager/locale"/>
-            <param name="forconversion" value="${f8}"/>
-        </antcall>
-
-        <pathconvert pathsep="," property="f9" refid="modules-autoload-locale" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="modules/autoload/locale"/>
-            <param name="forconversion" value="${f9}"/>
-        </antcall>
-
-        <pathconvert pathsep="," property="fa" refid="lib" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="lib"/>
-            <param name="forconversion" value="${fa}"/>
-        </antcall>
-
-        <pathconvert pathsep="," property="fb" refid="lib-ext" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="lib/ext"/>
-            <param name="forconversion" value="${fb}"/>
-        </antcall>
-
-        <pathconvert pathsep="," property="fc" refid="lib-locale" setonempty="false"/>
-        <antcall target="repackage-all">
-            <param name="subdir" value="lib/locale"/>
-            <param name="forconversion" value="${fc}"/>
-        </antcall>
     </target>
     
-    <target name="repackage-all">
-        <condition property="run-repackage">
-            <not>
-                <!-- This a little trick to find out whether property
-                    forconversion contains real set of path or one of
-                    the strings ${f1} .. ${f6}. It contains this strange
-                    string in case the folder for conversion is emtpy.
-                    Sorry I did not find any better way to decide whether
-                    a property is empty - it would require a dedicated task.
-                -->
-                <contains string="${forconversion}" substring="{f"/>
-            </not>
-        </condition>
-        <antcall target="repackage-all2"/>
-    </target>
-    
-    <target name="repackage-all2" if="run-repackage">
-        <echo message="repackage-all called with --${forconversion}--"/>
-        <repeat values="${forconversion}" name="filetoconvert" target="repackage"/>
-    </target>
-    
-    <target name="repackage">
-        <echo message="Trying to repackage ${filetoconvert}"/>
-        <basename property="fname" file="${filetoconvert}" suffix=".jar"/>
-        <uptodate srcfile="${filetoconvert}" targetfile="jars/${maindir}/${fname}.jar" property="jaruptodate"/>
-        <antcall target="repackage2"/>
-    </target>
-    <!-- This target takes a jar file and adds additional directory to the packed
-        directory structure
-    -->
-    <target name="repackage2" unless="jaruptodate">
-        <mkdir dir="jars/${maindir}"/>
-        <mkdir dir="src/META-INF"/>
-        <copy file="${filetoconvert}" tofile="jars/${maindir}/${fname}.jar"/>
-        <echo file="src/META-INF/netbeans-location.properties" append="true"><![CDATA[${fname}.jar=${subdir}
-]]></echo>
-    </target>
-
     <available file="${jnlp.signjar.keystore}" property="do.not.generate.keystore" />
     <target name="generate-keystore" unless="do.not.generate.keystore" >
         <echo message="Going to create default keystore in ${jnlp.signjar.keystore}" />
