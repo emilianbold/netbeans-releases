@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.javadoc;
  
 import java.io.File;
+import java.io.IOException;
 
 import java.util.Enumeration;
 import java.lang.reflect.Method;
@@ -35,6 +36,8 @@ import com.netbeans.developer.modules.javadoc.comments.JavaDocPropertySupportFac
 import com.netbeans.developer.modules.javadoc.search.SearchDocAction;
 import com.netbeans.developer.modules.javadoc.search.DocFileSystem;
 
+import org.openidex.util.Utilities2;
+
 /** Class for initializing Javadoc module on IDE startup.
 
  @author Petr Hrebejk
@@ -50,10 +53,11 @@ public class JavadocModule extends ModuleInstall {
     // Install Search Action
 
     try {
-      createFirstAction (SearchDocAction.class, 
-        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help") );
+      Utilities2.createAction (SearchDocAction.class, 
+        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"),
+        "ModuleHelp", true, true, false, true);
     } 
-    catch (Exception e) {
+    catch (IOException e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
         e.printStackTrace ();
       }
@@ -69,7 +73,8 @@ public class JavadocModule extends ModuleInstall {
 
     // Remove doc search action
     try {
-      removeAction (SearchDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"));
+      Utilities2.removeAction (SearchDocAction.class,
+        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"));
     } 
     catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
@@ -105,7 +110,7 @@ public class JavadocModule extends ModuleInstall {
                    new JavaDocPropertySupportFactory() );
     
     // Assign the Ctrl+F1 to JavaDoc Index Search Action
-
+    // [PENDING] should be in installed() whenever global keymap editor is finished
     Keymap map = TopManager.getDefault ().getGlobalKeymap ();
     try {
       assign ("C-F1", "com.netbeans.developer.modules.javadoc.search.SearchDocAction", map);
@@ -116,41 +121,6 @@ public class JavadocModule extends ModuleInstall {
   }
 	
   // UTILITY METHODS ----------------------------------------------------------------------
-
-  private void createFirstAction ( Class actionClass, DataFolder folder )
-  throws java.io.IOException {
-    String actionShortName = Utilities.getShortClassName (actionClass);
-    String actionName = actionClass.getName ();
-
-    if (InstanceDataObject.find (folder, actionShortName, actionName) != null) return;  
-
-    DataObject[] children = folder.getChildren ();
-    DataObject[] newOrder = new DataObject [children.length + 2 ];
-    
-    System.arraycopy (children, 0, newOrder, 2, children.length );
-    InstanceDataObject actionInstance = InstanceDataObject.create (folder, actionShortName, actionName);
-    InstanceDataObject afterSeparator = InstanceDataObject.create (folder, "Separator2-"+actionShortName, "javax.swing.JSeparator");
-
-    newOrder[0] = actionInstance;
-    newOrder[1] = afterSeparator;
-
-    folder.setOrder (newOrder);
-
-  }
-
- 
-  private void removeAction (Class actionClass, DataFolder folder) throws java.io.IOException {
-    String actionShortName = Utilities.getShortClassName (actionClass);
-    InstanceDataObject.remove (folder, actionShortName, actionClass.getName ());
-    try {
-      InstanceDataObject.remove (folder, "Separator1-"+actionShortName, "javax.swing.JSeparator");
-      InstanceDataObject.remove (folder, "Separator2-"+actionShortName, "javax.swing.JSeparator");
-    } catch (Exception e) {
-      // these do not have to exist, wo we will catch the exception silently
-    }
-  }
-
-  
 
   /** Assigns a key to an action
   * @param key key name
@@ -285,6 +255,8 @@ public class JavadocModule extends ModuleInstall {
 
 /* 
  * Log
+ *  20   Gandalf   1.19        12/21/99 Jesse Glick     Installing after general
+ *       documentation.
  *  19   Gandalf   1.18        10/27/99 Petr Hrebejk    Bug fixes & back button 
  *       in Javadoc Quickview
  *  18   Gandalf   1.17        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
