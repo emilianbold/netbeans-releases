@@ -13,9 +13,6 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.util.ResourceBundle;
-import org.openide.*;
-import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
@@ -35,7 +32,7 @@ public class DropViewAction extends DatabaseAction
         
 //        try {
 //        } catch(Exception e) {
-//            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("???")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+//            Topmanager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("???")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 //        }
     }
 }

@@ -28,8 +28,6 @@ import org.netbeans.lib.ddl.util.CommandBuffer;
 import org.netbeans.lib.ddl.impl.CreateIndex;
 import org.netbeans.lib.ddl.util.PListReader;
 import javax.swing.event.TableModelEvent;
-import org.openide.DialogDescriptor;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.util.*;

@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import org.openide.*;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.util.*;
 import org.openide.windows.OutputWriter;
@@ -158,7 +159,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
                 e.printStackTrace();
 
             executionWithException = true;
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             return;
 //            throw new DDLException(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage()); // NOI18N
         }
@@ -168,7 +169,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
         if (spec.getSpecificationFactory().isDebugMode()) {
 
             try {
-                OutputWriter ow = TopManager.getDefault().getStdOut();
+                OutputWriter ow = IOProvider.getDefault().getStdOut();
                 if (ow != null)
                     ow.println(fcmd);
                 else
@@ -200,7 +201,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
             if (opened && fcon != null)
                 spec.closeJDBCConnection();
 
-//            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+//            Topmanager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             throw new DDLException(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
         }
 

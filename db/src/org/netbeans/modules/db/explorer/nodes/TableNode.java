@@ -49,7 +49,7 @@ public class TableNode extends DatabaseNode /*implements InstanceCookie*/ {
     }
 
     public Class instanceClass() throws IOException, ClassNotFoundException {
-        return Class.forName("org.netbeans.lib.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ()); //NOI18N
+        return Class.forName("org.netbeans.lib.sql.ConnectionSource", true, org.openide.Topmanager.getDefault ().currentClassLoader ()); //NOI18N
     }
 
     public Object instanceCreate()
@@ -93,10 +93,10 @@ public class TableNode extends DatabaseNode /*implements InstanceCookie*/ {
             super.setName(newname);
             info.put(DatabaseNode.TABLE, newname);
         } catch (CommandNotSupportedException ex) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception ex) {
             //			ex.printStackTrace();
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 
@@ -248,7 +248,7 @@ public class TableNode extends DatabaseNode /*implements InstanceCookie*/ {
                     /*
                     					SwingUtilities.invokeLater(new Runnable() {
                     						public void run() {
-                    							TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to process command, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    							Topmanager.getDefault().notify(new NotifyDescriptor.Message("Unable to process command, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                     						}
                     					});
                     */					

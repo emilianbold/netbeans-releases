@@ -20,7 +20,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.*;
@@ -152,14 +152,14 @@ public class AddDriverDialog {
                         dialog.setVisible(false);
                         dialog.dispose();
                     } else
-                        TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("AddDriverErrorMessage"), NotifyDescriptor.ERROR_MESSAGE));
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("AddDriverErrorMessage"), NotifyDescriptor.ERROR_MESSAGE));
                 }
             };
 
             DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddDriverDialogTitle"), true, listener); //NOI18N
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
             descriptor.setClosingOptions(closingOptions);
-            dialog = TopManager.getDefault().createDialog(descriptor);
+            dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(false);
         } catch (MissingResourceException e) {
             e.printStackTrace();

@@ -48,7 +48,7 @@ public class ExecuteCommandAction extends DatabaseAction {
                 DataViewWindow win = new DataViewWindow(info, ""); //NOI18N
                 win.open();
             } catch(Exception e) {
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
             }
         }
     }

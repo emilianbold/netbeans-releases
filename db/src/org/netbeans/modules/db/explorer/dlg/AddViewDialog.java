@@ -19,7 +19,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
@@ -122,11 +122,11 @@ public class AddViewDialog {
                                 dialog.dispose();
                             }
                         } catch (CommandNotSupportedException e) {
-                            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                         } catch (DDLException e) {
-                            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                         } catch (Exception e) {
-                            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                         }
                     }
                 }
@@ -137,7 +137,7 @@ public class AddViewDialog {
             // after OK button is dialog closed by hand
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
             descriptor.setClosingOptions(closingOptions);
-            dialog = TopManager.getDefault().createDialog(descriptor);
+            dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException e) {
             e.printStackTrace();

@@ -23,7 +23,6 @@ import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.*;
 import org.openide.nodes.*;
 import org.openide.options.SystemOption;
-import org.openide.TopManager;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.DatabaseException;
@@ -52,8 +51,8 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
                 }
             }
 
-            TopManager tm = TopManager.getDefault();
-            FileSystem rfs = tm.getRepository().getDefaultFileSystem();
+            Repository r = Repository.getDefault();
+            FileSystem rfs = r.getDefaultFileSystem();
             FileObject rootFolder = rfs.getRoot();
             FileObject databaseFileObject = rootFolder.getFileObject("Database"); //NOI18N
             if (databaseFileObject != null) {

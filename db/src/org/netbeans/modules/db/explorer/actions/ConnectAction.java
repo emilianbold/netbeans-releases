@@ -114,7 +114,7 @@ public class ConnectAction extends DatabaseAction {
                             nfo.setUser(oldUser);
                             nfo.setSchema(oldSchema);
                             String message = MessageFormat.format(bundle.getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); // NOI18N
-                            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                         }
                     }
                   }
@@ -150,12 +150,12 @@ public class ConnectAction extends DatabaseAction {
                                 if(exc.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
                                     message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"),
                                                                    new String[] {message, con.getDatabase()}); // NOI18N
-                            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                             dlg.setSelectedComponent(basePanel);
                             dlg.setException(new DatabaseException("Unable to obtain schema. "+exc.getMessage())); // NOI18N
                         } catch(Exception exc) {
                             String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
-                            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                             dlg.setSelectedComponent(basePanel);
                             dlg.setException(new DatabaseException("Unable to obtain schema. "+exc.getMessage())); // NOI18N
                         }
@@ -181,7 +181,7 @@ public class ConnectAction extends DatabaseAction {
             } catch (Exception exc) {
                 //exc.printStackTrace();
                 String message = MessageFormat.format(bundle.getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); // NOI18N
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             }
     }
 }

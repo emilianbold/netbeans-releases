@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
@@ -244,7 +243,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            org.openide.DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 

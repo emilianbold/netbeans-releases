@@ -20,7 +20,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.impl.CreateIndex;
@@ -170,7 +170,7 @@ public class AddIndexDialog {
                         } catch (CommandNotSupportedException e) {
                             //PENDING
                         } catch (DDLException e) {
-                            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
                         } catch (ClassNotFoundException e) {
                             //PENDING
                         } catch (IllegalAccessException e) {
@@ -187,7 +187,7 @@ public class AddIndexDialog {
             // after OK button is dialog closed by hand
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
             descriptor.setClosingOptions(closingOptions);
-            dialog = TopManager.getDefault().createDialog(descriptor);
+            dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException e) {
             e.printStackTrace();

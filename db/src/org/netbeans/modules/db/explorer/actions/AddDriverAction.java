@@ -41,7 +41,7 @@ public class AddDriverAction extends DatabaseAction {
             if (dlg.run()) nfo.addDriver(dlg.getDriver());
         } catch(Exception exc) {
             String message = MessageFormat.format(bundle.getString("ERR_UnableToAddDriver"), new String[] {exc.getMessage()}); // NOI18N
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }

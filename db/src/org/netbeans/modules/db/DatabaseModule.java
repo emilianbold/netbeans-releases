@@ -21,7 +21,6 @@ import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.*;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
@@ -35,10 +34,10 @@ public class DatabaseModule extends ModuleInstall {
     static final long serialVersionUID =5426465356344170725L;
     
     public void installed() {
-        TopManager tm = TopManager.getDefault();
+        DialogDisplayer dd = DialogDisplayer.getDefault();
 
         try {
-            FileSystem rfs = tm.getRepository().getDefaultFileSystem();
+            FileSystem rfs = Repository.getDefault().getDefaultFileSystem();
             FileObject rootFolder = rfs.getRoot();
             FileObject databaseFileObject = rootFolder.getFileObject("Database"); //NOI18N
             if (databaseFileObject == null)
@@ -50,20 +49,18 @@ public class DatabaseModule extends ModuleInstall {
             }
         } catch (LinkageError ex) {
             String msg = MessageFormat.format(bundle.getString("FMT_CLASSNOTFOUND"), new String[] {ex.getMessage()}); //NOI18N
-            if (tm != null)
-                tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+            if (dd != null)
+                dd.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception ex) {
             String msg = MessageFormat.format(bundle.getString("FMT_EXCEPTIONINSTALL"), new String[] {ex.getMessage()}); //NOI18N
-            if (tm != null)
-                tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+            if (dd != null)
+                dd.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
     
     public void uninstalled() {
-        TopManager tm = TopManager.getDefault();
-
         try {
-            FileSystem rfs = tm.getRepository().getDefaultFileSystem();
+            FileSystem rfs = Repository.getDefault().getDefaultFileSystem();
             FileObject rootFolder = rfs.getRoot();
             FileObject databaseFileObject = rootFolder.getFileObject("Database"); //NOI18N
             if (databaseFileObject != null) {
@@ -90,7 +87,7 @@ public class DatabaseModule extends ModuleInstall {
     }
     
     public void close () {
-        final Node environment = TopManager.getDefault().getPlaces().nodes().environment();
+        final Node environment = org.openide.TopManager.getDefault().getPlaces().nodes().environment();
         
         // closing all open connection
         Children.MUTEX.writeAccess (new Runnable () {

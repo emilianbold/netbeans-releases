@@ -22,7 +22,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -70,7 +70,7 @@ public class ConnectionDialog {
         // after OK button is dialog closed by hand
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
         descriptor.setClosingOptions(closingOptions);
-        dialog = TopManager.getDefault().createDialog(descriptor);
+        dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setResizable(false);
         dialog.setVisible(false);
     }

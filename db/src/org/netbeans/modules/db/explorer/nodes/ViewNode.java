@@ -41,7 +41,7 @@ public class ViewNode extends DatabaseNode {
             info.put(DatabaseNode.TABLE, newname);
         } catch (CommandNotSupportedException exc) {
             String message = MessageFormat.format(bundle.getString("EXC_UnableToChangeName"), new String[] {exc.getCommand()}); // NOI18N
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
             e.printStackTrace();
         }

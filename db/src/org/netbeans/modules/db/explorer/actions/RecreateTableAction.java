@@ -22,6 +22,7 @@ import javax.swing.JFileChooser;
 import org.openide.*;
 import org.netbeans.lib.ddl.impl.*;
 import org.openide.nodes.*;
+import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
@@ -65,7 +66,7 @@ public class RecreateTableAction extends DatabaseAction {
                                       }
                                   });
 
-            java.awt.Component par = TopManager.getDefault().getWindowManager().getMainWindow();
+            java.awt.Component par = WindowManager.getDefault().getMainWindow();
             if (chooser.showOpenDialog(par) == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
                 if (file != null && file.isFile()) {
@@ -97,7 +98,7 @@ public class RecreateTableAction extends DatabaseAction {
                                 if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                                     exc.printStackTrace();
                                 
-                                TopManager.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                                 
                                 continue;
                             } catch (org.netbeans.modules.db.DatabaseException exc) {
@@ -116,7 +117,7 @@ public class RecreateTableAction extends DatabaseAction {
                             exc.printStackTrace();
                         
                         String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
-                        TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     }
                 } else { // CANCEL option
                     noResult = false;
@@ -127,7 +128,7 @@ public class RecreateTableAction extends DatabaseAction {
                 exc.printStackTrace();
             
             String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }

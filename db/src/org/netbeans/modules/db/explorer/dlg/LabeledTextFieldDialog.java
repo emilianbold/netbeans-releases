@@ -20,7 +20,7 @@ import javax.swing.*;
 import org.openide.util.NbBundle;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 
 import org.netbeans.modules.db.explorer.*;
 
@@ -165,7 +165,7 @@ public class LabeledTextFieldDialog
                                       };
 
             DialogDescriptor descriptor = new DialogDescriptor(pane, title, true, listener);
-            dialog = TopManager.getDefault().createDialog(descriptor);
+            dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException ex) {
             ex.printStackTrace();

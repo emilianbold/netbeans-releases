@@ -19,8 +19,6 @@ import java.text.MessageFormat;
 import java.sql.*;
 import java.util.Properties;
 import java.util.ResourceBundle;
-
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.*;
@@ -273,7 +271,7 @@ public class DatabaseConnection implements DBConnection {
 
         try {
             /*
-            			ClassLoader syscl = TopManager.getDefault().currentClassLoader();
+            			ClassLoader syscl = Topmanager.getDefault().currentClassLoader();
             			Class cl = syscl.loadClass("java.sql.DriverManager");
             			cl = syscl.loadClass(drv);
             			DriverManager.registerDriver((Driver)cl.newInstance());

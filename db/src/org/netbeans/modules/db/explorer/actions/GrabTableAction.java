@@ -26,6 +26,7 @@ import org.openide.nodes.*;
 
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
+import org.openide.windows.WindowManager;
 
 public class GrabTableAction extends DatabaseAction {
     static final long serialVersionUID =-7685449970256732671L;
@@ -79,7 +80,7 @@ public class GrabTableAction extends DatabaseAction {
                                       }
                                   });
 
-            java.awt.Component par = TopManager.getDefault().getWindowManager().getMainWindow();
+            java.awt.Component par = WindowManager.getDefault().getMainWindow();
             boolean noResult = true;
             File file = null;
             while(noResult) {
@@ -89,7 +90,7 @@ public class GrabTableAction extends DatabaseAction {
                         if(file.exists()) {
                             Object yesOption = new JButton(bundle.getString("Yes"));
                             Object noOption = new JButton (bundle.getString("No"));
-                            Object result = TopManager.getDefault ().notify (new NotifyDescriptor
+                            Object result = DialogDisplayer.getDefault ().notify (new NotifyDescriptor
                                             (MessageFormat.format(bundle.getString("MSG_ReplaceFileOrNot"), // NOI18N
                                                 new String[] {file.getName()}), //question
                                              bundle.getString("GrabTableFileSaveDialogTitle"), // title
@@ -116,7 +117,7 @@ public class GrabTableAction extends DatabaseAction {
 
         } catch(Exception exc) {
             String message = MessageFormat.format(bundle.getString("ERR_UnableToGrabTable"), new String[] {exc.getMessage()}); // NOI18N
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }

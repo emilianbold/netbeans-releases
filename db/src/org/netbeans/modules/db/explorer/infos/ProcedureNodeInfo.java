@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
@@ -127,7 +126,7 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo {
             cmd.setObjectOwner((String) get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            org.openide.DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }

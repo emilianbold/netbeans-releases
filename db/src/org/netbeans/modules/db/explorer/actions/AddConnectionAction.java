@@ -50,7 +50,7 @@ public class AddConnectionAction extends DatabaseAction {
 
         } catch (Exception e) {
             String message = MessageFormat.format(bundle.getString("ERR_UnableToPerformOperation"), new String[] {e.getMessage(), ""}); //NOI18N
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
 
     }

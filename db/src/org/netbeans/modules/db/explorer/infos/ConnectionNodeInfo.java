@@ -21,7 +21,6 @@ import java.util.*;
 import java.text.MessageFormat;
 
 import org.openide.nodes.Node;
-import org.openide.TopManager;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;

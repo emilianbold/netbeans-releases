@@ -29,7 +29,7 @@ import javax.swing.text.JTextComponent;
 
 import org.openide.*;
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.impl.*;
@@ -551,7 +551,7 @@ public class AddTableColumnDialog {
                                 }
                               } else {
                                   String msg = bundle.getString("EXC_InsufficientAddColumnInfo");
-                                  TopManager.getDefault().notify(
+                                  DialogDisplayer.getDefault().notify(
                                     new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                               }
                           }
@@ -563,7 +563,7 @@ public class AddTableColumnDialog {
             // after OK button is dialog closed by hand
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
             descriptor.setClosingOptions(closingOptions);
-            dialog = TopManager.getDefault().createDialog(descriptor);
+            dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException e) {
             e.printStackTrace();

@@ -34,7 +34,7 @@ public class RemoveFromPrimaryKeyAction extends DatabaseAction {
             DatabaseNodeInfo nfo = info.getParent(nodename);
         } catch(Exception exc) {
             String message = MessageFormat.format(bundle.getString("ERR_UnableToRemoveFromPK"), new String[] {exc.getMessage()}); // NOI18N
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }

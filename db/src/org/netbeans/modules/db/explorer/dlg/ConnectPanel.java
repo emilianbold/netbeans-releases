@@ -18,8 +18,6 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import org.openide.DialogDescriptor;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
 public class ConnectPanel extends JPanel {

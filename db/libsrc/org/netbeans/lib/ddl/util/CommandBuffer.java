@@ -144,7 +144,7 @@ public class CommandBuffer
                 if (handler != null)
                     exres = handler.shouldContinueAfterException(e);
                 if (!exres)
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
             }
         }
 

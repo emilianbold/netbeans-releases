@@ -21,6 +21,7 @@ import javax.swing.JTabbedPane;
 import java.sql.*;
 
 import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
 import org.openide.DialogDescriptor;
@@ -81,10 +82,10 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         if(dlg!=null) dlg.close();
                     } catch (ClassNotFoundException exc) {
                         String message = MessageFormat.format(bundle.getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
-                        TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     } catch(Exception exc) {
                         String message = MessageFormat.format(bundle.getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
-                        TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     }
                 }
             }
@@ -127,12 +128,12 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         if(con.getDriver().equals(PointbasePlus.DRIVER))
                             if(exc.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
                                 message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, con.getDatabase()}); // NOI18N
-                        TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                         dlg.setSelectedComponent(basePanel);
                         dlg.setException(new DatabaseException("Unable to obtain schema. "+exc.getMessage())); // NOI18N
                     } catch(Exception exc) {
                         String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); //NOI18N
-                        TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                         dlg.setSelectedComponent(basePanel);
                         dlg.setException(new DatabaseException("Unable to obtain schema. "+exc.getMessage())); // NOI18N
                     }

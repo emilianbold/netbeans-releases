@@ -19,7 +19,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 
 import org.netbeans.modules.db.explorer.*;
 
@@ -81,7 +81,7 @@ public class LabeledComboDialog
                                       };
 
             DialogDescriptor descriptor = new DialogDescriptor(pane, title, true, listener);
-            dialog = TopManager.getDefault().createDialog(descriptor);
+            dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(false);
         } catch (MissingResourceException ex) {
             ex.printStackTrace();

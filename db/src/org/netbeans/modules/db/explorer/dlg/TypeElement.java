@@ -20,7 +20,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.lib.ddl.*;
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.db.explorer.*;
 

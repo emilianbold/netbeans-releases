@@ -38,7 +38,7 @@ public class CreateViewAction extends DatabaseAction {
             
             if (! info.getDriverSpecification().areViewsSupported()) {
                 String message = MessageFormat.format(bundle.getString("MSG_ViewsAreNotSupported"), new String[] {info.getConnection().getMetaData().getDatabaseProductName().trim()}); // NOI18N
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
                 return;
             }
             
@@ -52,7 +52,7 @@ public class CreateViewAction extends DatabaseAction {
             }
         } catch(Exception exc) {
             String message = MessageFormat.format(bundle.getString("ERR_UnableToPerformOperation"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }

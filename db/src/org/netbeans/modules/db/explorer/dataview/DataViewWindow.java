@@ -29,8 +29,8 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.table.AbstractTableModel;
 
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.awt.SplittedPanel;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
@@ -194,7 +194,7 @@ public class DataViewWindow extends TopComponent {
             return true;
         } catch (Exception e) {
 //            e.printStackTrace();
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
+            org.openide.DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
             return false;
         }
     }
@@ -532,7 +532,7 @@ public class DataViewWindow extends TopComponent {
                         String allset = bundle.getString("DataViewAllFetchButton"); //NOI18N
                         String message = MessageFormat.format(bundle.getString("DataViewMessage"), arr); //NOI18N
                         NotifyDescriptor ndesc = new NotifyDescriptor(message, bundle.getString("FetchDataTitle"), NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {nextset, allset, cancel}, NotifyDescriptor.CANCEL_OPTION); //NOI18N
-                        String retv = (String)TopManager.getDefault().notify(ndesc);
+                        String retv = (String) DialogDisplayer.getDefault().notify(ndesc);
                         if (retv.equals(allset))
                             limit = Integer.MAX_VALUE;
                         else
@@ -574,7 +574,7 @@ public class DataViewWindow extends TopComponent {
                         ((DatabaseNodeInfo)((Node)nodes.nextElement()).getCookie(DatabaseNodeInfo.class)).refreshChildren();
                 }
 
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CommandExecuted"), NotifyDescriptor.INFORMATION_MESSAGE)); //NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CommandExecuted"), NotifyDescriptor.INFORMATION_MESSAGE)); //NOI18N
             }
             stat.close();
         }
