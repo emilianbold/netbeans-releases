@@ -143,7 +143,7 @@ public class AbstractCommand implements DDLCommand
 		} catch (Exception e) {
 			throw new DDLException("unable to format a command "+format+": "+e.getMessage());
 		}
-		
+				
 		// In case of debug mode, you simply print command and don't execute
 		if (!spec.getSpecificationFactory().isDebugMode()) {					
 			try {
@@ -175,7 +175,8 @@ public class AbstractCommand implements DDLCommand
 	{
 		if (format == null) throw new DDLException("no format specified");
 		try {
-			return CommandFormatter.format(format, getCommandProperties());
+			Map props = getCommandProperties();
+			return CommandFormatter.format(format, props);
 		} catch (Exception e) {
 			throw new DDLException(e.getMessage());
 		}
@@ -184,6 +185,8 @@ public class AbstractCommand implements DDLCommand
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
+*       ConnectAs
 *  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 
 *       spravnym throwovanim :) CommandNotImplementedException
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version

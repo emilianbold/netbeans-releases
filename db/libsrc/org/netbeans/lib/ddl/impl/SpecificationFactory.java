@@ -111,7 +111,6 @@ public class SpecificationFactory implements DBSpecFactory {
 			pn = dmd.getDatabaseProductName();
 			DBSpec spec = createSpec(dbcon, pn);
 			con.close();
-			spec.setSpecificationFactory(this);
 			return spec;
 		} catch (SQLException e) {
 			throw new DDLException("unable to connect to server");
@@ -133,7 +132,9 @@ public class SpecificationFactory implements DBSpecFactory {
 		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
 		HashMap specmap = deepUnion(product, (HashMap)specs.get("GenericDatabaseSystem"), true);
 		specmap.put("connection", connection);
-		return new Specification(specmap);
+		DBSpec spec = new Specification(specmap);
+		spec.setSpecificationFactory(this);
+		return spec;
 	}
 
 	/** Creates instance of DBSpec class; a database-specification
@@ -218,6 +219,8 @@ public class SpecificationFactory implements DBSpecFactory {
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
+*       ConnectAs
 *  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 
 *       spravnym throwovanim :) CommandNotImplementedException
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version

@@ -381,6 +381,8 @@ public class Specification implements DBSpec {
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
+*       ConnectAs
 *  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 
 *       spravnym throwovanim :) CommandNotImplementedException
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
