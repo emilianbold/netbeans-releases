@@ -512,8 +512,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         openForms.remove(formModel);
 
         // remove nodes hierarchy
-        formDataObject.getNodeDelegate().getChildren()
-                                          .remove(new Node[] { formRootNode });
+        if (formDataObject.isValid())
+            formDataObject.getNodeDelegate().getChildren()
+                                        .remove(new Node[] { formRootNode });
 
         // remove listeners
         detachFormListener();
