@@ -256,10 +256,10 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="Separator7.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true"/>
 
                     <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
-                    <attr name="org-openide-actions-ToggleBreakpointAction.instance/add-watch" boolvalue="true"/>
+                    <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true"/>
 
-                    <file name="add-watch"/>
-                    <attr name="add-watch/Separator8.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-AddWatchAction.instance"/>
+                    <attr name="org-openide-actions-AddWatchAction.instance/Separator8.instance" boolvalue="true"/>
 
                     <file name="Separator8.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
