@@ -28,13 +28,14 @@ interface TopComponentGroupModel {
 
     public String getName();
 
-    public void open(Collection openedTopComponents);
+    public void open(Collection openedTopComponents, Collection openedBeforeTopComponents);
     public void close();
     public boolean isOpened();
     
     public Set getTopComponents();
     
     public Set getOpenedTopComponents();
+    public Set getOpenedBeforeTopComponents();
     
     public Set getOpeningTopComponents();
     public Set getClosingTopComponents();

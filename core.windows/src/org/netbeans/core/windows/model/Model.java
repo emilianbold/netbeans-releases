@@ -229,13 +229,14 @@ public interface Model {
     /** Gets programatic name of goup. */
     public String getGroupName(TopComponentGroupImpl tcGroup);
 
-    public void openGroup(TopComponentGroupImpl tcGroup, Collection openedTopComponents);
+    public void openGroup(TopComponentGroupImpl tcGroup, Collection openedTopComponents, Collection openedBeforeTopComponenets);
     public void closeGroup(TopComponentGroupImpl tcGroup);
     public boolean isGroupOpened(TopComponentGroupImpl tcGroup);
     
     public Set getGroupTopComponents(TopComponentGroupImpl tcGroup);
     
     public Set getGroupOpenedTopComponents(TopComponentGroupImpl tcGroup);
+    public Set getGroupOpenedBeforeTopComponents(TopComponentGroupImpl tcGroup);
     
     public Set getGroupOpeningTopComponents(TopComponentGroupImpl tcGroup);
     public Set getGroupClosingTopComponents(TopComponentGroupImpl tcGroup);

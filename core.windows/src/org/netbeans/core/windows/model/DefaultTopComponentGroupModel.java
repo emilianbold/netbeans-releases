@@ -42,6 +42,11 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
      * when group was opening). When group is closed this set should be emtpy. */
     private final Set openedTopComponents = new HashSet(3);
     
+    /** All TopComponent IDs which were already opened before this group was 
+     * opened (at the moment when group was opening). When group is closed this 
+     * set should be emtpy. */
+    private final Set openedBeforeTopComponents = new HashSet(3);
+    
     /** TopComponent IDs with opening flag. */
     private final Set openingTopComponents = new HashSet(3);
     /** TopComponent IDs with closing flag. */
@@ -62,7 +67,7 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
         return name;
     }
     
-    public void open(Collection openedTopComponents) {
+    public void open(Collection openedTopComponents, Collection openedBeforeTopComponents) {
         synchronized(LOCK_OPENED) {
             this.opened = true;
             this.openedTopComponents.clear();
@@ -72,6 +77,13 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
                     this.openedTopComponents.add(tcID);
                 }
             }
+            this.openedBeforeTopComponents.clear();
+            for(Iterator it = openedBeforeTopComponents.iterator(); it.hasNext(); ) {
+                String tcID = getID((TopComponent)it.next());
+                if(tcID != null) {
+                    this.openedBeforeTopComponents.add(tcID);
+                }
+            }
         }
     }
     
@@ -79,6 +91,7 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
         synchronized(LOCK_OPENED) {
             this.opened = false;
             this.openedTopComponents.clear();
+            this.openedBeforeTopComponents.clear();
         }
     }
     
@@ -109,6 +122,23 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
         Set s;
         synchronized(LOCK_OPENED) {
             s = new HashSet(openedTopComponents);
+        }
+        
+        Set result = new HashSet(s.size());
+        for(Iterator it = s.iterator(); it.hasNext(); ) {
+            TopComponent tc = getTopComponent((String)it.next());
+            if(tc != null) {
+                result.add(tc);
+            }
+        }
+        
+        return result;
+    }
+    
+    public Set getOpenedBeforeTopComponents() {
+        Set s;
+        synchronized(LOCK_OPENED) {
+            s = new HashSet(openedBeforeTopComponents);
         }
         
         Set result = new HashSet(s.size());

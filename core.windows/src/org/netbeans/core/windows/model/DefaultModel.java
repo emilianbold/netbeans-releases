@@ -770,10 +770,10 @@ final class DefaultModel implements Model {
         }
     }
     
-    public void openGroup(TopComponentGroupImpl tcGroup, Collection openedTopComponents) {
+    public void openGroup(TopComponentGroupImpl tcGroup, Collection openedTopComponents, Collection openedBeforeTopComponents) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
-            groupModel.open(openedTopComponents);
+            groupModel.open(openedTopComponents, openedBeforeTopComponents);
         }
     }
     
@@ -806,6 +806,15 @@ final class DefaultModel implements Model {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             return groupModel.getOpenedTopComponents();
+        } else {
+            return Collections.EMPTY_SET;
+        }
+    }
+    
+    public Set getGroupOpenedBeforeTopComponents(TopComponentGroupImpl tcGroup) {
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.getOpenedBeforeTopComponents();
         } else {
             return Collections.EMPTY_SET;
         }

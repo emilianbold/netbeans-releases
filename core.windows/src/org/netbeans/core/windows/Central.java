@@ -823,8 +823,17 @@ final class Central implements ControllerHandler {
         if(isGroupOpened(tcGroup)) {
             return;
         }
+
+        Set openedBeforeTopComponents = new HashSet();
+        Set tcs = tcGroup.getTopComponents();
+        for(Iterator it = tcs.iterator(); it.hasNext(); ) {
+            TopComponent tc = (TopComponent)it.next();
+            if( tc.isOpened() ) {
+                openedBeforeTopComponents.add( tc );
+            }
+        }
         
-        Set tcs = tcGroup.getOpeningSet();
+        tcs = tcGroup.getOpeningSet();
         List openedTcs = new ArrayList();
         for(Iterator it = tcs.iterator(); it.hasNext(); ) {
             TopComponent tc = (TopComponent)it.next();
@@ -840,7 +849,8 @@ final class Central implements ControllerHandler {
             }
         }
 
-        model.openGroup(tcGroup, new HashSet(openedTcs));
+        
+        model.openGroup(tcGroup, new HashSet(openedTcs), openedBeforeTopComponents);
         
         if(isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(tcGroup, 
@@ -867,8 +877,7 @@ final class Central implements ControllerHandler {
         Set openedTcsByGroup = model.getGroupOpenedTopComponents(tcGroup);
         
         // Find out TC which were opened before the group was opened.
-        Set openedTcsBefore = tcGroup.getOpeningSet();
-        openedTcsBefore.removeAll(openedTcsByGroup);
+        Set openedTcsBefore = model.getGroupOpenedBeforeTopComponents(tcGroup);
 
         // Adjust opening flags.
         for(Iterator it = model.getGroupTopComponents(tcGroup).iterator(); it.hasNext(); ) {
