@@ -354,7 +354,7 @@ implements AWTEventListener, DragSourceListener {
             startingComp);
         if (tabbed == null) {
             Tabbed.Accessor acc = (Tabbed.Accessor) SwingUtilities.getAncestorOfClass (Tabbed.Accessor.class,
-                                                                                       firstTC);
+                                                                                       startingComp);
             tabbed = acc != null ? acc.getTabbed() : null;
         }
         
