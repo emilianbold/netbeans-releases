@@ -46,9 +46,7 @@ import org.openide.nodes.*;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.Presenter;
@@ -164,39 +162,6 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
             return;
 
         org.openide.awt.HtmlBrowser.URLDisplayer.getDefault ().showURL (url);
-    }
-
-    /** Opens the bookamrks in new browser window.
-     * @see OpenInNewWindowAction */
-    public void openInNewWindow () {
-        String urlString = getURLString ();
-        if(urlString == null)
-            return;
-
-        URL url = getURLFromString(urlString);
-        
-        if(url == null)
-            return;
-
-        // hack for finding default browser set in global IDE settings
-        HtmlBrowser.Factory fact = null;
-        try {
-            ClassLoader clzL = (ClassLoader)Lookup.getDefault().lookup (ClassLoader.class);
-            Class clz = Class.forName ("org.netbeans.core.IDESettings", true, clzL);    // NOI18N
-            SharedClassObject settings = SharedClassObject.findObject(clz, true);
-            java.lang.reflect.Method m = clz.getMethod ("getWWWBrowser", new Class [] {});    // NOI18N
-            Object o = m.invoke (settings, new Object [] {});
-            if (o instanceof HtmlBrowser.Factory)
-                fact = (HtmlBrowser.Factory)o;
-        } catch (Exception ex) {
-            // not a big problem: HtmlBrowser will create some browser
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-
-        HtmlBrowser.BrowserComponent htmlViewer = new HtmlBrowser.BrowserComponent(fact, true, true);
-        htmlViewer.setURL(url);
-        htmlViewer.open();
-        htmlViewer.requestFocus ();
     }
 
     /** Gets URL from string. Notifies user about error if it's not possible. Utility method.
