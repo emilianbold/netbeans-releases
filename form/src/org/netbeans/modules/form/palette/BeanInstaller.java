@@ -645,11 +645,15 @@ public final class BeanInstaller
             list = new JList(categories);
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-            setLayout(new BorderLayout(5, 5));
-            add(new JLabel(CPManager.getBundle().getString("CTL_PaletteCategories")), // NOI18N
-                BorderLayout.NORTH);
+            setLayout(new BorderLayout(0, 5));
+            
+            JLabel categoryLabel = new JLabel(CPManager.getBundle().getString("CTL_PaletteCategories"));
+            categoryLabel.setDisplayedMnemonic(CPManager.getBundle().getString("CTL_PaletteCategories_Mnemonic").charAt(0));
+            categoryLabel.setLabelFor(list);
+            list.getAccessibleContext().setAccessibleDescription(CPManager.getBundle().getString("ACSD_CTL_PaletteCategories"));
+            add(categoryLabel, BorderLayout.NORTH);
             add(new JScrollPane(list), BorderLayout.CENTER);
-            setBorder(new EmptyBorder(5, 5, 5, 5));
+            setBorder(new EmptyBorder(12, 12, 0, 11));
         }
 
         public String getSelectedCategory() {

@@ -20,6 +20,7 @@ import java.beans.*;
 import java.awt.*;
 import java.util.HashMap;
 import javax.swing.*;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -146,6 +147,10 @@ public class CursorEditor extends PropertyEditorSupport  implements
             if (value != null)
                 list.setSelectedValue(value.getName(), true);
 
+            ResourceBundle bundle = org.openide.util.NbBundle.getBundle(CursorEditor.class);
+            JLabel cursorListLabel = new JLabel(bundle.getString("CTL_SelectCursorName"));
+            cursorListLabel.setLabelFor(list);
+            
             gridBagConstraints1 = new java.awt.GridBagConstraints();
             gridBagConstraints1.gridx = 0;
             gridBagConstraints1.gridy = 1;
@@ -153,14 +158,18 @@ public class CursorEditor extends PropertyEditorSupport  implements
             gridBagConstraints1.insets = new java.awt.Insets(8, 8, 8, 8);
             gridBagConstraints1.weightx = 1.0;
             gridBagConstraints1.weighty = 1.0;
-            add(list, gridBagConstraints1);
+            add(new JScrollPane(list), gridBagConstraints1);
 
             gridBagConstraints1 = new java.awt.GridBagConstraints();
             gridBagConstraints1.gridx = 0;
             gridBagConstraints1.gridy = 0;
             gridBagConstraints1.insets = new java.awt.Insets(8, 8, 0, 8);
             gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-            add(new JLabel(org.openide.util.NbBundle.getBundle(CursorEditor.class).getString("CTL_SelectCursorName")), gridBagConstraints1);
+            
+            add(cursorListLabel, gridBagConstraints1);
+
+            cursorListLabel.setDisplayedMnemonic(bundle.getString("CTL_SelectCursorName_Mnemonic").charAt(0));
+            list.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_SelectCursorName"));
         }
 
         public Object getPropertyValue() throws IllegalStateException {

@@ -44,6 +44,8 @@ public class CustomCodeEditor extends javax.swing.JPanel implements EnhancedCust
         jLabel1.setLabelFor(codeEditorPane);
         codeEditorPane.requestFocus();
         codeEditorPane.getCaret().setVisible(codeEditorPane.hasFocus());
+        
+        codeEditorPane.getAccessibleContext().setAccessibleDescription(getString("ACSD_CustomCodeEditor.label1"));
     }
 
     /** This method is called from within the constructor to

@@ -178,6 +178,9 @@ public class FormCustomEditor extends JPanel
                 HelpCtx.setHelpIDString(FormCustomEditor.this, helpID);
             }
         });
+        
+        advancedButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_Advanced"));
+        editorsCombo.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_BTN_SelectMode"));
     }
 
     /** This method is called from within the constructor to
@@ -204,6 +207,7 @@ public class FormCustomEditor extends JPanel
         add(editorsCombo, gridBagConstraints1);
         
         jLabel1.setText("jLabel1");
+        jLabel1.setLabelFor(editorsCombo);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 0;
@@ -258,7 +262,7 @@ public class FormCustomEditor extends JPanel
         Dimension inh = super.getPreferredSize();
         return new Dimension(Math.max(inh.width, DEFAULT_WIDTH), Math.max(inh.height, DEFAULT_HEIGHT));
     }
-
+    
     private void showAdvancedSettings() {
         FormCustomEditorAdvanced fcea = new FormCustomEditorAdvanced(preCode, postCode);
         DialogDescriptor dd = new DialogDescriptor(
