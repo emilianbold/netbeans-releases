@@ -17,7 +17,7 @@ import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
-import org.netbeans.spi.project.SourceGroup;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 

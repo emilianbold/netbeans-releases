@@ -16,7 +16,7 @@ package org.netbeans.api.project;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.spi.project.ProjectInformation;
+import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Utilities;
 
@@ -42,6 +42,24 @@ public class ProjectUtils {
             return pi;
         } else {
             return new BasicInformation(p);
+        }
+    }
+    
+    /**
+     * Get a list of sources for a project.
+     * If the project has a {@link Sources} instance in its lookup,
+     * that is used. Otherwise, a basic implementation is returned
+     * using {@link GenericSources#genericOnly}.
+     * @param p a project
+     * @return a list of sources for it
+     * @see Project#getLookup
+     */
+    public static Sources getSources(Project p) {
+        Sources s = (Sources)p.getLookup().lookup(Sources.class);
+        if (s != null) {
+            return s;
+        } else {
+            return GenericSources.genericOnly(p);
         }
     }
     

@@ -21,7 +21,7 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.SourceGroup;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -113,7 +113,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
                     FileObject prjDir = project.getProjectDirectory();
                     FileUtil.createFolder( prjDir, relativeFolder );
                 }                
-                FileObject folder = FileUtil.fromFile( f )[0];            
+                FileObject folder = FileUtil.toFileObject(f);            
                 Templates.setTargetFolder( (WizardDescriptor)settings, folder );
                 Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
             }

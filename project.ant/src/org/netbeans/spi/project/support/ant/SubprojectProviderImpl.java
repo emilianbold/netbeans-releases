@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -76,6 +77,14 @@ final class SubprojectProviderImpl implements SubprojectProvider {
                 return foreignProjects;
             }
         });
+    }
+    
+    public void addChangeListener(ChangeListener listener) {
+        // XXX implement - listen to references added and removed
+    }    
+    
+    public void removeChangeListener(ChangeListener listener) {
+        // XXX
     }
     
 }

@@ -23,10 +23,10 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
-import org.netbeans.spi.project.Sources;
-import org.netbeans.spi.project.SourceGroup;
-import org.netbeans.spi.project.support.GenericSources;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.SourceGroup;
 //import org.netbeans.spi.project.ui.templates.support.InstantiatingIterator;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -55,11 +55,7 @@ public final class NewFileWizard  extends TemplateWizard {
     }        
 
     protected org.openide.WizardDescriptor.Panel createTargetChooser() {
-        Sources c = (Sources)p.getLookup().lookup(Sources.class);
-        if (c == null) {
-            c = GenericSources.genericOnly(p);
-        }
-
+        Sources c = ProjectUtils.getSources(p);
         return Templates.createSimpleTargetChooser(p, c.getSourceGroups(Sources.TYPE_GENERIC));
     }
         

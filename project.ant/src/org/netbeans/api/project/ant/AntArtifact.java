@@ -44,12 +44,6 @@ public abstract class AntArtifact {
     protected AntArtifact() {}
     
     /**
-     * Standard artifact type representing a JAR file, presumably
-     * used as a Java library of some kind.
-     */
-    public static final String TYPE_JAR = "jar";
-    
-    /**
      * Get the type of the build artifact.
      * This can refer to both the physical content type or format;
      * and to the intended category of usage.

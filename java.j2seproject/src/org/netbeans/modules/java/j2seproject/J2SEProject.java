@@ -26,6 +26,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -41,8 +42,8 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.ProjectInformation;
-import org.netbeans.spi.project.Sources;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.GenericSources;
@@ -122,11 +123,11 @@ final class J2SEProject implements Project, AntProjectListener {
             "${build.test.classes.dir}/*.class", // NOI18N
         });
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        sourcesHelper.addPrincipalSourceRoot("${src.dir}", /*XXX I18N*/ "Source Packages");
-        sourcesHelper.addPrincipalSourceRoot("${test.src.dir}", /*XXX I18N*/ "Test Packages");
+        sourcesHelper.addPrincipalSourceRoot("${src.dir}", /*XXX I18N*/ "Source Packages", /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${test.src.dir}", /*XXX I18N*/ "Test Packages", /*XXX*/null, null);
         // XXX add build dir too?
-        sourcesHelper.addTypedSourceRoot("${src.dir}", Sources.TYPE_JAVA, /*XXX I18N*/ "Source Packages");
-        sourcesHelper.addTypedSourceRoot("${test.src.dir}", Sources.TYPE_JAVA, /*XXX I18N*/ "Test Packages");
+        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, /*XXX I18N*/ "Source Packages", /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${test.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, /*XXX I18N*/ "Test Packages", /*XXX*/null, null);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -321,7 +322,7 @@ final class J2SEProject implements Project, AntProjectListener {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                helper.createSimpleAntArtifact(AntArtifact.TYPE_JAR, "dist.jar", evaluator(), "jar", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", evaluator(), "jar", "clean"), // NOI18N
             };
         }
 

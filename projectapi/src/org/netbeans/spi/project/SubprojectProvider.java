@@ -14,6 +14,7 @@
 package org.netbeans.spi.project;
 
 import java.util.Set;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 
 /**
@@ -37,6 +38,16 @@ public interface SubprojectProvider {
      */
     Set/*<Project>*/ getSubProjects();
     
-    // XXX add/removeChangeListener
+    /**
+     * Add a listener to changes in the set of subprojects.
+     * @param listener a listener to add
+     */
+    void addChangeListener(ChangeListener listener);
+    
+    /**
+     * Remove a listener to changes in the set of subprojects.
+     * @param listener a listener to remove
+     */
+    void removeChangeListener(ChangeListener listener);
     
 }

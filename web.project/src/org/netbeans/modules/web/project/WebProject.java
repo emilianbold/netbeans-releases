@@ -24,6 +24,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -38,7 +39,7 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.ProjectInformation;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -255,7 +256,7 @@ final class WebProject implements Project, AntProjectListener {
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 // XXX probably this is nonsense:
-                helper.createSimpleAntArtifact(AntArtifact.TYPE_JAR, "dist.jar", "jar", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", "jar", "clean"), // NOI18N
             };
         }
 

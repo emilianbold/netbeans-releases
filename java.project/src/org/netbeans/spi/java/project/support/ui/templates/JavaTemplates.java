@@ -15,7 +15,7 @@ package org.netbeans.spi.java.project.support.ui.templates;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.project.JavaTargetChooserPanel;
-import org.netbeans.spi.project.SourceGroup;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;

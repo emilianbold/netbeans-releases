@@ -21,8 +21,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.project.SourceGroup;
-import org.netbeans.spi.project.Sources;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -89,18 +89,18 @@ public final class SourcesHelperTest extends NbTestCase {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         ProjectManager.getDefault().saveProject(project);
         sh = new SourcesHelper(h, h.getStandardPropertyEvaluator());
-        sh.addPrincipalSourceRoot("${src1.dir}", "Sources #1"); // inside proj dir
-        sh.addPrincipalSourceRoot("${src2.dir}", "Sources #2"); // outside (rel path)
-        sh.addPrincipalSourceRoot("${src2a.dir}", "Sources #2a"); // redundant
-        sh.addPrincipalSourceRoot("${src3.dir}", "Sources #3"); // outside (abs path)
-        sh.addPrincipalSourceRoot("${src4.dir}", "The Whole Shebang"); // above proj dir
-        sh.addPrincipalSourceRoot("${src5.dir}", "None such"); // does not exist on disk
+        sh.addPrincipalSourceRoot("${src1.dir}", "Sources #1", null, null); // inside proj dir
+        sh.addPrincipalSourceRoot("${src2.dir}", "Sources #2", null, null); // outside (rel path)
+        sh.addPrincipalSourceRoot("${src2a.dir}", "Sources #2a", null, null); // redundant
+        sh.addPrincipalSourceRoot("${src3.dir}", "Sources #3", null, null); // outside (abs path)
+        sh.addPrincipalSourceRoot("${src4.dir}", "The Whole Shebang", null, null); // above proj dir
+        sh.addPrincipalSourceRoot("${src5.dir}", "None such", null, null); // does not exist on disk
         sh.addNonSourceRoot("${build.dir}");
-        sh.addTypedSourceRoot("${src1.dir}", Sources.TYPE_JAVA, "Packages #1");
-        sh.addTypedSourceRoot("${src3.dir}", Sources.TYPE_JAVA, "Packages #3");
-        sh.addTypedSourceRoot("${src5.dir}", Sources.TYPE_JAVA, "No Packages");
-        sh.addTypedSourceRoot("${src2.dir}", "docroot", "Documents #2");
-        sh.addTypedSourceRoot("${src2a.dir}", "docroot", "Documents #2a"); // redundant
+        sh.addTypedSourceRoot("${src1.dir}", "java", "Packages #1", null, null);
+        sh.addTypedSourceRoot("${src3.dir}", "java", "Packages #3", null, null);
+        sh.addTypedSourceRoot("${src5.dir}", "java", "No Packages", null, null);
+        sh.addTypedSourceRoot("${src2.dir}", "docroot", "Documents #2", null, null);
+        sh.addTypedSourceRoot("${src2a.dir}", "docroot", "Documents #2a", null, null); // redundant
         // Separate project that has includes its project directory implicitly only.
         // Also hardcodes paths rather than using properties.
         proj2dir = scratch.createFolder("proj2dir");
@@ -113,11 +113,11 @@ public final class SourcesHelperTest extends NbTestCase {
         project2 = ProjectManager.getDefault().findProject(proj2dir);
         assertNotNull("have a project2", project2);
         sh2 = new SourcesHelper(h2, h2.getStandardPropertyEvaluator());
-        sh2.addPrincipalSourceRoot("src1", "Sources #1");
-        sh2.addPrincipalSourceRoot("src2", "Sources #2");
+        sh2.addPrincipalSourceRoot("src1", "Sources #1", null, null);
+        sh2.addPrincipalSourceRoot("src2", "Sources #2", null, null);
         sh2.addNonSourceRoot("build");
-        sh2.addTypedSourceRoot("src1", Sources.TYPE_JAVA, "Packages #1");
-        sh2.addTypedSourceRoot("src2", Sources.TYPE_JAVA, "Packages #2");
+        sh2.addTypedSourceRoot("src1", "java", "Packages #1", null, null);
+        sh2.addTypedSourceRoot("src2", "java", "Packages #2", null, null);
     }
     
     public void testSourcesBasic() throws Exception {
@@ -132,7 +132,7 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("group #3 is maindir", maindir, groups[2].getRootFolder());
         assertEquals("right display name for maindir", "The Whole Shebang", groups[2].getDisplayName());
         // Now the typed source roots.
-        groups = s.getSourceGroups(Sources.TYPE_JAVA);
+        groups = s.getSourceGroups("java");
         assertEquals("should have src1dir plus src3dir", 2, groups.length);
         assertEquals("group #1 is src1dir", src1dir, groups[0].getRootFolder());
         assertEquals("right display name for src1dir", "Packages #1", groups[0].getDisplayName());
@@ -150,12 +150,13 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("should have just proj2dir", 1, groups.length);
         assertEquals("group #1 is proj2dir", proj2dir, groups[0].getRootFolder());
         assertEquals("right display name for proj2dir", ProjectUtils.getInformation(project2).getDisplayName(), groups[0].getDisplayName());
-        groups = s.getSourceGroups(Sources.TYPE_JAVA);
+        groups = s.getSourceGroups("java");
         assertEquals("should have proj2src1dir plus proj2src2dir", 2, groups.length);
         assertEquals("group #1 is proj2src1dir group", proj2src1dir, groups[0].getRootFolder());
         assertEquals("right display name for src1dir", "Packages #1", groups[0].getDisplayName());
         assertEquals("group #2 is proj2src2dir group", proj2src2dir, groups[1].getRootFolder());
         assertEquals("right display name for proj2src2dir", "Packages #2", groups[1].getDisplayName());
+        // XXX test also icons
     }
     
     public void testExternalRootRegistration() throws Exception {
@@ -195,7 +196,7 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("group #1 is src2dir", src2dir, groups[0].getRootFolder());
         assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
         assertEquals("group #3 is maindir", maindir, groups[2].getRootFolder());
-        groups = s.getSourceGroups(Sources.TYPE_JAVA);
+        groups = s.getSourceGroups("java");
         assertEquals("should have src1dir plus src3dir", 2, groups.length);
         assertEquals("group #1 is src1dir", src1dir, groups[0].getRootFolder());
         assertEquals("right display name for src1dir", "Packages #1", groups[0].getDisplayName());
@@ -211,12 +212,12 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("group #2 is src2dir", src2dir, groups[1].getRootFolder());
         assertEquals("group #3 is src3dir", src3dir, groups[2].getRootFolder());
         assertEquals("group #4 is maindir", maindir, groups[3].getRootFolder());
-        groups = s.getSourceGroups(Sources.TYPE_JAVA);
+        groups = s.getSourceGroups("java");
         assertEquals("should have src4dir plus src3dir", 2, groups.length);
         assertEquals("group #1 is src4dir", src4dir, groups[0].getRootFolder());
         assertEquals("right display name for src4dir", "Packages #1", groups[0].getDisplayName());
         assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
-        // XXX test also change firing in case Sources is given the ability to fire changes
+        // XXX test also change firing in Sources object
     }
     
     public void testExternalRootLocationChanges() throws Exception {

@@ -13,18 +13,21 @@
 
 package org.netbeans.modules.web.project;
 
-import org.netbeans.spi.project.SourceGroup;
+import java.beans.PropertyChangeListener;
+import javax.swing.Icon;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.SourcesGroupTypes;
-import org.netbeans.spi.project.Sources;
+import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.WebCustomizerProvider;
-/** WebSources.java
- *
- * @author  mk115033
- */
-public class WebSources implements org.netbeans.spi.project.Sources {
+
+// XXX consider using SourcesHelper instead of doing it manually
+
+public class WebSources implements Sources {
    
     private AntProjectHelper helper;
     
@@ -33,7 +36,7 @@ public class WebSources implements org.netbeans.spi.project.Sources {
         this.helper=helper;
     }
     
-    public org.netbeans.spi.project.SourceGroup[] getSourceGroups(String str) {
+    public SourceGroup[] getSourceGroups(String str) {
         if (SourcesGroupTypes.TYPE_DOC_ROOT.equals(str)) {
             FileObject fo = helper.resolveFileObject(helper.evaluate(WebProjectProperties.WEB_DOCBASE_DIR));
             return new SourceGroup[] {new WebSources.WebSourceGroup(fo,
@@ -48,7 +51,7 @@ public class WebSources implements org.netbeans.spi.project.Sources {
             FileObject fo = helper.resolveFileObject(helper.evaluate(WebProjectProperties.SOURCE_ROOT));
             return new SourceGroup[] {new WebSources.WebSourceGroup(fo, fo.getName())};
         }
-        else if (Sources.TYPE_JAVA.equals(str)) {
+        else if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(str)) {
             FileObject fo = helper.resolveFileObject(helper.evaluate(WebProjectProperties.SRC_DIR));
             return new SourceGroup[] {new WebSources.WebSourceGroup(fo,
                 org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_Sources"))};
@@ -56,7 +59,15 @@ public class WebSources implements org.netbeans.spi.project.Sources {
         else return null;
     }
     
-    private static class WebSourceGroup implements org.netbeans.spi.project.SourceGroup {
+    public void addChangeListener(ChangeListener l) {
+        // XXX implement
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+        // XXX implement
+    }
+    
+    private static class WebSourceGroup implements SourceGroup {
         private FileObject folder;
         private String displayName;
         
@@ -69,12 +80,30 @@ public class WebSources implements org.netbeans.spi.project.Sources {
             return false;
         }
         
+        public String getName() {
+            // XXX choose a proper code name
+            return displayName;
+        }
+        
         public String getDisplayName() {
             return displayName;
         }
         
+        public Icon getIcon(boolean opened) {
+            // XXX
+            return null;
+        }
+        
         public org.openide.filesystems.FileObject getRootFolder() {
             return folder;
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            // XXX implement
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            // XXX implement
         }
         
     }

@@ -24,12 +24,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Icon;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.project.SourceGroup;
-import org.netbeans.spi.project.Sources;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -49,7 +51,7 @@ import org.openide.util.WeakListeners;
 public final class SourcesHelper {
     
     private class Root {
-        private final String location;
+        protected final String location;
         public Root(String location) {
             this.location = location;
         }
@@ -64,20 +66,25 @@ public final class SourcesHelper {
     
     private class SourceRoot extends Root {
         private final String displayName;
-        public SourceRoot(String location, String displayName) {
+        private final Icon icon;
+        private final Icon openedIcon;
+        public SourceRoot(String location, String displayName, Icon icon, Icon openedIcon) {
             super(location);
             this.displayName = displayName;
+            this.icon = icon;
+            this.openedIcon = openedIcon;
         }
         public final SourceGroup toGroup(FileObject loc) {
             assert loc != null;
-            return GenericSources.group(getProject(), loc, displayName);
+            return GenericSources.group(getProject(), loc, location.length() > 0 ? location : "generic", // NOI18N
+                                        displayName, icon, openedIcon);
         }
     }
     
     private final class TypedSourceRoot extends SourceRoot {
         private final String type;
-        public TypedSourceRoot(String type, String location, String displayName) {
-            super(location, displayName);
+        public TypedSourceRoot(String type, String location, String displayName, Icon icon, Icon openedIcon) {
+            super(location, displayName, icon, openedIcon);
             this.type = type;
         }
         public final String getType() {
@@ -123,17 +130,19 @@ public final class SourcesHelper {
      * @param location a project-relative or absolute path giving the location
      *                 of a source tree; may contain Ant property substitutions
      * @param displayName a display name (for {@link SourceGroup#getDisplayName})
+     * @param icon a regular icon for the source root, or null
+     * @param openedIcon an opened variant icon for the source root, or null
      * @throws IllegalStateException if this method is called after either
      *                               {@link #createSources} or {@link #registerExternalRoots}
      *                               was called
      * @see #registerExternalRoots
      * @see Sources#TYPE_GENERIC
      */
-    public void addPrincipalSourceRoot(String location, String displayName) throws IllegalStateException {
+    public void addPrincipalSourceRoot(String location, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
         if (lastRegisteredRoots != null) {
             throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
         }
-        principalSourceRoots.add(new SourceRoot(location, displayName));
+        principalSourceRoots.add(new SourceRoot(location, displayName, icon, openedIcon));
     }
     
     /**
@@ -163,15 +172,17 @@ public final class SourcesHelper {
      *                 of a source tree; may contain Ant property substitutions
      * @param type a source root type such as {@link Sources#TYPE_JAVA}
      * @param displayName a display name (for {@link SourceGroup#getDisplayName})
+     * @param icon a regular icon for the source root, or null
+     * @param openedIcon an opened variant icon for the source root, or null
      * @throws IllegalStateException if this method is called after either
      *                               {@link #createSources} or {@link #registerExternalRoots}
      *                               was called
      */
-    public void addTypedSourceRoot(String location, String type, String displayName) throws IllegalStateException {
+    public void addTypedSourceRoot(String location, String type, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
         if (lastRegisteredRoots != null) {
             throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
         }
-        typedSourceRoots.add(new TypedSourceRoot(type, location, displayName));
+        typedSourceRoots.add(new TypedSourceRoot(type, location, displayName, icon, openedIcon));
     }
     
     private Project getProject() {
@@ -353,7 +364,7 @@ public final class SourcesHelper {
             if (type.equals(Sources.TYPE_GENERIC)) {
                 List/*<SourceRoot>*/ roots = new ArrayList(principalSourceRoots);
                 // Always include the project directory itself as a default:
-                roots.add(new SourceRoot("", ProjectUtils.getInformation(getProject()).getDisplayName())); // NOI18N
+                roots.add(new SourceRoot("", ProjectUtils.getInformation(getProject()).getDisplayName(), null, null)); // NOI18N
                 Iterator it = roots.iterator();
                 Map/*<FileObject,SourceRoot>*/ rootsByDir = new LinkedHashMap();
                 // First collect all non-redundant existing roots.
@@ -410,6 +421,15 @@ public final class SourcesHelper {
                 }
             }
             return (SourceGroup[])groups.toArray(new SourceGroup[groups.size()]);
+        }
+        
+        public void addChangeListener(ChangeListener listener) {
+            // XXX implement - permit add/remove source root methods
+            // and listen to added/removed dirs, etc.
+        }
+        
+        public void removeChangeListener(ChangeListener listener) {
+            // XXX
         }
         
     }

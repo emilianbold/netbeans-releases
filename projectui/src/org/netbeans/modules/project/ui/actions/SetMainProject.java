@@ -25,7 +25,7 @@ import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
-import org.netbeans.spi.project.ProjectInformation;
+import org.netbeans.api.project.ProjectInformation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;

@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
-import org.netbeans.spi.project.SourceGroup;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;

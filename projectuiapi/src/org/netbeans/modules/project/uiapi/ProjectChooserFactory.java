@@ -15,7 +15,7 @@ package org.netbeans.modules.project.uiapi;
 
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.SourceGroup;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 

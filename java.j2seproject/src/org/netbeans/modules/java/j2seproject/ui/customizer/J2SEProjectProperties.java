@@ -27,6 +27,7 @@ import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -709,7 +710,7 @@ public class J2SEProjectProperties {
                         if (raw == null) {
                             // New file
                             File file = (File)vcpi.getObject();
-                            String reference = refHelper.createForeignFileReference(file, AntArtifact.TYPE_JAR);
+                            String reference = refHelper.createForeignFileReference(file, JavaProjectConstants.ARTIFACT_TYPE_JAR);
                             sb.append(reference);
                         } else {
                             // Existing property

@@ -23,9 +23,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.project.SourceGroup;
-import org.netbeans.spi.project.Sources;
-import org.netbeans.spi.project.support.GenericSources;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -241,11 +240,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             FileObject fo=null;
             // Show the browse dialog 
             if (folders!=null) fo = BrowseFolders.showDialog(folders);
-            else {		           
-                Sources sources = (Sources)project.getLookup().lookup( Sources.class );
-                if (sources == null) {
-                    sources = GenericSources.genericOnly(project);
-                }
+            else {
+                Sources sources = ProjectUtils.getSources(project);
                 fo = BrowseFolders.showDialog( sources.getSourceGroups( Sources.TYPE_GENERIC ) );
             }
             

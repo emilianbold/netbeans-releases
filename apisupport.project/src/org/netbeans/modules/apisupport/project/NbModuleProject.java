@@ -31,10 +31,11 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.ProjectInformation;
-import org.netbeans.spi.project.Sources;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -96,9 +97,9 @@ final class NbModuleProject implements Project {
         // difficult to predict statically exactly what they are!
         // XXX would be good to mark at least the module JAR as owned by this project
         // (currently FOQ/SH do not support that)
-        sourcesHelper.addTypedSourceRoot("${src.dir}", Sources.TYPE_JAVA, "Source Packages");
-        sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", Sources.TYPE_JAVA, "Unit Test Packages");
-        sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", Sources.TYPE_JAVA, "Functional Test Packages");
+        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Source Packages", /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Unit Test Packages", /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Functional Test Packages", /*XXX*/null, null);
         /* In case there are any JH-specific templates:
         if (helper.resolveFileObject("javahelp/manifest.mf") == null) { // NOI18N
             // Special hack for core - ignore core/javahelp
