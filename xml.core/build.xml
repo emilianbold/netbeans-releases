@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="binroot" location="${nbroot}/../nbextra"/>
   <property name="nbext" location="${nbroot}/nbbuild"/>
 
-  <property name="parserimpl" value="${taxroot}/release/modules/ext/xerces2.jar"/> <!-- parser implementation used internally by module -->
+  <property name="parserimpl" value="${binroot}/xml/tax/release/modules/ext/xerces2.jar"/> <!-- parser implementation used internally by module -->
 
   <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
   <property name="homepage.base" value="netbeans.org"/>
@@ -71,36 +71,9 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <!--copy todir="netbeans">
-      <fileset dir="release"/>
-    </copy-->
   </target>
 
   <target name="javahelp">
-    <!--mkdir dir="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"/>
-    <jhindexer basedir="javahelp/org/netbeans/modules/xml/core/docs/"
-               db="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
-      <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch/"/>
-      <exclude name="ja/"/>
-      <exclude name="credits.html"/>
-    </jhindexer>
-    <mkdir dir="javahelp/org/netbeans/modules/xml/core/docs/ja/JavaHelpSearch"/>
-    <jhindexer basedir="javahelp/org/netbeans/modules/xml/core/docs/ja/"
-               db="javahelp/org/netbeans/modules/xml/core/docs/ja/JavaHelpSearch"
-               locale="ja"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
-      <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch/"/>
-      <exclude name="credits.html"/>
-    </jhindexer>
-    <mkdir dir="netbeans/modules/docs"/>
-    <locjar jarfile="netbeans/modules/docs/xml-core.jar"
-            compress="true">
-      <fileset dir="javahelp" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
-      <locale name="ja"/>
-    </locjar-->
   </target>
 
   <target name="netbeans" depends="jars,release,javahelp"/>
