@@ -33,6 +33,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/xml/tools/doclet/DTDDocletTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/actions/CheckActionTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/actions/ValidateActionTest.class"/>
+                <!-- TEXT-EDIT -->
+                <include name="org/netbeans/modules/xml/text/syntax/ColoringTest.class"/>
             </patternset>
         </testset>
     </testbag>
