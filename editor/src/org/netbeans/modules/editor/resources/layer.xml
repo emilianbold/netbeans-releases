@@ -156,13 +156,13 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="Separator1.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
-                        <attr name="Separator1.instance/find-selection" boolvalue="true"/>
+                        <attr name="Separator1.instance/find-previous" boolvalue="true"/>
+                        <file name="find-previous"/>
+                        <attr name="find-previous/find-selection" boolvalue="true"/>
                         <file name="find-selection"/>
                         <attr name="find-selection/find-next" boolvalue="true"/>
                         <file name="find-next"/>
-                        <attr name="find-next/find-previous" boolvalue="true"/>
-                        <file name="find-previous"/>
-                        <attr name="find-previous/toggle-highlight-search" boolvalue="true"/>
+                        <attr name="find-next/toggle-highlight-search" boolvalue="true"/>
                         <file name="toggle-highlight-search"/>
                         <attr name="toggle-highlight-search/Separator2.instance" boolvalue="true"/>
                         <file name="Separator2.instance">
@@ -177,30 +177,22 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
                         <attr name="Separator3.instance/jump-list-next" boolvalue="true"/>
-                        <file name="jump-list-next"/>
-                        <attr name="jump-list-next/jump-list-prev" boolvalue="true"/>
-                        <file name="jump-list-prev"/>
-                        <attr name="jump-list-prev/Separator4.instance" boolvalue="true"/>
-                        <file name="Separator4.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
-                        <attr name="Separator4.instance/word-match-next" boolvalue="true"/>
                         <file name="word-match-next"/>
                         <attr name="word-match-next/word-match-prev" boolvalue="true"/>
                         <file name="word-match-prev"/>
-                        <attr name="word-match-prev/Separator5.instance" boolvalue="true"/>
-                        <file name="Separator5.instance">
+                        <attr name="word-match-prev/Separator4.instance" boolvalue="true"/>
+                        <file name="Separator4.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
-                        <attr name="Separator5.instance/shift-line-left" boolvalue="true"/>
+                        <attr name="Separator4.instance/shift-line-left" boolvalue="true"/>
                         <file name="shift-line-left"/>
                         <attr name="shift-line-left/shift-line-right" boolvalue="true"/>
                         <file name="shift-line-right"/>
-                        <attr name="shift-line-right/Separator6.instance" boolvalue="true"/>
-                        <file name="Separator6.instance">
+                        <attr name="shift-line-right/Separator5.instance" boolvalue="true"/>
+                        <file name="Separator5.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
-                        <attr name="Separator6.instance/start-macro-recording" boolvalue="true"/>
+                        <attr name="Separator5.instance/start-macro-recording" boolvalue="true"/>
                         <file name="start-macro-recording"/>
                         <attr name="start-macro-recording/stop-macro-recording" boolvalue="true"/>
                         <file name="stop-macro-recording"/>
@@ -299,20 +291,14 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <attr name="stop-macro-recording/Separator7.instance" boolvalue="true"/>
-                        <file name="Separator7.instance">
+                        <attr name="stop-macro-recording/Separator6.instance" boolvalue="true"/>
+                        <file name="Separator6.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
-                        <attr name="Separator7.instance/comment" boolvalue="true"/>
+                        <attr name="Separator6.instance/comment" boolvalue="true"/>
                         <file name="comment"/>
                         <attr name="comment/uncomment" boolvalue="true"/>
                         <file name="uncomment"/>
-                        <attr name="uncomment/make-getter" boolvalue="true"/>
-                        <file name="make-getter"/>
-                        <attr name="make-getter/make-setter" boolvalue="true"/>
-                        <file name="make-setter"/>
-                        <attr name="make-setter/make-is" boolvalue="true"/>
-                        <file name="make-is"/>
                     </folder>
                 </folder>
             </folder>
