@@ -103,10 +103,10 @@ public class DataObjectTests extends JellyTestCase {
         PropertySheetTabOperator tab = ps.getPropertySheetTabOperator("Execution");
         ServiceTypeCustomEditorOperator customizer=new ServiceTypeProperty(tab, "Compiler").invokeCustomizer();
         assertEquals("XTest Compilation", customizer.getServiceTypeValue());
-        new StringProperty(customizer.propertySheet(), "Jemmy Home").setValue("/jemmyyhome");
+        new StringProperty(customizer.propertySheet(), "Jemmy Home").setValue("/jemmyhome");
         new StringProperty(customizer.propertySheet(), "Jelly Home").setValue("/jellyhome");
         new StringProperty(customizer.propertySheet(), "XTest Home").setValue("/xtesthome");
-        new StringProperty(customizer.propertySheet(), "Netbeans Home").setValue("/jellyhome");
+        new StringProperty(customizer.propertySheet(), "Netbeans Home").setValue("/netbeanshome");
         new StringProperty(customizer.propertySheet(), "Test Type").setValue("testtype");
         customizer.ok();
         ps.close();
@@ -122,10 +122,10 @@ public class DataObjectTests extends JellyTestCase {
         PropertySheetTabOperator tab = ps.getPropertySheetTabOperator("Execution");
         ServiceTypeCustomEditorOperator customizer=new ServiceTypeProperty(tab, "Executor").invokeCustomizer();
         assertEquals("XTest Execution", customizer.getServiceTypeValue());
-        new StringProperty(customizer.propertySheet(), "Jemmy Home").setValue("/jemmyyhome");
+        new StringProperty(customizer.propertySheet(), "Jemmy Home").setValue("/jemmyhome");
         new StringProperty(customizer.propertySheet(), "Jelly Home").setValue("/jellyhome");
         new StringProperty(customizer.propertySheet(), "XTest Home").setValue("/xtesthome");
-        new StringProperty(customizer.propertySheet(), "Netbeans Home").setValue("/jellyhome");
+        new StringProperty(customizer.propertySheet(), "Netbeans Home").setValue("/netbeanshome");
         new StringProperty(customizer.propertySheet(), "Test Type").setValue("testtype");
         new StringProperty(customizer.propertySheet(), "Attributes").setValue("attributes");
         customizer.ok();
@@ -147,7 +147,7 @@ public class DataObjectTests extends JellyTestCase {
         assertEquals("echo:", st.nextToken());
         String s = st.nextToken();
         assertTrue(s, s.startsWith("netbeans.home="));
-        assertTrue(s, s.endsWith("jellyhome"));
+        assertTrue(s, s.endsWith("netbeanshome"));
         s = st.nextToken();
         assertTrue(s, s.startsWith("xtest.home="));
         assertTrue(s, s.endsWith("xtesthome"));
@@ -155,7 +155,7 @@ public class DataObjectTests extends JellyTestCase {
         assertEquals("xtest.attribs=", st.nextToken());
         s = st.nextToken();
         assertTrue(s, s.startsWith("jemmy.home="));
-        assertTrue(s, s.endsWith("jemmyyhome"));
+        assertTrue(s, s.endsWith("jemmyhome"));
         s = st.nextToken();
         assertTrue(s, s.startsWith("jelly.home="));
         assertTrue(s, s.endsWith("jellyhome"));
@@ -178,7 +178,7 @@ public class DataObjectTests extends JellyTestCase {
         assertEquals("echo:", st.nextToken());
         String s = st.nextToken();
         assertTrue(s, s.startsWith("netbeans.home="));
-        assertTrue(s, s.endsWith("jellyhome"));
+        assertTrue(s, s.endsWith("netbeanshome"));
         s = st.nextToken();
         assertTrue(s, s.startsWith("xtest.home="));
         assertTrue(s, s.endsWith("xtesthome"));
@@ -186,7 +186,7 @@ public class DataObjectTests extends JellyTestCase {
         assertEquals("xtest.attribs=attributes", st.nextToken());
         s = st.nextToken();
         assertTrue(s, s.startsWith("jemmy.home="));
-        assertTrue(s, s.endsWith("jemmyyhome"));
+        assertTrue(s, s.endsWith("jemmyhome"));
         s = st.nextToken();
         assertTrue(s, s.startsWith("jelly.home="));
         assertTrue(s, s.endsWith("jellyhome"));
@@ -209,7 +209,7 @@ public class DataObjectTests extends JellyTestCase {
         assertEquals("echo:", st.nextToken());
         String s = st.nextToken();
         assertTrue(s, s.startsWith("netbeans.home="));
-        assertTrue(s, s.endsWith("jellyhome"));
+        assertTrue(s, s.endsWith("netbeanshome"));
         s = st.nextToken();
         assertTrue(s, s.startsWith("xtest.home="));
         assertTrue(s, s.endsWith("xtesthome"));
@@ -217,7 +217,7 @@ public class DataObjectTests extends JellyTestCase {
         assertEquals("xtest.attribs=", st.nextToken());
         s = st.nextToken();
         assertTrue(s, s.startsWith("jemmy.home="));
-        assertTrue(s, s.endsWith("jemmyyhome"));
+        assertTrue(s, s.endsWith("jemmyhome"));
         s = st.nextToken();
         assertTrue(s, s.startsWith("jelly.home="));
         assertTrue(s, s.endsWith("jellyhome"));
@@ -240,7 +240,7 @@ public class DataObjectTests extends JellyTestCase {
         assertEquals("echo:", st.nextToken());
         String s = st.nextToken();
         assertTrue(s, s.startsWith("netbeans.home="));
-        assertTrue(s, s.endsWith("jellyhome"));
+        assertTrue(s, s.endsWith("netbeanshome"));
         s = st.nextToken();
         assertTrue(s, s.startsWith("xtest.home="));
         assertTrue(s, s.endsWith("xtesthome"));
@@ -248,7 +248,7 @@ public class DataObjectTests extends JellyTestCase {
         assertEquals("xtest.attribs=", st.nextToken());
         s = st.nextToken();
         assertTrue(s, s.startsWith("jemmy.home="));
-        assertTrue(s, s.endsWith("jemmyyhome"));
+        assertTrue(s, s.endsWith("jemmyhome"));
         s = st.nextToken();
         assertTrue(s, s.startsWith("jelly.home="));
         assertTrue(s, s.endsWith("jellyhome"));
