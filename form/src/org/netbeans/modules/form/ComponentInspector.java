@@ -57,7 +57,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
 
     /** Default icon base for control panel. */
     private static final String EMPTY_INSPECTOR_ICON_BASE =
-        "/org/netbeans/modules/form/resources/emptyInspector"; // NOI18N
+        "org/netbeans/modules/form/resources/emptyInspector"; // NOI18N
     
     private static ResourceBundle formBundle = FormEditor.getFormBundle();
     
