@@ -209,7 +209,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/naming..."/>
     <ant dir="../core/naming" target="netbeans"/>
   </target>
-  <target name="all-core/windows" depends="all-openide,all-openide/loaders">
+  <target name="all-core/windows" depends="all-openide,all-openide/loaders,all-core">
     <echo message="Building module core/windows..."/>
     <ant dir="../core/windows" target="netbeans"/>
   </target>
@@ -916,6 +916,7 @@ Tag:
     <!-- zip task not well suited to making final build, as it does not set +x bits -->
     <!-- so on Unix try to use native ZIP first -->
     <delete file="NetBeans-${buildnum}.zip"/>
+    <!-- XXX Ant 1.5.2 can store +x bit, see zipfileset -->
     <exec executable="zip" dir="." os="Linux SunOS Solaris Mac OS X" failonerror="false">
       <arg value="-r"/>
       <arg value="NetBeans-${buildnum}.zip"/>
