@@ -29,9 +29,10 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.file.name" value="test.jar"/>
     <property name="xtest.file.location" value="lib"/>
     
-    <!-- default testtypes and attributes -->
+    <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="ide"/>
-    <property name="xtest.attributes" value="stable"/>
+    <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.executors" value="ide"/>
     
     <!-- properties just for compiler -->
     <property name="build.compiler.deprecation" value="off"/>
@@ -146,12 +147,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="config" depends="init">
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
-        <!-- testbags, which conforms to ${xtest.attributes} - is subset or equals -->
-        <test-configurator testtype="${xtest.testtype}" testattributes="${xtest.attributes}"/>
+        <!-- testbags, which conforms to ${xtest.attribs} - is subset or equals -->
+        <test-configurator testtype="${xtest.testtype}" 
+                           testattributes="${xtest.attribs}"
+                           testexecutors="${xtest.executors}"/>
     </target>
     
     <target name="runtests" depends="config,cleanresults,buildtests">
-        <echo message="debugger tests, test type: ${xtest.testtype}, test attributes: ${xtest.attributes}"/>
+        <echo message="debugger tests, test type: ${xtest.testtype}, test attributes: ${xtest.attribs}"/>
         <test-executor paramClasspathProp="tbag.classpath"
                        paramPatternsetInProp="tbag.patternset.include"
                        paramPatternsetExProp="tbag.patternset.exclude"
@@ -254,16 +257,22 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.target" value="ide_test_helper"/>
         <property name="xtest.ide.path" refid="xtest.ide.path">
             <classpath id="xtest.ide.path">
-                <pathelement location="${netbeans.test.home}/modules/ext/ant.jar" />
-                <pathelement location="${netbeans.test.home}/modules/ext/ant-optional.jar" />
+                <!-- XXX this is bad, it assumes the Ant module is installed! -->
+                <fileset dir="${netbeans.test.home}/modules/ext">
+                    <include name="ant*.jar"/>
+                </fileset>
             </classpath>
         </property>
 
-        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Ddistexec=true -J-Dtest.exit=true -J-Dnetbeans.full.hack=true -J-Dtest.timeout=90 -J-Ddebugger.jdk11.path=c:\jdk1.1.8"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dnetbeans.full.hack=true -J-Dtest.timeout=90 -J-Ddebugger.jdk11.path=c:\jdk1.1.8"/>
         <echo message="ARGUMENTS = ${args}"/>
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.test.home}/lib/patches"/>
-        <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.test.home}/lib"/>
+        <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
+
 
         <exec dir="${netbeans.test.home}/bin" executable="${netbeans.test.home}/bin/runide.exe" 
               os="Windows 95 Windows 98 Windows NT Windows 2000"
@@ -277,7 +286,10 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
 
         <delete file="${netbeans.test.home}/lib/patches/testmain.jar"/>
-        <delete file="${netbeans.test.home}/lib/xtest.jar"/>
+        <delete file="${netbeans.test.home}/lib/ext/xtest.jar"/>
+        <delete file="${netbeans.test.home}/lib/ext/xtest-ext.jar"/>
+        <delete file="${netbeans.test.home}/lib/ext/junit.jar"/>
+        <delete file="${netbeans.test.home}/lib/ext/junit-ext.jar"/>
         
     </target>
 
@@ -337,7 +349,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <!-- Compiles all tests -->
-    <target name="compile" depends="init" unless="distexec">
+    <target name="compile" depends="init" unless="xtest.distexec">
         <javac srcdir="unit/src" 
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}">
@@ -356,7 +368,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Creates lib/test.jar with all tests for this module,       -->
     <!-- maybe there should be more includes here, not just classes -->
-    <target name="jars" depends="compile" unless="distexec">
+    <target name="jars" depends="compile" unless="xtest.distexec">
         <mkdir dir="${xtest.build}/${xtest.file.location}"/>
         <jar basedir="." 
             jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
@@ -387,7 +399,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="printconfig">
-        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attributes}."/>
+         <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
     
 </project>
