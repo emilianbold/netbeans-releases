@@ -355,10 +355,43 @@ workspaceswitcher
     <ant dir="../externaleditor" target="netbeans"/>
   </target>
 
-  <target name="all-xml" depends="all-openide,all-openidex,all-editor">
-    <echo message="Building module xml..."/>
-    <ant dir="../xml" target="netbeans"/>
+  <target name="all-xml/tax" depends="all-openide">
+      <echo message="Building module xml/tax..."/>
+      <ant dir="../xml/tax" target="netbeans"/>
   </target>
+
+  <target name="all-xml/core" depends="all-openide,all-openidex,all-xml/tax">
+      <echo message="Building module xml/core..."/>
+      <ant dir="../xml/core" target="netbeans"/>
+  </target>
+
+  <target name="all-xml/catalog" depends="all-openide,all-xml/core">
+      <echo message="Building module xml/catalog..."/>
+      <ant dir="../xml/catalog" target="netbeans"/>
+  </target>
+
+  <target name="all-xml/tools" depends="all-openide,all-xml/tax,all-xml/core">
+      <echo message="Building module xml/tools..."/>
+      <ant dir="../xml/tools" target="netbeans"/>
+  </target>
+
+  <target name="all-xml/text-edit" depends="all-openide,all-editor,all-xml/tax,all-xml/core">
+      <echo message="Building module xml/text-edit..."/>
+      <ant dir="../xml/text-edit" target="netbeans"/>
+  </target>
+
+  <target name="all-xml/tree-edit" depends="all-openide,all-openidex,all-xml/tax,all-xml/core">
+      <echo message="Building module xml/tree-edit..."/>
+      <ant dir="../xml/tree-edit" target="netbeans"/>
+  </target>
+
+  <target name="all-xml/css" depends="all-openide,all-editor">
+      <echo message="Building module xml/css..."/>
+      <ant dir="../xml/css" target="netbeans"/>
+  </target>
+
+  <target name="all-xml" depends="all-xml/tax,all-xml/core,all-xml/catalog,all-xml/tools,all-xml/text-edit,all-xml/tree-edit,all-xml/css"/>
+
 
   <target name="build-messaging" depends="init">
     <echo message="Starting a build for NetBeans (build ${buildnum}, config '${moduleconfig}') ..."/>
