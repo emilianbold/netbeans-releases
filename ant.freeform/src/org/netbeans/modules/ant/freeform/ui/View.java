@@ -13,30 +13,39 @@
 
 package org.netbeans.modules.ant.freeform.ui;
 
-import org.openide.nodes.FilterNode;
-import javax.swing.Action;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.util.Utilities;
 
-import java.awt.Image;
 import java.util.Collections;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.Actions;
-import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.Util;
-
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.GenericSources;
 
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.lookup.Lookups;
+import org.w3c.dom.Element;
+
+import org.openide.loaders.ChangeableDataFilter;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.FilterNode;
+import javax.swing.Action;
+
+import java.awt.Image;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
+import org.netbeans.modules.ant.freeform.FreeformProject;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.lookup.Lookups;
-import org.w3c.dom.Element;
+
 
 /**
  * Logical view of a freeform project.
@@ -117,8 +126,7 @@ public final class View implements LogicalViewProvider {
                 }
                 String style = itemEl.getAttribute("style"); // NOI18N
                 if (style.equals(STYLE_TREE)) {
-                    // XXX filter by VisibilityQuery
-                    return new Node[] {new ViewItemNode(fileDO.getNodeDelegate(), location, label)};
+                    return new Node[] {new ViewItemNode((DataFolder) fileDO, location, label)};
                 } else {
                     assert style.equals(STYLE_PACKAGES) : style;
                     return new Node[] {PackageView.createPackageView(GenericSources.group(p, file, location, label, null, null))};
@@ -174,14 +182,57 @@ public final class View implements LogicalViewProvider {
         
     }
     
-    private static final class ViewItemNode extends FilterNode {
+    static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
+        
+        EventListenerList ell = new EventListenerList();        
+        
+        public VisibilityQueryDataFilter() {
+            VisibilityQuery.getDefault().addChangeListener( this );
+        }
+                
+        public boolean acceptDataObject(DataObject obj) {                
+            FileObject fo = obj.getPrimaryFile();                
+            return VisibilityQuery.getDefault().isVisible( fo );
+        }
+        
+        public void stateChanged( ChangeEvent e) {            
+            Object[] listeners = ell.getListenerList();     
+            ChangeEvent event = null;
+            for (int i = listeners.length-2; i>=0; i-=2) {
+                if (listeners[i] == ChangeListener.class) {             
+                    if ( event == null) {
+                        event = new ChangeEvent( this );
+                    }
+                    ((ChangeListener)listeners[i+1]).stateChanged( event );
+                }
+            }
+        }        
+    
+        public void addChangeListener( ChangeListener listener ) {
+            ell.add( ChangeListener.class, listener );
+        }        
+                        
+        public void removeChangeListener( ChangeListener listener ) {
+            ell.remove( ChangeListener.class, listener );
+        }
+        
+    }
+    
+     private static final class ViewItemNode extends FilterNode {
         
         private final String name;
         
         private final String displayName;
-        
+        private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
+       
         public ViewItemNode(Node orig, String name, String displayName) {
             super(orig);
+            this.name = name;
+            this.displayName = displayName;
+        }
+        
+        public ViewItemNode(DataFolder folder, String name, String displayName) {
+            super(folder.getNodeDelegate(), folder.createNodeChildren(VISIBILITY_QUERY_FILTER));
             this.name = name;
             this.displayName = displayName;
         }
