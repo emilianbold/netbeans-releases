@@ -21,10 +21,9 @@ Microsystems, Inc. All Rights Reserved.
   <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="nb_root" location="../.."/>
-  <property name="j2eeserver_root" location="../../../nb_all/j2eeserver"/>
+  <property name="j2eeserver_root" location="../../j2eeserver"/>
   <property name="j2eeserver_jars" location="${j2eeserver_root}/netbeans/modules/autoload"/>
   <property name="nbext" location="${nb_root}/nbbuild"/>
-  <property name="binroot" location="../../../nbextra"/>
   <property name="tomcat5_dir" location="src/org/netbeans/modules/tomcat/tomcat5"/>
 	
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
@@ -45,8 +44,7 @@ Microsystems, Inc. All Rights Reserved.
      <echo message="generating bean graph for Tomcat 5 configuration file" />
      <java classname="org.netbeans.modules.schema2beans.GenBeans" fork="yes">	
      	<classpath>
-	  <pathelement path="${binroot}/core/release/lib/ext/crimson.jar" />
-      <pathelement path="${binroot}/core/release/lib/ext/xml-apis.jar" />
+          <pathelement path="${nb_root}/core/external/xml-apis-1.0b2.jar" />
 	  <pathelement path="${nb_root}/logger/netbeans/lib/ext/logger.jar" />
 	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
 	  <fileset dir = "${nb_root}/openide">
