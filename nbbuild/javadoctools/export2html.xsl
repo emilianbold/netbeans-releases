@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
     </xsl:template>
     
     <xsl:template name="list-modules">
-        <h3>Content</h3>
+        <h2>Content</h2>
         <ul>
             <xsl:for-each select="/apis/module" >
                 <li>
@@ -92,7 +92,7 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:variable name="arch.target" select="@target" />
 
             <xsl:if test="$interfaces">
-                <h5>
+                <h3>
 
                     <a name="def-api-{$module.name}"><xsl:value-of select="$module.name"/></a>
                     
@@ -114,7 +114,7 @@ Microsystems, Inc. All Rights Reserved.
                         </xsl:attribute>
                         <xsl:text>download</xsl:text>
                     </a>)
-                </h5>
+                </h3>
 
                 <div><xsl:apply-templates select="description"/></div>
 
