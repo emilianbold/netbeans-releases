@@ -14,6 +14,7 @@
 package org.netbeans.modules.tomcat5;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -30,6 +31,7 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.tomcat5.config.Context;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
@@ -59,7 +61,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
     private TomcatManager tm;
     
     /** TargetModuleID of module that is managed. */
-    private TargetModuleID tmId;
+    private TomcatModule tmId;
 
     public TomcatManagerImpl (TomcatManager tm) {
         this.tm = tm;
@@ -95,7 +97,22 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             docBase = "jar:"+docBase+"!/";
         }
         command = "install?context="+ctxPath+"&war="+docBase;
-        tmId = new TomcatModule (t, path);
+        
+        try {
+            FileInputStream in = new FileInputStream (deplPlan);
+            Context ctx = Context.createGraph (in);
+System.out.println("context root = "+ctx.getAttributeValue ("path"));
+            tmId = new TomcatModule (t, ctx.getAttributeValue ("path"));
+        }
+        catch (java.io.FileNotFoundException fnfe) {
+            throw new RuntimeException (fnfe);
+        }
+        rp ().post (this, 0, Thread.NORM_PRIORITY);
+    }
+    
+    void remove (TomcatModule tmId) {
+        this.tmId = tmId;
+        command = "remove?path="+tmId.getPath ();
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
@@ -111,7 +128,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
     
     /** JSR88 method. */
     public TargetModuleID[] getResultTargetModuleIDs () {
-        return null; // PENDING
+        return new TargetModuleID [] { tmId };
     }
     
     /** JSR88 method. */
@@ -193,7 +210,6 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             // Set up an authorization header with our credentials
             String input = tm.getUsername () + ":" + tm.getPassword ();
             String output = new String(Base64.encode(input.getBytes()));
-System.out.println("input = "+input+", output = "+output);
             hconn.setRequestProperty("Authorization",
                                      "Basic " + output);  // PENDING
 

@@ -47,6 +47,12 @@ public class TomcatModule implements TargetModuleID {
         return target;
     }
     
+    /** Context root path of this module. */
+    public String getPath () {
+        return path;
+    }
+    
+    // PENDING
     public String getWebURL () {
         try {
             return new java.net.URL ("http", "localhost", 8080, path).toExternalForm ();

@@ -223,13 +223,17 @@ public class TomcatManager implements DeploymentManager {
         return null;
     }
     
-    public ProgressObject undeploy (TargetModuleID[] targetModuleID) throws IllegalStateException {
+    public ProgressObject undeploy (TargetModuleID[] tmID) throws IllegalStateException {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.undeploy called on disconnected instance");   // NOI18N
         }
+        if (!(tmID[0] instanceof TomcatModule)) {
+            throw new IllegalStateException ("TomcatManager.undeploy invalid TargetModuleID passed");   // NOI18N
+        }
         
-        // PENDING 
-        return null;
+        TomcatManagerImpl impl = new TomcatManagerImpl (this);
+        impl.remove ((TomcatModule)tmID[0]);
+        return impl;
     }
     
     public ProgressObject distribute (Target[] targets, InputStream moduleArchive, InputStream deplPlan) 

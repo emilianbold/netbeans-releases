@@ -213,12 +213,12 @@ public class TomcatManagerTest extends TestCase {
 //        fail ("The test case is empty.");
 //    }
 //    
-    /** Test of distribute method, of class org.netbeans.modules.tomcat5.TomcatManager. */
-    public void testDistribute () {
+    /** Test for deployment and undeployment of web module. */
+    public void testDeploymentOfDirectory () {
         java.io.File webapp  = new java.io.File (datadir, "sampleweb");
         java.io.File context = new java.io.File (datadir, "sampleweb.xml");
         System.out.println("testDistribute of "+webapp+" using "+context);
-        tm.distribute (tm.getTargets (), webapp, context);
+        ProgressObject po = tm.distribute (tm.getTargets (), webapp, context);
         try {
             Thread.sleep (5000);
         }
@@ -226,51 +226,79 @@ public class TomcatManagerTest extends TestCase {
             // do nothing
         }
         try {
-            java.net.URLConnection conn = (new URL("http://localhost:8080/sampleweb/index.jsp")).openConnection();
-            HttpURLConnection hconn = (HttpURLConnection) conn;
-
-            // Set up standard connection characteristics
-            hconn.setAllowUserInteraction(false);
-            hconn.setUseCaches(false);
-            hconn.setDoOutput(false);
-            hconn.setRequestMethod("GET");
-            // Establish the connection with the server
-            hconn.connect();
-
-            // Process the response message
-            java.io.Reader reader = new InputStreamReader(hconn.getInputStream());
-            StringBuffer buff = new StringBuffer();
-            String error = null;
-            boolean first = true;
-            while (true) {
-                int ch = reader.read();
-                if (ch < 0) {
-                    break;
-                } else if ((ch == '\r') || (ch == '\n')) {
-                    String line = buff.toString();
-                    buff.setLength(0);
-                    // PENDING : fireProgressEvent
-                    TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, line);
-                    if (first) {
-                        if (!line.startsWith("OK")) {
-                            error = line;
-                        }
-                        first = false;
-                    }
-                } else {
-                    buff.append((char) ch);
-                }
-            }
-            if (buff.length() > 0) {
-                System.out.println(buff);;
-            }
-            if (error != null) {
-                fail("cannot read the page from application");
-            }
+            checkResponse (new URL("http://localhost:8080/sampleweb/index.jsp"));
         } catch (Exception e) {
             fail (e.getMessage ());
         }
-        
+        TargetModuleID [] tmIDs = po.getResultTargetModuleIDs ();
+        assertTrue ("There should be one result target module", tmIDs != null && tmIDs.length == 1);
+
+        ProgressObject po2 = tm.undeploy (tmIDs);
+        try {
+            Thread.sleep (5000);
+        }
+        catch (InterruptedException ie) {
+            // do nothing
+        }
+        try {
+            checkResponse (new URL("http://localhost:8080/sampleweb/index.jsp"));
+            fail ("deployed application is still accessible");
+        } catch (Exception e) {
+            // OK
+            System.out.println("correctly thrown exception: "+e.getMessage ());
+        }
+    }
+    
+    /** Tries to connect to given URL and scans the output whether
+     * its first line starts with OK.
+     */
+    private boolean checkResponse (URL url) throws Exception {
+        java.net.URLConnection conn = url.openConnection();
+        HttpURLConnection hconn = (HttpURLConnection) conn;
+
+        // Set up standard connection characteristics
+        hconn.setAllowUserInteraction(false);
+        hconn.setUseCaches(false);
+        hconn.setDoOutput(false);
+        hconn.setRequestMethod("GET");
+        // Establish the connection with the server
+        hconn.connect();
+
+        // Process the response message
+        java.io.Reader reader = new InputStreamReader(hconn.getInputStream());
+        StringBuffer buff = new StringBuffer();
+        String error = null;
+        boolean first = true;
+        while (true) {
+            int ch = reader.read();
+            if (ch < 0) {
+                break;
+            } else if ((ch == '\r') || (ch == '\n')) {
+                String line = buff.toString();
+                buff.setLength(0);
+                // PENDING : fireProgressEvent
+                TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, line);
+                if (first) {
+                    if (!line.startsWith("OK")) {
+                        error = line;
+                    }
+                    first = false;
+                }
+            } else {
+                buff.append((char) ch);
+            }
+        }
+        if (buff.length() > 0) {
+            System.out.println(buff);;
+        }
+        if (buff.length () == 0 && first) {
+            // actually bug in Tomcat - after remove there is  empty page returned.
+            throw new Exception ("URL stream content is empty");
+        }
+        if (error != null) {
+            throw new Exception ("URL reading failed: "+error);
+        }
+        return true;
     }
     
 //    /** Test of getAvailableModules method, of class org.netbeans.modules.tomcat5.TomcatManager. */
