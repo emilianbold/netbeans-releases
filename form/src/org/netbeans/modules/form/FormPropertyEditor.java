@@ -17,34 +17,36 @@ import java.beans.*;
 import org.openide.explorer.propertysheet.SpecialPropertyEditor;
 import org.openide.nodes.*;
 
-/** 
- *
- * @author Ian Formanek
- */
+/** A Multiplexing PropertyEditor used in the form editor. 
+* Allows multiple editors to be used with one currently selected.
+*
+* @author Ian Formanek
+*/
 public class FormPropertyEditor implements PropertyEditor, PropertyChangeListener, SpecialPropertyEditor {
   // -----------------------------------------------------------------------------
   // Private Variables
 
   private Object value;
   private Object source;
-  private java.util.Vector listeners;
   private RADComponent radComponent;
-  private PropertyEditor currentEditor;
+  private RADComponent.RADProperty radProperty;
+  private PropertyEditor modifiedEditor;
   private Class propertyType;
 
   // -----------------------------------------------------------------------------
   // Constructor
 
   /** Crates a new FormPropertyEditor */
-  FormPropertyEditor(RADComponent radComponent, Class propertyType, PropertyEditor defaultEditor) {
+  FormPropertyEditor(RADComponent radComponent, Class propertyType, RADComponent.RADProperty radProperty, PropertyEditor defaultEditor) {
     source = this;
     this.radComponent = radComponent;
+    this.radProperty = radProperty;
     this.propertyType = propertyType;
-    currentEditor = defaultEditor;
-    if (currentEditor instanceof FormAwareEditor) {
-      ((FormAwareEditor)currentEditor).setRADComponent (radComponent);
+    modifiedEditor = radProperty.getCurrentEditor ();
+    if (modifiedEditor instanceof FormAwareEditor) {
+      ((FormAwareEditor)modifiedEditor).setRADComponent (radComponent);
     }
-    currentEditor.addPropertyChangeListener (this);
+    modifiedEditor.addPropertyChangeListener (this);
   }
 
   Class getPropertyType () {
@@ -52,20 +54,21 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   }
   
   PropertyEditor getCurrentEditor () {
-    return currentEditor;
+    return radProperty.getCurrentEditor ();
   }
 
-  void setCurrentEditor (PropertyEditor editor) {
-    if (currentEditor != null) {
-      currentEditor.removePropertyChangeListener (this);
+  void commitModifiedEditor () {
+    radProperty.setCurrentEditor (modifiedEditor);
+  }
+
+  void setModifiedEditor (PropertyEditor editor) {
+    modifiedEditor.removePropertyChangeListener (this);
+    modifiedEditor = editor;
+    modifiedEditor.setValue (value);
+    if (modifiedEditor instanceof FormAwareEditor) {
+      ((FormAwareEditor)modifiedEditor).setRADComponent (radComponent);
     }
-    currentEditor = editor;
-    currentEditor.setValue (value);
-    if (currentEditor instanceof FormAwareEditor) {
-      ((FormAwareEditor)currentEditor).setRADComponent (radComponent);
-    }
-    currentEditor.addPropertyChangeListener (this);
-    firePropertyChange();
+    modifiedEditor.addPropertyChangeListener (this);
   }
 
   RADComponent getRADComponent () {
@@ -76,8 +79,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   // PropertyChangeListener implementation
 
   public void propertyChange (PropertyChangeEvent evt) {
-    value = currentEditor.getValue ();
-    firePropertyChange ();
+    value = modifiedEditor.getValue (); // [PENDING - modified or current?]
   }
   
   // -----------------------------------------------------------------------------
@@ -92,9 +94,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   */
   public void setValue(Object value) {
     this.value = value;
-    currentEditor.setValue (value);
-//    Thread.dumpStack();
-    //firePropertyChange();
+    modifiedEditor.setValue (value);
   }
   
   /**
@@ -114,7 +114,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @return  True if the class will honor the paintValue method.
   */
   public boolean isPaintable() {
-    return currentEditor.isPaintable ();
+    return getCurrentEditor ().isPaintable ();
   }
 
   /**
@@ -129,7 +129,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @param box  Rectangle within graphics object into which we should paint.
   */
   public void paintValue(java.awt.Graphics gfx, java.awt.Rectangle box) {
-    currentEditor.paintValue (gfx, box);
+    getCurrentEditor ().paintValue (gfx, box);
   }
 
   // -----------------------------------------------------------------------------
@@ -146,7 +146,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   *   	current value.
   */
   public String getJavaInitializationString() {
-    return currentEditor.getJavaInitializationString ();
+    return getCurrentEditor ().getJavaInitializationString ();
   }
 
   // -----------------------------------------------------------------------------
@@ -162,7 +162,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   *	     be prepared to parse that string back in setAsText().
   */
   public String getAsText() {
-    return currentEditor.getAsText ();
+    return getCurrentEditor ().getAsText ();
   }
 
   /**
@@ -174,7 +174,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @param text  The string to be parsed.
   */
   public void setAsText(String text) throws java.lang.IllegalArgumentException {
-    currentEditor.setAsText (text);
+    modifiedEditor.setAsText (text);
   }
 
   // -----------------------------------------------------------------------------
@@ -191,7 +191,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   *	
   */
   public String[] getTags() {
-    return currentEditor.getTags ();
+    return getCurrentEditor ().getTags ();
   }
 
   // -----------------------------------------------------------------------------
@@ -236,8 +236,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   *         sheet
   */
   public java.awt.Component getInPlaceCustomEditor () {
-    if (currentEditor instanceof SpecialPropertyEditor) {
-      return ((SpecialPropertyEditor)currentEditor).getInPlaceCustomEditor ();
+    if (getCurrentEditor () instanceof SpecialPropertyEditor) {
+      return ((SpecialPropertyEditor)getCurrentEditor ()).getInPlaceCustomEditor ();
     } else {
       return null;
     }
@@ -247,8 +247,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @return <code>true</code> if supported
   */
   public boolean hasInPlaceCustomEditor () {
-    if (currentEditor instanceof SpecialPropertyEditor) {
-      return ((SpecialPropertyEditor)currentEditor).hasInPlaceCustomEditor ();
+    if (getCurrentEditor () instanceof SpecialPropertyEditor) {
+      return ((SpecialPropertyEditor)getCurrentEditor ()).hasInPlaceCustomEditor ();
     } else {
       return false;
     }
@@ -259,8 +259,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @return <code>true</code> if supported
   */
   public boolean supportsEditingTaggedValues () {
-    if (currentEditor instanceof SpecialPropertyEditor) {
-      return ((SpecialPropertyEditor)currentEditor).supportsEditingTaggedValues ();
+    if (getCurrentEditor () instanceof SpecialPropertyEditor) {
+      return ((SpecialPropertyEditor)getCurrentEditor ()).supportsEditingTaggedValues ();
     } else {
       return false;
     }
@@ -277,10 +277,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   */
   public synchronized void addPropertyChangeListener(
                             PropertyChangeListener listener) {
-    if (listeners == null) {
-      listeners = new java.util.Vector();
-    }
-    listeners.addElement(listener);
+    // no-op impl
   }
 
   /**
@@ -290,38 +287,15 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   */
   public synchronized void removePropertyChangeListener(
                             PropertyChangeListener listener) {
-    if (listeners == null) {
-        return;
-    }
-    listeners.removeElement(listener);
-  }
-
-  /**
-  * Report that we have been modified to any interested listeners.
-  *
-  * @param source  The PropertyEditor that caused the event.
-  */
-  public void firePropertyChange() {
-    java.util.Vector targets;
-    synchronized (this) {
-      if (listeners == null) {
-          return;
-      }
-      targets = (java.util.Vector) listeners.clone();
-    }
-    // Tell our listeners that "everything" has changed.
-    PropertyChangeEvent evt = new PropertyChangeEvent(source, null, null, null);
-
-    for (int i = 0; i < targets.size(); i++) {
-      PropertyChangeListener target = (PropertyChangeListener)targets.elementAt(i);
-      target.propertyChange(evt);
-    }
+    // no-op impl
   }
 
 }
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/24/99  Ian Formanek    Improved 
+ *       FormPropertyEditor towards accepting multiple editors
  *  7    Gandalf   1.6         6/22/99  Ian Formanek    Further tweaked for 
  *       multiple (custom) editors
  *  6    Gandalf   1.5         6/22/99  Ian Formanek    
