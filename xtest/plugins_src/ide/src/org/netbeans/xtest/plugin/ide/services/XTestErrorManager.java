@@ -14,20 +14,23 @@ package org.netbeans.xtest.plugin.ide.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import org.openide.*;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 
 /**
  * When there is thrown exception from ide the test should fail. This class is made for notify 
  * TestCaseResult listener about thrown exception in ide. The funcionality is easily enabled by property of 
  * xtest (xtest.ide.error.manager).
  *
- * @author  pzajac
+ * @author  pzajac, Jiri.Skrivanek@sun.com
  */
 public class XTestErrorManager extends ErrorManager {
-    /** not yet proccessed exceptions
-     */
+    /** not yet proccessed exceptions */
     private static ArrayList/*Throwable*/ exceptions = new ArrayList();
+    /** maps Throwables to max severity from all annotations */
+    private static final Map mapSeverity = new WeakHashMap();
     
     /** all instances of error manager
      */
@@ -37,8 +40,35 @@ public class XTestErrorManager extends ErrorManager {
     public XTestErrorManager() {
     }
 
-    public java.lang.Throwable annotate(Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, Date date) {
+    /** Maps throwable to max severity. */
+    public synchronized Throwable annotate (
+        Throwable t,
+        int severity, String message, String localizedMessage,
+        Throwable stackTrace, java.util.Date date
+    ) {
+        Object o = mapSeverity.get(t);
+        if(o == null) {
+            // initial value
+            mapSeverity.put(t, new Integer(severity));
+        } else {
+            // update max value when current severity > stored
+            if(severity > ((Integer)o).intValue()) {
+                o = new Integer(severity);
+            }
+        }
         return t;
+    }
+    
+    /** Returns max severity annotated to given throwable. */
+    private int getMaxSeverity(int severity, Throwable t) {
+        Object o = mapSeverity.get(t);
+        if(o != null) {
+            int max = ((Integer)o).intValue();
+            if(max > severity) {
+                return max;
+            }
+        }
+        return severity;
     }
 
     public org.openide.ErrorManager.Annotation[] findAnnotations(Throwable t) {
@@ -73,6 +103,7 @@ public class XTestErrorManager extends ErrorManager {
     }
 
     public void notify(int severity, Throwable t) {
+        severity = getMaxSeverity(severity, t);
         // log only ERROR, EXCEPTION or UNKNOWN severity
         if(severity == ERROR || severity == EXCEPTION || severity == UNKNOWN) {
             // add the exception to exceptions queue of NbTestCase
