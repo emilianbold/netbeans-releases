@@ -96,8 +96,16 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
                 rs.next();
                 HashMap rset = new HashMap();
                 rset = drvSpec.getRow();
-                col.setColumnType(((Integer) rset.get(new Integer(5))).intValue());
-                col.setColumnSize(((Integer) rset.get(new Integer(7))).intValue());
+                
+                try {
+                    //hack because of MSSQL ODBC problems - see DriverSpecification.getRow() for more info - shouln't be thrown
+                    col.setColumnType(new Integer((String) rset.get(new Integer(5))).intValue());
+                    col.setColumnSize(new Integer((String) rset.get(new Integer(7))).intValue());
+                } catch (NumberFormatException exc) {
+                    col.setColumnType(0);
+                    col.setColumnSize(0);
+                }
+
                 col.setNullAllowed(((String) rset.get(new Integer(18))).toUpperCase().equals("YES")); //NOI18N
                 col.setDefaultValue((String) rset.get(new Integer(13)));
                 rset.clear();
