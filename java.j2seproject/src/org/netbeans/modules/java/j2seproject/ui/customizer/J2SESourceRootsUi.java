@@ -289,6 +289,7 @@ final class J2SESourceRootsUi {
                     int current = lastIndex + 1 + i;
                     rootsModel.insertRow( current, new Object[] {normalizedFile,""}); //NOI18N
                     selectionModel.addSelectionInterval(current,current);
+                    this.ownedFolders.add (normalizedFile);
                 }
             }
             if (rootsFromOtherProjects.size() > 0 || rootsFromRelatedSourceRoots.size() > 0) {
@@ -312,7 +313,7 @@ final class J2SESourceRootsUi {
 
             // Remove the items
             for( int i = si.length - 1 ; i >= 0 ; i-- ) {
-                this.ownedFolders.remove(((Vector)rootsModel.getDataVector().elementAt(0)).elementAt(0));
+                this.ownedFolders.remove(((Vector)rootsModel.getDataVector().elementAt(si[i])).elementAt(0));
                 rootsModel.removeRow( si[i] );
             }
 
