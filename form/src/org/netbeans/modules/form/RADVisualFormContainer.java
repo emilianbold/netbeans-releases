@@ -551,7 +551,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         if (newValue == null) newValue = value;
         setValue (newValue);
       }
-          
       public String getAsText () {
         return getValue ().toString ();
       }
@@ -562,7 +561,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         for (java.util.Iterator iter = encodingList.keySet().iterator(); iter.hasNext(); ) {
           eventBox.addItem(iter.next());
         }
-        eventBox.getEditor().setItem(getAsText ());
+        eventBox.setSelectedItem(getAsText ());
         eventBox.addActionListener (new java.awt.event.ActionListener () {
             public void actionPerformed (java.awt.event.ActionEvent e) {
               setAsText ((String) eventBox.getEditor().getItem());
@@ -585,6 +584,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  22   Gandalf   1.21        1/10/00  Pavel Buzek     #5088
  *  21   Gandalf   1.20        1/5/00   Ian Formanek    NOI18N
  *  20   Gandalf   1.19        12/14/99 Pavel Buzek     
  *  19   Gandalf   1.18        12/13/99 Pavel Buzek     
