@@ -281,23 +281,23 @@ System.out.println("is " + MyHttpServer.class.getResourceAsStream("server.proper
       if(i > -1) lookupPath = lookupPath.substring(0, i);
       if(lookupPath.length() < 1) lookupPath = "/";
       String s = lookupPath.toLowerCase();
-System.out.println("s :" + s);
-System.out.println("rep :" + op.getRepositoryBaseURL());
+/*System.out.println("s :" + s);
+System.out.println("rep :" + op.getRepositoryBaseURL());*/
       if(s.startsWith("/servlet/")) {
-System.out.println("security check OK 1");
+//System.out.println("security check OK 1");
         return true;
       }  
       if(s.startsWith("/web-inf")) {
         httpservletresponse.sendError(403);
         return false;
       } if (s.startsWith(op.getRepositoryBaseURL() + "/") || s.startsWith(op.getClasspathBaseURL() + "/")) {
-System.out.println("security check OK 2");
+//System.out.println("security check OK 2");
         return true;
       } else {
         httpservletresponse.sendError(404);
         return false;
       }
-
+                   
     }
 
     private Context context;
@@ -307,6 +307,7 @@ System.out.println("security check OK 2");
 
 /*
  * Log
+ *  36   Gandalf   1.35        1/11/00  Petr Jiricka    Cleanup
  *  35   Gandalf   1.34        1/9/00   Petr Jiricka    Cleanup
  *  34   Gandalf   1.33        12/1/99  Ales Novak      bugfix - working 
  *       directory is not system - system is deleted no more
