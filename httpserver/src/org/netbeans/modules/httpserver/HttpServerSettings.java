@@ -310,7 +310,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     
   /** Requests access for address addr. If necessary asks the user. Returns true it the access 
   * has been granted. */  
-  public boolean addGrantedAddress(InetAddress addr) {
+  public boolean allowAccess(InetAddress addr) {
     if (getHost().equals(HttpServerSettings.ANYHOST))
       return true;
       
@@ -370,6 +370,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  11   Gandalf   1.10        6/24/99  Petr Jiricka    Implements recent 
+ *       changes in org.openide.util.HttpServer - allowAccess(...)
  *  10   Gandalf   1.9         6/23/99  Petr Jiricka    
  *  9    Gandalf   1.8         6/22/99  Petr Jiricka    
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
