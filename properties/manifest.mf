@@ -7,6 +7,4 @@ OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.5
 
 Name: org/netbeans/modules/properties/PropertiesDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.text.TXTDataObject
-Install-After: org.netbeans.modules.java.JavaDataObject
 
