@@ -26,15 +26,24 @@ import java.net.MalformedURLException;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 import javax.swing.event.DocumentListener;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;
 import java.awt.FontMetrics;
-import org.netbeans.editor.FontMetricsCache;
 import java.awt.Insets;
 import java.awt.image.ImageObserver;
-import org.netbeans.editor.*;
+
+import org.openide.util.NbBundle;
+
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.FontMetricsCache;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsDefaults;
+import org.netbeans.editor.SettingsNames;
 
 /** GlyphGutter is component for displaying line numbers and annotation
  * glyph icons. Component also allow to "cycle" through the annotations. It
@@ -46,7 +55,7 @@ import org.netbeans.editor.*;
  * @since 07/2001
  */
 
-public class LinesComponent extends JComponent {
+public class LinesComponent extends JComponent implements javax.accessibility.Accessible {
 
     
     /** Document to which this gutter is attached*/
@@ -112,10 +121,25 @@ public class LinesComponent extends JComponent {
         update ();
     }
 
+    /* Read accessible context
+     * @return - accessible context
+     */
+    public AccessibleContext getAccessibleContext () {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleJComponent() {
+                public AccessibleRole getAccessibleRole() {
+                    return AccessibleRole.PANEL;
+                }
+            };
+        }
+        return accessibleContext;
+    }
+
     /** Do initialization of the glyph gutter*/
     protected void init() {
         createLines();
-
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(LinesComponent.class, "ACSN_Lines_Component")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LinesComponent.class, "ACSD_Lines_Component")); // NOI18N
     }
     
     private void createLines() {

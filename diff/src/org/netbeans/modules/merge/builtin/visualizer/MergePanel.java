@@ -132,6 +132,12 @@ public class MergePanel extends javax.swing.JPanel {
         acceptAndNextLeftButton.setMnemonic(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextLeftButton_Mnemonic").charAt(0));  // NOI18N
         acceptRightButton.setMnemonic(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptRightButton.text_Mnemonic").charAt(0));  // NOI18N
         acceptAndNextRightButton.setMnemonic(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextRightButton_Mnemonic").charAt(0));  // NOI18N
+        jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MergePanel.class, "ACS_EditorPane1A11yName"));  // NOI18N
+        jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MergePanel.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
+        jEditorPane2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MergePanel.class, "ACS_EditorPane2A11yName"));  // NOI18N
+        jEditorPane2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MergePanel.class, "ACS_EditorPane2A11yDescr"));  // NOI18N
+        jEditorPane3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MergePanel.class, "ACS_EditorPane3A11yName"));  // NOI18N
+        jEditorPane3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MergePanel.class, "ACS_EditorPane3A11yDescr"));  // NOI18N
     }
 
     /** This method is called from within the constructor to

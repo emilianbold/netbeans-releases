@@ -87,6 +87,10 @@ public class DiffPanel extends javax.swing.JPanel {
         putClientProperty("PersistenceType", "Never");
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_DiffPanelA11yName"));  // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
+        jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane1A11yName"));  // NOI18N
+        jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
+        jEditorPane2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane2A11yName"));  // NOI18N
+        jEditorPane2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane2A11yDescr"));  // NOI18N
     }
 
     /** This method is called from within the constructor to

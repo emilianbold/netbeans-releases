@@ -80,6 +80,10 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         // for the topcomponent when it is alone in the mode.
         putClientProperty("TabPolicy", "HideWhenAlone");        
         setName(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "MergeDialogComponent.title"));
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(MergeDialogComponent.class, "ACSN_Merge_Dialog_Component")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeDialogComponent.class, "ACSD_Merge_Dialog_Component")); // NOI18N
+        mergeTabbedPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MergeDialogComponent.class, "ACSN_Merge_Tabbed_Pane")); // NOI18N
+        mergeTabbedPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeDialogComponent.class, "ACSD_Merge_Tabbed_Pane")); // NOI18N
     }
     
     public HelpCtx getHelpCtx() {

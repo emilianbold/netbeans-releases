@@ -345,6 +345,8 @@ public class DefaultDiff extends Diff implements Serializable {
             setLayout(new BorderLayout());
             add(c, BorderLayout.CENTER);
             putClientProperty("PersistenceType", "Never");
+            getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
+            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
         }
         
         protected Mode getDockingMode(Workspace workspace) {
