@@ -44,6 +44,7 @@ import org.openide.util.*;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
 import org.openide.util.lookup.*;
+import org.openide.windows.WindowManager;
 
 import org.netbeans.core.actions.*;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -512,6 +513,8 @@ public abstract class NbTopManager /*extends TopManager*/ {
                 // #29831: hide frames between closing() and close()
                 Runnable hideFrames = new Runnable() {
                     public void run() {
+                        WindowManagerImpl wmi = (WindowManagerImpl) WindowManager.getDefault();
+                        wmi.setExitingIDE(true);
                         if (Boolean.getBoolean("netbeans.close.when.invisible")) {
                             // hook to permit perf testing of time to *apparently* shut down
                             TopSecurityManager.exit(0);
