@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="compile" depends="dd2beans_gen, projectized.compile"/>
     
-  <target name="clean" depends="init, clean-ddgen-src, projectized.clean"/>
+  <target name="clean" depends="clean-ddgen-src, projectized.clean"/>
 
   <target name="clean-ddgen-check">
     <available property="have-config" file="${tomcat5_dir}/config"/>
