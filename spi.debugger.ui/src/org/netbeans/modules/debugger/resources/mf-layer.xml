@@ -272,9 +272,9 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.GoToCallingMethodAction"/>
 	</file>
         
-        <file name="CS-3.shadow">
+<!--        <file name="CS-3.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance"/>
-	</file>
+	</file>-->
         <file name="CS-4.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-WatchesAction.instance"/>
 	</file>
@@ -287,9 +287,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="CS-7.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-BreakpointsAction.instance"/>
 	</file>
-        <file name="CS-8.shadow">
+<!--        <file name="CS-8.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-SessionsAction.instance"/>
-	</file>
+	</file>-->
         <file name="CS-9.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-ThreadsAction.instance"/>
 	</file>
