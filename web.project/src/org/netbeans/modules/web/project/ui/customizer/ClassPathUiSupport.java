@@ -181,7 +181,9 @@ public class ClassPathUiSupport {
         int[] indexes = new int[files.length];
         for( int i = 0; i < files.length; i++ ) {
             int current = lastIndex + 1 + i;
-            ClassPathSupport.Item item = ClassPathSupport.Item.create( files[i], null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
+            File f = files[i];
+            String pathInWar = (f.isDirectory() ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB);
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, pathInWar);
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
                 indexes[i] = current;
@@ -261,17 +263,21 @@ public class ClassPathUiSupport {
         public Object getValueAt(int row, int column) {
             if (column == 0)
                 return getItem(row);
-            else
-                return ClassPathSupport.Item.PATH_IN_WAR_LIB.equals(getItem(row).getPathInWAR()) ? Boolean.TRUE : Boolean.FALSE;
+            else {
+                String pathInWar = getItem(row).getPathInWAR();
+                return (ClassPathSupport.Item.PATH_IN_WAR_LIB.equals(pathInWar) || ClassPathSupport.Item.PATH_IN_WAR_DIR.equals(pathInWar)) ? Boolean.TRUE : Boolean.FALSE;
+            }
         }
         
         public void setValueAt(Object value, int row, int column) {
             if (column != 1 || !(value instanceof Boolean))
                 return;
             
-            if (value == Boolean.TRUE)
-                getItem(row).setPathInWAR(ClassPathSupport.Item.PATH_IN_WAR_LIB);
-            else
+            if (value == Boolean.TRUE) {
+                ClassPathSupport.Item item = getItem(row);
+                String pathInWar = (item.getFile().isDirectory() ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB);
+                item.setPathInWAR(pathInWar);
+            } else
                 getItem(row).setPathInWAR(ClassPathSupport.Item.PATH_IN_WAR_NONE);
             fireTableCellUpdated(row, column);
         }

@@ -404,6 +404,7 @@ public class ClassPathSupport {
         public static final int TYPE_CLASSPATH = 3;
 
         public static final String PATH_IN_WAR_LIB = "WEB-INF/lib"; //NOI18N
+        public static final String PATH_IN_WAR_DIR = "WEB-INF/classes"; //NOI18N
         public static final String PATH_IN_WAR_APPLET = ""; //NOI18N
         public static final String PATH_IN_WAR_NONE = null;
     
