@@ -6,3 +6,7 @@ Netbeans-Module-Class: Loader
 
 Name: com/netbeans/developer/modules/loaders/form/FormLoaderSettings.class
 Netbeans-Module-Class: Option
+
+Name: com/netbeans/developer/modules/loaders/form/palette/PaletteNode.class
+Netbeans-Module-Class: Node
+Type: Environment
