@@ -35,7 +35,6 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.util.ContextGlobalProvider;
 
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -43,12 +42,6 @@ import org.openide.util.LookupEvent;
 
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
-
-import org.openide.util.actions.CallbackSystemAction;
-import org.openide.util.actions.CallbackSystemActionTest.SurviveFocusChgCallbackAction;
-
-
-import org.openide.util.actions.SystemAction;
 
 
 import org.openide.windows.TopComponent;
@@ -165,20 +158,23 @@ public class MultiViewActionMapTest extends NbTestCase {
         MultiViewDescription[] descs = new MultiViewDescription[] { desc1, desc2, desc3 };
         TopComponent tc = MultiViewFactory.createMultiView(descs, desc1);
         // WARNING: as anything else the first element's action map is set only after the tc is opened..
-        tc.open();
-        
         Lookup.Result result = tc.getLookup().lookup(new Lookup.Template(ActionMap.class));
         LookListener list = new LookListener();
-        result.addLookupListener(list);
         list.resetCount();
+        result.addLookupListener(list);
+        
+        tc.open();
+        assertEquals(1, list.getCount());
+        
         MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
         // test related hack, easy establishing a  connection from Desc->perspective
         Accessor.DEFAULT.createPerspective(desc2);
         handler.requestVisible(Accessor.DEFAULT.createPerspective(desc2));
-        assertEquals(1, list.getCount());
+        assertEquals(2, list.getCount());
+        
         Accessor.DEFAULT.createPerspective(desc3);
         handler.requestVisible(Accessor.DEFAULT.createPerspective(desc3));
-        assertEquals(2, list.getCount());
+        assertEquals(3, list.getCount());
     }
     
     
