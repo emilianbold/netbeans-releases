@@ -76,8 +76,18 @@ public class BookDataObject extends XmlMultiViewDataObject {
     /** Update text document from data model. Called when something is changed in visual editor.
     */
     protected String generateDocumentFromModel() {
-        return "";
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        try {
+            getBook().write(out);
+            out.close();
+            return out.toString("UTF8"); //NOI18N
+        }
+        catch (IOException e) {
+            org.openide.ErrorManager.getDefault ().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+        }
+	return out.toString ();
     }
+    
     protected DesignMultiViewDesc[] getMultiViewDesc() {
         return new DesignMultiViewDesc[]{new DesignView(this)};
     }
@@ -94,7 +104,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
 
         public org.netbeans.core.spi.multiview.MultiViewElement createElement() {
             BookDataObject dObj = (BookDataObject)getDataObject();
-            return new BookMultiViewElement((BookDataObject)getDataObject());
+            return new BookMultiViewElement(dObj);
         }
         
         public java.awt.Image getIcon() {
