@@ -78,8 +78,9 @@ final class TaskThreadGroup extends ThreadGroup {
                     new Thread[count];
                 enumerate(threads);
                 for (int i = threads.length; --i >= 0;) {
+                    // #33630 - ignore daemon threads
                     if ((threads[i] != null) &&
-                            (threads[i].isAlive())
+                            (threads[i].isAlive() && !threads[i].isDaemon())
                        ) {
                         if (++active > 1) {
                             return false;
