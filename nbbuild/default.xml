@@ -45,6 +45,7 @@
     <!-- Note: user-configured -Djavahome=... will always override this: -->
     <property name="javahome" location="${java.home}"/>
     <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
+    <available classname="com.apple.eawt.Application" property="is-mac"/>
   </target>
 
   <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
@@ -57,8 +58,11 @@
     <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
   </target>
 
-  <target name="setup-jdkhome" depends="setup-jdkhome-2,setup-jdkhome-3" unless="jdkhome-valid">
-    <available property="tools-classes-found" classname="sun.tools.javac.Main"/>
-    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed." unless="tools-classes-found"/>
+  <target name="setup-jdkhome-4" depends="setup-jdkhome-1" if="is-mac">
+      <property name="jdkhome-valid" value="${java.home}/../Classes/classes.jar"/> 
+  </target>
+
+  <target name="setup-jdkhome" depends="setup-jdkhome-2,setup-jdkhome-3,setup-jdkhome-4" unless="jdkhome-valid">
+    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
   </target>
 </project>
