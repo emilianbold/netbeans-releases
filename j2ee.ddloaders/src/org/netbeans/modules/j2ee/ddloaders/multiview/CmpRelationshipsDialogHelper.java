@@ -26,6 +26,8 @@ import org.openide.src.MethodElement;
 import org.openide.src.Type;
 
 import javax.swing.*;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -325,6 +327,20 @@ class CmpRelationshipsDialogHelper {
             }
             opositeEjbName = opositeRole.getEjbName();
         }
+
+        private String validateFieldName() {
+            if(isCreateCmrField()) {
+                String fieldName = getFieldName();
+                if (fieldName.length() == 0) {
+                    return Utils.getBundleMessage("MSG_FieldNameCannotBeEmpty");
+                } else {
+                    if (!Utils.isJavaIdentifier(fieldName)) {
+                        return Utils.getBundleMessage("MSG_InvalidFieldName", fieldName);
+                    }
+                }
+            }
+            return null;
+        }
     }
 
     FormRoleHelper roleA = new FormRoleHelper();
@@ -336,7 +352,8 @@ class CmpRelationshipsDialogHelper {
     }
 
     public boolean showCmpRelationshipsDialog(String title, EjbRelation relation) {
-        CmpRelationshipsForm form = initForm();
+        final CmpRelationshipsForm form = initForm();
+        final JLabel errorLabel = form.getErrorLabel();
 
         RelationshipHelper helper;
         if (relation != null) {
@@ -348,9 +365,13 @@ class CmpRelationshipsDialogHelper {
 
         listener.validate();
 
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(form, title);
+        final DialogDescriptor dialogDescriptor = new DialogDescriptor(form, title);
         dialogDescriptor.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        DialogListener dialogListener = new DialogListener(errorLabel, dialogDescriptor);
+        form.getFieldNameTextField().getDocument().addDocumentListener(dialogListener);
+        form.getFieldNameTextField2().getDocument().addDocumentListener(dialogListener);
+        form.getCreateCmrFieldCheckBox().addActionListener(dialogListener);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
 //            listener.validate();
@@ -448,6 +469,50 @@ class CmpRelationshipsDialogHelper {
         public void validate() {
             roleA.setFieldStates(roleB);
             roleB.setFieldStates(roleA);
+        }
+    }
+
+    private class DialogListener implements DocumentListener, ActionListener {
+
+        private final JLabel errorLabel;
+        private final DialogDescriptor dialogDescriptor;
+
+        public DialogListener(JLabel errorLabel, DialogDescriptor dialogDescriptor) {
+            this.errorLabel = errorLabel;
+            this.dialogDescriptor = dialogDescriptor;
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            validateFieldNames();
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            validateFieldNames();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            validateFieldNames();
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            validateFieldNames();
+        }
+
+        private void validateFieldNames() {
+            String s1 = roleA.validateFieldName();
+            if (s1 != null) {
+                errorLabel.setText(s1);
+                dialogDescriptor.setValid(false);
+            } else {
+                String s2 = roleB.validateFieldName();
+                if (s2 != null) {
+                    errorLabel.setText(s2);
+                    dialogDescriptor.setValid(false);
+                } else {
+                    errorLabel.setText(" ");
+                    dialogDescriptor.setValid(true);
+                }
+            }
         }
     }
 }
