@@ -60,6 +60,7 @@ Microsystems, Inc. All Rights Reserved.
             <config name="default" modules="openide,core" testtypes="unit"/>
             <config name="openide" modules="openide" testtypes="unit"/>
             <config name="core" modules="core" testtypes="unit"/>
+            <config name="examples" modules="mymodule" testtypes="unit"/>
         </xtestconfig>
     </target>
 
@@ -74,12 +75,12 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Building ${xtest.testtype} test of ${xtest.module}..."/>
 
         <mkdir dir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
-        <ant dir="../${xtest.module}/test/${xtest.testtype}" target="build">
+        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="build">
             <property name="xtest.build" 
                       value="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
         </ant>
 
-        <copy   file="../${xtest.module}/test/${xtest.testtype}/build.xml" 
+        <copy   file="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}/build.xml" 
                 toDir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
     </target>
 
@@ -88,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Build test of module in its default directory. -->
     <target name="build-test">
         <echo message="Building ${xtest.testtype} test of ${xtest.module}..."/>
-        <ant dir="../${xtest.module}/test/${xtest.testtype}" target="build"/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="build"/>
     </target>
 
     <!-- ====================================== -->
@@ -139,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Clean up build of module test.              -->
     <target name="clean-test-build">
         <echo message="Cleaning build of ${xtest.module} ${xtest.testtype} test..."/>
-        <ant dir="../${xtest.module}/test/${xtest.testtype}" target="clean_build"/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="clean_build"/>
     </target>
 
 
@@ -307,4 +308,37 @@ Microsystems, Inc. All Rights Reserved.
             description="Print modules, tests and patterns from selected configuration.">
         <xtestconfig-print/>
     </target>
+
+    <target name="usage">
+        <echo message="Usage: ant [properties] target"/>
+        <echo message=""/>
+        <echo message="The most important targets:"/>
+        <echo message="==========================="/>
+        <echo message=""/>
+        <echo message="build      ... build tests"/>
+        <echo message="clean      ... clean built tests and test results"/>
+        <echo message="test       ... execute tests"/>
+        <echo message="netbeans   ... build and execute tests (default target)"/>
+        <echo message="real-clean ... clean up tests, results, test distributions and XTest framework"/>
+        <echo message=""/>
+        <echo message="The most important properties:"/>
+        <echo message="=============================="/>
+        <echo message=""/>
+        <echo message="xtest.config  ... test configuration name"/>
+        <echo message="xtest.basedir ... absolute path to the root of modules"/>
+        <echo message=""/>
+    </target>
+
+    <!-- ============================================================================== -->
+    <!-- build and test examples, it can be used for verification of XTest instalation  -->
+    <!-- you can run examples directly by following command                             -->
+    <!-- ant -Dxtest.config=examples -Dxtest.basedir=${xtest.home}/examples             -->
+    <!-- replace ${xtest.home} by the absolute path of your XTest's home directory      -->
+    <target name="examples">
+       <ant dir="." target="netbeans">
+           <property name="xtest.config" value="examples"/>
+           <property name="xtest.basedir" location="examples"/>
+       </ant>
+    </target>
+
 </project>
