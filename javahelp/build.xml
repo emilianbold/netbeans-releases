@@ -96,20 +96,21 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="netbeans"/>
         <delete file="javahelp-api.nbm"/>
         <delete dir="Info"/>
-    </target>
-
-    <target name="clean-javadoc">
         <delete dir="javadoc"/>
         <delete dir="JavahelpAPIs"/>
+        <delete file="JavahelpAPIs.zip"/>
     </target>
 
-    <target name="real-clean" depends="clean,clean-javadoc">
+    <target name="real-clean" depends="clean">
         <delete dir="reload"/>
     </target>
 
-  <target name="javadoc" depends="clean-javadoc,javahelp-apis">
+  <target name="javadoc" depends="javahelp-apis">
     <copy todir="javadoc">
-      <fileset dir="JavahelpAPIs"/>
+      <fileset dir=".">
+        <include name="JavahelpAPIs/**"/>
+        <include name="JavahelpAPIs.zip"/>
+      </fileset>
     </copy>
   </target>
 

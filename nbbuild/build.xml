@@ -625,7 +625,7 @@ ToDo:
   <target name="nbm" description="Dummy target."/>
 
   <!-- build javadoc for selected modules -->
-  <target name="build-javadoc" depends="all-openide">
+  <target name="build-javadoc" depends="merge">
       <for-each startdir=".." target="javadoc" locations="${modules}"/>
   </target>
 

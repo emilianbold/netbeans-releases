@@ -80,20 +80,19 @@ Microsystems, Inc. All Rights Reserved.
       <delete dir="Info"/>
       <delete file="SettingsAPIs.zip"/>
       <delete dir="SettingsAPIs"/>
+      <delete dir="javadoc"/>
     </target>
 
-    <target name="real-clean" depends="clean,clean-javadoc">
+    <target name="real-clean" depends="clean">
         <delete dir="reload"/>
     </target>
 
-    <target name="clean-javadoc">
-      <delete dir="javadoc"/>
-      <delete dir="SettingsAPIs"/>
-    </target>
-
-    <target name="javadoc" description="Create Settings API documentation." depends="clean-javadoc,settingsapis">
-      <copy todir="javadoc">
-        <fileset dir="SettingsAPIs"/>
+    <target name="javadoc" description="Create Settings API documentation." depends="settingsapis">
+      <copy todir="javadoc/">
+        <fileset dir=".">
+          <include name="SettingsAPIs/**"/>
+          <include name="SettingsAPIs.zip"/>
+        </fileset>
       </copy>
     </target>
 
