@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.23"
+  question-version="1.24"
   module="J2EE Server Module"
   author="pavel.buzek@sun.com"
 >
@@ -41,29 +41,23 @@ deployment in IDE.
 </p>
 </answer>
 
-<!--
-        <question id="arch-overall" when="init">
-            Describe the overall architecture. 
-            <hint>
-            What will be API for 
-            <a href="http://openide.netbeans.org/tutorial/api-design.html#design.apiandspi">
-                clients and what support API</a>? 
-            What parts will be pluggable?
-            How will plug-ins be registered? Please use <code>&lt;api type="export"/&gt;</code>
-            to describe your general APIs.
-            If possible please provide 
-            simple diagrams. 
-            </hint>
-        </question>
--->
 <answer id="arch-overall">
-J2EE Server module serves as an integration point between two kinds of netbeans modules:
-<ul>
-<li><b>server plugins</b> (or simply plugins) that integrate various J2EE servers in IDE, and</li>
-<li><b>devmodules</b> - netbeans modules that provide support for development
-of J2EE modules (web module, EJB module, J2EE Application, etc.) and need to deploy 
-and debug them on J2EE servers.</li>
-</ul>
+
+<api name="J2EEServerAPI" type="export" category="friend" group="java">
+  J2EE Server module serves as an integration point between two kinds of netbeans modules:
+  <ul>
+    <li><b>server plugins</b> (or simply plugins) that integrate various J2EE servers in IDE, and</li>
+    <li><b>devmodules</b> - netbeans modules that provide support for development
+    of J2EE modules (web module, EJB module, J2EE Application, etc.) and need to deploy 
+    and debug them on J2EE servers.</li>
+  </ul>
+</api>
+    
+<api type="export" group="layer" name="PluginRegistration" category="friend" url="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
+    XML layer contract for registration of server plugins and instances that implement 
+    optional capabilities of server plugins.
+</api>
+
 <p>
 J2EE Server Module enables using <a href="http://java.sun.com/j2ee/tools/deployment/index.jsp">
 J2EE Deployment API</a> (aka JSR88) for plugin integration.
@@ -286,7 +280,8 @@ It uses these API's:
     <api 
         name="OpenAPI"
         type="import"
-        category="stable"
+        group="java" 
+        category="official"
         url="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/">
     NetBeans Open APIs
     </api>
@@ -296,7 +291,8 @@ Using various parts of Open API.
     <api 
         name="InputOutputAPI"
         type="import"
-        category="stable"
+        group="java" 
+        category="official"
         url="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI/">
     NetBeans Open APIs
     </api>
@@ -306,7 +302,8 @@ Used for displaying event log.
     <api 
         name="LoadersAPI"
         type="import"
-        category="stable"
+        group="java" 
+        category="official"
         url="http://www.netbeans.org/download/dev/javadoc/LoadersAPI/">
     NetBeans Loaders API
     </api>
@@ -315,6 +312,7 @@ Used for displaying event log.
     <api 
         name="schema2beans"
         type="import"
+        group="java" 
         category="stable"
         url="http://schema2beans.netbeans.org/">
     Schema2beans infrastructure
@@ -326,6 +324,7 @@ Also used for NetbeansDeployment (generate S2B beans from DTD).
     <api 
         name="SettingAPI"
         type="import"
+        group="java" 
         category="official"
         url="http://www.netbeans.org/download/dev/javadoc/SettingsAPI/">
     Setting API
@@ -336,6 +335,7 @@ For for storing settings (e.g. about deployed modules) in xml.
     <api 
         name="XMLAPI"
         type="import"
+        group="java" 
         category="stable"
         url="http://xml.netbeans.org/api/">
     XML API
@@ -346,6 +346,7 @@ XML editing and validation of server specific deployment descriptors.
     <api 
         name="ProjectsAPI"
         type="import"
+        group="java" 
         category="devel"
         url="http://www.netbeans.org/download/dev/javadoc/#def-api-projects/projectapi">
     Projects API
@@ -370,29 +371,29 @@ expected to be implemented as projects).
 <answer id="dep-non-nb">
         <ul>
             <li>
-                <api name="J2EEEditor" type="import" category="third" url="">
+                <api name="J2EEEditor" type="import" category="third" url="" group="java">
                     For editing server specific deployment descriptors.
                 </api>
             </li>
             <li>
-                <api name="EJB" type="import" category="third" url="http://java.sun.com/products/ejb/docs.html#specs">
+                <api name="EJB" type="import" category="standard" url="http://java.sun.com/products/ejb/docs.html#specs" group="java">
                     Enterprise JavaBeans API 2.0.
                 </api>
             </li>
             <li>
-                <api name="J2EEDeploymentAPI" type="import" category="third" url="http://java.sun.com/j2ee/tools/deployment/index.jsp">
+                <api name="J2EEDeploymentAPI" type="import" category="standard" url="http://java.sun.com/j2ee/tools/deployment/index.jsp" group="java">
                     J2EE Deployment API/JSR88. 
                     Part implemented by this module and used to communicate with 
                     server plugins and with devmodules.
                 </api>
             </li>
             <li>
-                <api name="J2EEManagementAPI" type="import" category="third" url="http://java.sun.com/j2ee/tools/management/index.jsp">
+                <api name="J2EEManagementAPI" type="import" category="standard" url="http://java.sun.com/j2ee/tools/management/index.jsp" group="java">
                     J2EE Management/JSR77. Used to communicate with server plugins.
                 </api>
             </li>
             <li>
-                <api name="JMXRI" type="import" category="third" url="http://wwws.sun.com/software/communitysource/jmx/download.html">
+                <api name="JMXRI" type="import" category="standard" url="http://wwws.sun.com/software/communitysource/jmx/download.html" group="java">
                     Java Management Extensions RI 1.2. Used for event logging.
                 </api>
             </li>
@@ -929,21 +930,54 @@ No.
 There is no way to enforce performance of SPI.
 Performance of module does depend on plugin and devmodule performance.
 </answer>
+<!-- Copy this above the </api-answers> tag! -->
+
+
+
 <!--
-    </category>
--->    
-<p>
-<ul>
-<li>
-    <api 
-        name="J2EE Server API"
-        type="export"
-        category="friend"
-        url="">
-   	 J2EE Server API
-    </api>
-<dd>Contains both server plugin and devmodule APIs.</dd>
-</li>
-</ul>
-</p>
+        <question id="perf-wakeup" when="final">
+            Does any piece of your code wake up periodically and do something
+            even when the system is otherwise idle (no user interaction)?
+        </question>
+-->
+ <answer id="perf-wakeup">
+  <p>
+   XXX no answer for perf-wakeup
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant additional rights to some other code?
+            <hint>Avoid using a class loader that adds extra
+            permissions to loaded code unless really necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            calling AccessController.doPrivileged().</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  <p>
+   XXX no answer for security-grant
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require modifications to the standard policy file?
+            <hint>Your code might pass control to third-party code not
+            coming from trusted domains. This could be code downloaded over the
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions need to be granted to which domains?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  <p>
+   XXX no answer for security-policy
+  </p>
+ </answer>
 </api-answers>
