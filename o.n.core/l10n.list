@@ -13,10 +13,8 @@ core/src/org/netbeans/core/windows/nodes/Bundle.properties
 core/src/org/netbeans/core/windows/toolbars/Bundle.properties
 core/src/org/netbeans/core/windows/util/Bundle.properties
 core/src/org/netbeans/core/resources/templatesRootDescription.html
-core/src/org/netbeans/docs/startup/info-NewNewAction.html
-core/src/org/netbeans/docs/startup/info-OpenFileAction.html
-core/src/org/netbeans/docs/startup/info-Tutorial.html
-core/src/org/netbeans/docs/startup/info-UpdateAction.html
+core/src/org/netbeans/docs/startup/info-NewTemplateAction.html
+core/src/org/netbeans/docs/startup/info-ProxySettingsAction.html
 core/src/org/netbeans/docs/startup/info.html
 core/src/org/netbeans/docs/tips/tip1.html
 core/src/org/netbeans/docs/tips/tip10.html
