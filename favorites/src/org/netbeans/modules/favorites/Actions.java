@@ -222,10 +222,6 @@ public final class Actions extends Object {
                 }
                 FileObject fo = dataObject.getPrimaryFile();
                 if (fo != null) {
-                    //Check if it is folder. Action is enabled only for folders.
-                    if (!fo.isFolder()) {
-                        return false;
-                    }
                     //Allow to link only once
                     if (isInFavorites(fo)) {
                         return false;
