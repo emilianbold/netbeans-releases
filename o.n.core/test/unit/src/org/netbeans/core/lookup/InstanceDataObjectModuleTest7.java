@@ -48,18 +48,13 @@ implements org.openide.filesystems.FileChangeListener {
         super(name);
     }
     
-    public static void main(String[] args) {
-        // Turn on verbose logging while developing tests:
-        //System.setProperty("org.netbeans.core.modules", "0");
-        TestRunner.run(new NbTestSuite(InstanceDataObjectModuleTest7.class));
-    }
-    
     protected void setUp() throws Exception {
         // Use MemoryFileSystem:
         Properties p = System.getProperties();
         p.remove("system.dir");
         System.setProperties(p);
         Repository.getDefault ().getDefaultFileSystem ().addFileChangeListener (this);
+        assertNotNull("have org-netbeans-modules-settings.jar in CP", InstanceDataObjectModuleTest7.class.getResource("/org/netbeans/modules/settings/resources/Bundle.properties"));
         super.setUp();
     }
     
@@ -74,7 +69,6 @@ implements org.openide.filesystems.FileChangeListener {
         twiddle(m2, TWIDDLE_ENABLE);
         assertTrue ("m2 is enabled", m2.isEnabled ());
         DataObject obj1;
-        try {
             obj1 = findIt("Services/Misc/inst-2.settings");
             assertEquals("No saved state for inst-2.settings", null, FileUtil.toFile(obj1.getPrimaryFile()));
             InstanceCookie inst1 = (InstanceCookie)obj1.getCookie(InstanceCookie.class);
@@ -113,11 +107,8 @@ implements org.openide.filesystems.FileChangeListener {
             assertTrue("Action changed", a1 != a2);
             assertTrue("Correct action", "SomeAction".equals(a2.getValue(Action.NAME)));
             assertTrue("New version of action", !a2.isEnabled());
-        } finally {
-            if (m2.isEnabled()) {
-                twiddle(m2, TWIDDLE_DISABLE);
-            }
-        }
+            assertTrue("module still enabled", m2.isEnabled());
+            twiddle(m2, TWIDDLE_DISABLE);
         // Now make sure it has no cookie.
         Thread.sleep(1000);
         DataObject obj3 = findIt("Services/Misc/inst-2.settings");

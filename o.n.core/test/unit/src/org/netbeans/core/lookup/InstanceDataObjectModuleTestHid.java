@@ -71,9 +71,9 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         try {
             mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {
-                    m1 = mgr.create(jar1, new ModuleHistory(jar1.getAbsolutePath()), false, false);
+                    m1 = mgr.create(jar1, new ModuleHistory(jar1.getAbsolutePath()), false, false, false);
                     if (!m1.getProblems().isEmpty()) throw new IllegalStateException("m1 is uninstallable: " + m1.getProblems());
-                    m2 = mgr.create(jar2, new ModuleHistory(jar2.getAbsolutePath()), false, false);
+                    m2 = mgr.create(jar2, new ModuleHistory(jar2.getAbsolutePath()), false, false, false);
                     return null;
                 }
             });
@@ -109,15 +109,28 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         try {
             mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {
-                    mgr.delete(m1);
-                    mgr.delete(m2);
+                    del(m1);
+                    del(m2);
                     return null;
+                }
+                private void del(Module m) throws Exception {
+                    if (m.isEnabled()) {
+                        // Test presumably failed halfway.
+                        if (m.isAutoload() || m.isEager() || m.isFixed()) {
+                            // Tough luck, can't get rid of it easily.
+                            return;
+                        }
+                        mgr.disable(m);
+                    }
+                    mgr.delete(m);
                 }
             });
         } catch (MutexException me) {
             Exception e = me.getException();
+            throw e/*new Exception(e + " [Messages:" + ErrManager.messages + "]", e)*/;
+        } catch (RuntimeException e) {
             // Debugging for #52689:
-            throw new Exception(e + " [Messages:" + ErrManager.messages + "]", e);
+            throw e/*new Exception(e + " [Messages:" + ErrManager.messages + "]", e)*/;
         }
         m1 = null;
         m2 = null;
