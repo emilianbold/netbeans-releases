@@ -46,31 +46,8 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
-  <target name="javahelp">
-    <copy todir="netbeans/docs">
-      <fileset dir="javahelp"/>
-    </copy>
-    <mkdir dir="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/JavaHelpSearch"/>
-    <jhindexer basedir="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/"
-               db="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/JavaHelpSearch"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
-      <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch/"/>
-      <exclude name="ja/"/>
-      <exclude name="credits.html"/>
-    </jhindexer>
-    <mkdir dir="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/ja/JavaHelpSearch"/>
-    <jhindexer basedir="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/ja/"
-               db="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/ja/JavaHelpSearch"
-               locale="ja"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
-      <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch/"/>
-      <exclude name="credits.html"/>
-    </jhindexer>
-  </target>
-    
-  <target name="netbeans" depends="jars,javahelp"/>
+   
+  <target name="netbeans" depends="jars"/>
   <target name="nbm" depends="netbeans">
     <makenbm file="debuggercore.nbm"
              topdir="."
