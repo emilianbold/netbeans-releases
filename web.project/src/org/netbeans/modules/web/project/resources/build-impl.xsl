@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:p="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
                 xmlns:web="http://www.netbeans.org/ns/web-project/1"
+                xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 exclude-result-prefixes="xalan p web projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -39,7 +40,9 @@ is divided into following sections:
 ]]></xsl:comment>
 
         <xsl:variable name="name" select="/p:project/p:configuration/web:data/web:name"/>
-        <project name="{$name}-impl">
+        <!-- Synch with build-impl.xsl: -->
+        <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
+        <project name="{$codename}-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
 
@@ -54,46 +57,46 @@ is divided into following sections:
     ======================
     </xsl:comment>
 
-            <target name="pre-init">
+            <target name="-pre-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="init-private">
-                <xsl:attribute name="depends">pre-init</xsl:attribute>
+            <target name="-init-private">
+                <xsl:attribute name="depends">-pre-init</xsl:attribute>
                 <property file="nbproject/private/private.properties"/>
             </target>
 
-            <target name="init-userdir">
-                <xsl:attribute name="depends">pre-init,init-private</xsl:attribute>
-                <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
-            </target>
-
-            <target name="init-user">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir</xsl:attribute>
+            <target name="-init-user">
+                <xsl:attribute name="depends">-pre-init,-init-private</xsl:attribute>
                 <property file="${{user.properties.file}}"/>
+                <xsl:comment> The two properties below are usually overridden </xsl:comment>
+                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
+                <property name="default.javac.source" value="1.4"/>
+                <property name="default.javac.target" value="1.4"/>
             </target>
 
-            <target name="init-project">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user</xsl:attribute>
+            <target name="-init-project">
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user</xsl:attribute>
                 <property file="nbproject/project.properties"/>
             </target>
 
-            <target name="do-init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project</xsl:attribute>
+            <target name="-do-init">
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
-                    <!--Setting java and javac default location -->
-                    <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
-                    <property name="platforms.${{platform.active}}.java" value="${{platform.home}}/bin/java"/>
-                    <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->
-                    <tempfile property="file.tmp" prefix="platform" suffix=".properties"/>
-                    <echo file="${{file.tmp}}">
-                        platform.home=$${platforms.${platform.active}.home}
-                        platform.bootcp=$${platforms.${platform.active}.bootclasspath}                
-                        build.compiler=$${platforms.${platform.active}.compiler}
-                        platform.java=$${platforms.${platform.active}.java}
-                        platform.javac=$${platforms.${platform.active}.javac}
-                    </echo>
+                    <webproject:property name="platform.home" value="platforms.${{platform.active}}.home"/>
+                    <webproject:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
+                    <webproject:property name="platform.compiler" value="platforms.${{platform.active}}.compile"/>
+                    <webproject:property name="platform.javac.tmp" value="platforms.${{platform.active}}.javac"/>
+                    <condition property="platform.javac" value="${{platform.home}}/bin/javac">
+                        <equals arg1="${{platform.javac.tmp}}" arg2="$${{platforms.${{platform.active}}.javac}}"/>
+                    </condition>
+                    <property name="platform.javac" value="${{platform.javac.tmp}}"/>
+                    <webproject:property name="platform.java.tmp" value="platforms.${{platform.active}}.java"/>
+                    <condition property="platform.java" value="${{platform.home}}/bin/java">
+                        <equals arg1="${{platform.java.tmp}}" arg2="$${{platforms.${{platform.active}}.java}}"/>
+                    </condition>
+                    <property name="platform.java" value="${{platform.java.tmp}}"/>
                     <property file="${{file.tmp}}"/>
                     <delete file="${{file.tmp}}"/>
                     <fail unless="platform.home">Must set platform.home</fail>
@@ -101,15 +104,16 @@ is divided into following sections:
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
                 </xsl:if>
-                <xsl:comment> The two properties below are usually overridden </xsl:comment>
-                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
-                <property name="default.javac.source" value="1.4"/>
-                <property name="default.javac.target" value="1.4"/>
                 <xsl:if test="/p:project/p:configuration/web:data/web:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
                 </xsl:if>
                 <condition property="no.javadoc.preview">
                     <isfalse value="${{javadoc.preview}}"/>
+                </condition>
+                <condition property="no.deps">
+                    <and>
+                        <istrue value="${{no.dependencies}}"/>
+                    </and>
                 </condition>
                 <condition property="do.compile.jsps">
                     <istrue value="${{compile.jsps}}"/>
@@ -119,13 +123,13 @@ is divided into following sections:
                 </condition>
             </target>
 
-            <target name="post-init">
+            <target name="-post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="init-check">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init</xsl:attribute>
+            <target name="-init-check">
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init</xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
@@ -140,7 +144,26 @@ is divided into following sections:
                 <fail unless="dist.war">Must set dist.war</fail>
             </target>
 
-            <target name="init-macrodef-javac">
+            <target name="-init-macrodef-property">
+                <macrodef>
+                    <xsl:attribute name="name">property</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">name</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">value</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <property>
+                            <xsl:attribute name="name">@{name}</xsl:attribute>
+                            <xsl:attribute name="value">${@{value}}</xsl:attribute>
+                        </property>
+                    </sequential>
+                  </macrodef>
+            </target>
+            
+            <target name="-init-macrodef-javac">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
@@ -170,7 +193,9 @@ is divided into following sections:
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
-                            <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                            <xsl:if test ="not(/p:project/p:configuration/web:data/web:explicit-platform/@explicit-source-supported ='false')">                            
+                                <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                            </xsl:if>
                             <xsl:attribute name="target">${javac.target}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
@@ -186,7 +211,7 @@ is divided into following sections:
                  </macrodef>
             </target>
 
-            <target name="init-macrodef-nbjpda">
+            <target name="-init-macrodef-nbjpda">
                 <macrodef>
                     <xsl:attribute name="name">nbjpdastart</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
@@ -226,7 +251,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="init-macrodef-debug">
+            <target name="-init-macrodef-debug">
                 <macrodef>
                     <xsl:attribute name="name">debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
@@ -246,9 +271,6 @@ is divided into following sections:
                         <java fork="true" classname="@{{classname}}">
                             <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                                <bootclasspath>
-                                    <path path="${{platform.bootcp}}"/>
-                                </bootclasspath>
                             </xsl:if>
                             <jvmarg value="-Xdebug"/>
                             <jvmarg value="-Xnoagent"/>
@@ -263,12 +285,12 @@ is divided into following sections:
                 </macrodef>
             </target>
             
-            <target name="init-taskdefs">
+            <target name="-init-taskdefs">
                 <taskdef name="copyfiles" classname="org.netbeans.modules.web.project.ant.CopyFiles" classpath="${{copyfiles.classpath}}"/>
             </target>
             
             <target name="init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-nbjpda,init-macrodef-debug,init-taskdefs</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -282,18 +304,18 @@ is divided into following sections:
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
 
-            <target name="pre-pre-compile">
+            <target name="-pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
 
-            <target name="pre-compile">
+            <target name="-pre-compile">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="do-compile">
-                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
+            <target name="-do-compile">
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile</xsl:attribute>
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"/>
                 <copy todir="${{build.classes.dir}}">
                     <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
@@ -313,23 +335,23 @@ is divided into following sections:
                 </xsl:for-each>
             </target>
 
-            <target name="post-compile">
+            <target name="-post-compile">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="compile">
-                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile,do-compile,post-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile</xsl:attribute>
                 <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
 
-            <target name="pre-compile-single">
+            <target name="-pre-compile-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="do-compile-single">
-                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile</xsl:attribute>
+            <target name="-do-compile-single">
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
                     <customize>
@@ -338,13 +360,13 @@ is divided into following sections:
                 </webproject:javac>
             </target>
 
-            <target name="post-compile-single">
+            <target name="-post-compile-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="compile-single">
-                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile-single,-do-compile-single,-post-compile-single</xsl:attribute>
             </target>
 
             <target name="compile-jsps">
@@ -496,7 +518,7 @@ is divided into following sections:
     <target name="do-debug-fix">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
         <xsl:attribute name="depends">init,pre-debug-fix,compile-single</xsl:attribute>
-        <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+        <webproject:nbjpdareload xmlns:webproject="http://www.netbeans.org/ns/j2se-project/1"/>
     </target>
 
     <target name="debug-fix">
@@ -514,30 +536,91 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
-                <javadoc destdir="${{dist.javadoc.dir}}" source="${{javac.source}}"
-                         notree="${{javadoc.notree}}"
-                         use="${{javadoc.use}}"
-                         nonavbar="${{javadoc.nonavbar}}"
-                         noindex="${{javadoc.noindex}}"
-                         splitindex="${{javadoc.splitindex}}"
-                         author="${{javadoc.author}}"
-                         version="${{javadoc.version}}"
-                         windowtitle="${{javadoc.windowtitle}}"
-                         private="${{javadoc.private}}" >
-                         <!-- encoding="${{javadoc.encoding}}" -->
-                    <classpath>
-                        <path path="${{javac.classpath}}"/>
-                    </classpath>
-                    <sourcepath>
-                        <pathelement location="${{src.dir}}"/>
-                    </sourcepath>
-                    <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
-                        <bootclasspath>
-                            <path path="${{platform.bootcp}}"/>
-                        </bootclasspath>
-                    </xsl:if>
-                    <fileset dir="${{src.dir}}"/>
-                </javadoc>
+                <xsl:choose>
+                    <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
+                        <!-- XXX #46901: <javadoc> does not support an explicit executable -->
+                        <webproject:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
+                        <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
+                            <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.active}}.javadoc}}"/>
+                        </condition>
+                        <property name="platform.javadoc" value="${{platform.javadoc.tmp}}"/>
+                        <condition property="javadoc.notree.opt" value="-notree">
+                            <istrue value="${{javadoc.notree}}"/>
+                        </condition>
+                        <property name="javadoc.notree.opt" value=""/>
+                        <condition property="javadoc.use.opt" value="-use">
+                            <istrue value="${{javadoc.use}}"/>
+                        </condition>
+                        <property name="javadoc.use.opt" value=""/>
+                        <condition property="javadoc.nonavbar.opt" value="-nonavbar">
+                            <istrue value="${{javadoc.nonavbar}}"/>
+                        </condition>
+                        <property name="javadoc.nonavbar.opt" value=""/>
+                        <condition property="javadoc.noindex.opt" value="-noindex">
+                            <istrue value="${{javadoc.noindex}}"/>
+                        </condition>
+                        <property name="javadoc.noindex.opt" value=""/>
+                        <condition property="javadoc.splitindex.opt" value="-splitindex">
+                            <istrue value="${{javadoc.splitindex}}"/>
+                        </condition>
+                        <property name="javadoc.splitindex.opt" value=""/>
+                        <condition property="javadoc.author.opt" value="-author">
+                            <istrue value="${{javadoc.author}}"/>
+                        </condition>
+                        <property name="javadoc.author.opt" value=""/>
+                        <condition property="javadoc.version.opt" value="-version">
+                            <istrue value="${{javadoc.version}}"/>
+                        </condition>
+                        <property name="javadoc.version.opt" value=""/>
+                        <condition property="javadoc.private.opt" value="-private">
+                            <istrue value="${{javadoc.private}}"/>
+                        </condition>
+                        <property name="javadoc.private.opt" value=""/>
+                        <condition property="javadoc.classpath.opt" value="-classpath ${{javac.classpath}}">
+                            <!-- -classpath '' cannot be passed safely on Windows; cf. #46901. -->
+                            <not>
+                                <equals arg1="${{javac.classpath}}" arg2=""/>
+                            </not>
+                        </condition>
+                        <property name="javadoc.classpath.opt" value=""/>
+                        <apply executable="${{platform.javadoc}}" failonerror="true" parallel="true">
+                            <arg value="-d"/>
+                            <arg file="${{dist.javadoc.dir}}"/>
+                            <xsl:if test ="not(/p:project/p:configuration/web:data/web:explicit-platform/@explicit-source-supported ='false')">
+                                <arg value="-source"/>
+                                <arg value="${{javac.source}}"/>
+                            </xsl:if>
+                            <arg value="-windowtitle"/>
+                            <arg value="${{javadoc.windowtitle}}"/>
+                            <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}} ${{javadoc.classpath.opt}}"/>
+                            <arg value="-sourcepath"/>
+                            <arg file="${{src.dir}}"/>
+                            <fileset dir="${{src.dir}}" includes="**/*.java"/>
+                        </apply>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <javadoc>
+                            <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
+                            <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                            <xsl:attribute name="notree">${javadoc.notree}</xsl:attribute>
+                            <xsl:attribute name="use">${javadoc.use}</xsl:attribute>
+                            <xsl:attribute name="nonavbar">${javadoc.nonavbar}</xsl:attribute>
+                            <xsl:attribute name="noindex">${javadoc.noindex}</xsl:attribute>
+                            <xsl:attribute name="splitindex">${javadoc.splitindex}</xsl:attribute>
+                            <xsl:attribute name="author">${javadoc.author}</xsl:attribute>
+                            <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
+                            <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
+                            <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
+                            <classpath>
+                                <path path="${{javac.classpath}}"/>
+                            </classpath>
+                            <sourcepath>
+                                <pathelement location="${{src.dir}}"/>
+                            </sourcepath>
+                            <fileset dir="${{src.dir}}"/>                
+                        </javadoc>
+                    </xsl:otherwise>
+                </xsl:choose>
             </target>
 
             <target name="javadoc-browse">
@@ -616,7 +699,7 @@ to simulate
         <xsl:param name="type"/>
         <target name="{$targetname}">
             <xsl:attribute name="depends">init</xsl:attribute>
-            <xsl:attribute name="unless">${no.dependencies}</xsl:attribute>
+            <xsl:attribute name="unless">no.deps</xsl:attribute>
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>

@@ -493,7 +493,8 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
                     EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
+                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(WebProject.this);
