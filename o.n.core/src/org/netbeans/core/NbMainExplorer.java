@@ -35,7 +35,9 @@ import org.openide.awt.SplittedPanel;
 import org.openide.awt.ToolbarToggleButton;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.TreeView;
 import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -342,7 +344,7 @@ public final class NbMainExplorer extends CloneableTopComponent
                                   implements DeferredPerformer.DeferredCommand {
     static final long serialVersionUID =-8202452314155464024L;
     /** composited view */
-    private BeanTreeView view;
+    private TreeView view;
     /** listeners to the root context and IDE settings */
     private PropertyChangeListener rcListener, weakRcL, weakIdeL;
     /** validity flag */
@@ -350,15 +352,23 @@ public final class NbMainExplorer extends CloneableTopComponent
     
     public ExplorerTab () {
       super();
+      view = initGui();
       // complete initialization of composited explorer actions
       IDESettings ideS = (IDESettings)IDESettings.findObject(IDESettings.class);
       setConfirmDelete(ideS.getConfirmDelete());
-      // initialize view
-      view = new BeanTreeView();
-      setLayout(new BorderLayout());
-      add(view);
       // attach listener to the changes of IDE settings
       weakIdeL = WeakListener.propertyChange(rcListener(), ideS);
+    }
+    
+    /** Initializes gui of this component. Subclasses can override
+    * this method to install their own gui.
+    * @return Tree view that will serve as main view for this explorer.
+    */
+    protected TreeView initGui () {
+      TreeView view = new BeanTreeView();
+      setLayout(new BorderLayout());
+      add(view);
+      return view;
     }
 
     /** Request focus also for asociated view */
@@ -492,6 +502,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     * Overriden - we don't want title to chnage in this style.
     */
     protected void updateTitle () {
+      // empty to keep the title unchanged
     }
 
     /** Overrides superclass' version, remembers last activated
@@ -502,6 +513,37 @@ public final class NbMainExplorer extends CloneableTopComponent
     }
     
   } // end of MainTab inner class
+  
+  /** Tab of main explorer. Tries to dock itself to main explorer mode
+  * before opening, if it's not docked already. */
+  public static class SettingsTab extends ExplorerTab {
+    static final long serialVersionUID =9087127908986061114L;
+   
+    /** Overrides superclass version - put tree view and property
+    * sheet to the splitted panel.
+    * @return Tree view that will serve as main view for this explorer.
+    */
+    protected TreeView initGui () {
+      TreeView view = new BeanTreeView();
+      SplittedPanel split = new SplittedPanel();
+      PropertySheetView propertyView = new PropertySheetView();
+      split.add(view, SplittedPanel.ADD_LEFT);
+      split.add(propertyView, SplittedPanel.ADD_RIGHT);
+      // add to the panel
+      setLayout(new BorderLayout());
+      add(split, BorderLayout.CENTER);
+      
+      return view;
+    }
+    
+    /** Called when the explored context changes.
+    * Overriden - we don't want title to chnage in this style.
+    */
+    protected void updateTitle () {
+      // empty to keep the title unchanged
+    }
+    
+  }
   
   /** Listener on roots, listens to changes of roots content */
   private final class RootsListener extends Object 
@@ -522,6 +564,7 @@ public final class NbMainExplorer extends CloneableTopComponent
 
 /*
 * Log
+*  45   Gandalf   1.44        12/3/99  David Simonek   
 *  44   Gandalf   1.43        11/30/99 David Simonek   neccessary changes needed
 *       to change main explorer to new UI style  (tabs are full top components 
 *       now, visual workspace added, layout of editing workspace chnaged a bit)
