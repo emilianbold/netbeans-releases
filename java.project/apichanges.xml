@@ -80,6 +80,23 @@ is the proper place.
     
         <change>
             <api name="ui"/>
+            <summary>Added a new factory method for creating the name/package chooser wizard panel into the templates SPI.</summary>
+            <version major="1" minor="3"/>
+            <date day="21" month="3" year="2005"/>
+            <author login="pjiricka"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                A new factory method for creating the name and package chooser panel in the Java file wizard.
+                This method is similar to the methods that already exist in this class; it has an extra boolean 
+                parameter that allows to specify whether the entered package name is required to be valid (non-empty).
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support.ui.templates" name="JavaTemplates"/>
+            <issue number="56730"/>
+        </change>
+        <change>
+            <api name="ui"/>
             <summary>The functionality of PackageListView was moved into PackageView support SPI.</summary>
             <version major="1" minor="3"/>
             <date day="10" month="1" year="2005"/>

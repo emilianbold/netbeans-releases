@@ -55,11 +55,30 @@ public class JavaTemplates {
      * @throws IllegalArgumentException if folders is empty
      */
     public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel) throws IllegalArgumentException {
+        return createPackageChooser(project, folders, bottomPanel, false);
+    }
+    
+    /**
+     * Create a Java-oriented target chooser suitable for templates which are Java
+     * sources or otherwise intended to reside in a Java package.
+     * The user is prompted to choose a package location for the new file and a (base) name;
+     * this method allows to specify whether a valid (non-empty) package is required.
+     * Resulting panel can be decorated with additional panel. Which will
+     * be placed below the standard package chooser.
+     * @param project the project which the template will be created in
+     * @param folders a list of possible Java package roots to create the new file in (must be nonempty)
+     * @param bottomPanel panel which should be placed underneth the default chooser
+     * @param validPackageRequired indicates whether a only a valid (non-empty) package is accepted
+     * @return a wizard panel prompting the user to choose a name and package
+     * @throws IllegalArgumentException if folders is empty
+     */
+    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders, 
+        WizardDescriptor.Panel bottomPanel, boolean validPackageRequired) throws IllegalArgumentException {
         if (folders.length == 0) {
             throw new IllegalArgumentException("No folders selected"); // NOI18N
         }
-        return new JavaTargetChooserPanel(project, folders, bottomPanel, false );
-    }
+        return new JavaTargetChooserPanel(project, folders, bottomPanel, false, validPackageRequired);
+    } 
     
     /** Creates new WizardIterator containing standard Package chooser
      * @return WizardIterator consisting of one panel containing package chooser
