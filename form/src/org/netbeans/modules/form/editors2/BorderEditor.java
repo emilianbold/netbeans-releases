@@ -524,13 +524,17 @@ public final class BorderEditor extends PropertyEditorSupport
      */
     public void readFromXML(org.w3c.dom.Node element) throws IOException {
         if (!XML_BORDER.equals(element.getNodeName())) {
-            IOException ex =  new IOException("Missing main border element"); // NOI18N
+            IOException ex = new IOException("Missing \"Border\" XML element"); // NOI18N
             ErrorManager.getDefault().annotate(
                 ex, bundle.getString("MSG_ERR_MissingMainElement")); // NOI18N
             throw ex;
         }
 
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
+        String infoName = attributes.getNamedItem(ATTR_INFO).getNodeValue();
+        if (ID_BI_NULL_BORDER.equals(infoName))
+            return; // null border
+
         org.w3c.dom.Node readNode = null;
         org.w3c.dom.NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++)
@@ -544,8 +548,6 @@ public final class BorderEditor extends PropertyEditorSupport
                 ex, bundle.getString("MSG_ERR_MissingBorderData")); // NOI18N
             throw ex;
         }
-
-        String infoName = attributes.getNamedItem(ATTR_INFO).getNodeValue();
 
         if (ID_BI_TITLED.equals(infoName))
             readTitledBorder(readNode);
