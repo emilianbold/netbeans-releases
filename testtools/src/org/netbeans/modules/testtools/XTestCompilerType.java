@@ -35,6 +35,17 @@ import java.io.File;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
 import org.openide.TopManager;
 import org.openide.ServiceType;
+import org.openide.loaders.ExecSupport;
+import org.openide.loaders.MultiDataObject;
+import org.apache.tools.ant.module.run.AntCompiler;
+import org.openide.compiler.CompilerGroup;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import org.openide.compiler.ProgressEvent;
+import org.apache.tools.ant.module.run.TargetExecutor;
+import org.openide.ErrorManager;
+import org.openide.util.Task;
 
 /**
  *
@@ -44,6 +55,7 @@ public class XTestCompilerType extends CompilerType {
 
     private static final String compileTarget = "buildtests";
     private static final String cleanTarget = "cleantests";
+    private static final String cleanResultsTarget = "cleanresults";
     
     /** Holds value of property netbeansHome. */
     private File netbeansHome;
@@ -69,7 +81,7 @@ public class XTestCompilerType extends CompilerType {
         jellyHome=new File(home+File.separator+"lib"+File.separator+"ext");
     }
     
-    public static ServiceType.Handle getCompiler() {
+    public static ServiceType.Handle getHandle() {
         return new ServiceType.Handle(new XTestCompilerType());
     }
     
@@ -77,15 +89,26 @@ public class XTestCompilerType extends CompilerType {
         return new HelpCtx (XTestCompilerType.class);
     }
 
+    final static File netHome=new File(System.getProperty("netbeans.home"));
+    
     public void prepareJob (CompilerJob job, Class type, DataObject obj) {
         AntProjectCookie cookie = (AntProjectCookie) obj.getCookie (AntProjectCookie.class);
         if (cookie == null) { 
             throw new IllegalArgumentException ("Missing Ant Project Cookie.");
         }
-        if (netbeansHome==null || netbeansHome.equals(new File(System.getProperty("netbeans.home")))) {
+        if (netbeansHome==null || netHome.equals(netbeansHome)) {
             File home=WizardIterator.showFileChooser(TopManager.getDefault().getWindowManager().getMainWindow(), "Select Tested Netbeans Home Directory (different than current)", true, false);
-            if (home!=null) 
+            if ((home!=null)&&(!netHome.equals(home))) {
                 setNetbeansHome(home);
+                if (obj instanceof MultiDataObject) {
+                    Object coo=ExecSupport.getExecutor(((MultiDataObject)obj).getPrimaryEntry());
+                    if ((coo!=null) && (coo instanceof XTestExecutor)) {
+                        XTestExecutor exec=((XTestExecutor)coo);
+                        if (exec.getNetbeansHome()==null)
+                            exec.setNetbeansHome(home);
+                    }
+                }
+            } else return;
         }
         Properties props=getProperties();
         File target;
@@ -99,6 +122,8 @@ public class XTestCompilerType extends CompilerType {
             job.add(compile);
         } else if (type == CompilerCookie.Clean.class) {
             job.add (new XTestCompiler (cookie, cleanTarget, props));
+        } else if (type == XTestDataObject.CleanResults.class) {
+            job.add (new XTestCompiler (cookie, cleanResultsTarget, props));
         } else {
             return;
         }
@@ -198,4 +223,66 @@ public class XTestCompilerType extends CompilerType {
             props.setProperty("xtest.testtype",testType);
         return props;
     }        
+
+    public static  class XTestCompiler extends AntCompiler {
+        private Properties props;
+
+        public XTestCompiler (AntProjectCookie cookie, String target, Properties props) {
+            super(cookie, target);
+            this.props=props;
+        }
+
+        public Class compilerGroupClass () {
+            return XTestCompilerGroup.class;
+        }
+
+        public Properties getProperties() {
+            return props;
+        }
+    }
+    
+    public static class XTestCompilerGroup extends CompilerGroup {
+
+        private Map torun = new HashMap();
+
+        public void add(Compiler c) throws IllegalArgumentException {
+            if(!(c instanceof XTestCompiler)) throw new IllegalArgumentException();
+            XTestCompiler comp=(XTestCompiler) c;
+            AntProjectCookie proj=comp.getProjectCookie();
+            Map targets=(Map)torun.get(proj);
+            if(targets== null) {
+                targets=new HashMap();
+                torun.put(proj, targets);
+            }
+            targets.put(comp.getTarget(), comp.getProperties());
+        }
+
+        public boolean start() {
+            Iterator scripts = torun.entrySet().iterator();
+            while(scripts.hasNext()) {
+                Map.Entry entry=(Map.Entry)scripts.next();
+                AntProjectCookie script=(AntProjectCookie)entry.getKey();
+                if(script.getFileObject()!=null) {
+                    fireProgressEvent(new ProgressEvent(this, script.getFileObject(), ProgressEvent.TASK_UNKNOWN));
+                }
+                Map targets=(Map)entry.getValue();
+                Iterator targetsit=targets.entrySet().iterator();
+                while(targetsit.hasNext()) {
+                    Map.Entry target =(Map.Entry)targetsit.next();
+                    try {
+                        TargetExecutor te=new TargetExecutor(script,(target == null)? null : new String[]{(String)target.getKey()});
+                        te.addProperties((Properties)target.getValue());
+                        if(te.execute().result()!=0) {
+                            return false;
+                        }
+                    } catch(IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+    }
+   
 }

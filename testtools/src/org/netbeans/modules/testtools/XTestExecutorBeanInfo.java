@@ -64,28 +64,27 @@ public class XTestExecutorBeanInfo extends SimpleBeanInfo {
             properties[0].setShortDescription("Netbeans IDE Home Directory (different than current).");
             properties[0].setValue("files",new Boolean(false));
             properties[0].setPreferred(true);
-            properties[1]=new PropertyDescriptor("windowSystem", XTestExecutor.class);
-            properties[1].setDisplayName("Window System");
-            properties[1].setShortDescription("Window System mode (SDI or MDI).");
-            properties[1].setPropertyEditorClass(ChoiceEditor.class);
-            properties[2]=new PropertyDescriptor("attributes", XTestExecutor.class);
-            properties[2].setDisplayName("Attributes");
-            properties[2].setShortDescription("Test Bag Attributes");
-            properties[3]=new PropertyDescriptor("jellyHome", XTestExecutor.class);
-            properties[3].setDisplayName("Jelly Home");
-            properties[3].setShortDescription("Jelly Home Directory");
+            properties[1]=new PropertyDescriptor("attributes", XTestExecutor.class);
+            properties[1].setDisplayName("Attributes");
+            properties[1].setShortDescription("Test Bag Attributes");
+            properties[2]=new PropertyDescriptor("jellyHome", XTestExecutor.class);
+            properties[2].setDisplayName("Jelly Home");
+            properties[2].setShortDescription("Jelly Home Directory");
+            properties[2].setValue("files",new Boolean(false));
+            properties[3]=new PropertyDescriptor("jemmyHome", XTestExecutor.class);
+            properties[3].setDisplayName("Jemmy Home");
+            properties[3].setShortDescription("Jemmy Home Directory");
             properties[3].setValue("files",new Boolean(false));
-            properties[4]=new PropertyDescriptor("jemmyHome", XTestExecutor.class);
-            properties[4].setDisplayName("Jemmy Home");
-            properties[4].setShortDescription("Jemmy Home Directory");
-            properties[4].setValue("files",new Boolean(false));
-            properties[5]=new PropertyDescriptor("testType", XTestExecutor.class);
-            properties[5].setDisplayName("Test Type");
-            properties[5].setShortDescription("Test Type");
-            properties[6]=new PropertyDescriptor("xtestHome", XTestExecutor.class);
-            properties[6].setDisplayName("XTest Home");
-            properties[6].setShortDescription("XTest Home Directory");
-            properties[6].setValue("files",new Boolean(false));
+            properties[4]=new PropertyDescriptor("testType", XTestExecutor.class);
+            properties[4].setDisplayName("Test Type");
+            properties[4].setShortDescription("Test Type");
+            properties[5]=new PropertyDescriptor("xtestHome", XTestExecutor.class);
+            properties[5].setDisplayName("XTest Home");
+            properties[5].setShortDescription("XTest Home Directory");
+            properties[5].setValue("files",new Boolean(false));
+            properties[6]=new PropertyDescriptor("showResults", XTestExecutor.class);
+            properties[6].setDisplayName("Show Results");
+            properties[6].setShortDescription("Start Browser with Results");
             return properties;
         } catch( IntrospectionException e) {
             if (Boolean.getBoolean ("netbeans.debug.exceptions"))
@@ -102,36 +101,4 @@ public class XTestExecutorBeanInfo extends SimpleBeanInfo {
         }
     }
  
-        
-    final public static class ChoiceEditor extends PropertyEditorSupport {
-        /** Display Names for alignment. */
-        private static String[] names = new String[] {"","sdi","mdi"}; 
-
-        /** @return names of the possible directions */
-        public String[] getTags() {
-            return names;
-        }
-
-        /** @return text for the current value */
-        public String getAsText() {
-            int value =((Integer)getValue()).intValue();
-            if ((value < 0) ||(value > 2)) return null;
-            return names [value];
-        }
-
-        /** Setter.
-         * @param str string equal to one value from directions array
-         */
-        public void setAsText(String str) {
-            for (int i = 0; i <= 2; i++) {
-                if (names[i].equals(str)) {
-                    setValue(new Integer(i));
-                    return;
-                }
-            }
-        }
-
-    }
-
-
 }

@@ -90,8 +90,8 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestWorkspaceWizardIterator.singleton"/>
         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/workspace.html"/>
-        <attr name="NetBeansAttrCompiler" methodvalue="org.netbeans.modules.testtools.XTestCompilerType.getCompiler"/>
-        <attr name="NetBeansAttrExecutor" methodvalue="org.netbeans.modules.testtools.XTestExecutor.getExecutor"/>
+        <!--attr name="NetBeansAttrDataObjectCompilerManager" methodvalue="org.netbeans.modules.testtools.XTestCompilerType.getHandle"/>
+        <attr name="NetBeansAttrExecutor" methodvalue="org.netbeans.modules.testtools.XTestExecutor.getHandle"/-->
       </file>
       <file name="unit__build-.xml" url="templates/unit__build-.xml.template"/>
       <file name="unit__cfg-.xml" url="templates/unit__cfg-.xml.template"/>

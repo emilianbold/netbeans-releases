@@ -65,8 +65,8 @@ public class XTestExecutor extends Executor {
     /** Holds value of property attributes. */
     private String attributes="";
     
-    /** Holds value of property windowSystem. */
-    private int windowSystem=0;
+    /** Holds value of property showResults. */
+    private boolean showResults=true;
     
     public XTestExecutor() {
         String home=System.getProperty("netbeans.home");
@@ -77,7 +77,7 @@ public class XTestExecutor extends Executor {
         jellyHome=new File(home+File.separator+"lib"+File.separator+"ext");
     }
     
-    public static ServiceType.Handle getExecutor() {
+    public static ServiceType.Handle getHandle() {
         return new ServiceType.Handle(new XTestExecutor());
     }
     
@@ -90,14 +90,19 @@ public class XTestExecutor extends Executor {
         if (cookie==null) {
             throw new IOException("Missing Ant Project Cookie.");
         }
-        if (netbeansHome==null || netbeansHome.equals(new File(System.getProperty("netbeans.home")))) {
+        if (netbeansHome==null || XTestCompilerType.netHome.equals(netbeansHome)) {
             File home=WizardIterator.showFileChooser(TopManager.getDefault().getWindowManager().getMainWindow(), "Select Tested Netbeans Home Directory (different than current)", true, false);
-            if (home!=null) 
+            if ((home!=null)&&(!XTestCompilerType.netHome.equals(home)))
                 setNetbeansHome(home);
+            else
+                throw new IOException("Home directory of tested IDE must be set.");
         }
         TargetExecutor executor = new TargetExecutor(cookie, new String[]{"all"});
         executor.addProperties(getProperties());
-        return showResults(executor.execute(), obj);
+        if (showResults)
+            return showResults(executor.execute(), obj);
+        else
+            return executor.execute();
     }
     
     private ExecutorTask showResults(final ExecutorTask task, final DataObject obj) {
@@ -218,24 +223,6 @@ public class XTestExecutor extends Executor {
         this.attributes = attributes;
         firePropertyChange("attributes", old, attributes);
     }
-    
-    /** Getter for property windowSystemSDI.
-     * @return Value of property windowSystemSDI.
-     */
-    public int getWindowSystem() {
-        return this.windowSystem;
-    }
-    
-    /** Setter for property windowSystemSDI.
-     * @param windowSystemSDI New value of property windowSystemSDI.
-     */
-    public void setWindowSystem(int windowSystem) {
-        if (windowSystem>=0 && windowSystem<3) {
-            Integer old=new Integer(this.windowSystem);
-            this.windowSystem = windowSystem;
-            firePropertyChange("windowSystem", old, new Integer(windowSystem));
-        }
-    }
    
     private Properties getProperties() {
         Properties props=new Properties();
@@ -251,8 +238,23 @@ public class XTestExecutor extends Executor {
             props.setProperty("xtest.testtype", testType);
         if (attributes!=null && !attributes.equals(""))
             props.setProperty("xtest.attribs", attributes);
-        if (windowSystem>0)
-            props.setProperty("xtest.ide.winsys", windowSystem==1? "sdi" : "mdi");
         return props;
     } 
+    
+    /** Getter for property showResults.
+     * @return Value of property showResults.
+     */
+    public boolean isShowResults() {
+        return this.showResults;
+    }
+    
+    /** Setter for property showResults.
+     * @param showResults New value of property showResults.
+     */
+    public void setShowResults(boolean showResults) {
+        Boolean old=new Boolean(this.showResults);
+        this.showResults = showResults;
+        firePropertyChange("showResults", old, new Boolean(showResults));
+    }
+    
 }

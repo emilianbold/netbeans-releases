@@ -247,7 +247,7 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
     }
     
     public boolean isValid() {
-        return DEFAULT_NAME.equals(nameField.getText())||Utilities.isJavaIdentifier(nameField.getText());
+        return DEFAULT_NAME.equals(nameField.getText())||nameField.getText().indexOf(' ')<0;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

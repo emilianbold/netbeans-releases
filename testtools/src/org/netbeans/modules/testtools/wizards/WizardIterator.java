@@ -173,7 +173,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         String className=source.getName();
         StringBuffer suite = new StringBuffer();
         suite.append("\n        TestSuite suite = new NbTestSuite();\n");
-        for (int i=0; i<methods.length; i++) {
+        for (int i=0; methods!=null && i<methods.length; i++) {
             suite.append("        suite.addTest(new ");
             suite.append(className);
             suite.append("(\"");
@@ -252,7 +252,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
 
     protected static Set instantiateTestType(WizardSettings set) throws IOException {
-        if (set.typeName!=null && !Utilities.isJavaIdentifier(set.typeName))
+        if (set.typeName!=null && set.typeName.indexOf(' ')>=0)
             throw new IOException("Selected Test Type name is not valid identifier.");
         HashSet res=new HashSet();
         DataObject dob=null;
@@ -297,7 +297,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
     
     protected static Set instantiateTestWorkspace(WizardSettings set) throws IOException {
-        if (set.workspaceName!=null && !Utilities.isJavaIdentifier(set.workspaceName))
+        if (set.workspaceName!=null && set.workspaceName.indexOf(' ')>=0)
             throw new IOException("Selected Test Workspace name is not valid identifier.");
         HashSet res=new HashSet();
         
@@ -348,13 +348,18 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
     
     public static void save(final DataObject dob) throws IOException {
-            RequestProcessor.postRequest(new Runnable() {
+            Runnable run=new Runnable() {
                 public void run() {
                     try {
-                        ((EditorCookie)dob.getCookie(EditorCookie.class)).saveDocument();
+                        if (dob.isModified())
+                            ((EditorCookie)dob.getCookie(EditorCookie.class)).saveDocument();
                     } catch (Exception e) {}
                 }
-            }, 5000);
+            };
+            //save after 1 second
+            RequestProcessor.postRequest(run, 1000);
+            //and after 5 seconds for sure
+            RequestProcessor.postRequest(run, 5000);
    }
    
    private  static File target=new File(".");

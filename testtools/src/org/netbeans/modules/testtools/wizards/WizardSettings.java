@@ -93,6 +93,8 @@ class WizardSettings extends Object {
         XMLDocument doc=new XMLDocument(workspaceTemplate);
         defaultType=doc.getProperty("xtest.testtype", "value");
         defaultAttributes=doc.getProperty("xtest.attribs", "value");
+        netbeansHome=doc.getProperty("netbeans.home", "location");
+        xtestHome=doc.getProperty("xtest.home", "location");
     }
 
     
@@ -181,7 +183,7 @@ class WizardSettings extends Object {
         }
         WizardIterator.save(typeConfig);
         
-        if (startFromType && defaultType!=null) {
+        if (startFromType && defaultType!=null && defaultType.length()>0) {
             FileObject fo=typeTarget.getPrimaryFile().getFileObject("build","xml");
             if (fo!=null) {
                 workspaceScript=DataObject.find(fo);

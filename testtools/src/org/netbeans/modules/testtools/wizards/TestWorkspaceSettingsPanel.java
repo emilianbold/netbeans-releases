@@ -28,6 +28,11 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -43,10 +48,18 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     private String jemmyHome=jemmyPath;
     private String jellyHome=jellyPath;
     private TemplateWizard wizard;
+    private ChangeListener listener=null;
 
     /** Creates new form TestWorkspacePanel */
     public TestWorkspaceSettingsPanel() {
         initComponents();
+        DocumentListener list=new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {fireStateChanged();}
+            public void removeUpdate(DocumentEvent e) {fireStateChanged();}
+            public void changedUpdate(DocumentEvent e) {fireStateChanged();}
+        };
+        netbeansField.getDocument().addDocumentListener(list);
+        fireStateChanged();
     }
     
     /** This method is called from within the constructor to
@@ -327,7 +340,7 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     }//GEN-LAST:event_xtestButtonActionPerformed
 
     private void netbeansButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_netbeansButtonActionPerformed
-        File home=WizardIterator.showFileChooser(this, "Select Netbeans Home Directory", true, false);
+        File home=WizardIterator.showFileChooser(this, "Select Netbeans Home Directory (different than current)", true, false);
         if (home!=null) 
             netbeansField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_netbeansButtonActionPerformed
@@ -388,7 +401,9 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
                         jellyHome="../../"+jellyPath;
                         break;
                  case 3:String home=System.getProperty("netbeans.home");
-                        netbeansField.setText(home);
+                        netbeansLabel.setEnabled(true);
+                        netbeansField.setEnabled(true);
+                        netbeansButton.setEnabled(true);
                         if (!new File(home+File.separator+"xtest-distribution").exists()) 
                             home=System.getProperty("netbeans.user");
                         xtestField.setText(home+File.separator+"xtest-distribution");
@@ -400,6 +415,8 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     }
     
     public void addChangeListener(javax.swing.event.ChangeListener changeListener) {
+        if (listener != null) throw new IllegalStateException ();
+        listener = changeListener;
     }    
     
     public java.awt.Component getComponent() {
@@ -417,7 +434,7 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         stop=true;
         try {
             df=wizard.getTargetFolder();
-            stop=(wizard.getTargetName()!=null && !Utilities.isJavaIdentifier(wizard.getTargetName())) 
+            stop=(wizard.getTargetName()!=null && wizard.getTargetName().indexOf(' ')>=0) 
             || WizardIterator.detectBuildScript(df);
         } catch (Exception e) {}
         if (stop)
@@ -435,6 +452,7 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     }
     
     public void removeChangeListener(javax.swing.event.ChangeListener changeListener) {
+        listener = null;
     }
     
     public void storeSettings(Object obj) {
@@ -448,8 +466,19 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         set.typeJellyHome=jellyHome;
     }
 
+    private static File netHome=new File(System.getProperty("netbeans.home"));
     public boolean isValid() {
-        return !stop;
+        return (!stop)&&(!netHome.equals(new File(netbeansField.getText())));
+    }
+
+    private void fireStateChanged() {
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                if (listener != null) {
+                    listener.stateChanged (new ChangeEvent (this));
+                }
+            }
+        });            
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -146,7 +146,7 @@ public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardD
         try {
             if (set.startFromType) {
                 name=wizard.getTargetName();
-                stop=(name!=null) && (!Utilities.isJavaIdentifier(name));
+                stop=(name!=null) && (name.indexOf(' ')>=0);
                 if (name==null)
                     name=wizard.getTemplate().getPrimaryFile().getName();
                 stop=stop||WizardIterator.detectTestType(wizard.getTargetFolder(), name);
