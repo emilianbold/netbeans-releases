@@ -20,10 +20,10 @@ Microsystems, Inc. All Rights Reserved.
     <item priority="2">
         <summary>Cleanup files structure</summary>
         <description>Files' structure is not synoptical. I see two possible structures:
-<ol>
+<ul>
     <li><b>By services</b> - each service has its own folder which contains cookies, actions, impl, wizard, ...</li>
     <li><b>By class types</b> - separated parts (cookies, actions, impl, wizard, ...) of each service are in common folder.</li>
-</ol>
+</ul>
         </description>
     </item>
     <item priority="4">
