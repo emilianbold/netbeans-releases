@@ -26,6 +26,8 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
+import org.netbeans.modules.httpserver.WrapperServlet;
+
 /** Simple external browser that uses new process for each URL request.
  *  Typically it runs command like <CODE>netscape [url]</CODE>.
  *
@@ -134,16 +136,21 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
         /** Given URL is displayed. 
           *  Configured process is started to satisfy this request. 
           */
-        public void setURL (URL url) {
+        public void setURL(URL url) {
+            if (url == null)
+                return;
             try {
-              process.exec(new BrowserFormat(new ExecInfo(""), (url == null)? "": url.toString())); // NOI18N
-              this.url = url;
+                if (url.getProtocol().equals("nbfs")) {
+                    url = WrapperServlet.createHttpURL(url);
+                }
+                process.exec(new BrowserFormat(new ExecInfo(""), (url == null)? "": url.toString())); // NOI18N
+                this.url = url;
             } catch (IOException ex) {
-              TopManager.getDefault().notify(
+                TopManager.getDefault().notify(
                 new NotifyDescriptor.Exception(ex,
-                  NbBundle.getBundle(SimpleExtBrowser.class).getString("EXC_Invalid_Processor")
-                )
-              );
+                    NbBundle.getBundle(SimpleExtBrowser.class).getString("EXC_Invalid_Processor")
+                    )
+                );
             }
         }
         
