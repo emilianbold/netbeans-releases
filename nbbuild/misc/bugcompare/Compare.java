@@ -1,3 +1,5 @@
+package nbbuild.misc.bugcompare;
+
 /*
  *                 Sun Public License Notice
  * 
@@ -20,7 +22,7 @@ import org.xml.sax.*;
  * @author  ph97928
  * @version 
  */
-public class Compare {
+public class Compare_1 {
     Map release32;
     Map dev;
     

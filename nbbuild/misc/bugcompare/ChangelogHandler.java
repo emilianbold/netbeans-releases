@@ -1,3 +1,5 @@
+package nbbuild.misc.bugcompare;
+
 
 /*
  *                 Sun Public License Notice
@@ -12,7 +14,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-public interface ChangelogHandler {
+public interface ChangelogHandler_1 {
     /**
      * An event handling method.
      * @param data value or null

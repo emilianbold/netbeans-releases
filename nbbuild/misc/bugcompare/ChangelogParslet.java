@@ -1,3 +1,5 @@
+package nbbuild.misc.bugcompare;
+
 /*
  *                 Sun Public License Notice
  * 
@@ -10,10 +12,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-public class ChangelogParslet {
+public class ChangelogParslet_1 {
 
     /** Creates new ChangelogParslet */
-    public ChangelogParslet() {
+    public ChangelogParslet_1() {
     }
 
 }

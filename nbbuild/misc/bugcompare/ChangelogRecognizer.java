@@ -1,3 +1,5 @@
+package nbbuild.misc.bugcompare;
+
 /*
  *                 Sun Public License Notice
  * 
@@ -11,7 +13,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-public class ChangelogRecognizer implements org.xml.sax.DocumentHandler {
+public class ChangelogRecognizer_1 implements org.xml.sax.DocumentHandler {
     private java.lang.StringBuffer buffer;
     
     private ChangelogParslet parslet;
@@ -20,7 +22,7 @@ public class ChangelogRecognizer implements org.xml.sax.DocumentHandler {
     
     private java.util.Stack context;
     
-    public ChangelogRecognizer(final ChangelogHandler handler, final ChangelogParslet parslet) {
+    public ChangelogRecognizer_1(final ChangelogHandler handler, final ChangelogParslet parslet) {
         this.parslet = parslet;
         this.handler = handler;
         buffer = new StringBuffer(111);

@@ -1,3 +1,5 @@
+package nbbuild.misc.bugcompare;
+
 
 /*
  *                 Sun Public License Notice
@@ -13,14 +15,14 @@
  */
 
 import java.util.*;
-public class ChangelogHandlerImpl implements ChangelogHandler {
+public class ChangelogHandlerImpl_1 implements ChangelogHandler {
     public static final boolean DEBUG = false;
     
     Map map;
     
     int number;
     
-    public ChangelogHandlerImpl(Map map) {
+    public ChangelogHandlerImpl_1(Map map) {
         this.map = map;
         number = 0;
     }
@@ -45,8 +47,8 @@ public class ChangelogHandlerImpl implements ChangelogHandler {
             else {
                 if ((number > 1000) && (number < 15000)) {
                     map.put(new Integer(number), data);
-                    number = 0;
                 }
+                number = 0;
             }
         }
     }
