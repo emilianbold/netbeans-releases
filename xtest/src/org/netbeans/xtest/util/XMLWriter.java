@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -64,9 +64,7 @@ public class XMLWriter {
         if (orig == null) return "";
         StringBuffer temp = new StringBuffer();
         StringCharacterIterator sci = new StringCharacterIterator(orig);
-        for (char c = sci.first(); c != CharacterIterator.DONE;
-             c = sci.next()) {
-
+        for (char c = sci.first(); c != CharacterIterator.DONE;c = sci.next()) {
             switch (c) {
             case '<':
                 temp.append("&lt;");
@@ -88,6 +86,31 @@ public class XMLWriter {
         return temp.toString();
     }
 
+    /** Replaces invalid xml characters by its hex value. Valid xml characters
+     * are only these: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+     * (http://www.w3.org/TR/2004/REC-xml-20040204/#charsets).
+     */
+    private String invalidCharactersEscape(String orig) {
+        if (orig == null) return "";
+        StringBuffer temp = new StringBuffer();
+        StringCharacterIterator sci = new StringCharacterIterator(orig);
+        for (char c = sci.first(); c != CharacterIterator.DONE;c = sci.next()) {
+            if((c == 9) || (c == 10) || (c == 13) ||
+                    ((c >= 0x0020) && (c <= 0xD7FF)) ||
+                    ((c >= 0xE000) && (c <= 0xFFFD)) ||
+                    ((c >= 0x10000) && (c <= 0x10FFFF))) {
+                // regular char
+                temp.append(c);
+            } else {
+                // invalid char (replace by hex value)
+                temp.append('0');
+                temp.append('x');
+                temp.append(Integer.toHexString(c).toCharArray());
+            }
+        }
+        return temp.toString();
+    }
+    
     /**
      *  Writes a DOM element to a stream.
      */
@@ -100,7 +123,10 @@ public class XMLWriter {
         NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
-            String attribute = " "+attr.getName()+"=\""+xmlEscape(attr.getValue())+"\"";
+            // #50889 - invalid xml characters causes that results are not
+            // properly generated. We have to replace invalid characters by
+            // its hex value.
+            String attribute = " "+attr.getName()+"=\""+invalidCharactersEscape(xmlEscape(attr.getValue()))+"\"";
             printer.print(attribute);
         }
                 
@@ -144,6 +170,10 @@ public class XMLWriter {
                 // Cf.: http://www.w3.org/TR/REC-xml#sec-cdata-sect
                 // Of course using a real XML serializer (as e.g. XMLUtil.write) does this for you.
                 s = s.replaceAll("]]>", "]]]]><![CDATA[>");
+                // #50889 - invalid xml characters causes that results are not
+                // properly generated. We have to replace invalid characters by
+                // its hex value.
+                s = invalidCharactersEscape(s);
                 printer.printUnformatted(s);
                 printer.printUnformatted("]]>");
                 printer.newLine();
