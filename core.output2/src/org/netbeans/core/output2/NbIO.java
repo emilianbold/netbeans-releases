@@ -19,6 +19,7 @@
 package org.netbeans.core.output2;
 
 import org.openide.ErrorManager;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 import javax.swing.*;
@@ -34,7 +35,7 @@ import java.lang.ref.WeakReference;
  *
  * @author  Tim Boudreau
  */
-class NbIO implements CallbackInputOutput {
+class NbIO implements InputOutput {
 
     private Boolean focusTaken = null;
     private Boolean closed = null;

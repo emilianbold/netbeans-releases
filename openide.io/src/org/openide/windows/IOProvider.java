@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringWriter;
+import javax.swing.Action;
 import org.openide.util.Lookup;
 
 /** A factory for IO tabs shown in the output window.  To create a new tab to
@@ -62,6 +63,28 @@ public abstract class IOProvider {
      */
     public abstract InputOutput getIO(String name, boolean newIO);
 
+    
+    /** 
+     *Gets a named instance of InputOutput with additional actions displayed in the
+     * toolbar.
+     * Streams for reading/writing can be accessed via
+     * getters on the returned instance. 
+     * Additional actions are displayed on the output's toolbar.
+     *
+     * @param name A localized display name for the tab
+     * @param additionalActions array of actions that are added to the toolbar, Can be empty array, but not null.
+     *   The number of actions should not exceed 5 and each should have the <code>Action.SMALL_ICON</code> property defined.
+     * @return an <code>InputOutput</code> instance for accessing the new tab
+     * @see InputOutput
+     * @since 1.6 <br>
+     * Note: The method is non-abstract for backward compatibility reasons only. If you are
+     * extending IOProvider and implementing its abstract classes, you are encouraged to override
+     * this method as well. The default implementation falls back to the <code>getIO(name, newIO)</code> method, ignoring the actions passed.
+     */
+    public InputOutput getIO(String name, Action[] additionalActions) {
+        return getIO(name, true);
+    }
+    
     /** Support writing to the Output Window on the main tab or a similar output device.
      * @return a writer for the standard NetBeans output area
      */

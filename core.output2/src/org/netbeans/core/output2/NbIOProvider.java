@@ -57,11 +57,14 @@ public final class NbIOProvider extends IOProvider {
     
     
     public InputOutput getIO(String name, boolean newIO) {
-        return getIO (name, newIO, null);
+        return getIO (name, newIO, new Action[0]);
     }
     
+    public InputOutput getIO(String name, Action[] toolbarActions) {
+        return getIO (name, true, toolbarActions);
+    }
     
-    public InputOutput getIO(String name, boolean newIO, Action[] toolbarActions) {
+    private InputOutput getIO(String name, boolean newIO, Action[] toolbarActions) {
         if (Controller.log) {
             Controller.log("GETIO: " + name + " new:" + newIO);
         }
@@ -71,6 +74,9 @@ public final class NbIOProvider extends IOProvider {
             result = new NbIO(name, toolbarActions);
             namesToIos.add (name, result);
             Controller.ensureViewInDefault (result, newIO);
+        } else {
+            // mkleint ignore actions if reuse of tabs.
+//            result.setToolbarActions(toolbarActions);
         }
         return result;
     }

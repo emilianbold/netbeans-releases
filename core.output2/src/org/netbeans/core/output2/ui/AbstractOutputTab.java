@@ -91,7 +91,10 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
         actions = new Action[a.length];
         JButton[] jb = new JButton[a.length];
         for (int i=0; i < jb.length; i++) {
-            actions[i] = new WeakAction(a[i]);
+            actions[i] = a[i];
+            // mkleint - ignore the WeakAction referencing as it introduces
+            // additional non obvious contract to using the the toolbar actions.
+//            actions[i] = new WeakAction(a[i]);
             installKeyboardAction (a[i]);
             jb[i] = new JButton(actions[i]);
             jb[i].setBorderPainted(false);
