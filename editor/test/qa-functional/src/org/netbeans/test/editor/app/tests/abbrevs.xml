@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Test Name="Abbreviations" Author="ehucka" Version="1.1">
+  <TestSubTest Name="BasicTests" Author="ehucka" Version="1.0" OwnLogger="true">
+    <TestStep Name="AbbrevSettings">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetIEAction Name="setSimpleIE" IndentationEngine="Simple Indentation Engine" />
+    </TestStep>
+    <TestStep Name="InvokeAllActions">
+      <TestStringAction Name="string" String="sh " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="Psfb " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="cl " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="Re " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="ie " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="tw " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="df " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="tds " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="St " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="tr " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="pr " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="th " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="impb " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="imps " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="Ve " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="iof " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="le " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="fa " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="wh " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="sw " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="Psf " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="psfs " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="sy " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="serr " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="Psfs " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="pe " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="ab " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="Psfi " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="Ex " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="st " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="eq " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="Gr " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="bo " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="ir " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="pu " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="twn " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="fy " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="impS " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="psfb " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="ca " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="impa " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="impd " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="pst " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="twne " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="psf " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="psfi " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="fi " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="impj " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="fl " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="ex " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="im " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="cn " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="Ob " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="sout " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="En " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="re " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="br " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="twni " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+      <TestStringAction Name="string" String="impq " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="" />
+    </TestStep>
+    <TestCallAction Name="InvokeAll" Call="InvokeAllActions" Set="AbbrevSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["short 
+public static final boolean 
+class 
+Rectangle
+interface 
+throw 
+default:
+Thread.dumpStack();
+String
+transient 
+private 
+throws 
+import java.beans.
+import javax.swing.
+Vector
+instanceof 
+length
+false
+while (
+switch (
+public static final 
+private static final String 
+synchronized 
+System.err.println("");
+public static final String 
+protected 
+abstract 
+public static final int 
+Exception
+static 
+equals
+Graphics
+boolean 
+import 
+public 
+throw new 
+finally 
+import com.sun.java.swing.
+private static final boolean 
+catch (
+import java.awt.
+import org.netbeans.
+printStackTrace();
+throw new Error();
+private static final 
+private static final int 
+final 
+import java.
+float 
+extends 
+implements 
+continue
+Object
+System.out.println("");
+Enumeration
+return 
+break
+throw new InternalError();
+import javax.sql.
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA["Write out all default abbreviations."]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="indentAbbrevSettings">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetIEAction Name="setJavaIE" IndentationEngine="Java Indentation Engine" />
+      <TestAddAbbreviationAction Name="addMutlilineAbbreviation" AbbreviationName="tryc">
+        <AbbreviationContent>
+          <![CDATA["try {
+      |
+} catch (Exception ex) {
+      ex.printStackTrace();
+} "]]>
+        </AbbreviationContent>
+      </TestAddAbbreviationAction>
+      <TestAddAbbreviationAction Name="addMultilineAbbreviation2" AbbreviationName="fori">
+        <AbbreviationContent>
+          <![CDATA["for (int i=0;i < |;i++) {
+}"]]>
+        </AbbreviationContent>
+      </TestAddAbbreviationAction>
+    </TestStep>
+    <TestStep Name="indentAbbrevActions">
+      <TestStringAction Name="string5" String="if () {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string6" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string7" String="\0Ctryc File f = new File();" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestStringAction Name="string8" String="&quot;&quot;" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestStringAction Name="string9" String="/tmp/out.tmp" />
+      <TestLogAction Name="page-down" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string1" String="while () {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string2" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string3" String="\0Cif () {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string4" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string5" String="\0Cfori array.length" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string6" String="\0Cif () {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string7" String="\0C}" />
+    </TestStep>
+    <TestCallAction Name="IndentAbbrevs" Call="indentAbbrevActions" Set="indentAbbrevSettings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["if () {
+    try {
+        File f = new File("/tmp/out.tmp");
+    } catch (Exception ex) {
+        ex.printStackTrace();
+    }
+}
+while () {
+    if () {
+        for (int i=0;i < array.length;i++) {
+            if () {
+            }
+        }
+    }
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA["Test indentation of multiline abbreviations."]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="cursorSettings">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetIEAction Name="setJavaIE" IndentationEngine="Java Indentation Engine" />
+    </TestStep>
+    <TestStep Name="cursorActions">
+      <TestStringAction Name="string11" String="sout Hello Test" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string12" String="\0Cserr Hello errors." />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string13" String="\0C" />
+    </TestStep>
+    <TestCallAction Name="Cursor" Call="cursorActions" Set="cursorSettings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["System.out.println("Hello Test");
+System.err.println("Hello errors.");
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA["Test cursor position in abbreviation."]]>
+      </Comment>
+    </TestCallAction>
+    <Comment>
+      <![CDATA["Write out all default abbreviations."]]>
+    </Comment>
+  </TestSubTest>
+  <Comment>
+    <![CDATA["Write out all default abbreviations."]]>
+  </Comment>
+</Test>
+

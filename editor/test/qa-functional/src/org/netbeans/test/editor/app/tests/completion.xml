@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Test Name="Completion" Author="ehucka" Version="1.1">
+  <TestSubTest Name="BasicTests" Author="ehucka" Version="1.0" OwnLogger="true">
+    <TestStep Name="javaSettings">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetCompletionAction Name="setCompletion" CaseSensitive="true" InstantSubstitution="false" NaturalSort="false" />
+    </TestStep>
+    <TestStep Name="fooClassStep">
+      <TestStringAction Name="string4" String="public class Foo {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string5" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string6" String="\0Cpublic Foo() {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string7" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string8" String="\0CString s;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string9" String="\0Cs." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string10" String="\0Cindex);" />
+    </TestStep>
+    <TestCallAction Name="fooClass" Call="fooClassStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["public class Foo {
+    public Foo() {
+        String s;
+        s.charAt(index);
+    }
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA["Test of invoking CC."]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="objectStep">
+      <TestStringAction Name="string9" String="Object o;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string10" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string11" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string12" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string13" String="\0Co);" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string14" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string15" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string16" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string17" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string18" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string19" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string20" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string21" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string22" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string23" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string24" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string25" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string26" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string27" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string28" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string29" String="\0Ctime);" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string30" String="\0Co." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string31" String="\0Ctime," />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string32" String="\0Cnanos);" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string33" String="\0C" />
+    </TestStep>
+    <TestCallAction Name="objectMethods" Call="objectStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["Object o;
+o.clone();
+o.equals(o);
+o.finalize();
+o.getClass();
+o.hashCode();
+o.notify();
+o.notifyAll();
+o.toString();
+o.wait();
+o.wait(time);
+o.wait(time, nanos);
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA["Writes all Object's methods."]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="retypeClassStep">
+      <TestStringAction Name="string35" String="Vector v=new Vector()\0A;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string36" String="\0Cv.add();" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestStringAction Name="string37" String="&quot;Hi!&quot;" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string38" String="\0C(()())" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestStringAction Name="string39" String="String" />
+      <TestLogAction Name="caret-forward" Command="" />
+      <TestLogAction Name="caret-forward" Command="" />
+      <TestStringAction Name="string40" String="v.get(0)" />
+      <TestLogAction Name="caret-forward" Command="" />
+      <TestLogAction Name="caret-forward" Command="" />
+      <TestStringAction Name="string41" String="." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string42" String="\0C&quot;!&quot;);" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string43" String="\0C" />
+    </TestStep>
+    <TestCallAction Name="retypeClass" Call="retypeClassStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["Vector v=new Vector();
+v.add("Hi!");
+((String)(v.get(0))).endsWith("!");
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA["Tests CC after retyping braces."]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="stayInvokedActions">
+      <TestStringAction Name="string24" String="ja" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string25" String="\0C.aw" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string26" String="\0C.e" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string27" String="\0C.F" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string28" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string29" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string30" String="\0Cja" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string31" String="\0C.sw" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string32" String="\0C.JP" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string33" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string34" String="\0C" />
+      <TestStringAction Name="string35" String="ja" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string36" String="\0C.sw" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string37" String="\0C.JB" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string38" String="\0C." />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string39" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string40" String="\0Cjav" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string41" String="\0C.l" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string42" String="\0C.Str" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string43" String="\0C." />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string44" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string45" String="\0Cja" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string46" String="\0C.i" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string47" String="\0C.F" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string48" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string49" String="\0C" />
+    </TestStep>
+    <TestCallAction Name="stayInvoked" Call="stayInvokedActions" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["java.awt.event.FocusListener;
+javax.swing.JPanel;
+javax.swing.JButton.CENTER_ALIGNMENT;
+java.lang.String.CASE_INSENSITIVE_ORDER;
+java.io.FileFilter;
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <Comment>
+      <![CDATA["Test of invoking CC."]]>
+    </Comment>
+  </TestSubTest>
+  <TestSubTest Name="Settings" Author="eh103527" Version="1.0" OwnLogger="true">
+    <TestStep Name="CaseInsensitiveSettings">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetCompletionAction Name="setCompletion" CaseSensitive="false" InstantSubstitution="false" NaturalSort="false" />
+    </TestStep>
+    <TestStep Name="CaseInsensisitveActions">
+      <TestStringAction Name="string12" String="java.lang.obj" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string13" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string14" String="\0Cjava.io.fileout" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string15" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string16" String="\0Cjava.util.arrayl" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string17" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string18" String="\0CString.cas" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string19" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string20" String="\0Cjava.awt.ev" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string21" String="\0C.keye" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string22" String="\0C.vk_en" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string23" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string24" String="\0C" />
+      <TestStringAction Name="string26" String="java.io.utfdata" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="25" />
+      <TestStringAction Name="string27" String=";" />
+      <TestLogAction Name="insert-break" Command="28" />
+    </TestStep>
+    <TestCallAction Name="CaseInsensitive" Call="CaseInsensisitveActions" Set="CaseInsensitiveSettings" Enable="true" Repeat="1" Delay="100">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["java.lang.Object;
+java.io.FileOutputStream;
+java.util.ArrayList;
+String.CASE_INSENSITIVE_ORDER;
+java.awt.event.KeyEvent.VK_ENTER;
+java.io.UTFDataFormatException;
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA["This test will fails depend on issue 29406."]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="InstantSubstitutionSettings">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetCompletionAction Name="setCompletion" CaseSensitive="true" InstantSubstitution="true" NaturalSort="false" />
+    </TestStep>
+    <TestStep Name="InstantSubstitutionActions">
+      <TestStringAction Name="string29" String="java.lang.Do" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string30" String=";" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string31" String="\0Cjava.util.Ve" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string32" String=";" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string33" String="\0Cjava.io.IOE" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string34" String=";" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string35" String="\0Cjava.awt.event.KeyEv" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string36" String=";" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string37" String="java.io.UTFD" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string38" String=";" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string39" String="java.beans.Cust" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string40" String=";" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string41" String="java.util.jar.Mani" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string42" String=";" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string43" String="\0C" />
+    </TestStep>
+    <TestCallAction Name="InstantSubstitution" Call="InstantSubstitutionActions" Set="InstantSubstitutionSettings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["java.lang.Double;
+java.util.Vector;
+java.io.IOException;
+java.awt.event.KeyEvent;
+java.io.UTFDataFormatException;
+java.beans.Customizer;
+java.util.jar.Manifest;
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA["Test will fail depend on issue 29408."]]>
+      </Comment>
+    </TestCallAction>
+    <Comment>
+      <![CDATA["This test will fails depend on issue 29406."]]>
+    </Comment>
+  </TestSubTest>
+  <TestSubTest Name="Issues" Author="eh103527" Version="1.0" OwnLogger="true">
+    <TestStep Name="Settings1">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetJavaIEAction Name="setJavaIE8" IndentationEngine="Java Indentation Engine" LeadingStarInComment="false" AddNewLineBeforeParenthesis="false" AddSpaceBeforeBrackets="false" ExpandTabs="true" TabSize="4" />
+      <TestSetCompletionAction Name="setCompletion9" CaseSensitive="false" InstantSubstitution="false" NaturalSort="false" />
+    </TestStep>
+    <TestStep Name="CCAfterMethodsActions">
+      <TestStringAction Name="string10" String="public class Foo {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string11" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string12" String="\0Cpublic String getString() {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string13" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string14" String="\0Creturn &quot;Test&quot;;" />
+      <TestLogAction Name="caret-down" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string15" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string16" String="\0Cpublic void concat(String s) {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string17" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string18" String="\0Cs=s.conc" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string19" String="\0CgetString())." />
+      <TestStringAction Name="string22" String="subs" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string23" String="\0C1);" />
+    </TestStep>
+    <TestCallAction Name="CCAfterMethods" Call="CCAfterMethodsActions" Set="Settings1" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["public class Foo {
+    public String getString() {
+        return "Test";
+    }
+    
+    public void concat(String s) {
+        s=s.concat(getString()).substring(1);
+    }
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA["It tests issues 28055."]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="RepositoryActions">
+      <TestStringAction Name="string3" String="import org.o" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string4" String="\0C." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string5" String="fi" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string6" String="\0C.R" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string7" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string8" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string9" String="\0Cclass Foo {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string10" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string11" String="\0Cpublic void main(String[] args) {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string12" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string13" String="\0CRepository r;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string14" String="\0Cr." />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string15" String="\0Cnull);" />
+    </TestStep>
+    <TestCallAction Name="Repository" Call="RepositoryActions" Set="Settings1" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["import org.openide.filesystems.Repository;
+
+class Foo {
+    public void main(String[] args) {
+        Repository r;
+        r.addFileSystem(null);
+    }
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA["Tests issues around 24646."]]>
+      </Comment>
+    </TestCallAction>
+    <Comment>
+      <![CDATA["It tests issues 28055."]]>
+    </Comment>
+  </TestSubTest>
+  <TestSubTest Name="HTMLCompletion" Author="eh103527" Version="1.0" OwnLogger="true">
+    <TestStep Name="HTMLEditorSettings">
+      <TestSetKitAction Name="setHTMLKit" Kit="HTMLKit" />
+      <TestSetIEAction Name="setWrapIE" IndentationEngine="Line Wrapping Indentation Engine" />
+    </TestStep>
+    <TestStep Name="HTMLActions">
+      <TestStringAction Name="string1" String="&lt;" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string2" String="ht" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string3" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string4" String="\0C&lt;/" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string5" String="\0C&lt;B" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string6" String="o" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string7" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string8" String="\0C&lt;/" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string9" String="\0C" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string10" String="\0C&lt;" />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string11" String="a" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string12" String="\0C" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string13" String="\0Caaa" />
+      <TestLogAction Name="caret-forward" Command="" />
+      <TestStringAction Name="string14" String=" " />
+      <TestLogAction Name="completion-show" Command=" " />
+      <TestStringAction Name="string15" String="h" />
+      <TestLogAction Name="shift-insert-break" Command="\0C" />
+      <TestStringAction Name="string16" String="\0Cfile" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestStringAction Name="string17" String="Text.&lt;/" />
+      <TestLogAction Name="completion-show" Command=" " />
+    </TestStep>
+    <TestCallAction Name="BasicHTML" Call="HTMLActions" Set="HTMLEditorSettings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["<HTML>
+<BODY>
+<A class='aaa' href='file'>Text.</A>
+</BODY>
+</HTML>"]]>
+      </Output>
+      <Comment>
+        <![CDATA["Basic test of HTML CC.
+"]]>
+      </Comment>
+    </TestCallAction>
+    <Comment>
+      <![CDATA["Basic test of HTML CC.
+"]]>
+    </Comment>
+  </TestSubTest>
+  <Comment>
+    <![CDATA["Test of invoking CC."]]>
+  </Comment>
+</Test>
+

@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Test Name="Indentation" Author="ehucka, jlahoda" Version="1.1">
+  <TestSubTest Name="Reformatting" Author="NoAuthor" Version="1.0" OwnLogger="true">
+    <TestStep Name="CommonJavaSettings">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetJavaIEAction Name="setJavaIndentEngine" IndentationEngine="Java Indentation Engine" LeadingStarInComment="true" AddNewLineBeforeParenthesis="false" AddSpaceBeforeBrackets="false" ExpandTabs="true" TabSize="4" />
+    </TestStep>
+    <TestStep Name="RoundActions">
+      <TestStringAction Name="string30" String="public class Xxx {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string31" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string32" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string33" String="\0Cpublic xXx(){" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string34" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string35" String="\0Cif (1==1){" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string36" String="\0C} else if(2==2){" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string37" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string38" String="\0C(2+(3*(4-(8/(new String(&quot;ddd&quot;).length())))));" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string39" String="\0Cserr Ahoj." />
+      <TestLogAction Name="caret-down" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string40" String="\0Cwhile()" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string41" String="\0Cif()" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string42" String="\0Cdo {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string43" String="\0Csout Test" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string44" String="\0C} while ()" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestStringAction Name="string45" String="true" />
+      <TestLogAction Name="caret-forward" Command="" />
+      <TestStringAction Name="string46" String=";" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string47" String="\0Celse" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string48" String="\0Cserr Test2" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string49" String="\0Cfor ()" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string50" String="\0Cdo {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string51" String="\0Cserr " />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string52" String="\0C} while (false);" />
+      <TestLogAction Name="format" Command=" " />
+    </TestStep>
+    <TestCallAction Name="Round" Call="RoundActions" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["public class Xxx {
+    
+    public xXx(){
+        if (1==1){
+            (2+(3*(4-(8/(new String("ddd").length())))));
+            System.err.println("Ahoj.");
+        } else if(2==2){
+            while()
+                if()
+                    do {
+                        System.out.println("Test");
+                    } while (true);
+                else
+                    System.err.println("Test2");
+            for ()
+                do {
+                    System.err.println("");
+                } while (false);
+        }
+    }
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="AddNewLineSettings">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetJavaIEAction Name="setJavaIndentEngine" IndentationEngine="Java Indentation Engine" LeadingStarInComment="true" AddNewLineBeforeParenthesis="true" AddSpaceBeforeBrackets="false" ExpandTabs="true" TabSize="4" />
+    </TestStep>
+    <TestCallAction Name="RoundAddNewLine" Call="RoundActions" Set="AddNewLineSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["public class Xxx
+{
+    
+    public xXx()
+    {
+        if (1==1)
+        {
+            (2+(3*(4-(8/(new String("ddd").length())))));
+            System.err.println("Ahoj.");
+        } else if(2==2)
+        {
+            while()
+                if()
+                    do
+                    {
+                        System.out.println("Test");
+                    } while (true);
+                else
+                    System.err.println("Test2");
+            for ()
+                do
+                {
+                    System.err.println("");
+                } while (false);
+        }
+    }
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="AddSpaceBraceSettings">
+      <TestSetKitAction Name="setKit" Kit="JavaKit" />
+      <TestSetJavaIEAction Name="setJavaIndentEngine" IndentationEngine="Java Indentation Engine" LeadingStarInComment="true" AddNewLineBeforeParenthesis="false" AddSpaceBeforeBrackets="true" ExpandTabs="true" TabSize="2" />
+    </TestStep>
+    <TestCallAction Name="RoundAddSpace" Call="RoundActions" Set="AddSpaceBraceSettings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["public class Xxx {
+  
+  public xXx (){
+    if (1==1){
+      (2+(3*(4-(8/(new String ("ddd").length ())))));
+      System.err.println ("Ahoj.");
+    } else if(2==2){
+      while()
+        if()
+          do {
+            System.out.println ("Test");
+          } while (true);
+        else
+          System.err.println ("Test2");
+      for ()
+        do {
+          System.err.println ("");
+        } while (false);
+    }
+  }
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="CompoundActions">
+      <TestStringAction Name="string131" String="public class X {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string132" String="public void Y()" />
+      <TestLogAction Name="abbrev-reset" Command=" " />
+      <TestStringAction Name="string133" String=" {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string134" String="if ()" />
+      <TestLogAction Name="delete-previous" Command="\0A" />
+      <TestStringAction Name="string135" String="1 == 1)" />
+      <TestLogAction Name="abbrev-reset" Command=" " />
+      <TestStringAction Name="string136" String=" {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string137" String="while (a)" />
+      <TestLogAction Name="abbrev-reset" Command=" " />
+      <TestStringAction Name="string138" String=" {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string139" String="do {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string140" String="} while (true);" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string141" String="if (4 == %" />
+      <TestLogAction Name="delete-previous" Command="\0A" />
+      <TestStringAction Name="string142" String="5)" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string143" String="while (4 ==7)" />
+      <TestLogAction Name="delete-previous" Command="\0A" />
+      <TestStringAction Name="string144" String="" />
+      <TestLogAction Name="delete-previous" Command="\0A" />
+      <TestStringAction Name="string145" String=" 7)" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string146" String="switch (rt)" />
+      <TestLogAction Name="abbrev-reset" Command=" " />
+      <TestStringAction Name="string147" String=" {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string148" String="case 23:" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string149" String="break;l" />
+      <TestLogAction Name="delete-previous" Command="\0A" />
+      <TestStringAction Name="string150" String="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string151" String="case 45:" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string152" String="break;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string153" String="}" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string154" String="}" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string155" String="}" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string156" String="}" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string157" String="}" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string158" String="" />
+      <TestLogAction Name="format" Command="\06" />
+      <TestStringAction Name="string159" String="\06" />
+    </TestStep>
+    <TestCallAction Name="Compound" Call="CompoundActions" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["public class X {
+    public void Y () {
+        if (1 == 1) {
+            while (a) {
+                do {
+                } while (true);
+                if (4 == 5)
+                    while (4 == 7)
+                        switch (rt) {
+                            case 23:
+                                break;
+                            case 45:
+                                break;
+                        }
+            }
+        }
+    }
+}
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestCallAction Name="CompoundNewLine" Call="CompoundActions" Set="AddNewLineSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["public class X
+{
+    public void Y()
+    {
+        if (1 == 1)
+        {
+            while (a)
+            {
+                do
+                {
+                } while (true);
+                if (4 == 5)
+                    while (4 == 7)
+                        switch (rt)
+                        {
+                            case 23:
+                                break;
+                            case 45:
+                                break;
+                        }
+            }
+        }
+    }
+}
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="ClosingSameLineActions">
+      <TestStringAction Name="string18" String="class Xxx {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string19" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string20" String="\0Cpublic met1() {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string21" String="\0Csout Ahoj" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestStringAction Name="string22" String="}" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string23" String="\0Cpublic void test2() { sout Cuz" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestStringAction Name="string24" String="}" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string25" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string26" String="\0Cpublic void test3 () {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string27" String="\0Cif () {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string28" String="\0C} }" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string29" String="\0C//end" />
+    </TestStep>
+    <TestCallAction Name="ClosingSameLine" Call="ClosingSameLineActions" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["class Xxx {
+    public met1() {
+        System.out.println("Ahoj");}
+    public void test2() { System.out.println("Cuz");}
+    
+    public void test3 () {
+        if () {
+        } }
+    //end
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <Comment>
+      <![CDATA[""]]>
+    </Comment>
+  </TestSubTest>
+  <TestSubTest Name="Writting" Author="NoAuthor" Version="1.0" OwnLogger="true">
+    <TestStep Name="Settings">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetJavaIEAction Name="setJavaIE" IndentationEngine="Java Indentation Engine" LeadingStarInComment="true" AddNewLineBeforeParenthesis="false" AddSpaceBeforeBrackets="false" ExpandTabs="true" TabSize="4" />
+    </TestStep>
+    <TestStep Name="SpecialAddNewLineStep">
+      <TestStringAction Name="string16" String="public class X" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string17" String="{ public X()" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string18" String="{  if (a == a)" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string19" String="while (true)" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string20" String="{ System.err.println(&quot;&quot;);" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string21" String="}" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string22" String="}" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string23" String="}" />
+    </TestStep>
+    <TestCallAction Name="SpecialAddNewLine" Call="SpecialAddNewLineStep" Set="Settings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["public class X
+{ public X()
+  {  if (a == a)
+         while (true)
+         { System.err.println("");
+         }
+  }
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestStep Name="TwoBracketsStep">
+      <TestStringAction Name="string29" String="JButton b;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string30" String="b.addActionListener(new ActionListener() {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string31" String="public void actionPerformed(ActionEvent ev) {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string33" String="sout Source: " />
+      <TestLogAction Name="caret-forward" Command="" />
+      <TestStringAction Name="string34" String="+ev.getSource()" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string35" String="}});" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string36" String="sout Back line" />
+      <TestLogAction Name="format" Command="" />
+    </TestStep>
+    <TestCallAction Name="TwoBrackets" Call="TwoBracketsStep" Set="Settings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["JButton b;
+b.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent ev) {
+        System.out.println("Source: "+ev.getSource());
+    }});
+System.out.println("Back line");"]]>
+      </Output>
+      <Comment>
+        <![CDATA["Tests bad behaviour of IE - two closing brackets after implementation of inline class."]]>
+      </Comment>
+    </TestCallAction>
+    <Comment>
+      <![CDATA[""]]>
+    </Comment>
+  </TestSubTest>
+  <TestSubTest Name="Issues" Author="eh103527" Version="1.0" OwnLogger="true">
+    <TestStep Name="Settings">
+      <TestSetKitAction Name="setJavaKit" Kit="JavaKit" />
+      <TestSetJavaIEAction Name="setJavaIE" IndentationEngine="Java Indentation Engine" LeadingStarInComment="false" AddNewLineBeforeParenthesis="false" AddSpaceBeforeBrackets="false" ExpandTabs="true" TabSize="4" />
+    </TestStep>
+    <TestStep Name="DoWhileActions">
+      <TestStringAction Name="string7" String="public class Xxx {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string8" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string9" String="\0Cpublic void xXx () {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string10" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string11" String="\0Cif (true)" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string12" String="\0Cdo" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string13" String="\0Csout Lets work!" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string14" String="\0Cwhile ();" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestLogAction Name="caret-backward" Command="" />
+      <TestStringAction Name="string15" String="true" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string16" String="\0Cfor ()" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string17" String="\0Cif ()" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string18" String="\0Cwhile ()" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string19" String="\0Cdo" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string20" String="\0Cserr Bye" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string21" String="\0Cwhile ();" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string22" String="\0Cif () {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string23" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string24" String="\0Cif ()" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string25" String="\0Celse if ()" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string26" String="\0Cdo" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string27" String="\0Cserr Bye" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string28" String="\0Cwhile ();" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string29" String="\0Celse" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string30" String="\0Cdo" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string31" String="\0Cserr Bye" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string32" String="\0Cwhile();" />
+    </TestStep>
+    <TestCallAction Name="DoWhile" Call="DoWhileActions" Set="Settings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["public class Xxx {
+    public void xXx () {
+        if (true)
+            do
+                System.out.println("Lets work!");
+            while (true);
+        for ()
+            if ()
+                while ()
+                    do
+                        System.err.println("Bye");
+                    while ();
+        if () {
+            if ()
+            else if ()
+                do
+                    System.err.println("Bye");
+                while ();
+            else
+                do
+                    System.err.println("Bye");
+                while();
+        }
+    }
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <Comment>
+      <![CDATA[""]]>
+    </Comment>
+  </TestSubTest>
+  <Comment>
+    <![CDATA[""]]>
+  </Comment>
+</Test>
+

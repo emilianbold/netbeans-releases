@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Test Name="JavaDoc" Author="ehucka" Version="1.2">
+  <TestSubTest Name="Writting" Author="ehucka" Version="1.2" OwnLogger="true">
+    <TestStep Name="insideStep">
+      <TestStringAction Name="string1" String="/*sdfgsdgfsdfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string2" String="\0Csdfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string3" String="\0Csdfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string4" String="\0Csd" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string5" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string6" String="\0Cfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string7" String="\0Csdfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string8" String="\0C*/" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string9" String="\0Cpublic class Test {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string10" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string11" String="\0C/**" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string12" String="\0Casdf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string13" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string14" String="\0Casd" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string15" String="\0Cfa" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string16" String="\0Csdf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string17" String="\0Ca" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string18" String="\0Csdf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string19" String="\0Cas" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string20" String="\0Cdfa" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string21" String="\0Csdf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string22" String="\0C*/" />
+    </TestStep>
+    <TestStep Name="startStep">
+      <TestStringAction Name="string23" String="public class Test {" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string24" String="\0C}" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-begin-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string25" String="\0C" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestStringAction Name="string26" String="/**" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string27" String="\0Csdfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string28" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string29" String="\0Csdfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string30" String="\0Csdfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string31" String="\0Csdfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string32" String="\0Csdfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string33" String="\0C*/" />
+    </TestStep>
+    <TestStep Name="endStep">
+      <TestStringAction Name="string34" String="/*asdfasdfasdfasdf*/" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string35" String="\0C/**" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string36" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string37" String="\0Casdf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string38" String="\0Casd" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string39" String="\0Cf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string40" String="\0Casd" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string41" String="\0Cfas" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string42" String="\0Cdf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string43" String="\0Casdf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string44" String="\0Casdf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string45" String="\0Casdf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string46" String="\0Casdf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string47" String="\0C*/" />
+    </TestStep>
+    <TestStep Name="CommonJavaSettings">
+      <TestSetKitAction Name="set152" Kit="JavaKit" />
+      <TestSetJavaIEAction Name="setJavaIndentEngine168" IndentationEngine="Java Indentation Engine" LeadingStarInComment="true" AddNewLineBeforeParenthesis="false" AddSpaceBeforeBrackets="false" ExpandTabs="true" TabSize="4" />
+    </TestStep>
+    <TestStep Name="NoLeadingStarSettings">
+      <TestSetKitAction Name="set196" Kit="JavaKit" />
+      <TestSetJavaIEAction Name="setJavaIndentEngine208" IndentationEngine="Java Indentation Engine" LeadingStarInComment="false" AddNewLineBeforeParenthesis="false" AddSpaceBeforeBrackets="false" ExpandTabs="false" TabSize="4" />
+    </TestStep>
+    <TestCallAction Name="inside" Call="insideStep" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["/*sdfgsdgfsdfg
+ *sdfg
+ *sdfg
+ *sd
+ *
+ *fg
+ *sdfg
+ **/
+/**
+ *asdf
+ *
+ *asd
+ *fa
+ *sdf
+ *a
+ *sdf
+ *as
+ *dfa
+ *sdf
+ **/
+public class Test {
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestCallAction Name="start" Call="startStep" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["/**
+ *sdfg
+ *
+ *sdfg
+ *sdfg
+ *sdfg
+ *sdfg
+ **/
+public class Test {
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestCallAction Name="end" Call="endStep" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["/*asdfasdfasdfasdf*/
+/**
+ *
+ *asdf
+ *asd
+ *f
+ *asd
+ *fas
+ *df
+ *asdf
+ *asdf
+ *asdf
+ *asdf
+ **/"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestCallAction Name="insideNoLeading" Call="insideStep" Set="NoLeadingStarSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["/*sdfgsdgfsdfg
+ sdfg
+ sdfg
+ sd
+ 
+ fg
+ sdfg
+ */
+/**
+ asdf
+ 
+ asd
+ fa
+ sdf
+ a
+ sdf
+ as
+ dfa
+ sdf
+ */
+public class Test {
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestCallAction Name="startNoLeading" Call="startStep" Set="NoLeadingStarSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["/**
+ sdfg
+ 
+ sdfg
+ sdfg
+ sdfg
+ sdfg
+ */
+public class Test {
+}"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestCallAction Name="endNoLeading" Call="endStep" Set="NoLeadingStarSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["/*asdfasdfasdfasdf*/
+/**
+ 
+ asdf
+ asd
+ f
+ asd
+ fas
+ df
+ asdf
+ asdf
+ asdf
+ asdf
+ */"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <Comment>
+      <![CDATA[""]]>
+    </Comment>
+  </TestSubTest>
+  <TestSubTest Name="Reformatting" Author="NoAuthor" Version="1.0" OwnLogger="true">
+    <TestStep Name="ReformattingStep">
+      <TestStringAction Name="string51" String="/*sdfsdfgsdfgsdghfdghertgscdvbgdfgh*/" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string52" String="\0C/*sdfgsdfkghjoer8vtn8340-5v0k fdvmndfglkjoertg*/" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string53" String="\0C" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-up" Command="" />
+      <TestLogAction Name="caret-end-line" Command="" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string54" String="\0Cfdg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string55" String="\0Cdsf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string56" String="\0Cg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string57" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string58" String="\0Casd" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string59" String="\0Cf" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string60" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string61" String="\0Cs" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string62" String="\0Cadfg" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string63" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string64" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string65" String="\0C3" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string66" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string67" String="\0C4" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string68" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string69" String="\0C56" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string70" String="\0C^" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string71" String="\0C$" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string72" String="\0C;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string73" String="\0C&apos;" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string74" String="\0C[" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string75" String="\0C]" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string76" String="\0C\" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string77" String="\0C" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string78" String="\0C-" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string79" String="\0C=" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string80" String="\0C*/" />
+      <TestLogAction Name="caret-begin" Command="" />
+      <TestLogAction Name="caret-down" Command="" />
+      <TestStringAction Name="string81" String="/**" />
+      <TestLogAction Name="caret-begin" Command="" />
+      <TestLogAction Name="selection-end" Command="" />
+      <TestLogAction Name="format" Command="\06" />
+    </TestStep>
+    <TestStep Name="LeadingStarSettings">
+      <TestSetJavaIEAction Name="setJavaIELeadingStar" IndentationEngine="Java Indentation Engine" LeadingStarInComment="true" AddNewLineBeforeParenthesis="false" AddSpaceBeforeBrackets="false" ExpandTabs="true" TabSize="4" />
+    </TestStep>
+    <TestStep Name="NoLeadingStar">
+      <TestSetJavaIEAction Name="setJavaIENoLeading" IndentationEngine="Java Indentation Engine" LeadingStarInComment="false" AddNewLineBeforeParenthesis="false" AddSpaceBeforeBrackets="false" ExpandTabs="true" TabSize="4" />
+    </TestStep>
+    <TestCallAction Name="ReformattingLeadingStar" Call="ReformattingStep" Set="LeadingStarSettings" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["/*sdfsdfgsdfgsdghfdghertgscdvbgdfgh*/
+/**fdg
+ * dsf
+ * g
+ *
+ * asd
+ * f
+ *
+ * s
+ * adfg
+ *
+ *
+ * 3
+ *
+ * 4
+ *
+ * 56
+ * ^
+ * $
+ * ;
+ * '
+ * [
+ * ]
+ * \
+ *
+ * -
+ * =
+ */
+/*sdfgsdfkghjoer8vtn8340-5v0k fdvmndfglkjoertg*/
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <TestCallAction Name="ReformatingNoLeadingStar" Call="ReformattingStep" Set="NoLeadingStar" Enable="true" Repeat="1" Delay="10">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["/*sdfsdfgsdfgsdghfdghertgscdvbgdfgh*/
+/**fdg
+ dsf
+ g
+ 
+ asd
+ f
+ 
+ s
+ adfg
+ 
+ 
+ 3
+ 
+ 4
+ 
+ 56
+ ^
+ $
+ ;
+ '
+ [
+ ]
+ \
+ 
+ -
+ =
+ */
+/*sdfgsdfkghjoer8vtn8340-5v0k fdvmndfglkjoertg*/
+"]]>
+      </Output>
+      <Comment>
+        <![CDATA[""]]>
+      </Comment>
+    </TestCallAction>
+    <Comment>
+      <![CDATA[""]]>
+    </Comment>
+  </TestSubTest>
+  <Comment>
+    <![CDATA[""]]>
+  </Comment>
+</Test>
+
