@@ -24,11 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.TreeMap;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.StringTokenizer;
+import java.util.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -54,6 +50,7 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openidex.search.SimpleSearchInfo;
@@ -475,7 +472,49 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 Exception ioe = new IOException ();
                 throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
             }
-        }        
+        }
+
+        public PasteType[] getPasteTypes(Transferable t) {
+            if (t.isDataFlavorSupported(ExTransferable.multiFlavor)) {
+                try {
+                    MultiTransferObject mto = (MultiTransferObject) t.getTransferData (ExTransferable.multiFlavor);
+                    List result = new ArrayList ();
+                    for (int i=0; i < mto.getCount(); i++) {
+                        DataFlavor[] flavors = mto.getTransferDataFlavors(i);
+                        if (!isPackageFlavor(flavors)) {
+                            result.addAll (Arrays.asList(super.getPasteTypes(mto.getTransferableAt(i))));
+                        }
+                    }
+                    return (PasteType[]) result.toArray(new PasteType[result.size()]);
+                } catch (UnsupportedFlavorException e) {
+                    ErrorManager.getDefault().notify(e);
+                    return new PasteType[0];
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                    return new PasteType[0];
+                }
+            }
+            else {
+                DataFlavor[] flavors = t.getTransferDataFlavors();
+                if (isPackageFlavor(flavors)) {
+                    return new PasteType[0];
+                }
+                else {
+                    return super.getPasteTypes(t);
+                }
+            }
+        }
+
+
+        private boolean isPackageFlavor (DataFlavor[] flavors) {
+            for (int i=0; i<flavors.length; i++) {
+                if (SUBTYPE.equals(flavors[i].getSubType ()) && PRIMARY_TYPE.equals(flavors[i].getPrimaryType ())) {
+                    //Disable pasting into package, only paste into root is allowed
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public void setName(String name) {
             System.out.println( "Rename to " + name );
@@ -719,54 +758,56 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     static class PackagePasteType extends PasteType {
         
         private int op;
-        private PackageNode node;
+        private PackageNode[] nodes;
         private FileObject srcRoot;
 
-        public PackagePasteType (FileObject srcRoot, PackageNode node, int op) {
+        public PackagePasteType (FileObject srcRoot, PackageNode[] node, int op) {
             assert op == DnDConstants.ACTION_COPY || op == DnDConstants.ACTION_MOVE : "Invalid DnD operation";  //NOI18N
-            this.node = node;
+            this.nodes = node;
             this.op = op;
             this.srcRoot = srcRoot;
         }
 
         public Transferable paste() throws IOException {
-            String pkgName = node.computePackageName(false);
-            StringTokenizer tk = new StringTokenizer(pkgName,".");  //NOI18N
-            FileObject fo = srcRoot;
-            while (tk.hasMoreTokens()) {
-                String name = tk.nextToken();
-                FileObject tmp = fo.getFileObject(name,null);
-                if (tmp == null) {
-                    tmp = fo.createFolder(name);
+            for (int ni=0; ni< nodes.length; ni++) {
+                String pkgName = nodes[ni].computePackageName(false);
+                StringTokenizer tk = new StringTokenizer(pkgName,".");  //NOI18N
+                FileObject fo = srcRoot;
+                while (tk.hasMoreTokens()) {
+                    String name = tk.nextToken();
+                    FileObject tmp = fo.getFileObject(name,null);
+                    if (tmp == null) {
+                        tmp = fo.createFolder(name);
+                    }
+                    fo = tmp;
                 }
-                fo = tmp;
-            }
-            DataFolder dest = DataFolder.findFolder(fo);
-            DataObject[] children = node.dataFolder.getChildren();
-            boolean cantDelete = false;
-            for (int i=0; i< children.length; i++) {
-                if (children[i].getPrimaryFile().isData()) {
-                    //Copy only the pacakge level
-                    children[i].copy (dest);
-                    if (this.op == DnDConstants.ACTION_MOVE) {
-                        try {
-                            children[i].delete();
-                        } catch (IOException ioe) {
-                            cantDelete = true;
+                DataFolder dest = DataFolder.findFolder(fo);
+                DataObject[] children = nodes[ni].dataFolder.getChildren();
+                boolean cantDelete = false;
+                for (int i=0; i< children.length; i++) {
+                    if (children[i].getPrimaryFile().isData()) {
+                        //Copy only the pacakge level
+                        children[i].copy (dest);
+                        if (this.op == DnDConstants.ACTION_MOVE) {
+                            try {
+                                children[i].delete();
+                            } catch (IOException ioe) {
+                                cantDelete = true;
+                            }
                         }
                     }
+                    else {
+                        cantDelete = true;
+                    }
                 }
-                else {
-                    cantDelete = true;
+                if (this.op == DnDConstants.ACTION_MOVE && !cantDelete) {
+                    try {
+                        nodes[ni].dataFolder.delete ();
+                    } catch (IOException ioe) {
+                        //Not important
+                    }
                 }
             }
-            if (this.op == DnDConstants.ACTION_MOVE && !cantDelete) {
-                try {
-                    node.dataFolder.delete ();
-                } catch (IOException ioe) {
-                    //Not important
-                }
-            }            
             return ExTransferable.EMPTY;
         }
 
