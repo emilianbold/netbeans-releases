@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -38,6 +38,12 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testAddFileChangeListener"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testRemoveFileChangeListener"/>
                 <include name="org/openide/modules/*.class"/>
+                <include name="org/openide/loaders/*.class"/>
+                <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectInvalidatedAfterRootChange"/>
+                <exclude name="org/openide/loaders/InstanceDataObjectTest.class/testCreateFromTemplateForSettingsFile"/>
+                <!-- Why? Looks OK to me. -jglick
+                <exclude name="org/openide/loaders/MultiDataObjectTest.class"/>
+                -->
             </patternset>
         </testset>      
     </testbag>
@@ -46,12 +52,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/util/*.class"/>
-                <!-- XXX many loaders tests can run in IDE mode just fine... -->
-                <include name="org/openide/loaders/*.class"/>
-                <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>
-                <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectInvalidatedAfterRootChange"/>
-                <exclude name="org/openide/loaders/MultiDataObjectTest.class"/>
-                <exclude name="org/openide/loaders/InstanceDataObjectTest.class/testCreateFromTemplateForSettingsFile"/>
                 <include name="org/openide/xml/*.class"/>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
                 <include name="org/openide/nodes/*.class"/>
@@ -81,16 +81,16 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/filesystems/MultiFileSystem3Test.class/testGetOutputStream"/>
                 <include name="org/openide/filesystems/MultiFileSystem3Test.class/testAddFileChangeListener"/>
                 <include name="org/openide/filesystems/MultiFileSystem3Test.class/testRemoveFileChangeListener"/>
+                <include name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectInvalidatedAfterRootChange"/>
+                <include name="org/openide/loaders/InstanceDataObjectTest.class/testCreateFromTemplateForSettingsFile"/>
             </patternset>
         </testset>      
     </testbag>
 
     <testbag testattribs="ide,failing" executor="ide" name="testbag_4" resultsprocessor="unit">
         <testset dir="unit/src">
-            <patternset>                
-                <include name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>
-                <include name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectInvalidatedAfterRootChange"/>
-                <include name="org/openide/loaders/InstanceDataObjectTest.class/testCreateFromTemplateForSettingsFile"/>
+            <patternset>
+                <!-- none -->
             </patternset>
         </testset>      
     </testbag>
