@@ -15,6 +15,7 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -46,6 +47,7 @@ public class OpenProject extends BasicAction {
 
     public void actionPerformed( ActionEvent evt ) {
         JFileChooser chooser = ProjectChooserAccessory.createProjectChooser( true ); // Create the jFileChooser
+        chooser.setMultiSelectionEnabled( true );
         
         OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
         
@@ -56,22 +58,37 @@ public class OpenProject extends BasicAction {
               
             if ( option == JFileChooser.APPROVE_OPTION ) {
 
-                final File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
-
-                Project project = OpenProjectList.fileToProject( projectDir ); 
+                final File[] projectDirs;
+                if ( chooser.isMultiSelectionEnabled() ) {                    
+                    projectDirs = chooser.getSelectedFiles();
+                }
+                else {
+                    projectDirs = new File[] { chooser.getSelectedFile() };
+                }
                 
-                if ( project == null ) {
+                // Project project = OpenProjectList.fileToProject( projectDir ); 
+                ArrayList projects = new ArrayList( projectDirs.length );
+                for( int i = 0; i < projectDirs.length; i++ ) {
+                    Project p = OpenProjectList.fileToProject( FileUtil.normalizeFile( projectDirs[i] ) );
+                    if ( p != null ) {
+                        projects.add( p );
+                    }
+                }
+                
+                if ( projects.isEmpty() ) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage( OpenProject.class, "MSG_notProjectDir"), // NOI18N
                                 NotifyDescriptor.WARNING_MESSAGE));                    
                 }
                 else {
+                    Project projectsArray[] = new Project[ projects.size() ];
+                    projects.toArray( projectsArray );
                     OpenProjectList.getDefault().open( 
-                        project,                    // Put the project into OpenProjectList
-                        opls.isOpenSubprojects() ); // And optionaly open subprojects
-                    if ( opls.isOpenAsMain() ) {
+                        projectsArray,                    // Put the project into OpenProjectList
+                        opls.isOpenSubprojects() );       // And optionaly open subprojects
+                    if ( opls.isOpenAsMain() && projectsArray.length == 1 ) {
                         // Set main project if selected
-                        OpenProjectList.getDefault().setMainProject( project );
+                        OpenProjectList.getDefault().setMainProject( projectsArray[0] );
                     }
                     final ProjectTab ptLogial  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
                     
@@ -79,9 +96,18 @@ public class OpenProject extends BasicAction {
                     SwingUtilities.invokeLater (new Runnable () {
                         public void run () {
                             Node root = ptLogial.getExplorerManager ().getRootContext ();
-                            Node projNode = root.getChildren ().findChild (projectDir.getName ());
+                            
+                            ArrayList nodes = new ArrayList( projectDirs.length );
+                            for( int i = 0; i < projectDirs.length; i++ ) {                
+                                Node projNode = root.getChildren ().findChild (projectDirs[i].getName () );
+                                if ( projNode != null ) {
+                                    nodes.add( projNode );
+                                }
+                            }
                             try {
-                                ptLogial.getExplorerManager ().setSelectedNodes (new Node[] {projNode});
+                                Node[] nodesArray = new Node[ nodes.size() ];
+                                nodes.toArray( nodesArray );
+                                ptLogial.getExplorerManager ().setSelectedNodes (nodesArray);
                                 ptLogial.open ();
                                 ptLogial.requestActive ();
                             } catch (Exception ignore) {
