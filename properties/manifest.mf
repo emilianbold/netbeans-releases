@@ -1,5 +1,6 @@
-Netbeans-Module: Version 1.00
-Netbeans-Module-Name: Properties Module
+NetBeans-Module: com.netbeans.developer.modules.loaders.properties/1
+NetBeans-Module-Name: Properties Files
 
 Name: com/netbeans/developer/modules/loaders/properties/PropertiesDataLoader.class
-Netbeans-Module-Class: Loader
+NetBeans-Module-Class: Loader
+

@@ -1,18 +1,18 @@
-Netbeans-Module: Version 1.00
-Netbeans-Module-Name: Debugger Module
+NetBeans-Module: com.netbeans.modules.debugger/1
+NetBeans-Module-Name: Debugger
 
 Name: com/netbeans/developer/modules/debugger/DebuggerSettings.class
-Netbeans-Module-Class: Option
+NetBeans-Module-Class: Option
 
 Name: com/netbeans/developer/modules/debugger/JavaDebugger.class
-Netbeans-Module-Class: Debugger
+NetBeans-Module-Class: Debugger
 
 Name: com/netbeans/developer/modules/debugger/nodes/DebuggerNode.class
-Netbeans-Module-Class: Node
+NetBeans-Module-Class: Node
 Type: Environment
 
 Name: com/netbeans/developer/modules/debugger/actions/AddBreakpointAction.class
-Netbeans-Module-Class: Action
+NetBeans-Module-Class: Action
 Toolbar: Debug
 Menu: Debug
 

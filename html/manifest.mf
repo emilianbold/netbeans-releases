@@ -1,8 +1,6 @@
-Netbeans-Module: Version 1.00
-Netbeans-Module-Name: Html Module
-
+NetBeans-Module: com.netbeans.developer.modules.loaders.html/1
+NetBeans-Module-Name: HTML
 
 Name: com/netbeans/developer/modules/loaders/html/HtmlLoader.class
-Netbeans-Module-Class: Loader
-
+NetBeans-Module-Class: Loader
 

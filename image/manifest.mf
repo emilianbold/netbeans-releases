@@ -1,5 +1,6 @@
-Netbeans-Module: Version 1.00
-Netbeans-Module-Name: Image Module
+NetBeans-Module: com.netbeans.developer.modules.loaders.image/1
+NetBeans-Module-Name: Image
 
 Name: com/netbeans/developer/modules/loaders/image/ImageDataLoader.class
-Netbeans-Module-Class: Loader
+NetBeans-Module-Class: Loader
+

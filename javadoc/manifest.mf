@@ -1,9 +1,11 @@
-Netbeans-Module: Version 1.00
-Netbeans-Module-Name: JavaDoc Module
-Netbeans-Module-Install: com/netbeans/developer/modules/javadoc/JavadocModule.class
+NetBeans-Module: com.netbeans.developer.modules.javadoc/1
+NetBeans-Module-Name: JavaDoc
+NetBeans-Module-Install: com/netbeans/developer/modules/javadoc/JavadocModule.class
+NetBeans-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.java/1
 
 Name: com/netbeans/developer/modules/javadoc/settings/DocumentationSettings.class
-Netbeans-Module-Class: Option
+NetBeans-Module-Class: Option
 
 Name: com/netbeans/developer/modules/javadoc/GenerateDocAction.class
-Netbeans-Module-Class: Action
+NetBeans-Module-Class: Action
+
