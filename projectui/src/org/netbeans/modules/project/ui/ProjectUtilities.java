@@ -16,11 +16,18 @@ package org.netbeans.modules.project.ui;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
-import java.io.File;
-
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -49,42 +56,18 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-
 /** The util methods for projectui module.
  *
  * @author  Jiri Rechtacek
  */
 public class ProjectUtilities {
+    
     static final String OPEN_FILES_NS = "http://www.netbeans.org/ns/projectui-open-files/1"; // NOI18N
     static final String OPEN_FILES_ELEMENT = "open-files"; // NOI18N
     static final String FILE_ELEMENT = "file"; // NOI18N
     
     /** Creates a new instance of ProjectUtilities */
     private ProjectUtilities () {
-    }
-    
-    /** Closes all documents in editor area which are owned by one of given projects.
-     * If some documents are modified then an user is notified by Save/Discard/Cancel dialog.
-     * Dialog is showed only once for all project's documents together.
-     *
-     * @param p project to close
-     * @return false if an user cancel the Save/Discard/Cancel dialog, true otherwise
-     */    
-    public static boolean closeAllDocuments (Project[] projects) {
-        return closeAllDocuments (projects, false);
-    }
-    
-    /** Closes all documents of the given project in editor area. If some documents
-     * are modified then an user is notified by Save/Discard/Cancel dialog.
-     *
-     * @param p project to close
-     * @return false if an user cancel the Save/Discard/Cancel dialog, true otherwise
-     */    
-    public static boolean closeAllDocuments (Project p) {
-        if (p == null) {
-            throw new IllegalArgumentException ("No specified project."); // NOI18N
-        }
-        return closeAllDocuments (new Project[] { p });
     }
     
     /** Invokes the preferred action on given object and tries to select it in
@@ -215,14 +198,12 @@ public class ProjectUtilities {
     /** Closes all documents in editor area which are owned by one of given projects.
      * If some documents are modified then an user is notified by Save/Discard/Cancel dialog.
      * Dialog is showed only once for all project's documents together.
-     * If 'storeDocuments' is true then URLs of closed documents are store to private
-     * <code>project.xml</code>.
+     * URLs of closed documents are stored to <code>private.xml</code>.
      *
      * @param p project to close
-     * @param storeDocuments will be documents stored to private
-     * @return false if an user cancel the Save/Discard/Cancel dialog, true otherwise
+     * @return false if the user cancelled the Save/Discard/Cancel dialog, true otherwise
      */    
-    public static boolean closeAllDocuments (Project[] projects, boolean storeDocuments) {
+    public static boolean closeAllDocuments(Project[] projects) {
         if (projects == null) {
             throw new IllegalArgumentException ("No projects are specified."); // NOI18N
         }
