@@ -3,11 +3,11 @@ OpenIDE-Module-Name: Internationalization
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.properties/1, org.netbeans.modules.form/1 > 1.0, org.netbeans.modules.editor/1
 OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Install: org/netbeans/modules/i18n/PropertiesFormModule.class
+OpenIDE-Module-Install: org/netbeans/modules/i18n/I18nModule.class
 OpenIDE-Module-Description: org.netbeans.modules.i18n.docs.HelpSet
 
-Name: org/netbeans/modules/i18n/LocalizeAction.class
+Name: org/netbeans/modules/i18n/I18nAction.class
 OpenIDE-Module-Class: Action
 
-Name: org/netbeans/modules/i18n/InsertLocalStringAction.class
+Name: org/netbeans/modules/i18n/InsertI18nStringAction.class
 OpenIDE-Module-Class: Action
