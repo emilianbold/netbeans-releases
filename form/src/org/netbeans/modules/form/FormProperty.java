@@ -77,24 +77,25 @@ public abstract class FormProperty extends Node.Property {
     // variables
     protected int propType = NORMAL_RW;
 
-    FormPropertyContext propertyContext = null;
+    FormPropertyContext propertyContext;
 
-    protected Object propertyValue = null; // cached value of the property
+    protected Object propertyValue; // cached value of the property
     protected boolean valueSet = false; // propertyValue validity
     boolean valueChanged = false; // i.e. non-default
 
     private boolean externalChangeMonitoring = true;
-    private Object lastRealValue = null; // for detecting external change of the property value
+    private Object lastRealValue; // for detecting external change of the property value
 
     String preCode;
     String postCode;
 
     PropertyEditor currentEditor;
 
-    private ArrayList listeners = new ArrayList();
+    private ArrayList propListeners;
+    private ArrayList vetoListeners;
     private boolean fireChanges = true;
 
-    private DesignValueListener designValueListener = null;
+//    private DesignValueListener designValueListener = null;
 
     // ---------------------------
     // constructors
@@ -245,7 +246,7 @@ public abstract class FormProperty extends Node.Property {
                            && (value == null || !value.equals(defValue)))));
         // or use Utilities.compareObjects(defValue,value) ?
 
-        settleDesignValueListener(oldValue, value);
+//        settleDesignValueListener(oldValue, value);
         propertyValueChanged(oldValue, value);
     }
 
@@ -337,7 +338,7 @@ public abstract class FormProperty extends Node.Property {
         if (prEd != null)
             setCurrentEditor(prEd);
 
-        settleDesignValueListener(oldValue, defValue);
+//        settleDesignValueListener(oldValue, defValue);
         propertyValueChanged(oldValue, defValue);
     }
 
@@ -580,16 +581,29 @@ public abstract class FormProperty extends Node.Property {
     // ----------------------------
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
-        if (listeners == null)
-            listeners = new ArrayList();
+        if (propListeners == null)
+            propListeners = new ArrayList();
         else
-            listeners.remove(l); // do not allow duplicates
-        listeners.add(l);
+            propListeners.remove(l); // do not allow duplicates
+        propListeners.add(l);
     }
 
     public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
-        if (listeners != null)
-            listeners.remove(l);
+        if (propListeners != null)
+            propListeners.remove(l);
+    }
+
+    public synchronized void addVetoableChangeListener(VetoableChangeListener l) {
+        if (vetoListeners == null)
+            vetoListeners = new ArrayList();
+        else
+            vetoListeners.remove(l); // do not allow duplicates
+        vetoListeners.add(l);
+    }
+
+    public synchronized void removeVetoableChangeListener(VetoableChangeListener l) {
+        if (vetoListeners != null)
+            vetoListeners.remove(l);
     }
 
     public boolean isChangeFiring() {
@@ -601,28 +615,55 @@ public abstract class FormProperty extends Node.Property {
     }
 
     protected void propertyValueChanged(Object old, Object current) {
-        if (fireChanges)
-            firePropertyChange(PROP_VALUE, old, current);
+        if (fireChanges) {
+            try {
+                firePropertyChange(PROP_VALUE, old, current);
+            }
+            catch (PropertyVetoException ex) {
+                boolean fire = fireChanges;
+                fireChanges = false;
+                try {
+                    setValue(old);
+                }
+                catch (Exception ex2) {} // ignore
+                fireChanges = fire;
+            }
+        }
     }
 
     protected void currentEditorChanged(PropertyEditor old,
                                         PropertyEditor current)
     {
-        if (fireChanges)
-            firePropertyChange(CURRENT_EDITOR, old, current);
+        if (fireChanges) {
+            try {
+                firePropertyChange(CURRENT_EDITOR, old, current);
+            }
+            catch (PropertyVetoException ex) {} // won't happen
+        }
     }
 
-    private void firePropertyChange(String propName, Object old, Object current) {
-//        if (!fireChanges) return;
-        ArrayList targets;
+    private void firePropertyChange(String propName, Object old, Object current)
+        throws PropertyVetoException
+    {
+        ArrayList vetoTargets = null;
+        ArrayList propTargets = null;
         synchronized (this) {
-            if (listeners == null) return;
-            targets = (ArrayList)listeners.clone();
+            if (vetoListeners != null && propName != CURRENT_EDITOR)
+                vetoTargets = (ArrayList)vetoListeners.clone();
+            if (propListeners != null)
+                propTargets = (ArrayList)propListeners.clone();
+            else if (vetoListeners == null || propName == CURRENT_EDITOR)
+                return;
         }
-        PropertyChangeEvent evt = new PropertyChangeEvent(this,
-                                          propName, old, current);
-        for (int i=0, n=targets.size(); i < n; i++)
-            ((PropertyChangeListener)targets.get(i)).propertyChange(evt);
+
+        PropertyChangeEvent ev = new PropertyChangeEvent(this,
+                                         propName, old, current);
+        if (vetoTargets != null)
+            for (int i=0, n=vetoTargets.size(); i < n; i++)
+                ((VetoableChangeListener)vetoTargets.get(i)).vetoableChange(ev);
+        if (propTargets != null)
+            for (int i=0, n=propTargets.size(); i < n; i++)
+                ((PropertyChangeListener)propTargets.get(i)).propertyChange(ev);
     }
 
     // ----------------------------
@@ -668,7 +709,7 @@ public abstract class FormProperty extends Node.Property {
         return defaultEditor;
     }
 
-    private void settleDesignValueListener(Object oldVal, Object newVal) {
+/*    private void settleDesignValueListener(Object oldVal, Object newVal) {
         if (oldVal == newVal) return;
 
         if (oldVal instanceof FormDesignValue.Listener && designValueListener != null)
@@ -690,5 +731,5 @@ public abstract class FormProperty extends Node.Property {
                 catch (Exception ex) { // can't do nothing here
                 }
         }
-    }
+    } */
 }
