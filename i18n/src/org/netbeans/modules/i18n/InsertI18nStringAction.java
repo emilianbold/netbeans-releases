@@ -310,7 +310,7 @@ public class InsertI18nStringAction extends CookieAction {
 
     /** Gets the action's help context. Implemenst superclass abstract method. */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(I18nUtil.HELP_ID_AUTOINSERT);
+        return new HelpCtx(I18nUtil.HELP_ID_MANINSERT);
     }
 
     /** Gets the action's icon location.

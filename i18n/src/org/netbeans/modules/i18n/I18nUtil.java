@@ -38,12 +38,14 @@ import org.openide.util.SharedClassObject;
  *
  * @author  Peter Zavadsky
  */
-public abstract class I18nUtil {
+public final class I18nUtil {
 
     /** Help ID for i18n module in general. */
     public static final String HELP_ID_I18N = "internation.internation"; // NOI18N
     /** Help ID for I18N dialog. */
     public static final String HELP_ID_AUTOINSERT = "internation.autoinsert"; // NOI18N
+    /** Help ID for Insert I18N dialog. */
+    public static final String HELP_ID_MANINSERT = "internation.maninsert"; // NOI18N
     /** Help ID for I18N form property editor. You can see it in Component inspector. */
     public static final String HELP_ID_FORMED = "internation.formed"; // NOI18N
     /** Help ID for I18N test wizard. */
@@ -52,6 +54,12 @@ public abstract class I18nUtil {
     public static final String HELP_ID_WIZARD = "internation.wizard"; // NOI18N
     /** Help ID for I18N options. */
     public static final String HELP_ID_CUSTOM = "internation.custom"; // NOI18N
+    /** Help ID for parameters dialog. */
+    public static final String HELP_ID_ADDPARAMS = "internation.addparams"; // NOI18N
+    /** Help ID for replacing format. */
+    public static final String HELP_ID_REPLFORMAT = "internation.replformat"; // NOI18N
+    /** Help ID for Locale execution. */
+    public static final String HELP_ID_RUNLOCALE = "internation.runlocale"; // NOI18N
     
     /** Items for init format customizer. */
     private static List initFormatItems;
