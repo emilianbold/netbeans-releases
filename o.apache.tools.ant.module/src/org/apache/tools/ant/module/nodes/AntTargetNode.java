@@ -189,15 +189,38 @@ public class AntTargetNode extends ElementNode {
                 return new DependsPanel ();
             }
             private class DependsPanel extends Box implements ActionListener {
-                private final Set on = new HashSet ();
+                private final Set on = new HashSet (); // Set<String>
                 public DependsPanel () {
                     super (BoxLayout.Y_AXIS);
                     String depends = (String) DependsEditor.this.getValue ();
                     StringTokenizer tok = new StringTokenizer (depends, ", "); // NOI18N
+                    Set available = getAvailable ();
+                    Set bogus = new HashSet (); // Set<String>
                     while (tok.hasMoreTokens ()) {
-                        on.add (tok.nextToken ());
+                        String dep = tok.nextToken ();
+                        if (available.contains (dep)) {
+                            on.add (dep);
+                        } else {
+                            bogus.add (dep);
+                        }
                     }
-                    Iterator it = getAvailable ().iterator ();
+                    if (! bogus.isEmpty ()) {
+                        // #12681: if there are bad dependencies, just skip them.
+                        List bogusList = new ArrayList (bogus); // List<String>
+                        Collections.sort (bogusList);
+                        StringBuffer bogusListString = new StringBuffer (100);
+                        Iterator it = bogusList.iterator ();
+                        bogusListString.append ((String) it.next ());
+                        while (it.hasNext ()) {
+                            bogusListString.append (' '); // NOI18N
+                            bogusListString.append ((String) it.next ());
+                        }
+                        add (new JLabel (NbBundle.getMessage (AntTargetNode.class,
+                            "MSG_suppressing_bad_deps", bogusListString.toString ()))); // NOI18N
+                    }
+                    List availableList = new ArrayList (available); // List<String>
+                    Collections.sort (availableList);
+                    Iterator it = availableList.iterator ();
                     while (it.hasNext ()) {
                         String target = (String) it.next ();
                         AbstractButton check = new JCheckBox (target, on.contains (target));
@@ -215,10 +238,12 @@ public class AntTargetNode extends ElementNode {
                         on.remove (target);
                     }
                     StringBuffer buf = new StringBuffer ();
-                    Iterator it = on.iterator ();
+                    List onList = new ArrayList (on); // List<String>
+                    Collections.sort (onList);
+                    Iterator it = onList.iterator ();
                     while (it.hasNext ()) {
                         target = (String) it.next ();
-                        if (buf.length () > 0) buf.append (',');
+                        if (buf.length () > 0) buf.append (','); // NOI18N
                         buf.append (target);
                     }
                     DependsEditor.this.setValue (buf.toString ());
