@@ -24,7 +24,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.nodes.Sheet;
 
-import org.netbeans.modules.j2ee.deployment.execution.actions.ConfigureAction;
 import org.netbeans.modules.j2ee.deployment.execution.ServerExecSupport;
 import org.netbeans.modules.j2ee.deployment.impl.projects.JSPServletFinderImpl;
 import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
@@ -55,14 +54,6 @@ public abstract class J2eeModuleProvider implements Node.Cookie {
         return set;
     }
     
-    static SystemAction configureAction;
-    public static final SystemAction configureAction() {
-        if (configureAction == null) {
-            configureAction = NodeAction.get (ConfigureAction.class);
-        }
-        return configureAction;
-    }
-
     public static org.openide.loaders.ExecutionSupport getExecutionSupport (DataObject dobj) {
         return new ServerExecSupport (((MultiDataObject) dobj).getPrimaryEntry ());
     }
