@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Form config">
     
 
-    <testbag testattribs="stable" executor="ide" name="testbag_visual_development" resultsprocessor="qa-functional">
+    <testbag testattribs="validation, full" executor="ide" name="testbag_visual_development" resultsprocessor="qa-functional">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="visualDevelopment/AddComponents_AWT.class"/>
@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="stable" executor="ide" name="testbag_compatibility" resultsprocessor="qa-functional">
+    <testbag testattribs="validation, full" executor="ide" name="testbag_compatibility" resultsprocessor="qa-functional">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="compatibility/EditForm.class"/>
@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable" executor="ide" name="testbag_palette" resultsprocessor="qa-functional">
+    <testbag testattribs="validation, full" executor="ide" name="testbag_palette" resultsprocessor="qa-functional">
         <testset dir="qa-functional/src">
             <patternset>
 		    <include name="palette/PaletteTests.class"/>
