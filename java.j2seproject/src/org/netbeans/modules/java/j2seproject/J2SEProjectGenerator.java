@@ -86,12 +86,19 @@ public class J2SEProjectGenerator {
                 assert nl.getLength() == 1;
                 Element testRoots = (Element) nl.item(0);
                 for (int i=0; i<sourceFolders.length; i++) {
-                    String propName = "src.dir" + (i == 0 ? "" : Integer.toString (i+1)); //NOI18N
+                    String name = sourceFolders[i].getName();
+                    String propName = name + ".dir";    //NOI18N
+                    int rootIndex = 1;
+                    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    while (props.containsKey(propName)) {
+                        rootIndex++;
+                        propName = name + rootIndex + ".dir";   //NOI18N
+                    }
                     String srcReference = refHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
                     Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                     root.setAttribute ("id",propName);   //NOI18N
                     sourceRoots.appendChild(root);
-                    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     props.put(propName,srcReference);
                     h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
                 }
@@ -114,12 +121,20 @@ public class J2SEProjectGenerator {
                         if (!testFolders[i].exists()) {
                             testFolders[i].mkdirs();
                         }
-                        String propName = "test.src.dir" + (i == 0 ? "" : Integer.toString (i+1)); //NOI18N
+
+                        String name = testFolders[i].getName();
+                        String propName = "test." + name + ".dir";    //NOI18N
+                        int rootIndex = 1;
+                        EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        while (props.containsKey(propName)) {
+                            rootIndex++;
+                            propName = "test." + name + rootIndex + ".dir";   //NOI18N
+                        }
                         String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
                         Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                         root.setAttribute ("id",propName);   //NOI18N
                         testRoots.appendChild(root);
-                        EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
+                        props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
                         props.put(propName,testReference);
                         h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     }

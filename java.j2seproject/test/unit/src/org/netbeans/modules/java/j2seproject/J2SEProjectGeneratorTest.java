@@ -92,7 +92,47 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "src.dir",
         "test.src.dir",
     };
-    
+
+    private static final String[] createdPropertiesExtSources = {
+        "application.args",
+        "build.classes.dir",
+        "build.classes.excludes",
+        "build.dir",
+        "build.sysclasspath",
+        "build.test.classes.dir",
+        "build.test.results.dir",
+        "debug.classpath",
+        "debug.test.classpath",
+        "dist.dir",
+        "dist.jar",
+        "dist.javadoc.dir",
+        "jar.compress",
+        "javac.classpath",
+        "javac.compilerargs",
+        "javac.deprecation",
+        "javac.source",
+        "javac.target",
+        "javac.test.classpath",
+        "javadoc.author",
+        "javadoc.encoding",
+        "javadoc.noindex",
+        "javadoc.nonavbar",
+        "javadoc.notree",
+        "javadoc.private",
+        "javadoc.splitindex",
+        "javadoc.use",
+        "javadoc.version",
+        "javadoc.windowtitle",
+        "main.class",
+        "manifest.file",
+        "platform.active",
+        "run.classpath",
+        "run.jvmargs",
+        "run.test.classpath",
+        "src.dir",
+        "test.test.dir",
+    };
+
     public void testCreateProject() throws Exception {
         File proj = getWorkDir();
         clearWorkDir();
@@ -118,7 +158,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         proj.mkdir();
         File srcRoot = new File (root, "src");
         srcRoot.mkdir ();
-        File testRoot = new File (root, "tests");
+        File testRoot = new File (root, "test");
         testRoot.mkdir ();
         AntProjectHelper helper = J2SEProjectGenerator.createProject(proj, "test-project-ext-src", new File[] {srcRoot}, new File[] {testRoot}, "manifest.mf");
         assertNotNull (helper);
@@ -128,8 +168,8 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         } 
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ArrayList l = new ArrayList(props.keySet());
-        for (int i=0; i<createdProperties.length; i++) {
-            String propName = createdProperties[i];
+        for (int i=0; i<createdPropertiesExtSources.length; i++) {
+            String propName = createdPropertiesExtSources[i];
             String propValue = props.getProperty(propName);
             assertNotNull(propName+" property cannot be found in project.properties", propValue);
             l.remove(propName);
@@ -141,13 +181,13 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
                 File file = helper.resolveFile(eval.evaluate(propValue));
                 assertEquals("Invalid value of src.dir property.", srcRoot, file);
             }
-            else if ("test.src.dir".equals(propName)) {
+            else if ("test.test.dir".equals(propName)) {
                 PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
                 File file = helper.resolveFile(eval.evaluate(propValue));
                 assertEquals("Invalid value of test.src.dir property.", testRoot, file);
             }
         }
-        assertEquals("Found unexpected property: "+l,createdProperties.length, props.keySet().size());
+        assertEquals("Found unexpected property: "+l,createdPropertiesExtSources.length, props.keySet().size());
     }
     
 }

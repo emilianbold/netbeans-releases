@@ -65,13 +65,13 @@ public final class SourceRoots {
     private List sourceRootURLs;
     private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
-    private int rootIndex = 2;
 
     /**
      * Creates new SourceRoots
      * @param helper
      * @param evaluator
      * @param elementName the name of XML element under which are declared the roots
+     * @param newRootNameTemplate template for new property name of source root
      */
     SourceRoots (UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, String elementName, String newRootNameTemplate) {
         assert helper != null && evaluator != null && refHelper != null && elementName != null && newRootNameTemplate != null;
@@ -258,10 +258,12 @@ public final class SourceRoots {
                             if (rootName == null) {
                                 //Root is new generate property for it
                                 props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                rootName = MessageFormat.format(newRootNameTemplate, new Object[]{new Integer(rootIndex)});
+                                String[] names = newRoot.getPath().split("/");  //NOI18N
+                                rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],""});    //NOI18N
+                                int rootIndex = 1;
                                 while (props.containsKey(rootName)) {
                                     rootIndex++;
-                                    rootName = MessageFormat.format(newRootNameTemplate, new Object[]{new Integer(rootIndex)});
+                                    rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],new Integer(rootIndex)});
                                 }
                                 File f = FileUtil.normalizeFile(new File(URI.create(newRoot.toExternalForm())));
                                 File projDir = FileUtil.toFile(helper.getAntProjectHelper().getProjectDirectory());
