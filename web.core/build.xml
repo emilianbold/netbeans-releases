@@ -23,46 +23,14 @@ Microsystems, Inc. All Rights Reserved.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
   <property name="nbm_alias" value="nb_ide"/>
-  <property name="s2b_root_2_3" location="src/org/netbeans/modules/web/dd/model_2_3"/>
-  <property name="s2b_root_2_4" location="src/org/netbeans/modules/web/dd/model_2_4"/>
-  <property name="s2b_res_root" location="src/org/netbeans/modules/web/dd/resources"/>
-
-  <target name="s2binit">
-	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-	  <classpath>
-		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
-		<pathelement path="${nb_root}/schema2beans/anttask/s2banttask.jar"/>
-	  </classpath>
-	</taskdef>
-  </target>
 
   <target name="init">
     <ant dir="../external" target="unscramble"/>
+    <property name="ddapi.implementation.version" value="${buildnumber}"/>
+    <filter token="DDAPI_BUILD_NUMBER_SUBST"  value="${ddapi.implementation.version}"/>
   </target>
 
-   <target name="dd2beansgen" depends="s2binit">
-     <echo message="generating code generation input file information" />
-	<schema2beans schema="${s2b_res_root}/web-app_2_3.dtd"
-	  mddFile="${s2b_res_root}/web-app_2_3.mdd"
-	  package="org.netbeans.modules.web.dd.model_2_3"
-	  useInterfaces="true"
-	  validate="true"
-	  attrProp="true"
-	  rootDir="src"/>
-	<schema2beans schema="${s2b_res_root}/web-app_2_4.xsd"
-	  mddFile="${s2b_res_root}/web-app_2_4.mdd"
-	  package="org.netbeans.modules.web.dd.model_2_4"
-	  schemaType="xmlschema"
-	  useInterfaces="true"
-	  validate="true"
-	  attrProp="true"
-	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
-	  <delete file="${s2b_root_2_4}/WebAppType.java"/>
-  </target>
-
-  <target name="compile" depends="dd2beansgen,init">
+  <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
@@ -90,6 +58,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement path="${nb_root}/web/jspsyntax/netbeans/modules/eager/jsp-syntax.jar" />
         <pathelement path="${nb_root}/web/servletapi24/netbeans/modules/autoload/ext/jsp-api-2.0.jar" />
         <pathelement path="${nb_root}/web/servletapi24/netbeans/modules/autoload/ext/servlet-api-2.4.jar" />
+        <pathelement location="${nb_root}/web/ddapi/netbeans/modules/autoload/ddapi.jar" />
       </classpath>
     </javac>
   </target>
@@ -104,7 +73,6 @@ Microsystems, Inc. All Rights Reserved.
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
 	    compress="false">
       <include name="org/netbeans/modules/web/"/>
-      <include name="org/netbeans/api/web/"/>
       <include name="META-INF/"/>
       <locale name="ja"/>
     </locjar>
@@ -131,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean" depends="clean-ddgen-src, clean-javadoc">
+  <target name="clean">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
@@ -142,50 +110,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <delete dir="netbeans"/>
   </target>
-
-  <target name="clean-ddgen-src">
-        <mkdir dir="${s2b_root_2_3}"/>
-        <mkdir dir="${s2b_root_2_4}"/>
-        <delete>
-            <fileset dir="${s2b_root_2_3}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${s2b_root_2_3}"/>
-        <delete>
-            <fileset dir="${s2b_root_2_4}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${s2b_root_2_4}"/>
-  </target>
-  
-  <target name="javadoc" description="Build Javadoc."> 
-      <property name="_cp" refid="cp"/> 
-      <ant dir="${nb_root}/nbbuild/javadoctools" antfile="template.xml" target="javadoc"> 
-       <property name="javadoc.base" location="."/> 
-       <property name="javadoc.name" value="DD-API"/> 
-       <property name="javadoc.title" value="Deployment Descriptor API"/> 
-       <property name="javadoc.packages" value="org.netbeans.api.web.*,org.openide.filesystems.*"/> 
-       <property name="javadoc.classpath" value="${_cp}"/> 
-       <property name="javadoc.arch" location="../arch/arch-DD-API.xml"/>
-       <property name="javadoc.overview" location="doc/overview.html"/>
-      </ant>
-      <mkdir dir="javadoc/DD-API/arch"/>
-      <copy file="../www/doc/ddapi_architecture.html" todir="javadoc/DD-API/arch"/>
-      <copy file="doc/usage.html" todir="javadoc/DD-API/arch"/>
-  </target>
-  
-  <target name="clean-javadoc">
-  	<delete dir="javadoc"/>
-  </target>
-
-  <path id="cp">
-	 <pathelement location="${nb_root}/openide/fs/netbeans/lib/openide-fs.jar"/> 
-	 <pathelement location="${nb_root}/openide/util/netbeans/lib/openide-util.jar"/>
-	 <pathelement path="netbeans/modules/jsp.jar" />
-	 <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
-  </path>
 
   <!-- This target will only work *inside* the IDE! -->
   <target depends="jars" description="Test the module inside the running IDE." name= "test">

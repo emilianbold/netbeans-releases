@@ -701,8 +701,12 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/servletapi24..."/>
     <ant dir="../web/servletapi24" target="netbeans"/>
   </target>
+  <target name="all-web/ddapi" depends="all-openide,all-schema2beans">
+    <echo message="Building module web/ddapi..."/>
+    <ant dir="../web/ddapi" target="netbeans"/>
+  </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-xml/catalog,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects,all-web/jspsyntax">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-web/ddapi,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-xml/catalog,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
