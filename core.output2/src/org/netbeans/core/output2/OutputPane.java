@@ -16,6 +16,7 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
+import org.netbeans.core.output2.settings.OutputSettings;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 
 import javax.swing.*;
@@ -171,10 +172,9 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
     }
     
     
-    private static boolean wrapByDefault = Boolean.getBoolean("nb.output.wrap"); //NOI18N
     public void setWrapped (boolean val) {
         if (val != isWrapped() || !(getEditorKit() instanceof OutputEditorKit)) {
-            wrapByDefault = val;
+            OutputSettings.getDefault().setWrap(val);
             final int pos = textView.getCaret().getDot();
             Cursor cursor = textView.getCursor();
             try {
@@ -219,7 +219,7 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             return getEditorKit() instanceof OutputEditorKit 
               && ((OutputEditorKit) getEditorKit()).isWrapped();
         } else {
-            return wrapByDefault;
+            return OutputSettings.getDefault().isWrap();
         }
     }
     
