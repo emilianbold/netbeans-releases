@@ -344,8 +344,7 @@ final class BrokenDataShadow extends MultiDataObject {
         
         /** Class for original filesystem name property of broken link
         */
-        private final class FileSystemProperty extends PropertySupport.ReadWrite 
-        implements java.beans.PropertyEditor {
+        private final class FileSystemProperty extends PropertySupport.ReadWrite {
             private java.beans.PropertyChangeSupport supp;
             
             public FileSystemProperty () {
@@ -376,6 +375,30 @@ final class BrokenDataShadow extends MultiDataObject {
                     throw e;
                 }
                 bds.refresh ();
+            }
+            
+            public java.beans.PropertyEditor getPropertyEditor () {
+                return new FileSystemPropertyEditor ();
+            }
+            
+        }
+        
+        
+        private final class FileSystemPropertyEditor 
+        implements java.beans.PropertyEditor {
+            private java.beans.PropertyChangeSupport supp;
+            private String origFSName;
+            
+            public FileSystemPropertyEditor () {
+            }
+
+            /* Getter */
+            public Object getValue () {
+                return origFSName;
+            }                        
+            
+            public void setValue (Object val) throws IllegalArgumentException {
+                origFSName = (String)val;
             }
             
             public synchronized void addPropertyChangeListener (java.beans.PropertyChangeListener listener) {
@@ -440,10 +463,7 @@ final class BrokenDataShadow extends MultiDataObject {
                 return false;
             }
             
-            public java.beans.PropertyEditor getPropertyEditor () {
-                return this;
-            }
-            
         }
+        
     }
 }
