@@ -31,7 +31,9 @@ ToDo:
   <property name="build.sysclasspath" value="ignore"/>
 
   <!-- To make people happy who want to do `ant clean all': -->
-  <target name="all" depends="build,check-commit-validation" description="Build the IDE and run a sanity check."/>
+  <target name="all" depends="build,commit-validation" description="Build the IDE and run basic validation tests."/>
+
+  <target name="all-nozip" depends="build-nozip,commit-validation" description="Build the IDE (no ZIP file, unpacked) and run basic validation tests."/>
 
   <target name="check-for-jdk-1.4">
     <available property="have-jdk-1.4" classname="java.lang.CharSequence"/>
@@ -811,7 +813,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
            built modules (excluding fixedmodules which must build everytime). -->
       <for-each startdir=".." target="nbm" locations="${allmodules}"/>
   </target>
-  <target name="nbm" description="Dummy target."/>
+  <target name="nbm"/><!-- dummy target -->
 
   <!-- build javadoc for selected modules -->
   <target name="build-javadoc" depends="init">
@@ -873,7 +875,7 @@ Tag:
   </target>
 
   <target name="build" depends="build-nozip"
-          description="Create a complete build (but do not try it).">
+          description="Create a complete build including a ZIP distribution (but do not try it).">
     <!-- zip task not well suited to making final build, as it does not set +x bits -->
     <!-- so on Unix try to use native ZIP first -->
     <delete file="NetBeans-${buildnum}.zip"/>
@@ -949,6 +951,7 @@ the ${netbeans.dest}/bin/ directory.
   <target name="sanity-start" depends="init,maybe-build-nozip">
     <mkdir dir="${test.user.dir}"/>
     <echo>Starting the IDE as a sanity check...</echo>
+    <echo>WARNING - the sanity-start target is deprecated. Use commit-validation instead.</echo>
     <!-- XXX better would be to scan start log for stacktraces and just show those; -->
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
@@ -979,8 +982,9 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
   <target name="nozip-check" 
-          depends="build-nozip,sanity-check" 
-	  description="Build the IDE and run a sanity check but do not create a final ZIP file."/>
+          depends="build-nozip,sanity-check">
+    <echo>WARNING - the nozip-check target is deprecated. Use all-nozip instead.</echo>
+  </target>
 
   <target name="tryme" depends="init,maybe-build-nozip"
           description="Try running the IDE interactively (build it first if needed).">
@@ -1092,7 +1096,7 @@ the ${netbeans.dest}/bin/ directory.
     <printcvsmodules modules="${fixedmodules},${modules}" targetprefix="all-" />
   </target>
 
-  <target name="conditional-commit-validation" >
+  <target name="check-commit-validation">
     <condition property="run.validation" >
         <and>
           <available file="../ide/test/build.xml" />
@@ -1102,25 +1106,24 @@ the ${netbeans.dest}/bin/ directory.
         </and>
     </condition>
   </target>
+  
+  <target name="commit-validation" depends="commitValidation,no-commit-validation" description="Runs tests to validate IDE before commit."/>
 
-  
-  <target name="check-commit-validation" depends="commitValidation,no-commit-validation"  />
-  <target name="commitValidation" depends="conditional-commit-validation" if="run.validation" >
-    <antcall target="commit-validation" />
-  </target>
-  <target name="no-commit-validation" depends="conditional-commit-validation" unless="run.validation" >
-    <echo>
-        You do not seem to have modules to run commit validation test suite. 
-        You shall not commit any changes into CVS repository without running it.
-        More information at http://www.netbeans.org/community/guidelines/commit.html
-    </echo>
-  </target>
-  
-  <target name="commit-validation" description="Runs tests to validate IDE before commit.">
+  <!-- keep this target name at least for a while for backward compat -jglick -->
+  <target name="commitValidation" depends="check-commit-validation" if="run.validation">
     <property name="xtest.home" location="../xtest"/>
     <ant dir="${xtest.home}/instance" target="runtests">
         <property name="xtest.config" value="commit-validation-nb"/>
     </ant>
+  </target>
+
+  <target name="no-commit-validation" depends="check-commit-validation" unless="run.validation">
+    <echo>
+        *** WARNING ***
+        You do not seem to have the modules needed to run the commit validation test suite. 
+        You may not commit any changes into the CVS repository without running these tests.
+        For more information: http://www.netbeans.org/community/guidelines/commit.html
+    </echo>
   </target>
   
 </project>
