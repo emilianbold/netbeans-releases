@@ -164,7 +164,7 @@ public class Controller { //XXX public only for debug access to logging code
     private OutputTab createAndInstallView (OutputWindow win, NbIO io) {
         if (log) log ("Create and install a new tab for : " + io.getName());
         OutputTab result = new OutputTab (io);
-        result.setName (io.getName());
+        result.setName (io.getName() + " ");
         Action[] a = io.getToolbarActions();
         if (a != null) {
             result.setToolbarActions(a);
@@ -255,9 +255,9 @@ public class Controller { //XXX public only for debug access to logging code
                         "closed is " + t.getIO().isStreamClosed());
                 }
                 if (win.isAncestorOf(t)) {
-                    String name = t.getIO().isStreamClosed() ? t.getIO().getName() :
+                    String name = t.getIO().isStreamClosed() ? t.getIO().getName() + " " :
                             "<html><b>" + /*XXX escape */t.getIO().getName() 
-                            + "</b></html>";  //NOI18N
+                            + " </b> </html>";  //NOI18N
                     win.setTabTitle (t, name);
                 }
             }

@@ -444,8 +444,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         }
 
         public void setDot (int dot) {
-//            if (!locked) {
-                super.setDot (dot);
+            super.setDot (dot);
         }
 
         public int getMark() {
@@ -537,12 +536,30 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             if (line != -1 && !sel) {
                 caretEnteredLine(getCaretLine());
             }
+            if (isWrapped()) {
+                //We need to force a repaint to erase all of the old selection
+                //if we're doing our own painting
+                int dot = caret.getDot();
+                int mark = caret.getMark();
+                if ((((dot > mark) != (lastKnownDot > lastKnownMark)) && !(lastKnownDot == lastKnownMark)) || ((lastKnownDot == lastKnownMark) != (dot == mark))){
+                    int begin = Math.min (Math.min(lastKnownDot, lastKnownMark), Math.min(dot, mark));
+                    int end = Math.max (Math.max(lastKnownDot, lastKnownMark), Math.max (dot, mark));
+                    caret.repaintFormerSelection(Math.min(
+                        lastKnownDot, lastKnownMark), 
+                        Math.max(lastKnownDot, lastKnownMark));
+                }
+            }
             if (sel != hadSelection) {
                 hadSelection = sel;
                 hasSelectionChanged (sel);
             }
         }
+        lastKnownMark = caret.getMark();
+        lastKnownDot = caret.getDot();
     }
+    
+    private int lastKnownMark = -1;
+    private int lastKnownDot = -1;
 
     private void hasSelectionChanged(boolean sel) {
         ((AbstractOutputTab) getParent()).hasSelectionChanged(sel);
@@ -646,7 +663,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
 
     public final void mouseReleased(MouseEvent e) {
-        if (e.getSource() == textView) {
+        if (e.getSource() == textView && SwingUtilities.isLeftMouseButton(e)) {
             int pos = textView.viewToModel(e.getPoint());
             if (pos != -1) {
                 int line = textView.getDocument().getDefaultRootElement().getElementIndex(pos);

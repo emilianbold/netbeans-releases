@@ -74,7 +74,7 @@ class ExtPlainView extends PlainView {
             g.setColor(getColorForLocation(p0, doc, true));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
             if (g.getColor() == selectedLinkFg) {
-                g.drawLine (x, y, x + ret, y+1);
+                g.drawLine (x, y+1, x + ret, y+1);
             }
             return ret;
         } else {
@@ -92,7 +92,7 @@ class ExtPlainView extends PlainView {
             g.setColor(getColorForLocation(p0, doc, false));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
             if (g.getColor() == unselectedLinkFg) {
-                g.drawLine (x, y, x + ret, y+1);
+                g.drawLine (x, y+1, x + ret, y+1);
             }
             return ret;
         } else {

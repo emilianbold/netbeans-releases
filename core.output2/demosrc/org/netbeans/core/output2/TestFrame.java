@@ -37,13 +37,13 @@
         validate();
         System.err.println ("Writing content");
         io.getOut().println("This is an output window");
-        for (int i=0; i < 3000; i++) {
+        for (int i=0; i < 200; i++) {
             out.println (Thread.currentThread().getName() + i +  ": Wow, we will write a long line of text here.  Very long in fact - who knows just how long it" +
                 " might end up being?  Well, we'll have to see.");
 
-            if (i == 1000) {
+            if (i % 50 == 0) {
                 try {
-                    out.println ("This is the ten thousandth line", new L());
+                    out.println ("This is a hyperlink, hear it roar.  And roar, and roar!", new L());
 //                    Thread.currentThread().sleep(20);
                 } catch (Exception e) {}
             }

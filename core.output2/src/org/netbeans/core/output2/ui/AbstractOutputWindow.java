@@ -68,6 +68,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                     assert pane.getParent() != this;
                     pane.add (aop);
                     pane.add (c);
+                    
                     super.addImpl (pane, constraints, idx);
                     updateSingletonName(null, null);
                     revalidate();
