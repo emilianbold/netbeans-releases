@@ -17,7 +17,6 @@ import java.awt.*;
 import java.beans.*;
 import org.openide.nodes.Node;
 import org.netbeans.modules.form.*;
-import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
  * Meta component representing a LayoutManager instance.
@@ -30,15 +29,20 @@ class MetaLayout extends RADComponent {
     private AbstractLayoutSupport abstLayoutDelegate;
 
     public MetaLayout(AbstractLayoutSupport layoutDelegate,
-                      LayoutManager lmInstance)
+                      LayoutManager lmInstance,
+                      boolean defaultInstance)
     {
         super();
+
         abstLayoutDelegate = layoutDelegate;
-        FormModel formModel =
-                ((LayoutSupportManager)abstLayoutDelegate.getLayoutContext())
-                        .getMetaContainer().getFormModel();
-        initialize(formModel);
-        setBeanInstance(lmInstance);
+
+        initialize(((LayoutSupportManager)abstLayoutDelegate.getLayoutContext())
+                         .getMetaContainer().getFormModel());
+
+        if (defaultInstance)
+            setBeanInstance(lmInstance);
+        else
+            setInstance(lmInstance);
     }
 
     protected void createCodeExpression() {

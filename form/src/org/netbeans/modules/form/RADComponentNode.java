@@ -410,19 +410,9 @@ public class RADComponentNode extends FormNode
      */
     public Transferable clipboardCopy() throws java.io.IOException {
         return new CopySupport.RADTransferable(
-                                 CopySupport.COMPONENT_COPY_FLAVOR, component);
+                                   CopySupport.getComponentCopyFlavor(),
+                                   component);
     }
-
-    /** Store original name of component and subcomponents. */
-/*    private void storeNames(RADComponent comp) {
-        comp.storeName();
-        if (comp instanceof ComponentContainer) {
-            RADComponent comps[] =((ComponentContainer) comp).getSubBeans();
-            for (int i=0, n=comps.length; i<n; i++) {
-                storeNames(comps[i]);
-            }
-        }
-    } */
 
     /** Cut this node to the clipboard.
      *
@@ -431,31 +421,26 @@ public class RADComponentNode extends FormNode
      */
     public Transferable clipboardCut() throws java.io.IOException {
         return new CopySupport.RADTransferable(
-                                 CopySupport.COMPONENT_CUT_FLAVOR, component);
+                                   CopySupport.getComponentCutFlavor(),
+                                   component);
     }
 
     /** Accumulate the paste types that this node can handle
      * for a given transferable.
-     * <P>
-     * The default implementation simply tests whether the transferable supports
-     * {@link NodeTransfer#nodePasteFlavor}, and if so, it obtains the paste types
-     * from the {@link NodeTransfer.Paste transfer data} and inserts them into the set.
-     *
      * @param t a transferable containing clipboard data
-     * @param s a list of {@link PasteType}s that will have added to it all types
-     *    valid for this node
+     * @param s a list of {@link PasteType}s that will have added to it all
+     *          types valid for this node
      */
     protected void createPasteTypes(Transferable t, java.util.List s) {
         if (component.isReadOnly())
             return;
 
-        boolean copy = t.isDataFlavorSupported(CopySupport.COMPONENT_COPY_FLAVOR);
-        boolean cut = t.isDataFlavorSupported(CopySupport.COMPONENT_CUT_FLAVOR);
+        boolean copy = t.isDataFlavorSupported(
+                             CopySupport.getComponentCopyFlavor());
+        boolean cut = t.isDataFlavorSupported(
+                            CopySupport.getComponentCutFlavor());
 
         if (copy || cut) { // copy or cut some RADComponent
-            if (!(component instanceof ComponentContainer))
-                return; // component can be pasted only to a container
-
             RADComponent transComp = null;
             try {
                 transComp = (RADComponent) t.getTransferData(
@@ -464,78 +449,49 @@ public class RADComponentNode extends FormNode
             catch (UnsupportedFlavorException e) {} // should not happen
             catch (java.io.IOException e) {} // should not happen
 
-            if (transComp == null)
-                return;
-
-            if (transComp instanceof RADMenuItemComponent) {
-                // pasting menu component, check if it is possible
-                if (!canPasteMenuComponent((RADMenuItemComponent)transComp, cut))
-                    return;
+            if (transComp != null
+                // cut only to another container
+                && (!cut || CopySupport.canPasteCut(transComp,
+                                                    component.getFormModel(),
+                                                    component))
+                // must be a valid source/target combination
+                && (MetaComponentCreator.canAddComponent(
+                                             transComp.getBeanClass(),
+                                             component)
+                    || (!cut && MetaComponentCreator.canApplyComponent(
+                                                     transComp.getBeanClass(),
+                                                     component))))
+            {   // pasting is allowed
+                s.add(new CopySupport.RADPaste(t,
+                                               component.getFormModel(),
+                                               component));
             }
-            else if (component instanceof RADVisualContainer
-                     && transComp instanceof RADVisualComponent)
-            {   // pasting a visual component
-                // check general cut conditions
-                if (cut && !canPasteCut(transComp))
-                    return;
-
-                Class transClass = transComp.getBeanClass();
-                if (java.awt.Window.class.isAssignableFrom(transClass)
-                        || java.applet.Applet.class.isAssignableFrom(transClass))
-                    return; // cannot copy Window or Applet to another component
-            }
-            else return; // not allowed combination of source/target
-
-            s.add(new CopySupport.RADPaste(t,
-                                           (ComponentContainer) component,
-                                           component.getFormModel()));
         }
         else { // if there is not a RADComponent in the clipboard,
                // try if it is not InstanceCookie
-            InstanceCookie ic =
-                (InstanceCookie) NodeTransfer.cookie(t,
-                                                     NodeTransfer.COPY,
-                                                     InstanceCookie.class);
-            if (ic != null)
-                s.add(new CopySupport.InstancePaste(t,
-                                                    component,
-                                                    component.getFormModel()));
-        }
-    }
+            InstanceCookie ic = (InstanceCookie)
+                                NodeTransfer.cookie(t,
+                                                    NodeTransfer.COPY,
+                                                    InstanceCookie.class);
+            Class cls = null;
+            try {
+                if (ic != null)
+                    cls = ic.instanceClass();
+            }
+            catch (Exception ex) { // notify??
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+            }
 
-    // Checks whether the source menu component can be pasted to this component.
-    private boolean canPasteMenuComponent(RADMenuItemComponent sourceMenuComp,
-                                          boolean cut) {
-        boolean canPaste = false;
-
-        if (!(component instanceof RADMenuComponent)) {
-            // target component is not a menu component
-            if (component instanceof RADVisualContainer
-                && sourceMenuComp instanceof RADMenuComponent)
+            if (cls != null
+                && (MetaComponentCreator.canAddComponent(cls, component)
+                    || MetaComponentCreator.canApplyComponent(cls, component)))
             {
-                RADVisualContainer cont = (RADVisualContainer) component;
-                canPaste = cont.getContainerMenu() == null
-                           && cont.canHaveMenu(sourceMenuComp.getBeanClass());
+                s.add(new CopySupport.InstancePaste(t,
+                                                    component.getFormModel(),
+                                                    component));
             }
         }
-        else { // target component is some menu container
-            canPaste = ((RADMenuComponent)component).canAddItem(
-                                                sourceMenuComp.getBeanClass());
-        }
-
-        return canPaste && cut ?
-                 canPasteCut(sourceMenuComp) : canPaste;
-    }
-
-    // Checks whether source component is not to be pasted to its own
-    // container or even to itself.
-    private boolean canPasteCut(RADComponent sourceComp) {
-        if (sourceComp.getFormModel() != component.getFormModel())
-            return true; // source component is from another form
-
-        return sourceComp != component
-               && sourceComp.getParentComponent() != component
-               && !sourceComp.isParentComponent(component);
     }
 
     // -----------------------------------------------------------------------------

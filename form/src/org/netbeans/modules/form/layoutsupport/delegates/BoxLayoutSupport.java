@@ -116,11 +116,8 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
 
     // ------------
 
-    protected LayoutManager createDefaultLayoutInstance(
-                                Container container,
-                                Container containerDelegate)
-    {
-        return new BoxLayout(containerDelegate, BoxLayout.X_AXIS);
+    protected LayoutManager createDefaultLayoutInstance() {
+        return new BoxLayout(new JPanel(), BoxLayout.X_AXIS);
     }
 
     protected LayoutManager cloneLayoutInstance(Container container,
@@ -155,8 +152,8 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
     }
 
     protected void layoutChanged() {
-        super.layoutChanged();
         updateLayoutInstance();
+        super.layoutChanged();
     }
 
     // we must override this because BoxLayout is not a bean

@@ -24,8 +24,10 @@ import org.netbeans.modules.form.codestructure.*;
 public interface LayoutSupportDelegate {
 
     // initialization
-    void initialize(LayoutSupportContext layoutContext,
-                    boolean fromCode);
+    public void initialize(LayoutSupportContext layoutContext);
+    public void initializeFromCode(LayoutSupportContext layoutContext);
+    public void initializeFromLayout(LayoutSupportContext layoutContext,
+                                     LayoutManager lmInstance);
 
     // type of support
     Class getSupportedClass();
@@ -52,7 +54,7 @@ public interface LayoutSupportDelegate {
     void removeComponent(int index);
     void removeAll();
 
-    // [do we need this method ??]
+    // is something changed (in comparison with default layout)?
     boolean isLayoutChanged(Container defaultContainer,
                             Container defaultContainerDelegate);
 
@@ -104,6 +106,6 @@ public interface LayoutSupportDelegate {
                                             Insets sizeChanges);
 
     // copying
-    LayoutSupportDelegate cloneLayout(LayoutSupportContext targetContext,
-                                      CodeExpression[] targetComponents);
+    LayoutSupportDelegate cloneLayoutSupport(LayoutSupportContext targetContext,
+                                             CodeExpression[] targetComponents);
 }

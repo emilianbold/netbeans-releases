@@ -31,8 +31,10 @@ import org.netbeans.modules.form.codestructure.*;
 public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 {
     /** The icons for AbstractLayout */
-    private static String iconURL = "/org/netbeans/modules/form/layoutsupport/resources/AbstractLayout.gif"; // NOI18N
-    private static String icon32URL = "/org/netbeans/modules/form/layoutsupport/resources/AbstractLayout32.gif"; // NOI18N
+    private static String iconURL =
+        "/org/netbeans/modules/form/layoutsupport/resources/AbstractLayout.gif"; // NOI18N
+    private static String icon32URL =
+        "/org/netbeans/modules/form/layoutsupport/resources/AbstractLayout32.gif"; // NOI18N
 
     private static ResourceBundle bundle = null;
 
@@ -60,72 +62,63 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     // -----------
     // LayoutSupportDelegate interface implementation
 
-    public void initialize(LayoutSupportContext layoutContext,
-                           boolean fromCode)
-    {
+    public void initialize(LayoutSupportContext layoutContext) {
         this.layoutContext = layoutContext;
-
-        CodeStructure codeStructure = layoutContext.getCodeStructure();
-
-        if (componentCodeExpressions != null)
-            componentCodeExpressions.clear();
-        else componentCodeExpressions = new ArrayList();
-
-        if (componentCodeGroups != null)
-            componentCodeGroups.clear();
-        else componentCodeGroups = new ArrayList();
-
-        if (componentConstraints != null)
-            componentConstraints.clear();
-        else componentConstraints = new ArrayList();
-
-        if (setLayoutCode != null)
-            setLayoutCode.removeAll();
-        else setLayoutCode = codeStructure.createCodeGroup();
+        clean();
 
         Class cls = getSupportedClass();
         if (cls != null && LayoutManager.class.isAssignableFrom(cls)) {
             // create default layout instance and metacomponent for it
             LayoutManager lmInstance = null;
             try {
-                lmInstance = createDefaultLayoutInstance(
-                               layoutContext.getPrimaryContainer(),
-                               layoutContext.getPrimaryContainerDelegate());
+                lmInstance = createDefaultLayoutInstance();
             }
             catch (Exception ex) { // cannot make default layout instance
                 ex.printStackTrace(); // [just ignore??]
             }
 
             if (lmInstance != null)
-                metaLayout = new MetaLayout(this, lmInstance);
+                metaLayout = new MetaLayout(this, lmInstance, true);
         }
         else metaLayout = null;
 
         // read layout code
         readLayoutCode(setLayoutCode);
+    }
 
-        if (fromCode) { // read components from code
-            CodeGroup componentCode = null;
-            Iterator it = CodeStructure.getDefinedStatementsIterator(
-                                            getActiveContainerCodeExpression());
-            while (it.hasNext()) {
-                if (componentCode == null)
-                    componentCode = codeStructure.createCodeGroup();
+    public void initializeFromCode(LayoutSupportContext layoutContext) {
+        initialize(layoutContext);
 
-                CodeStatement statement = (CodeStatement) it.next();
-                CodeExpression compExp = readComponentCode(statement,
-                                                            componentCode);
-                if (compExp != null) {
-                    componentCodeExpressions.add(compExp);
-                    componentCodeGroups.add(componentCode);
-                    componentCode = null;
+        CodeGroup componentCode = null;
+        Iterator it = CodeStructure.getDefinedStatementsIterator(
+                                        getActiveContainerCodeExpression());
+        while (it.hasNext()) {
+            if (componentCode == null)
+                componentCode =
+                    layoutContext.getCodeStructure().createCodeGroup();
 
-                    if (componentConstraints.size()
-                            < componentCodeExpressions.size())
-                        componentConstraints.add(null);
-                }
+            CodeStatement statement = (CodeStatement) it.next();
+            CodeExpression compExp = readComponentCode(statement,
+                                                        componentCode);
+            if (compExp != null) {
+                componentCodeExpressions.add(compExp);
+                componentCodeGroups.add(componentCode);
+                componentCode = null;
+
+                if (componentConstraints.size()
+                        < componentCodeExpressions.size())
+                    componentConstraints.add(null);
             }
         }
+    }
+
+    public void initializeFromLayout(LayoutSupportContext layoutContext,
+                                     LayoutManager lmInstance)
+    {
+        this.layoutContext = layoutContext;
+        clean();
+        metaLayout = new MetaLayout(this, lmInstance, false);
+        readLayoutCode(setLayoutCode);
     }
 
     public boolean isDedicated() {
@@ -396,8 +389,9 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     }
 
     // copying
-    public LayoutSupportDelegate cloneLayout(LayoutSupportContext targetContext,
-                                             CodeExpression[] targetComponents)
+    public LayoutSupportDelegate cloneLayoutSupport(
+                                     LayoutSupportContext targetContext,
+                                     CodeExpression[] targetComponents)
     {
         AbstractLayoutSupport clone;
         try {
@@ -408,7 +402,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
             return null;
         }
 
-        clone.initialize(targetContext, false);
+        clone.initialize(targetContext);
 
         FormProperty[] sourceProperties = getAllProperties();
         FormProperty[] targetProperties = clone.getAllProperties();
@@ -432,9 +426,8 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     // extending API for subclasses
 
     // can be overriden
-    protected LayoutManager createDefaultLayoutInstance(
-                                Container container,
-                                Container containerDelegate)
+    // Creates a default instance of LayoutManager (for internal use).
+    protected LayoutManager createDefaultLayoutInstance()
         throws Exception
     {
         return (LayoutManager)
@@ -442,6 +435,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     }
 
     // can be overriden
+    // Creates a clone of represented Layoutmanager instance (for external use).
     protected LayoutManager cloneLayoutInstance(Container container,
                                                 Container containerDelegate)
         throws Exception
@@ -459,6 +453,32 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     // JScrollPane (whole container).
     protected CodeExpression getActiveContainerCodeExpression() {
         return layoutContext.getContainerDelegateCodeExpression();
+    }
+
+    // cleans all data before the delegate is initialized
+    protected void clean() {
+        if (componentCodeExpressions != null)
+            componentCodeExpressions.clear();
+        else componentCodeExpressions = new ArrayList();
+
+        if (componentCodeGroups != null)
+            componentCodeGroups.clear();
+        else componentCodeGroups = new ArrayList();
+
+        if (componentConstraints != null)
+            componentConstraints.clear();
+        else componentConstraints = new ArrayList();
+
+        if (setLayoutCode != null)
+            setLayoutCode.removeAll();
+        else setLayoutCode = layoutContext.getCodeStructure().createCodeGroup();
+
+        layoutBeanCode = null;
+        metaLayout = null;
+
+        propertySets = null;
+        allProperties = null;
+        layoutListener = null;
     }
 
     // can be overriden

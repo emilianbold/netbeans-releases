@@ -45,66 +45,73 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     // ----------
     // initialization
 
-    // initialization for a new container
+    // initialization for a new container, layout delegate is set to null
     public void initialize(RADVisualContainer container,
                            CodeStructure codeStructure)
     {
+        if (layoutDelegate != null)
+            removeLayoutDelegate(false);
+
         this.metaContainer = container;
         this.codeStructure = codeStructure;
-
-        layoutDelegate = null;
 
         containerCodeExpression = metaContainer.getCodeExpression();
         containerDelegateCodeExpression = null;
     }
 
-    // further initialization for a container
-    // initialize(...) method must be called first
-    public boolean initializeLayoutDelegate() {
+    // Creation and initialization of a layout delegate for a new container.
+    // Method initialize(...) must be called first.
+    public boolean initializeLayoutDelegate(boolean fromCode) {
         LayoutSupportDelegate delegate = null;
-
-        // first try to find a dedicated layout delegate (for a container)
-        Class layoutDelegateClass =
-            LayoutSupportRegistry.getSupportClassForContainer(
-                                      metaContainer.getBeanClass());
+        LayoutManager lmInstance = null;
 
         try {
+            // first try to find a dedicated layout delegate (for the container)
+            Class layoutDelegateClass =
+                LayoutSupportRegistry.getSupportClassForContainer(
+                                          metaContainer.getBeanClass());
+
             if (layoutDelegateClass != null) {
                 delegate = LayoutSupportRegistry.createSupportInstance(
                                                      layoutDelegateClass);
             }
             else {
-                // find a general layout delegate (for given LayoutManager)
-                Iterator it = CodeStructure.getDefinedStatementsIterator(
+                // find a general layout delegate (for LayoutManager of the container)
+                if (fromCode) { // initialization from code
+                    Iterator it = CodeStructure.getDefinedStatementsIterator(
                                           getContainerDelegateCodeExpression());
-                CodeStatement[] statements =
-                    CodeStructure.filterStatements(
-                                it, AbstractLayoutSupport.getSetLayoutMethod());
+                    CodeStatement[] statements =
+                        CodeStructure.filterStatements(
+                            it, AbstractLayoutSupport.getSetLayoutMethod());
 
-                if (statements.length > 0) { // LayoutManager from code
-                    CodeExpressionOrigin layoutOrigin =
-                        statements[0].getStatementParameters()[0].getOrigin();
-                    delegate = LayoutSupportRegistry.createSupportForLayout(
-                                                       layoutOrigin.getType());
-
-                    if (delegate == null) {
+                    if (statements.length > 0) { // setLayout method found
+                        CodeExpressionOrigin layoutOrigin =
+                            statements[0].getStatementParameters()[0].getOrigin();
+                        delegate = LayoutSupportRegistry.createSupportForLayout(
+                                                         layoutOrigin.getType());
                         // handle special case of null layout
-                        if (layoutOrigin.getType() == LayoutManager.class
+                        if (delegate == null
+                            && layoutOrigin.getType() == LayoutManager.class
                             && layoutOrigin.getCreationParameters().length == 0
                             && layoutOrigin.getParentExpression() == null
-                            && "null".equals(layoutOrigin.getJavaCodeString(null, null))) // NOI18N
+                            && "null".equals(layoutOrigin.getJavaCodeString( // NOI18N
+                                                                  null, null)))
                         {
                             delegate = new NullLayoutSupport();
                         }
                     }
                 }
-                else { // default LayoutManager
-                    LayoutManager defaultLM =
-                        getPrimaryContainerDelegate().getLayout();
-                    delegate = defaultLM != null ?
-                                 LayoutSupportRegistry.createSupportForLayout(
-                                                           defaultLM.getClass()) :
-                                 new NullLayoutSupport();
+
+                if (delegate == null) { // initialization from LayoutManager instance
+                    Container contDel = getPrimaryContainerDelegate();
+                    if (contDel.getComponentCount() == 0) {
+                        // we can still handle only empty containers ...
+                        lmInstance = contDel.getLayout();
+                        delegate = lmInstance != null ?
+                            LayoutSupportRegistry.createSupportForLayout(
+                                                    lmInstance.getClass()) :
+                            new NullLayoutSupport();
+                    }
                 }
             }
 
@@ -118,97 +125,58 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             return false;
         }
 
-        setLayoutDelegate(delegate, true);
+        if (lmInstance == null) {
+            if (!fromCode)
+                setLayoutDelegate(delegate);
+            else
+                setLayoutDelegateInitFromCode(delegate);
+        }
+        else setLayoutDelegateInitFromLayout(delegate, lmInstance);
+
         return true;
     }
 
-    // set and initialize new layout delegate
-    public void setLayoutDelegate(LayoutSupportDelegate newDelegate,
-                                  boolean initFromCode)
-    {
-        LayoutSupportDelegate oldDelegate = layoutDelegate;
-        int componentCount = oldDelegate != null ?
-                             oldDelegate.getComponentCount() : 0;
-
-        Container cont = getPrimaryContainer();
-        Container contDel = getPrimaryContainerDelegate();
-
-        RADVisualComponent[] metacomps = null;
-        LayoutConstraints[] oldConstraints = null;
-
-        if (oldDelegate != null
-            && (newDelegate != oldDelegate || !initFromCode))
-        { // clean the old layout delegate
-            CodeStructure.removeStatements(
-                oldDelegate.getLayoutCode().getStatementsIterator());
-
-            if (componentCount > 0) {
-                metacomps = metaContainer.getSubComponents();
-                oldConstraints = new LayoutConstraints[componentCount];
-            }
-
-            for (int i=0; i < componentCount; i++) {
-                LayoutConstraints constr = oldDelegate.getConstraints(i);
-                oldConstraints[i] = constr;
-                if (constr != null)
-                    metacomps[i].setLayoutConstraints(oldDelegate.getClass(),
-                                                      constr);
-
-                CodeStructure.removeStatements(
-                    oldDelegate.getComponentCode(i).getStatementsIterator());
-            }
-
-            oldDelegate.removeAll();
-            oldDelegate.clearContainer(cont, contDel);
-        }
+    public void setLayoutDelegate(LayoutSupportDelegate newDelegate) {
+        LayoutConstraints[] oldConstraints;
+        if (layoutDelegate != null)
+            oldConstraints = removeLayoutDelegate(true);
+        else oldConstraints = null;
 
         layoutDelegate = newDelegate;
 
-        if (newDelegate == null)
-            return;
-
-        newDelegate.initialize(this, initFromCode);
-
-        if (initFromCode)
-            return; // return now, do not setup primary container
-
-        newDelegate.setLayoutToContainer(cont, contDel);
-
-        if (componentCount == 0)
-            return; // no components in container
-
-        CodeExpression[] compExps = new CodeExpression[componentCount];
-        Component[] designComps = new Component[componentCount];
-        Component[] primaryComps = new Component[componentCount];
-        LayoutConstraints[] newConstraints = new LayoutConstraints[componentCount];
-
-        if (metacomps == null)
-            metacomps = metaContainer.getSubComponents();
-
-        FormDesigner designer =
-            getMetaContainer().getFormModel().getFormDesigner();
-
-        for (int i=0; i < componentCount; i++) {
-            RADVisualComponent metacomp = metacomps[i];
-            compExps[i] = metacomp.getCodeExpression();
-            primaryComps[i] = metacomp.getComponent();
-            ensureFakePeerAttached(primaryComps[i]);
-            newConstraints[i] = newDelegate == null ? null :
-                metacomp.getLayoutConstraints(newDelegate.getClass());
-
-            metacomp.resetConstraintsProperties();
-
-            Component comp = (Component) designer.getComponent(metacomp);
-            designComps[i] = comp != null ? comp : metacomp.getComponent();
+        if (layoutDelegate != null) {
+            layoutDelegate.initialize(this); // default initialization
+            fillLayout(oldConstraints);
         }
+    }
 
-        if (oldConstraints != null)
-            newDelegate.convertConstraints(
-                            oldConstraints, newConstraints, designComps);
+    public void setLayoutDelegateInitFromCode(LayoutSupportDelegate newDelegate)
+    {
+        if (layoutDelegate != null && layoutDelegate != newDelegate)
+            removeLayoutDelegate(false);
 
-        newDelegate.addComponents(compExps, newConstraints);
+        layoutDelegate = newDelegate;
 
-        newDelegate.addComponentsToContainer(cont, contDel, primaryComps, 0);
+        if (layoutDelegate != null) {
+            layoutDelegate.initializeFromCode(this);
+        }
+    }
+
+    public void setLayoutDelegateInitFromLayout(
+                    LayoutSupportDelegate newDelegate,
+                    LayoutManager lmInstance)
+    {
+        LayoutConstraints[] oldConstraints;
+        if (layoutDelegate != null)
+            oldConstraints = removeLayoutDelegate(true);
+        else oldConstraints = null;
+
+        layoutDelegate = newDelegate;
+
+        if (layoutDelegate != null) {
+            layoutDelegate.initializeFromLayout(this, lmInstance);
+            fillLayout(oldConstraints);
+        }
     }
 
     public LayoutSupportDelegate getLayoutDelegate() {
@@ -219,7 +187,6 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     public void copyLayoutDelegateFrom(
                     LayoutSupportManager sourceLayoutSupport)
     {
-        LayoutSupportDelegate oldDelegate = layoutDelegate;
         LayoutSupportDelegate sourceDelegate =
             sourceLayoutSupport.getLayoutDelegate();
 
@@ -230,26 +197,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         RADVisualComponent[] metacomps = null;
 
-        if (oldDelegate != null) { // clean the old layout delegate
-            CodeStructure.removeStatements(
-                oldDelegate.getLayoutCode().getStatementsIterator());
-
-            if (componentCount > 0)
-                metacomps = metaContainer.getSubComponents();
-
-            for (int i=0; i < componentCount; i++) {
-                LayoutConstraints constr = oldDelegate.getConstraints(i);
-                if (constr != null)
-                    metacomps[i].setLayoutConstraints(oldDelegate.getClass(),
-                                                      constr);
-
-                CodeStructure.removeStatements(
-                    oldDelegate.getComponentCode(i).getStatementsIterator());
-            }
-
-            oldDelegate.removeAll();
-            oldDelegate.clearContainer(cont, contDel);
-        }
+        if (layoutDelegate != null)
+            removeLayoutDelegate(false);
 
         CodeExpression[] compExps = new CodeExpression[componentCount];
         Component[] primaryComps = new Component[componentCount];
@@ -266,7 +215,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         }
 
         LayoutSupportDelegate newDelegate =
-            sourceDelegate.cloneLayout(this, compExps);
+            sourceDelegate.cloneLayoutSupport(this, compExps);
         newDelegate.setLayoutToContainer(cont, contDel);
         newDelegate.addComponentsToContainer(cont, contDel, primaryComps, 0);
 
@@ -294,12 +243,92 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         }
     }
 
+    public void clearPrimaryContainer() {
+        layoutDelegate.clearContainer(getPrimaryContainer(),
+                                      getPrimaryContainerDelegate());
+    }
+
     public RADVisualContainer getMetaContainer() {
         return metaContainer;
     }
 
     public boolean supportsArranging() {
         return layoutDelegate instanceof LayoutSupportArranging;
+    }
+
+    private LayoutConstraints[] removeLayoutDelegate(
+                                    boolean extractConstraints)
+    {
+        CodeStructure.removeStatements(
+            layoutDelegate.getLayoutCode().getStatementsIterator());
+
+        int componentCount = layoutDelegate.getComponentCount();
+        LayoutConstraints[] constraints = null;
+
+        if (componentCount > 0) {
+            RADVisualComponent[] metacomps = metaContainer.getSubComponents();
+            if (extractConstraints)
+                constraints = new LayoutConstraints[componentCount];
+
+            for (int i=0; i < componentCount; i++) {
+                LayoutConstraints constr = layoutDelegate.getConstraints(i);
+                if (extractConstraints)
+                    constraints[i] = constr;
+                if (constr != null)
+                    metacomps[i].setLayoutConstraints(layoutDelegate.getClass(),
+                                                      constr);
+
+                CodeStructure.removeStatements(
+                    layoutDelegate.getComponentCode(i).getStatementsIterator());
+            }
+        }
+
+        layoutDelegate.removeAll();
+        layoutDelegate.clearContainer(getPrimaryContainer(),
+                                      getPrimaryContainerDelegate());
+        layoutDelegate = null;
+
+        return constraints;
+    }
+
+    private void fillLayout(LayoutConstraints[] oldConstraints) {
+        RADVisualComponent[] metacomps = metaContainer.getSubComponents();
+        int componentCount = metacomps.length;
+
+        CodeExpression[] compExps = new CodeExpression[componentCount];
+        Component[] designComps = new Component[componentCount];
+        Component[] primaryComps = new Component[componentCount];
+        LayoutConstraints[] newConstraints = new LayoutConstraints[componentCount];
+
+        FormDesigner designer = metaContainer.getFormModel().getFormDesigner();
+
+        for (int i=0; i < componentCount; i++) {
+            RADVisualComponent metacomp = metacomps[i];
+            metacomp.resetConstraintsProperties();
+
+            compExps[i] = metacomp.getCodeExpression();
+            primaryComps[i] = metacomp.getComponent();
+            ensureFakePeerAttached(primaryComps[i]);
+            newConstraints[i] = metacomp.getLayoutConstraints(
+                                             layoutDelegate.getClass());
+
+            Component comp = (Component) designer.getComponent(metacomp);
+            designComps[i] = comp != null ? comp : metacomp.getComponent();
+        }
+
+        if (oldConstraints != null)
+            layoutDelegate.convertConstraints(oldConstraints,
+                                              newConstraints,
+                                              designComps);
+
+        layoutDelegate.addComponents(compExps, newConstraints);
+
+        // setup primary container
+        Container cont = getPrimaryContainer();
+        Container contDel = getPrimaryContainerDelegate();
+//        layoutDelegate.clearContainer(cont, contDel);
+        layoutDelegate.setLayoutToContainer(cont, contDel);
+        layoutDelegate.addComponentsToContainer(cont, contDel, primaryComps, 0);
     }
 
     // ---------

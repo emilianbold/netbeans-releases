@@ -40,12 +40,22 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     protected void setBeanInstance(Object beanInstance) {
+        if (isLayoutSupportSet())
+            layoutSupport.clearPrimaryContainer();
+
         super.setBeanInstance(beanInstance);
+
         layoutSupport.initialize(this, getFormModel().getCodeStructure());
     }
 
-    public void setLayoutSupportDelegate(LayoutSupportDelegate layoutDelegate) {
-        layoutSupport.setLayoutDelegate(layoutDelegate, false);
+    public void setLayoutSupportDelegate(LayoutSupportDelegate layoutDelegate,
+                                         LayoutManager lmInstance)
+    {
+        if (lmInstance == null) // default delegate initialization
+            layoutSupport.setLayoutDelegate(layoutDelegate);
+        else // initialize delegate from instance
+            layoutSupport.setLayoutDelegateInitFromLayout(layoutDelegate,
+                                                          lmInstance);
         setLayoutNodeReference(null);
     }
 

@@ -64,9 +64,12 @@ class FormOthersNode extends FormNode {
         if (formModel.isReadOnly())
             return;
 
-        if (t.isDataFlavorSupported(CopySupport.COMPONENT_COPY_FLAVOR)
-                || t.isDataFlavorSupported(CopySupport.COMPONENT_CUT_FLAVOR)) {
-            // copy or cut some RADComponent
+        boolean copy = t.isDataFlavorSupported(
+                             CopySupport.getComponentCopyFlavor());
+        boolean cut = t.isDataFlavorSupported(
+                            CopySupport.getComponentCutFlavor());
+
+        if (copy || cut) { // copy or cut some RADComponent
             RADComponent transComp = null;
             try {
                 transComp = (RADComponent) t.getTransferData(
@@ -75,12 +78,11 @@ class FormOthersNode extends FormNode {
             catch (UnsupportedFlavorException e) {} // should not happen
             catch (java.io.IOException e) {} // should not happen
 
-            if (transComp == null)
-                return;
-
-            s.add(new CopySupport.RADPaste(t,
-                                           formModel.getModelContainer(),
-                                           formModel));
+            if (transComp != null
+                && (!cut || CopySupport.canPasteCut(transComp, formModel, null)))
+            {
+                s.add(new CopySupport.RADPaste(t, formModel, null));
+            }
         }
         else { // if there is not a RADComponent in the clipboard,
                // try if it is not InstanceCookie
@@ -89,7 +91,7 @@ class FormOthersNode extends FormNode {
                                                      NodeTransfer.COPY,
                                                      InstanceCookie.class);
             if (ic != null)
-                s.add(new CopySupport.InstancePaste(t, null, formModel));
+                s.add(new CopySupport.InstancePaste(t, formModel, null));
         }
     }
 

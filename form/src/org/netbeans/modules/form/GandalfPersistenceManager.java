@@ -609,7 +609,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // initialize layout support from restored code
         if (visualContainer != null) {
-            if (visualContainer.getLayoutSupport().initializeLayoutDelegate()) {
+            if (visualContainer.getLayoutSupport().initializeLayoutDelegate(true)) {
                 visualContainer.initSubComponents(childComponents);
                 visualContainer.getLayoutSupport().setupPrimaryContainer();
             }

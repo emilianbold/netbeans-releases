@@ -274,11 +274,12 @@ public class FormModel
     }
 
     public void setContainerLayout(RADVisualContainer metacont,
-                                   LayoutSupportDelegate layoutDelegate)
+                                   LayoutSupportDelegate layoutDelegate,
+                                   java.awt.LayoutManager lmInstance)
     {
         LayoutSupportDelegate current =
             metacont.getLayoutSupport().getLayoutDelegate();
-        metacont.setLayoutSupportDelegate(layoutDelegate);
+        metacont.setLayoutSupportDelegate(layoutDelegate, lmInstance);
         fireContainerLayoutChanged(metacont, current, layoutDelegate);
     }
 

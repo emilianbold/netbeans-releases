@@ -15,15 +15,17 @@ package org.netbeans.modules.form;
 
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.util.*;
 import java.text.MessageFormat;
 
-import org.openide.cookies.InstanceCookie;
-import org.openide.NotifyDescriptor;
 import org.openide.*;
+import org.openide.src.*;
+import org.openide.nodes.Node;
+import org.openide.cookies.InstanceCookie;
 
 import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.compat2.border.BorderInfo;
+import org.netbeans.modules.form.compat2.border.*;
 
 /**
  * This class represents an access point for adding new components to FormModel.
@@ -38,6 +40,13 @@ import org.netbeans.modules.form.compat2.border.BorderInfo;
 
 public class MetaComponentCreator {
 
+    private static final int NO_TARGET = 0;
+    private static final int TARGET_LAYOUT = 1;
+    private static final int TARGET_BORDER = 2;
+    private static final int TARGET_MENU = 3;
+    private static final int TARGET_VISUAL = 4;
+    private static final int TARGET_OTHER = 5;
+
     FormModel formModel;
 
     MetaComponentCreator(FormModel model) {
@@ -45,7 +54,7 @@ public class MetaComponentCreator {
     }
 
     /** Creates and adds a new metacomponent to FormModel. The new component
-     * is added to target component (if it is a ComponentContainer).
+     * is added to target component (if it is ComponentContainer).
      * @param ic InstanceCookie for creating the bean instance
      * @param constraints constraints object (for visual components only)
      * @param targetComp component into which the new component is added
@@ -64,7 +73,7 @@ public class MetaComponentCreator {
 
     /** Creates and adds a new metacomponent to FormModel, based on given
      * InstanceCookie. The new component is added to target component (if it
-     * is a ComponentContainer).
+     * is ComponentContainer).
      * @param ic InstanceCookie for creating the bean instance
      * @param constraints constraints object (for visual components only)
      * @param targetComp component into which the new component is added
@@ -88,50 +97,78 @@ public class MetaComponentCreator {
     }
 
     /** Creates a copy of a metacomponent and adds it to FormModel. The new 
-     * component is added to target component (if it is a ComponentContainer).
+     * component is added to target component (if it is ComponentContainer)
+     * or applied to it (if it is layout or border).
      * @param sourceComp metacomponent to be copied
-     * @param targetCont container into which the new component is added
+     * @param targetComp target component (where the new component is added)
      * @return the component if it was successfully created and added (all
      *         errors are reported immediately)
      */
     public RADComponent copyComponent(RADComponent sourceComp,
-                                      ComponentContainer targetCont)
+                                      RADComponent targetComp)
     {
+        int targetPlacement = getTargetPlacement(sourceComp.getBeanClass(),
+                                                 targetComp,
+                                                 false);
+
+        // if layout or border is to be copied from a meta component, we just
+        // apply the cloned instance, but don't copy the meta component
+        if (targetPlacement == TARGET_LAYOUT) {
+            return copyAndApplyLayout(sourceComp, targetComp);
+        }
+
+        else if (targetPlacement == TARGET_BORDER) {
+            return copyAndApplyBorder(sourceComp, targetComp);
+        }
+
+        else if (targetPlacement == NO_TARGET)
+            return null;
+
         if (sourceComp instanceof RADVisualComponent)
             LayoutSupportManager.storeConstraints(
                                      (RADVisualComponent) sourceComp);
 
-        // copy the metacomponent
+        // in other cases let's copy the source meta component
         RADComponent newMetaComp = makeCopy(sourceComp);
         if (newMetaComp == null)
             return null;
 
-        // add the new metacomponent to target FormModel
-        if (newMetaComp instanceof RADVisualComponent
-                && targetCont instanceof RADVisualContainer)
-        {   // visual component
+        if (targetPlacement == TARGET_MENU) {
+            addMenuComponent(newMetaComp, targetComp);
+        }
+        else if (targetPlacement == TARGET_VISUAL) {
             RADVisualComponent newVisual = (RADVisualComponent) newMetaComp;
-            RADVisualContainer newParent = (RADVisualContainer) targetCont;
-            LayoutConstraints newConstr = newParent.getLayoutSupport()
-                                              .getStoredConstraints(newVisual);
+            Object constraints;
+            if (targetComp != null) {
+                constraints = ((RADVisualContainer)targetComp)
+                    .getLayoutSupport().getStoredConstraints(newVisual);
+            }
+            else constraints = null;
 
-            formModel.addVisualComponent(newVisual, newParent, newConstr);
-//                          laysup.fixConstraints(constr));
+            addVisualComponent(newVisual, targetComp, constraints);
         }
-        else if (newMetaComp instanceof RADMenuItemComponent
-                 && (targetCont instanceof RADMenuComponent
-                     || targetCont instanceof RADVisualContainer))
-        {   // menu component
-            formModel.addComponent(newMetaComp, targetCont);
+        else if (targetPlacement == TARGET_OTHER) {
+            addOtherComponent(newMetaComp, targetComp);
         }
-        else if (targetCont == null
-                 || targetCont == formModel.getModelContainer())
-        {   // other component
-            formModel.addComponent(newMetaComp, null);
-        }
-        else return null; // this should not happen
 
         return newMetaComp;
+    }
+
+    public static boolean canAddComponent(Class beanClass,
+                                          RADComponent targetComp)
+    {
+        int targetPlacement = getTargetPlacement(beanClass, targetComp, false);
+        return targetPlacement == TARGET_OTHER
+                || targetPlacement == TARGET_MENU
+                || targetPlacement == TARGET_VISUAL;
+    }
+
+    public static boolean canApplyComponent(Class beanClass,
+                                            RADComponent targetComp)
+    {
+        int targetPlacement = getTargetPlacement(beanClass, targetComp, false);
+        return targetPlacement == TARGET_BORDER
+                || targetPlacement == TARGET_LAYOUT;
     }
 
     // --------
@@ -149,32 +186,166 @@ public class MetaComponentCreator {
         if (beanClass == null)
             return null;
 
+        // check pasting form class to itself
+        if (formModel.getFormBaseClass().isAssignableFrom(beanClass)) {
+            // it might be...
+            SourceElement formSource =
+                FormEditorSupport.getFormDataObject(formModel).getSource();
+            if (formSource != null) {
+                ClassElement formClass = formSource.getClasses()[0];
+                if (formClass != null
+                    &&  formClass.getVMName().equals(beanClass.getName()))
+                {
+                    TopManager.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            FormEditor.getFormBundle().getString(
+                                          "MSG_ERR_CannotAddForm"), // NOI8N
+                            NotifyDescriptor.WARNING_MESSAGE));
+                    return null;
+                }
+            }
+        }
+
         RADComponent newComp;
 
-        if (LayoutSupportDelegate.class.isAssignableFrom(beanClass)
-              || LayoutManager.class.isAssignableFrom(beanClass))
-            newComp = setContainerLayout(source, targetComp);
+        switch (getTargetPlacement(beanClass, targetComp, true)) {
+            case TARGET_LAYOUT:
+                newComp = setContainerLayout(source, targetComp);
+                break;
 
-        else if (BorderInfo.class.isAssignableFrom(beanClass)
-              || javax.swing.border.Border.class.isAssignableFrom(beanClass))
-            newComp = setComponentBorder(source, targetComp);
+            case TARGET_BORDER:
+                newComp = setComponentBorder(source, targetComp);
+                break;
 
-        else if (MenuComponent.class.isAssignableFrom(beanClass)
-              || JMenuItem.class.isAssignableFrom(beanClass)
-              || JMenuBar.class.isAssignableFrom(beanClass)
-              || JPopupMenu.class.isAssignableFrom(beanClass)
-              // or separator being added to a menu
-              || (targetComp instanceof RADMenuComponent
-                  && (JSeparator.class.isAssignableFrom(beanClass)
-                      || Separator.class.isAssignableFrom(beanClass))))
-            newComp = addMenuComponent(source, targetComp);
+            case TARGET_MENU:
+                newComp = addMenuComponent(source, targetComp);
+                break;
 
-        else  if (Component.class.isAssignableFrom(beanClass))
-            newComp = addVisualComponent(source, targetComp, constraints);
+            case TARGET_VISUAL:
+                newComp = addVisualComponent(source, targetComp, constraints);
+                break;
 
-        else newComp = addOtherComponent(source, targetComp);
+            case TARGET_OTHER:
+                newComp = addOtherComponent(source, targetComp);
+                break;
+
+            default:
+                newComp = null;
+        }
 
         return newComp;
+    }
+
+    private static int getTargetPlacement(Class beanClass,
+                                          RADComponent targetComp,
+                                          boolean canUseParent)
+    {
+        if (LayoutSupportDelegate.class.isAssignableFrom(beanClass)
+              || LayoutManager.class.isAssignableFrom(beanClass))
+        {   // layout manager
+            if (targetComp == null)
+                return TARGET_OTHER;
+
+            RADVisualContainer targetCont;
+            if (targetComp instanceof RADVisualContainer)
+                targetCont = (RADVisualContainer) targetComp;
+            else if (canUseParent)
+                targetCont = targetComp instanceof RADVisualComponent ?
+                    (RADVisualContainer) targetComp.getParentComponent() :
+                    null;
+            else
+                targetCont = null;
+
+            return targetCont != null
+                       && !targetCont.getLayoutSupport().isDedicated() ?
+                TARGET_LAYOUT : NO_TARGET;
+        }
+
+        if (BorderInfo.class.isAssignableFrom(beanClass)
+              || Border.class.isAssignableFrom(beanClass))
+        {   // border
+            if (targetComp == null)
+                return TARGET_OTHER;
+
+            return targetComp instanceof RADVisualComponent ?
+//                       && JComponent.class.isAssignableFrom(beanClass)
+                TARGET_BORDER : NO_TARGET;
+        }
+
+        if (MenuComponent.class.isAssignableFrom(beanClass)
+              || JMenuItem.class.isAssignableFrom(beanClass)
+              || JMenuBar.class.isAssignableFrom(beanClass)
+              || JPopupMenu.class.isAssignableFrom(beanClass))
+        {   // menu
+            if (targetComp == null)
+                return TARGET_MENU;
+
+            if (targetComp instanceof RADMenuComponent) {
+                // adding to a menu
+                return ((RADMenuComponent)targetComp).canAddItem(beanClass) ?
+                    TARGET_MENU : NO_TARGET;
+            }
+            else { // adding to a visual container?
+                RADVisualContainer targetCont;
+                if (targetComp instanceof RADVisualContainer)
+                    targetCont = (RADVisualContainer) targetComp;
+                else if (canUseParent)
+                    targetCont = targetComp instanceof RADVisualComponent ?
+                        (RADVisualContainer) targetComp.getParentComponent() :
+                        null;
+                else
+                    targetCont = null;
+
+                if (targetCont != null) { // yes, this is a visual container
+                    if (targetCont.getContainerMenu() == null
+                            && targetCont.canHaveMenu(beanClass))
+                        return TARGET_MENU;
+                }
+                else return NO_TARGET; // unknown container
+            }
+        }
+
+        else if (JSeparator.class.isAssignableFrom(beanClass)
+                 || Separator.class.isAssignableFrom(beanClass))
+        {   // separator
+            if (targetComp == null)
+                return TARGET_VISUAL;
+
+            if (targetComp instanceof RADMenuComponent)
+                return TARGET_MENU;
+        }
+
+        if (Component.class.isAssignableFrom(beanClass)) {
+            // visual component
+            if (targetComp == null)
+                return TARGET_VISUAL;
+
+            if (!(targetComp instanceof RADVisualComponent))
+                return NO_TARGET; // no visual target
+
+            if (!canUseParent && !(targetComp instanceof RADVisualContainer))
+                return NO_TARGET; // no visual container target
+
+            RADVisualContainer targetCont;
+            if (targetComp instanceof RADVisualContainer)
+                targetCont = (RADVisualContainer) targetComp;
+            else
+                targetCont = targetComp instanceof RADVisualComponent ?
+                    (RADVisualContainer) targetComp.getParentComponent() :
+                    null;
+
+            if (targetCont != null
+                && (java.awt.Window.class.isAssignableFrom(beanClass)
+                    || java.applet.Applet.class.isAssignableFrom(beanClass)))
+                return NO_TARGET; // cannot add Window or Applet to any container
+
+            return TARGET_VISUAL;
+        }
+
+        if (targetComp == null)
+            return TARGET_OTHER;
+
+        return NO_TARGET;
     }
 
     // ---------
@@ -283,15 +454,13 @@ public class MetaComponentCreator {
         return newComp;
     }
 
+    // --------
+
     private RADComponent addVisualComponent(
                              CreationFactory.InstanceSource source,
                              RADComponent targetComp,
                              Object constraints)
     {
-        if (targetComp != null
-                && !(targetComp instanceof RADVisualComponent))
-            return null;
-
         RADVisualComponent newMetaComp = null;
         RADVisualContainer newMetaCont =
             FormUtils.isContainer(source.getInstanceClass()) ?
@@ -308,14 +477,28 @@ public class MetaComponentCreator {
 
             // initialize layout support (if the new component is a container)
             if (newMetaCont != null
-                && !newMetaCont.getLayoutSupport().initializeLayoutDelegate())
+                && !newMetaCont.getLayoutSupport().initializeLayoutDelegate(false))
             {   // no LayoutSupportDelegate found for the container,
                 // create RADVisualComponent only
+                newMetaCont.resetCodeExpression(); // must be called for unused components
                 newMetaCont = null;
                 newMetaComp = null;
             }
         }
 
+        addVisualComponent(newMetaComp, targetComp, constraints);
+
+        // for some components, we initialize their properties with some
+        // non-default values e.g. a label on buttons, checkboxes
+        defaultComponentInit(newMetaComp);
+
+        return newMetaComp;
+    }
+
+    private void addVisualComponent(RADVisualComponent newMetaComp,
+                                    RADComponent targetComp,
+                                    Object constraints)
+    {
         // get parent container into which the new component will be added
         RADVisualContainer parentCont;
         if (targetComp != null) {
@@ -335,11 +518,7 @@ public class MetaComponentCreator {
         }
         else formModel.addComponent(newMetaComp, null);
 
-        // for some components, we initialize their properties with some
-        // non-default values e.g. a label on buttons, checkboxes
-        defaultComponentInit(newMetaComp);
         getDesigner().setSelectedComponent(newMetaComp);
-        return newMetaComp;
     }
 
     private RADComponent addOtherComponent(
@@ -351,6 +530,13 @@ public class MetaComponentCreator {
         if (!initComponentInstance(newMetaComp, source))
             return null;
 
+        addOtherComponent(newMetaComp, targetComp);
+        return newMetaComp;
+    }
+
+    private void addOtherComponent(RADComponent newMetaComp,
+                                   RADComponent targetComp)
+    {
         ComponentContainer targetCont = 
             targetComp instanceof ComponentContainer
                 && !(targetComp instanceof RADVisualContainer) ?
@@ -359,20 +545,34 @@ public class MetaComponentCreator {
         formModel.addComponent(newMetaComp, targetCont);
 
         getDesigner().setSelectedComponent(newMetaComp);
-        return newMetaComp;
     }
 
     private RADComponent setContainerLayout(
                              CreationFactory.InstanceSource source,
                              RADComponent targetComp)
     {
-        if (targetComp == null)
-            return addOtherComponent(source, null);
+        Class layoutClass = source.getInstanceClass();
+        LayoutManager layoutInstance;
+        if (source.getInstanceCookie() != null) {
+            try {
+                layoutInstance = (LayoutManager)
+                                 source.getInstanceCookie().instanceCreate();
+            }
+            catch (Exception ex) {
+                showInstErrorMessage(ex);
+                return null;
+            }
+        }
+        else layoutInstance = null;
 
-        if (!(targetComp instanceof RADVisualComponent))
-            return null;
+        return setContainerLayout(layoutClass, layoutInstance, targetComp);
+    }
 
-        // get container on which the layout will be set
+    private RADComponent setContainerLayout(Class layoutClass,
+                                            LayoutManager layoutInstance,
+                                            RADComponent targetComp)
+    {
+        // get container on which the layout is to be set
         RADVisualContainer metacont;
         if (targetComp instanceof RADVisualContainer)
             metacont = (RADVisualContainer) targetComp;
@@ -382,38 +582,28 @@ public class MetaComponentCreator {
                 return null;
         }
 
-        LayoutSupportDelegate layoutDelegate =
-                              metacont.getLayoutSupport().getLayoutDelegate();
-        if (layoutDelegate != null && layoutDelegate.isDedicated())
-            return null; // layout cannot be changed, should be reported!!
-
-        Class beanClass = source.getInstanceClass();
-        layoutDelegate = null;
-
-        // there are three ways how new LayoutSupportDelegate can be created...
+        LayoutSupportDelegate layoutDelegate = null;
         try {
-            if (LayoutManager.class.isAssignableFrom(beanClass)) {
+            if (LayoutManager.class.isAssignableFrom(layoutClass)) {
                 // LayoutManager -> find LayoutSupportDelegate for it
                 layoutDelegate = LayoutSupportRegistry
-                                     .createSupportForLayout(beanClass);
+                                     .createSupportForLayout(layoutClass);
             }
-            else if (LayoutSupportDelegate.class.isAssignableFrom(beanClass)) {
+            else if (LayoutSupportDelegate.class.isAssignableFrom(layoutClass)) {
                 // LayoutSupportDelegate -> use it directly
                 layoutDelegate = LayoutSupportRegistry
-                                     .createSupportInstance(beanClass);
+                                     .createSupportInstance(layoutClass);
             }
         }
-        catch (Exception e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                e.printStackTrace();
+        catch (Exception ex) {
+            String msg = MessageFormat.format(
+                FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"), // NOI8N
+                new Object[] { layoutClass.getName() });
 
-            TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(
-                    MessageFormat.format(
-                        FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"), // NOI8N
-                        new Object[] { beanClass.getName(),
-                                        e.getClass().getName() }),
-                    NotifyDescriptor.ERROR_MESSAGE));
+            ErrorManager em = TopManager.getDefault ().getErrorManager();
+            em.annotate(ex, ErrorManager.EXCEPTION, null, msg, null, null);
+            em.notify(ex);
+
             return null;
         }
 
@@ -422,39 +612,56 @@ public class MetaComponentCreator {
                 new NotifyDescriptor.Message(
                     MessageFormat.format(
                         FormEditor.getFormBundle().getString("FMT_ERR_LayoutNotFound"), // NOI8N
-                        new Object[] { beanClass.getName() }),
+                        new Object[] { layoutClass.getName() }),
                     NotifyDescriptor.WARNING_MESSAGE));
+
             return null;
         }
 
-        formModel.setContainerLayout(metacont, layoutDelegate);
+        formModel.setContainerLayout(metacont, layoutDelegate, layoutInstance);
 
         getDesigner().setSelectedComponent(metacont);
         return metacont;
+    }
+
+    private RADComponent copyAndApplyLayout(RADComponent sourceComp,
+                                            RADComponent targetComp)
+    {
+        try {
+            LayoutManager lmInstance = (LayoutManager)
+                                       sourceComp.cloneBeanInstance(null);
+            // we clone the instance as we need the property values copied
+            // for the LayoutSupportDelegate initialization which is done
+            // and the delegate set before we can copy the properties...
+
+            RADVisualContainer targetCont = (RADVisualContainer)
+                setContainerLayout(sourceComp.getBeanClass(),
+                                   lmInstance,
+                                   targetComp);
+
+            // copy properties additionally to handle design values
+            Node.Property[] sourceProps = sourceComp.getAllBeanProperties();
+            Node.Property[] targetProps =
+                targetCont.getLayoutSupport().getAllProperties();
+            FormUtils.copyProperties(sourceProps, targetProps,
+                                     true, false);
+        }
+        catch (Exception ex) { // ignore
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+        }
+        return targetComp;
     }
 
     private RADComponent setComponentBorder(
                              CreationFactory.InstanceSource source,
                              RADComponent targetComp)
     {
-        if (targetComp == null)
-            return addOtherComponent(source, null);
-
-        if (!(targetComp instanceof RADVisualComponent))
-            return null;
-
-        if (!(JComponent.class.isAssignableFrom(targetComp.getBeanClass()))) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                FormEditor.getFormBundle().getString("MSG_BorderNotApplicable"), // NOI8N
-                NotifyDescriptor.INFORMATION_MESSAGE));
-            return null;
-        }
-
-        RADProperty prop = targetComp.getPropertyByName("border"); // NOI18N
+        RADProperty prop = getBorderProperty(targetComp);
         if (prop == null)
             return null;
 
-        try {
+        try { // set border property
             Object border = CreationFactory.createInstance(source);
             prop.setValue(border);
         }
@@ -467,33 +674,67 @@ public class MetaComponentCreator {
         return targetComp;
     }
 
+    private void setComponentBorderProperty(Object borderInstance,
+                                            RADComponent targetComp)
+    {
+        RADProperty prop = getBorderProperty(targetComp);
+        if (prop == null)
+            return;
+
+        try { // set border property
+            prop.setValue(borderInstance);
+        }
+        catch (Exception ex) { // should not happen
+            ex.printStackTrace();
+            return;
+        }
+
+        getDesigner().setSelectedComponent(targetComp);
+    }
+
+    private RADComponent copyAndApplyBorder(RADComponent sourceComp,
+                                            RADComponent targetComp)
+    {
+        try {
+            Border borderInstance = (Border) sourceComp.createBeanInstance();
+            BorderDesignSupport designBorder =
+                new BorderDesignSupport(borderInstance);
+
+            Node.Property[] sourceProps = sourceComp.getAllBeanProperties();
+            Node.Property[] targetProps = designBorder.getProperties();
+
+            FormUtils.copyProperties(sourceProps, targetProps,
+                                     true, false);
+
+            setComponentBorderProperty(designBorder, targetComp);
+        }
+        catch (Exception ex) { // ignore
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+        }
+        return targetComp;
+    }
+
+    private RADProperty getBorderProperty(RADComponent targetComp) {
+        RADProperty prop;
+        if (JComponent.class.isAssignableFrom(targetComp.getBeanClass())
+                && (prop = targetComp.getPropertyByName("border")) != null) // NOI18N
+            return prop;
+
+        TopManager.getDefault().notify(new NotifyDescriptor.Message(
+            FormEditor.getFormBundle().getString("MSG_BorderNotApplicable"), // NOI8N
+            NotifyDescriptor.INFORMATION_MESSAGE));
+
+        return null;
+    }
+
     private RADComponent addMenuComponent(CreationFactory.InstanceSource source,
                                           RADComponent targetComp)
     {
-        Class beanClass = source.getInstanceClass();
-        ComponentContainer menuContainer = null;
-
-        if (targetComp instanceof RADMenuComponent) {
-            // adding to a menu
-            if (((RADMenuComponent)targetComp).canAddItem(beanClass))
-                menuContainer = (ComponentContainer) targetComp;
-        }
-        else if (targetComp instanceof RADVisualComponent) {
-            RADVisualContainer targetCont =
-                targetComp instanceof RADVisualContainer ?
-                    (RADVisualContainer) targetComp :
-                    (RADVisualContainer) targetComp.getParentComponent();
-
-            if (targetCont != null 
-                    && targetCont.getContainerMenu() == null
-                    && targetCont.canHaveMenu(beanClass))
-                menuContainer = targetCont;
-        }
-
         // create new metacomponent
         RADMenuComponent newMenuComp;
         RADMenuItemComponent newMenuItemComp;
-        if ((RADMenuItemComponent.recognizeType(beanClass)
+        if ((RADMenuItemComponent.recognizeType(source.getInstanceClass())
                  & RADMenuItemComponent.MASK_CONTAINER) != 0) {
             newMenuComp = new RADMenuComponent();
             newMenuItemComp = newMenuComp;
@@ -509,8 +750,7 @@ public class MetaComponentCreator {
         if (newMenuComp != null)
             newMenuComp.initSubComponents(new RADComponent[0]);
 
-        // add the new metacomponent to the model
-        formModel.addComponent(newMenuItemComp, menuContainer);
+        addMenuComponent(newMenuItemComp, targetComp);
 
         // for some components, we initialize their properties with some
         // non-default values e.g. a label on buttons, checkboxes
@@ -533,8 +773,35 @@ public class MetaComponentCreator {
             }
         }
 
-        getDesigner().setSelectedComponent(newMenuItemComp);
         return newMenuItemComp;
+    }
+
+    private void addMenuComponent(RADComponent newMenuComp,
+                                  RADComponent targetComp)
+    {
+        Class beanClass = newMenuComp.getBeanClass();
+        ComponentContainer menuContainer = null;
+
+        if (targetComp instanceof RADMenuComponent) {
+            // adding to a menu
+            if (((RADMenuComponent)targetComp).canAddItem(beanClass))
+                menuContainer = (ComponentContainer) targetComp;
+        }
+        else if (targetComp instanceof RADVisualComponent) {
+            RADVisualContainer targetCont =
+                targetComp instanceof RADVisualContainer ?
+                    (RADVisualContainer) targetComp :
+                    (RADVisualContainer) targetComp.getParentComponent();
+
+            if (targetCont != null 
+                    && targetCont.getContainerMenu() == null
+                    && targetCont.canHaveMenu(beanClass))
+                menuContainer = targetCont;
+        }
+
+        formModel.addComponent(newMenuComp, menuContainer);
+
+        getDesigner().setSelectedComponent(newMenuComp);
     }
 
     // --------

@@ -32,7 +32,7 @@ import org.netbeans.modules.form.codestructure.*;
  * @author Ian Formanek
  */
 
-public class RADComponent implements FormDesignValue {
+public class RADComponent implements FormDesignValue, java.io.Serializable {
 
     // -----------------------------------------------------------------------------
     // Static variables
@@ -796,34 +796,6 @@ public class RADComponent implements FormDesignValue {
 //        return propertyListener;
 //    }
 
-    // -----------------------------------------------------------------------------
-    // Debug methods
-
-    public java.lang.String toString() {
-        return super.toString() + ", name: "+getName()+", class: "+getBeanClass()+", beaninfo: "+getBeanInfo() + ", instance: "+getBeanInstance(); // NOI18N
-    }
-
-    public void debugChangedValues() {
-/*        if (System.getProperty("netbeans.debug.form.full") != null) { // NOI18N
-            System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------"); // NOI18N
-            for (java.util.Iterator it = nameToProperty.values().iterator(); it.hasNext();) {
-                RADProperty prop =(RADProperty)it.next();
-                if (prop.isChanged()) {
-//                    PropertyDescriptor desc = prop.getPropertyDescriptor();
-                    try {
-                        System.out.println("Changed Property: "+prop.getName()+", value: "+prop.getValue()); // NOI18N
-                    } catch (Exception e) {
-                        // ignore problems
-                    }
-                }
-            }
-            System.out.println("--------------------------------------------------------------------------------------"); // NOI18N
-        } */
-    }
-
-    // -------------
-    // innerclasses
-
     /** Listener class for listening to changes in component's properties.
      */
     protected class PropertyListener implements PropertyChangeListener {
@@ -859,6 +831,57 @@ public class RADComponent implements FormDesignValue {
                     getNodeReference().fireComponentPropertySetsChange();
             }
         }
+    }
+
+    // ----------
+
+    Object writeReplace() {
+        return new Replace(this);
+    }
+
+    private static class Replace implements java.io.Serializable {
+        private FormDataObject dobj;
+        private String compName;
+
+        Replace(RADComponent comp) {
+            dobj = FormEditorSupport.getFormDataObject(comp.getFormModel());
+            compName = comp.getName();
+        }
+
+        Object readResolve() /*throws java.io.ObjectStreamException*/ {
+            FormModel[] forms = FormEditorSupport.getOpenedForms();
+            for (int i=0; i < forms.length; i++) {
+                FormModel form = forms[i];
+                if (dobj.equals(FormEditorSupport.getFormDataObject(form)))
+                    return form.findRADComponent(compName);
+            }
+            return null; // or throw some exception?
+        }
+    }
+
+    // -----------------------------------------------------------------------------
+    // Debug methods
+
+    public java.lang.String toString() {
+        return super.toString() + ", name: "+getName()+", class: "+getBeanClass()+", beaninfo: "+getBeanInfo() + ", instance: "+getBeanInstance(); // NOI18N
+    }
+
+    public void debugChangedValues() {
+/*        if (System.getProperty("netbeans.debug.form.full") != null) { // NOI18N
+            System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------"); // NOI18N
+            for (java.util.Iterator it = nameToProperty.values().iterator(); it.hasNext();) {
+                RADProperty prop =(RADProperty)it.next();
+                if (prop.isChanged()) {
+//                    PropertyDescriptor desc = prop.getPropertyDescriptor();
+                    try {
+                        System.out.println("Changed Property: "+prop.getName()+", value: "+prop.getValue()); // NOI18N
+                    } catch (Exception e) {
+                        // ignore problems
+                    }
+                }
+            }
+            System.out.println("--------------------------------------------------------------------------------------"); // NOI18N
+        } */
     }
 
     // ------------------------------------
