@@ -112,30 +112,12 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
     
     public JComponent createStructureComponent() {
         JToolBar toolbar = new ToolBarView(getExplorerManager(),getContentView().getRoot());
-        if (toolBarButtons!=null) {
-            for (int i=0;i<toolBarButtons.length;i++)
-                toolbar.add(toolBarButtons[i]);
-        
-        }
         return toolbar;
     }
     
     public void edit() {
         
     }
-    
-    private javax.swing.JButton[] toolBarButtons;
-    public void setToolBarAction(Action[] actions) {
-        toolBarButtons = new javax.swing.JButton[actions.length];
-        for (int i=0;i<actions.length;i++) {
-            toolBarButtons[i].setAction(actions[i]);
-        }
-    }
-    
-    public javax.swing.JButton[] getToolBarButtons(){
-        return toolBarButtons;
-    }
-
     
     /**
      * Used to create an instance of the JComponent used for the properties component. Usually a subclass of PropertySheetView.
@@ -149,10 +131,11 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
         private ExplorerManager manager;
         private Lookup lookup;
         ToolBarView(final ExplorerManager manager, org.openide.nodes.Node root) {
-            
+            super();
             this.manager=manager;
             // same as before...
-
+            
+            //setLayout(new javax.swing.BoxLayout(this,javax.swing.BoxLayout.X_AXIS));
             ActionMap map = getActionMap();
             // ...and initialization of lookup variable
             lookup = ExplorerUtils.createLookup (manager, map);
@@ -164,8 +147,6 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
             cView.setPreferredSize(new java.awt.Dimension(150,19));
             ((NodeListModel)(cView.getModel())).setDepth(3);
             add(cView);
-            add(new javax.swing.JSeparator());
-            
         }
         // ...method as before and getLookup
         public ExplorerManager getExplorerManager() {

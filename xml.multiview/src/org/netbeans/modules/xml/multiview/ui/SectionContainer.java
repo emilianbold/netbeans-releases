@@ -37,24 +37,33 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     private boolean active;
     private int sectionCount=0;
     private int index;
-    /** Creates new form SectionContainer */
-    
+    private boolean foldable;
+
     public SectionContainer(SectionView sectionView, Node root, String title) {
-        this.sectionView = sectionView;
-        this.title=title;
+        this(sectionView, root, title, true);
+    }
+    
+    public SectionContainer(SectionView sectionView, Node root, String title, boolean foldable) {
+        this.sectionView=sectionView;
         this.root=root;
+        this.title=title;
+        this.foldable=foldable;
         initComponents();
         setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         titleButton.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         filler.setBackground(SectionVisualTheme.getFillerColor());
         titleButton.setText(title);
-        
         titleButton.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
                 JPopupMenu popup = getNode().getContextMenu();
                 popup.show(foldButton,e.getX(), e.getY());
             }
         });
+        if (!foldable) {  
+            remove(filler);
+            remove(foldButton);
+        }
     }
     
     /** Method from NodeSectionPanel interface */
@@ -109,10 +118,19 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         return sectionView.getSection(key);
     }
     
+    public void addSection(NodeSectionPanel section, boolean open) {
+        addSection(section);
+        if (open) {
+            section.open();
+            section.scroll();
+            section.setActive(true);
+        }
+    }
+    
     /** Method from ContainerPanel interface */
     public void addSection(NodeSectionPanel section){
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = sectionCount;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -145,7 +163,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         for (int i=0;i<removedPanels.size();i++) {
             NodeSectionPanel pan = (NodeSectionPanel)removedPanels.get(i);
             java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = pan.getIndex();
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -170,6 +188,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         jSeparator1 = new javax.swing.JSeparator();
         contentPanel = new javax.swing.JPanel();
         filler = new javax.swing.JPanel();
+        actionPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -190,7 +209,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 4);
         add(foldButton, gridBagConstraints);
 
         titleButton.setFont(new java.awt.Font("Dialog", 1, 14));
@@ -209,15 +228,16 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(titleButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
         add(jSeparator1, gridBagConstraints);
 
         contentPanel.setLayout(new java.awt.GridBagLayout());
@@ -225,17 +245,26 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(contentPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 4);
         add(filler, gridBagConstraints);
+
+        actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 0));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(actionPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -252,6 +281,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel actionPanel;
     private javax.swing.JPanel contentPanel;
     private javax.swing.JPanel filler;
     private javax.swing.JToggleButton foldButton;
@@ -267,5 +297,24 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     /** Method from NodeSectionPanel interface */
     public int getIndex() {
         return index;
-    }  
+    }
+    
+    private javax.swing.JButton[] headerButtons;
+    
+    public void setHeaderActions(Action[] actions) {
+        headerButtons = new javax.swing.JButton[actions.length];
+        for (int i=0;i<actions.length;i++) {
+            headerButtons[i] = new javax.swing.JButton(actions[i]);
+            actionPanel.add(headerButtons[i]);
+        }
+    }
+    
+    public javax.swing.JButton[] getHeaderButtons(){
+        return headerButtons;
+    }
+    
+    public boolean isFoldable() {
+        return foldable;
+    }
+    
 }
