@@ -363,9 +363,28 @@ public class FolderObjTest extends NbTestCase {
         
         assertGC("", toGCRef);
         toDelete.delete();
+        assertEquals(0,testFo.getChildren().length);
         toDelete = testFo.getFileObject("delete");        
         assertNull(toDelete);        
         assertEquals(2, l.size());
+    }
+
+    public void testDelete2() throws IOException {
+        File f = testFile;
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        
+        FileObject testFo = fs.findFileObject(testFile);
+        assertNotNull(testFo);
+        assertEquals(0,testFo.getChildren().length);
+        
+        FileObject newFolder = testFo.createFolder("testDelete2");
+        assertNotNull(newFolder);
+        assertEquals(1,testFo.getChildren().length);
+        
+        newFolder.delete();
+        assertFalse(newFolder.isValid());
+        assertEquals(0,testFo.getChildren().length);
+        assertNull(testFo.getFileObject(newFolder.getNameExt()));
     }
     
     public void testExternalDelete2() throws IOException {

@@ -194,10 +194,21 @@ public final class FolderObj extends BaseFileObj {
         BaseFileObj.attribs.deleteAttributes(file.getAbsolutePath().replace('\\', '/'));//NOI18N
 
         for (int i = 0; i < all.size(); i++) {
-            final BaseFileObj toDel = (BaseFileObj) all.get(i);
+            final BaseFileObj toDel = (BaseFileObj) all.get(i);            
+            final FolderObj existingParent = toDel.getExistingParent();            
+            final ChildrenCache childrenCache = (existingParent != null) ? existingParent.getChildrenCache() : null;            
+            if (childrenCache != null) {
+                final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+                if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
+                try {                
+                    childrenCache.getChild(BaseFileObj.getNameExt(file), true);
+                } finally {
+                    if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();                    
+                }
+            }                
             toDel.setValid(false);
             toDel.fireFileDeletedEvent(false);
-        }
+        }        
     }
 
 

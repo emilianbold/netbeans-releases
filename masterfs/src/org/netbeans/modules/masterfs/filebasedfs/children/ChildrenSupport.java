@@ -187,9 +187,12 @@ java.lang.AssertionError: E:\work\nb_all8\openide\masterfs\build
         //assert childs != null : folder.getAbsolutePath();
         if (childs != null) {
             for (int i = 0; i < childs.length; i++) {
-                FileNaming child = NamingFactory.fromFile(folderName, childs[i]);
-                assert child.getParent() == folderName;
-                retVal.add(child);
+                final FileInfo fInfo = new FileInfo(childs[i]);
+                if (fInfo.isConvertibleToFileObject()) {
+                    FileNaming child = NamingFactory.fromFile(folderName, childs[i]);
+                    assert child.getParent() == folderName;
+                    retVal.add(child);
+                } 
             }
         }
         
