@@ -74,7 +74,7 @@ public final class
     private HashSet executionListeners = new HashSet();
 
     /** List of running executions */
-    private ArrayList runningTasks = new ArrayList( 5 );
+    private List runningTasks = Collections.synchronizedList(new ArrayList( 5 ));
 
     static {
         systemIO.out = new OutputStreamWriter(System.out);
@@ -105,9 +105,11 @@ public final class
         return null;
     }
     
-    /** Returns collection of tasks which did not ended yet */
+    /** Returns a snapshot of a collection of tasks which did not ended yet */
     public Collection getRunningTasks() {
-        return runningTasks;
+        // toArray is atomic on synchronized list, contrary to just passing
+        // the list to a Collection constructor.
+        return Arrays.asList(runningTasks.toArray());
     }
     
     /** Returns name of running task */
