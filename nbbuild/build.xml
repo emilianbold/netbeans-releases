@@ -17,7 +17,6 @@ ToDo:
 - build validator DTD for this build system
 - sanity check that module list actually satisfies module dependencies
 Modules:
-emacs (currently will conflict with editor if installed)
 treefs (complete yet?)
 workspaceswitcher
 -->
@@ -115,11 +114,6 @@ workspaceswitcher
   <target name="all-openide" depends="check-for-binaries">
     <echo message="Building Open APIs..."/>
     <ant dir="../openide" target="netbeans"/>
-  </target>
-  
-  <target name="all-openidex" depends="all-openide">
-    <echo message="Building pending API extensions..."/>
-    <ant dir="../openidex" target="netbeans"/>
   </target>
   <target name="all-core" depends="all-openide">
     <echo message="Building IDE core implementation..."/>
@@ -262,6 +256,10 @@ workspaceswitcher
   <target name="all-objectbrowser" depends="all-openide">
     <echo message="Building module objectbrowser..."/>
     <ant dir="../objectbrowser" target="netbeans"/>
+  </target>
+  <target name="all-openidex" depends="all-openide">
+    <echo message="Building module openidex..."/>
+    <ant dir="../openidex" target="netbeans"/>
   </target>
   <target name="all-projects" depends="all-openide">
     <echo message="Building module projects..."/>
@@ -711,7 +709,7 @@ the ${netbeans.dest}/bin/ directory.
     </delete>
   </target>
 
-  <target name="localclean">
+  <target name="localclean" depends="init">
     <delete dir="${netbeans.dest}"/>
   </target>
 
@@ -725,6 +723,3 @@ the ${netbeans.dest}/bin/ directory.
     <echo message="modules=${fixedmodules},${modules}"/>
   </target>
 </project>
-
-
-
