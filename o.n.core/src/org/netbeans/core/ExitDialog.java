@@ -32,7 +32,10 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.cookies.SaveCookie;
-
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataFolder;
 
 /** Dialog which lets the user select which open files to close.
  *
@@ -67,7 +70,27 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
             DataObject obj = (DataObject) iter.next();
             listModel.addElement(obj);
         }
+        draw ();
+    }
+    
+    /** Constructs new dlg for unsaved files in filesystems marked 
+     * for unmount.
+    */
+    public ExitDialog (Node[] activatedNodes) {
+        setLayout (new java.awt.BorderLayout ());
 
+        listModel = new DefaultListModel();
+        Iterator iter = getModifiedActSet (activatedNodes).iterator();
+        while (iter.hasNext()) {
+            DataObject obj = (DataObject) iter.next();
+            listModel.addElement(obj);
+        }
+        draw ();
+    }
+
+    /** Constructs rest of dialog.
+    */
+    private void draw () {
         list = new JList(listModel);
         list.setBorder(new EmptyBorder(2, 2, 2, 2));
         list.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
@@ -82,7 +105,7 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
         add(scroll, java.awt.BorderLayout.CENTER);
         list.setCellRenderer(new ExitDlgListCellRenderer());
     }
-
+    
     private void updateSaveButton () {
         exitOptions [0].setEnabled (list.getSelectedIndex () != -1);
     }
@@ -151,6 +174,11 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
         // XXX(-ttran) result must be set before calling setVisible(false)
         // because this will unblock the thread which called Dialog.show()
         
+        for (int i = listModel.size() - 1; i >= 0; i--) {            
+            DataObject obj = (DataObject) listModel.getElementAt(i);
+            obj.setModified(false);
+        }
+
         result = true;
         exitDialog.setVisible (false);
         exitDialog.dispose();
@@ -166,11 +194,54 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
     }
 
 
+    /** Opens the ExitDialog for unsaved files in filesystems marked 
+     * for unmount and blocks until it's closed. If dialog doesm't
+     * exists it creates new one. Returns true if the IDE should be closed.
+     */
+    static boolean showDialog(Node[] activatedNodes) {
+        return innerShowDialog( activatedNodes );        
+    }
+    
     /** Opens the ExitDialog and blocks until it's closed. If dialog doesm't
      * exists it creates new one. Returns true if the IDE should be closed.
      */
     static boolean showDialog() {
-        java.util.Set set = org.openide.loaders.DataObject.getRegistry ().getModifiedSet ();
+        return innerShowDialog( null );        
+    }
+
+    /** Returns modified set of DataObjects in filesystems marked 
+     * for unmount.
+     */
+    private static java.util.Set getModifiedActSet (Node[] activatedNodes) {
+        Iterator iter = DataObject.getRegistry ().getModifiedSet ().iterator();
+        java.util.Set set = new java.util.HashSet();
+        while (iter.hasNext()) {
+            DataObject obj = (DataObject) iter.next();
+            try {
+                FileSystem fs = obj.getPrimaryFile().getFileSystem();
+                for (int i=0;i<activatedNodes.length;i++) {
+                    DataFolder df = (DataFolder)activatedNodes[i].getCookie(DataFolder.class);
+                    if (df != null)
+                        if (df.getPrimaryFile().getFileSystem().equals(fs)) {
+                            set.add(obj);
+                            break;
+                        }
+                }
+            } catch (FileStateInvalidException fe) {
+            }
+        }
+        return set;
+    }
+    
+    /** Opens the ExitDialog for activated nodes or for
+     * whole repository.
+     */
+    private static boolean innerShowDialog(Node[] activatedNodes) {
+        java.util.Set set = null;
+        if (activatedNodes != null)
+            set = getModifiedActSet (activatedNodes);
+        else
+            set = org.openide.loaders.DataObject.getRegistry ().getModifiedSet ();
         if (!set.isEmpty()) {
 
             // XXX(-ttran) caching this dialog is fatal.  If the user
@@ -189,7 +260,11 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
                 secondaryExitOptions = new Object[] {
                                            new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_Cancel")),
                                        };
-                ExitDialog exitComponent = new ExitDialog ();
+                ExitDialog exitComponent = null;
+                if (activatedNodes != null)
+                    exitComponent = new ExitDialog (activatedNodes);
+                else
+                    exitComponent = new ExitDialog ();
                 DialogDescriptor exitDlgDescriptor = new DialogDescriptor (
                                                          exitComponent,                                                   // inside component
                                                          NbBundle.getBundle(ExitDialog.class).getString("CTL_ExitTitle"), // title

@@ -635,6 +635,13 @@ public abstract class NbTopManager extends TopManager {
         }
     }
 
+    /** Shows exit dialog for activated File system nodes
+    * after unmounting filesystem(s)
+    * @return result of dialog (mount or unmount)
+    */    
+    public static boolean showExitDialog (Node[] activatedNodes) {
+        return ExitDialog.showDialog(activatedNodes);
+    }
 
     /** Provides access to data loader pool.
     * @return the loader pool for the system
