@@ -416,6 +416,8 @@ public final class IntrospectedInfo implements Serializable {
                         // to all tasks it should not be stored as such. Ditto taskname.
                         continue;
                     }
+                    // XXX also handle subclasses of DataType and its standard attrs
+                    // incl. creating nicely-named node props for description, refid, etc.
                     info.attrs.put (name, type);
                 } catch (RuntimeException re) { // i.e. BuildException; but avoid loading this class
                     AntModule.err.notify (ErrorManager.INFORMATIONAL, re);
