@@ -36,14 +36,17 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/xml/tools/actions/ValidateActionTest.class"/>
                 <!-- TEXT-EDIT -->
                 <include name="org/netbeans/modules/xml/text/syntax/ColoringTest.class"/>
-            </patternset>
+                <!-- TREE-EDIT -->
+           </patternset>
         </testset>
     </testbag>
         
     <testbag testattribs="fail" executor="ide" name="all_xml_fail" resultsprocessor="qa-reporter">
         <testset dir="qa-functional/src">
             <patternset>
-                <!-- fail due -->
+                <!-- fail due #24418 -->
+                <include name="org/netbeans/modules/xml/tree/nodes/XMLDataNodeTest.class"/>
+                <include name="org/netbeans/modules/xml/tree/nodes/DTDDataNodeTest.class"/> 
             </patternset>
         </testset>
     </testbag>
