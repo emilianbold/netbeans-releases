@@ -290,7 +290,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
 
     public void open(Workspace workspace) {
         super.open(workspace);
-        requestFocus();
+        requestActive();
     }
     
     public synchronized void addMergePanel(MergePanel panel) {

@@ -172,7 +172,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
      * Transfer the focus to the diff panel.
      */
     public boolean requestFocusInWindow() {
-        super.requestFocus();
+        super.requestFocusInWindow();
         return diffPanel.requestFocusInWindow();
     }
     
