@@ -238,10 +238,7 @@ public final class Actions implements ActionProvider {
             if (path == null) {
                 return Collections.EMPTY_MAP;
             }
-            //XXX: Workaround of the issue #54259:Compile package disabled after IDE target generation
-            // it may be better to extend the action-context element to specify
-            // if the action is able to handle folders
-            if (pattern != null && !pattern.matcher(path).find() && file.isData()) {
+            if (pattern != null && !pattern.matcher(path).find()) {
                 return Collections.EMPTY_MAP;
             }
             result.put(path, file);
@@ -314,33 +311,9 @@ public final class Actions implements ActionProvider {
                         // Not a disk file??
                         return;
                     }
-                    //XXX: Workaround of the issue #54259:Compile package disabled after IDE target generation
-                    // it may be better to extend the action-context element to specify
-                    // if the action is able to handle folders
                     buf.append(f.getAbsolutePath());
-                    if (f.isDirectory()) {
-                        buf.append(File.separatorChar);
-                        //Todo: * for package view or ** for tree view
-                        buf.append("**");   //NOI18N
-                    }
                 } else if (format.equals("relative-path")) { // NOI18N
-                    String rPath = (String) entry.getKey();
-                    buf.append (rPath);
-                    //XXX: Workaround of the issue #54259:Compile package disabled after IDE target generation
-                    // it may be better to extend the action-context element to specify
-                    // if the action is able to handle folders
-                    File f = FileUtil.toFile((FileObject) entry.getValue());
-                    if (f == null) {
-                        // Not a disk file??
-                        return;
-                    }
-                    else if (f.isDirectory()) {
-                        if (rPath.length()>0) {
-                            buf.append(File.separatorChar);
-                        }
-                        //Todo: * for package view or ** for tree view
-                        buf.append("**");   //NOI18N
-                    }
+                    buf.append((String) entry.getKey());
                 } else if (format.equals("absolute-path-noext")) { // NOI18N
                     File f = FileUtil.toFile((FileObject) entry.getValue());
                     if (f == null) {
