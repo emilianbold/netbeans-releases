@@ -269,7 +269,7 @@ final class Central implements ControllerHandler {
         if(maximizedMode == old) {
             return;
         }
-        
+
         model.setMaximizedMode(maximizedMode);
         
         if(isVisible()) {
@@ -1642,6 +1642,11 @@ final class Central implements ControllerHandler {
     }
     
     public void userDisabledAutoHide(TopComponent tc, ModeImpl source) {
+        // unmaximize if needed
+        if(getMaximizedMode() != null) {
+            model.setMaximizedMode(null);
+        }
+        
         ModeImpl targetMode = getModeTopComponentPreviousMode(tc, source);
 //        debugLog("userDisabledAutoHide()=" + targetMode);
         

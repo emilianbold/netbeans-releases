@@ -942,10 +942,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             }
         }
 
-        // XXX PENDING If necessary, unmaximize the state.
+        // XXX PENDING If necessary, unmaximize the state, but exclude sliding modes
         // Consider to put it in addOpenedTopComponent, to do it in one step.
         ModeImpl maximizedMode = getMaximizedMode();
-        if(maximizedMode != null && mode != maximizedMode) {
+        if(maximizedMode != null && mode != maximizedMode && 
+            mode.getKind() != Constants.MODE_KIND_SLIDING) {
             setMaximizedMode(null);
         }
 
