@@ -17,9 +17,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -38,6 +40,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
 
 /**
  * Reads/writes project.xml.
@@ -536,6 +539,7 @@ public class FreeformProjectGenerator {
                     Element props = doc.createElementNS(FreeformProjectType.NS_GENERAL, "properties"); // NOI18N
                     File locationF = FileUtil.toFile(locationFO);
                     File dirF = FileUtil.toFile(dirFO);
+                    Map properties = new HashMap();
                     if (!locationFO.equals(dirFO)) {
                         Element property = doc.createElementNS(FreeformProjectType.NS_GENERAL, "property"); // NOI18N
                         property.setAttribute("name", PROP_PROJECT_LOCATION); // NOI18N
@@ -547,6 +551,7 @@ public class FreeformProjectGenerator {
                         }
                         property.appendChild(doc.createTextNode(path));
                         props.appendChild(property);
+                        properties.put(PROP_PROJECT_LOCATION, path);
                     }
                     String antPath = "build.xml"; // NOI18N
                     if (antScript != null) {
@@ -554,9 +559,12 @@ public class FreeformProjectGenerator {
                         property.setAttribute("name", PROP_ANT_SCRIPT); // NOI18N
                         antPath = relativizeLocation(locationF, dirF, antScript);
                         property.appendChild(doc.createTextNode(antPath));
+                        properties.put(PROP_ANT_SCRIPT, antPath);
                         antPath = "${"+PROP_ANT_SCRIPT+"}"; // NOI18N
                         props.appendChild(property);
                     }
+                    PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
+                        PropertyUtils.fixedPropertyProvider(properties)});
                     if (props.getChildNodes().getLength() > 0) {
                         data.appendChild(props);
                     }
@@ -580,11 +588,11 @@ public class FreeformProjectGenerator {
                     }
                     putBuildXMLSourceFile(h[0], antPath);
                     putContextMenuAction(h[0], mappings);
-                    List exports = guessExports(h[0].getStandardPropertyEvaluator(), mappings, compUnits);
+                    List exports = guessExports(evaluator, mappings, compUnits);
                     if (exports.size() > 0) {
                         putExports(h[0], exports);
                     }
-                    List subprojects = guessSubprojects(h[0].getStandardPropertyEvaluator(), compUnits, locationF, dirF);
+                    List subprojects = guessSubprojects(evaluator, compUnits, locationF, dirF);
                     if (subprojects.size() > 0) {
                         putSubprojects(h[0], subprojects);
                     }
@@ -1220,9 +1228,10 @@ public class FreeformProjectGenerator {
                 if (tm.targets.size() == 1) {
                     if (tm.script != null) {
                         String script = evaluator.evaluate(tm.script);
-                        if (script.indexOf('/') != -1 || script.indexOf('\\') != -1) { // NOI18N
+                        File f = new File(script);
+                        if (f.isAbsolute()) {
                             // #50092 - no exports will be generated when build
-                            // script lies outside of project directory
+                            // script does not lie within project directory
                             return new ArrayList();
                         }
                     }

@@ -1220,12 +1220,18 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         
         Map m = new HashMap();
         m.put("outputfile", "out.jar");
-        m.put("ant", "etc/antScript");
+        m.put("ant", getWorkDir().getAbsolutePath()+"/etc/antScript");
         PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
             PropertyUtils.fixedPropertyProvider(m)});
         
         List exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
         assertEquals("no one export was created because build script is not in project folder", 0, exports.size());
+        m.put("ant", "etc/antScript");
+        evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
+            PropertyUtils.fixedPropertyProvider(m)});
+        exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
+        assertEquals("one export was created", 1, exports.size());
+        
         tm.script = null;
         exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
         assertEquals("one export was created", 1, exports.size());
