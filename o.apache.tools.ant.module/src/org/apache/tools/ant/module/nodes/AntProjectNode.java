@@ -75,21 +75,17 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         }
         Element pel = cookie.getProjectElement ();
         if (pel != null) {
-            // #19446: honor file extensions mode
-            FileObject fo = getDataObject().getPrimaryFile();
-            String simpleName = DataNode.getShowFileExtensions() ? fo.getNameExt() : fo.getName();
             String projectName = pel.getAttribute ("name"); // NOI18N
             if (! projectName.equals("")) { // NOI18N
-                // Set the name/display name in the IDE to the name of the project 
-                setDisplayName (NbBundle.getMessage (AntProjectNode.class, "LBL_script_display_name", simpleName, projectName));
+                // Set the node description in the IDE to the name of the project 
+                setShortDescription(NbBundle.getMessage (AntProjectNode.class, "LBL_named_script_description", projectName));
             } else {
                 // No name specified, OK.
-                setDisplayName(simpleName);
+                setShortDescription(NbBundle.getMessage (AntProjectNode.class, "LBL_anon_script_description"));
             }
         }
         Throwable exc = cookie.getParseException ();
         if (exc == null) {
-            setShortDescription (getDisplayName ());
             setIconBase ("org/apache/tools/ant/module/resources/AntIcon"); // NOI18N
         } else {
             String m = exc.getLocalizedMessage ();
