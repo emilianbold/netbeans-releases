@@ -39,6 +39,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.openide.filesystems.*;
+import org.openide.util.Utilities;
 
 import org.w3c.dom.Document;
 import org.xml.sax.*;
@@ -514,19 +515,43 @@ public final class StartTomcat extends StartServer implements ProgressObject
     private static class TomcatFormat extends org.openide.util.MapFormat {
         
         private static final long serialVersionUID = 992972967554321415L;
-
+        
+        private static final String CATALINA_STARTUP_SCRIPT_WIN = "catalina.bat";  // NOI18N
+        private static final String CATALINA_STARTUP_SCRIPT_OTHER = "catalina.sh"; // NOI18N
+        private static final String CATALINA_STARTUP_SCRIPT_WIN_JDK15 = "catalina.50.bat";  // NOI18N
+        private static final String CATALINA_STARTUP_SCRIPT_OTHER_JDK15 = "catalina.50.sh"; // NOI18N
+        
         public TomcatFormat (String home) {
             super(new java.util.HashMap ());
+            String catalinaStartupScript = getStartupScript(home);
             java.util.Map map = getMap ();
-            map.put (TAG_EXEC_CMD, org.openide.util.Utilities.isWindows ()? "catalina.bat": "catalina.sh"); // NOI18N
+            map.put (TAG_EXEC_CMD, catalinaStartupScript);
             map.put (TAG_EXEC_STARTUP, "run"); // NOI18N
             map.put (TAG_EXEC_SHUTDOWN, "stop"); // NOI18N
-            //map.put (TAG_SHUTDOWN_CMD, org.openide.util.Utilities.isWindows ()? "shutdown.bat": "shutdown.sh"); // NOI18N
-            map.put (TAG_DEBUG_CMD, org.openide.util.Utilities.isWindows ()? "catalina.bat": "catalina.sh"); // NOI18N
+            map.put (TAG_DEBUG_CMD, catalinaStartupScript);
             map.put (TAG_JPDA, "jpda"); // NOI18N
             map.put (TAG_JPDA_STARTUP, "run"); // NOI18N
             map.put (StartTomcat.TAG_CATALINA_HOME, home); // NOI18N
             map.put (TAG_SEPARATOR, File.separator);
+        }
+        
+        /**
+         * Return appropriate catalina startup script.
+         * 
+         * @param home TOMCAT_HOME dir.
+         * @return appropriate catalina startup script.
+         */
+        private String getStartupScript(String home) {
+            String javaVersion = System.getProperty("java.vm.version");  // NOI18N
+            if (javaVersion != null && javaVersion.startsWith("1.5")) {  // NOI18N
+                String startupScript = Utilities.isWindows() 
+                                            ? CATALINA_STARTUP_SCRIPT_WIN_JDK15
+                                            : CATALINA_STARTUP_SCRIPT_OTHER_JDK15;
+                if (new File(home + "/bin/" + startupScript).exists()) // NOI18N
+                        return startupScript;
+            }
+            return Utilities.isWindows() ? CATALINA_STARTUP_SCRIPT_WIN
+                                         : CATALINA_STARTUP_SCRIPT_OTHER;
         }
     }
     
