@@ -429,7 +429,7 @@ public final class BeanInstaller extends Object {
   * @param folder - where to find jars
   */
   private static boolean autoLoadFolders(File globalFolder, File localFolder) {
-    if (!globalFolder.exists())
+    if (!(globalFolder.exists() || localFolder.exists()))
       return false;
     
     boolean modified = false;
@@ -721,6 +721,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  22   Gandalf   1.21        10/12/99 Ian Formanek    Fixed multi-user 
+ *       configuration with no "beans" folder in the shared installation.
  *  21   Gandalf   1.20        10/12/99 Ian Formanek    Fixed problem with 
  *       NullPointerException thrown under some conditions...
  *  20   Gandalf   1.19        10/10/99 Ian Formanek    Correctly works in 
