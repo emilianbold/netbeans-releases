@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
     </tstamp>
   </target>
   
-  <target name="set-installer.basename" unless="unstaller.basename" depends="set-buildnumber">
+  <target name="set-installer.basename" unless="installer.basename" depends="set-buildnumber">
     <property name="installer.basename" value="NetBeans-dev-${buildnumber}"/>
   </target>
 
