@@ -25,7 +25,8 @@ class DocSearchIcons extends Object {
   public static final int ICON_PACKAGE = ICON_NOTRESOLVED + 1 ;
   public static final int ICON_CLASS = ICON_PACKAGE + 1 ;
   public static final int ICON_INTERFACE = ICON_CLASS + 1;
-  public static final int ICON_CONSTRUCTOR = ICON_INTERFACE + 1;
+  public static final int ICON_EXCEPTION = ICON_INTERFACE + 1;
+  public static final int ICON_CONSTRUCTOR = ICON_EXCEPTION + 1;
   public static final int ICON_METHOD = ICON_CONSTRUCTOR + 1;
   public static final int ICON_METHOD_ST = ICON_METHOD + 1;
   public static final int ICON_VARIABLE = ICON_METHOD_ST + 1;
@@ -40,6 +41,7 @@ class DocSearchIcons extends Object {
       icons[ ICON_PACKAGE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/defaultFolder.gif"));
       icons[ ICON_CLASS ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/class.gif"));
       icons[ ICON_INTERFACE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/interface.gif"));
+      icons[ ICON_EXCEPTION ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/exception.gif"));
       icons[ ICON_CONSTRUCTOR ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/constructorPublic.gif"));
       icons[ ICON_METHOD ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/methodPublic.gif"));
       icons[ ICON_METHOD_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/methodStPublic.gif"));
@@ -60,6 +62,8 @@ class DocSearchIcons extends Object {
 
 /* 
  * Log
+ *  6    Gandalf   1.5         8/13/99  Petr Hrebejk    Exception icopn added & 
+ *       Jdoc repository moved to this package
  *  5    Gandalf   1.4         6/23/99  Petr Hrebejk    HTML doc view & sort 
  *       modes added
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    Fixed resources for 

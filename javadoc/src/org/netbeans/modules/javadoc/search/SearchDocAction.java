@@ -27,8 +27,6 @@ public class SearchDocAction extends CallableSystemAction {
   /** generated Serialized Version UID */
   //static final long serialVersionUID = 1391479985940417455L;
 
-  /** Link to the documentation index search window. */
-  static IndexSearch indexSearch = null;
 
   /** Human presentable name of the action. This should be
   * presented as an item in a menu.
@@ -58,9 +56,9 @@ public class SearchDocAction extends CallableSystemAction {
   * is not null otherwise the action is ignored.
   */
   public void performAction () {
-    if (indexSearch == null) 
-      indexSearch = new IndexSearch ();
-
+    
+    IndexSearch indexSearch = IndexSearch.getDefault();
+    
     String toFind = GetJavaWord.getCurrentJavaWord();
 
     if (toFind != null) 
@@ -73,6 +71,8 @@ public class SearchDocAction extends CallableSystemAction {
 
 /*
  * Log
+ *  11   Gandalf   1.10        8/13/99  Petr Hrebejk    Exception icopn added & 
+ *       Jdoc repository moved to this package
  *  10   Gandalf   1.9         7/30/99  Petr Hrebejk    Search uses 
  *       FileSystemCapabilities
  *  9    Gandalf   1.8         6/24/99  Jesse Glick     Gosh-honest HelpID's.

@@ -114,6 +114,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
   static private final String STR_CLASS = bundle.getString( "JDK12_CLASS" );
   static private final String STR_INTERFACE = bundle.getString( "JDK12_INTERFACE" );
+  static private final String STR_EXCEPTION = bundle.getString( "JDK12_EXCEPTION" );
   static private final String STR_CONSTRUCTOR = bundle.getString( "JDK12_CONSTRUCTOR" );
   static private final String STR_METHOD = bundle.getString( "JDK12_METHOD" );
   static private final String STR_VARIABLE = bundle.getString( "JDK12_VARIABLE" );
@@ -221,6 +222,8 @@ class SearchThreadJdk12 extends IndexSearchThread {
           currentDii.setIconIndex( DocSearchIcons.ICON_CLASS );
         else if ( token.equals( STR_INTERFACE ) )
           currentDii.setIconIndex( DocSearchIcons.ICON_INTERFACE );
+        else if ( token.equals( STR_EXCEPTION ) )
+          currentDii.setIconIndex( DocSearchIcons.ICON_EXCEPTION );
         else if ( token.equals( STR_PACKAGE ) )
           currentDii.setIconIndex( DocSearchIcons.ICON_PACKAGE );
         else if ( token.equals( STR_CONSTRUCTOR ) )
