@@ -4,6 +4,7 @@ core/src/org/netbeans/core/resources/templatesRootDescription.html
 core/release/CREDITS.html
 core/bootstrap/src/**/Bundle.properties
 core/execution/src/**/Bundle.properties
+core/favorites/src/**/Bundle.properties
 core/ide/src/**/Bundle.properties
 core/javahelp/src/**/Bundle.properties
 core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpPage.html
