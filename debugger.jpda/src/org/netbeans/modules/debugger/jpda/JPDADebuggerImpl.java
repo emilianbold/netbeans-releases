@@ -13,8 +13,18 @@
 
 package org.netbeans.modules.debugger.jpda;
 
-import com.sun.jdi.*;
+import com.sun.jdi.Bootstrap;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Method;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.StackFrame;
+import com.sun.jdi.ThreadReference;
+import com.sun.jdi.TypeComponent;
+import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.Value;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 
@@ -26,7 +36,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.lang.reflect.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,6 +84,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 * @author   Jan Jancura
 */
 public class JPDADebuggerImpl extends JPDADebugger {
+    
+    private static final boolean startVerbose = 
+        System.getProperty ("netbeans.debugger.start") != null;
 
 
     // variables ...............................................................
@@ -492,15 +504,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    private static final java.util.regex.Pattern jvmVersionPattern =
-            java.util.regex.Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(_\\d+)?(-\\w+)?");
-    private static java.lang.reflect.Method  tcGenericSignatureMethod;
-    private static java.lang.reflect.Method  lvGenericSignatureMethod;
-
-    public static String getGenericSignature(TypeComponent component) {
+    public static String getGenericSignature (TypeComponent component) {
         if (tcGenericSignatureMethod == null) return null;
         try {
-            return (String) tcGenericSignatureMethod.invoke(component, new Object[0]);
+            return (String) tcGenericSignatureMethod.invoke 
+                (component, new Object[0]);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             return null;    // should not happen
@@ -510,7 +518,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    public static String getGenericSignature(LocalVariable component) {
+    public static String getGenericSignature (LocalVariable component) {
         if (lvGenericSignatureMethod == null) return null;
         try {
             return (String) lvGenericSignatureMethod.invoke(component, new Object[0]);
@@ -537,36 +545,37 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void setRunning (VirtualMachine vm, Operator o) {
+        if (startVerbose)
+            System.out.println("\nS JPDADebuggerImpl.setRunning ()");
         this.virtualMachine = vm;
-        tcGenericSignatureMethod = null;
-        if (Bootstrap.virtualMachineManager().minorInterfaceVersion() >= 5) {
-            java.util.regex.Matcher m = jvmVersionPattern.matcher(virtualMachine.version());
-            if (m.matches()) {
-                int minor = Integer.parseInt(m.group(2));
-                if (minor >= 5) {
-                    try {
-                        tcGenericSignatureMethod = TypeComponent.class.getMethod("genericSignature", new Class[0]);
-                        lvGenericSignatureMethod = LocalVariable.class.getMethod("genericSignature", new Class[0]);
-                    } catch (NoSuchMethodException e) {
-                        // the method is not available, ignore generics
-                    }
-                }
-            }
-        }
+        
+        initGenericsSupport ();
+        
         operator = o;
         Iterator i = vm.allThreads ().iterator ();
         while (i.hasNext ()) {
             ThreadReference tr = (ThreadReference) i.next ();
             if (tr.isSuspended ()) {
+                if (startVerbose)
+                    System.out.println("\nS JPDADebuggerImpl.setRunning () - " +
+                        "thread supended"
+                    );
                 setState (STATE_RUNNING);
                 virtualMachine.resume ();
+                if (startVerbose)
+                    System.out.println("\nS JPDADebuggerImpl.setRunning () - " +
+                        "thread supended - VM resumed - end"
+                    );
                 synchronized (LOCK2) {
                     LOCK2.notify ();
                 }
                 return;
             }
         }
+        
         setState (STATE_RUNNING);
+        if (startVerbose)
+            System.out.println("\nS JPDADebuggerImpl.setRunning () - end");
         synchronized (LOCK2) {
             LOCK2.notify ();
         }
@@ -594,6 +603,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public void finish () {
         synchronized (LOCK) {
+            if (startVerbose)
+                System.out.println("\nS StartActionProvider.finish ()");
             AbstractDICookie di = (AbstractDICookie) lookupProvider.lookupFirst 
                 (null, AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
@@ -601,12 +612,26 @@ public class JPDADebuggerImpl extends JPDADebugger {
             startingThread = null;
             try {
                 if (virtualMachine != null) {
-                    if (di instanceof AttachingDICookie)
+                    if (di instanceof AttachingDICookie) {
+                        if (startVerbose)
+                            System.out.println ("\nS StartActionProvider." +
+                                "finish () VM dispose"
+                            );
                         virtualMachine.dispose ();
-                    else
+                    } else {
+                        if (startVerbose)
+                            System.out.println ("\nS StartActionProvider." +
+                                "finish () VM exit"
+                            );
                         virtualMachine.exit (0);
+                    }
                 }
             } catch (VMDisconnectedException e) {
+                if (startVerbose)
+                    System.out.println ("\nS StartActionProvider." +
+                        "finish () VM exception " + e
+                    );
+                e.printStackTrace ();
             }
             virtualMachine = null;
             setState (STATE_DISCONNECTED);
@@ -618,6 +643,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 jsr45EngineProviders = null;
             }
             javaEngineProvider.getDestructor ().killEngine ();
+            if (startVerbose)
+                System.out.println ("\nS StartActionProvider." +
+                    "finish () end "
+                );
         }
     }
 
@@ -673,6 +702,33 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
 
     // private helper methods ..................................................
+    
+    private static final java.util.regex.Pattern jvmVersionPattern =
+            java.util.regex.Pattern.compile ("(\\d+)\\.(\\d+)\\.(\\d+)(_\\d+)?(-\\w+)?");
+    private static java.lang.reflect.Method  tcGenericSignatureMethod;
+    private static java.lang.reflect.Method  lvGenericSignatureMethod;
+
+
+    private void initGenericsSupport () {
+        tcGenericSignatureMethod = null;
+        if (Bootstrap.virtualMachineManager ().minorInterfaceVersion () >= 5) {
+            java.util.regex.Matcher m = jvmVersionPattern.matcher 
+                (virtualMachine.version ());
+            if (m.matches ()) {
+                int minor = Integer.parseInt (m.group (2));
+                if (minor >= 5) {
+                    try {
+                        tcGenericSignatureMethod = TypeComponent.class.
+                            getMethod ("genericSignature", new Class [0]);
+                        lvGenericSignatureMethod = LocalVariable.class.
+                            getMethod ("genericSignature", new Class [0]);
+                    } catch (NoSuchMethodException e) {
+                        // the method is not available, ignore generics
+                    }
+                }
+            }
+        }
+    }
     
     private void setState (int state) {
         if (state == this.state) return;

@@ -39,6 +39,9 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
 public class StartActionProvider extends ActionsProvider {
 //    private static transient String []        stopMethodNames = 
 //        {"main", "start", "init", "<init>"}; // NOI18N
+    
+    private static final boolean startVerbose = 
+        System.getProperty ("netbeans.debugger.start") != null;
 
     private JPDADebuggerImpl debuggerImpl;
     private ContextProvider lookupProvider;
@@ -55,6 +58,8 @@ public class StartActionProvider extends ActionsProvider {
     }
     
     public void doAction (Object action) {
+        if (startVerbose)
+            System.out.println("\nS StartActionProvider.doAction ()");
         JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
         if (debugger != null && debugger.getVirtualMachine() != null) return;
@@ -64,6 +69,10 @@ public class StartActionProvider extends ActionsProvider {
         Thread startingThread = new Thread (
             new Runnable () {
                 public void run () {
+                    if (startVerbose)
+                        System.out.println ("\nS StartActionProvider." +
+                            "doAction ().thread"
+                        );
                     try {
                         VirtualMachine virtualMachine = cookie.
                             getVirtualMachine ();
@@ -73,7 +82,15 @@ public class StartActionProvider extends ActionsProvider {
                             virtualMachine,
                             o
                         );
+                        if (startVerbose)
+                            System.out.println ("\nS StartActionProvider." +
+                                "doAction ().thread end: success"
+                            );
                     } catch (Exception ex) {
+                        if (startVerbose)
+                            System.out.println ("\nS StartActionProvider." +
+                                "doAction ().thread end: exception " + ex
+                            );
                         debuggerImpl.setException (ex);
                         ((Session) lookupProvider.lookupFirst 
                             (null, Session.class)).kill ();
@@ -82,8 +99,16 @@ public class StartActionProvider extends ActionsProvider {
             },
             "Debugger start"
         );
+        if (startVerbose)
+            System.out.println ("\nS StartActionProvider." +
+                "doAction () setStarting"
+            );
         debuggerImpl.setStarting (startingThread);
         startingThread.start ();
+        if (startVerbose)
+            System.out.println ("\nS StartActionProvider." +
+                "doAction () end"
+            );
     }
 
     public boolean isEnabled (Object action) {

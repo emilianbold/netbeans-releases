@@ -27,7 +27,8 @@ import org.openide.util.RequestProcessor;
  */
 public class JPDAConnect extends Task {
     
-    private static final boolean startVerbose = System.getProperty ("netbeans.debugger.start") != null;
+    private static final boolean startVerbose = 
+        System.getProperty ("netbeans.debugger.start") != null;
     
     private String host = "localhost";
 
@@ -103,12 +104,19 @@ public class JPDAConnect extends Task {
     
     public void execute () throws BuildException {
         if (startVerbose)
-            System.out.println("\nS JPDAConnect ***************");
+            System.out.println("\nS JPDAConnect.execute ()");
 
         if (name == null)
-            throw new BuildException ("name attribute must specify name of this debugging session", getLocation ());
+            throw new BuildException (
+                "name attribute must specify name of this debugging session", 
+                getLocation ()
+            );
         if (address == null)
-            throw new BuildException ("address attribute must specify port number or memory allocation unit name of connection", getLocation ());
+            throw new BuildException (
+                "address attribute must specify port number or memory " +
+                "allocation unit name of connection", 
+                getLocation ()
+            );
         if (transport == null)
             transport = "dt_socket";
 
@@ -127,11 +135,14 @@ public class JPDAConnect extends Task {
                     synchronized(lock) {
                         try {
                             if (startVerbose)
-                                System.out.println("\nS JPDAConnect2");
-                            // VirtualMachineManagerImpl can be initialized here, so needs
-                            // to be inside RP thread.
-                            if (startVerbose)
-                                System.out.println("\nS JPDADebugger.attach: host = " + host + " port = " + address + " transport = " + transport);
+                                System.out.println(
+                                    "\nS JPDAConnect.execute ().synchronized: " 
+                                    + "host = " + host + " port = " + address + 
+                                    " transport = " + transport
+                                );
+                            
+                            // VirtualMachineManagerImpl can be initialized 
+                            // here, so needs to be inside RP thread.
                             if (transport.equals ("dt_socket"))
                                 try {
                                     JPDADebugger.attach (
@@ -140,11 +151,28 @@ public class JPDAConnect extends Task {
                                         new Object[] {sourcePath}
                                     );
                                 } catch (NumberFormatException e) {
-                                    throw new BuildException ("address attribute must specify port number for dt_socket connection", getLocation ());
+                                    throw new BuildException (
+                                        "address attribute must specify port " +
+                                        "number for dt_socket connection", 
+                                        getLocation ()
+                                    );
                                 }
                             else
-                                JPDADebugger.attach (address, new Object[] {sourcePath});
+                                JPDADebugger.attach (
+                                    address, 
+                                    new Object[] {sourcePath}
+                                );
+                            if (startVerbose)
+                                System.out.println(
+                                    "\nS JPDAConnect.execute ().synchronized " +
+                                    "end: success"
+                                );
                         } catch (Throwable e) {
+                            if (startVerbose)
+                                System.out.println(
+                                    "\nS JPDAConnect.execute ().synchronized " +
+                                    "end: exception " + e
+                                );
                             lock[0] = e;
                         } finally {
                             lock.notify();
@@ -155,9 +183,19 @@ public class JPDAConnect extends Task {
             try {
                 lock.wait();
             } catch (InterruptedException e) {
+                if (startVerbose)
+                    System.out.println(
+                        "\nS JPDAConnect.execute () " +
+                        "end: exception " + e
+                    );
                 throw new BuildException(e);
             }
             if (lock[0] != null)  {
+                if (startVerbose)
+                    System.out.println(
+                        "\nS JPDAConnect.execute () " +
+                        "end: exception " + lock[0]
+                    );
                 throw new BuildException((Throwable) lock[0]);
             }
 
@@ -166,5 +204,10 @@ public class JPDAConnect extends Task {
             log ("Attached JPDA debugger to " + address);
         else
             log ("Attached JPDA debugger to " + host + ":" + address);
+        if (startVerbose)
+            System.out.println(
+                "\nS JPDAConnect.execute () " +
+                "end: success "
+            );
     }
 }
