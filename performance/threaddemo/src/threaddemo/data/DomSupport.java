@@ -20,6 +20,8 @@ import java.io.*;
 import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
@@ -50,6 +52,8 @@ import threaddemo.util.*;
  */
 public final class DomSupport extends DocumentParseSupport implements DomProvider, ErrorHandler, TwoWayListener, EntityResolver, EventListener {
     
+    private static final Logger logger = Logger.getLogger(DomSupport.class.getName());
+    
     static {
         // Need Xerces DOM - Crimson's DOM has no event support.
         System.setProperty("javax.xml.parsers.DocumentBuilderFactory", "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
@@ -58,6 +62,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     private final Phadhail ph;
     private final Set listeners = new HashSet();
     private boolean inIsolatingChange = false;
+    private boolean madeIsolatedChanges;
     
     public DomSupport(Phadhail ph, EditorCookie.Observable edit, Lock lock) {
         super(edit, lock);
@@ -72,7 +77,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
                     assert !inIsolatingChange;
                     try {
                         Object v = getValueBlocking();
-                        System.err.println("getDocument: " + v);//XXX
+                        logger.log(Level.FINER, "getDocument: {0}", v);
                         return (Document)v;
                     } catch (InvocationTargetException e) {
                         throw (IOException)e.getCause();
@@ -143,6 +148,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         final ChangeListener[] ls;
         synchronized (listeners) {
             if (listeners.isEmpty()) {
+                logger.log(Level.FINER, "DomSupport change with no listeners: {0}", ph);
                 return;
             }
             ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
@@ -151,7 +157,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         getLock().read(new Runnable() {
             public void run() {
                 assert !inIsolatingChange;
-                System.err.println("DS.fireChange");
+                logger.log(Level.FINER, "DomSupport change: {0}", ph);
                 for (int i = 0; i < ls.length; i++) {
                     ls[i].stateChanged(ev);
                 }
@@ -166,7 +172,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     protected final DerivationResult doDerive(StyledDocument document, List documentEvents, Object oldValue) throws IOException {
         assert !inIsolatingChange;
         // ignoring documentEvents
-        System.err.println("DS.doDerive");//XXX
+        logger.log(Level.FINER, "DomSupport doDerive: {0}", ph);
         if (oldValue != null) {
             ((EventTarget)oldValue).removeEventListener("DOMSubtreeModified", this, false);
         }
@@ -197,7 +203,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     
     protected final Object doRecreate(StyledDocument document, Object oldValue, Object derivedDelta) throws IOException {
         assert !inIsolatingChange;
-        System.err.println("doRecreate");//XXX
+        logger.log(Level.FINER, "DomSupport doRecreate: {0}", ph);
         Document newDom = (Document)derivedDelta;
         // ignoring oldValue, returning same newDom
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -250,33 +256,33 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     public void broken(TwoWayEvent.Broken evt) {
-        System.err.println("Received: " + evt);//XXX
+        logger.log(Level.FINER, "Received: {0}", evt);
         fireChange();
     }
     
     public void clobbered(TwoWayEvent.Clobbered evt) {
-        System.err.println("Received: " + evt);//XXX
+        logger.log(Level.FINER, "Received: {0}", evt);
         assert false;
     }
     
     public void derived(TwoWayEvent.Derived evt) {
-        System.err.println("Received: " + evt);//XXX
+        logger.log(Level.FINER, "Received: {0}", evt);
         fireChange();
     }
     
     public void forgotten(TwoWayEvent.Forgotten evt) {
-        System.err.println("Received: " + evt);//XXX
+        logger.log(Level.FINER, "Received: {0}", evt);
         assert false;
     }
     
     public void invalidated(TwoWayEvent.Invalidated evt) {
-        System.err.println("Received: " + evt);//XXX
+        logger.log(Level.FINER, "Received: {0}", evt);
         // just wait...
         initiate();
     }
     
     public void recreated(TwoWayEvent.Recreated evt) {
-        System.err.println("Received: " + evt);//XXX
+        logger.log(Level.FINER, "Received: {0}", evt);
         fireChange();
     }
     
@@ -287,12 +293,15 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
                     Document d = (Document)evt.getCurrentTarget();
                     Document old = (Document)getValueNonBlocking();
                     assert old == null || old == d;
+                    logger.log(Level.FINEST, "DomSupport got DOM event {0} on {1}, inIsolatingChange={2}", new Object[] {evt, ph, inIsolatingChange ? Boolean.TRUE : Boolean.FALSE});
                     if (!inIsolatingChange) {
                         try {
                             setDocument(d);
                         } catch (IOException e) {
                             assert false : e;
                         }
+                    } else {
+                        madeIsolatedChanges = true;
                     }
                 }
             });
@@ -305,17 +314,24 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     public void isolatingChange(Runnable r) {
         assert getLock().canWrite();
         assert !inIsolatingChange;
+        madeIsolatedChanges = false;
         inIsolatingChange = true;
         try {
             r.run();
         } finally {
             inIsolatingChange = false;
-            Document d = (Document)getValueNonBlocking();
-            if (d != null) {
-                try {
-                    setDocument(d);
-                } catch (IOException e) {
-                    assert false : e;
+            logger.log(Level.FINER, "Finished isolatingChange on {0}; madeIsolatedChanges={1}", new Object[] {ph, madeIsolatedChanges ? Boolean.TRUE : Boolean.FALSE});
+            if (madeIsolatedChanges) {
+                Document d = (Document)getValueNonBlocking();
+                if (d != null) {
+                    try {
+                        setDocument(d);
+                    } catch (IOException e) {
+                        assert false : e;
+                    }
+                } else {
+                    // ???
+                    fireChange();
                 }
             }
         }
