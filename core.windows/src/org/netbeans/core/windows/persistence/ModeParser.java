@@ -96,6 +96,20 @@ class ModeParser {
         //if (DEBUG) Debug.log(ModeParser.class, "load ENTER" + " mo:" + name);
         ModeConfig mc = new ModeConfig();
         readProperties(mc);
+        if (mc.kind == Constants.MODE_KIND_SLIDING && mc.side != null && !mc.permanent) {
+            // now we have the 4.0 anonymous mode for the slide bar. replace with the 
+            // predefined ones..
+            mc.permanent = true;
+            // well, the names are defined in core/ui.
+            // shall we at all care about the name? or is making it permanent just fine?
+//            if (mc.side.equals(Constants.BOTTOM)) {
+//                mc.name = "bottomSlidingSide"; //NOI18N
+//            } else if (mc.side.equals(Constants.LEFT)) {
+//                mc.name = "leftSlidingSide"; //NOI18N
+//            } else if (mc.side.equals(Constants.RIGHT)) {
+//                mc.name = "rightSlidingSide"; //NOI18N
+//            }
+        }
         readTCRefs(mc);
         //if (DEBUG) Debug.log(ModeParser.class, "load LEAVE" + " mo:" + name);
         return mc;

@@ -80,6 +80,9 @@ public class ModeConfig {
         if ((state != modeCfg.state) || (kind != modeCfg.kind)) {
             return false;
         }
+        if (side != modeCfg.side) {
+            return false;
+        }
         //Order of constraints array is defined
         if (constraints.length != modeCfg.constraints.length) {
             return false;
@@ -129,6 +132,9 @@ public class ModeConfig {
         hash = 37 * hash + name.hashCode();
         hash = 37 * hash + state;
         hash = 37 * hash + kind;
+        if (side != null) {
+            hash = 37 * hash + side.hashCode();
+        }
         for (int i = 0; i < constraints.length; i++) {
             hash = 37 * hash + constraints[i].hashCode();
         }
