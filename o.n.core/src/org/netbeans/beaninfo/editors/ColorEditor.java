@@ -39,8 +39,7 @@ public final class ColorEditor implements PropertyEditor {
   // static .....................................................................................
 
   // the bundle to use
-  static ResourceBundle bundle = NbBundle.getBundle (
-    "com.netbeans.developer.impl.locales.ExplorerBundle");
+  static ResourceBundle bundle = NbBundle.getBundle (ColorEditor.class);
 
   private static JColorChooser staticChooser;
 
@@ -536,6 +535,7 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  7    Gandalf   1.6         3/4/99   Jan Jancura     bundle moved
  *  6    Gandalf   1.5         2/5/99   David Simonek   
  *  5    Gandalf   1.4         2/5/99   Petr Hamernik   bugfix
  *  4    Gandalf   1.3         2/4/99   David Simonek   bugfix #1038

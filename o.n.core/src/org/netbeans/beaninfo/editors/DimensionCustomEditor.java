@@ -28,7 +28,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements NbCusto
 
   // the bundle to use
   static ResourceBundle bundle = NbBundle.getBundle (
-    "com.netbeans.developer.impl.locales.ExplorerBundle");
+    DimensionCustomEditor.class);
 
   /** Initializes the Form */
   public DimensionCustomEditor(DimensionEditor editor) {
@@ -142,6 +142,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements NbCusto
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */

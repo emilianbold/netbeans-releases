@@ -26,7 +26,7 @@ public class PointEditor extends ArrayOfIntSupport {
 
   // the bundle to use
   static ResourceBundle bundle = NbBundle.getBundle (
-    "com.netbeans.developer.impl.locales.ExplorerBundle");
+    PointEditor.class);
 
   public PointEditor() {
     super("java.awt.Point", 2);
@@ -61,6 +61,7 @@ public class PointEditor extends ArrayOfIntSupport {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */

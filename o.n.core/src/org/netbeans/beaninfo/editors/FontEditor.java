@@ -38,7 +38,7 @@ public class FontEditor implements PropertyEditor {
 
   // the bundle to use
   static ResourceBundle bundle = NbBundle.getBundle (
-    "com.netbeans.developer.impl.locales.ExplorerBundle");
+    FontEditor.class);
 
   static final String[] fonts = Toolkit.getDefaultToolkit ().getFontList ();
 
@@ -308,6 +308,7 @@ public class FontEditor implements PropertyEditor {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */

@@ -20,13 +20,12 @@ import com.netbeans.ide.util.NbBundle;
 
 /** A property editor for Insets class.
 * @author   Petr Hamernik
-* @version  0.10, 21 Jul, 1998
 */
 public class InsetsEditor extends ArrayOfIntSupport {
 
   // the bundle to use
   static ResourceBundle bundle = NbBundle.getBundle (
-    "com.netbeans.developer.impl.locales.ExplorerBundle");
+    InsetsEditor.class);
 
   public InsetsEditor() {
     super("java.awt.Insets", 4);
@@ -62,6 +61,7 @@ public class InsetsEditor extends ArrayOfIntSupport {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */

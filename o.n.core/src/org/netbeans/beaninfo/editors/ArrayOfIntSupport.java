@@ -24,7 +24,7 @@ import java.text.MessageFormat;
 */
 abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport {
   private static final String VALUE_FORMAT = com.netbeans.ide.util.NbBundle.getBundle(
-    "com.netbeans.developer.impl.locales.ExplorerBundle").getString("EXC_BadFormatValue");
+    ArrayOfIntSupport.class).getString("EXC_BadFormatValue");
                                                                 
   /** Length of the array of the integers */
   private int count;
@@ -168,6 +168,7 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */
