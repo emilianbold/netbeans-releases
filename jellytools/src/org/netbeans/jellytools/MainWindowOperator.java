@@ -138,6 +138,13 @@ public class MainWindowOperator extends JFrameOperator {
         return org.openide.awt.StatusDisplayer.getDefault().getStatusText();
     }
     
+    /** Sets given text to main window's status bar.
+     * @param newStatusText string to be displayed in status bar
+     */
+    public void setStatusText(String newStatusText) {
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(newStatusText);
+    }
+
     /** Returns singleton instance of StatusTextTracer.
      * @return singleton instance of StatusTextTracer
      */
