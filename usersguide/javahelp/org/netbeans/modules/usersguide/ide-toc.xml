@@ -228,7 +228,7 @@
       <tocitem text="Breakpoints View" target="debug.window.breakpoints"></tocitem>
       <tocitem text="Customizing the Display of a View" target="debug.view.customize"></tocitem>
     </tocitem>
-  <tocitem text="Debug Tabs in Output Window" target="debug.output.window"></tocitem>
+  <tocitem text="Debug Output" target="debug.output.window"></tocitem>
   <tocitem text="Source Editor Debugging Features" target="debug.source.editor"></tocitem>
   <tocitem text="Current Context in the Debugger" target="debug.current-context"></tocitem>
   </tocitem>
@@ -277,10 +277,9 @@
 
 
   <tocitem text="Managing Threads" target="debug.threads.jump">
-    <tocitem text="Suspending and Resuming a Thread" target="debug.threads.suspend" />
     <tocitem text="Making a Thread Current" target="debug.threads.change" />
+    <tocitem text="Suspending and Resuming a Thread" target="debug.threads.suspend" />
     <tocitem text="Viewing the Source Code of a Thread" target="debug.threads.source" />
-    <tocitem text="Thread Properties" target="debug.threads.properties" />
   </tocitem>
 
   <tocitem text="Using the Call Stack" target="debug.callstack.jump" >

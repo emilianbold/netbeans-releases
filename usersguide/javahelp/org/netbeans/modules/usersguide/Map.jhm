@@ -441,7 +441,6 @@
 <mapID target="debug.threads.suspend" url="debug/threads/suspend.html" />
 <mapID target="debug.threads.change" url="debug/threads/change.html" />
 <mapID target="debug.threads.source" url="debug/threads/source.html" />
-<mapID target="debug.threads.properties" url="debug/threads/thread_props.html" />
 
 <mapID target="debug.debugger.jump" url="debug/debugger/debugger_jump.html" />
 <mapID target="debug.debugger.default" url="debug/debugger/default.html" />
