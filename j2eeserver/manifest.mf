@@ -8,8 +8,3 @@ OpenIDE-Module-Requires: org.openide.TopManager, org.openide.compiler.Compilatio
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.debugger.core/3, org.netbeans.modules.debugger.jpda/1, org.openide.deprecated > 1.0, org.openide.src > 1.0, org.openide.compiler > 1.0, org.openide.execution > 1.0, org.openide.io > 1.0
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/impl/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/impl/Bundle.properties
-
-Name: org/netbeans/modules/j2ee/ui/ServerRegistryNode.class
-OpenIDE-Module-Class: Node
-Type: Environment
-
