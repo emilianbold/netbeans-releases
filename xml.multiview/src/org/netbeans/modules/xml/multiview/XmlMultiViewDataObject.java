@@ -150,7 +150,15 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 firePropertyChange(PROP_DOCUMENT_VALID, Boolean.FALSE, Boolean.TRUE);
             }
         }
-        firePropertyChange(PROP_SAX_ERROR, getErrorMessage(oldError), getErrorMessage(saxError));
+        
+        String oldErrorMessage = getErrorMessage(oldError);
+        String newErrorMessage = getErrorMessage(saxError);
+        if (oldErrorMessage==null) {
+            if (newErrorMessage!=null) {
+                firePropertyChange(PROP_SAX_ERROR, null, newErrorMessage);
+            }
+        } else if (!oldErrorMessage.equals(newErrorMessage))
+            firePropertyChange(PROP_SAX_ERROR,oldErrorMessage , newErrorMessage);
     }
 
     private String getErrorMessage(Exception e) {
