@@ -164,6 +164,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
             sb.append ("\n"); // NOI18N
             elem = (DTDElement)I.next();
             // <!ELEMENT ...
+            sb.append(Util.getString("FMT_DTDDoc") + "\n");
             sb.append ("<!ELEMENT ").append (elem.name).append (" "); // NOI18N
 
             if ( elem.empty ) {
