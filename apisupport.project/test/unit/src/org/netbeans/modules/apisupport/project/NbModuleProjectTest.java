@@ -58,8 +58,13 @@ public class NbModuleProjectTest extends TestBase {
         String[] cp = {
             "platform4/core/openide.jar",
             "platform4/core/openide-loaders.jar",
+            "ide4/modules/org-netbeans-modules-java-platform.jar",
+            "ide4/modules/org-netbeans-modules-project-ant.jar",
+            "ide4/modules/org-netbeans-modules-project-libraries.jar",
+            "ide4/modules/org-openidex-util.jar",
             "ide4/modules/org-netbeans-modules-projectapi.jar",
             "ide4/modules/org-netbeans-modules-projectuiapi.jar",
+            "platform4/modules/org-netbeans-modules-queries.jar",
             "ide4/modules/org-netbeans-api-java.jar",
         };
         StringBuffer cpS = new StringBuffer();
