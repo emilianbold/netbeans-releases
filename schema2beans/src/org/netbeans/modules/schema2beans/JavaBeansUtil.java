@@ -690,12 +690,18 @@ public class JavaBeansUtil {
             return Short.valueOf(value);
         if (typeName == "java.lang.Character" || typeName == "char")
             return new Character(value.charAt(0));
-        // Would like to add java.net.URI, but that's >=JDK1.4
         if (typeName == "java.net.URL") {
             try {
                 return new java.net.URL(value);
             } catch (java.net.MalformedURLException e) {
-                throw new RuntimeException(e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }
+        if (typeName == "java.net.URI") {
+            try {
+                return new java.net.URI(value);
+            } catch (java.net.URISyntaxException e) {
+                throw new RuntimeException(e);
             }
         }
         if (typeName == "java.math.BigDecimal")

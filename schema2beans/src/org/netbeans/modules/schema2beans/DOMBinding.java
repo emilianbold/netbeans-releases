@@ -372,6 +372,7 @@ public class DOMBinding {
         //System.out.println("cls="+cls+" node="+node+" ret="+ret);
 		if (!(java.lang.String.class).isAssignableFrom(cls)
 		    && (ret != null)) {
+            String clsName = cls.getName().intern();
 		    //
 		    //  Build an instance of the wrapper class (STRING type
 		    //  but not a String class). The wrapper must have a
@@ -379,40 +380,65 @@ public class DOMBinding {
 		    //
 		    
 		    try {
-			//  If cls implements Wrapper, use it first
-			if ((Wrapper.class).isAssignableFrom(cls)) {
-			    Wrapper w = (Wrapper)cls.newInstance();
-			    w.setWrapperValue(ret);
-			    return w;
-			}
-			//
-			//  Not very nice but we want to support the
-			//  Character/char case and there is no String
-			//  constructor for this core class.
-			//
-			if ((java.lang.Character.class).isAssignableFrom(cls)) {
-			    String 	s = ret.trim();
-			    char	c = '\0';
-			    if (s.length() == 0) {
-				if (ret.length() != 0)
-				    c = ret.charAt(0);
-			    }
-			    else
-				c = s.charAt(0);
+                //  If cls implements Wrapper, use it first
+                if ((Wrapper.class).isAssignableFrom(cls)) {
+                    Wrapper w = (Wrapper)cls.newInstance();
+                    w.setWrapperValue(ret);
+                    return w;
+                }
+                //
+                //  Not very nice but we want to support the
+                //  Character/char case and there is no String
+                //  constructor for this core class.
+                //
+                if ((java.lang.Character.class).isAssignableFrom(cls)) {
+                    String 	s = ret.trim();
+                    char	c = '\0';
+                    if (s.length() == 0) {
+                        if (ret.length() != 0)
+                            c = ret.charAt(0);
+                    }
+                    else
+                        c = s.charAt(0);
 			    
-			    return new Character(c);
-			}
-			if (charArrayClass.isAssignableFrom(cls))
-			    return ret.toCharArray();
-            return JavaBeansUtil.convertValue(cls, ret.trim());
-		    }
-		    catch(Exception e) {
+                    return new Character(c);
+                }
+                if (charArrayClass.isAssignableFrom(cls))
+                    return ret.toCharArray();
+                if (clsName == "org.netbeans.modules.schema2beans.QName"
+                    || clsName == "javax.xml.namespace.QName") {
+                    String ns = "";
+                    String localPart = null;
+                    String prefix = "";
+                    int colonPos = ret.indexOf(':');
+                    if (colonPos < 0) {
+                        localPart = ret;
+                    } else {
+                        prefix = ret.substring(0, colonPos);
+                        localPart = ret.substring(colonPos+1, ret.length());
+                        ns = findNamespace(prefix);
+                    }
+                    //System.out.println("localPart="+localPart+" ns="+ns+" prefix="+prefix);
+                    if (clsName == "org.netbeans.modules.schema2beans.QName") {
+                        return new
+                            org.netbeans.modules.schema2beans.QName(ns,
+                                                                    localPart,
+                                                                    prefix);
+                    }
+                    Constructor c =
+                        cls.getDeclaredConstructor(new Class[] {String.class,
+                                                                String.class,
+                                                                String.class});
+                    return c.newInstance(new Object[] {ns, localPart, prefix});
+                }
+                return JavaBeansUtil.convertValue(cls, ret.trim());
+		    } catch(Exception e) {
                 //TraceLogger.error(e);
-			throw new Schema2BeansRuntimeException(
-			MessageFormat.format(Common.getMessage(
-			    "CantInstanciatePropertyClass_msg"),
-			    new Object[] {cls.getName(), prop.getName(), 
-                              ret}), e);
+                throw new Schema2BeansRuntimeException(
+                             MessageFormat.format(Common.getMessage(
+                                         "CantInstanciatePropertyClass_msg"),
+                                         new Object[] {cls.getName(), prop.getName(),
+                                                        ret}), e);
 		    }
 		}
 		return ret;
@@ -453,6 +479,20 @@ public class DOMBinding {
             return Boolean.TRUE;
         }
     }
+
+    protected String findNamespace(String prefix) {
+        String targetName = "xmlns:"+prefix;
+        for (Node n = node; n != null; n = n.getParentNode()) {
+            NamedNodeMap nodeMap = n.getAttributes();
+            if (nodeMap == null)
+                continue;
+            Attr a = (Attr) nodeMap.getNamedItem(targetName);
+            if (a != null) {
+                return a.getValue();
+            }
+        }
+        return "";
+    }
     
     /**
      *	Return the value as a String of the object
@@ -465,8 +505,40 @@ public class DOMBinding {
             return new String((char[])value);
         } else if (value instanceof java.util.Calendar) {
             return calendarToString((java.util.Calendar) value);
-        } else
+        } else if (value instanceof org.netbeans.modules.schema2beans.QName) {
+            org.netbeans.modules.schema2beans.QName q =
+                (org.netbeans.modules.schema2beans.QName) value;
+            if ("".equals(q.getPrefix()))
+                return q.getLocalPart();
+            else
+                return q.getPrefix() + ":" + q.getLocalPart();
+        } else {
+            Class cls = value.getClass();
+            String clsName = cls.getName();
+            if (clsName.equals("javax.xml.namespace.QName")) {
+                try {
+                    Method prefixMethod = cls.getDeclaredMethod("getPrefix",
+                                                                new Class[0]);
+                    String prefix = (String) prefixMethod.invoke(value,
+                                                                 new Object[0]);
+                    Method localPartMethod = cls.getDeclaredMethod("getLocalPart",
+                                                                   new Class[0]);
+                    String localPart = (String) localPartMethod.invoke(value,
+                                                                       new Object[0]);
+                    if ("".equals(prefix))
+                        return localPart;
+                    else
+                        return prefix + ":" + localPart;
+                } catch (java.lang.NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                } catch (java.lang.IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } catch (java.lang.reflect.InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             return value.toString();
+        }
     }
 
 	public static String calendarToString(java.util.Calendar cal) {
@@ -518,15 +590,77 @@ public class DOMBinding {
 	    
 	    //	Use the value cache, otherwise get the Node tree value
 	    if ((oldValue == null) && (this.node != null))
-		oldValue = this.getValue(prop);
+            oldValue = this.getValue(prop);
 	    
 	    if (Common.isBean(prop.type))
-		bp.value = value;
+            bp.value = value;
 	    else
-		if (Common.isString(prop.type) && (value != null))
-		    bp.value = this.getWrapperValue(value);
-		else
-		    bp.value = value;
+            if (Common.isString(prop.type) && (value != null)) {
+                if (value instanceof org.netbeans.modules.schema2beans.QName) {
+                    org.netbeans.modules.schema2beans.QName q =
+                        (org.netbeans.modules.schema2beans.QName) value;
+                    String prefix = q.getPrefix();
+                    String declaredNS = "";
+                    if ("".equals(prefix)) {
+                        prefix = prop.getDtdName()+"_ns__";
+                        q = new org.netbeans.modules.schema2beans.QName(q.getNamespaceURI(),
+                                                    q.getLocalPart(),
+                                                    prefix);
+                    } else {
+                        declaredNS = findNamespace(prefix);
+                    }
+                    if ("".equals(declaredNS)) {
+                        // It's undeclared, so declare it.
+                        ((Element)node).setAttribute("xmlns:"+prefix,
+                                                     q.getNamespaceURI());
+                        prop.createTransientAttribute("xmlns:"+prefix);
+                    }
+                } else {
+                    Class cls = value.getClass();
+                    String clsName = cls.getName();
+                    if (clsName.equals("javax.xml.namespace.QName")) {
+                        try {
+                        Method prefixMethod = cls.getDeclaredMethod("getPrefix",
+                                                                new Class[0]);
+                        String prefix = (String) prefixMethod.invoke(value,
+                                                                 new Object[0]);
+                        Method nsMethod = cls.getDeclaredMethod("getNamespaceURI",
+                                                                new Class[0]);
+                        String ns = (String) nsMethod.invoke(value,
+                                                             new Object[0]);
+                        String declaredNS = "";
+                        if ("".equals(prefix)) {
+                            Method localPartMethod = cls.getDeclaredMethod("getLocalPart",
+                                                                   new Class[0]);
+                            String localPart = (String) localPartMethod.invoke(value,
+                                                                       new Object[0]);
+                            Constructor c = cls.getDeclaredConstructor(new Class[] {String.class, String.class, String.class});
+                            prefix = prop.getDtdName()+"_ns__";
+                            value = c.newInstance(new Object[] {ns, localPart,
+                                                                prefix});
+                        } else {
+                            declaredNS = findNamespace(prefix);
+                        }
+                        if ("".equals(declaredNS)) {
+                            // It's undeclared, so declare it.
+                            ((Element)node).setAttribute("xmlns:"+prefix,
+                                                         ns);
+                            prop.createTransientAttribute("xmlns:"+prefix);
+                        }
+                        } catch (java.lang.NoSuchMethodException e) {
+                            throw new RuntimeException(e);
+                        } catch (java.lang.IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        } catch (java.lang.InstantiationException e) {
+                            throw new RuntimeException(e);
+                        } catch (java.lang.reflect.InvocationTargetException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+                bp.value = this.getWrapperValue(value);
+            } else
+                bp.value = value;
 	}
 	
 	return oldValue;
