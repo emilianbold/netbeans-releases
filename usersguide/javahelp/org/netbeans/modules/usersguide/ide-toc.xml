@@ -27,7 +27,7 @@
     <tocitem text="Disabling Compilation for a Filesystem" target="filesystems.disable-compile" />
     <tocitem text="Unmounting a Filesystem" target="filesystems.removing" />
     <tocitem text="Hiding and Displaying a Filesystem" target="filesystems.hiding" />
-    <tocitem text="Configuring a Mounted Filesystem" target="filesystems.settings" />
+    <tocitem text="Setting Files to Back Up" target="filesystems.backup" />
     <tocitem text="Mounting the Java 2 SDK" target="filesystems.jdk" />
     <tocitem text="Specifying Files to Ignore in a Filesystem" target="filesystems.ignore-files" />
     <tocitem text="Comparing Two Files in the IDE" target="filesystems.diff" />

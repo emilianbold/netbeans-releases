@@ -49,12 +49,12 @@
 <mapID target="filesystems.openfile" url="filesystems/filesystems_openfile.html" />
 <mapID target="filesystems.order" url="filesystems/filesystems_order.html" />
 <mapID target="filesystems.removing" url="filesystems/filesystems_removing.html" />
-<mapID target="filesystems.settings" url="filesystems/filesystems_settings.html" />
 <mapID target="filesystems.disable-compile" url="filesystems/filesystems_disable-compile.html" />
 <mapID target="filesystems.diff" url="filesystems/filesystems_diff.html" />
 <mapID target="filesystems.jdk" url="filesystems/filesystems_jdk.html" />
 <mapID target="filesystems.ignore-files" url="filesystems/filesystems_ignore-files.html" />
 <mapID target="filesystems.hiding" url="filesystems/filesystems_hiding.html" />
+<mapID target="filesystems.backup" url="filesystems/filesystems_backup.html" />
 
 <mapID target="objects.clipboard-ops" url="objects/objects_clipboard-ops.html" />
 <mapID target="objects.file-extensions" url="objects/objects_file-extensions.html" />
@@ -200,9 +200,9 @@
 <mapID target="java.jdks.jump" url="java/jdks_jump.html" />
 
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Java Libraries-->
-<mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_settings.html" />
+<mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_JARpropsheet.html" />
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Java Libraries|[Fileystem]-->
-<mapID target="org.netbeans.modules.java.Filesystem.libraryFS" url="filesystems/filesystems_settings.html" />
+<mapID target="org.netbeans.modules.java.Filesystem.libraryFS" url="filesystems/filesystems_JARpropsheet.html" />
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Javadoc Documentation-->
 <mapID target="org.netbeans.modules.javadoc.FileSystem.docroots" url="javadoc/search_path.html" />
 <!--csh page for projects|settings|Java Sources-->
@@ -213,12 +213,12 @@
 <!--nodes for filesystems in Filesystem Settings-->
 <!--org.netbeans.core.ExJarFileSystem is used for JAR filesystem node in the Filesystems window-->
 <mapID target="org.netbeans.core.ExJarFileSystem" url="filesystems/filesystems_node-JAR.html" />
-<mapID target="org.netbeans.core.JarFileSystem" url="filesystems/filesystems_settings.html" />
-<mapID target="org.netbeans.core.ExLocalFileSystem" url="filesystems/filesystems_settings.html" />
-<mapID target="org.netbeans.core.LocalFileSystem" url="filesystems/filesystems_settings.html" />
+<mapID target="org.netbeans.core.JarFileSystem" url="filesystems/filesystems_node-JAR.html" />
+<mapID target="org.netbeans.core.ExLocalFileSystem" url="filesystems/filesystems_node-dir.html" />
+<mapID target="org.netbeans.core.LocalFileSystem" url="filesystems/filesystems_node-dir.html" />
 
 <!--Note: not sure when this ID is called-->
-<mapID target="org.openide.filesystems.JarFileSystem" url="filesystems/filesystems_settings.html" />
+<mapID target="org.openide.filesystems.JarFileSystem" url="filesystems/filesystems_node-JAR.html" />
 
    <!--Filesystems node--> 
    <mapID target="org.netbeans.core.DesktopNode$ProjectSettingsNode" url="pending.html" />
@@ -227,15 +227,18 @@
 
    <mapID target="org.netbeans.core.ExJarFileSystem_properties" url="filesystems/filesystems_JARpropsheet.html" />
    <mapID target="org.netbeans.core.ExJarFileSystem_expert" url="filesystems/filesystems_JARpropsheet.html" />
+
+<!--These two are probably obsolete-->
    <mapID target="org.netbeans.core.ExLocalFileSystem_properties" url="filesystems/filesystems_propsheet.html" />
-   <mapID target="org.netbeans.core.ExLocalFileSystem_expert" url="filesystems/filesystems_propsheet_expert.html" />   
+   <mapID target="org.netbeans.core.ExLocalFileSystem_expert" url="filesystems/filesystems_propsheet.html" />   
       
    <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalLocalFileSystem.properties" url="filesystems/filesystems_propsheet.html" />   
-   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalLocalFileSystem.expert" url="filesystems/filesystems_propsheet_expert.html" />   
+   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalLocalFileSystem.expert" url="filesystems/filesystems_propsheet.html" />   
    <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalJarFileSystem.properties" url="filesystems/filesystems_JARpropsheet.html" />   
    <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalJarFileSystem.expert" url="filesystems/filesystems_JARpropsheet.html" />  
 
-   <mapID target="org.openide.filesystems.FileSystemCapability.Bean" url="filesystems/filesystems_propsheet_capabilities.html" />   
+<!--probably not needed anymore starting in 3.6-->
+   <mapID target="org.openide.filesystems.FileSystemCapability.Bean" url="filesystems/filesystems_propsheet.html" />   
    
    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl" url="pending.html" /> 
    
@@ -927,8 +930,8 @@
    <mapID target="org.netbeans.core.ControlPanelNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.EnvironmentNode" url="objects/objects_runtime.html" />
-   <mapID target="org.netbeans.core.FSPoolNode" url="filesystems/filesystems_settings.html" /> 
-   <mapID target="org.netbeans.core.FSPoolNode$FSNode" url="filesystems/filesystems_settings.html" />
+   <mapID target="org.netbeans.core.FSPoolNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.FSPoolNode$FSNode" url="pending.html" />
    <mapID target="org.netbeans.core.LoaderPoolNode" url="objects/objects_object-types.html" /> 
    <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="objects/objects_object-types.html" /> 
    <mapID target="objects.object-types" url="objects/objects_object-types.html" /> 
@@ -1448,9 +1451,9 @@
    <mapID target="org.netbeans.beaninfo.editors.ExecutorEditor$NoExecutor" url="pending.html" />
    <mapID target="org.netbeans.core.ui.LookupNode" url="pending.html" />
 <!--for Filesystems Settings in customizer and in Options window-->
-   <mapID target="org.netbeans.core.ui.MountNode" url="filesystems/filesystems_settings.html" />
+   <mapID target="org.netbeans.core.ui.MountNode" url="filesystems/filesystems_node-dir.html" />
 <!--for Filesystems Settings for default filesystem-->
-   <mapID target="org.netbeans.core.projects.SystemFileSystem" url="filesystems/filesystems_settings.html" />
+   <mapID target="org.netbeans.core.projects.SystemFileSystem" url="pending.html" />
 <!--for Modules node in Options window-->
    <mapID target="org.netbeans.core.ui.ModuleNode" url="modules/modulenodes.html" />
    <mapID target="org.netbeans.core.ui.ModuleNode$Item" url="modules/modulenodes.html" />   
