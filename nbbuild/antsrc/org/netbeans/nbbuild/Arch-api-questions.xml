@@ -23,7 +23,7 @@
     </category>
     <category id="dep" name="Project and platform dependencies">
         <question id="dep-nb">
-            What other NetBeans projects this one depends on?
+            What other NetBeans projects does this one depend on?
             <hint>
             If you want, describe such projects as imported API using
             the <code>&lt;api name="identification" type="import or export" category="stable" url="where is the description" /&gt;</code>
@@ -31,7 +31,7 @@
         </question>
         
         <question id="dep-non-nb">
-            What other non-NetBeans projects this one depends on?
+            What other projects outside NetBeans does this one depend on?
             
             <hint>
             Some non-NetBeans projects are packaged as NetBeans modules
@@ -42,8 +42,8 @@
         </question>
         
         <question id="dep-platform">
-            On which platforms your module run? Any? Does it run in the same
-            way?
+            On which platforms does your module run? <!--Any?--> Does it run in the same
+            way on each?
             <hint>
             If your module is using JNI or deals with special differences of
             OSes like filesystems, etc. please describe here what they are.
@@ -51,7 +51,7 @@
         </question>
         
         <question id="dep-jre">
-            Which version of JRE you need (1.2, 1.3, 1.4, etc.)?
+            Which version of JRE do you need (1.2, 1.3, 1.4, etc.)?
             <hint>
             It is expected that if your module runs on 1.x that it will run 
             on 1.x+1 if no, state that please. Also describe here cases where
@@ -60,14 +60,14 @@
         </question>
 
         <question id="dep-jrejdk">
-            Do you require JDK or is JRE enough?
+            Do you require the JDK or is the JRE enough?
         </question>
                 
     </category>
 
     <category id="deploy" name="Deployment">
         <question id="deploy-jar">
-            Do you deploy just module JAR file(s) or some other files?
+            Do you deploy just module JAR file(s) or other files as well?
             <hint>
             If your module consist just from one module JAR file, just confirm that.
             If it uses more than one JAR, describe where there are located, how
@@ -80,16 +80,18 @@
         </question>
     
         <question id="deploy-nbm">
-            Can you deploy NBM via AutoUpdate center?
+            Can you deploy an NBM via the Update Center?
             <hint>
             If not why?
             </hint>
         </question>
         
         <question id="deploy-shared">
-            Do you need to be installed in shared location or only in user directory?
+            Do you need to be installed in the shared location only, or in the user directory only,
+            or can your module be installed anywhere?
             <hint>
             Installation location shall not matter, if it does explain why.
+            Consider also whether <code>InstalledFileLocator</code> can help.
             </hint>
         </question>
         
@@ -121,13 +123,14 @@
             </hint>
         </question>
         <question id="compat-standards">
-            Does the module implements or defines any standards? Is the 
-            implementation exact or it deviates somehow?
+            Does the module implement or define any standards? Is the 
+            implementation exact or does it deviate somehow?
         </question>
         <question id="compat-version">
-            Does your module properly coexists with earlier and future
-            versions? Can you correctly read settings? Will future
-            versions be able to read settings?
+            Can your module coexist with earlier and future
+            versions? Can you correctly read all old settings? Will future
+            versions be able to read your current settings? Can you read
+            or politely ignore settings stored by a future version?
             
             <hint>
             Very helpful for reading settings is to store version number
@@ -150,9 +153,9 @@
             </hint>
         </question>
         <question id="resources-layer">
-            Does your module provide own layer? Does it create some files or
-            folders on it? What it is trying to communicate by that and with which 
-            component?
+            Does your module provide own layer? Does it create any files or
+            folders in it? What it is trying to communicate by that and with which 
+            components?
             
             <hint>
             NetBeans allows automatic and declarative installation of resources 
@@ -175,8 +178,8 @@
         </question>
         
         <question id="resources-mask">
-            Does your module mask/hide/override any resource provided by another one in
-            module layer? 
+            Does your module mask/hide/override any resources provided by other modules in
+            their layers?
             
             <hint>
             If you mask a file provided by another module, you probably depend
@@ -190,8 +193,8 @@
     
     <category id="lookup" name="Lookup of components">
         <question id="lookup-lookup">
-            Does your module uses <code>org.openide.util.Lookup</code>
-            to find any components to communicate to? Which ones?
+            Does your module use <code>org.openide.util.Lookup</code>
+            to find any components to communicate with? Which ones?
             
             <hint>
             Please describe the interfaces you are searching for, where 
@@ -201,14 +204,14 @@
             </hint>
         </question>
         <question id="lookup-register">
-            Do you register anything into the lookup for other to find? 
+            Do you register anything into lookup for other code to find?
             <hint>
             Do you register using layer file or using <code>META-INF/services</code>?
             Who is supposed to find your component?
             </hint>
         </question>
         <question id="lookup-remove">
-            Are removing entries of other modules from the lookup? 
+            Do you remove entries of other modules from lookup?
             <hint>
             Why? Of course, that is possible, but it can be dangerous. Is the module
             your are masking resource from aware of what you are doing?
@@ -224,8 +227,8 @@
     
     <category id="exec" name="Execution Environment">
         <question id="exec-property">
-            Is execution of your code influenced by any environment of
-            system (<code>System.getProperty</code>) property?
+            Is execution of your code influenced by any environment or
+            Java system (<code>System.getProperty</code>) property?
             
             <hint>
             If there is a property that can change the behaviour of your 
@@ -240,7 +243,7 @@
         </question>
         
         <question id="exec-component">
-            Is execution of your code influenced by (string) property
+            Is execution of your code influenced by any (string) property
             of any of your components?
             
             <hint>
@@ -254,14 +257,14 @@
         </question>
 
         <question id="exec-classloader">
-            Does your code uses own classloader?
+            Does your code create its own class loader(s)?
             <hint>
             A bit unusual. Please explain why and what for.
             </hint>
         </question>
                 
         <question id="exec-reflection">
-            Does your code uses java.lang.reflect to execute some other code?
+            Does your code use Java Reflection to execute other code?
             <hint>
             This usually indicates a missing or unsufficient API in the other
             part of the system. If the other side is not aware of your dependency
@@ -270,7 +273,7 @@
         </question>
         
         <question id="exec-privateaccess">
-            Are you aware of any other part of the system calling some of 
+            Are you aware of any other parts of the system calling some of 
             your methods by reflection?
             <hint>
             If so, describe the "contract" as an API. Likely private or friend one, but
@@ -281,16 +284,16 @@
     
     <category id="format" name="Format of files and protocols">
         <question id="format-types">
-            Which file formats your code reads or writes on disk?
+            Which file formats (if any) does your code read or write on disk?
         </question>
         
         <question id="format-dnd">
-            Which protocols your code understands during drag-n-drop?
+            Which protocols (if any) does your code understand during Drag &amp; Drop?
         </question>
         
         <question id="format-clipboard">
-            Which protocols your code reads/inserts when communicating with
-            clipboard?
+            Which data flavors (if any) does your code read from or insert to
+            the clipboard?
         </question>
         
     </category>
@@ -298,10 +301,10 @@
     
     <category id="performance" name="Performance and Scalability">
         <question id="perf-startup">
-            Does your module executes anything on startup?
+            Does your module run any code on startup?
         </question>
         <question id="perf-exit">
-            Does your module executes anything on exit?
+            Does your module run any code on exit?
         </question>
         <question id="perf-scale">
             Which external criteria influence the performance of your
@@ -310,22 +313,23 @@
             Please include some estimates.
         </question>
         <question id="perf-limit">
-            Are there any limits in number/size of elements your code
-            can handle?
+            Are there any hardcoded or practical limits in the number or size of
+            elements your code can handle?
         </question>
         <!-- multithreading -->
     
         <question id="perf-mem">
-            What is the amount of memory your component occupies? Estimate
-            with a relaction to the number of windows, etc.
+            How much memory does your component consume? Estimate
+            with a relation to the number of windows, etc.
         </question>
         
         <question id="perf-wakeup">
-            Is any piece of your code waking up periodically?
+            Does any piece of your code wake up periodically and do something
+            even when the system is otherwise idle (no user interaction)?
         </question>
 
         <question id="perf-progress">
-            Does your module executes some long running task?
+            Does your module execute any long-running tasks?
             <hint>Typically they are tasks like connecting over
             network, computing huge amount of data, compilation.
             Such communication should be done asynchronously (for example
@@ -335,14 +339,13 @@
         </question>
 
         <question id="perf-huge_dialogs">
-            Does your module contain any dialogs or wizards with huge
-            amount of GUI controls like combo boxes, lists, trees, text
-            areas?
+            Does your module contain any dialogs or wizards with a large number of
+            GUI controls such as combo boxes, lists, trees, or text areas?
         </question>
 
         <question id="perf-menus">
-            Does your module use dynamically changing context menus or
-            context sensitive actions with complicated logic for enable/disable?
+            Does your module use dynamically updated context menus, or
+            context-sensitive actions with complicated enablement logic?
         </question>
         
     </category>
