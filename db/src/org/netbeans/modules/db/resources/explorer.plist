@@ -2038,6 +2038,12 @@
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
+			delimiter,
+			{
+				name = "Refresh";
+				class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
+				perm = "write";
+			},
 			delimiter
 		);
 	};
