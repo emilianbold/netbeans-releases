@@ -295,30 +295,30 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
 
         packageLabel.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel2"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(packageLabel, gridBagConstraints);
 
         packageComboBox.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(packageComboBox, gridBagConstraints);
 
         fileLabel.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
         add(fileLabel, gridBagConstraints);
 
         fileTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 0);
         add(fileTextField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -443,8 +443,17 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         ModelItem ch[] = groupItem.getChildren();
         FileObject root = groupItem.group.getRootFolder();
         
-        String relPath = FileUtil.getRelativePath( root, folder ).replace( '/', '.' ); //NOI18N
-                
+        String relPath = FileUtil.getRelativePath( root, folder );
+        
+        if ( relPath == null ) {
+            // Group Root folder is no a parent of the preselected folder
+            // No package should be selected
+            return null; 
+        }        
+        else {
+            relPath = relPath.replace( '/', '.' ); //NOI18N
+        }        
+            
         for( int i = 0; i < ch.length; i++ ) {
             if ( ch[i].toString().equals( relPath ) ) {
                 return ch[i];
