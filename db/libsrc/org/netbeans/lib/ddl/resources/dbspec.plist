@@ -1962,4 +1962,33 @@
     };
   };
 
+//  ********************************************************************************
+//
+//  Firebird
+//
+//  ********************************************************************************/
+
+  "Firebird something == notyet impelemented" = {
+    DatabaseProductName = "Firebird something == notyet impelemented";
+    TypeMap = {
+      java.sql.Types.BLOB = BLOB;  //JDBC 2.0 A type representing an SQL Binary Large Object
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+    SizelessTypes = (BLOB,DATE,"DOUBLE PRECISION",INTEGER,SMALLINT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
+    CharacterTypes = (CHAR,VARCHAR);
+
+  };
+
+
 }
