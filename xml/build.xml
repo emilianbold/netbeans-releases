@@ -14,9 +14,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="xml" default="netbeans" basedir=".">
 
-    <property name="nb_root" location="../../nb_all"/>
-    <property name="bin_root" location="../../nbextra"/>
-    <property name="nbext_root" location="${nb_root}/nbbuild"/>
+    <property name="nbroot" location=".."/>
+    <property name="binroot" location="${nbroot}/../nbextra"/>
+    <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
     <property name="submodules" value="tax, core, catalog, tools, text-edit, tree-edit, css"/>

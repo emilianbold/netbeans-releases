@@ -17,11 +17,11 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xml_root" location=".."/>
     <property name="core_root" location="../core"/>
 
-    <property name="nb_root" location="${xml_root}/../../nb_all"/>
-    <property name="bin_root" location="${xml_root}/../../nbextra"/>
-    <property name="nbext_root" location="${nb_root}/nbbuild"/>
+    <property name="nbroot" location="${xml_root}/.."/>
+    <property name="binroot" location="${nbroot}/../nbextra"/>
+    <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
-    <property name="license.file" location="${nb_root}/nbbuild/standard-nbm-license.txt"/>
+    <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="storepass" value="?"/>
@@ -50,10 +50,10 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Compiling XML catalog module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
-                <fileset dir="${nb_root}/openide/netbeans/lib">
+                <fileset dir="${nbroot}/openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
-                <pathelement location="${bin_root}/core/release/lib/ext/xerces.jar"/>
+                <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
                 <pathelement location="${core_root}/src/"/>
             </classpath>
         </javac>
@@ -69,8 +69,8 @@ Microsystems, Inc. All Rights Reserved.
         <locjar jarfile="netbeans/modules/xml-catalog.jar"
                 manifest="manifest-subst.mf"
                 compress="false">
-            <fileset dir="src" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
-            <fileset dir="compat/src" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="compat/src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
         </locjar>    
     </target>
@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
         <genjavadoc destdir="javadoc" modules="openide,xml/catalog">
-            <topdir path="${nb_root}"/>
+            <topdir path="${nbroot}"/>
         </genjavadoc>
     </target>
 
