@@ -350,6 +350,11 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/AWTForms.html"/>
                 
+                <attr name="Applet.java/Dialog.java" boolvalue="true" />
+                <attr name="Dialog.java/Frame.java" boolvalue="true" />
+                <attr name="Frame.java/Panel.java" boolvalue="true" />
+                <attr name="Panel.java/Package.shadow" boolvalue="true" />
+                
                 <file name="Applet.java" url="templates/AWTForms/Applet_java">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                     <attr name="template" boolvalue="true" />

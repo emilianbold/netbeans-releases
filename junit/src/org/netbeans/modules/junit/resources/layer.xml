@@ -32,6 +32,10 @@
         <folder name="JUnit">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/JUnitFolder.html"/>
+            <attr name="EmptyJUnitTest.java/SimpleJUnitTest.java" boolvalue="true"/>
+            <attr name="TestSuite.java/Package.shadow" boolvalue="true"/>
+            <attr name="SimpleJUnitTest.java/TestSuite.java" boolvalue="true"/>
+            <attr name="SimpleJUnitTest.java/Package.shadow" boolvalue="true"/>
             
             <file name="EmptyJUnitTest.java" url="templates/SimpleJUnitTest.java.template">
                 <attr name="template" boolvalue="true"/>

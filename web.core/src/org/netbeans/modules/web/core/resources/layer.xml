@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
   <folder name="Templates">
-    <attr name="Beans/JSP_Servlet" boolvalue="true"/>
+    <attr name="JSP_Servlet/Classes" boolvalue="true"/>
     <folder name="JSP_Servlet">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardURL" 

@@ -21,6 +21,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Beans">
       <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/Beans.html" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
+      
+      <attr name ="PropertyEditor.java/Package.shadow" boolvalue="true" />
 
       <file name="Bean.java" url="templates/Bean.template">
          <attr name="template" boolvalue="true" />
