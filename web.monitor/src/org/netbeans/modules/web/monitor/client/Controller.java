@@ -64,15 +64,12 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Children.SortedArray;
 import org.openide.options.*;
+import org.openide.util.HttpServer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-// Note dependency on other module! 
-import org.netbeans.modules.httpserver.*;
-
 import org.netbeans.modules.web.monitor.server.Constants;
 import org.netbeans.modules.web.monitor.data.*;
-
 
 public class Controller  {
 
@@ -418,7 +415,7 @@ public class Controller  {
 
 	if(debug) 
 	    log("Replay transaction from node " + node.getName()); // NOI18N
-		
+
 	if(!checkServer(true)) return;
 
 	TransactionNode tn = null; 
@@ -1210,61 +1207,6 @@ public class Controller  {
 	return md;
     }
 
-    boolean checkServer(boolean replay) {
-
-	boolean serverRunning = true;
-
-	try {
-	    if(debug) 
-		log("Getting the server setting"); //NOI18N 
-	    
-	    HttpServerSettings setting = 
-		(HttpServerSettings)SystemOption.findObject 
-		(HttpServerSettings.class);
-	    if(setting == null) {
-		if(debug) 
-		    log("No server setting object"); //NOI18N 
-		serverRunning = false; 
-	    }
-	    else if(!setting.isRunning()) {
-		if(debug) log("Now starting the internal server"); // NOI18N
-		setting.setRunning(true);
-	    }
-	    if(!setting.isRunning()) {
-		if(debug) 
-		    log("Server is not running"); //NOI18N 
-		serverRunning = false;
-	    }
-	}
-	catch(Exception ex) {
-	    serverRunning = false;
-	}
-	if(!serverRunning) {
-
-	    Object[] options = {
-		NbBundle.getBundle(Controller.class).getString("MON_OK"),
-	    };
-	    String msg = null;
-	    if(replay) msg = NbBundle.getBundle(Controller.class).getString("MON_CantReplay"); 
-	    else { 
-		msg = NbBundle.getBundle(Controller.class).getString("MON_NoServer");
-	    }
-	    
-	    msg = msg.concat(" "); //NOI18N
-	    msg = msg.concat(NbBundle.getBundle(Controller.class).getString("MON_Start_server"));
-		
-	    NotifyDescriptor noServerDialog = 
-		new NotifyDescriptor(msg,
-				     NbBundle.getBundle(Controller.class).getString("MON_NoServerTitle"),
-				     NotifyDescriptor.DEFAULT_OPTION,
-				     NotifyDescriptor.INFORMATION_MESSAGE,
-				     options,
-				     options[0]);
-	    DialogDisplayer.getDefault().notify(noServerDialog);
-	}
-	return serverRunning;
-    }
-
     private void showReplay(URL url) throws UnknownHostException,
 	                                    IOException {
 	
@@ -1431,6 +1373,35 @@ public class Controller  {
     // PENDING - use the logger instead
     private static void log(final String s) {
 	System.out.println("Controller::" + s); //NOI18N
+    }
+
+
+    boolean checkServer(boolean replay) { 
+	try { 
+	    HttpServer.getRepositoryRoot();
+	    return true;
+	}
+	catch(Throwable t) { 
+	    Object[] options = {
+		NbBundle.getBundle(Controller.class).getString("MON_OK"),
+	    };
+	    String msg = null;
+	    if(replay) 
+		msg = NbBundle.getBundle(Controller.class).getString("MON_CantReplay"); 
+	    else
+		msg = NbBundle.getBundle(Controller.class).getString("MON_NoServer");
+
+	    
+	    NotifyDescriptor noServerDialog = 
+		new NotifyDescriptor(msg,
+				     NbBundle.getBundle(Controller.class).getString("MON_NoServerTitle"),
+				     NotifyDescriptor.DEFAULT_OPTION,
+				     NotifyDescriptor.INFORMATION_MESSAGE,
+				     options,
+				     options[0]);
+	    DialogDisplayer.getDefault().notify(noServerDialog);
+	}
+	return false;
     }
     
 
