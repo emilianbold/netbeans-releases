@@ -134,14 +134,14 @@ public class NbExecutor extends Task {
               }
               catch (BuildException e) {
                   log("Exception during executiong test (module="+test.getModule()+",type="+test.getType()+"):\n"+e.toString(),Project.MSG_ERR);
-                  logError(e,outputfile);
+                  logError("module="+test.getModule()+",type="+test.getType()+": "+e.toString(),outputfile);
               }
             }
             if (mode.equalsIgnoreCase("run") && msetup != null) executeStop(msetup);
           }
           catch (BuildException e) {
               log("Exception during executiong test:\n"+e.toString(),Project.MSG_ERR);
-              logError(e,null);
+              logError(e.toString(),null);
           }
         } 
         if (mode.equalsIgnoreCase("run") && setup != null) executeStop(setup);
@@ -162,14 +162,14 @@ public class NbExecutor extends Task {
         return file;
     }
     
-    private void logError(Exception e, File f) {
+    private void logError(String mess, File f) {
         String prop = System.getProperty(ERRORS_PROP,"");   
-        prop = prop + "\n" + e.toString();
+        prop = prop + "\n" + mess;
         System.setProperty(ERRORS_PROP,prop);
         if (f != null) {
           try {  
             BufferedWriter wr = new BufferedWriter(new FileWriter(f.getAbsolutePath().substring(0,f.getAbsolutePath().length()-3)+"errors"));
-            wr.write(e.toString());
+            wr.write(mess);
             wr.close();
           }
           catch (IOException exp) {
@@ -206,7 +206,7 @@ public class NbExecutor extends Task {
                  }
                  catch (BuildException e) {
                      log("Exception during executiong setup:\n"+e.toString(),Project.MSG_ERR);
-                     logError(e,outputfile);
+                     logError(e.toString(),outputfile);
                  }
                }
            };
@@ -222,7 +222,7 @@ public class NbExecutor extends Task {
             }              
             catch (BuildException e) {
                 log("Exception during executiong setup:\n"+e.toString(),Project.MSG_ERR);
-                logError(e,outputfile);
+                logError(e.toString(),outputfile);
             }
         }
     }
