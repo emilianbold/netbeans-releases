@@ -3,3 +3,4 @@
 **/src/**/*.jar
 **/src/**/*.xml
 **/src/**/*.ser
+**/src/**/*.txt
