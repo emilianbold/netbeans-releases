@@ -536,9 +536,45 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
         
         result.setName(bundle.getString("LBL_panel_ChooseClass"));
         
+        addAccessibilityDescriptions(result);
         setUpInteraction();
         
         return result;
+    }
+    
+    /**
+     * Sets up tooltips and accessibility names and descriptions
+     * for GUI elements of the wizard panel.
+     *
+     * @param  wizPanel  wizard panel whose elements need to be made accessible.
+     */
+    private void addAccessibilityDescriptions(Component wizPanel) {
+        final ResourceBundle bundle
+                = NbBundle.getBundle(SimpleTestStepLocation.class);
+        
+        tfClassToTest.setToolTipText(
+                bundle.getString("SimpleTest.classToTest.toolTip"));    //NOI18N
+        tfClassToTest.getAccessibleContext().setAccessibleName(
+                bundle.getString("SimpleTest.classToTest.AN"));         //NOI18N
+        tfClassToTest.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("SimpleTest.classToTest.AD"));         //NOI18N
+        
+        btnBrowse.setToolTipText(
+                bundle.getString("SimpleTest.btnBrowse.toolTip"));      //NOI18N
+        btnBrowse.getAccessibleContext().setAccessibleName(
+                bundle.getString("SimpleTest.btnBrowse.AN"));           //NOI18N
+        btnBrowse.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("SimpleTest.btnBrowse.AD"));           //NOI18N
+        
+        cboxLocation.setToolTipText(
+                bundle.getString("SimpleTest.location.toolTip"));       //NOI18N
+        cboxLocation.getAccessibleContext().setAccessibleName(
+                bundle.getString("SimpleTest.location.AN"));            //NOI18N
+        cboxLocation.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("SimpleTest.location.AD"));            //NOI18N
+        
+        wizPanel.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("SimpleTest.AD"));                     //NOI18N
     }
     
     /**
@@ -1716,6 +1752,9 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
                     case 0:
                         break;
                     case 1:
+                        if (c instanceof JComboBox) {
+                            System.out.println("FOUND COMBO!");
+                        }
                         stack.add(content[0]);
                         lastIndex++;
                         break;
