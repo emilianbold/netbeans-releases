@@ -16,6 +16,8 @@ package org.netbeans.modules.project.ui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -454,13 +456,18 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         
     }
     
-    private static class TemplatesListView extends ListView {
+    private static class TemplatesListView extends ListView implements ActionListener {
         public TemplatesListView () {
             super ();
             // bugfix #44717, Enter key must work regardless if TemplatesPanels is focused
             list.unregisterKeyboardAction (KeyStroke.getKeyStroke (KeyEvent.VK_ENTER, 0, false));
             getAccessibleContext ().setAccessibleName ("OUTER LIST");
             getAccessibleContext ().setAccessibleDescription ("DESC OUTER LIST");
+            setDefaultProcessor( this );
+        }
+        
+        public void actionPerformed( ActionEvent e ) {
+            // Do nothing
         }
     }
     
