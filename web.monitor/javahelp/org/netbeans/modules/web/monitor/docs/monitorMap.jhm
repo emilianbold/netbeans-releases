@@ -4,7 +4,7 @@
          "http://java.sun.com/products/javahelp/map_1_0.dtd">
 <map version="1.0">
 
-<!-- last updated 08feb02 -->
+<!-- last updated 30april02 -->
 
 <!-- 
 help\
@@ -20,5 +20,10 @@ help\
 	<mapID target="monitor_sort" url="monitor/sort.html" />
 	<mapID target="monitor_store" url="monitor/store.html" />
 	<mapID target="monitor_view" url="monitor/view.html" />
+
+	<mapID target="org.netbeans.modules.web.monitor.client.MonitorAction"
+url="ctx_monitorintro.html" />
+
+
 
 </map>

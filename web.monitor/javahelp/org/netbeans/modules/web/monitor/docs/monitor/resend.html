@@ -6,7 +6,7 @@ Use is subject to license terms.
 > -->
 <html>
 <head>
-<meta name="lastupdated" content="17april02">
+<meta name="lastupdated" content="24april02">
 
 <title>Editing and Replaying Requests</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -34,6 +34,16 @@ Use is subject to license terms.
   <li>Choose Replay from the contextual menu. The page resulting from the request 
     appears in the browser you chose.</li>
 </ol>
+<table>
+  <tr> 
+    <td valign="top"><img src="../images/warn.gif" width="16" height="16"></td>
+    <td valign=top align=left> 
+      <p>Note that if a servlet or JSP page reads data directly from the <code>ServletInputStream</code> 
+        as opposed to using methods from the <code>getParameter</code> family, 
+        requests to that resource will not replay correctly.</p>
+    </td>
+  </tr>
+</table>
 <p><b>To edit and then resend a monitor data record:</b></p>
 <ol>
   <li>Right-click the monitor data record to be edited.</li>
