@@ -252,17 +252,17 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     /**
      * Adds Ejb
      * <p/>
-     * One ejb element element. The ejb-name is
+     * One entity element element. The entity-name is
      * set to Ejb_&lt clazz&gt by default.
      *
-     * @param clazz      class name of ejb
-     * @param urlPattern path to ejb class (pkg/foo/Bar)
+     * @param clazz      class name of entity
+     * @param urlPattern path to entity class (pkg/foo/Bar)
      */
     public void createDefaultEJBConfiguration(String clazz, String urlPattern) {
         // PENDING: should be synchronized
         EnterpriseBeans a = getEjbJar().getEnterpriseBeans();
         try {
-            Session newEjb = a.newSession();//Ludo todo add more ejb type cmp, mdb.
+            Session newEjb = a.newSession();//Ludo todo add more entity type cmp, mdb.
             newEjb.setEjbClass(clazz);
             String name = "Ludo was there Name123";//DDUtils.findFreeName (a.getServlet (), "EjbName" , "Ejb_"+clazz); // NOI18N
             newEjb.setEjbName(name);
@@ -309,7 +309,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      * @param evt - object that describes the change.
      */
     public void deploymentChange(DDChangeEvent evt) {
-        // fix of #28542, don't add ejb, if it's already defined in DD
+        // fix of #28542, don't add entity, if it's already defined in DD
         if (evt.getType() == DDChangeEvent.EJB_ADDED && EjbDefined(evt.getNewValue())) {
             return;
         }
@@ -352,7 +352,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         }
         Ejb[] ejbs = ejbJar.getEnterpriseBeans().getEjbs();
         for (int i = 0; i < ejbs.length; i++) {
-            //Ludo TODO need to check the other class names: remote, home....depending on the ejb type
+            //Ludo TODO need to check the other class names: remote, home....depending on the entity type
             if (ejbs[i].getEjbClass() != null && ejbs[i].getEjbClass().equals(classname)) {
                 return true;
             }
@@ -699,9 +699,10 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         return false;
     }
 
-    /** Called on close-discard option.
-    * The data model is updated from corresponding file object(s).
-    */
+    /**
+     * Called on close-discard option.
+     * The data model is updated from corresponding file object(s).
+     */
     protected void reloadModelFromFileObject() throws IOException {
         InputSource is = new InputSource(getPrimaryFile().getInputStream());
         if (is != null) { // merging model with the document
@@ -748,6 +749,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             }
         }
     }
+
     /**
      * Update text document from data model. Called when something is changed in visual editor.
      */
@@ -770,7 +772,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      * Display Name for MultiView editor
      */
     protected String getDisplayName() {
-        return "ejb-jar.xml";
+        return "entity-jar.xml";
     }
 
     /**
@@ -1032,7 +1034,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         switch (eventType) {
             case DDChangeEvent.EJB_CLASS_CHANGED:
                 {
-                    // update ejb-class
+                    // update entity-class
                     if (oldResourceName == null) {
                         return;
                     }
@@ -1045,7 +1047,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                 }
             case DDChangeEvent.EJB_CLASS_DELETED:
                 {
-                    // delete the whole ejb(impl file deletion)
+                    // delete the whole entity(impl file deletion)
                     if (resourceName == null) {
                         return;
                     }

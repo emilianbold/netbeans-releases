@@ -14,9 +14,17 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbRef;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.filesystems.FileObject;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author pfiala
@@ -27,6 +35,36 @@ public class EjbReferencesNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        return new EjbReferencesPanel(getSectionNodeView(), (Ejb) getKey());
+        final Ejb ejb = (Ejb) getKey();
+        final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
+                new EjbReferencesTableModel(ejb));
+        innerTablePanel.getEditButton().setVisible(false);
+        innerTablePanel.getRemoveButton().setVisible(false);
+        innerTablePanel.getAddButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                FileObject ejbJarFile =
+                        ((SectionNodeView) innerTablePanel.getSectionView()).getDataObject().getPrimaryFile();
+                if (new OpenAddReferenceDialog(ejb, createRefNameSet(ejb), ejbJarFile).openDialog()) {
+                    EjbReferencesTableModel model = ((EjbReferencesTableModel) innerTablePanel.getTable().getModel());
+                    model.fireTableRowsInserted(0, 0);
+                    model.fireTableDataChanged();
+                    innerTablePanel.adjustHeight();
+                }
+            }
+        });
+        return innerTablePanel;
+    }
+
+    private Set createRefNameSet(Ejb ejb) {
+        Set refNameSet = new HashSet();
+        EjbLocalRef[] ejbLocalRef = ejb.getEjbLocalRef();
+        for (int i = 0; i < ejbLocalRef.length; i++) {
+            refNameSet.add(ejbLocalRef[i].getEjbRefName());
+        }
+        EjbRef[] ejbRef = ejb.getEjbRef();
+        for (int i = 0; i < ejbRef.length; i++) {
+            refNameSet.add(ejbRef[i].getEjbRefName());
+        }
+        return refNameSet;
     }
 }

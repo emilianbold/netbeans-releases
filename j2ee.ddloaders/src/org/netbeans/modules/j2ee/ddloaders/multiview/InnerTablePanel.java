@@ -23,7 +23,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
@@ -39,6 +39,40 @@ public class InnerTablePanel extends SectionInnerPanel {
     private final XmlMultiViewDataObject dataObject;
     private JTable table;
 
+    protected void setButtonListeners(final InnerTableModel model) {
+        final JTable table = getTable();
+        getAddButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                stopCellEditing(table);
+                selectCell(model.addRow(), 0);
+            }
+        });
+        getEditButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editCell(table.getSelectedRow(), table.getSelectedColumn());
+            }
+        });
+        getRemoveButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                stopCellEditing(table);
+                int row = table.getSelectedRow();
+                final int column = table.getSelectedColumn();
+                model.removeRow(row);
+                int rowCount = model.getRowCount();
+                if (row >= rowCount) {
+                    row = rowCount - 1;
+                }
+                if (row >= 0) {
+                    selectCell(row, column);
+                }
+            }
+        });
+    }
+
+    private void stopCellEditing(final JTable table) {
+        table.editCellAt(-1, -1); // finish possible editing
+    }
+
     private class TablePanel extends DefaultTablePanel {
 
         /**
@@ -46,7 +80,7 @@ public class InnerTablePanel extends SectionInnerPanel {
          *
          * @param model DefaultTableModel for included table
          */
-        public TablePanel(final DefaultTableModel model) {
+        public TablePanel(final AbstractTableModel model) {
             super(model);
             final JTable table = getTable();
             table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -77,7 +111,8 @@ public class InnerTablePanel extends SectionInnerPanel {
         }
     }
 
-    public InnerTablePanel(SectionNodeView sectionNodeView, DefaultTableModel model, TableCellEditor tableCellEditor) {
+    public InnerTablePanel(SectionNodeView sectionNodeView, final AbstractTableModel model,
+            TableCellEditor tableCellEditor) {
         super(sectionNodeView);
         this.dataObject = (XmlMultiViewDataObject) sectionNodeView.getDataObject();
         tablePanel = new TablePanel(model);
@@ -86,16 +121,34 @@ public class InnerTablePanel extends SectionInnerPanel {
                 if (dataObject != null) {
                     dataObject.modelUpdatedFromUI();
                 }
+                if (e.getType() == TableModelEvent.DELETE || e.getType() == TableModelEvent.INSERT) {
+                    adjustHeight();
+                }
             }
         });
         table = tablePanel.getTable();
         if (tableCellEditor != null) {
             table.setCellEditor(tableCellEditor);
         }
-
+        model.addTableModelListener(new TableModelListener() {
+            public void tableChanged(final TableModelEvent e) {
+                int type = e.getType();
+                if (type == TableModelEvent.UPDATE) {
+                    final int column = e.getColumn() + 1;
+                    if (column < model.getColumnCount()) {
+                        //editCell(e.getFirstRow(), column);
+                    }
+                }
+            }
+        });
         table.setPreferredSize(table.getPreferredSize());
+        table.setCellSelectionEnabled(true);
+        InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke("ENTER"), "selectNextColumnCell");
+        inputMap.put(KeyStroke.getKeyStroke("shift ENTER"), "selectPreviousColumnCell");
         setLayout(new BorderLayout());
         add(tablePanel, BorderLayout.WEST);
+        setColumnWidths();
     }
 
     public JTable getTable() {
@@ -114,12 +167,13 @@ public class InnerTablePanel extends SectionInnerPanel {
         return tablePanel.getRemoveButton();
     }
 
-    public void setColumnWidths(int[] widths) {
+    public void setColumnWidths() {
         final JTable table = tablePanel.getTable();
+        InnerTableModel tableModel = (InnerTableModel) table.getModel();
         TableColumnModel columnModel = table.getColumnModel();
         int tableWidth = 0;
-        for (int i = 0, n = widths.length; i < n; i++) {
-            int width = widths[i];
+        for (int i = 0, n = columnModel.getColumnCount(); i < n; i++) {
+            int width = tableModel.getDefaultColumnWidth(i);
             tableWidth += width;
             columnModel.getColumn(i).setPreferredWidth(width);
         }
@@ -128,9 +182,43 @@ public class InnerTablePanel extends SectionInnerPanel {
         table.setPreferredSize(size);
     }
 
-    public InnerTablePanel(SectionNodeView sectionNodeView, DefaultTableModel model) {
+    public InnerTablePanel(SectionNodeView sectionNodeView, final AbstractTableModel model) {
         this(sectionNodeView, model, null);
+        if (model instanceof InnerTableModel) {
+            setButtonListeners((InnerTableModel) model);
+        }
+    }
 
+    public void adjustHeight() {
+        JTable table = getTable();
+        Dimension size = table.getPreferredSize();
+        table.setPreferredSize(null);
+        size.height = table.getPreferredSize().height;
+        table.setPreferredSize(size);
+        org.netbeans.modules.xml.multiview.Utils.scrollToVisible(InnerTablePanel.this);
+    }
+
+    protected void editCell(final int row, final int column) {
+        selectCell(row, column);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                final JTable table = getTable();
+                table.editCellAt(row, column);
+                Component editorComponent = table.getEditorComponent();
+                editorComponent.requestFocus();
+            }
+        });
+    }
+
+    private void selectCell(final int row, final int column) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                final JTable table = getTable();
+                table.getSelectionModel().setLeadSelectionIndex(row);
+                table.getColumnModel().getSelectionModel().setLeadSelectionIndex(column);
+                table.requestFocus();
+            }
+        });
     }
 
     public JComponent getErrorComponent(String errorId) {

@@ -28,6 +28,7 @@ class SelectMethodsNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        return new SelectMethodsPanel(getSectionNodeView(), (Entity) key);
+        return new InnerTablePanel(getSectionNodeView(), new SelectMethodsTableModel((Entity) key));
+
     }
 }

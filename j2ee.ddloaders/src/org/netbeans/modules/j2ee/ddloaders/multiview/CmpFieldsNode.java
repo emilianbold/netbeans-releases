@@ -18,6 +18,9 @@ import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 /**
  * @author pfiala
  */
@@ -28,7 +31,18 @@ class CmpFieldsNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        SectionNodeView sectionNodeView = getSectionNodeView();
-        return new CmpFieldsPanel(sectionNodeView, (Entity) key);
+        InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
+                new CmpFieldsTableModel((Entity) key));
+        innerTablePanel.getEditButton().setVisible(false);
+        innerTablePanel.getRemoveButton().setVisible(false);
+
+        innerTablePanel.getAddButton().setVisible(false);
+        innerTablePanel.getAddButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // TODO: Add CMP Field
+            }
+        });
+        return innerTablePanel;
+
     }
 }

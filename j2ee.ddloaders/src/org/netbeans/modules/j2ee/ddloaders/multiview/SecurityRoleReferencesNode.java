@@ -27,6 +27,7 @@ public class SecurityRoleReferencesNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        return new SecurityRoleReferencesPanel(getSectionNodeView(), (EntityAndSession) key);
+        return new InnerTablePanel(getSectionNodeView(), new SecurityRoleReferencesTableModel((EntityAndSession) key));
+
     }
 }

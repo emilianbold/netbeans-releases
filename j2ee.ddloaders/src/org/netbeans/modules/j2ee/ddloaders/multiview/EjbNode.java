@@ -39,8 +39,9 @@ class EjbNode extends SectionNode {
             addChild(new EntityOverviewNode(sectionNodeView, entity));
             addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, entity));
             if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType())) {
-                addChild(new CmpFieldsNode(sectionNodeView, entity));
-                addChild(new SelectMethodsNode(sectionNodeView, entity));
+                // TODO: uncomment following comments aftre implementation completion
+                //addChild(new CmpFieldsNode(sectionNodeView, entity));
+                //addChild(new SelectMethodsNode(sectionNodeView, entity));
             }
             addChild(new BeanDetailNode(sectionNodeView, entity));
         } else if (ejb instanceof MessageDriven) {

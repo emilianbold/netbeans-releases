@@ -20,7 +20,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -42,6 +41,9 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         getRemoteHomeTextField().setEnabled(false);
 
         populateFields(this, ejb);
+
+        // TODO: remove following statement after implementation completion
+        getChangeClassesButton().setVisible(false);
 
         getChangeClassesButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -102,7 +104,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             }
         });
 
-
         final JCheckBox remoteInterfaceCheckBox = form.getRemoteInterfaceCheckBox();
         remoteInterfaceCheckBox.addActionListener(new ActionListener() {
 
@@ -123,7 +124,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             }
         });
 
-
         final JTextField beanClassTextField = form.getBeanClassTextField();
         beanClassTextField.setText(ejbClass);
 
@@ -131,8 +131,8 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         descriptor.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
 
         DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
-        
-        if(descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+
+        if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             System.out.println("validate");
             System.out.println("refactor");
             System.out.println("update");
