@@ -100,7 +100,7 @@
 
 
 <tocitem text="Editing Source Files" target="editing.intro">
-  <tocitem text="Source Editor" target="editing.editorwindow"/>
+  <tocitem text="Source Editor Window" target="editing.editorwindow"/>
   <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
   <tocitem text="Working With Large Files in the Source Editor" target="workspace.clone"/>
   <tocitem text="Creating New Java Code" target="editing.newcode"/>
