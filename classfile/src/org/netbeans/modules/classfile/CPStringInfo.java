@@ -28,7 +28,11 @@ import java.io.IOException;
  * @author Thomas Ball
  */
 public class CPStringInfo extends CPName {
-	CPStringInfo(ConstantPool pool,int index) {
-	    super(pool, index);
-	}
+    CPStringInfo(ConstantPool pool,int index) {
+	super(pool, index);
+    }
+
+    public final int getTag() {
+	return ConstantPool.CONSTANT_String;
+    }
 }

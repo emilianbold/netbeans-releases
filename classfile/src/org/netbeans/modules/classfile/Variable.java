@@ -77,9 +77,9 @@ public class Variable extends Field {
      *
      * @return string describing the variable and its type.
      */
-    public final String getFullName() {
+    public final String getDeclaration() {
 	StringBuffer sb = new StringBuffer();
-	sb.append(CPFieldMethodInfo.getSignature(getType(), false));
+	sb.append(CPFieldMethodInfo.getSignature(getDescriptor(), false));
 	sb.append(' ');
 	sb.append(getName());
 	return sb.toString();

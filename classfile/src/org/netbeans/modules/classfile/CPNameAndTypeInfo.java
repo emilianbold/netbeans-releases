@@ -59,6 +59,10 @@ public class CPNameAndTypeInfo extends CPEntry {
 	iDesc = index;
     }
 
+    public int getTag() {
+	return ConstantPool.CONSTANT_NameAndType;
+    }
+
     public String toString() {
         return getClass().getName() + ": name=" + getName() + //NOI18N
             ", descriptor=" + getDescriptor(); //NOI18N

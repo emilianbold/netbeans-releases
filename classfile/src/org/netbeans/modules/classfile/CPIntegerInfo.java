@@ -34,6 +34,10 @@ public class CPIntegerInfo extends CPEntry {
         value = new Integer(v);
     }
 
+    public final int getTag() {
+	return ConstantPool.CONSTANT_Integer;
+    }
+
     public String toString() {
         return getClass().getName() + ": value=" + value; //NOI18N
     }

@@ -92,7 +92,7 @@ public class Method extends Field {
         return s;
     }
 
-    public final String getFullName() {
-        return CPMethodInfo.getFullMethodName(getName(), getType());
+    public final String getDeclaration() {
+        return CPMethodInfo.getFullMethodName(getName(), getDescriptor());
     }
 }

@@ -50,6 +50,10 @@ public class CPUTF8Info extends CPName {
         return getName();
     }
 
+    public final int getTag() {
+	return ConstantPool.CONSTANT_Utf8;
+    }
+
     public String toString() {
 	return getClass().getName() + ": name=" + getName(); //NOI18N
     }

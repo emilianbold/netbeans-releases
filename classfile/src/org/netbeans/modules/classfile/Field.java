@@ -86,7 +86,7 @@ public abstract class Field {
         return _name;
     }
     
-    public final String getType() {
+    public final String getDescriptor() {
 	if (_type == null) {
             _type = utfType.getName();
 	    utfType = null;              // release for gc
@@ -94,7 +94,7 @@ public abstract class Field {
         return _type;
     }
 
-    public abstract String getFullName();
+    public abstract String getDeclaration();
     
     public final int getAccess() {
         return access;
@@ -136,7 +136,7 @@ public abstract class Field {
         if (deprecated)
             sb.append(" (deprecated)"); //NOI18N
         sb.append(" type="); //NOI18N
-        sb.append(getType());
+        sb.append(getDescriptor());
         sb.append(", access="); //NOI18N
         sb.append(Access.toString(access));
         return sb.toString();

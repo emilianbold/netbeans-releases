@@ -80,4 +80,8 @@ public class CPMethodInfo extends CPFieldMethodInfo {
         sb.append(')');
         return sb.toString();
     }
+
+    public int getTag() {
+	return ConstantPool.CONSTANT_MethodRef;
+    }
 }

@@ -50,5 +50,11 @@ public abstract class CPEntry {
     public Object getValue() {
         return value;
     }
+
+    /**
+     * Returns the constant type value, or tag, as defined by
+     * table 4.3 of the Java Virtual Machine specification.
+     */
+    public abstract int getTag();
 }
 

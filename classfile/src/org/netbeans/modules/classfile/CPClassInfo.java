@@ -40,4 +40,8 @@ public class CPClassInfo extends CPName {
     public String getInternalName() {
         return super.getName();
     }
+
+    public final int getTag() {
+	return ConstantPool.CONSTANT_Class;
+    }
 }

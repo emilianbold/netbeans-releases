@@ -34,6 +34,10 @@ public class CPFloatInfo extends CPEntry {
         value = new Float(v);
     }
 
+    public final int getTag() {
+	return ConstantPool.CONSTANT_Float;
+    }
+
     public String toString() {
         return getClass().getName() + ": value=" + value; //NOI18N
     }

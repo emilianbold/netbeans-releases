@@ -40,6 +40,10 @@ public class CPDoubleInfo extends CPEntry {
     boolean usesTwoSlots() {
 	return true;
     }
+
+    public final int getTag() {
+	return ConstantPool.CONSTANT_Double;
+    }
     
     public String toString() {
         return getClass().getName() + ": value=" + value; //NOI18N

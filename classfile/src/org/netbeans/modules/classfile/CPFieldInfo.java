@@ -31,4 +31,8 @@ public class CPFieldInfo extends CPFieldMethodInfo {
     CPFieldInfo(ConstantPool pool,int iClass,int iNameAndType) {
         super(pool, iClass, iNameAndType);
     }
+
+    public final int getTag() {
+	return ConstantPool.CONSTANT_FieldRef;
+    }
 }

@@ -31,4 +31,8 @@ public class CPInterfaceMethodInfo extends CPMethodInfo {
     CPInterfaceMethodInfo(ConstantPool pool,int iClass,int iNameAndType) {
         super(pool, iClass, iNameAndType);
     }
+
+    public final int getTag() {
+	return ConstantPool.CONSTANT_InterfaceMethodRef;
+    }
 }
