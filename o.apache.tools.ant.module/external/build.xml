@@ -17,9 +17,9 @@ Microsystems, Inc. All Rights Reserved.
         <taskdef name="unscramble" classname="org.netbeans.nbbuild.Unscramble" classpath="${extnl}/scrambler.jar"/>
         <unscramble logfile="${extnl}/unscrambling.log">
             <!-- LFI #105463: -->
-            <binary clear="ant-1.5.1.jar" scrambled="ant-1.5.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="ant-1.5.3.jar" scrambled="ant-1.5.3.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <!-- LFI #105463: -->
-            <binary clear="ant-optional-1.5.1.jar" scrambled="ant-optional-1.5.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="ant-optional-1.5.3.jar" scrambled="ant-optional-1.5.3.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <!-- LFI #105463: -->
             <binary clear="ant-docs-1.5.1.zip" scrambled="ant-docs-1.5.1.zip.scrambled" license="${extnl}/apache-license.txt"/>
         </unscramble>
@@ -27,14 +27,14 @@ Microsystems, Inc. All Rights Reserved.
     <target name="scramble">
         <taskdef name="scramble" classname="org.netbeans.nbbuild.Scramble" classpath="${extnl}/scrambler.jar"/>
         <scramble>
-            <binary clear="ant-1.5.1.jar.master" scrambled="ant-1.5.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
-            <binary clear="ant-optional-1.5.1.jar.master" scrambled="ant-optional-1.5.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="ant-1.5.3.jar.master" scrambled="ant-1.5.3.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="ant-optional-1.5.3.jar.master" scrambled="ant-optional-1.5.3.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <binary clear="ant-docs-1.5.1.zip.master" scrambled="ant-docs-1.5.1.zip.scrambled" license="${extnl}/apache-license.txt"/>
         </scramble>
     </target>
     <target name="clean">
-        <delete file="ant-1.5.1.jar"/>
-        <delete file="ant-optional-1.5.1.jar"/>
+        <delete file="ant-1.5.3.jar"/>
+        <delete file="ant-optional-1.5.3.jar"/>
         <delete file="ant-docs-1.5.1.zip"/>
     </target>
 </project>

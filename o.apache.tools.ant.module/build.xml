@@ -38,7 +38,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
     <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
     <fileset dir="external">
-      <include name="ant-1.5.1.jar"/>
+      <include name="ant-1.5.3.jar"/>
     </fileset>
     <fileset dir="../libs/external">
       <include name="xerces*.jar"/>
@@ -72,7 +72,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <mkdir dir="netbeans/modules/ext"/>
     <copy todir="netbeans/modules/ext">
       <fileset dir="external">
-        <include name="ant*1.5.1.jar"/>
+        <include name="ant*1.5.*.jar"/>
       </fileset>
     </copy>
   </target>
@@ -103,8 +103,8 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="reload/ant.jar" manifest="manifest-subst.mf" compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <zipfileset src="external/ant-1.5.1.jar" excludes="META-INF/MANIFEST.MF"/>
-      <zipfileset src="external/ant-optional-1.5.1.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="external/ant-1.5.3.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="external/ant-optional-1.5.3.jar" excludes="META-INF/MANIFEST.MF"/>
     </jar>
   </target>
   <target name="test" depends="test-build" description="Test module inside running IDE.">
