@@ -67,8 +67,11 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </copy>
         <path id="nbantext-cp">
+            <!-- cmdline Ant -->
+            <pathelement location="${ant.home}/lib/ant.jar"/>
+            <!-- Ant in NB -->
+            <pathelement path="${netbeans.library.path}"/>
             <fileset dir="../..">
-                <include name="nbbuild/external/ant-1.*.jar"/>
                 <include name="nbbuild/external/jhall*.jar"/>
                 <include name="libs/external/regexp*.jar"/>
                 <include name="libs/external/xerces*.jar"/>
