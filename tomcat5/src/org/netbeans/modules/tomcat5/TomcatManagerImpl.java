@@ -87,6 +87,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
         
         command = "deploy?path="+ctxPath; // NOI18N
         cmdType = CommandType.DISTRIBUTE;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         istream = is;
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
@@ -98,6 +99,10 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
         String path = deplPlan.getAbsolutePath ();
         String ctxPath = null;
         try {
+            if (!deplPlan.exists ()) {
+                // try fallback to WEB-INF/context.xml
+                deplPlan = new File (new File (wmfile, "WEB-INF"), "context.xml"); // NOI18N
+            }
             ctxPath = deplPlan.toURL ().toExternalForm ();
         }
         catch (java.net.MalformedURLException e) {
@@ -117,24 +122,37 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             // WAR file
             docBase = "jar:"+docBase+"!/"; // NOI18N
         }
-        command = "install?context="+ctxPath+"&war="+docBase; // NOI18N
+        command = "install?config="+ctxPath+"&war="+docBase; // NOI18N
         cmdType = CommandType.DISTRIBUTE;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         
         try {
             FileInputStream in = new FileInputStream (deplPlan);
             Context ctx = Context.createGraph (in);
             tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); // NOI18N
+            rp ().post (this, 0, Thread.NORM_PRIORITY);
         }
         catch (java.io.FileNotFoundException fnfe) {
-            throw new RuntimeException (fnfe.getMessage ());    // XXX use justt fnfe (since 1.4)
+            // XXX : workaround because server registry doesn't check for returned status
+            rp ().post (new TomcatManagerImpl.Failure (fnfe.getLocalizedMessage ()), 100);
+            // pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, fnfe.getLocalizedMessage (), StateType.FAILED)); // PENDING
         }
-        rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
     void remove (TomcatModule tmId) {
         this.tmId = tmId;
         command = "remove?path="+tmId.getPath (); // NOI18N
         cmdType = CommandType.UNDEPLOY;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+        rp ().post (this, 0, Thread.NORM_PRIORITY);
+    }
+    
+    /** Starts web module. */
+    void start (TomcatModule tmId) {
+        this.tmId = tmId;
+        command = "start?path="+tmId.getPath (); // NOI18N
+        cmdType = CommandType.UNDEPLOY;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
@@ -145,7 +163,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
     
     /** JSR88 method. */
     public DeploymentStatus getDeploymentStatus () {
-        return null; // PENDING
+        return pes.getDeploymentStatus (); // PENDING
     }
     
     /** JSR88 method. */
@@ -303,4 +321,15 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
 
     }
     
+    private class Failure implements Runnable {
+        
+        private String msg;
+        
+        private Failure (String msg) {
+        }
+        
+        public void run () {
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.FAILED)); // PENDING
+        }
+    }
 }

@@ -261,7 +261,7 @@ public class TomcatManager implements DeploymentManager {
         throw new UnsupportedOperationException ("TomcatManager.redeploy not supported yet.");
     }
     
-    public ProgressObject redeploy (TargetModuleID[] targetModuleID, File file, File file2) 
+    public ProgressObject redeploy (TargetModuleID[] tmID, File file, File file2) 
     throws UnsupportedOperationException, IllegalStateException {
         // PENDING
         throw new UnsupportedOperationException ("TomcatManager.redeploy not supported yet.");
@@ -273,16 +273,20 @@ public class TomcatManager implements DeploymentManager {
     public void setLocale (Locale locale) throws UnsupportedOperationException {
     }
     
-    public ProgressObject start (TargetModuleID[] targetModuleID) throws IllegalStateException {
+    public ProgressObject start (TargetModuleID[] tmID) throws IllegalStateException {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.start called on disconnected instance");   // NOI18N
         }
+        if (tmID.length != 1 || !(tmID[0] instanceof TomcatModule)) {
+            throw new IllegalStateException ("TomcatManager.start invalid TargetModuleID passed");   // NOI18N
+        }
         
-        // PENDING 
-        return null;
+        TomcatManagerImpl impl = new TomcatManagerImpl (this);
+        impl.start ((TomcatModule)tmID[0]);
+        return impl;
     }
     
-    public ProgressObject stop (TargetModuleID[] targetModuleID) throws IllegalStateException {
+    public ProgressObject stop (TargetModuleID[] tmID) throws IllegalStateException {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.stop called on disconnected instance");   // NOI18N
         }
@@ -295,7 +299,7 @@ public class TomcatManager implements DeploymentManager {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.undeploy called on disconnected instance");   // NOI18N
         }
-        if (!(tmID[0] instanceof TomcatModule)) {
+        if (tmID.length != 1 || !(tmID[0] instanceof TomcatModule)) {
             throw new IllegalStateException ("TomcatManager.undeploy invalid TargetModuleID passed");   // NOI18N
         }
         
@@ -325,6 +329,13 @@ public class TomcatManager implements DeploymentManager {
         return impl;
     }
     
+    /** Deploys web module using install command
+     * @param targets Array containg one web module
+     * @param moduleArchive directory with web module or WAR file
+     * @param deplPlan Server specific data
+     * @throws IllegalStateException when TomcatManager is disconnected
+     * @return Object that reports about deployment progress
+     */    
     public ProgressObject distribute (Target[] targets, File moduleArchive, File deplPlan) 
     throws IllegalStateException {
         if (!isConnected ()) {

@@ -32,6 +32,13 @@ public class ProgressEventSupport {
     
     private java.util.Vector listeners;
     
+    private DeploymentStatus status;
+    
+    /**
+     * Constructs a <code>ProgressEventSupport</code> object.
+     *
+     * @param o Source for any events.
+     */
     public ProgressEventSupport (Object o) {
         if (o == null) {
             throw new NullPointerException ();
@@ -58,6 +65,7 @@ public class ProgressEventSupport {
     /** Report event to any registered listeners. */
     public void fireHandleProgressEvent (TargetModuleID targetModuleID, DeploymentStatus sCode) {
         ProgressEvent evt = new ProgressEvent (obj, targetModuleID, sCode);
+        status = sCode;
 	java.util.Vector targets = null;
 	synchronized (this) {
 	    if (listeners != null) {
@@ -71,5 +79,11 @@ public class ProgressEventSupport {
 	        target.handleProgressEvent (evt);
 	    }
 	}
+    }
+    
+    /** Returns last DeploymentStatus notified by {@link fireHandleProgressEvent}
+     */
+    public DeploymentStatus getDeploymentStatus () {
+        return status;
     }
 }
