@@ -46,13 +46,13 @@ Microsystems, Inc. All Rights Reserved.
         </file>
 
         <!-- Locale External Execution -->
-        <folder name="Executor">
+        <!--folder name="Executor">
             <file name="org-netbeans-modules-i18n-LocaleExecutor.settings" url="LocaleExecutor.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.i18n.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/core/resources/executionTypes.gif"/>
                 <attr name="SystemFileSystem.layer" stringvalue="project"/>
             </file>
-        </folder>
+        </folder-->
     </folder>
     
     <folder name="UI">
@@ -68,7 +68,7 @@ SystemFileSystem
       </folder> <!-- Services -->
     </folder> <!-- UI -->
 
-    <folder name="Templates">
+    <!--folder name="Templates">
         <folder name="Services">
             <folder name="Executor">
                 <file name="org-netbeans-modules-i18n-LocaleExecutor.settings" url="LocaleExecutor.settings">
@@ -78,7 +78,7 @@ SystemFileSystem
                 </file>
             </folder>
         </folder>
-    </folder>
+    </folder-->
 
 </filesystem>
 
