@@ -60,7 +60,9 @@ public final class TransformPanel extends javax.swing.JPanel {
     private boolean userSetProcess = false;
     private String lastOutputFileExt = TransformUtil.DEFAULT_OUTPUT_EXT;
     private Object lastXSLObject     = new Object();
-    
+
+    /** Hide transformation components if true. */
+    private boolean suppressXSL;
     
     /** Names of output actions. */
     private static final String[] SHOW_NAMES = new String[] {
@@ -72,19 +74,25 @@ public final class TransformPanel extends javax.swing.JPanel {
     private static final Object JUST_PREVIEW = new Preview();
     
     /** Creates new form TransformPanel */
-    public TransformPanel (DataObject xml, String xml_ss, DataObject xsl) throws MalformedURLException, FileStateInvalidException {
+    public TransformPanel (DataObject xml, String xml_ss, DataObject xsl, boolean suppressXSL) throws MalformedURLException, FileStateInvalidException {
         initComponents();
 
-        init (xml, xml_ss, xsl);
+        init (xml, xml_ss, xsl, suppressXSL);
         initAccessibility();
     }
     
+    /** Creates new form TransformPanel */
+    public TransformPanel (DataObject xml, String xml_ss, DataObject xsl) throws MalformedURLException, FileStateInvalidException {
+        this (xml, xml_ss, xsl, false);
+    }
+    
 
-    private void init (DataObject xml, String xml_ss, DataObject xsl) throws MalformedURLException, FileStateInvalidException {
+    private void init (DataObject xml, String xml_ss, DataObject xsl, boolean supXSL) throws MalformedURLException, FileStateInvalidException {
         data = new Data();
         xmlDataObject  = xml;
         xml_stylesheet = xml_ss;
         xslDataObject  = xsl;
+        suppressXSL    = supXSL;
                 
         if ( xmlDataObject != null ) {
             data.xml = TransformUtil.getURLName (xmlDataObject.getPrimaryFile());
@@ -329,13 +337,22 @@ public final class TransformPanel extends javax.swing.JPanel {
         browseInputButton.setEnabled (notXML);
         
         // XSL Transformation
-        boolean notXSL = ( xslDataObject == null );
-        transformLabel.setVisible(notXSL);
-        transformComboBox.setVisible (notXSL);
-        browseXSLTButton.setVisible (notXSL);
-        if ( data.xsl != null ) {
-            transformComboBox.setSelectedItem (data.xsl);
-            transformComboBox.setEditable (data.xsl instanceof String);
+        if ( suppressXSL ) {
+            transformLabel.setVisible (false);
+            transformComboBox.setVisible (false);
+            browseXSLTButton.setVisible (false);
+        } else {
+            transformLabel.setVisible (true);
+            transformComboBox.setVisible (true);
+            browseXSLTButton.setVisible (true);
+
+            boolean notXSL = ( xslDataObject == null );
+            transformComboBox.setEnabled (notXSL);
+            browseXSLTButton.setEnabled (notXSL);
+            if ( data.xsl != null ) {
+                transformComboBox.setSelectedItem (data.xsl);
+                transformComboBox.setEditable (data.xsl instanceof String);
+            }
         }
 
         // test if XML and also XSL
