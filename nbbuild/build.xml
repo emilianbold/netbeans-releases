@@ -1223,6 +1223,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
    <ant dir="../multicompile" target="netbeans"/>
   </target>
+
   <target name="all-objectbrowser" depends="init">
     <echo message="Building module objectbrowser..."/>
      <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -1232,6 +1233,27 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
    <ant dir="../objectbrowser" target="netbeans"/>
   </target>
+
+  <target name="all-objectbrowser/navigator" depends="init,all-openide,all-openide/loaders">
+    <echo message="Building module objectbrowser/navigator..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../objectbrowser/navigator" target="netbeans"/>
+  </target>
+
+  <target name="all-objectbrowser/navigator/javanavigation" depends="init,all-objectbrowser/navigator,all-openide,all-openide/loaders">
+    <echo message="Building module objectbrowser/navigator/javanavigation..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../objectbrowser/navigator/javanavigation" target="netbeans"/>
+  </target>
+
   <target name="all-openidex" depends="init">
     <echo message="Building module openidex..."/>
      <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -2057,7 +2079,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../contrib/baseoptions" target="netbeans"/>
   </target>
   
-  
   <target name="all-contrib/navigator" depends="init,all-openide/looks,all-openide/registry">
     <echo message="Building module contrib/navigator..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -2087,7 +2108,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../contrib/navigator/propagator" target="netbeans"/>
   </target>
-
+  
   <target name="all-contrib/statuspopup" depends="init">
     <echo message="Building module contrib/statuspopup..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
