@@ -256,7 +256,7 @@ public class TargetServer {
             ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
             TargetModuleID[] ids = dm.getAvailableModules(type, targets);
             for (int i=0; i<ids.length; i++) {
-                availables.put(ids[i].toString(), ids[i]);
+                availables.put(keyOf(ids[i]), ids[i]);
             }
         } catch (TargetException te) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, te);
@@ -431,6 +431,14 @@ public class TargetServer {
         }
     }
     
+    private static String keyOf(TargetModuleID tmid) {
+        StringBuffer sb =  new StringBuffer(256);
+        sb.append(tmid.getModuleID());
+        sb.append("@"); //NOI18N
+        sb.append(tmid.getTarget().getName());
+        return sb.toString();
+    }
+    
     //collect root modules into TargetModule with timestamp
     private TargetModuleID[] saveRootTargetModules(TargetModuleID [] modules) {
         long timestamp = System.currentTimeMillis();
@@ -438,9 +446,10 @@ public class TargetServer {
         Set originals = new HashSet();
         for (int i=0; i<modules.length; i++) {
             if (modules[i].getParentTargetModuleID() == null) {
-                String id = modules[i].toString();
+                //String id = modules[i].toString();
+                String id = keyOf(modules[i]);
                 String targetName = modules[i].getTarget().getName();
-                TargetModule tm = new TargetModule(instance.getUrl(), timestamp, currentContentDir.getAbsolutePath(), contextRoot, modules[i]);
+                TargetModule tm = new TargetModule(id, instance.getUrl(), timestamp, currentContentDir.getAbsolutePath(), contextRoot, modules[i]);
                 deployedRootTMIDs.add(tm);
                 originals.add(modules[i]);
             }

@@ -35,11 +35,16 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
     private static final TargetModuleID[] EMPTY_TMID_ARRAY = new TargetModuleID[0];
     
     /** Creates a new instance of TargetModule */
+    public TargetModule(String id, String url, long timestamp, String contentDir, String contextRoot, TargetModuleID delegate) {
+        this(id, url, delegate.getTarget().getName(), timestamp, contentDir, contextRoot);
+        this.delegate = delegate;
+    }
+    
     public TargetModule(String url, long timestamp, String contentDir, String contextRoot, TargetModuleID delegate) {
         this(delegate.toString(), url, delegate.getTarget().getName(), timestamp, contentDir, contextRoot);
         this.delegate = delegate;
     }
-    
+
     public TargetModule(String id, String url, String targetName, long timestamp, String contentDir, String contextRoot) {
         if (id == null || url == null || targetName == null || timestamp <= 0) {
             java.util.List args = Arrays.asList(new Object[] { id, url, targetName, new Long(timestamp)});
