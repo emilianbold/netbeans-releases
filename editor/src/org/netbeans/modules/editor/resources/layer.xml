@@ -60,4 +60,110 @@ Microsystems, Inc. All Rights Reserved.
         <file name="AS-O[org.netbeans.modules.editor.java.JavaFastOpenAction].instance" />
     </folder>
 
+    <folder name="Services">
+
+        <file name="AllOptions.settings">
+            <![CDATA[<?xml version="1.0"?>
+                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                <settings version="1.0">
+                    <module name="org.netbeans.modules.editor/1" spec="1.8"/>
+                    <instanceof class="java.lang.Object"/>
+                    <instanceof class="org.openide.util.SharedClassObject"/>
+                    <instanceof class="org.openide.options.ContextSystemOption"/>
+                    <instanceof class="org.netbeans.modules.editor.options.AllOptions"/>
+                    <instanceof class="java.io.Serializable"/>
+                    <instanceof class="java.io.Externalizable"/>
+                    <instance class="org.netbeans.modules.editor.options.AllOptions"/>
+                </settings>
+            ]]>
+        </file>
+
+    </folder>
+
+    <folder name="Services">
+        <folder name="IndentEngine">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+
+            <file name="org-netbeans-modules-editor-java-JavaIndentEngine.settings">
+                <![CDATA[<?xml version="1.0"?>
+                      <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
+                      "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                      <settings version="1.0">
+                          <module name="org.netbeans.modules.editor/1" spec="1.8"/>
+                          <instanceof class="java.lang.Object"/>
+                          <instanceof class="org.openide.ServiceType"/>
+                          <instanceof class="org.openide.text.IndentEngine"/>
+                          <instanceof class="org.netbeans.modules.editor.FormatterIndentEngine"/>
+                          <instanceof class="org.netbeans.modules.editor.java.JavaIndentEngine"/>
+                          <instanceof class="java.io.Serializable"/>
+                          <instance class="org.netbeans.modules.editor.java.JavaIndentEngine"/>
+                      </settings>
+                ]]>
+            </file>
+
+            <file name="org-netbeans-modules-editor-SimpleIndentEngine.settings">
+                <![CDATA[<?xml version="1.0"?>
+                      <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
+                      "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                      <settings version="1.0">
+                          <module name="org.netbeans.modules.editor/1" spec="1.8"/>
+                          <instanceof class="java.lang.Object"/>
+                          <instanceof class="org.openide.ServiceType"/>
+                          <instanceof class="org.openide.text.IndentEngine"/>
+                          <instanceof class="org.netbeans.modules.editor.FormatterIndentEngine"/>
+                          <instanceof class="org.netbeans.modules.editor.SimpleIndentEngine"/>
+                          <instanceof class="java.io.Serializable"/>
+                          <instance class="org.netbeans.modules.editor.SimpleIndentEngine"/>
+                      </settings>
+                ]]>
+            </file>
+
+        </folder>
+    </folder>
+
+    <folder name="Templates">
+        <folder name="Services">
+            <folder name="IndentEngine">
+                <file name="org-netbeans-modules-editor-java-JavaIndentEngine.settings">
+                    <![CDATA[<?xml version="1.0"?>
+                        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
+                        "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                        <settings version="1.0">
+                            <module name="org.netbeans.modules.editor/1" spec="1.8"/>
+                            <instanceof class="java.lang.Object"/>
+                            <instanceof class="org.openide.ServiceType"/>
+                            <instanceof class="org.openide.text.IndentEngine"/>
+                            <instanceof class="org.netbeans.modules.editor.FormatterIndentEngine"/>
+                            <instanceof class="org.netbeans.modules.editor.java.JavaIndentEngine"/>
+                            <instanceof class="java.io.Serializable"/>
+                            <instance class="org.netbeans.modules.editor.java.JavaIndentEngine"/>
+                        </settings>
+                    ]]>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+
+                <file name="org-netbeans-modules-editor-SimpleIndentEngine.settings">
+                    <![CDATA[<?xml version="1.0"?>
+                        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
+                        "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                        <settings version="1.0">
+                            <module name="org.netbeans.modules.editor/1" spec="1.8"/>
+                            <instanceof class="java.lang.Object"/>
+                            <instanceof class="org.openide.ServiceType"/>
+                            <instanceof class="org.openide.text.IndentEngine"/>
+                            <instanceof class="org.netbeans.modules.editor.FormatterIndentEngine"/>
+                            <instanceof class="org.netbeans.modules.editor.SimpleIndentEngine"/>
+                            <instanceof class="java.io.Serializable"/>
+                            <instance class="org.netbeans.modules.editor.SimpleIndentEngine"/>
+                        </settings>
+                    ]]>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+
+            </folder>
+        </folder>
+    </folder>
+
+
 </filesystem>
