@@ -303,7 +303,7 @@ public class Logger implements Serializable {
     
     private class SimulationPerformer extends Thread {
         private int delay;
-        private boolean performing;
+        //private boolean performing;
         private Logger master;
         
         SimulationPerformer( int delay, Logger master ) {
@@ -317,6 +317,7 @@ public class Logger implements Serializable {
             try {
                 System.err.println("Logger: Starts performing.");
                 for( int i=0; i < testActions.size(); i++ ) {
+                    if (!master.isPerforming()) break;
                     final int cntr = i;
                     final boolean isLast = (cntr + 1) == testActions.size();
                     try {
