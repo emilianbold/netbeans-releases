@@ -410,14 +410,10 @@ implements java.io.Serializable {
             fo.setAttribute (DataObject.EA_ASSIGNED_LOADER, c.getName ());
             fo.setAttribute(DataObject.EA_ASSIGNED_LOADER_MODULE, modulename);
         }
-        
-        DataObject d = DataObjectPool.getPOOL().find (fo);
-        if (d != null && d.getLoader() != loader) {
-            try {
-                d.setValid (false);
-            } catch (java.beans.PropertyVetoException e) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
-            }
+        java.util.HashSet single = new java.util.HashSet();
+        single.add(fo);
+        if (!DataObjectPool.getPOOL().revalidate(single).isEmpty()) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "It was not possible to invalidate data object: " + fo); // NOI18N
         }
     }
     

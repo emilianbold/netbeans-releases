@@ -1060,11 +1060,11 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         FileObject f = fae.getFile();
         if (f != null) {
             String attrFromFO = (String)f.getAttribute(EA_ASSIGNED_LOADER);
-            if ((attrFromFO != null) && (! attrFromFO.equals(getLoader().getClass().getName()))) {
-                try {
-                    setValid (false);
-                } catch (java.beans.PropertyVetoException e) {
-                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            if (attrFromFO == null || (! attrFromFO.equals(getLoader().getClass().getName()))) {
+                java.util.HashSet single = new java.util.HashSet();
+                single.add(f);
+                if (!DataObjectPool.getPOOL().revalidate(single).isEmpty()) {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "It was not possible to invalidate data object: " + this); // NOI18N
                 }
             }
         }
