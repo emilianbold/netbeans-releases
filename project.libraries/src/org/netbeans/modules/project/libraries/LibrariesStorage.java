@@ -349,6 +349,17 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         if (impl != null) {
             try {
                 readLibrary (definitionFile, impl);
+                LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
+                if (provider == null) {
+                    ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
+                }
+                try {
+                    //TODO: LibraryTypeProvider should be extended by libraryUpdated method 
+                    provider.libraryCreated (impl);
+                } catch (RuntimeException e) {
+                    String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryCreatedError");
+                    ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
+                }                
             } catch (SAXException se) {
                 ErrorManager.getDefault().notify(se);
             } catch (ParserConfigurationException pce) {
