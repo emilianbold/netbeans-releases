@@ -218,6 +218,7 @@ final class ProjectSelectionPanel extends JPanel {
         projectTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
         projectTable.setDefaultEditor(Boolean.class, new ProjectCellEditor());
+        projectTableSP.getViewport().setBackground(projectTable.getBackground());
         destination.setText(System.getProperty("user.home"));
     }
     
