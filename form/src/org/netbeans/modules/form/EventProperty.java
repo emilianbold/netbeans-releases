@@ -89,8 +89,17 @@ public class EventProperty extends PropertySupport.ReadWrite {
 
                     if ("".equals(val)) { // empty String => remove current
                         change.getRemoved().add(current);
+                        for (int i=0, n=handlers.size(); i < n; i++) {
+                            String name = ((EventHandler)handlers.get(i)).getName();
+                            if (!name.equals(current)) {
+                                newSelectedHandler = name;
+                                break;
+                            }
+                        }
                     }
                     else { // valid String => rename current (if new name entered)
+                        newSelectedHandler = (String) val;
+
                         boolean ignoreValue = false;
                         for (int i=0, n=handlers.size(); i < n; i++)
                             if (((EventHandler)handlers.get(i)).getName()
@@ -104,8 +113,6 @@ public class EventProperty extends PropertySupport.ReadWrite {
                             change.getRenamedNewNames().add((String)val);
                             change.getRenamedOldNames().add(current);
                         }
-
-                        newSelectedHandler = (String) val;
                     }
                 }
                 else {
@@ -155,10 +162,10 @@ public class EventProperty extends PropertySupport.ReadWrite {
             }
         }
 
-        event.getComponent().getNodeReference().firePropertyChangeHelper(
-                this.getName(), null, null); //lastSelectedHandler, newSelectedHandler);
-
         lastSelectedHandler = formHandlers.getEventHandler(newSelectedHandler);
+
+        event.getComponent().getNodeReference().firePropertyChangeHelper(
+                this.getName(), null, null);
     }
 
     public boolean canWrite() {
@@ -329,6 +336,9 @@ public class EventProperty extends PropertySupport.ReadWrite {
                         .removeFocusListener(comboEditFocusListener);
 
                     String selected = (String) eventCombo.getEditor().getItem();
+                    EventProperty.this.setValue(selected);
+                    selected = lastSelectedHandler != null ?
+                                   lastSelectedHandler.getName() : null;
                     EventEditor.this.setValue(selected);
                     if (!"".equals(selected)) // NOI18N
                         event.gotoEventHandler(selected);
