@@ -23,8 +23,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="inited" value="true" />
   </target>
   
-  <target name="copy-localized-data" failonerror="false">
-      <copy todir=".">
+  <target name="copy-localized-data">
+      <copy todir="." failonerror="false">
           <fileset dir="../../translatedfiles/src/installer/jdkbundle"/>
       </copy>
   </target>
