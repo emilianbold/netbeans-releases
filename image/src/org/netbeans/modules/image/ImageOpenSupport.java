@@ -11,54 +11,57 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.image;
 
-import java.io.IOException;
+
 import java.text.MessageFormat;
 import java.util.Enumeration;
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 
-import org.openide.*;
 import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.OpenSupport;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 import org.openide.windows.CloneableTopComponent;
-import org.openide.util.*;
-import org.openide.text.EditorSupport;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
-/** OpenSupport flavored with little EditorSupport features like 
-* listening on changes of image file and renames on dataobject, 
-* so it can work appropriate in Editor window.
-*
-* @author Peter Zavadsky
-*/
+
+/** 
+ * OpenSupport flavored with some <code>CloneableEditorSupport</code> features like 
+ * listening on changes of image file and renames on dataobject, 
+ * so it can work appropriate in Editor window.
+ *
+ * @author Peter Zavadsky
+ */
 
 public class ImageOpenSupport extends OpenSupport implements OpenCookie {
 
-    /** Saves last modified time
-    */
+    /** Saves last modified time. */
     private long lastSaveTime;
 
-    /** Listens for changes on file
-    */
+    /** Listens for changes on file. */
     private FileChangeListener fileChangeL; 
 
 
-    /** Constructs ImageOpenSupportObject on given MultiDataObject.Entry
-    */
+    /** Constructs ImageOpenSupportObject on given MultiDataObject.Entry. */
     public ImageOpenSupport (MultiDataObject.Entry ent) {
         super (ent);
     }
 
-    /** Creates the CloenableTOPComponent viewer of image
-    */
+    /** Creates the CloenableTOPComponent viewer of image. */
     public CloneableTopComponent createCloneableTopComponent () {
         prepareViewer();
         return new ImageViewer((ImageDataObject)entry.getDataObject());
     }
 
-    /**  Set listener for changes on image file
-    */
+    /** Set listener for changes on image file. */
     void prepareViewer() {
         // listen for changes on the image file
         if(fileChangeL == null) {
@@ -82,11 +85,10 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie {
         lastSaveTime = System.currentTimeMillis();
     }
 
-    /** Ask and reload/close image views
-    */
+    /** Ask and reload/close image views. */
     private void reload(FileEvent evt) {
         // ask if reload?
-        MessageFormat fmt = new MessageFormat(NbBundle.getBundle(EditorSupport.class).getString("FMT_External_change")); // NOI18N
+        MessageFormat fmt = new MessageFormat(NbBundle.getBundle(ImageOpenSupport.class).getString("MSG_ExternalChange")); // NOI18N
         String msg = fmt.format(new Object[] { entry.getFile().getPackageNameExt('/', '.')});
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
         Object ret = TopManager.getDefault().notify(nd);
