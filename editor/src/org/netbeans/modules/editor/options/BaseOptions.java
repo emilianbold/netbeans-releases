@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
 import javax.swing.text.JTextComponent;
   
 import com.netbeans.editor.Settings;
@@ -262,7 +263,7 @@ public class BaseOptions extends OptionSupport {
   }
 
   public Map getColoringMap() {
-    Map cm = new HashMap( SettingsUtil.getColoringMap(getKitClass(), false) );
+    Map cm = new HashMap( SettingsUtil.getColoringMap(getKitClass(), false, true) ); // !!! !evaluateEvaluators
     cm.put(null, getKitClass().getName() ); // add kit class
     return cm;
   }
@@ -281,22 +282,22 @@ public class BaseOptions extends OptionSupport {
   
   public void setFontSize(final int size) {
     final int oldSize = getFontSize();
-    Map cm = SettingsUtil.getColoringMap(getKitClass(), false);
+    Map cm = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
     if (cm != null) {
-      SettingsUtil.changeColorings(cm,
-        new SettingsUtil.ColoringChanger() {
-          public Coloring changeColoring(String coloringName, Coloring c) {
-            if (c != null) {
-              Font font = c.getFont();
-              if (font != null && font.getSize() == oldSize) {
-                font = font.deriveFont((float)size);
-                return Coloring.changeFont(c, font);
-              }
-            }
-            return c;
+      Iterator it = cm.entrySet().iterator();
+      while (it.hasNext()) {
+        Map.Entry entry = (Map.Entry)it.next();
+        Object value = entry.getValue();
+        if (value instanceof Coloring) {
+          Coloring c = (Coloring)value;
+          Font font = c.getFont();
+          if (font != null && font.getSize() == oldSize) {
+            font = font.deriveFont((float)size);
+             entry.setValue(Coloring.changeFont(c, font));
           }
         }
-      );
+      }
+
       SettingsUtil.updateColoringSettings(getKitClass(), cm, false);
     }
   }
@@ -436,6 +437,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  22   Jaga      1.14.1.1.1.44/13/00  Miloslav Metelka 
  *  21   Jaga      1.14.1.1.1.33/24/00  Miloslav Metelka 
  *  20   Jaga      1.14.1.1.1.23/21/00  Miloslav Metelka 
  *  19   Jaga      1.14.1.1.1.13/20/00  Miloslav Metelka 

@@ -52,11 +52,12 @@ public class NbEditorSettingsInitializer implements Settings.Initializer {
   public static void init() {
     if (!inited) {
       inited = true;
-      Settings.addInitializer(new BaseSettingsInitializer());
-      Settings.addInitializer(new ExtSettingsInitializer());
+      Settings.addInitializer(new BaseSettingsInitializer(), Settings.CORE_LEVEL);
+      Settings.addInitializer(new ExtSettingsInitializer(), Settings.CORE_LEVEL);
       Settings.addInitializer(new JavaSettingsInitializer(JavaKit.class));
       Settings.addInitializer(new HTMLSettingsInitializer(HTMLKit.class));
       Settings.addInitializer(new NbEditorSettingsInitializer());
+      Settings.addInitializer(new PlainSettingsInitializer());
       Settings.addInitializer(new NbJavaSettingsInitializer());
       Settings.addInitializer(new NbHTMLSettingsInitializer());
     }
@@ -65,13 +66,16 @@ public class NbEditorSettingsInitializer implements Settings.Initializer {
   public NbEditorSettingsInitializer() {
   }
 
-  public Map updateSettingsMap(Class kitClass, Map settingsMap) {
+  /** Update map filled with the settings.
+  * @param kitClass kit class for which the settings are being updated.
+  *   It is always non-null value.
+  * @param settingsMap map holding [setting-name, setting-value] pairs.
+  *   The map can be empty if this is the first initializer
+  *   that updates it or if no previous initializers updated it.
+  */
+  public void updateSettingsMap(Class kitClass, Map settingsMap) {
 
     if (kitClass == NbEditorKit.class) {
-
-      if (settingsMap == null) {
-        settingsMap = new HashMap();
-      }
 
       settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, 
         new ArrayList(Arrays.asList(
@@ -89,13 +93,13 @@ public class NbEditorSettingsInitializer implements Settings.Initializer {
 
     }
 
-    return settingsMap;
   }
   
 }
 
 /*
  * Log
+ *  3    Jaga      1.2         4/13/00  Miloslav Metelka 
  *  2    Jaga      1.1         3/24/00  Miloslav Metelka 
  *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
  * $

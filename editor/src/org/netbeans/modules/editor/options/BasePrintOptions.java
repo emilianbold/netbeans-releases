@@ -74,7 +74,7 @@ public class BasePrintOptions extends OptionSupport {
   }
 
   public Map getPrintColoringMap() {
-    Map cm = SettingsUtil.getColoringMap(getKitClass(), true);
+    Map cm = SettingsUtil.getColoringMap(getKitClass(), true, true);
     cm.put(null, getKitClass()); // add kit class
     return cm;
   }
@@ -87,6 +87,7 @@ public class BasePrintOptions extends OptionSupport {
 
 /*
  * Log
+ *  16   Jaga      1.12.1.2    4/13/00  Miloslav Metelka 
  *  15   Jaga      1.12.1.1    3/24/00  Miloslav Metelka 
  *  14   Jaga      1.12.1.0    3/15/00  Miloslav Metelka Structural change
  *  13   Gandalf   1.12        2/15/00  Miloslav Metelka print coloring map 
