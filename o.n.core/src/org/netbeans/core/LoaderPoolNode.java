@@ -210,9 +210,13 @@ public final class LoaderPoolNode extends AbstractNode {
         l.add (loader);
         classes.add (loader.getClass ());
       } catch (IOException ex) {
-        TopManager.getDefault ().notifyException (ex);
+        if (System.getProperty ("netbeans.debug.exceptions") != null) {
+          ex.printStackTrace();
+        }
       } catch (ClassNotFoundException ex) {
-        TopManager.getDefault ().notifyException (ex);
+        if (System.getProperty ("netbeans.debug.exceptions") != null) {
+          ex.printStackTrace();
+        }
       }
     }
     
@@ -674,6 +678,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  27   Gandalf   1.26        10/8/99  Jaroslav Tulach Prints exceptions only to
+*       console.
 *  26   Gandalf   1.25        9/30/99  Jaroslav Tulach DataLoader is now 
 *       serializable.
 *  25   Gandalf   1.24        9/28/99  Jaroslav Tulach Changes in loader pool 
