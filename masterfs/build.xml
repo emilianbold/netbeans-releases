@@ -91,10 +91,10 @@ Microsystems, Inc. All Rights Reserved.
           <property name="javadoc.title" value="MasterFSAPI"/>
           <property name="javadoc.packages" value="org.netbeans.api.masterfs,org.netbeans.spi.masterfs"/>
           <property name="javadoc.classpath" refid="cp"/>
-          <!--<property name="javadoc.arch" location="../arch/arch-openide-registry.xml"/>-->
-          <!--<property name="javadoc.docfiles" location="api/doc"/>
-          <property name="javadoc.overview" location="api/doc/overview.html"/>
-         <property name="javadoc.apichanges" location="api/apichanges.xml"/> -->
+          <property name="javadoc.arch" location="../arch/arch-openide-masterfs.xml"/>
+          <!--<property name="javadoc.docfiles" location="api/doc"/>-->
+          <!--<property name="javadoc.overview" location="api/doc/overview.html"/>-->
+         <!--<property name="javadoc.apichanges" location="api/apichanges.xml"/> -->
         </ant>
     </target>
 
