@@ -323,20 +323,29 @@ public final class ProjectWebModule extends J2eeModuleProvider
 //    }
     
     private static class IT implements Iterator {
-        java.util.Enumeration ch;
+        ArrayList ch;
         FileObject root;
         
         private IT (FileObject f) {
-            this.ch = f.getChildren (true);
+            this.ch = new ArrayList ();
+            ch.add (f);
             this.root = f;
         }
         
         public boolean hasNext () {
-            return ch.hasMoreElements ();
+            return ! ch.isEmpty();
         }
         
         public Object next () {
-            FileObject f = (FileObject) ch.nextElement ();
+            FileObject f = (FileObject) ch.get(0);
+            ch.remove(0);
+            if (f.isFolder()) {
+                f.refresh();
+                FileObject chArr[] = f.getChildren ();
+                for (int i = 0; i < chArr.length; i++) {
+                    ch.add(chArr [i]);
+                }
+            }
             return new FSRootRE (root, f);
         }
         
