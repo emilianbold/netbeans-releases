@@ -58,6 +58,7 @@ import org.netbeans.modules.editor.NbImplementationProvider;
 import java.util.Iterator;
 import org.openide.text.CloneableEditor;
 import java.util.HashSet;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.options.BasePrintOptions;
 import org.openide.loaders.OperationEvent;
@@ -237,34 +238,41 @@ public class EditorModule extends ModuleInstall {
             t.printStackTrace();
         }
 
-        // issue #16110
-        // close all TopComponents which contain editor based on BaseKit
-        HashSet set = new HashSet();
-        set.addAll(TopComponent.getRegistry().getOpened());
+        // #42970 - Possible closing of opened editor top components must happen in AWT thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
 
-        for (Iterator it = set.iterator(); it.hasNext(); ) {
-            TopComponent topComp = (TopComponent)it.next();
-            // top components in which we are interested must be of type CloneableEditor
-            if (!(topComp instanceof CloneableEditor))
-                continue;
-            Node[] arr = topComp.getActivatedNodes();
-            if (arr == null)
-                continue;
-            for (int i=0; i<arr.length; i++) {
-                EditorCookie ec = (EditorCookie)arr[i].getCookie(EditorCookie.class);
-                if (ec == null)
-                    continue;
-                JEditorPane[] pane = ec.getOpenedPanes();
-                if (pane == null) 
-                    continue;
-                for (int j=0; j<pane.length; j++) {
-                    if (pane[j].getEditorKit() instanceof BaseKit) {
-                        topComp.setCloseOperation(TopComponent.CLOSE_EACH);
-                        topComp.close();
+                // issue #16110
+                // close all TopComponents which contain editor based on BaseKit
+                HashSet set = new HashSet();
+                set.addAll(TopComponent.getRegistry().getOpened());
+
+                for (Iterator it = set.iterator(); it.hasNext(); ) {
+                    TopComponent topComp = (TopComponent)it.next();
+                    // top components in which we are interested must be of type CloneableEditor
+                    if (!(topComp instanceof CloneableEditor))
+                        continue;
+                    Node[] arr = topComp.getActivatedNodes();
+                    if (arr == null)
+                        continue;
+                    for (int i=0; i<arr.length; i++) {
+                        EditorCookie ec = (EditorCookie)arr[i].getCookie(EditorCookie.class);
+                        if (ec == null)
+                            continue;
+                        JEditorPane[] pane = ec.getOpenedPanes();
+                        if (pane == null) 
+                            continue;
+                        for (int j=0; j<pane.length; j++) {
+                            if (pane[j].getEditorKit() instanceof BaseKit) {
+                                topComp.setCloseOperation(TopComponent.CLOSE_EACH);
+                                topComp.close();
+                            }
+                        }
                     }
                 }
+
             }
-        }
+        });
 
         // stop any queued updates of parser DB
         ParserThread.getParserThread().stopParserThread();
