@@ -32,10 +32,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- realclean, printconfig targets. -->
     <import file="${xtest.home}/lib/default-module-build.xml"/>
     
-    <!-- This calls common clean process. -->
-    <target name="cleantests">
-        <!-- Call cleantests also from imported script -->
-        <antcall target="module-build.cleantests"/>
+    <!-- Common clean routine plus extra steps. -->
+    <target name="cleantests" depends="module-build.cleantests">
         <ant dir="unit/src/org/netbeans/core/modules" target="clean"/>
         <ant dir="unit/src/org/netbeans/core/projects" target="clean"/>
         <ant dir="unit/src/org/netbeans/core/lookup/data" target="clean"/>             
