@@ -531,7 +531,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tasklist/api..."/>
     <ant dir="../tasklist/api" target="netbeans"/>
   </target>
-  <target name="all-tasklist/core" depends="all-openide,all-tasklist/api">
+  <target name="all-tasklist/core" depends="all-openide,all-core/settings,all-core/output,all-tasklist/api">
     <echo message="Building module tasklist/core..."/>
     <ant dir="../tasklist/core" target="netbeans"/>
   </target>
