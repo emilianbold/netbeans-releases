@@ -34,6 +34,7 @@ import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
 import org.openide.windows.TopComponent;
 
@@ -382,18 +383,21 @@ public class BundleEditPanel extends JPanel {
                     if(evt2.getSource() == DialogDescriptor.OK_OPTION) {
                         dialog[0].setVisible(false);
                         dialog[0].dispose();
+
+                        final String key = item.getKey();
+                        String value = item.getValue();
+                        String comment = item.getComment();
+
+                        boolean keyAdded = false;
                         
                         try {
                             // Starts "atomic" acion for special undo redo manager of open support.
                             obj.getOpenSupport().atomicUndoRedoFlag = new Object();
 
-                            String key = item.getKey();
-                            String value = item.getValue();
-                            String comment = item.getComment();
-                            
                             // add key to all entries
                             for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {            
                                 PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
+                                
                                 if (entry != null && !entry.getHandler().getStructure().addItem(key, value, comment)) {
                                     NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                                         MessageFormat.format(
@@ -402,11 +406,50 @@ public class BundleEditPanel extends JPanel {
                                         ),
                                         NotifyDescriptor.ERROR_MESSAGE);
                                     TopManager.getDefault().notify(msg);
+                                } else {
+                                    keyAdded = true;
                                 }
                             }
                         } finally {
                             // Finishes "atomic" undo redo action for special undo redo manager of open support.
                             obj.getOpenSupport().atomicUndoRedoFlag = null;
+                        }
+
+                        if(keyAdded) {
+                            // Item was added succesfully, go to edit it.
+                            // PENDING: this is in request processor queue only 
+                            // due to reason that properties structure has just after
+                            // adding new item inconsistence gap until it's reparsed anew.
+                            // This should be removed when the parsing will be redsigned.
+                            RequestProcessor.postRequest(new Runnable() {
+                                public void run() {
+                                    // Find indexes.
+                                    int rowIndex = obj.getBundleStructure().getKeyIndexByName(key);
+
+                                    if((rowIndex != -1)) {
+                                        final int row = rowIndex;
+                                        final int column = 1; // Default locale.
+
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            public void run() {
+                                                // Autoscroll to cell if possible and necessary.
+                                                if(table.getAutoscrolls()) { 
+                                                    Rectangle cellRect = table.getCellRect(row, column, false);
+                                                    if (cellRect != null) {
+                                                        table.scrollRectToVisible(cellRect);
+                                                    }
+                                                }
+
+                                                // Update selection & edit.
+                                                table.getColumnModel().getSelectionModel().setSelectionInterval(row, column);
+                                                table.getSelectionModel().setSelectionInterval(row, column);
+
+                                                table.editCellAt(row, column);
+                                            }
+                                        });
+                                    }
+                                }
+                            });
                         }
                         
                     // Cancel pressed
