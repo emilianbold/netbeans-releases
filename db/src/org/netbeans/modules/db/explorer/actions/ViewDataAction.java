@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -26,6 +27,8 @@ import org.netbeans.modules.db.explorer.dataview.*;
 
 public class ViewDataAction extends DatabaseAction {
     static final long serialVersionUID =-894644054833609687L;
+    
+    private String quoteStr;
     
     protected boolean enable(Node[] activatedNodes) {
         Node node;
@@ -48,44 +51,72 @@ public class ViewDataAction extends DatabaseAction {
 
         if (activatedNodes != null && activatedNodes.length>0) {
             try {
-
                 node = activatedNodes[0];
                 DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-                String onome = info.getName();
+                
+                DatabaseMetaData dmd = info.getConnection().getMetaData();
+                quoteStr = dmd.getIdentifierQuoteString();
+                if (quoteStr == null)
+                    quoteStr = ""; //NOI18N
+                else
+                    quoteStr.trim();
+                
+                String schema = info.getSchema();
+                if (schema == null)
+                    schema = ""; //NOI18N
+                else
+                    schema = schema.trim();
+                
+                String onome;
                 if (info instanceof TableNodeInfo || info instanceof ViewNodeInfo) {
+                    onome = quote(info.getName());
+                    if (!schema.equals("")) //NOI18N
+                        onome = quote(schema) + "." + onome; //NOI18N
+                    
                     Enumeration enum = info.getChildren().elements();
                     while (enum.hasMoreElements()) {
                         DatabaseNodeInfo nfo = (DatabaseNodeInfo)enum.nextElement();
                         if (nfo instanceof ColumnNodeInfo || nfo instanceof ViewColumnNodeInfo) {
-                            if (cols.length()>0) cols.append(", "); //NOI18N
-                            cols.append(nfo.getName());
+                            if (cols.length() > 0)
+                                cols.append(", "); //NOI18N
+                            cols.append(quote(nfo.getName()));
                         }
                     }
 
-                    expression = "select "+cols.toString()+" from "+onome; //NOI18N
+                    expression = "select " + cols.toString() + " from " + onome; //NOI18N
 
                 } else if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
-                    onome = (info instanceof ViewColumnNodeInfo)?info.getView():info.getTable();
+                    onome = quote((info instanceof ViewColumnNodeInfo) ? info.getView() : info.getTable());
+                    if (!schema.equals("")) //NOI18N
+                        onome = quote(schema) + "." + onome; //NOI18N
+                    
                     for (int i = 0; i<activatedNodes.length; i++) {
                         node = activatedNodes[i];
                         info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
                         if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
-                            if (cols.length()>0) cols.append(", "); //NOI18N
-                            cols.append(info.getName());
+                            if (cols.length() > 0)
+                                cols.append(", "); //NOI18N
+                            cols.append(quote(info.getName()));
                         }
                     }
 
-                    expression = "select "+cols.toString()+" from "+onome; //NOI18N
+                    expression = "select " + cols.toString() + " from " + onome; //NOI18N
 
                 }
 
                 DataViewWindow win = new DataViewWindow(info, expression);
                 win.open();
                 win.executeCommand();
+            } catch (SQLException exc) {
+                //PENDING
             } catch(Exception exc) {
                 String message = MessageFormat.format(bundle.getString("ShowDataError"), new String[] {exc.getMessage()}); // NOI18N
                 TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
+    }
+    
+    private String quote(String name) {
+        return quoteStr + name + quoteStr;
     }
 }
