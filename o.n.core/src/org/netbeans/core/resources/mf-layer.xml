@@ -126,12 +126,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-openide-actions-NewTemplateAction.instance">
             <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-NewTemplateAction.html" />
         </file>
-        <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
-        <!-- [PENDING] should be from autoupdate module; throws exceptions with autoupdate not installed -->
-        <file name="org-netbeans-modules-autoupdate-UpdateAction.instance">
-            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-UpdateAction.html" />
-        </file>
-        <attr name="org-netbeans-modules-autoupdate-UpdateAction.instance/org-netbeans-core-ui-ProxySettingsAction.instance" boolvalue="true" />
+        <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-core-ui-ProxySettingsAction.instance" boolvalue="true" />
         <file name="org-netbeans-core-ui-ProxySettingsAction.instance">
             <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-ProxySettingsAction.html" />
         </file>
