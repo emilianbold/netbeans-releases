@@ -238,14 +238,14 @@ removed !!!!
               os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000 Windows XP"
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
               enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
-	    	  <arg line="--clusters ..\..\ide4 ${args}"/>
-        </ideTestRunner>            
+	    	  <arg line="--clusters ..\..\ide4;..\..\nb4.0 ${args}"/>
+        </ideTestRunner>
         
         <ideTestRunner dir="${core.dir}/${nb.bin.dir}" executable="sh"  workdir="${xtest.workdir}/sys"
               os="Linux SunOS Solaris Mac OS X" 
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
               enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
-            <arg line="./nbexec --clusters ../../ide4 ${args}"/>
+            <arg line="./nbexec --clusters ../../ide4:../../nb4.0 ${args}"/>
         </ideTestRunner>    
         
         
@@ -338,14 +338,12 @@ removed !!!!
         <antcall target="copy-ide-screenshots"/>
         <!-- copy ide.zip -->
         <condition property="xtest.userdir.move">
-           <echo message="XXXXXXXXXXXXXXX xtest.archive.ide.userdir=${xtest.archive.ide.userdir}"/>
            <equals arg1="${xtest.archive.ide.userdir}" arg2="true"/>
         </condition>
         <antcall target="copy-ide.zip"/>
     </target>
     
     <target name="copy-ide.zip" if="xtest.userdir.move">
-        <echo message="XXXXXXXXXXXXXXX copy-ide.zip xtest.workdir/sys/ide=${xtest.workdir}/sys/ide"/>
         <!-- zip the ide userdir stuff -->
         <zip zipfile="${xtest.current.results}/sys/ide/ide.zip" basedir="${xtest.workdir}/sys/ide"/>
     </target>
