@@ -271,6 +271,7 @@ final class SaveSupport {
             } catch (Exception ex) { // do nothing
                 return;
             }
+            if (!getter.isAccessible()) return;
             
             try {
                 String name = (String) getter.invoke(inst, null);
