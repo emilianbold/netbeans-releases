@@ -15,11 +15,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
     <!ENTITY localize-it "<attr name='SystemFileSystem.localizingBundle' stringvalue='org.netbeans.modules.xml.tools.resources.Bundle'/>">
     
-    <!-- XSL 'module' hosted entities -->
-    <!ENTITY xsl-resolvers SYSTEM "nbres:/org/netbeans/modules/xsl/resources/mf-resolvers.ent">
-    <!ENTITY xsl-templates SYSTEM "nbres:/org/netbeans/modules/xsl/resources/mf-templates.ent">
-    <!ENTITY xsl-editors   SYSTEM "nbres:/org/netbeans/modules/xsl/resources/mf-editors.ent">
-
     <!-- Defer class loading by declaring hint for lookup. -->
     <!ENTITY xml-action-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.core.actions.CollectXMLAction$XMLAction'/>">
     <!ENTITY dtd-action-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.core.actions.CollectDTDAction$DTDAction'/>">
@@ -28,16 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <filesystem>
-
-    <!-- register templates -->  
-    <folder name="Templates">
-
-        <folder name="XML">
-            &xsl-templates;
-        </folder> <!-- XML -->
-
-    </folder> <!-- Templates -->
-
 
     <!-- register services with Lookup -->
     <folder name="Services">
@@ -72,13 +57,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance">
                 &dtd-action-attributes;
             </file>
-            <file name="org-netbeans-modules-xsl-actions-TransformAction.instance">
-                &xml-action-attributes;                
-            </file>
-        </folder>
-
-        <folder name="MIMEResolver">
-            &xsl-resolvers;
         </folder>
 
     </folder>
@@ -95,7 +73,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
-            <file name="org-netbeans-modules-xsl-actions-TransformAction.instance" />
         </folder>
     </folder>
 
@@ -141,9 +118,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- Mount -->
 
     <folder name="Shortcuts">
-        <file name="A-F6.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.TransformAction"/>
-	</file>
         <file name="A-F9.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.CheckAction"/>
 	</file>
@@ -193,8 +167,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder> <!-- xml-dtd -->
         </folder> <!-- application -->
                 
-        &xsl-editors;
-        
     </folder> <!-- Editors -->
     
 </filesystem>

@@ -158,10 +158,4 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir=".." target="compile"/>
     </target>
 
-
-    <!-- Run tests. -->
-    <target name="test">
-        <ant dir="testbase" target="run"/>
-    </target>
-
 </project>

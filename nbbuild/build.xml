@@ -580,7 +580,7 @@ ToDo:
       <ant dir="../xml/catalog" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tools" depends="all-openide, all-httpserver/servletapi, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core">
+  <target name="all-xml/tools" depends="all-openide, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core">
       <echo message="Building module xml/tools..."/>
       <ant dir="../xml/tools" target="netbeans"/>
   </target>
@@ -600,7 +600,12 @@ ToDo:
       <ant dir="../xml/css" target="netbeans"/>
   </target>
 
-  <target name="all-xml" depends="all-xml/api, all-xml/tax, all-xml/core, all-xml/catalog, all-xml/tools, all-xml/text-edit, all-xml/tree-edit, all-xml/css"/>
+  <target name="all-xml/xsl" depends="all-openide, all-httpserver/servletapi, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core">
+      <echo message="Building module xml/xsl..."/>
+      <ant dir="../xml/xsl" target="netbeans"/>
+  </target>
+
+  <target name="all-xml" depends="all-xml/api, all-xml/tax, all-xml/core, all-xml/catalog, all-xml/tools, all-xml/text-edit, all-xml/tree-edit, all-xml/css, all-xml/xsl"/>
 
 
   <target name="all-treefs" depends="all-openide">

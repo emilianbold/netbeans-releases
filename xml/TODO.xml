@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--DOCTYPE list PUBLIC "-//NetBeans//DTD ToDo 1.0//EN" "http://xml.netbeans.org/dtds/todo-1_0.dtd" [-->
 <!DOCTYPE list [
+    <!ENTITY api_todo.xml       SYSTEM "api/TODO.xml">
     <!ENTITY catalog_todo.xml   SYSTEM "catalog/TODO.xml">
     <!ENTITY core_todo.xml      SYSTEM "core/TODO.xml">
     <!ENTITY css_todo.xml       SYSTEM "css/TODO.xml">
@@ -25,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <!ENTITY text-edit_todo.xml SYSTEM "text-edit/TODO.xml">
     <!ENTITY tools_todo.xml     SYSTEM "tools/TODO.xml">
     <!ENTITY tree-edit_todo.xml SYSTEM "tree-edit/TODO.xml">
+    <!ENTITY xsl_todo.xml       SYSTEM "xsl/TODO.xml">
 ]>
 
 <list module="xml">
@@ -38,6 +40,7 @@ Microsystems, Inc. All Rights Reserved.
         <description>Upgrade modules to use 3.4 implementation, especially mf-layer advantages -- see <a href="http://www.netbeans.org/unbranded-source/browse/~checkout~/openide/api/doc/org/openide/doc-files/upgrade.html">3.2 -> 3.3 -> 3.4 Upgrade Guide</a> for more info.</description>
     </item>
 
+    &api_todo.xml;
     &catalog_todo.xml;
     &core_todo.xml;
     &css_todo.xml;
@@ -45,4 +48,5 @@ Microsystems, Inc. All Rights Reserved.
     &text-edit_todo.xml;
     &tools_todo.xml;
     &tree-edit_todo.xml;    
+    &xsl_todo.xml;
 </list>

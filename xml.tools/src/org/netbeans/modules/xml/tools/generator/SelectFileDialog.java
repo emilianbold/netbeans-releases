@@ -21,7 +21,7 @@ import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 
-import org.netbeans.modules.xml.tools.lib.GuiUtil;
+import org.netbeans.modules.xml.core.lib.GuiUtil;
 
 public class SelectFileDialog extends JPanel {
 

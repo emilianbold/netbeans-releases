@@ -23,7 +23,7 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.modules.xml.core.actions.CollectXMLAction;
 import org.netbeans.modules.xml.core.actions.CollectDTDAction;
 
-import org.netbeans.modules.xml.tools.lib.GuiUtil;
+import org.netbeans.modules.xml.core.lib.GuiUtil;
 
 public abstract class XMLGenerateAction extends CookieAction {
 

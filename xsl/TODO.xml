@@ -16,16 +16,14 @@ Microsystems, Inc. All Rights Reserved.
      When you change this, please regenerate result document by 'ant todo' in www directory.
   -->
 
-<list module="tools">
-    <item priority="2">
-        <summary>Cleanup files structure</summary>
-        <description>Files' structure is not synoptical. I see two possible structures:
-<ul>
-    <li><b>By services</b> - each service has its own folder which contains cookies,
-        actions, impl, wizard, ...</li>
-    <li><b>By class types</b> - separated parts (cookies, actions, impl, wizard, ...) of
-        each service are in common folder.</li>
-</ul>
-        </description>
+<list module="xsl">
+    <item>
+        <summary>Use <code>org.openide.filesystems.URLMapper</code> methods to detect
+        right <code>URL</code>.</summary>
+        <description>Follow <a
+        href="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-urlmapper">3.4
+        upgrade guide</a> and use <code>org.openide.filesystems.URLMapper</code> methods
+        to detect right <code>URL</code>. (See
+        <code>org.netbeans.modules.xsl.utils.TransformUtil::getURLName</code> method.)</description>
     </item>
 </list>

@@ -35,8 +35,8 @@ import org.openide.util.MapFormat;
 import org.openide.xml.*;
 
 import org.netbeans.modules.xml.core.DTDDataObject;
-import org.netbeans.modules.xml.tools.lib.GuiUtil;
-import org.netbeans.modules.xml.tools.lib.FileUtilities;
+import org.netbeans.modules.xml.core.lib.GuiUtil;
+import org.netbeans.modules.xml.core.lib.FileUtilities;
 import org.netbeans.tax.*;
 
 /**

@@ -22,7 +22,7 @@ import org.openide.util.UserCancelException;
 
 import org.netbeans.tax.*;
 import org.netbeans.modules.xml.core.XMLDataObject;
-import org.netbeans.modules.xml.tools.lib.GuiUtil;
+import org.netbeans.modules.xml.core.lib.GuiUtil;
 
 /**
  * GenerateDTDSupport class generate a DTD by guessing it from

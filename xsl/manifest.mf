@@ -1,0 +1,16 @@
+OpenIDE-Module: org.netbeans.modules.xsl/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xsl/resources/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/xsl/resources/mf-layer.xml
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
+OpenIDE-Module-Specification-Version: @XSL_SPEC_VERS_SUBST@
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Module-Dependencies: 
+ org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
+ org.netbeans.modules.xml.core/1 > @CORE_SPEC_VERS_SUBST@,
+ org.netbeans.libs.jaxp/1,
+ org.netbeans.modules.servletapi/1
+OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl
+
+Name: org/netbeans/modules/xsl/XSLDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.xml.core.XMLDataObject
