@@ -93,33 +93,33 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
 
     public String getError() {
         if (projectLocation.getText().length() == 0) {
-            return "Location of your existing project must be specified";
+            return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_1");
         }
         if (!getProjectLocation().exists()) {
-            return "Project location does not exist";
+            return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_2");
         }
         if (antScript.getText().length() == 0) {
-            return "Your existing build script must be specified";
+            return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_3");
         }
         if (!getAntScript().exists()) {
-            return "The specified build script doesn't exist.";
+            return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_4");
         }
         if (!antScriptValidityChecked) {
             FileObject fo = FileUtil.toFileObject(getAntScript());
             if (fo != null && Util.getAntScriptTargetNames(fo) != null) {
                 antScriptValidityChecked = true;
             } else {
-                return "The selected file is not a valid Ant script";
+                return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_5");
             }
         }
         if (getProjectName().length() == 0) {
-            return "Project name must be set";
+            return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_6");
         }
         if (projectFolder.getText().length() == 0) {
-            return "Project folder must be set";
+            return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_7");
         }
-        if (getAsFile(projectFolder.getText() + File.separatorChar + "nbproject").exists()) {
-            return "Project folder already contains NetBeans project data";
+        if (getAsFile(projectFolder.getText() + File.separatorChar + "nbproject").exists()) { // NOI18N
+            return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_8");
         }
         return null;
     }
@@ -168,7 +168,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
 
     private boolean isValidProjectLocation() {
         return (getProjectLocation().exists() && getProjectLocation().isDirectory() &&
-                projectLocation.getText().length() > 0 && (!projectLocation.getText().endsWith(":")));
+                projectLocation.getText().length() > 0 && (!projectLocation.getText().endsWith(":"))); // NOI18N
     }
 
     private void updateAntScriptLocation() {
@@ -176,13 +176,13 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
             return;
         }
         if (isValidProjectLocation()) {
-            File as = new File(getProjectLocation().getAbsolutePath() + File.separatorChar + "build.xml");
+            File as = new File(getProjectLocation().getAbsolutePath() + File.separatorChar + "build.xml"); // NOI18N
             if (as.exists()) {
                 antScript.setText(as.getAbsolutePath());
                 return;
             }
         }
-        antScript.setText(""); //NOI18N
+        antScript.setText(""); // NOI18N
     }
 
     private void updateProjectName() {
@@ -201,7 +201,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
                 }
             }
         }
-        projectName.setText(""); //NOI18N
+        projectName.setText(""); // NOI18N
     }
 
     private void updateProjectFolder() {
@@ -211,7 +211,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         if (isValidProjectLocation()) {
             projectFolder.setText(getProjectLocation().getAbsolutePath());
         } else {
-            projectFolder.setText(""); //NOI18N
+            projectFolder.setText(""); // NOI18N
         }
     }
 
@@ -409,7 +409,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
             chooser.setSelectedFile(getProjectLocation());
         }
         chooser.setDialogTitle(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_Browse_Location"));
-        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectLoc = FileUtil.normalizeFile(chooser.getSelectedFile());
             projectLocation.setText(projectLoc.getAbsolutePath());
         }
@@ -425,7 +425,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
             chooser.setSelectedFile(getProjectLocation());
         }
         chooser.setDialogTitle(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_Browse_Project_Folder"));
-        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
             projectFolder.setText(projectDir.getAbsolutePath());
         }                    
@@ -441,7 +441,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
             chooser.setSelectedFile(getProjectLocation());
         }
         chooser.setDialogTitle(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_Browse_Build_Script"));
-        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File script = FileUtil.normalizeFile(chooser.getSelectedFile());
             antScript.setText(script.getAbsolutePath());
         }            

@@ -89,14 +89,14 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
-        wizardDescriptor.putProperty("NewProjectWizard_Title", component.getClientProperty("NewProjectWizard_Title")); //NOI18N
+        wizardDescriptor.putProperty("NewProjectWizard_Title", component.getClientProperty("NewProjectWizard_Title")); // NOI18N
     }
     
     public void storeSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
         wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT, component.getAntScript());
         wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_NAME, component.getProjectName());
-        wizardDescriptor.putProperty("NewProjectWizard_Title", null); //NOI18N
+        wizardDescriptor.putProperty("NewProjectWizard_Title", null); // NOI18N
         wizardDescriptor.putProperty("setAsMain", component.getMainProject()); // NOI18N
 
         PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{

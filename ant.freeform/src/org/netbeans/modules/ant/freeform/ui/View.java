@@ -136,7 +136,7 @@ public final class View implements LogicalViewProvider {
                     return new Node[] {PackageView.createPackageView(GenericSources.group(p, file, location, label, null, null))};
                 }
             } else {
-                assert itemEl.getLocalName().equals("source-file") : itemEl;
+                assert itemEl.getLocalName().equals("source-file") : itemEl; // NOI18N
                 return new Node[] {new ViewItemNode(fileDO.getNodeDelegate(), location, label)};
             }
         }

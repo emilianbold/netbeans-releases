@@ -124,7 +124,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
     public void setTargetNames(List list, boolean selectDefaults) {
         targetNames = list;
-        targetNames.add(0, ""); //NOI18N
+        targetNames.add(0, ""); // NOI18N
         updateCombos(selectDefaults);
     }
 
@@ -157,14 +157,14 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             }
         }
         if (selectDefaults) {
-            selectItem(buildCombo, "build", false); //NOI18N
-            selectItem(cleanCombo, "clean", false); //NOI18N
-            selectItem(javadocCombo, "javadoc", false); //NOI18N
-            selectItem(runCombo, "run", false); //NOI18N
-            selectItem(debugCombo, "debug", false); //NOI18N
-            selectItem(testCombo, "test", false);
+            selectItem(buildCombo, "build", false); // NOI18N
+            selectItem(cleanCombo, "clean", false); // NOI18N
+            selectItem(javadocCombo, "javadoc", false); // NOI18N
+            selectItem(runCombo, "run", false); // NOI18N
+            selectItem(debugCombo, "debug", false); // NOI18N
+            selectItem(testCombo, "test", false); // NOI18N
             if (projectType.equals("webapps")) { // NOI18N
-                selectItem(redeployCombo, "run-deploy", false); //NOI18N
+                selectItem(redeployCombo, "run-deploy", false); // NOI18N
             }
         }
     }
@@ -235,7 +235,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         while (it.hasNext()) {
             sb.append((String)it.next());
             if (it.hasNext()) {
-                sb.append(", "); //NOI18N
+                sb.append(", "); // NOI18N
             }
         }
         return sb.toString();
@@ -243,7 +243,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
     static List getStringAsList(String str) {
         ArrayList l = new ArrayList(2);
-        StringTokenizer tok = new StringTokenizer(str, ",");
+        StringTokenizer tok = new StringTokenizer(str, ","); // NOI18N
         while (tok.hasMoreTokens()) {
             String target = tok.nextToken().trim();
             if (target.length() == 0) {
@@ -305,7 +305,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
                 buildCombo.getModel().getSelectedItem() != null &&
                 ((String)buildCombo.getModel().getSelectedItem()).length() > 0) {
             FreeformProjectGenerator.TargetMapping tm = getTargetMapping(REBUILD_ACTION);
-            String val = (String)cleanCombo.getModel().getSelectedItem()+","+(String)buildCombo.getModel().getSelectedItem();
+            String val = (String)cleanCombo.getModel().getSelectedItem()+","+(String)buildCombo.getModel().getSelectedItem(); // NOI18N
             tm.targets = getStringAsList(val);
         } else {
             removeTargetMapping(REBUILD_ACTION);
@@ -751,8 +751,8 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         
         public String getColumnName(int column) {
             switch (column) {
-                case 0: return "Ant Target";
-                default: return "Label";
+                case 0: return org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_Target");
+                default: return org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_Label");
             }
         }
         

@@ -86,7 +86,7 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
     
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
-        wizardDescriptor.putProperty("NewProjectWizard_Title", component.getClientProperty("NewProjectWizard_Title")); //NOI18N
+        wizardDescriptor.putProperty("NewProjectWizard_Title", component.getClientProperty("NewProjectWizard_Title")); // NOI18N
         File f = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT);
         FileObject fo = FileUtil.toFileObject(f);
         // Util.getAntScriptTargetNames can return null when script is 
@@ -102,14 +102,14 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         File antScript = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT);
         if (!antScript.getParentFile().equals(projDir) && antScript.getName().equals("build.xml")) { // NOI18N
             // NON-DEFAULT location of build file
-            component.setScript("${"+FreeformProjectGenerator.PROP_ANT_SCRIPT+"}");
+            component.setScript("${"+FreeformProjectGenerator.PROP_ANT_SCRIPT+"}"); // NOI18N
         }
     }
     
     public void storeSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
         wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_TARGET_MAPPINGS, component.getMapping());
-        wizardDescriptor.putProperty("NewProjectWizard_Title", null); //NOI18N
+        wizardDescriptor.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
     
 }
