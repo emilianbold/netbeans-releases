@@ -240,6 +240,15 @@ public class UpdateHelper {
         } else {
             this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/web-project/2",true); //NOI18N
         }
+        
+        boolean putProps = false;
+        
+        // AB: fix for #55597: should not update the project without adding the properties
+        // update is only done once, so if we don't add the properties now, we don't get another chance to do so
+        if (props == null) {
+            props = getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            putProps = true;
+        }
 
         //add properties needed by 4.1 project
         if(props != null) {
@@ -248,12 +257,16 @@ public class UpdateHelper {
             props.put("build.test.results.dir", ""); //NOI18N
             props.put("conf.dir","${source.root}/conf"); //NOI18N
         }
+        
+        if (putProps) {
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        }
 
         ProjectManager.getDefault().saveProject (this.project);
         synchronized(this) {
             this.isCurrent = Boolean.TRUE;
         } 
- 
+        
         //fire project updated
         projectUpdateListener.projectUpdated();
         
