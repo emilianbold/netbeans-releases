@@ -13,7 +13,6 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.nodes.Node;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSupportLayout;
 
@@ -34,8 +33,25 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   private DesignLayout designLayout;
   private DesignLayout previousDesignLayout;
 
+  transient private Container containerDelegate;
+  
+  void setComponent (Class beanClass) {
+    super.setComponent (beanClass);
+    Object value = getBeanInfo ().getBeanDescriptor ().getValue ("containerDelegate");
+    if ((value != null) && (value instanceof String) && ((String)value).equals ("getContentPane")) {
+      try {
+        java.lang.reflect.Method m = beanClass.getMethod ("getContentPane", new Class [0]);
+        containerDelegate = (Container) m.invoke (getComponentInstance (), new Object [0]);
+      } catch (Exception e) { // effectively ignored - simply no containerDelegate
+      }
+    }
+  }
+    
   /** @return The JavaBean visual container represented by this RADVisualComponent */
   public Container getContainer () {
+    if (containerDelegate != null) {
+      return containerDelegate;
+    }
     return (Container)getComponentInstance ();
   }
 
@@ -76,6 +92,9 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   }
 
   public String getContainerGenName () {
+    if (containerDelegate != null) {
+      return getName () + ".getContentPane ()";
+    }
     return getName () + ".";
   }
 
@@ -91,12 +110,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   }
 
   public void initSubComponents (RADComponent[] initComponents) {
-/*    System.out.println("initComponents in: "+getName ());
-    System.out.println("initComponents: "+initComponents);
-    System.out.println("initComponents length: "+initComponents.length);
-    for (int  i = 0; i < initComponents.length; i++) {
-      System.out.println("Component at ["+i+"] = "+initComponents[i].getClass ().getName ()+", :"+initComponents[i]);
-    } */
     subComponents = new RADVisualComponent[initComponents.length];
     System.arraycopy (initComponents, 0, subComponents, 0, initComponents.length);
     for (int i = 0; i < subComponents.length; i++) {
@@ -110,7 +123,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     newComponents[newComponents.length - 1] = comp;
     comp.initParent (this);
     subComponents = newComponents;
-    getNodeReference ().getChildren ().add (new Node[] { new RADComponentNode (comp) });
+    getNodeReference ().getChildren ().add (new com.netbeans.ide.nodes.Node[] { new RADComponentNode (comp) });
   }
 
   public void remove (RADVisualComponent comp) {
@@ -143,6 +156,9 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  12   Gandalf   1.11        5/17/99  Ian Formanek    Fixed bug 1850 - An 
+ *       exception is thrown when opening form, which contains JInternalFrame 
+ *       component. 
  *  11   Gandalf   1.10        5/16/99  Ian Formanek    
  *  10   Gandalf   1.9         5/15/99  Ian Formanek    
  *  9    Gandalf   1.8         5/15/99  Ian Formanek    
