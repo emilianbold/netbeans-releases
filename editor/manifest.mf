@@ -3,6 +3,7 @@ OpenIDE-Module-Name: Editor
 OpenIDE-Module-Install: com/netbeans/developer/modules/text/EditorModule.class
 OpenIDE-Module-Specification-Version: 0.9.4
 OpenIDE-Module-Implementation-Version: 0.9.4
+OpenIDE-Module-Module-Dependencies: org.openidex.util/1
 
 Name: com/netbeans/developer/modules/text/options/AllOptions.class
 OpenIDE-Module-Class: Option
