@@ -501,7 +501,9 @@ public class TomcatManager implements DeploymentManager {
                 if (o != null) {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
                     if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                        if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
+                        String shmem = attCookie.getSharedMemoryName();
+                        if (shmem == null) continue;
+                        if (shmem.equalsIgnoreCase(sdi.getShmemName())) {
                             Object d = s.lookupFirst(null, JPDADebugger.class);
                             if (d != null) {
                                 JPDADebugger jpda = (JPDADebugger)d;
@@ -511,7 +513,9 @@ public class TomcatManager implements DeploymentManager {
                             }
                         }
                     } else {
-                        if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
+                        String host = attCookie.getHostName();
+                        if (host == null) continue;
+                        if (host.equalsIgnoreCase(sdi.getHost())) {
                             if (attCookie.getPortNumber() == sdi.getPort()) {
                                 Object d = s.lookupFirst(null, JPDADebugger.class);
                                 if (d != null) {
