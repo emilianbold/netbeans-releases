@@ -869,7 +869,15 @@
 
 
    <!--Filesystems node--> 
-   <mapID target="org.netbeans.core.DesktopNode$ProjectSettingsNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.DesktopNode$ProjectSettingsNode" url="pending.html" />
+   
+   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalLocalFileSystem.properties" url="pending.html" />   
+   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalLocalFileSystem.expert" url="pending.html" />   
+   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalJarFileSystem.properties" url="pending.html" />   
+   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalJarFileSystem.expert" url="pending.html" />  
+   <mapID target="org.openide.filesystems.FileSystemCapability.Bean " url="pending.html" />  
+    
+    
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
    <mapID target="org.netbeans.core.NbMainExplorer" url="objects/explorer.html" /> 
    <mapID target="org.netbeans.core.NbPlaces$SessionNode" url="pending.html" /> 
