@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.extbrowser;
 
+import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -86,7 +87,9 @@ public class IExplorerBrowser extends ExtWebBrowser {
             // someone is customizing this on non-Win platform
             b = "iexplore";     // NOI18N
         }
-
+        if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
+            ExtWebBrowser.getEM().log(ErrorManager.INFORMATIONAL, "" + System.currentTimeMillis() + " IE: defaultBrowserExecutable: " + params + ", " + b);
+        }
         return new NbProcessDescriptor (b, params);
     }
     
