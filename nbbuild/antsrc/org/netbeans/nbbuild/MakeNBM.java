@@ -369,8 +369,8 @@ public class MakeNBM extends Task {
         }
 
     File file;
-    String rootDir = getProject ().getProperty ("nbm.target.dir");
-    if (rootDir != null && !rootDir.equals ("")) {
+    String rootDir = getProject ().getProperty ("nbm.target.dir"); //NOI18N
+    if (rootDir != null && !rootDir.equals ("")) {  //NOI18N
         file = new File (rootDir, this.file.getName ());
     } else {
         file = this.file;
@@ -406,7 +406,7 @@ public class MakeNBM extends Task {
                         } else {
                             // Not found in main JAR, check locale variant JAR.
                             File variant = new File(new File(module.getParentFile(), "locale"), module.getName()); //NOI18N
-                            if (!variant.isFile()) throw new BuildException(bundlename + " not found in " + module, getLocation()); //NOI18N
+                            if (!variant.isFile()) throw new BuildException(bundlename + " not found in " + module, getLocation());
                             long vmMod = variant.lastModified();
                             if (mostRecentInput < vmMod) mostRecentInput = vmMod;
                             ZipFile variantjar = new ZipFile(variant);
@@ -440,7 +440,7 @@ public class MakeNBM extends Task {
             }
         }
         try {
-	    infofile = File.createTempFile("info",".xml");
+	    infofile = File.createTempFile("info",".xml"); //NOI18N
             OutputStream infoStream = new FileOutputStream (infofile);
             try {
                 PrintWriter ps = new PrintWriter(new OutputStreamWriter(infoStream, "UTF-8")); //NOI18N
@@ -475,7 +475,7 @@ public class MakeNBM extends Task {
                     ps.println ("        needsrestart=\"" + xmlEscape(needsrestart) + "\""); //NOI18N
                 if (moduleauthor != null)
                     ps.println ("        moduleauthor=\"" + xmlEscape(moduleauthor) + "\""); //NOI18N
-                if (releasedate == null || "".equals (releasedate)) {
+                if (releasedate == null || "".equals (releasedate)) { //NOI18N
                     // if date is null, set today
                     releasedate = DATE_FORMAT.format (new Date (System.currentTimeMillis ()));
                 }
@@ -553,9 +553,9 @@ public class MakeNBM extends Task {
         infofile.deleteOnExit();
         ZipFileSet infoXML = new ZipFileSet();
         infoXML.setFile( infofile );
-        infoXML.setFullpath("Info/info.xml");
+        infoXML.setFullpath("Info/info.xml"); //NOI18N
 
-        String codename = attr.getValue("OpenIDE-Module");
+        String codename = attr.getValue("OpenIDE-Module"); //NOI18N
         if (codename == null)
  	    new BuildException( "Can't get codenamebase" );
  	
@@ -565,7 +565,7 @@ public class MakeNBM extends Task {
  	fs.setDir( productDir );
  	for (int i=0; i < files.length; i++)
  	    fs.createInclude().setName( files[i] );
- 	fs.setPrefix("netbeans/");
+ 	fs.setPrefix("netbeans/"); //NOI18N
 
 	// JAR it all up together.
 	long jarModified = file.lastModified (); // may be 0
@@ -598,7 +598,7 @@ public class MakeNBM extends Task {
 		throw new BuildException ("must define storepass attribute on <signature/>");
 	    if (signature.alias == null)
 		throw new BuildException ("must define alias attribute on <signature/>");
-            if (signature.storepass.equals ("?") || !signature.keystore.exists()) {
+            if (signature.storepass.equals ("?") || !signature.keystore.exists()) { //NOI18N
                 log ("Not signing NBM file " + file + "; no stored-key password provided or keystore (" 
 		     + signature.keystore.toString() + ") doesn't exist", Project.MSG_WARN);
             } else {
@@ -663,7 +663,7 @@ public class MakeNBM extends Task {
   protected String getLicenseOverride() {
     String s = getProject().getProperty( "makenbm.override.license") ; //NOI18N
     if( s != null) {
-      if( s.equals( "")) {
+      if( s.equals( "")) { //NOI18N
 	s = null ;
       }
     }
