@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URI;
 import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
@@ -270,12 +272,11 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
            
             // Try to compute relative path            
             FileObject spDir = p.getProjectDirectory();
-            // XXX this does not work:
-            String relPath = relativizePath( pDir, FileUtil.toFile( spDir ), 3 );
+            String relPath = relativizePath(pDir, FileUtil.toFile( spDir ));
                         
-            if ( relPath == null ) { // Can't realtivize                
-                // XXX this should be FileUtil.toFile and getAbsolutePath:
-                relPath = spDir.getPath();
+            if (relPath == null) {
+                // Cannot get a relative path; display it as absolute.
+                relPath = FileUtil.getFileDisplayName(spDir);
             }
             String displayName = MessageFormat.format( 
                 pattern, 
@@ -314,54 +315,47 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         
     }
     
-    private static String relativizePath( File f1, File f2, int maxDif ) {
-
-        /*
-        String relPath = FileUtil.getRelativePath( pDir, spDir );
-        
-        if ( relPath != null ) {
-            return relPath;
+    /**
+     * Get a slash-separated relative path from f1 to f2, if they are collocated
+     * and this is possible.
+     * May return null.
+     */
+    private static String relativizePath(File f1, File f2) {
+        if (f1 == null || f2 == null) {
+            return null;
         }
-        */
-                        
-        List p1 = filePath( f1 );
-        List p2 = filePath( f2 );
-        
-        int maxLen = Math.min( p1.size(), p2.size() );
-        
-        int i = 0;
-        
-        while( i < maxLen ) {
-            if ( !p1.get(i).equals( p2.get(i) ) ) {
-                break;
+        if (!CollocationQuery.areCollocated(f1, f2)) {
+            return null;
+        }
+        // Copied from PropertyUtils.relativizeFile, more or less:
+        StringBuffer b = new StringBuffer();
+        File base = f1;
+        String filepath = f2.getAbsolutePath();
+        while (!filepath.startsWith(slashify(base.getAbsolutePath()))) {
+            base = base.getParentFile();
+            if (base == null) {
+                return null;
             }
-            i++;
+            b.append("../"); // NOI18N
         }
-        
-        if ( i == 0 ) {
-            return null; // Completely different
+        URI u = base.toURI().relativize(f2.toURI());
+        assert !u.isAbsolute() : u + " from " + f1 + " and " + f2 + " with common root " + base;
+        b.append(u.getPath());
+        if (b.charAt(b.length() - 1) == '/') {
+            // file is an existing directory and file.toURI ends in /
+            // we do not want the trailing slash
+            b.setLength(b.length() - 1);
         }
-        if ( i == p1.size() ) { // P2 under p1
-            
+        return b.toString();
+    }
+    private static String slashify(String path) {
+        if (path.endsWith(File.separator)) {
+            return path;
+        } else {
+            return path + File.separatorChar;
         }
-    
-        
-        return null;
     }
     
-    
-    
-    private static List filePath( File f ) {
-        ArrayList result = new ArrayList();
-        
-        do {
-            result.add( 0, f );
-            f = f.getParentFile(); 
-        } 
-        while( f != null ); 
-        
-        return result;
-    }
     
     // Other methods -----------------------------------------------------------
     
