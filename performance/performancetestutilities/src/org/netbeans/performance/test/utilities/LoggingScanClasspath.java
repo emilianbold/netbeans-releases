@@ -56,7 +56,7 @@ public class LoggingScanClasspath {
         public PerformanceScanData(String name, Long value, String fullyQualifiedName) {
             // jar:file:/path_to_jdk/src.zip!/
             // jar:file:/C:/path_jdk/src.zip!/
-            // file:/path_to_jEdit41/src/
+            // file:/path_to_project/jEdit41/src/
             
             int beginIndex;
             int endIndex;
@@ -64,7 +64,10 @@ public class LoggingScanClasspath {
             try {
                 beginIndex = name.substring(0, name.lastIndexOf('/')-1).lastIndexOf('/')+1;
                 endIndex = name.indexOf('!', beginIndex); // it's jar and it ends with '!/'
-                if (endIndex == -1) endIndex = name.length()-1; // it's directory and it ends with '/'
+                if (endIndex == -1) { // it's directory and it ends with '/'
+                    endIndex = name.length()-1;
+                    beginIndex = name.lastIndexOf('/',beginIndex-2)+1; // log "jedit41/src" not only "src" 
+                }
                 
                 this.setName(name.substring(beginIndex, endIndex));
             } catch (Exception exc) {

@@ -40,7 +40,7 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
     static {
         reportCPR.add("src.zip");
         reportCPR.add("rt.jar");
-        reportCPR.add("src");
+        reportCPR.add("jEdit41/src");
     }
     
     /**
@@ -74,7 +74,7 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
         return suite;
     }
     
-    public void testOpenJEditProject() {
+    public void openJEditProject() {
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/jEdit41");
         
         //wait until scan finished and at least some timeout, because we find that scandialog is still opened
