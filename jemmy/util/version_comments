@@ -611,6 +611,34 @@ DefaultWindowDriver.java
 
 #VERSION 2.0.3
 
+26251: 
+        QueueTool: 
+                new methods invokeSmoothly(*). 
+                They perform an action directly if executed in event dispatching thread, 
+                otherwise invoke invokeAndWait(*). 
+        EventDriver: 
+                uses QueueTool.invokeSmoothly(*) for event dispatching. 
+                It makes possible to create bigger transactions including event dispatching. 
+        RobotDriver.java: 
+                Does not wait for the event queue emptying if executed in event dispatching thread. 
+        JTreeMouseDriver.java, JListMouseDriver.java, JTableMouseDriver.java: 
+                Click point calculation performed in the same InvocationEvent as events dispatching. 
+        Operator.java: 
+                Uses QueueTool.invokeSmoothly(*) for mapping 
+        JTreeOperator.java, JListOperator.java, JTableOperator.java: 
+                Row calculation performed in the same InvocationEvent as events dispatching. 
+
+ChoiceDriver.java: 
+        Changes for 1.4 Behavior of java.awt.Choise is a little bit different for 1.4. 
+
+Documentation: 
+        New document describing operator environment. 
+        Plans page has been updated. 
+        Some javadoc for classes in "drivers" subpackage. 
+
+
+#VERSION 2.0.4
+
 27140 fixed partially: one file (QueueJMenuDriver) is on queue-branch only.
 Files:
 src/org/netbeans/jemmy/operators/ContainerOperator.java
