@@ -223,7 +223,7 @@ public class PropertiesStructure extends Element {
                 //#17044 update in-memory model
                 item.setParent(this);
                 items.put(key, item);  
-                //structureChanged();
+                structureChanged();
                 
                 return true;
             }
