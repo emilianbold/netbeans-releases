@@ -16,6 +16,7 @@ package org.netbeans.modules.web.project.ui.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import javax.swing.ButtonModel;
@@ -387,7 +388,6 @@ public class WebProjectProperties {
             while(remove.hasNext()) {
                 ClassPathSupport.Item cpti = (ClassPathSupport.Item)remove.next();
                 cptm.getDefaultListModel().removeElement(cpti);
-                //System.out.println("[4.0->4.1 project update] classpath item " + cpti + " removed from ClassPathUiSupport.ClassPathTableModel !");
             }
             
             //commented out, one more check follows
@@ -737,44 +737,27 @@ public class WebProjectProperties {
         }
         while (classpath.hasNext()) {
             ClassPathSupport.Item item = (Item)classpath.next();
-            if (item.getType() != ClassPathSupport.Item.TYPE_LIBRARY) {
-                continue;
-            }
-            List/*<URL>*/ roots = item.getLibrary().getContent("classpath");  //NOI18N
-            ArrayList files = new ArrayList ();
-            ArrayList dirs = new ArrayList ();
-            for (Iterator it = roots.iterator(); it.hasNext();) {
-                URL rootUrl = (URL) it.next();
-                FileObject root = URLMapper.findFileObject (rootUrl);
-                if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
-                    root = FileUtil.getArchiveFile (root);
-                }
-                if (root != null) {
-                    if (root.isData()) {
-                        files.add(root); 
-                    } else {
-                        dirs.add(root);
-                    }
-                }
-            }
+            ArrayList /*File*/ files = new ArrayList ();
+            ArrayList /*File*/ dirs = new ArrayList ();
+            getFilesForItem (item, files, dirs);
             String key;
             if (files.size() > 0) {
-                key = getAntPropertyName(item.getRaw())+".libfiles"; //NOI18N
+                key = getAntPropertyName(item.getReference())+".libfiles"; //NOI18N
                 exLibs.remove(key);
                 for (int i = 0; i < files.size(); i++) {
-                    FileObject fo = (FileObject) files.get(i);
-                    key = getAntPropertyName(item.getRaw())+".libfile." + (i+1); //NOI18N
-                    privateProps.setProperty (key, "" + fo.getPath ()); //NOI18N
+                    File f = (File) files.get(i);
+                    key = getAntPropertyName(item.getReference())+".libfile." + (i+1); //NOI18N
+                    privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
                     exLibs.remove(key);
                 }
             }
             if (dirs.size() > 0) {
-                key = getAntPropertyName(item.getRaw())+".libdirs"; //NOI18N
+                key = getAntPropertyName(item.getReference())+".libdirs"; //NOI18N
                 exLibs.remove(key);
                 for (int i = 0; i < dirs.size(); i++) {
-                    FileObject fo = (FileObject) dirs.get(i);
-                    key = getAntPropertyName(item.getRaw())+".libdir." + (i+1); //NOI18N
-                    privateProps.setProperty (key, "" + fo.getPath ()); //NOI18N
+                    File f = (File) dirs.get(i);
+                    key = getAntPropertyName(item.getReference())+".libdir." + (i+1); //NOI18N
+                    privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
                     exLibs.remove(key);
                 }
             }
@@ -784,4 +767,50 @@ public class WebProjectProperties {
             privateProps.remove(unused.next());
         }
     }
+    
+    public static final void getFilesForItem (ClassPathSupport.Item item, List/*File*/ files, List/*File*/ dirs) {
+        if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+            List/*<URL>*/ roots = item.getLibrary().getContent("classpath");  //NOI18N
+            for (Iterator it = roots.iterator(); it.hasNext();) {
+                URL rootUrl = (URL) it.next();
+                FileObject root = URLMapper.findFileObject (rootUrl);
+                if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                    root = FileUtil.getArchiveFile (root);
+                }
+                File f = FileUtil.toFile(root);
+                if (f != null) {
+                    if (f.isFile()) {
+                        files.add(f); 
+                    } else {
+                        dirs.add(f);
+                    }
+                }
+            }
+        }
+        if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+            File root = item.getFile();
+            if (root != null) {
+                if (root.isFile()) {
+                    files.add(root); 
+                } else {
+                    dirs.add(root);
+                }
+            }
+        }
+        if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+            String artifactFolder = item.getArtifact().getScriptLocation().getParent();
+            URI roots[] = item.getArtifact().getArtifactLocations();
+            for (int i = 0; i < roots.length; i++) {
+                File root = new File (artifactFolder + File.separator + roots [i]);
+                if (root != null) {
+                    if (root.isFile()) {
+                        files.add(root); 
+                    } else {
+                        dirs.add(root);
+                    }
+                }
+            }
+        }
+    }
+    
 }

@@ -334,30 +334,14 @@ public class ClassPathSupport {
     
     private static Element createLibraryElement(Document doc, String pathItem, Item item) {
         Element libraryElement = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_LIBRARY);
-        if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-            List/*<URL>*/ roots = item.getLibrary().getContent("classpath");  //NOI18N
-            ArrayList files = new ArrayList ();
-            ArrayList dirs = new ArrayList ();
-            for (Iterator it = roots.iterator(); it.hasNext();) {
-                URL rootUrl = (URL) it.next();
-                FileObject root = org.openide.filesystems.URLMapper.findFileObject (rootUrl);
-                if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
-                    root = FileUtil.getArchiveFile (root);
-                }
-                if (root != null) {
-                    if (root.isData()) {
-                        files.add(root); 
-                    } else {
-                        dirs.add(root);
-                    }
-                }
-            }
-            if (files.size() > 0) {
-                libraryElement.setAttribute(ATTR_FILES, "" + files.size());
-            }
-            if (dirs.size() > 0) {
-                libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
-            }
+        ArrayList files = new ArrayList ();
+        ArrayList dirs = new ArrayList ();
+        WebProjectProperties.getFilesForItem(item, files, dirs);
+        if (files.size() > 0) {
+            libraryElement.setAttribute(ATTR_FILES, "" + files.size());
+        }
+        if (dirs.size() > 0) {
+            libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
         }
         Element webFile = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_FILE);
         libraryElement.appendChild(webFile);
