@@ -23,6 +23,8 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+
 
 /**
  *
@@ -88,17 +90,16 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
 		wizardDescriptor = (WizardDescriptor) settings;
 		component.read(wizardDescriptor);
 
-		// XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
-		// this name is used in NewProjectWizard to modify the title
-//		Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
-//		if (substitute != null)
-//			wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+        // this name is used in NewFileWizard to modify the title
+        wizardDescriptor.putProperty("NewFileWizard_Title", 
+            NbBundle.getMessage(WebServiceClientWizardDescriptor.class, "LBL_WebServiceClient"));// NOI18N        
 	}
 
 	public void storeSettings(Object settings) {
 		WizardDescriptor d = (WizardDescriptor) settings;
 		component.store(d);
-//		((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
+		((WizardDescriptor) d).putProperty("NewFileWizard_Title", null); // NOI18N
 	}
 	
 	public void validate() throws org.openide.WizardValidationException {
