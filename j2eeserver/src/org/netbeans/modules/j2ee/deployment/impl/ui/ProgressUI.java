@@ -87,6 +87,8 @@ public class ProgressUI extends JPanel {
 	errorText.setText (" ");					//NOI18N
         autoCloseCheck.setSelected(autoClose);
         autoCloseCheck.setMnemonic(NbBundle.getMessage(ProgressUI.class, "LBL_Close_When_Finished_Mnemonic").charAt(0));
+        autoCloseCheck.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ProgressUI.class, "ACSD_Close_When_Finished"));
     }
 
     /**
@@ -190,6 +192,9 @@ public class ProgressUI extends JPanel {
                     myMonitor.setValue (0);
                     taskTitle.setText (msg);
                     frame.getContentPane().add(thisPanel);
+                    frame.getAccessibleContext().setAccessibleDescription(
+                        desc != null ? desc 
+                                     : NbBundle.getMessage(ProgressUI.class, "ACSD_Progress_Monitor"));
                     frame.setBounds(Utilities.findCenterBounds(frame.getSize()));
                     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
                     frame.pack();
