@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="core qa-functional test config">
 <!-- START Window System testbags -->
-    <testbag testattribs="validation or full or ide or ws" executor="ide_firststart" prio="1" name="Initial position of windows after first start" resultsprocessor="unit">
+    <testbag testattribs="validation or full or ide or ws" executor="ide_firststart_mdi" prio="1" name="Initial position of windows after first start, MDI" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>                
                 <include name="gui/windowsystem/validation/Validation_Init.class"/>		               
@@ -33,7 +33,23 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation or full or ide or ws" executor="ide_secondstart" prio="2" name="Initial position of windows after restart" resultsprocessor="unit">
+    <testbag testattribs="validation or full or ide or ws" executor="ide_secondstart_mdi" prio="2" name="Initial position of windows after restart, MDI" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="gui/windowsystem/validation/Validation_Init_1.class"/>		               
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="validation or full or ide or ws" executor="ide_firststart_sdi" prio="3" name="Initial position of windows after first start, SDI" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="gui/windowsystem/validation/Validation_Init.class"/>		               
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="validation or full or ide or ws" executor="ide_secondstart_sdi" prio="4" name="Initial position of windows after restart, SDI" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>                
                 <include name="gui/windowsystem/validation/Validation_Init_1.class"/>		               
@@ -271,9 +287,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
 
-    <executor name="ide_firststart" antfile="build-qa-functional.xml" target="runidetest_firststart"/>
-    
-    <executor name="ide_secondstart" antfile="build-qa-functional.xml" target="runidetest_secondstart"/>
+    <executor name="ide_firststart_mdi" antfile="build-qa-functional.xml" target="runidetest_firststart_mdi"/>
+    <executor name="ide_firststart_sdi" antfile="build-qa-functional.xml" target="runidetest_firststart_sdi"/>
+    <executor name="ide_secondstart_mdi" antfile="build-qa-functional.xml" target="runidetest_secondstart_mdi"/>
+    <executor name="ide_secondstart_sdi" antfile="build-qa-functional.xml" target="runidetest_secondstart_sdi"/>
     
     <executor name="platform" antfile="build-qa-functional.xml" target="runplatformtest"/>
 

@@ -107,16 +107,15 @@ Microsystems, Inc. All Rights Reserved.
         </ant>
     </target>
     
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <!-- This target executes tests inside IDE -->
-    <target name="runidetest_firststart" depends="set_classpath">
+    <!-- This target executes tests inside IDE-->
+    <target name="runidetest_firststart_mdi" depends="set_classpath">
+        <property name="xtest.ide.winsys" value="mdi"/>
         <ant dir="." antfile="${xtest.module_harness.antfile}"
              target="test">
            <property name="xtest.exectype" value="ide"/>
         </ant>
         <!-- now backup generated golden files for second run -->
-        <jar jarfile="lib/gf.jar" >
+        <jar jarfile="lib/gf_mdi.jar" >
             <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInEditing"
                 includes="*.txt" />
             <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInGUIEditing"
@@ -131,14 +130,51 @@ Microsystems, Inc. All Rights Reserved.
                 includes="*.txt" />
         </jar>
     </target>
-    
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
+
+    <!-- This target executes tests inside IDE-->
+    <target name="runidetest_firststart_sdi" depends="set_classpath">
+        <property name="xtest.ide.winsys" value="sdi"/>
+        <ant dir="." antfile="${xtest.module_harness.antfile}"
+             target="test">
+           <property name="xtest.exectype" value="ide"/>
+        </ant>
+        <!-- now backup generated golden files for second run -->
+        <jar jarfile="lib/gf_sdi.jar" >
+            <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInEditing"
+                includes="*.txt" />
+            <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInGUIEditing"
+                includes="*.txt" />
+            <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInDebugging"
+                includes="*.txt" />
+            <!-- Running Workspaces removed
+	    <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInRunning"
+                includes="*.txt" />
+	    -->	
+            <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementOfEditor"
+                includes="*.txt" />
+        </jar>
+    </target>
+        
     <!-- This target executes tests inside IDE and will reuse userdir from previous testbag-->
-    <target name="runidetest_secondstart" depends="set_classpath">
+    <target name="runidetest_secondstart_mdi" depends="set_classpath">
+        <property name="xtest.ide.winsys" value="mdi"/>
         <!-- first restore golden files from previous run -->
         <mkdir dir="work/sys/tests/qa-functional/src/gui/windowsystem/validation/data/goldenfiles/Validation_Init_1"/>
-        <unjar src="lib/gf.jar" dest="${xtest.workdir}/sys/tests/qa-functional/src/gui/windowsystem/validation/data/goldenfiles/Validation_Init_1" />        
+        <unjar src="lib/gf_mdi.jar" dest="${xtest.workdir}/sys/tests/qa-functional/src/gui/windowsystem/validation/data/goldenfiles/Validation_Init_1" />        
+        <!-- to achieve execution on previous directory -->
+        <property name="xtest.reuse.ide" value="true"/>    
+        <ant dir="." antfile="${xtest.module_harness.antfile}"
+             target="test">
+           <property name="xtest.exectype" value="ide"/>
+        </ant>
+    </target>
+    
+    <!-- This target executes tests inside IDE and will reuse userdir from previous testbag-->
+    <target name="runidetest_secondstart_sdi" depends="set_classpath">
+        <property name="xtest.ide.winsys" value="sdi"/>
+        <!-- first restore golden files from previous run -->
+        <mkdir dir="work/sys/tests/qa-functional/src/gui/windowsystem/validation/data/goldenfiles/Validation_Init_1"/>
+        <unjar src="lib/gf_sdi.jar" dest="${xtest.workdir}/sys/tests/qa-functional/src/gui/windowsystem/validation/data/goldenfiles/Validation_Init_1" />        
         <!-- to achieve execution on previous directory -->
         <property name="xtest.reuse.ide" value="true"/>    
         <ant dir="." antfile="${xtest.module_harness.antfile}"

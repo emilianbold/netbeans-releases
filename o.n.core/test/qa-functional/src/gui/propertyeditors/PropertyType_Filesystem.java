@@ -95,22 +95,24 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
         FilesystemCustomEditorOperator customizer = new FilesystemCustomEditorOperator(propertyCustomizer);
         
         if(propertyValue_L.startsWith(ADDDIRECTORY)){
+            err.println("== ADDING DIRECTORY ============");
             customizer.addLocalDirectory();
             customizer.btBrowse().pushNoBlock();
             FileCustomEditorOperator dialog = new FileCustomEditorOperator("Add Local Directory");
             dialog.setFileValue(getPath(propertyValue_L, ADDDIRECTORY));
-            new EventTool().waitNoEvent(1000);
+            new EventTool().waitNoEvent(500);
             dialog.ok();
             //customizer.setDirectory(getPath(propertyValue_L, ADDDIRECTORY));
         }
         
         if(propertyValue_L.startsWith(ADDJAR)){
+            err.println("== ADDING JAR ============");
             customizer.addJARFile();
             customizer.btBrowse2().pushNoBlock();
             FileCustomEditorOperator dialog = new FileCustomEditorOperator("Add JAR File");
-            dialog.setFileValue(getPath(propertyValue_L, ADDJAR));
-            new EventTool().waitNoEvent(1000);
-            dialog.ok();
+            dialog.fileChooser().chooseFile(getPath(propertyValue_L, ADDJAR));
+            //new EventTool().waitNoEvent(500);
+            //dialog.ok();
             //customizer.setJARFile(getPath(propertyValue_L, ADDJAR));
         }
         
@@ -141,6 +143,8 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
     private String getPath(String str, String delim) {
         int index = str.indexOf(delim);
         
+        err.println("============================= Try to set path="+str);
+        
         if(index > -1)
             return str.substring(index + delim.length());
         
@@ -149,7 +153,7 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
     
     private String getOSDependentFilesystem(String path) {
         String os = System.getProperty("os.name");
-        System.err.println("Os name = {"+os+"}");
+        err.println("Os name = {"+os+"}");
         
         if(os.indexOf("Win")!=-1)
             return path.replace('\\','/');

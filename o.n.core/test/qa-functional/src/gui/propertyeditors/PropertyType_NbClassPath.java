@@ -18,6 +18,7 @@ import org.netbeans.junit.NbTestSuite;
 import gui.propertyeditors.utilities.PropertyEditorsSupport;
 
 import org.netbeans.jellytools.properties.editors.ClasspathCustomEditorOperator;
+import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
 
 /**
  * Tests of NbClassPath Property Editor.
@@ -143,23 +144,32 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
         ClasspathCustomEditorOperator customizer = new ClasspathCustomEditorOperator(propertyCustomizer);
         
         if(propertyValue_L.startsWith(ADDDIRECTORY)){
+            err.println("========== ADDING DIRECTORY =======");
             customizer.addDirectory(getPath(propertyValue_L, ADDDIRECTORY));
         }
         
         if(propertyValue_L.startsWith(ADDJAR)){
-            customizer.addJARZIP(getPath(propertyValue_L, ADDJAR));
+            err.println("========== ADDING JAR =======");
+//            customizer.addJARZIP(getPath(propertyValue_L, ADDJAR));
+            // hack because previously code fails
+            FileCustomEditorOperator editor=customizer.addJARZIP();
+            editor.fileChooser().chooseFile(getPath(propertyValue_L, ADDJAR));
+            customizer.ok();
         }
         
         if(propertyValue_L.startsWith(REMOVE)){
+            err.println("========== REMOVE =======");
             customizer.remove(getPath(propertyValue_L,REMOVE));
         }
         
         if(propertyValue_L.startsWith(UP)){
+            err.println("========== UP =======");
             customizer.lstClasspath().selectItem(getPath(propertyValue_L,UP));
             customizer.moveUp();
         }
         
         if(propertyValue_L.startsWith(DOWN)){
+            err.println("========== DOWN =======");            
             customizer.lstClasspath().selectItem(getPath(propertyValue_L,DOWN));
             customizer.moveDown();
         }
