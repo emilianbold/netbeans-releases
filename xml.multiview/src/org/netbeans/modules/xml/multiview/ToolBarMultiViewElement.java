@@ -32,8 +32,9 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     //private static final long serialVersionUID = 12345L;  
     MultiViewElementCallback observer;
     private javax.swing.JComponent toolbar;
-    ToolBarDesignEditor editor;
-    
+    private ToolBarDesignEditor editor;
+
+
     public ToolBarMultiViewElement() {
     }
     

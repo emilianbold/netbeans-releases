@@ -237,4 +237,8 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
      */
     protected abstract DesignMultiViewDesc[] getMultiViewDesc();
     
+    public void setLastOpenView(int index) {
+        getEditorSupport().setLastOpenView(index);
+    }
+    
 }

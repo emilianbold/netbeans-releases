@@ -38,7 +38,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
     private static final int PARSING_DELAY = 2000;
     private static final int PARSING_INIT_DELAY = 100;
     private RequestProcessor.Task parsingDocumentTask;
-    CloneableTopComponent mvtc;
+    private CloneableTopComponent mvtc;
+    private int lastOpenView=0;
     
     final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
@@ -246,11 +247,11 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
      */
     public void open() {
         if (java.awt.EventQueue.isDispatchThread()) {
-            openInAWT(0);
+            openInAWT(lastOpenView);
         } else {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    openInAWT(0);
+                    openInAWT(lastOpenView);
                 }
             });
         }
@@ -353,5 +354,9 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
     
     CloneableTopComponent getMVTC() {
         return mvtc;
+    }
+    
+    void setLastOpenView(int index) {
+        lastOpenView=index;
     }
 }
