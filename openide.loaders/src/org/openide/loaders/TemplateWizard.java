@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -460,13 +460,28 @@ public class TemplateWizard extends WizardDescriptor {
         //
         // waiting times
         //
-        try {
-            JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
-            Component c = f.getGlassPane ();
-            c.setVisible (true);
-            c.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
-        } catch (NullPointerException npe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
+        if (SwingUtilities.isEventDispatchThread ()) {
+            try {
+                JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
+                Component c = f.getGlassPane ();
+                c.setVisible (true);
+                c.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
+            } catch (NullPointerException npe) {
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
+            }
+        } else {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    try {
+                        JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
+                        Component c = f.getGlassPane ();
+                        c.setVisible (true);
+                        c.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
+                    } catch (NullPointerException npe) {
+                        ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
+                    }
+                }
+            });
         }
     }
     
@@ -474,13 +489,28 @@ public class TemplateWizard extends WizardDescriptor {
         //
         // normal times
         //
-        try {
-            JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
-            Component c = f.getGlassPane ();
-            c.setCursor (null);
-            c.setVisible (false);
-        } catch (NullPointerException npe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
+        if (SwingUtilities.isEventDispatchThread ()) {
+            try {
+                JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
+                Component c = f.getGlassPane ();
+                c.setCursor (null);
+                c.setVisible (false);
+            } catch (NullPointerException npe) {
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
+            }
+        } else {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    try {
+                        JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
+                        Component c = f.getGlassPane ();
+                        c.setCursor (null);
+                        c.setVisible (false);
+                    } catch (NullPointerException npe) {
+                        ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
+                    }
+                }
+            });
         }
     }
     
