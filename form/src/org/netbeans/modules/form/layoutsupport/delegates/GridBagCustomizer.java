@@ -18,7 +18,6 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
-import java.lang.Math;
 
 import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.PropertySheet;
