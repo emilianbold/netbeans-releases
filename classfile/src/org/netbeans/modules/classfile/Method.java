@@ -93,6 +93,6 @@ public class Method extends Field {
     }
 
     public final String getFullName() {
-        return CPMethodInfo.getFullMethodName(name, type);
+        return CPMethodInfo.getFullMethodName(getName(), getType());
     }
 }

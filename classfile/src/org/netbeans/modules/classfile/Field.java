@@ -28,8 +28,14 @@ import java.io.*;
  */
 public abstract class Field {
 
-    String name;
-    String type;
+    /* name and type are lazily initialized, so must be
+     * kept private. 
+     */
+    CPUTF8Info utfName;
+    CPUTF8Info utfType;
+    private String _name;
+    private String _type;
+
     int access;
     protected boolean includeCode;
     private boolean deprecated = false;
@@ -41,10 +47,8 @@ public abstract class Field {
 	this.includeCode = includeCode;
         CPEntry entry = null;
         try { // debug
-            entry = pool.get(in.readUnsignedShort());
-            name = ((CPUTF8Info)entry).getName();
-            entry = pool.get(in.readUnsignedShort());
-            type = ((CPUTF8Info)entry).getName();
+	    utfName = (CPUTF8Info)pool.get(in.readUnsignedShort());
+	    utfType = (CPUTF8Info)pool.get(in.readUnsignedShort());
             loadAttributes(in, pool);
         } catch (ClassCastException e) {
             // debug assertion
@@ -75,11 +79,19 @@ public abstract class Field {
         DataInputStream in, ConstantPool pool) throws IOException;
     
     public final String getName() {
-        return name;
+	if (_name == null) {
+            _name = utfName.getName();
+	    utfName = null;              // release for gc
+	}
+        return _name;
     }
     
     public final String getType() {
-        return type;
+	if (_type == null) {
+            _type = utfType.getName();
+	    utfType = null;              // release for gc
+	}
+        return _type;
     }
 
     public abstract String getFullName();
