@@ -115,13 +115,14 @@ public class PostInstallFixupAction extends ProductAction {
         try {
             init(support);
             
-            deleteFiles(nbInstallDir, new String[] {sep + "etc" + sep + "netbeans.conf"});
+            deleteFiles(nbInstallDir, new String[] {"etc" + sep + "netbeans.conf"});
             deleteFiles(nbInstallDir, new String[] {"_uninst" + sep + "install.log"});
             deleteFiles(nbInstallDir, new String[] {"nb4.1" + sep + "config" + sep + "productid" });
             deleteFiles(uninstallDir, new String[] {"install.properties"});
-
-            if (Util.isUnixOS())
-                uninstallGnomeIcon();            
+            
+            if (Util.isUnixOS()) {
+                uninstallGnomeIcon();
+            }
         }
         catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
