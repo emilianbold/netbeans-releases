@@ -38,9 +38,9 @@ public class I18nOptions extends SystemOption {
     public static final String PROP_REGULAR_EXPRESSION = "regularExpression"; // NOI18N
 
     {
-        setInitJavaCode(I18nUtil.initFormatItems[0]);
-        setReplaceJavaCode(I18nUtil.replaceFormatItems[0]);
-        setRegularExpression(I18nUtil.regExpItems[0]);
+        setInitJavaCode(I18nUtil.getInitFormatItems()[0]);
+        setReplaceJavaCode(I18nUtil.getReplaceFormatItems()[0]);
+        setRegularExpression(I18nUtil.getRegExpItems()[0]);
     }
 
     
@@ -52,7 +52,7 @@ public class I18nOptions extends SystemOption {
     
     /** Implements superclass abstract method. */
     public String displayName() {
-        return NbBundle.getBundle(I18nModule.class).getString("LBL_Internationalization");
+        return I18nUtil.getBundle().getString("LBL_Internationalization");
     }
 
     /** Getter for init java code property. */

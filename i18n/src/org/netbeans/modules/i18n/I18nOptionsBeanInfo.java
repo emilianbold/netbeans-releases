@@ -38,8 +38,7 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
     
     /** Icon 32x32. */
     private static Image icon32;
-    
-    private static final ResourceBundle bundle = NbBundle.getBundle(I18nOptionsBeanInfo.class);    
+
     
     /** Overrides superclass method. */
     public PropertyDescriptor[] getPropertyDescriptors() {
@@ -54,6 +53,9 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
             replaceCodePD.setExpert(true);
             regExpPD.setExpert(true);
 
+            // Resource bundle.
+            ResourceBundle bundle = I18nUtil.getBundle();
+            
             // Set display names.
             genFieldPD.setDisplayName(bundle.getString("TXT_GenerateField"));
             initCodePD.setDisplayName(bundle.getString("TXT_InitCodeFormat"));

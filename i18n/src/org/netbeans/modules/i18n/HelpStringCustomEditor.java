@@ -159,7 +159,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     public static class InitCodeEditor extends StringEditor {
         /** Overrides superclass method. */
         public Component getCustomEditor() {
-            return new HelpStringCustomEditor((String)getValue(), I18nUtil.initFormatItems, I18nUtil.initHelpItems);
+            return new HelpStringCustomEditor((String)getValue(), I18nUtil.getInitFormatItems(), I18nUtil.getInitHelpItems());
         }
     } // End of nested class InitCodeEditor.
     
@@ -168,7 +168,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     public static class ReplaceCodeEditor extends StringEditor {
         /** Overrides superclass method. */
         public Component getCustomEditor() {
-            return new HelpStringCustomEditor((String)getValue(), I18nUtil.replaceFormatItems, I18nUtil.replaceHelpItems);
+            return new HelpStringCustomEditor((String)getValue(), I18nUtil.getReplaceFormatItems(), I18nUtil.getReplaceHelpItems());
         }
     } // End of nested class ReplaceCodeEditor.
     
@@ -177,7 +177,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     public static class RegExpEditor extends StringEditor {
         /** Overrides superclass method. */
         public Component getCustomEditor() {
-            return new HelpStringCustomEditor((String)getValue(), I18nUtil.regExpItems, I18nUtil.regExpHelpItems);
+            return new HelpStringCustomEditor((String)getValue(), I18nUtil.getRegExpItems(), I18nUtil.getRegExpHelpItems());
         }
     } // End of nested class RegExpEditor.
     

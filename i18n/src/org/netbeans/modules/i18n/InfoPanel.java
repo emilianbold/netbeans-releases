@@ -31,12 +31,19 @@ import org.openide.util.NbBundle;
 public class InfoPanel extends JPanel {
 
     /** Bundle in which are internationalized string from this source. */
-    private static final ResourceBundle bundle = NbBundle.getBundle(I18nModule.class);
+    private static ResourceBundle bundle;
 
     
     /** Creates new form InfoPanel */
     public InfoPanel() {
+        initBundle();
         initComponents ();
+    }
+    
+    /** Helper method for bundle initialization. */
+    private static void initBundle() {
+        if(bundle == null)
+            bundle = I18nUtil.getBundle();
     }
     
     /** Fills values. */
