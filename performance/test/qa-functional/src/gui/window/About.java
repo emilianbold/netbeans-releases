@@ -44,6 +44,7 @@ public class About extends testUtilities.PerformanceTestCase {
         MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Help") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle" , "About");
         ABOUT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle_nb", "CTL_About_Title");
         DETAIL = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle_nb", "CTL_About_Detail");
+        waitNoEvent(2000);
     }
     
     public void prepare(){

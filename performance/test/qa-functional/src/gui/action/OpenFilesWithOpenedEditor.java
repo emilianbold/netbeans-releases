@@ -45,7 +45,6 @@ public class OpenFilesWithOpenedEditor extends OpenFiles {
 
     public void testOpening20kBJavaFile(){
         WAIT_AFTER_OPEN = 1500;
-        setPaintFilteringForEditor();
         setJavaEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -56,7 +55,6 @@ public class OpenFilesWithOpenedEditor extends OpenFiles {
     
     public void testOpening20kBTxtFile(){
         WAIT_AFTER_OPEN = 1000;
-        setPaintFilteringForEditor();
         setPlainTextEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -67,7 +65,6 @@ public class OpenFilesWithOpenedEditor extends OpenFiles {
     
     public void testOpening20kBXmlFile(){
         WAIT_AFTER_OPEN = 1000;
-        setPaintFilteringForEditor();
         setXMLEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";

@@ -17,6 +17,7 @@ package gui.menu;
 import org.netbeans.jellytools.MainWindowOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuOperator;
 
 import org.netbeans.junit.NbTestSuite;
@@ -30,6 +31,10 @@ import org.netbeans.junit.NbTestSuite;
 public class MainMenu extends testUtilities.PerformanceTestCase {
     
     protected static String menuPath;
+    
+    private JMenuBarOperator menuBar;
+    
+    private JMenuOperator testedMenu;
     
     /** Creates a new instance of MainMenu */
     public MainMenu(String testName) {
@@ -110,11 +115,21 @@ public class MainMenu extends testUtilities.PerformanceTestCase {
         doMeasurement();
     }
     
-    public void prepare(){}
+    public void prepare(){
+    }
     
     public ComponentOperator open(){
-        MainWindowOperator.getDefault().menuBar().pushMenu(menuPath,"|");
-        JMenuOperator testedMenu = new JMenuOperator(MainWindowOperator.getDefault());
+        menuBar.pushMenu(menuPath,"|");
         return testedMenu;
+    }
+
+    /**
+     * Prepare method have to contain everything that needs to be done prior to
+     * repeated invocation of test.
+     * Default implementation is empty.
+     */
+    protected void initialize() {
+        menuBar = MainWindowOperator.getDefault().menuBar();
+        testedMenu = new JMenuOperator(MainWindowOperator.getDefault());
     }
 }

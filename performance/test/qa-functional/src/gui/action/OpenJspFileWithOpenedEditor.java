@@ -45,7 +45,6 @@ public class OpenJspFileWithOpenedEditor extends OpenJspFile {
     
     public void testOpening20kBJSPFile(){
         WAIT_AFTER_OPEN = 3000;
-        setPaintFilteringForEditor();
         setXMLEditorCaretFilteringOn();
         fileProject = "PerformanceTestWebApplication";
         fileName = "Test.jsp";

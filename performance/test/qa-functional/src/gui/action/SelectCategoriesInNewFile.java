@@ -69,7 +69,7 @@ public class SelectCategoriesInNewFile extends testUtilities.PerformanceTestCase
         doMeasurement();
     }
    
-    public void initialize(){
+    protected void initialize(){
     }
     
     public void prepare(){

@@ -101,7 +101,7 @@ public class TypingInEditor extends testUtilities.PerformanceTestCase {
             setAreaToFilter (thebasecaret.x-20, thebasecaret.y-20, thebasecaret.width+40, thebasecaret.height+40);
         }
         */
-        setPaintFilteringForEditor();
+        repaintManager().setOnlyEditor(true);
         setJavaEditorCaretFilteringOn();
 
         // open a java file in the editor
@@ -136,6 +136,7 @@ public class TypingInEditor extends testUtilities.PerformanceTestCase {
     public void shutdown() {
         turnBack();
         editorOperator.closeDiscard();
+        repaintManager().setOnlyEditor(false);
         super.shutdown();
     }
 

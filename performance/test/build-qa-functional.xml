@@ -19,9 +19,39 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbextra.dir" location="../../../nbextra"/>
     <property name="nbextra.qa.performance.dist.dir" location="${nbextra.dir}/qa/performance/dist"/>
     
-    <!-- Imports default set boot classpath for appropriate JDK used for testing,
-        unzip projects for testing. -->
-    <import file="${nbextra.qa.performance.dist.dir}/build-performance-tests.xml"/>
+    <property file="project.properties"/>
+
+    <!-- path reference used in both compiler and executor -->
+    <path id="jemmy.and.jelly.path">
+        <pathelement location="${nball.dir}/jemmy/builds/jemmy.jar"/>
+        <pathelement location="${nball.dir}/jellytools/builds/jelly2-nb.jar"/>
+    </path>
+
+    <!-- path reference used in tests -->
+    <path id="guitracker.path">
+        <pathelement location="${nball.dir}/performance/guitracker/dist/guitracker.jar"/>
+    </path>
+    
+    <!-- Replace original netbeans.conf with released netbeans.conf -->
+    <target name="copy_released_ide_cfg_file">
+        <move file="${netbeans.dest.dir}/etc/netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf.original" />
+        <copy file="netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
+    </target>
+
+    <!-- Replace released netbeans.conf with original netbeans.conf -->
+    <target name="copy_original_ide_cfg_file">
+        <move file="${netbeans.dest.dir}/etc/netbeans.conf.original" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
+    </target>
+
+    <!-- Copy and unzip project JEdit from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_jedit_project">
+        <unzip src="${jedit.location}" dest="${xtest.tmpdir}/"/>
+    </target>
+    
+    <!-- Copy and unzip project PerformanceTestFolderData from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_test_folder_project">
+        <unzip src="${nbextra.dir}/qa/projectized/PerformanceTestFoldersData.zip" dest="${xtest.tmpdir}/"/>
+    </target>
     
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
@@ -37,6 +67,9 @@ Microsystems, Inc. All Rights Reserved.
             
         <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
         <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
+        <pathelement location="${editor/plain.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain.jar"/>
+        <pathelement location="${web/jspsyntax.dir}/${nb.modules.dir}/org-netbeans-modules-web-core-syntax.jar"/>
+        <pathelement location="${xml/text-edit.dir}/${nb.modules.dir}/xml-text-edit.jar"/>
             
         <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
         
@@ -54,10 +87,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Setting classpaths  -->
     <!-- =================== -->
     
-    <target name="ide_command_line_suffix" depends="set_bootclasspath_jdk142,set_bootclasspath_jdk150">
+    <target name="ide_command_line_suffix">
         <!--  We are using modified rt.jar instead of hack on the bootclasspath, so if you try to run performance tests on your own jdk uncomment this line
-        <property name="xtest.ide.commandline.suffix" value="-J-Xbootclasspath/p:${xtest.tmpdir}/hack_jdk.zip -J-Dorg.netbeans.performance.repeat=5"/> -->
-        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Xbootclasspath/p:${xtest.tmpdir}/hack_jdk.zip -J-Dorg.netbeans.performance.repeat=3"/> -->
+        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
     </target>
     
     
@@ -71,7 +104,7 @@ Microsystems, Inc. All Rights Reserved.
             <classpath>
                 <path refid="compiletest.classpath"/>
                 <path refid="jemmy.and.jelly.path"/>
-                <path refid="performance.testutilities"/>
+                <path refid="guitracker.path"/>
             </classpath>
         </buildTests>
     </target>
@@ -101,7 +134,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
-            <classpath refid="performance.testutilities"/>
             
             <property name="xtest.timeout" value="2400000" />
             
@@ -110,12 +142,6 @@ Microsystems, Inc. All Rights Reserved.
     
         </executeTests>
 
-        <!-- remove lock file - if setup fails - it will be possible run all tests - this must be solved by XTEST issue 45807 
-             this doesn't solve all our problems if setup fails during parsing of project !
-             Issue is solved.
-        <delete file="${xtest.workdir}/sys/ide/lock" />
-        -->
-        
         <!-- save copy of current Userdir -->
         <copy todir="${xtest.workdir}/sys/ide_backup">
           <fileset dir="${xtest.workdir}/sys/ide"/>
@@ -133,8 +159,10 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_released_ide_cfg_file"/>
        
         <executeTests pluginName="ide">
-            <classpath refid="jemmy.and.jelly.path"/>
-            <classpath refid="performance.testutilities"/>
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+                <path refid="guitracker.path"/>
+            </classpath>
             
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true" />
@@ -153,8 +181,10 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_released_ide_cfg_file"/>
        
         <executeTests pluginName="ide">
-            <classpath refid="jemmy.and.jelly.path"/>
-            <classpath refid="performance.testutilities"/>
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+                <path refid="guitracker.path"/>
+            </classpath>
             
             <property name="xtest.ide.reuse.userdir" value="true"/>
             <property name="xtest.timeout" value="3600000" />
@@ -174,16 +204,18 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_released_ide_cfg_file"/>
        
         <executeTests pluginName="ide">
-            <classpath refid="jemmy.and.jelly.path"/>
-            <classpath refid="performance.testutilities"/>
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+                <path refid="guitracker.path"/>
+            </classpath>
             
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true" />
             <property name="xtest.timeout" value="5400000" />
             
-            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
             
-<!--            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dorg.netbeans.mdr.persistence.btreeimpl.btreestorage.MDRCache.threshhold=1000 -J-Dorg.netbeans.javacore.ASTCache.size=16"/>
+<!--            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dorg.netbeans.mdr.persistence.btreeimpl.btreestorage.MDRCache.threshhold=1000 -J-Dorg.netbeans.javacore.ASTCache.size=16"/>
 -->
         </executeTests>
         

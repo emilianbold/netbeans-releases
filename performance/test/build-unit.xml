@@ -26,12 +26,24 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/default.xml"/>
     <property file="../../nbbuild/directories.properties"/>
 
+    <!-- path reference used in both compiler and executor -->
+    <path id="jemmy.and.jelly.path">
+        <pathelement location="${nball.dir}/jemmy/builds/jemmy.jar"/>
+        <pathelement location="${nball.dir}/jellytools/builds/jelly2-nb.jar"/>
+    </path>
+    
+    <!-- path reference used in both compiler and executor -->
+    <path id="guitracker.path">
+        <pathelement location="${nball.dir}/performance/guitracker/dist/guitracker.jar"/>
+    </path>
+    
         
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
     
     <target name="unit-compiler">
+        <!-- PENDING need to build guitracker library first -->
         <buildTests srcDir="unit/src" compileexcludes="**/data/**">
             <classpath refid="jemmy.and.jelly.path"/>
         </buildTests>
@@ -105,6 +117,17 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Utils     -->
     <!-- ========= -->
     
+    <!-- Replace original netbeans.conf with released netbeans.conf -->
+    <target name="copy_released_ide_cfg_file">
+        <move file="${netbeans.dest.dir}/etc/netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf.original" />
+        <copy file="netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
+    </target>
+
+    <!-- Replace released netbeans.conf with original netbeans.conf -->
+    <target name="copy_original_ide_cfg_file">
+        <move file="${netbeans.dest.dir}/etc/netbeans.conf.original" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
+    </target>
+
     <!-- Prepare PS utils to be available from IDE during test -->    
     <target name="prepare_measure_memory">
         <copy file="${nbextra.qa.performance.dist.dir}/pslist.exe" tofile="${xtest.tmpdir}/pslist.exe" />

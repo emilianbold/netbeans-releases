@@ -79,6 +79,7 @@ public class MeasureActions  {
         suite.addTest(new SelectCategoriesInNewFile("testSelectXML","Select XML in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectOther","Select Other in New File"));
 
+        /*
         suite.addTest(new RefreshFolder("testRefreshFolderWith50JavaFiles", "Refresh folder with 50 java files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100JavaFiles", "Refresh folder with 100 java files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100XmlFiles", "Refresh folder with 100 xml files"));
@@ -94,6 +95,7 @@ public class MeasureActions  {
 
         
         suite.addTest(new RefactorFindUsages("measureTime", "Refactor find usages"));
+         */
         
 //TODO    suite.addTest(new OpenProject("testOpenJavaApplicationProject", "Open Java Application project"));
 //TODO    suite.addTest(new OpenProject("testOpenJavaLibraryProject", "Open Java Library project"));

@@ -94,8 +94,10 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
         projectTab.getProjectRootNode("PerformanceTestData").collapse();
         projectTab.getProjectRootNode("jEdit").collapse();
         
-        addClassNameToLookFor("explorer.view");
-        setPrintClassNames(true);
+        // XXX how to filter this
+//        addClassNameToLookFor("explorer.view");
+//        setPrintClassNames(true);
+        fail("Cannot filter events yet");
         turnBadgesOff();
     }
         
@@ -166,7 +168,7 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
 
     public void shutdown() {
         new RestoreWindowAction().performAPI(projectTab);
-        setPrintClassNames(false);
+//        setPrintClassNames(false);
         turnBadgesOn();
     }
     

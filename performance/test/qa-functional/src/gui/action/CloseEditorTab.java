@@ -55,7 +55,7 @@ public class CloseEditorTab extends testUtilities.PerformanceTestCase {
     
     
     public void testClosingTab(){
-        closeFile = "Parser.java";
+        closeFile = "EditServer.java";
         doMeasurement();
     }
     

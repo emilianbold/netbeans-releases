@@ -50,7 +50,7 @@ public class PasteInEditor extends testUtilities.PerformanceTestCase {
     public void initialize() {
         EditorOperator.closeDiscardAll();
         
-        setPaintFilteringForEditor();
+        repaintManager().setOnlyEditor(true);
         setJavaEditorCaretFilteringOn();
         
         // open two java files in the editor
@@ -80,6 +80,7 @@ public class PasteInEditor extends testUtilities.PerformanceTestCase {
     public void shutdown() {
         // close the second file without saving it
         editorOperator2.closeDiscard();
+        repaintManager().setOnlyEditor(false);
     }
 
 }

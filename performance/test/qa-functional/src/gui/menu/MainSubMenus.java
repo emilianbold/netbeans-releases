@@ -111,6 +111,7 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
     }
     
     public void testVersioningCVSMenu(){
+        WAIT_AFTER_OPEN = 1000; // this is known to be very slow
         testSubMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning", "org.netbeans.modules.vcs.profiles.cvsprofiles.config.Bundle", "CVS");
     }
     
@@ -161,17 +162,21 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
         return org.netbeans.jellytools.Bundle.getStringTrimmed(bundle,key);
     }
     
+    private JMenuItemOperator mio;
+    private MouseDriver mdriver;
+    
     public void prepare(){
         MainWindowOperator.getDefault().menuBar().pushMenu(mainMenuPath,"|");
         testedMainMenu = new JMenuOperator(MainWindowOperator.getDefault());
+
+        JMenuItem submenu = testedMainMenu.findJMenuItem(testedMainMenu.getContainers()[0], subMenuPath, false, false);
+        assertNotNull("Can not find "+subMenuPath+" menu item in "+mainMenuPath+" menu", submenu);
+        mio = new JMenuItemOperator (submenu);
+        
+        mdriver = org.netbeans.jemmy.drivers.DriverManager.getMouseDriver(mio);
     }
     
     public ComponentOperator open(){
-        JMenuItem submenu = testedMainMenu.findJMenuItem(testedMainMenu.getContainers()[0], subMenuPath, false, false);
-        assertNotNull("Can not find "+subMenuPath+" menu item", submenu);
-        JMenuItemOperator mio = new JMenuItemOperator (submenu);
-        
-        MouseDriver mdriver = org.netbeans.jemmy.drivers.DriverManager.getMouseDriver(mio);
         mdriver.moveMouse(mio, mio.getCenterXForClick(), mio.getCenterYForClick());
 //        mio.pushKey(java.awt.event.KeyEvent.VK_RIGHT);
         return mio;

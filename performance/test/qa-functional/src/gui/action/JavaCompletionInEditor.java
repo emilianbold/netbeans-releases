@@ -99,8 +99,10 @@ public class JavaCompletionInEditor extends testUtilities.PerformanceTestCase {
             setAreaToFilter (thebasecaret.x-20, thebasecaret.y-20, thebasecaret.width+40, thebasecaret.height+40);
         }
         */
-        addClassNameToLookFor("JDCPopupPanel");
-        setPrintClassNames (true);
+        repaintManager().setOnlyEditor(true);
+        
+//        addClassNameToLookFor("JDCPopupPanel");
+//        setPrintClassNames (true);
         setJavaEditorCaretFilteringOn();
 
         // scroll to the place where we start
@@ -121,6 +123,7 @@ public class JavaCompletionInEditor extends testUtilities.PerformanceTestCase {
     
     public void shutdown() {
         turnBack();
+        repaintManager().setOnlyEditor(false);
         editorOperator.closeDiscard();
         super.shutdown();
     }

@@ -67,7 +67,6 @@ public class OpenFiles extends testUtilities.PerformanceTestCase {
     
     public void testOpening20kBJavaFile(){
         WAIT_AFTER_OPEN = 6000;
-        setPaintFilteringForEditor();
         setJavaEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -78,7 +77,6 @@ public class OpenFiles extends testUtilities.PerformanceTestCase {
     
     public void testOpening20kBTxtFile(){
         WAIT_AFTER_OPEN = 1500;
-        setPaintFilteringForEditor();
         setPlainTextEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -89,7 +87,6 @@ public class OpenFiles extends testUtilities.PerformanceTestCase {
     
     public void testOpening20kBXmlFile(){
         WAIT_AFTER_OPEN = 3000;
-        setPaintFilteringForEditor();
         setXMLEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -98,12 +95,14 @@ public class OpenFiles extends testUtilities.PerformanceTestCase {
         doMeasurement();
     }
     
-    public void initialize(){
+    protected void initialize(){
         EditorOperator.closeDiscardAll();
+        repaintManager().setOnlyEditor(true);
     }
 
-    public void shutdown(){
+    protected void shutdown(){
         EditorOperator.closeDiscardAll();
+        repaintManager().setOnlyEditor(false);
     }
     
     public void prepare(){

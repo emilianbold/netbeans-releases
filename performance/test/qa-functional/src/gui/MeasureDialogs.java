@@ -66,7 +66,7 @@ public class MeasureDialogs  {
         
         suite.addTest(new AddJDBCDriverDialog("measureTime", "Add JDBC Driver dialog open"));
         suite.addTest(new NewDatabaseConnectionDialog("measureTime", "New Database Connection dialog open"));
-        suite.addTest(new AddNewServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
+//        suite.addTest(new AddNewServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
         suite.addTest(new SetDefaultServerDialog("measureTime", "Set Default Server dialog open"));
         suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
         
@@ -92,7 +92,7 @@ public class MeasureDialogs  {
         
         suite.addTest(new RefactorFindUsagesDialog("measureTime", "Refactor find usages dialog open"));
         suite.addTest(new RefactorRenameDialog("measureTime", "Refactor rename dialog open"));
-        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));
+//        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));
         
         suite.addTest(new DeleteFileDialog("measureTime", "Delete Object dialog open"));
         

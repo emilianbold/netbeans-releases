@@ -122,8 +122,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
         //projectTab.getProjectRootNode(testDataProject).collapse();
         
         turnBadgesOff();
-        addClassNameToLookFor("explorer.view");
-        setPrintClassNames(true);
+        repaintManager().setOnlyExplorer(true);
     }
         
         
@@ -147,6 +146,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
     }
     
     public void shutdown() {
+        repaintManager().setOnlyExplorer(false);
         turnBadgesOn();
         projectTab.getProjectRootNode(testDataProject).collapse();
         new RestoreWindowAction().performAPI(projectTab);

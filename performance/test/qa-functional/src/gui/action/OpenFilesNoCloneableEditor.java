@@ -25,6 +25,8 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
  */
 public class OpenFilesNoCloneableEditor extends OpenFiles {
     
+    private String compName;
+    
     /**
      * Creates a new instance of OpenFilesNoCloneableEditor
      * @param testName the name of the test
@@ -47,6 +49,7 @@ public class OpenFilesNoCloneableEditor extends OpenFiles {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "Bundle.properties";
+        compName = "Bundle";
         menuItem = OPEN;
         doMeasurement();
     }
@@ -56,6 +59,7 @@ public class OpenFilesNoCloneableEditor extends OpenFiles {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "splash.gif";
+        compName = "splash.gif";
         menuItem = OPEN;
         doMeasurement();
     }
@@ -73,7 +77,7 @@ public class OpenFilesNoCloneableEditor extends OpenFiles {
             throw new Error ("Cannot push menu item "+this.menuItem+" of node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after open ------------");
-        return new TopComponentOperator(fileName);
+        return new TopComponentOperator(compName);
     }
     
     public void close(){
@@ -83,6 +87,11 @@ public class OpenFilesNoCloneableEditor extends OpenFiles {
         else {
             throw new Error ("no component to close");
         }
+    }
+
+    protected void initialize() {
+        super.initialize();
+        repaintManager().setOnlyEditor(false);
     }
     
 }

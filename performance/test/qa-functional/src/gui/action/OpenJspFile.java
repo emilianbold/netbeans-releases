@@ -50,7 +50,6 @@ public class OpenJspFile extends OpenFiles {
     
     public void testOpening20kBJSPFile(){
         WAIT_AFTER_OPEN = 3000;
-        setPaintFilteringForEditor();
         setXMLEditorCaretFilteringOn();
         fileProject = "PerformanceTestWebApplication";
         fileName = "Test.jsp";

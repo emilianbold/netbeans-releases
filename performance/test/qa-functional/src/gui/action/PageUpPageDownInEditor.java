@@ -56,7 +56,7 @@ public class PageUpPageDownInEditor extends testUtilities.PerformanceTestCase {
     public void initialize() {
         EditorOperator.closeDiscardAll();
         
-        setPaintFilteringForEditor();
+        repaintManager().setOnlyEditor(true);
         setJavaEditorCaretFilteringOn();
         
         // open a java file in the editor
@@ -80,6 +80,11 @@ public class PageUpPageDownInEditor extends testUtilities.PerformanceTestCase {
         else
             new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_DOWN)).perform(editorOperator);
         return null;
+    }
+
+    protected void shutdown() {
+        super.shutdown();
+        repaintManager().setOnlyEditor(false);
     }
     
 }
