@@ -19,6 +19,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -34,24 +36,30 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImplementation {
-    
+
+    private Map/*URL, SourceForBinaryQuery.Result*/ cache = new HashMap ();
+
     /** Creates a new instance of J2SELibrarySourceForBinaryQuery */
     public J2SELibrarySourceForBinaryQuery() {
     }
 
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
+        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) this.cache.get (binaryRoot);
+        if (res != null) {
+            return res;
+        }
         LibraryManager lm = LibraryManager.getDefault ();
-        // XXX this is very inefficient - linear search over all libraries!
         Library[] libs = lm.getLibraries();
         for (int i=0; i< libs.length; i++) {
             String type = libs[i].getType ();
             if (J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(type)) {
-                // XXX could cache various portions of this calculation - profile it...
                 List classes = libs[i].getContent("classpath");    //NOI18N
                 for (Iterator it = classes.iterator(); it.hasNext();) {
                     URL entry = (URL) it.next();
                     if (entry.equals(binaryRoot)) {
-                        return new Result(entry, libs[i]);
+                        res =  new Result(entry, libs[i]);
+                        cache.put (binaryRoot, res);
+                        return res;
                     }
                 }
             }

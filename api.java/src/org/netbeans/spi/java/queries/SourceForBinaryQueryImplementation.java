@@ -58,6 +58,18 @@ public interface SourceForBinaryQueryImplementation {
     /**
      * Returns the source root(s) for a given binary root.
      * <p>
+     * The returned SourceForBinaryQuery.Result must be a singleton. It means that for
+     * repeated calling of this method with the same recognized root the method has to
+     * return the same instance of SourceForBinaryQuery.Result.<br>
+     * The typical implemantation of the findSourceRoots contains 3 steps:
+     * <ol>
+     * <li>Look into the cache if there is already a result for the root, if so return it</li>
+     * <li>Check if the binaryRoot is recognized, if not return null</li>
+     * <li>Create a new SourceForBinaryQuery.Result for the binaryRoot, put it into the cache
+     * and return it.</li>
+     * </ol>
+     * </p>
+     * <p>
      * Any absolute URL may be used but typically it will use the <code>file</code>
      * protocol for directory entries and <code>jar</code> protocol for JAR entries
      * (e.g. <samp>jar:file:/tmp/foo.jar!/</samp>).

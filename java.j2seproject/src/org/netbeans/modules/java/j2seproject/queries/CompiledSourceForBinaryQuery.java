@@ -25,6 +25,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
@@ -39,6 +41,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
+    private Map/*<URL,SourceForBinaryQuery.Result>*/  cache = new HashMap ();
 
     public CompiledSourceForBinaryQuery(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.helper = helper;
@@ -50,6 +53,10 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             binaryRoot = FileUtil.getArchiveFile(binaryRoot);
             // XXX check whether this is really the root
         }
+        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) cache.get (binaryRoot);
+        if (res != null) {
+            return res;
+        }
         String srcPropName = null;
         if (hasSources(binaryRoot,"build.classes.dir")) {   //NOI18N
             srcPropName = "src.dir";                        //NOI18N
@@ -60,7 +67,14 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         else if (hasSources (binaryRoot,"build.test.classes.dir")) {    //NOI18N
             srcPropName = "test.src.dir";                               //NOI18N
         }
-        return srcPropName == null ? null : new Result (this.helper, this.evaluator, srcPropName);
+        if (srcPropName == null) {
+            return null;
+        }
+        else {
+            res = new Result (this.helper, this.evaluator, srcPropName);
+            cache.put (binaryRoot, res);
+            return res;
+        }
     }
 
 

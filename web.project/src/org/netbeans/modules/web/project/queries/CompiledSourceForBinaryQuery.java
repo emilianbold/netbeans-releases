@@ -18,6 +18,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.Map;
+import java.util.HashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 
@@ -28,15 +30,21 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
     private AntProjectHelper helper;
+    private Map/*<URL,SourceForBinaryQuery.Result>*/  cache = new HashMap ();
 
     public CompiledSourceForBinaryQuery (AntProjectHelper helper) {
         this.helper = helper;
     }
 
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-
+        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) this.cache.get (binaryRoot);
+        if (res != null) {
+            return res;
+        }
         if (hasSources(binaryRoot, "build.classes.dir") || hasSources (binaryRoot,"dist.jar")) {      //NOI18N
-            return new Result (this.helper, "src.dir");                      //NOI18N
+            res = new Result (this.helper, "src.dir");                      //NOI18N
+            this.cache.put (binaryRoot, res);
+            return res;
         }
         return null;
     }

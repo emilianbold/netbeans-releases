@@ -16,6 +16,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
@@ -41,6 +43,8 @@ import org.openide.util.WeakListeners;
 
 public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
+    private Map/*<URL, SourceForBinaryQuery.Result>*/ cache = new HashMap ();
+
     public PlatformSourceForBinaryQuery () {
     }
 
@@ -50,6 +54,10 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
      * @return FileObject[], never returns null
      */
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
+        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) this.cache.get (binaryRoot);
+        if (res != null) {
+            return res;
+        }
         JavaPlatformManager mgr = JavaPlatformManager.getDefault();
         JavaPlatform[] platforms = mgr.getInstalledPlatforms();
         for (int i=0; i< platforms.length; i++) {
@@ -57,7 +65,9 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             for (Iterator it = cp.entries().iterator(); it.hasNext();) {
                 ClassPath.Entry entry = (ClassPath.Entry) it.next();
                 if (entry.getURL().equals (binaryRoot)) {
-                    return new Result (platforms[i]);                    
+                    res = new Result (platforms[i]);
+                    this.cache.put (binaryRoot, res);
+                    return res;
                 }
             }
         }
