@@ -19,7 +19,7 @@ import java.util.*;
 import org.openide.ErrorManager;
 import org.openide.util.Mutex;
 
-// XXX implement!
+// XXX create a specialized subclass with underlying model an EditorCookie.Observable + Document
 
 /**
  * Support for bidirectional construction of a derived model from an underlying model.
@@ -155,8 +155,14 @@ public abstract class TwoWaySupport {
     /** derivation tasks indexed by support */
     private static final Map tasks = new WeakHashMap(); // Map<TwoWaySupport,DeriveTask>
     
-    /** whether derivation thread has been started yet */
+    /** derivation thread when it has been started */
     private static boolean startedThread = false;
+    
+    /** queue of derived model references */
+    private static ReferenceQueue queue = null;
+    
+    /** reverse lookup for model field to support queue collector */
+    private static final Map referencesToSupports = new WeakHashMap(); // Map<Reference<Object>,Reference<TwoWaySupport>>
     
     /** associated mutex */
     private final Mutex mutex;
@@ -168,7 +174,7 @@ public abstract class TwoWaySupport {
     private Reference model = null; // Reference<Object>
     
     /** current derivation problem, if any */
-    private Exception problem = null;
+    private Exception problem = null; // XXX should perhaps be Reference<Exception>?
     
     /** if model is not null, whether it is fresh or stale */
     private boolean fresh = false;
@@ -301,7 +307,7 @@ public abstract class TwoWaySupport {
                 // Another reader is getting the value at the moment, wait for it.
                 try {
                     LOCK.wait();
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException e) {/* OK */}
             }
             if (fresh) {
                 Object o = model.get();
@@ -342,7 +348,7 @@ public abstract class TwoWaySupport {
                     toDerive.remove(t);
                 }
                 if (result != null) {
-                    model = createEnqueuedReference(result);
+                    setModel(result);
                     fresh = true;
                 } else if (resultingProblem != null) {
                     problem = resultingProblem;
@@ -350,6 +356,16 @@ public abstract class TwoWaySupport {
                 }
             }
         }
+    }
+    
+    private void setModel(Object result) {
+        assert Thread.holdsLock(LOCK);
+        assert result != null;
+        if (model != null) {
+            referencesToSupports.remove(model);
+        }
+        model = createEnqueuedReference(result);
+        referencesToSupports.put(model, new WeakReference(this));
     }
     
     /**
@@ -414,7 +430,7 @@ public abstract class TwoWaySupport {
             // invalidate -> initiate -> [pause] -> mutate -> [pause] -> invalidate -> [pause] -> derive
             // where the final derivation was not really appropriate (or was it?)
             Object result = doRecreate(oldValue, derivedDelta);
-            model = createEnqueuedReference(result);
+            setModel(result);
             if (fresh) {
                 fireChange(new TwoWayEvent.Recreated(this, oldValue, result, derivedDelta));
             } else {
@@ -479,6 +495,7 @@ public abstract class TwoWaySupport {
                 toDerive.add(t);
                 tasks.put(this, t);
                 active = true;
+                startDerivationThread();
                 LOCK.notifyAll();
             }
         }
@@ -565,8 +582,41 @@ public abstract class TwoWaySupport {
     }
     
     private Reference createEnqueuedReference(Object value) {
-        // XXX
-        return null;
+        Reference r = createReference(value, queue);
+        if (!(r instanceof StrongReference) && queue == null) {
+            // Well discard that one; optimistically assumed that
+            // createReference is not overridden, in which case we
+            // never actually have to make a queue.
+            queue = new ReferenceQueue();
+            r = createReference(value, queue);
+            Thread t = new Thread(new QueuePollingThread(), "TwoWaySupport.QueuePollingThread");
+            t.setPriority(Thread.MIN_PRIORITY);
+            t.setDaemon(true);
+            t.start();
+        }
+        return r;
+    }
+    
+    private static final class QueuePollingThread implements Runnable {
+        
+        public void run() {
+            while (true) {
+                try {
+                    Reference r = queue.remove();
+                    TwoWaySupport s;
+                    synchronized (LOCK) {
+                        Reference r2 = (Reference)referencesToSupports.remove(r);
+                        s = (r2 != null) ? (TwoWaySupport)r2.get() : null;
+                    }
+                    if (s != null) {
+                        s.fireChange(new TwoWayEvent.Forgotten(s));
+                    }
+                } catch (InterruptedException e) {
+                    assert false : e;
+                }
+            }
+        }
+        
     }
     
     /**
@@ -583,7 +633,7 @@ public abstract class TwoWaySupport {
      */
     protected Reference createReference(Object value, ReferenceQueue q) {
         // Does not matter what the queue is.
-        return new StrongReference(value, q);
+        return new StrongReference(value);
     }
 
     /**
@@ -592,8 +642,8 @@ public abstract class TwoWaySupport {
      */
     private static final class StrongReference extends WeakReference {
         private Object value;
-        public StrongReference(Object value, ReferenceQueue q) {
-            super(value, q);
+        public StrongReference(Object value) {
+            super(value);
             assert value != null;
             this.value = value;
         }
@@ -630,7 +680,7 @@ public abstract class TwoWaySupport {
     private static void startDerivationThread() {
         synchronized (LOCK) {
             if (!startedThread) {
-                Thread t = new Thread(new DerivationThread());
+                Thread t = new Thread(new DerivationThread(), "TwoWaySupport.DerivationThread");
                 t.setPriority(Thread.MIN_PRIORITY);
                 t.setDaemon(true);
                 t.start();
@@ -647,7 +697,9 @@ public abstract class TwoWaySupport {
                     while (toDerive.isEmpty()) {
                         try {
                             LOCK.wait();
-                        } catch (InterruptedException e) {}
+                        } catch (InterruptedException e) {
+                            assert false : e;
+                        }
                     }
                     Iterator it = toDerive.iterator();
                     DeriveTask t = (DeriveTask)it.next();
@@ -678,7 +730,9 @@ public abstract class TwoWaySupport {
                         } else {
                             try {
                                 LOCK.wait(t.schedule - now);
-                            } catch (InterruptedException e) {}
+                            } catch (InterruptedException e) {
+                                assert false : e;
+                            }
                             // Try again in next round.
                         }
                     } else {

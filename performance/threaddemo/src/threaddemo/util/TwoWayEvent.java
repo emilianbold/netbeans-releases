@@ -203,6 +203,10 @@ public abstract class TwoWayEvent extends EventObject {
 
     /**
      * Event indicating the reference to the derived model was garbage collected.
+     * This does not apply if the support itself was already collected.
+     * Also, only supports overriding {@link TwoWaySupport#createReference} will
+     * ever fire this event, since the default implementation creates a strong
+     * reference that cannot be collected.
      */
     public static final class Forgotten extends TwoWayEvent {
         
