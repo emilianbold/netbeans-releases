@@ -46,11 +46,6 @@ public class PropertiesStructure extends Element {
   * Looks for changes between the structures and according to them calls update methods.
   */
   public synchronized void update(PropertiesStructure struct) {       
-/*System.out.println(" ------- OLD -------- ");
-System.out.println(toString());
-System.out.println(" ------- NEW -------- ");
-System.out.println(struct.toString());
-System.out.println(" -------------------- ");*/
     boolean structChanged = false;
     Element.ItemElem curItem;
     Element.ItemElem oldItem;
@@ -184,11 +179,11 @@ System.out.println(" -------------------- ");*/
       return true;
     }
     catch (IOException e) {
-      e.printStackTrace();
+      // PENDING
       return false;
     }
     catch (BadLocationException e) {
-      e.printStackTrace();
+      // PENDING
       return false;
     }
   }              
@@ -225,11 +220,11 @@ System.out.println(" -------------------- ");*/
       }  
     }
     catch (IOException e) {
-      e.printStackTrace();
+      // PENDING
       return false;
     }
     catch (BadLocationException e) {
-      e.printStackTrace();
+      // PENDING
       return false;
     }
   }                     
@@ -295,20 +290,17 @@ System.out.println(" -------------------- ");*/
 
   /** Notification that the given item has changed (its value or comment) */
   void itemChanged(Element.ItemElem elem) {
-//System.out.println("PropStr - item " + elem.getKey());
     getParentBundleStructure().itemChanged(elem);
   }
 
   /** Notification that the structure has changed (no specific information). */
   void structureChanged() {
-//System.out.println("PropStr - struct - general");
     getParentBundleStructure().oneFileChanged(getParent());
   }                        
   
   /** Notification that the structure has changed (items have been added or deleted,
   * also includes changing an item's key). */
   void structureChanged(ArrayMapList changed, ArrayMapList inserted, ArrayMapList deleted) {
-//System.out.println("PropStr - struct");
     getParentBundleStructure().oneFileChanged(getParent(), changed, inserted, deleted);
   }                        
   
@@ -316,7 +308,6 @@ System.out.println(" -------------------- ");*/
   * Think twice when using this - don't I need to reparse all files ?
   */
   void itemKeyChanged(String oldKey, Element.ItemElem newElem) {
-//System.out.println("renaming from " + oldKey + " to " + newElem.getKey());
     // update the element in the structure, because now it is in with the wrong key
     int index = items.indexOf(oldKey);
     if (index < 0)

@@ -50,7 +50,6 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
       
       public void setValue(Object x) {
         // PENDING - due to a compiler error explicitly do "super" code instead of calling super
-        //System.out.println("SetValue " +x.toString());
         this.value = x;
         //super.setValue(x);
         PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)x;
@@ -74,13 +73,11 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
       public boolean startCellEditing(EventObject anEvent) {
         if(anEvent == null)
           getEditorComponent().requestFocus();
-        //System.out.println("Editing started");
         return true;
       }
       
       /*
       public boolean startCellEditing(EventObject anEvent) {
-        System.out.println("start : " + value.toString());
         if(anEvent == null)
           getEditorComponent().requestFocus();
           
@@ -93,28 +90,22 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         
         // set values as they deserve
         if (sp != null) {               
-System.out.println("branch1 - setting " + sp.getValue() + " / " + sp.getComment());
           ((JTextField)getEditorComponent()).setText(sp.getValue());
           commentComponent.setText(sp.getComment());
         }  
         else {
-System.out.println("branch2");
           ((JTextField)getEditorComponent()).setText("");
           commentComponent.setText("");
         }  
-System.out.println("value : " + ((JTextField)getEditorComponent()).getText());
-System.out.println("comment : " + commentComponent.getText());
           
         return true;
       } */
 
       public boolean stopCellEditing() {
-        //System.out.println("Editing stopped");
         return true;
       }
 
       public void cancelCellEditing() {
-        //System.out.println("Editing cancelled");
       }
     }
 

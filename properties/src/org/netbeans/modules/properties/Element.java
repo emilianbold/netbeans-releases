@@ -90,11 +90,9 @@ implements Serializable {
     }
     catch (BadLocationException e) {
       // PENDING
-      //System.out.println("Properties Element - silently caught BadLocationException !");
     }  
     catch (IOException e) {
       // PENDING
-      //System.out.println("Properties Element - silently caught IOException !");
     }  
   }
 
@@ -402,6 +400,7 @@ implements Serializable {
 
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         8/9/99   Petr Jiricka    Removed debug prints
  *  7    Gandalf   1.6         6/16/99  Petr Jiricka    
  *  6    Gandalf   1.5         6/10/99  Petr Jiricka    
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 

@@ -267,10 +267,10 @@ public class PropertiesFileEntry extends PresentableFileEntry {
                     kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_COMMENT, null, it.getComment()));
                   }                                                                                      
                   else
-                    /*System.out.println("listening to CHANGE_ITEM - propstruct is null " + evt.getItemName())*/;
+                    ;
                 }                   
                 else
-                  /*System.out.println("listening to CHANGE_ITEM - kyNode is null : " + evt.getItemName())*/;
+                  ;
                 // if it's me
                 // in theory do nothing
                 //PropKeysChildren.this.refreshKey(evt.getItemName());

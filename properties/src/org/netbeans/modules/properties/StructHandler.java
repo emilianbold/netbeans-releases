@@ -107,20 +107,13 @@ public class StructHandler extends Element /*implements TaskListener*/ {
 /*  public Task prepare () {
     return (Task) Children.MUTEX.writeAccess(new Mutex.Action() {
       public Object run() {
-debug("PREPARING : " + (parsingTask == null ? "NULL":(" NOT NULL, FINISHED:" + parsingTask.isFinished()        )));
         if (parsingTask == null) {
           DataRef d = getReferenceData();
           if (d != null) {
-debug("returning datatask");          
             return new DataTask(d);
           }  
           
-//debug("CALL PARSING IN THREAD " + Thread.currentThread().toString());
-if (parsingTask != null)
-  debug("CHYBA JAKO KRAVA TYVOLE DO PRDELE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11"); 
-debug("SETTING PARSING TASK = SOMETHING");
           parsingTask = createParsingTask(Thread.MAX_PRIORITY);
-debug("...SET (SOMETHING)");
         }
         return parsingTask;
       }
@@ -163,7 +156,6 @@ debug("...SET (SOMETHING)");
   * and parsing is not running yet.
   */
   void autoParse() {   
-debug("Starting autoparse");
     if (dirty && getStatus()) 
       getParsedDataBlocking();
 /*    Children.MUTEX.writeAccess(new Runnable() {
@@ -182,7 +174,6 @@ debug("Starting autoparse");
     return (Task) Children.MUTEX.writeAccess(new Mutex.Action() {
       public Object run() {
         if (parsingTask == null) {
-debug("AUTO parsingTask = someTask");
           parsingTask = createParsingTask(priority);
         }
         return parsingTask;
@@ -227,10 +218,8 @@ debug("AUTO parsingTask = someTask");
     Runnable parseRunnable = new Runnable() {
       public void run() {
         try {
-//debug("PARSING IN THREAD " + Thread.currentThread().toString());        
           PropertiesParser parser = new PropertiesParser(pfe);
           parser.parseFile();   
-//debug("FINISHED PARSING IN THREAD " + Thread.currentThread().toString());        
         }
         catch (IOException e) {
           setPropertiesStructure(null);
@@ -254,12 +243,9 @@ debug("AUTO parsingTask = someTask");
   
   /** Clear the parsing task variable */
 /*  public void taskFinished(final Task task) {
-debug("TASK FINISHED");  
     Children.MUTEX.writeAccess(new Runnable() {
       public void run() {
-debug("SETTING parsingTask = null");  
         parsingTask = null;
-debug("...SET (null)");  
       }
     });
   }*/
@@ -271,7 +257,6 @@ debug("...SET (null)");
     }
     catch (PropertiesException e) {
       // PENDING
-//debug("STRUCTURE IS NULL");
       return null;
     }  
   }
@@ -286,12 +271,9 @@ debug("...SET (null)");
     if (d != null)
       return d;
 
-debug("CALL PREPARE IN THREAD " + Thread.currentThread().toString());
 /*    Task t = prepare();
     t.waitFinished();*/
     getParsedDataBlocking();
-debug("PARSING TASK CHECK : " + (parsingTask == null ? "NULL":"NOT NULL"));    
-//debug("FINISH CALLING PREPARE IN THREAD " + Thread.currentThread().toString());
     
     d = getReferenceData();
     if (d != null)
@@ -313,10 +295,6 @@ debug("PARSING TASK CHECK : " + (parsingTask == null ? "NULL":"NOT NULL"));
     });
     // PENDING
     //firePropertyChange (PROP_STATUS, null, null);
-  }
-
-  private void debug(String hlaska) {
-//    System.out.println(pfe.getFile().getName() + " > " + hlaska + "// " + Thread.currentThread().toString());
   }
 
   // ======================== The real data holder ==========================

@@ -94,7 +94,7 @@ public class KeyNode extends AbstractNode {
   public Element.ItemElem getItem() {
     Element.ItemElem item = struct.getItem(itemKey);
     /*if (item == null)
-      System.out.println("Warning - item not found for KeyNode : " + itemKey);*/
+      // PENDING   */
     return item;
   }
 
@@ -203,12 +203,10 @@ public class KeyNode extends AbstractNode {
 
       public void setValue (Object val) throws IllegalAccessException,
       IllegalArgumentException, InvocationTargetException {
-      try {
         if (!(val instanceof String))
           throw new IllegalArgumentException();
 
         KeyNode.this.setName ((String)val);
-      } catch (Exception e) {e.printStackTrace();}
       }
     };
     p.setName (Element.ItemElem.PROP_ITEM_KEY);
@@ -282,6 +280,7 @@ public class KeyNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         8/9/99   Petr Jiricka    Removed debug prints
  *  9    Gandalf   1.8         7/16/99  Petr Jiricka    
  *  8    Gandalf   1.7         6/16/99  Petr Jiricka    
  *  7    Gandalf   1.6         6/10/99  Petr Jiricka    
