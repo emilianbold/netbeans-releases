@@ -14,12 +14,10 @@
 package com.netbeans.developer.modules.loaders.url;
 
 import java.io.*;
-import java.net.URL;
 
 import com.netbeans.ide.*;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.windows.*;
 import com.netbeans.ide.util.*;
 import com.netbeans.ide.util.actions.*;
 import com.netbeans.ide.nodes.*;
@@ -33,7 +31,7 @@ public class URLDataObject extends MultiDataObject {
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = -6035788991669336965L;
 
-  private static final String URL_ICON_BASE =
+  private final static String URL_ICON_BASE =
     "com/netbeans/developer/modules/loaders/url/urlObject";
 
   /* The FileObject containing the URL String */
@@ -193,6 +191,7 @@ public class URLDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  4    Gandalf   1.3         3/9/99   Ian Formanek    
  *  3    Gandalf   1.2         3/9/99   Ian Formanek    
  *  2    Gandalf   1.1         2/25/99  Ian Formanek    
  *  1    Gandalf   1.0         1/22/99  Ian Formanek    

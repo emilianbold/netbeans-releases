@@ -37,7 +37,9 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
   * describing the editable properties supported by this bean.
   */
   public PropertyDescriptor[] getPropertyDescriptors () {
-    if (descriptors == null) initializeDescriptors();
+    if (descriptors == null) { 
+      initializeDescriptors();
+    }
     return descriptors;
   }
 
@@ -75,6 +77,7 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  4    Gandalf   1.3         3/9/99   Ian Formanek    
 *  3    Gandalf   1.2         3/9/99   Ian Formanek    
 *  2    Gandalf   1.1         2/16/99  David Simonek   
 *  1    Gandalf   1.0         1/22/99  Ian Formanek    
