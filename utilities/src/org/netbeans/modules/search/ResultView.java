@@ -17,6 +17,7 @@ package org.netbeans.modules.search;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -671,15 +672,23 @@ final class ResultView extends TopComponent
     private void callFromAWT(final Method method,
                              final Object object,
                              final Object param) {
-        Mutex.EVENT.writeAccess(new Runnable() {
-            public void run() {
-                try {
-                    method.invoke(object, new Object[] {param});
-                } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
+        final Runnable routine = new Runnable() {
+                public void run() {
+                    try {
+                        method.invoke(object, new Object[] {param});
+                    } catch (Exception ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }};
+        if (EventQueue.isDispatchThread()) {
+            routine.run();
+        } else {
+            try {
+                EventQueue.invokeAndWait(routine);
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ex);
             }
-        });
+        }
     }
     
     /* Implements interface ExplorerManager.Provider */
