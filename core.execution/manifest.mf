@@ -5,7 +5,3 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.3
 OpenIDE-Module-Module-Dependencies: org.netbeans.core.ui/1 > 1.0
 OpenIDE-Module-Layer: org/netbeans/core/execution/resources/layer.xml
-
-Name: org/netbeans/core/execution/ProcessNode.class
-OpenIDE-Module-Class: Node
-Type: Environment

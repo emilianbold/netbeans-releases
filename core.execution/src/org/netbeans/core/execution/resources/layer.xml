@@ -125,6 +125,11 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="UI">
+        <folder name="Runtime">
+            <file name="org-netbeans-core-execution-ProcessNode.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.core.execution.ProcessNode"/>
+            </file>
+        </folder>
         <!-- settings categories UI presentation -->
         <folder name="Services">
         
