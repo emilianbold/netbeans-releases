@@ -19,9 +19,11 @@ import java.io.File;
 import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -38,6 +40,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.*;
+
 
 /** A web module implementation on top of project.
  *
@@ -75,7 +78,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
             return null;
         }
         FileObject dd = webInfFo.getFileObject (FILE_DD);
-        if (dd == null && !silent) {
+        if (dd == null && !silent && isProjectOpened()) {
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebXmlNotFound", //NOI18N
                     webInfFo.getPath()));
         }
@@ -123,7 +126,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
 
     public FileObject getDocumentBase (boolean silent) {
         FileObject docBase = getFileObject(WebProjectProperties.WEB_DOCBASE_DIR);
-        if (docBase == null && !silent) {
+        if (docBase == null && !silent && isProjectOpened()) {
             String path = helper.resolvePath(helper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR));
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class, "MSG_DocBase_Corrupted", //NOI18N
                     project.getName(), path));
@@ -153,7 +156,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
             return null;
         }
         FileObject webInf = documentBase.getFileObject (FOLDER_WEB_INF);
-        if (webInf == null && !silent) {
+        if (webInf == null && !silent && isProjectOpened()) {
                 showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted", //NOI18N
                         documentBase.getPath()));
         }
@@ -401,15 +404,20 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public FileObject getDD() {
        FileObject webInfFo = getWebInf();
        if (webInfFo==null) {
-           DialogDisplayer.getDefault().notify(
-           new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted"),
-           NotifyDescriptor.ERROR_MESSAGE));
+           if (isProjectOpened()) {
+               DialogDisplayer.getDefault().notify(
+               new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted"),
+               NotifyDescriptor.ERROR_MESSAGE));
+           }
            return null;
        }
        return getWebInf().getFileObject(WebProjectWebServicesSupport.WEBSERVICES_DD, "xml");
    }
     
     public FileObject[] getSourceRoots() {
+        if (!isProjectOpened())
+            return new FileObject[0];
+        
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         FileObject[] roots = new FileObject[groups.length+1];
@@ -419,6 +427,15 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         
         return roots; 
+    }
+    
+    private boolean isProjectOpened() {
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < projects.length; i++) {
+            if (projects[i].equals(project)) 
+                return true;
+        }
+        return false;
     }
     
 //    private Set versionListeners() {

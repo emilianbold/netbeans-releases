@@ -40,7 +40,9 @@ public class ConfigFilesListener extends AbstractFilesListener {
                 continue;
             
             for (int j = 0; j < paths.length; j++) {
-                result.add(provider.getDeploymentConfigurationFile(paths[j]));
+                File f = provider.getDeploymentConfigurationFile(paths[j]);
+                if (f != null)
+                    result.add(f);
             }
         }
         return (File[]) result.toArray(new File[result.size()]);

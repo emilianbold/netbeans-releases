@@ -27,6 +27,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -162,9 +163,11 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     public FileObject getWebservicesDD() {
         FileObject webInfFo = getWebInf();
         if (webInfFo==null) {
-            DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Message(NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfCorrupted"),
-            NotifyDescriptor.ERROR_MESSAGE));
+            if (isProjectOpened()) {
+                DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfCorrupted"),
+                NotifyDescriptor.ERROR_MESSAGE));
+            }
             return null;
         }
         return getWebInf().getFileObject(WEBSERVICES_DD, "xml");
@@ -598,9 +601,11 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     public FileObject getDeploymentDescriptor() {
         FileObject webInfFo = getWebInf();
         if (webInfFo==null) {
-            DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Message(NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfCorrupted"), // NOI18N
-            NotifyDescriptor.ERROR_MESSAGE));
+            if (isProjectOpened()) {
+                DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfCorrupted"), // NOI18N
+                NotifyDescriptor.ERROR_MESSAGE));
+            }
             return null;
         }
         return getWebInf().getFileObject(ProjectWebModule.FILE_DD);
@@ -806,6 +811,15 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         }
         stubs.add(jaxrpcClientStub);
         return stubs;
+    }
+    
+    private boolean isProjectOpened() {
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < projects.length; i++) {
+            if (projects[i].equals(project)) 
+                return true;
+        }
+        return false;
     }
     
     /** !PW This method is exposed in the client support API.  Though it's

@@ -114,13 +114,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     private Server getServer () {
-        Server s = ServerRegistry.getInstance ().getServer (getProvider ().getServerID ());
-        if (s == null) {
-            //PENDING some ntoifcation.
-            ServerString ss = ServerRegistry.getInstance().getDefaultInstance();
-            s = ss == null ? null : ss.getServer();
-        }
-        return s;
+        return ServerRegistry.getInstance ().getServer (getProvider ().getServerID ());
     }
     
     private DConfigBean getWebContextDConfigBean() {
@@ -359,7 +353,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             preparing = false;
         }
         return null;
-    }
+    }    
 
     private DeploymentPlanSplitter getDeploymentPlanSplitter() {
         return getServer ().getDeploymentPlanSplitter();
@@ -508,6 +502,8 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             if (fo == null) {
                 fo = findPrimaryConfigurationFO();
             }
+            if (fo == null)
+                return null;
             Project owner = FileOwnerQuery.getOwner(fo);
             if (owner != null)
                 return owner.getProjectDirectory().getName();

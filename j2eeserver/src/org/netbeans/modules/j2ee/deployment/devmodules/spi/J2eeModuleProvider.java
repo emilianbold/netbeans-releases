@@ -302,7 +302,7 @@ public abstract class J2eeModuleProvider {
     protected final void fireServerChange (String oldServerID, String newServerID) {
         Server oldServer = ServerRegistry.getInstance ().getServer (oldServerID);
 	Server newServer = ServerRegistry.getInstance ().getServer (newServerID);
-        if (oldServer != null && !oldServer.equals (newServer)) {
+        if (oldServer != null && newServer != null && !oldServer.equals (newServer)) {
 
             if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                 String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
