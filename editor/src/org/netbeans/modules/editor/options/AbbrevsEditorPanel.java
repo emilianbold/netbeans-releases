@@ -22,6 +22,9 @@ import javax.swing.table.*;
 import org.openide.*;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.NotifyDescriptor;
+import java.text.MessageFormat;
+import org.openide.TopManager;
 
 
 /**
@@ -210,12 +213,34 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
 
         if( dd.getValue() == DialogDescriptor.OK_OPTION ) {
             String[] retVal = input.getAbbrev();
-            if( ! "".equals( retVal[0] )  ) return retVal;  // NOI18N don't allow empty abbrev
+            if( ! "".equals( retVal[0] )  ){ // NOI18N don't allow empty abbrev
+                int existingKeyPosition = model.containsKey(retVal[0]);
+                
+                if (existingKeyPosition >= 0){
+                    // ignore if user edits value and doesn't change the key
+                    if ( abbrev!=null && abbrev[0].equals(retVal[0]) ) return retVal;
+                    
+                    String[] existingPair = model.getPair(existingKeyPosition);
+                    NotifyDescriptor NDConfirm = new NotifyDescriptor.Confirmation(
+                    MessageFormat.format(
+                    bundle.getString("AEP_Overwrite"), //NOI18N
+                    new Object[] {retVal[0], existingPair[1], retVal[1]}),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE
+                    );
+                    
+                    TopManager.getDefault().notify(NDConfirm);
+                    if (NDConfirm.getValue()!=NDConfirm.YES_OPTION){
+                        return null;
+                    }
+                }
+                return retVal;
+            }
         }
         return null; // cancel or empty
     }
-
-
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JTable abbrevsTable;
@@ -288,6 +313,10 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
             String key = (String)getValueAt( row, 0 );
             String[] retVal = { key, (String)data.get( key ) };
             return retVal;
+        }
+        
+        public int containsKey( String key ){
+            return Arrays.binarySearch( keys, key );
         }
     }
 
