@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.openide.TopManager;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.DefaultPropertyModel;
@@ -148,6 +149,7 @@ public class DiffPresenter extends javax.swing.JPanel {
             } catch (java.beans.IntrospectionException intrex) {
                 return ;
             }
+            pd.setDisplayName(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_ProvidersPropEditorTitle"));
             pd.setPropertyEditorClass (PropertyEditorManager.findEditor (Object.class).getClass());
             // special attributes to the property editor
             pd.setValue ("superClass", DiffProvider.class);
@@ -157,6 +159,7 @@ public class DiffPresenter extends javax.swing.JPanel {
                 Node providersNode = providersDO.getNodeDelegate();
                 pd.setValue("node", providersNode);
             } catch (DataObjectNotFoundException donfex) {}
+            pd.setValue(ExPropertyEditor.PROPERTY_HELP_ID, "org.netbeans.modules.diff.DiffPresenter.providers");
             model = new DefaultPropertyModel (this, pd);
             panel = new PropertyPanel (model, PropertyPanel.PREF_INPUT_STATE);
             panel.setChangeImmediate(false);
@@ -177,6 +180,7 @@ public class DiffPresenter extends javax.swing.JPanel {
             } catch (java.beans.IntrospectionException intrex) {
                 return ;
             }
+            pd.setDisplayName(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_VisualizersPropEditorTitle"));
             pd.setPropertyEditorClass (PropertyEditorManager.findEditor (Object.class).getClass());
             // special attributes to the property editor
             pd.setValue ("superClass", DiffVisualizer.class);
@@ -186,6 +190,7 @@ public class DiffPresenter extends javax.swing.JPanel {
                 Node visualizersNode = visualizersDO.getNodeDelegate();
                 pd.setValue("node", visualizersNode);
             } catch (DataObjectNotFoundException donfex) {}
+            pd.setValue(ExPropertyEditor.PROPERTY_HELP_ID, "org.netbeans.modules.diff.DiffPresenter.visualizers");
             model = new DefaultPropertyModel (this, pd);
             panel = new PropertyPanel (model, PropertyPanel.PREF_INPUT_STATE);
             panel.setChangeImmediate(false);
