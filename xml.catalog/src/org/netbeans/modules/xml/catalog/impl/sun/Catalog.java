@@ -190,6 +190,12 @@ public final class Catalog
      * @return null if not registered
      */
     public String getSystemID(String publicId) {
+        Object p = getPeer();
+        if (p instanceof com.sun.resolver.tools.CatalogResolver) 
+            try {
+                return ((com.sun.resolver.tools.CatalogResolver) p).getCatalog().resolveSystem(publicId);
+            } catch (java.net.MalformedURLException ex) {}
+              catch (java.io.IOException ex) {}
         return null;
     }
     
@@ -244,14 +250,13 @@ public final class Catalog
     private EntityResolver createPeer(String location, boolean pref) {
         try {
             CatalogResolver res = new CatalogResolver(pref);
-            com.sun.resolver.Catalog cat = res.getCatalog();            
+            com.sun.resolver.Catalog cat = res.getCatalog();
 
             // try to handle as a XML format, if fail try a text format
             try {
                 cat.parseCatalog("application/xml", new URL(location));
                 setShortDescription(Util.THIS.getString("DESC_loaded"));
-                return res;
-                
+                return res;  
             } catch (CatalogException cex) {
                 try {
                     cat.parseCatalog("text/plain", new URL(location));
@@ -259,7 +264,7 @@ public final class Catalog
                     return res;                
                 } catch (RuntimeException ex) {
                     setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
-                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Internal resolvers library error!", ex);
+                    if ( Util.THIS.isLoggable() )  Util.THIS.debug("Internal resolvers library error!", ex);
                 }
             }
             
@@ -291,7 +296,36 @@ public final class Catalog
      * Lazy init peer and return it.
      */
     private synchronized EntityResolver getPeer() {
+        
         if (peer == null) peer = createPeer(location, preference);
         return peer;
     }
+
+    /**
+     * Get registered URI for the given name or null if not registered.
+     * @return null if not registered
+     */
+    public String resolveURI(String name) {
+        Object p = getPeer();
+        if (p instanceof com.sun.resolver.tools.CatalogResolver) 
+            try {
+                return ((com.sun.resolver.tools.CatalogResolver) p).getCatalog().resolveURI(name);
+            } catch (java.net.MalformedURLException ex) {}
+              catch (java.io.IOException ex) {}
+        return null;
+    }
+    /**
+     * Get registered URI for the given publicId or null if not registered.
+     * @return null if not registered
+     */ 
+    public String resolvePublic(String publicId) {
+        Object p = getPeer();
+        if (p instanceof com.sun.resolver.tools.CatalogResolver) 
+            try {
+                return ((com.sun.resolver.tools.CatalogResolver) p).getCatalog().resolvePublic(publicId,null);
+            } catch (java.net.MalformedURLException ex) {}
+              catch (java.io.IOException ex) {}
+        return null;
+    }
+    
 }

@@ -40,7 +40,16 @@ public interface CatalogReader {
      * @return null if not registered
      */
     public String getSystemID(String publicId);
-    
+    /**
+     * Get registered URI for the given name or null if not registered.
+     * @return null if not registered
+     */
+    public String resolveURI(String name);
+    /**
+     * Get registered URI for the given publicId or null if not registered.
+     * @return null if not registered
+     */
+    public String resolvePublic(String publicId);
     /**
      * Optional operation allowing to listen at catalog for changes.
      * @throws UnsupportedOpertaionException if not supported by the implementation.

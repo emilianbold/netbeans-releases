@@ -148,13 +148,13 @@ class SharedXMLSupport {
         sendMessage(Util.THIS.getString("MSG_checking", checkedFile));
 
         Handler handler = new Handler();
+ 
+
+        InputSource input = null;
         
         try {
-
             // set up parser
-            
             XMLReader parser = createParser(validate);
-            
             if (parser == null) {
                 fatalErrors++;
                 console.receive(new CookieMessage(
@@ -163,7 +163,23 @@ class SharedXMLSupport {
                 ));
                 return;
             }
-
+            
+            if (validate) {
+                // get all naemspaces for the parser
+                input=ShareableInputSource.create(createInputSource());
+                String[] schemaLocations=getSchemaLocations(input);
+                ((ShareableInputSource)input).reset();
+                if (schemaLocations!=null && schemaLocations.length>0) {
+                    boolean first=true;
+                    StringBuffer sb = new StringBuffer();
+                    for (int i=0;i<schemaLocations.length;i++) {
+                        sb.append(first?schemaLocations[i]:" "+schemaLocations[i]);
+                        first=false;
+                    }
+                    parser.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation", sb.toString()); //NOI18N
+                }
+            } else input = createInputSource();
+            
             parser.setErrorHandler(handler);           
             parser.setContentHandler(handler);
             
@@ -171,10 +187,7 @@ class SharedXMLSupport {
                 Util.THIS.debug(checkedFile + ":" + parserDescription(parser));
             }
 
-            // parse
-            
-            final InputSource input = createInputSource();
-
+            // parse  
             if (mode == CheckXMLSupport.CHECK_ENTITY_MODE) {
                 new SAXEntityParser(parser, true).parse(input);
             } else if (mode == CheckXMLSupport.CHECK_PARAMETER_ENTITY_MODE) {
@@ -202,6 +215,11 @@ class SharedXMLSupport {
         } catch (RuntimeException ex) {
 
             handler.runtimeError(ex);
+        } finally {
+	    if (input instanceof ShareableInputSource)
+            try {
+                ((ShareableInputSource)input).closeAll();
+            } catch (IOException ex) {}
         }
         
     }
@@ -254,7 +272,7 @@ class SharedXMLSupport {
 	
         try {
             SAXParser parser = factory.newSAXParser();
-            ret = parser.getXMLReader();                
+            ret = parser.getXMLReader();
         } catch (Exception ex) {
             sendMessage(Util.THIS.getString("MSG_parser_err_1"));
             return null;
@@ -425,4 +443,56 @@ class SharedXMLSupport {
         }
     }
     
+    private String[] getSchemaLocations(InputSource is) {
+        EntityResolver res = createEntityResolver();
+        if (res==null) return null;
+        String[] namespaces = getNamespaces(is);
+        List loc = new ArrayList();
+        for (int i=0;i<namespaces.length;i++) {
+            try {
+                javax.xml.transform.Source src = ((javax.xml.transform.URIResolver)res).resolve(namespaces[i], null);
+                if (src!=null) loc.add(namespaces[i]+" "+src.getSystemId()); //NOI18N
+            } catch (Exception ex) {}
+        }
+        String[] schemaLocations = new String[loc.size()];
+        loc.toArray(schemaLocations);
+        return schemaLocations;
+    }
+    
+    private String[] getNamespaces(InputSource is) {
+        NsHandler handler = new NsHandler();
+        try {
+            XMLReader xmlReader = org.openide.xml.XMLUtil.createXMLReader();
+            xmlReader.setContentHandler(handler);
+            xmlReader.parse(is);
+        } catch (IOException ex) {
+        } catch (SAXException ex) {
+        }
+        return handler.getNamespaces();
+    }
+    
+    private static class NsHandler extends org.xml.sax.helpers.DefaultHandler {
+        List namespaces;
+        
+        NsHandler() {
+            namespaces=new ArrayList();
+        }
+        
+        public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
+            if (atts.getLength()>0) { //NOI18N
+                for (int i=0;i<atts.getLength();i++) {
+                    if (atts.getQName(i).startsWith("xmlns")) { //NOI18N
+                        namespaces.add(atts.getValue(i));
+                    }
+                }
+            }
+        }
+        
+        String[] getNamespaces() {
+            String[] ns = new String[namespaces.size()];
+            namespaces.toArray(ns);
+            return ns;
+        }
+    }
+
 }
