@@ -272,3 +272,4 @@ public class PropertiesStructure extends Element {
 
         structureChanged(changed, inserted, deleted);
     }
+}

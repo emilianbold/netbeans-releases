@@ -65,3 +65,4 @@ public class GrantAccessEvent extends EventObject {
     boolean isGranted () {
         return granted;
     }
+}

@@ -342,3 +342,4 @@ public class I18nManager {
             topComponent.close();
     }
 
+}

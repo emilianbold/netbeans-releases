@@ -507,3 +507,4 @@ public class PropertiesTableModel extends AbstractTableModel {
         }
     } // End of nested class StringPair.
         
+}
