@@ -53,12 +53,13 @@ public class BeansTemplates extends NbTestCase {
     public void setUp() {
         // redirect jemmy trace and error output to a log
         JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getLog(), true));
+        JellyProperties.setJemmyDebugTimeouts();
         JellyProperties.setDefaults();
         sampleDir = mountSampledir();
     }
     
     public void tearDown() {       
-        JamUtilities.waitEventQueueEmpty(3000);
+        JamUtilities.waitEventQueueEmpty(1500);
     }
 
     public void testJavaBean() {

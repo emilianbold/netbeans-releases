@@ -68,6 +68,7 @@ public class BeanInfoGeneration extends NbTestCase {
     public void setUp() {
         // redirect jemmy trace and error output to a log
         JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getLog(), true));
+        JellyProperties.setJemmyDebugTimeouts();
         JellyProperties.setDefaults();
         if (mount) {
             new JelloRepository().findOrMount(sampleDir);
@@ -83,8 +84,7 @@ public class BeanInfoGeneration extends NbTestCase {
     }
     
     public void tearDown() {
-
-        JamUtilities.waitEventQueueEmpty(3000);
+//        JamUtilities.waitEventQueueEmpty(3000);
         Explorer explorer = new Explorer();
         explorer = Explorer.find();
         explorer.switchToFilesystemsTab();
@@ -92,18 +92,18 @@ public class BeanInfoGeneration extends NbTestCase {
         String myObject = sampleDir+explorer.delim+NAME_TEST_FILE;
         
         String myObjectBeanInfo = sampleDir+explorer.delim+NAME_TEST_FILE + "BeanInfo";
-        JamUtilities.waitEventQueueEmpty(3000);                
+//        JamUtilities.waitEventQueueEmpty(3000);                
         explorer.pushPopupMenu("Delete", myObject);
         new JelloYesNoDialog("Confirm Object Deletion").yes();
-        JamUtilities.waitEventQueueEmpty(3000);        
+//        JamUtilities.waitEventQueueEmpty(3000);        
         explorer.pushPopupMenu("Delete", myObjectBeanInfo);
         new JelloYesNoDialog("Confirm Object Deletion").yes();
-        JamUtilities.waitEventQueueEmpty(1500);                
+//        JamUtilities.waitEventQueueEmpty(1500);                
         if (unmount) {
             explorer.pushPopupMenu("Unmount Filesystem", sampleDir);
             
         }
-        JamUtilities.waitEventQueueEmpty(1000);
+        JamUtilities.waitEventQueueEmpty(1500);
     }
     
     

@@ -60,6 +60,7 @@ public class CreateNewNonIndexedProperty extends NbTestCase {
     public void setUp() {
         // redirect jemmy trace and error output to a log
         JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getRef(), true));
+        JellyProperties.setJemmyDebugTimeouts();
         JellyProperties.setDefaults();
         if (mount) {
             new JelloRepository().findOrMount(sampleDir);
@@ -77,10 +78,10 @@ public class CreateNewNonIndexedProperty extends NbTestCase {
         explorer = Explorer.find();          
         explorer.switchToFilesystemsTab();                                
         String myObject = sampleDir+explorer.delim+NAME_TEST_FILE;
-        JamUtilities.waitEventQueueEmpty(3000);
+//        JamUtilities.waitEventQueueEmpty(3000);
         explorer.pushPopupMenu("Delete", myObject);
         new JelloYesNoDialog("Confirm Object Deletion").yes();        
-        JamUtilities.waitEventQueueEmpty(1500);
+//        JamUtilities.waitEventQueueEmpty(1500);
         if (!mount) {
             explorer.pushPopupMenu("Unmount Filesystem", sampleDir);            
         }

@@ -60,6 +60,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
     public void setUp() {
         // redirect jemmy trace and error output to a log
         JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getLog(), true));
+        JellyProperties.setJemmyDebugTimeouts();
         JellyProperties.setDefaults();
         if (mount) {
             new JelloRepository().findOrMount(sampleDir);
@@ -74,10 +75,10 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         explorer.switchToFilesystemsTab();
         
         String myObject = sampleDir+explorer.delim+NAME_TEST_FILE;
-        JamUtilities.waitEventQueueEmpty(3000);                
+//        JamUtilities.waitEventQueueEmpty(3000);                
         explorer.pushPopupMenu("Delete", myObject);
         new JelloYesNoDialog("Confirm Object Deletion").yes();
-        JamUtilities.waitEventQueueEmpty(1500);        
+//        JamUtilities.waitEventQueueEmpty(1500);        
         if (unmount) {
             System.out.println("UNMOUNTING");
             explorer.pushPopupMenu("Unmount Filesystem", sampleDir);
@@ -205,7 +206,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         mf.pushMenu("Tools|Options...");
         Options opt = new Options();
         PropertiesWindow pw = opt.getPropertiesWindow("Editing"+opt.delim+"Beans Property");
-	JamUtilities.waitEventQueueEmpty(3000);                
+//	JamUtilities.waitEventQueueEmpty(3000);                
         pw.setSelectedItem("Style of Declared Variable", 0);
         pw.close();
         opt.close();             
@@ -321,7 +322,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         
         okCancelHelpDialog.ok();        
 //end of the first property
-        JamUtilities.waitEventQueueEmpty(3000);                
+//        JamUtilities.waitEventQueueEmpty(3000);                
         pw.setSelectedItem("Style of Declared Variable", 1);
 //start of the second property
         explorer = Explorer.find();
@@ -364,7 +365,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         
         explorer = Explorer.find();
         explorer.switchToFilesystemsTab();
-        JamUtilities.waitEventQueueEmpty(5000);                
+//        JamUtilities.waitEventQueueEmpty(5000);                
         explorer.pushPopupMenu("Properties", sampleDir+explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
                            +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
                            +explorer.delim+"firstName");
