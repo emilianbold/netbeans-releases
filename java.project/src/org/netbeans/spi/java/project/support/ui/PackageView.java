@@ -13,8 +13,13 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.java.project.PackageViewSettings;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.WeakListeners;
 
 /**
  * Factory for package views.
@@ -22,10 +27,7 @@ import org.openide.nodes.Node;
  * @author Jesse Glick
  */
 public class PackageView {
-    
-    /** #42151: option to show tree structure instead */
-    private static final boolean USE_TREE_VIEW = Boolean.getBoolean("org.netbeans.spi.java.project.support.ui.packageView.USE_TREE_VIEW"); // NOI18N
-    
+        
     private PackageView() {}
     
     /**
@@ -41,11 +43,7 @@ public class PackageView {
      * @return node which will display packages in given group
      */
     public static Node createPackageView( SourceGroup group ) {
-        if (USE_TREE_VIEW) {
-            return new TreeRootNode(group);
-        } else {
-            return new PackageRootNode(group);
-        }
+        return new RootNode (group);                
     }
     
     /**
@@ -70,5 +68,42 @@ public class PackageView {
                 return null;
             }
         }
+    }
+    
+    /**
+     * FilterNode which listens on the PackageViewSettings and changes the view to 
+     * the package view or tree view
+     *
+     */
+    private static final class RootNode extends FilterNode implements PropertyChangeListener {
+        
+        private SourceGroup sourceGroup;
+        private PackageViewSettings settings;
+        
+        private RootNode (SourceGroup group) {
+            super (getOriginalNode (group, PackageViewSettings.getDefault()));
+            this.sourceGroup = group;
+            this.settings = PackageViewSettings.getDefault();
+            this.settings.addPropertyChangeListener(WeakListeners.propertyChange(this, this.settings));
+        }
+        
+        public void propertyChange (PropertyChangeEvent event) {
+            if (PackageViewSettings.PROP_PACKAGE_VIEW_TYPE.equals(event.getPropertyName())) {
+                changeOriginal(getOriginalNode (this.sourceGroup, this.settings), true);
+            }
+        }
+        
+        private static Node getOriginalNode (SourceGroup group, PackageViewSettings settings) {            
+            assert settings != null : "PackageViewSettings can't be null"; //NOI18N
+            switch (settings.getPackageViewType()) {
+                case PackageViewSettings.TYPE_PACKAGE_VIEW:
+                    return new PackageRootNode(group);
+                case PackageViewSettings.TYPE_TREE:
+                    return new TreeRootNode(group);
+                default:
+                    assert false : "Unknown PackageView Type"; //NOI18N
+                    return new PackageRootNode(group);
+            }
+        }        
     }
 }
