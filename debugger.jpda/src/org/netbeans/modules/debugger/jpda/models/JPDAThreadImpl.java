@@ -287,6 +287,7 @@ public class JPDAThreadImpl implements JPDAThread {
             return ltm.getThis (or, "");
         } catch (IncompatibleThreadStateException e) {
         } catch (UnsupportedOperationException e) {
+            // if JVM deos not support this feature - not a problem
         }
         return null;
     }
