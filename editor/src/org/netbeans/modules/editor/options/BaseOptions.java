@@ -63,7 +63,7 @@ public class BaseOptions extends OptionSupport {
     /** Latest version of the options. It must be increased
      * manually when new patch is added to the options.
      */
-    protected static final int LATEST_OPTIONS_VERSION = 1;
+    protected static final int LATEST_OPTIONS_VERSION = UpgradeOptions.LATEST_VERSION;
 
     protected static final String OPTIONS_VERSION_PROP = "optionsVersion";
 
