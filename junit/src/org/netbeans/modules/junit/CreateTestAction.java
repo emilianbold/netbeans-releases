@@ -45,9 +45,7 @@ public class CreateTestAction extends CookieAction {
     }
 
     public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx (CreateTestAction.class);
+        return new HelpCtx(CreateTestAction.class);
     }
 
     /* protected members */
@@ -62,13 +60,10 @@ public class CreateTestAction extends CookieAction {
     }
     */
 
-    /** Perform extra initialization of this action's singleton.
-     * PLEASE do not use constructors for this purpose!
     protected void initialize () {
 	super.initialize ();
-        putProperty (Action.SHORT_DESCRIPTION, NbBundle.getMessage (CreateTestAction.class, "HINT_Action"));
+        putProperty(javax.swing.Action.SHORT_DESCRIPTION, NbBundle.getMessage(CreateTestAction.class, "HINT_Action_CreateTest"));
     }
-    */
 
     protected String iconResource () {
         return "CreateTestActionIcon.gif";
