@@ -81,7 +81,7 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
                 return Introspector.getBeanInfo (getClass ()).getBeanDescriptor ().getDisplayName ();
             } catch (Exception e) {
                 // Catching IntrospectionException, but also maybe NullPointerException...?
-                TopManager.getDefault ().getErrorManager ().notify (
+                ErrorManager.getDefault ().notify (
                     ErrorManager.INFORMATIONAL,
                     e
                 );

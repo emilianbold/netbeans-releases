@@ -220,7 +220,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         }
         catch (Exception ex) {
             // some problem in native code likely
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
         }
         // guess IE
         return WinWebBrowser.IEXPLORE;
@@ -404,10 +404,10 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             }
             catch (Exception ex) {
                 final Exception ex1 = ex;
-                TopManager.getDefault().getErrorManager().annotate(ex1, bundle.getString("MSG_win_browser_invocation_failed"));
+                ErrorManager.getDefault ().annotate(ex1, bundle.getString("MSG_win_browser_invocation_failed"));
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        TopManager.getDefault().notifyException(ex1);
+                        ErrorManager.getDefault ().notify (ex1);
                     }
                 });
             }
