@@ -803,7 +803,13 @@ public class TomcatManager implements DeploymentManager {
                 return null;
             }
             if (o != null) {
-                return Integer.valueOf(o);
+                Integer i = null;
+                try {
+                    i = Integer.valueOf(o); 
+                } catch (Exception e){
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot convert port number: " + o + " to Integer."); //NOI18N
+                }
+                return i;
             } 
         } else {
             if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
@@ -903,7 +909,12 @@ public class TomcatManager implements DeploymentManager {
         updatePortsFromFile();
         InstanceProperties ip = getInstanceProperties();
         if (ip != null) {
-            Integer adminPort = Integer.valueOf(ip.getProperty(ADMIN_PORT));
+            Integer adminPort = null;
+            try {
+                adminPort = Integer.valueOf(ip.getProperty(ADMIN_PORT));
+            } catch (Exception e) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.toString());
+            }
             return adminPort;
         }
         return null;
@@ -913,7 +924,12 @@ public class TomcatManager implements DeploymentManager {
         updatePortsFromFile();
         InstanceProperties ip = getInstanceProperties();
         if (ip != null) {
-            Integer serverPort = Integer.valueOf(ip.getProperty(SERVER_PORT));
+            Integer serverPort = null;
+            try {
+                serverPort = Integer.valueOf(ip.getProperty(SERVER_PORT));
+            } catch (Exception e) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.toString());
+            }
             return serverPort;
         }
         return null;
