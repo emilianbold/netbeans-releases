@@ -3291,9 +3291,15 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </condition>
   </target>
   
-  <target name="commit-validation" depends="commitValidation,no-commit-validation" description="Runs tests to validate IDE before commit."/>
+  <target 
+    name="commit-validation" 
+    depends="commitValidation,all-verification,no-commit-validation" 
+    description="Runs tests to validate IDE before commit."
+  />
 
   <target name="all-commitValidation" description="dummy target for build error recognition facility"/>
+  
+  <target name="all-verification" depends="check-files-layout" />
 
   <!-- keep this target name at least for a while for backward compat -jglick -->
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
@@ -3369,7 +3375,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="check.files.layout.generated" location="build/files-layout.txt" />
   
     <property name="check-file-layout-root" location="${netbeans.dest.dir}" />
-    <echo message="${check-file-layout-root}" />
     <fileset id="check-file-layout" dir="${check-file-layout-root}" casesensitive="yes" >
         <include name="platform*/**" />
         <include name="ide*/**" />
