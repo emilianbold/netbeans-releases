@@ -291,6 +291,19 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
         }
         
         if (startDebugMode) {
+            
+            if (command == CommandType.START) {
+                try {
+                    DebugSupport.allowDebugging(tm);
+                } catch (IOException e) {
+                    // fault, but not a critical one
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                } catch (SAXException e) {
+                    // fault, but not a critical one
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+
             NbProcessDescriptor pd  = defaultDebugDesc (StartTomcat.TAG_DEBUG_CMD, 
                                                         command == CommandType.START ? StartTomcat.TAG_JPDA_STARTUP : StartTomcat.TAG_JPDA_SHUTDOWN);
             try { 
