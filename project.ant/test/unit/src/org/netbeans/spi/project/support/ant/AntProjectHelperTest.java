@@ -33,6 +33,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -206,6 +207,9 @@ public class AntProjectHelperTest extends NbTestCase {
      * @throws Exception if anything unexpected happens
      */
     public void testStandardPropertyEvaluator() throws Exception {
+        // Make sure any callbacks happen inside a lock, so changes are not posted asynch:
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws Exception {
         PropertyEvaluator pev = h.getStandardPropertyEvaluator();
         assertEquals("shared.prop correct", "value1", pev.getProperty("shared.prop"));
         assertEquals("private.prop correct", "value2", pev.getProperty("private.prop"));
@@ -327,6 +331,9 @@ public class AntProjectHelperTest extends NbTestCase {
         l.reset();
         assertEquals("global.prop.2 is gone", null, pev.getProperty("global.prop.2"));
         // XXX try eval when user.properties.file is not defined (tricky, need to preset netbeans.user)
+                return null;
+            }
+        });
     }
     
     /**
