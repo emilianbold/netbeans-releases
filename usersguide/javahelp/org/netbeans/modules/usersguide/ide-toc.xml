@@ -185,6 +185,8 @@
 
 <tocitem text="Debugging Java Programs" target="debug.overview">
   <tocitem text="The Debug Environment" target="debug.workspace">
+    <tocitem text="Debug Menu" target="debug.menu"></tocitem>
+    <tocitem text="Debug Toolbar" target="debug.toolbar"></tocitem>
     <tocitem text="Sessions View" target="debug.window.sessions"></tocitem>
     <tocitem text="Breakpoints View" target="debug.window.breakpoints"></tocitem>
     <tocitem text="Threads View" target="debug.window.threads"></tocitem>
@@ -192,17 +194,25 @@
     <tocitem text="Watches View" target="debug.window.watches"></tocitem>
     <tocitem text="Variables View" target="debug.window.variables"></tocitem>
     <tocitem text="Classes View" target="debug.window.classes"></tocitem>
-    <tocitem text="Configuring the Debug Toolbar" target="debug.toolbar"></tocitem>
+    <tocitem text="Member Grouping and Sorting" target="debug.members"></tocitem>
+    <tocitem text="Debugger Interactions With the Source Editor" target="debug.source.editor"></tocitem>
+    <tocitem text="Setting General Options for the Debug Environment" target="debug.options"></tocitem>
+    <tocitem text="Setting Java Options for the Debug Environment" target="debug.java.options"></tocitem>
   </tocitem>
-  <tocitem text="Starting a Debugging Session" target="debug.running.debugger" />
-  <tocitem text="Attaching the Debugger to a Running Process" target="debug.attach" />
+  <tocitem text="Starting a Debugging Session" target="debug.sessions.jump">
+    <tocitem text="Starting the First Debugging Session" target="debug.running.debugger" />
+    <tocitem text="Attaching the Debugger to a Running Process" target="debug.attach" />
+    <tocitem text="Starting an Additional Debugging Session" target="debug.sessions.start" />
+    <tocitem text="Modifying Session Properties" target="debug.sessions.persistent" />
+    <tocitem text="Finishing a Debugging Session" target="debug.sessions.finishsession" />
+      </tocitem>
+
   <tocitem text="Controlling Program Execution" target="debug.running.jump">
      <tocitem text="Running to the First Line of the Program" target="debug.running.first" />
      <tocitem text="Running to the Cursor Location" target="debug.running.cursor" />
      <tocitem text="Stepping Through Your Program" target="debug.step" />
      <tocitem text="Pausing a Program" target="debug.running.pause" />
      <tocitem text="Continuing a Program in the Debugger" target="debug.running.resume" />
-     <tocitem text="Finishing a Debugging Session" target="debug.running.end" />
   </tocitem>
   <tocitem text="Setting Breakpoints" target="debug.breakpoint">
      <tocitem text="Setting a Breakpoint on a Line" target="debug.breakpoint.line" />
@@ -237,17 +247,10 @@
     <tocitem text="Deleting a Watch" target="debug.watch.delete" />
   </tocitem>
   <tocitem text="Examining the Classes Loaded by the Program" target="debug.environment.classes" />
-  <tocitem text="Debugging Multiple Sessions" target="debug.sessions.jump">
-    <tocitem text="Starting Multiple Sessions" target="debug.sessions.start" />
-    <tocitem text="Making a Session Persistent" target="debug.sessions.persistent" />
-    <tocitem text="Finishing or Destroying a Session" target="debug.sessions.finishsession" />
-    <tocitem text="Restarting a Persistent Session" target="debug.sessions.restart" />
-  </tocitem>
   <tocitem text="Setting Debugger Options" target="debug.debugger.jump">
     <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
-    <tocitem text="Setting Debugger Options for the Environment" target="debug.options"></tocitem>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
     <tocitem text="Setting a Debugger Type in a Template" target="debug.debugger.template" />

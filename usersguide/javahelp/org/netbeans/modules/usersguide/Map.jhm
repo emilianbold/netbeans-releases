@@ -323,6 +323,8 @@
 
 <mapID target="debug.overview" url="debug/debug.html" />
 <mapID target="debug.workspace" url="debug/environment/workspace.html" />
+<mapID target="debug.menu" url="debug/environment/debug_menu.html" />
+<mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 <mapID target="debug.window.sessions" url="debug/environment/sessions_view.html" />
 <mapID target="debug.window.breakpoints" url="debug/environment/breakpoints_view.html" />
 <mapID target="debug.window.threads" url="debug/environment/threads_view.html" />
@@ -336,9 +338,19 @@
 <mapID target="debug.window.brkpt_class" url="debug/environment/brkpt_class.html" />
 <mapID target="debug.window.brkpt_thread" url="debug/environment/brkpt_thread.html" />
 <mapID target="debug.window.brkpt_variable" url="debug/environment/brkpt_variable.html" />
-
+<mapID target="debug.source.editor" url="debug/environment/debug_sourceeditor.html" />
+<mapID target="debug.members" url="debug/environment/debug_members.html" />
 <mapID target="debug.options" url="debug/environment/options.html" />
-<mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
+<mapID target="debug.java.options" url="debug/environment/java_options.html" />
+
+<mapID target="debug.sessions.jump" url="debug/sessions/sessions.html" />
+<mapID target="debug.running.debugger" url="debug/sessions/start_first.html" />
+<mapID target="debug.attach" url="debug/sessions/attach.html" />
+<mapID target="debug.sessions.start" url="debug/sessions/start_additional.html" />
+<mapID target="debug.sessions.persistent" url="debug/sessions/session_properties.html" />
+<mapID target="debug.sessions.finishsession" url="debug/sessions/finishsession.html" />
+
+<mapID target="debug.sessions.finishdialog" url="debug/sessions/finishdialog.html" />
 <mapID target="debug.attachvm.window" url="debug/environment/attachvm_window.html" />
 
 <mapID target="debug.breakpoint" url="debug/breakpoint/breakpoint_set.html" />
@@ -356,14 +368,12 @@
 <mapID target="debug.add.breakpoint" url="debug/breakpoint/breakpoint_window.html" />
 
 <mapID target="debug.running.jump" url="debug/running/running_jump.html" />
-<mapID target="debug.running.debugger" url="debug/running/running_debugger.html" />
 <mapID target="debug.running.first" url="debug/running/running_first.html" />
 <mapID target="debug.running.cursor" url="debug/running/running_cursor.html" />
 <mapID target="debug.running.resume" url="debug/running/running_resume.html" />
 <mapID target="debug.running.pause" url="debug/running/pause.html" />
 <mapID target="debug.step" url="debug/running/stepping.html" />
 <mapID target="debug.running.end" url="debug/running/running_end.html" />
-<mapID target="debug.attach" url="debug/running/attach.html" />
 
 <mapID target="debug.variables.jump" url="debug/variables/variables_jump.html" />
 <mapID target="debug.variables.value" url="debug/variables/value.html" />
@@ -386,13 +396,6 @@
 <mapID target="debug.threads.source" url="debug/threads/source.html" />
 <mapID target="debug.threads.variables" url="debug/threads/variables.html" />
 <mapID target="debug.threads.callstack" url="debug/threads/callstack.html" />
-
-<mapID target="debug.sessions.jump" url="debug/sessions/sessions.html" />
-<mapID target="debug.sessions.start" url="debug/sessions/startsession.html" />
-<mapID target="debug.sessions.persistent" url="debug/sessions/persistent.html" />
-<mapID target="debug.sessions.finishdialog" url="debug/sessions/finishdialog.html" />
-<mapID target="debug.sessions.finishsession" url="debug/sessions/finishsession.html" />
-<mapID target="debug.sessions.restart" url="debug/sessions/restartsession.html" />
 
 <mapID target="debug.debugger.jump" url="debug/debugger/debugger_jump.html" />
 <mapID target="debug.debugger.default" url="debug/debugger/default.html" />
