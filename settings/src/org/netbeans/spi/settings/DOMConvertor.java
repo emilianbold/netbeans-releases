@@ -155,12 +155,12 @@ public abstract class DOMConvertor extends Convertor {
         // in case of a reference a cache of already read objects should
         // be consulted instead of delegating
         String idref = element.getAttribute(ATTR_IDREF);
-        if (idref.length() != 0 && element.getTagName().equals(ELM_DELEGATE)) {
-            obj = getCache(element.getOwnerDocument(), idref);
+        if (idref.length() != 0) {
+            obj = getCache(element.getOwnerDocument(), idref.intern());
             if (obj != null) {
                 return obj;
             } else {
-                throw new IOException("broken reference: " + element); // NOI18N
+                throw new IOException("broken reference: " + element + ", idref=" + idref); // NOI18N
             }
         }
         
@@ -291,7 +291,7 @@ public abstract class DOMConvertor extends Convertor {
     
     /** create an element referencing an already stored object */
     private static org.w3c.dom.Element writeReference(org.w3c.dom.Document doc, CacheRec cache) throws org.w3c.dom.DOMException {
-        org.w3c.dom.Element el = doc.createElement(ELM_DELEGATE);
+        org.w3c.dom.Element el = doc.createElement(cache.elm.getTagName());
         el.setAttribute(ATTR_IDREF, (String) cache.value);
         cache.elm.setAttribute(ATTR_ID, (String) cache.value);
         return el;
@@ -312,7 +312,7 @@ public abstract class DOMConvertor extends Convertor {
             if (cr == null) {
                 cr = new CacheRec();
                 cr.key = obj;
-                cr.value = String.valueOf(refs.size());
+                cr.value = "ID_" + String.valueOf(refs.size()); // NOI18N
                 refs.put(obj, cr);
             }
             cr.used = cr.elm != null;
