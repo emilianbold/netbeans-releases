@@ -98,7 +98,7 @@ public class CheckLinks extends MatchingTask {
     static RE hrefOrAnchor;
     static {
         try {
-            hrefOrAnchor = new RE("<(a|img)\\s+(href|name|src)=\"([^\"#]*)(#[^\"]+)?\">");
+            hrefOrAnchor = new RE("<(a|img)(\\s+shape=\"rect\")?\\s+(href|name|src)=\"([^\"#]*)(#[^\"]+)?\"(\\s+shape=\"rect\")?>");
         } catch (RESyntaxException rese) {
             throw new Error (rese.toString());
         }
@@ -167,10 +167,10 @@ public class CheckLinks extends MatchingTask {
                     // Advance match position past end of expression:
                     idx = hrefOrAnchor.getParenEnd (0);
                     // Get the stuff involved:
-                    String type = hrefOrAnchor.getParen(2);
+                    String type = hrefOrAnchor.getParen(3);
                     if (type.equalsIgnoreCase("name")) {
                         // We have an anchor, therefore refs to it are valid.
-                        String name = hrefOrAnchor.getParen(3);
+                        String name = unescape(hrefOrAnchor.getParen(4));
                         if (names.add(name)) {
                             okurls.add(new URL(base, "#" + name));
                         } else if (recurse == 1) {
@@ -179,8 +179,8 @@ public class CheckLinks extends MatchingTask {
                     } else {
                         // A link to some other document: href=, src=.
                         if (others != null) {
-                            String otherbase = hrefOrAnchor.getParen (3);
-                            String otheranchor = hrefOrAnchor.getParen (4);
+                            String otherbase = unescape(hrefOrAnchor.getParen (4));
+                            String otheranchor = unescape(hrefOrAnchor.getParen (5));
                             if (!otherbase.startsWith("mailto:")) {
                                 URL o = new URL(base, (otheranchor == null) ? otherbase : otherbase + otheranchor);
                                 //task.log("href: " + o);
@@ -225,6 +225,41 @@ public class CheckLinks extends MatchingTask {
         } catch (BuildException e) {
             throw new IOException(e.toString());
         }
+    }
+    
+    private static String unescape(String text) {
+        if (text == null) {
+            return null;
+        }
+        int pos = 0;
+        int search;
+        while ((search = text.indexOf('&', pos)) != -1) {
+            int semi = text.indexOf(';', search + 1);
+            if (semi == -1) {
+                // Unterminated &... leave rest as is??
+                return text;
+            }
+            String entity = text.substring(search + 1, semi);
+            String repl;
+            if (entity.equals("amp")) {
+                repl = "&";
+            } else if (entity.equals("quot")) {
+                repl = "\"";
+            } else if (entity.equals("lt")) {
+                repl = "<";
+            } else if (entity.equals("gt")) {
+                repl = ">";
+            } else if (entity.equals("apos")) {
+                repl = "'";
+            } else {
+                // ???
+                pos = semi + 1;
+                continue;
+            }
+            text = text.substring(0, search) + repl + text.substring(semi + 1);
+            pos = search + repl.length();
+        }
+        return text;
     }
     
 }
