@@ -70,6 +70,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
   }
   
   public Coloring getColoring() {
+//    System.out.println("ColoringEditorPanel.java:78 coloring=" + coloring);
     return coloring;
   }
   
@@ -499,6 +500,7 @@ private javax.swing.JLabel preview;
     
     Editor(Class c) {
       editor = PropertyEditorManager.findEditor(c);
+//      System.out.println("ColoringEditorPanel.java:506 CLASS=" + editor.getClass());
       getContentPane().add(editor.getCustomEditor());
       okButton = new JButton("OK");
       cancelButton = new JButton("Cancel");
@@ -517,7 +519,10 @@ private javax.swing.JLabel preview;
     
     public void setValue(Object value) {
       oldValue = value;
+//      System.out.println("ColoringEditorPanel.java:525 setValue(): value=" + value);
       editor.setValue(value);
+//      System.out.println("ColoringEditorPanel.java:525 getValue(): value=" + editor.getValue());
+
     }
     
     public Object getValue() {
@@ -539,6 +544,7 @@ private javax.swing.JLabel preview;
 
 /*
  * Log
+ *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
  * $
  */

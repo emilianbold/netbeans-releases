@@ -52,6 +52,7 @@ public class ColoringEditor extends PropertyEditorSupport {
       editor.addPropertyChangeListener(new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == "value") {
+              value.setColoring(editor.getColoring());
               firePropertyChange();
             }
           }
@@ -133,6 +134,7 @@ public class ColoringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  6    Gandalf   1.5         7/21/99  Miloslav Metelka 
  *  5    Gandalf   1.4         7/20/99  Miloslav Metelka 
  *  4    Gandalf   1.3         7/9/99   Ales Novak      NullPointerException
  *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.

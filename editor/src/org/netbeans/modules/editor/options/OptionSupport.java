@@ -66,8 +66,8 @@ public class OptionSupport extends SystemOption {
     return getString(OPTIONS_PREFIX + typeName);
   }
 
-  void changeProperty(String name, Object newValue) {
-    Object oldValue = getProperty(name);
+  void setSettingValue(String name, Object newValue) {
+    Object oldValue = getSettingValue(name);
     if ((oldValue == null && newValue == null)
         || (oldValue != null && oldValue.equals(newValue))
     ) {
@@ -79,11 +79,11 @@ public class OptionSupport extends SystemOption {
   }
 
   Object getSettingValue(String name) {
-    Object val = getProperty(name);
-    if (val == null) {
-      val = Settings.getValue(kitClass, name);
-      putProperty(name, val);
-    }
+//    Object val = getProperty(name);
+//    if (val == null) {
+      Object val = Settings.getValue(kitClass, name);
+//      putProperty(name, val);
+//    }
     return val;
   }
 
@@ -98,10 +98,22 @@ public class OptionSupport extends SystemOption {
     return bundle.getString(s);
   }
 
+  public static String[] mergeStringArrays(String[] a1, String[] a2) {
+    String[] ret = new String[a1.length + a2.length];
+    for (int i = 0; i < a1.length; i++) {
+      ret[i] = a1[i];
+    }
+    for (int i = 0; i < a2.length; i++) {
+      ret[a1.length + i] = a2[i];
+    }
+    return ret;
+  }
+
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
  * $

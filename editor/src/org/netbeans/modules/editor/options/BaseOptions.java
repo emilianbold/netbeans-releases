@@ -117,21 +117,21 @@ public class BaseOptions extends OptionSupport {
     return ((Integer)getSettingValue(Settings.TAB_SIZE)).intValue();
   }
   public void setTabSize(int tabSize) {
-    changeProperty(Settings.TAB_SIZE, new Integer(tabSize));
+    setSettingValue(Settings.TAB_SIZE, new Integer(tabSize));
   }
 
   public boolean getExpandTabs() {
     return ((Boolean)getSettingValue(Settings.EXPAND_TABS)).booleanValue();
   }
   public void setExpandTabs(boolean expandTabs) {
-    changeProperty(Settings.EXPAND_TABS, new Boolean(expandTabs));
+    setSettingValue(Settings.EXPAND_TABS, new Boolean(expandTabs));
   }
   
   public int getSpacesPerTab() {
     return ((Integer) getSettingValue(Settings.SPACES_PER_TAB)).intValue();
   }
   public void setSpacesPerTab(int i){
-    changeProperty(Settings.SPACES_PER_TAB, new Integer(i));
+    setSettingValue(Settings.SPACES_PER_TAB, new Integer(i));
   }
   
   public Map getAbbrevMap() {
@@ -139,84 +139,84 @@ public class BaseOptions extends OptionSupport {
   }
 
   public void setAbbrevMap(Map map) {
-    changeProperty(Settings.ABBREV_MAP, map);
+    setSettingValue(Settings.ABBREV_MAP, map);
   }
   
   public String getCaretTypeInsertMode() {
     return (String) getSettingValue(Settings.CARET_TYPE_INSERT_MODE);
   }
   public void setCaretTypeInsertMode(String type) {
-    changeProperty(Settings.CARET_TYPE_INSERT_MODE, type);
+    setSettingValue(Settings.CARET_TYPE_INSERT_MODE, type);
   }
   
   public String getCaretTypeOverwriteMode() {
     return (String) getSettingValue(Settings.CARET_TYPE_OVERWRITE_MODE);
   }
   public void setCaretTypeOverwriteMode(String type) {
-    changeProperty(Settings.CARET_TYPE_OVERWRITE_MODE, type);
+    setSettingValue(Settings.CARET_TYPE_OVERWRITE_MODE, type);
   }
   
   public boolean getCaretItalicInsertMode() {
     return ((Boolean) getSettingValue(Settings.CARET_ITALIC_INSERT_MODE)).booleanValue();
   }
   public void setCaretItalicInsertMode(boolean b) {
-    changeProperty(Settings.CARET_ITALIC_INSERT_MODE, (b ? Boolean.TRUE : Boolean.FALSE));
+    setSettingValue(Settings.CARET_ITALIC_INSERT_MODE, (b ? Boolean.TRUE : Boolean.FALSE));
   }
   
   public boolean getCaretItalicOverwriteMode() {
     return ((Boolean) getSettingValue(Settings.CARET_ITALIC_OVERWRITE_MODE)).booleanValue();
   }
   public void setCaretItalicOverwriteMode(boolean b) {
-    changeProperty(Settings.CARET_ITALIC_OVERWRITE_MODE, (b ? Boolean.TRUE : Boolean.FALSE));
+    setSettingValue(Settings.CARET_ITALIC_OVERWRITE_MODE, (b ? Boolean.TRUE : Boolean.FALSE));
   }
   
   public Color getCaretColorInsertMode() {
     return (Color) getSettingValue(Settings.CARET_COLOR_INSERT_MODE);
   }
   public void setCaretColorInsertMode(Color color) {
-     changeProperty(Settings.CARET_COLOR_INSERT_MODE, color);
+     setSettingValue(Settings.CARET_COLOR_INSERT_MODE, color);
   }
   
   public Color getCaretColorOverwriteMode() {
     return (Color) getSettingValue(Settings.CARET_COLOR_OVERWRITE_MODE);
   }
   public void setCaretColorOverwriteMode(Color color) {
-    changeProperty(Settings.CARET_COLOR_OVERWRITE_MODE, color);
+    setSettingValue(Settings.CARET_COLOR_OVERWRITE_MODE, color);
   }
   
   public int getCaretBlinkRate() {
     return ((Integer)getSettingValue(Settings.CARET_BLINK_RATE)).intValue();
   }
   public void setCaretBlinkRate(int rate) {
-    changeProperty(Settings.CARET_BLINK_RATE, new Integer(rate));
+    setSettingValue(Settings.CARET_BLINK_RATE, new Integer(rate));
   }
 
   public boolean getLineNumberVisible() {
     return ((Boolean) getSettingValue(Settings.LINE_NUMBER_VISIBLE)).booleanValue();
   }
   public void setLineNumberVisible(boolean b) {
-    changeProperty(Settings.LINE_NUMBER_VISIBLE, (b ? Boolean.TRUE : Boolean.FALSE));
+    setSettingValue(Settings.LINE_NUMBER_VISIBLE, (b ? Boolean.TRUE : Boolean.FALSE));
   }
   
   public Insets getScrollJumpInsets() {
     return (Insets)getSettingValue(Settings.SCROLL_JUMP_INSETS);
   }
   public void setScrollJumpInsets(Insets i) {
-    changeProperty(Settings.SCROLL_JUMP_INSETS, i);
+    setSettingValue(Settings.SCROLL_JUMP_INSETS, i);
   }
   
   public Insets getScrollFindInsets() {
     return (Insets)getSettingValue(Settings.SCROLL_FIND_INSETS);
   }
   public void setScrollFindInsets(Insets i) {
-    changeProperty(Settings.SCROLL_FIND_INSETS, i);
+    setSettingValue(Settings.SCROLL_FIND_INSETS, i);
   }
   
   public List getKeyBindingList() {
     return (List) getSettingValue(Settings.KEY_BINDING_LIST);
   }
   public void setKeyBindingList(List list) {
-    changeProperty(Settings.KEY_BINDING_LIST, list);
+    setSettingValue(Settings.KEY_BINDING_LIST, list);
   }
 
   public Object[] getSystemColoringArray() {
@@ -247,35 +247,35 @@ public class BaseOptions extends OptionSupport {
     return ((Float) getSettingValue(Settings.LINE_HEIGHT_CORRECTION)).floatValue();
   }
   public void setLineHeightCorrection(float f) {
-    changeProperty(Settings.LINE_HEIGHT_CORRECTION, new Float(f));
+    setSettingValue(Settings.LINE_HEIGHT_CORRECTION, new Float(f));
   }
   
   public Insets getMargin() {
     return (Insets)getSettingValue(Settings.MARGIN);
   }
   public void setMargin(Insets i) {
-    changeProperty(Settings.MARGIN, i);
+    setSettingValue(Settings.MARGIN, i);
   }
   
   public Insets getLineNumberMargin() {
     return (Insets)getSettingValue(Settings.LINE_NUMBER_MARGIN);
   }
   public void setLineNumberMargin(Insets i) {
-    changeProperty(Settings.LINE_NUMBER_MARGIN, i);
+    setSettingValue(Settings.LINE_NUMBER_MARGIN, i);
   }
   
   public boolean getStatusBarVisible() {
     return ((Boolean)getSettingValue(Settings.STATUS_BAR_VISIBLE)).booleanValue();
   }
   public void setStatusBarVisible(boolean v) {
-    changeProperty(Settings.STATUS_BAR_VISIBLE, v ? Boolean.TRUE : Boolean.FALSE);
+    setSettingValue(Settings.STATUS_BAR_VISIBLE, v ? Boolean.TRUE : Boolean.FALSE);
   }
   
   public int getStatusBarCaretDelay() {
     return ((Integer)getSettingValue(Settings.STATUS_BAR_CARET_DELAY)).intValue();
   }
   public void setStatusBarCaretDelay(int delay) {
-    changeProperty(Settings.STATUS_BAR_CARET_DELAY, new Integer(delay));
+    setSettingValue(Settings.STATUS_BAR_CARET_DELAY, new Integer(delay));
   }
   
 
@@ -283,6 +283,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
  * $

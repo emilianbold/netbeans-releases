@@ -60,7 +60,7 @@ public class BasePrintOptions extends OptionSupport {
     return ((Boolean)getSettingValue(Settings.PRINT_LINE_NUMBER_VISIBLE)).booleanValue();
   }
   public void setPrintLineNumberVisible(boolean b) {
-    changeProperty(Settings.PRINT_LINE_NUMBER_VISIBLE, (b ? Boolean.TRUE : Boolean.FALSE));
+    setSettingValue(Settings.PRINT_LINE_NUMBER_VISIBLE, (b ? Boolean.TRUE : Boolean.FALSE));
   }
 
   public Object[] getPrintSystemColoringArray() {
@@ -91,6 +91,7 @@ public class BasePrintOptions extends OptionSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
  * $

@@ -17,6 +17,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.Writer;
 import java.io.File;
+import java.io.InputStream;
+import java.io.IOException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
@@ -33,6 +35,8 @@ import org.openide.text.IndentEngine;
 import org.openide.TopManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
 import com.netbeans.developer.modules.text.java.JCStorage;
 
 /**
@@ -43,6 +47,8 @@ import com.netbeans.developer.modules.text.java.JCStorage;
 public class EditorModule implements ModuleInstall {
 
   private static final String DB_DIR = "ParserDB";
+  private static final String JDK12_JAR
+      = "/com/netbeans/developer/modules/text/java/jdk12.jar";
 
   private static final String MIME_PLAIN = "text/plain";
   private static final String MIME_JAVA = "text/x-java";
@@ -83,24 +89,51 @@ public class EditorModule implements ModuleInstall {
 
     LocaleSupport.setLocaleSupport(new NbLocaleSupport());
 
-    // initializations
-    FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
-    File rootDir = ((LocalFileSystem)rfs).getRootDirectory();
+    // Initializations
 
-    DialogSupport.setDialogCreator(new NbDialogCreator());
+    // Settings
     ExtSettings.init();
     NbEditorSettings.init();
+
+    // System actions to editor actions mapping
     KitSupport.init();
-    File dbDir = new File(rootDir.getAbsolutePath() + File.separator + DB_DIR);
-    if (!dbDir.exists()) {
-      dbDir.mkdir();
+
+    // Customized dialog creator
+    DialogSupport.setDialogCreator(new NbDialogCreator());
+
+    // Java Completion support
+    FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
+    FileObject rootFolder = rfs.getRoot();
+    FileObject fo = rootFolder.getFileObject(DB_DIR);
+    if (fo == null) {
+      System.out.println("EditorModule.java:104 FO not found");
+      try {
+        fo = rootFolder.createFolder(DB_DIR);
+        System.out.println("EditorModule.java:112 created dir=" + fo);
+        if (fo != null) {
+          InputStream is = this.getClass().getResourceAsStream(JDK12_JAR);
+          if (is != null) {
+            System.out.println("EditorModule.java:114 extracting jar");
+            FileUtil.extractJar(fo, is);
+          }
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+        // creation failed
+      }
     }
+
+    File rootDir = ((LocalFileSystem)rfs).getRootDirectory();
+    File dbDir = new File(rootDir.getAbsolutePath() + File.separator + DB_DIR);
     JCStorage.init(dbDir);
 
-    // preload some classes for faster editor opening
+    // Indentation engines registration
+    registerIndents();
+
+    // Preloading of some classes for faster editor opening
     BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
 
-    // install new kits
+    // Registration of the editor kits to JEditorPane
     for (int i = 0; i < replacements.length; i++) {
       JEditorPane.registerEditorKitForContentType(
         replacements[i].contentType,
@@ -161,6 +194,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  21   Gandalf   1.20        7/21/99  Miloslav Metelka 
  *  20   Gandalf   1.19        7/21/99  Miloslav Metelka 
  *  19   Gandalf   1.18        7/20/99  Miloslav Metelka Creation of ParserDB dir
  *       if necessary
