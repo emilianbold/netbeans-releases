@@ -233,6 +233,10 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
                 <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
                 <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
+                <pathelement location="../../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
+                <pathelement location="../output/netbeans/modules/autoload/core-output.jar"/>
+                <pathelement location="../execution/netbeans/modules/autoload/core-execution.jar"/>
+                <pathelement location="../compiler/netbeans/modules/autoload/core-compiler.jar"/>
     	</path>
     </target>
         
@@ -253,7 +257,10 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
             <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
             <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-
+            <pathelement location="../../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
+            <pathelement location="../output/src"/>
+            <pathelement location="../execution/src"/>
+            <pathelement location="../compiler/src"/>
     	</path>
     </target>
     

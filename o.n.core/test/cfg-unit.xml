@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <!-- this shall be enabled! <exclude name="org/netbeans/core/AutomountSupportTest.class"/> -->
-<!--                <include name="org/netbeans/core/BundleKeysTest.class"/> disabled until Jirka fixes it - see JellyTools_compatibility -->
+                <include name="org/netbeans/core/BundleKeysTest.class"/> <!-- see JellyTools_compatibility -->
                 <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>
             </patternset>
         </testset>
