@@ -87,14 +87,23 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
   
-  <target name="javadoc" depends="clean-javadoc">
-    <delete dir="javadoc"/>
-    <mkdir dir="javadoc"/>
+  <target name="javadoc" depends="clean-javadoc,java-support-apis">
+    <copy todir="javadoc">
+      <fileset dir=".">
+        <include name="JavaSupportAPIs/**"/>
+        <include name="JavaSupportAPIs.zip"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="java-support-apis">
+    <delete dir="JavaSupportAPIs"/>
+    <mkdir dir="JavaSupportAPIs"/>
     <tstamp/>
     <property name="java-api-footer" 
       value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp|&amp;nbsp;&amp;nbsp;Portions Copyright 2002, Sun Microsystems, Inc."/>
     <javadoc 
-	destdir="javadoc" 
+	destdir="JavaSupportAPIs" 
 	packagenames="org.netbeans.api.java.classpath"
 	doctitle="NetBeans Java Support APIs"
 	windowtitle="NetBeans Java Support APIs"
@@ -125,39 +134,42 @@ Microsystems, Inc. All Rights Reserved.
 	    packagelistLoc="doc/external/openide"
 	/>	
     </javadoc>
-    <copy todir="javadoc">
+    <copy todir="JavaSupportAPIs">
 	<fileset dir="doc">
 	    <exclude name="external/**"/>
 	    <exclude name="**/CVS"/>
 	</fileset>
     </copy>
-    <replace dir="javadoc" token="@jdk-docs@" value="${jdk-docs-location}">
+    <replace dir="JavaSupportAPIs" token="@jdk-docs@" value="${jdk-docs-location}">
 	<include name="**/*.html"/>
     </replace>
-    <replace dir="javadoc" token="@openide-docs@" value="${openide-docs-location}">
+    <replace dir="JavaSupportAPIs" token="@openide-docs@" value="${openide-docs-location}">
 	<include name="**/*.html"/>
     </replace>
-    <replace dir="javadoc" token="@TOP@" value="">
+    <replace dir="JavaSupportAPIs" token="@TOP@" value="">
 	<include name="overview-summary.html"/>
     </replace>
-    <replace dir="javadoc" token="@TOP@" value="../../../../">
+    <replace dir="JavaSupportAPIs" token="@TOP@" value="../../../../">
 	<include name="*/*/*/*/*.html"/>
     </replace>
-    <replace dir="javadoc" token="@TOP@" value="../../../../../">
+    <replace dir="JavaSupportAPIs" token="@TOP@" value="../../../../../">
 	<include name="*/*/*/*/*/*.html"/>
     </replace>
-    <replace dir="javadoc" token="@FOOTER@" value="${java-api-footer}">
+    <replace dir="JavaSupportAPIs" token="@FOOTER@" value="${java-api-footer}">
 	<include name="**/*.html"/>
     </replace>
-    <replace dir="javadoc" token="@DATE@" value="${TODAY}">
+    <replace dir="JavaSupportAPIs" token="@DATE@" value="${TODAY}">
 	<include name="**/*.html"/>
     </replace>
+    <zip zipfile="JavaSupportAPIs.zip" basedir="JavaSupportAPIs"/>
   </target>
 
   <target name="real-clean" depends="clean,clean-javadoc"/>
 
   <target name="clean-javadoc">
+    <delete dir="JavaSupportAPIs"/>
     <delete dir="javadoc"/>
+    <delete file="JavaSupportAPIs.zip"/>
   </target>
 
   <target name="clean">
@@ -169,7 +181,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="java.nbm"/>
     <delete dir="netbeans"/>
-    <delete dir="javadoc"/>
     <delete dir="Info"/>
   </target>
   

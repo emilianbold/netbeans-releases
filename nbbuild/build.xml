@@ -627,6 +627,8 @@ ToDo:
   <!-- build javadoc for selected modules -->
   <target name="build-javadoc" depends="merge">
       <for-each startdir=".." target="javadoc" locations="${modules}"/>
+      <taskdef name="simplemerge" classname="org.netbeans.nbbuild.SimpleMerge" classpath="nbantext.jar"/>
+      <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${modules}"/>
   </target>
 
   <target name="build-messaging" depends="init">
@@ -1212,6 +1214,7 @@ the ${netbeans.dest}/bin/ directory.
   <target name="localclean" depends="init">
     <delete dir="${netbeans.dest}"/>
     <delete dir="${test.user.dir}"/>
+    <delete dir="modules_javadoc"/>
   </target>
 
   <target name="clean" depends="init,localclean"
