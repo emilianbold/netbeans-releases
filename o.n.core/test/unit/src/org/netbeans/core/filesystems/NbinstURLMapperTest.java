@@ -58,7 +58,7 @@ public class NbinstURLMapperTest extends NbTestCase {
                 found = true;
             }
         }
-        assertTrue("The TestInstalledFileLocator can not be found in the default lookup.",found);
+        assertTrue("No TestInstalledFileLocator can be found in " + Lookup.getDefault(), found);
         f = new File (f,FOLDER_NAME);
         f.mkdir();
         f = new File (f,FILE_NAME);
@@ -101,7 +101,7 @@ public class NbinstURLMapperTest extends NbTestCase {
         assertTrue ("The nbinst URL was resolved.",fos.length == 0);
     }
 
-    public void testURLConenction () throws MalformedURLException, IOException {
+    public void testURLConnection() throws MalformedURLException, IOException {
         URL url = new URL ("nbinst:///modules/test.txt");                //NOI18N
         URLConnection connection = url.openConnection();
         assertEquals ("URLConnection returned wrong content length.",connection.getContentLength(),expectedLength);
