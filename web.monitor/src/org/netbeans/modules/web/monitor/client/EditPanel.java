@@ -216,7 +216,7 @@ class EditPanel extends javax.swing.JPanel implements
 					  NbBundle.getBundle(EditPanel.class).getString("MON_EditReplay_panel"),
 					  false, 
 					  options,
-					  options[1],
+					  options[0],
 					  DialogDescriptor.BOTTOM_ALIGN,
 					  new HelpCtx("monitor_resend"), //NOI18N
 					  this);
