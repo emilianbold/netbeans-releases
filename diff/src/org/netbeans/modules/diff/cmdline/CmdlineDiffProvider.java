@@ -40,7 +40,7 @@ import org.netbeans.spi.diff.DiffProvider;
 public class CmdlineDiffProvider extends DiffProvider implements java.io.Serializable {
 
     //private static final String REVISION_STR = "retrieving revision";
-    private static final String DIFF_REGEXP = "(^[0-9]+(,[0-9]+|)[d][0-9]+$)|"+
+    public static final String DIFF_REGEXP = "(^[0-9]+(,[0-9]+|)[d][0-9]+$)|"+
                                               "(^[0-9]+(,[0-9]+|)[c][0-9]+(,[0-9]+|)$)|"+
                                               "(^[0-9]+[a][0-9]+(,[0-9]+|)$)";
     private static final int BUFF_LENGTH = 1024;
@@ -230,7 +230,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
     }
      */
     
-    private static void setTextOnLastDifference(List differences,
+    public static void setTextOnLastDifference(List differences,
         StringBuffer firstText, StringBuffer secondText) {
         if (differences.size() > 0) {
             String t1 = firstText.toString();
@@ -250,7 +250,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
      * @param elements the elements of output data.
      */
     //private void outputData(String[] elements, List differences) {
-    private static void outputLine(String elements, RE pattern, List differences,
+    public static void outputLine(String elements, RE pattern, List differences,
                                    StringBuffer firstText, StringBuffer secondText) {
         //diffBuffer.append(elements[0]+"\n"); // NOI18N
         //D.deb("diff match: "+elements[0]); // NOI18N
