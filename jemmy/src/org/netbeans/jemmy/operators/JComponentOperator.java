@@ -334,13 +334,16 @@ public class JComponentOperator extends ContainerOperator
 	if(((JComponent)getSource()).getToolTipText() != null) {
 	    result.put(TOOLTIP_TEXT_DPROP, ((JComponent)getSource()).getToolTipText());
 	}
+        //System.out.println("Dump a11y = " + System.getProperty("jemmy.dump.a11y"));
         if(System.getProperty("jemmy.dump.a11y") != null &&
            System.getProperty("jemmy.dump.a11y").equals("on")) {
             AccessibleContext a11y = ((JComponent)getSource()).getAccessibleContext();
             if(a11y != null) {
                 result.put(A11Y_DATA, "yes");
-                result.put(A11Y_NAME_DPROP, a11y.getAccessibleName());
-                result.put(A11Y_DESCRIPTION_DPROP, a11y.getAccessibleDescription());
+                String accName = (a11y.getAccessibleName()        == null) ? "null" : a11y.getAccessibleName();
+                String accDesc = (a11y.getAccessibleDescription() == null) ? "null" : a11y.getAccessibleDescription();
+                result.put(A11Y_NAME_DPROP, accName);
+                result.put(A11Y_DESCRIPTION_DPROP, accDesc);
             } else {
                 result.put(A11Y_DATA, "no");
             }
