@@ -762,8 +762,7 @@ public class FormEditorSupport extends JavaEditor
             // Find another multiviewTC, possibly with loaded formDesigner
             while (en.hasMoreElements()) {
                 multiviewTC = (CloneableTopComponent)en.nextElement();
-                FormDesigner designer = (FormDesigner)
-                    multiviewTC.getLookup().lookup(FormDesigner.class);
+                FormDesigner designer = (FormDesigner)multiviewTC.getClientProperty("formDesigner"); // NOI18N
                 if (designer != null) {
                     formDesigner = designer;
                     break;
@@ -1043,8 +1042,7 @@ public class FormEditorSupport extends JavaEditor
                         FormEditorSupport fes = getFormEditor(active);
                         if (fes != null) {
                             fes.multiviewTC = (CloneableTopComponent) active;
-                            FormDesigner designer = (FormDesigner)
-                                active.getLookup().lookup(FormDesigner.class);
+                            FormDesigner designer = (FormDesigner)active.getClientProperty("formDesigner"); // NOI18N
                             if (designer != null)
                                 fes.setFormDesigner(designer);
                         }

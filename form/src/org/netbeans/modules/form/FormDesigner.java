@@ -118,14 +118,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         
         formEditorSupport = fes;
         
-        // add FormDataObject and FormDesigner to lookup so they can be obtained
-        // from multiview TopComponent
-        Lookup lookup = ComponentInspector.getInstance().setupActionMap(getActionMap());
-        associateLookup(new ProxyLookup(new Lookup[] {
-            lookup,
-            Lookups.fixed(new Object[] { formEditorSupport.getFormDataObject(),
-                                         this })
-        }));
+        // add FormDataObject to lookup so it can be obtained from multiview TopComponent
+        ActionMap map = ComponentInspector.getInstance().setupActionMap(getActionMap());
+        associateLookup(
+            Lookups.fixed(new Object[] { map, formEditorSupport.getFormDataObject() })
+        );
         
         formToolBar = new FormToolBar(this);
     }
@@ -809,6 +806,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         multiViewObserver = callback;
+        
+        // add FormDesigner as a client property so it can be obtained
+        // from multiview TopComponent (it is not sufficient to put
+        // it into lookup - only content of the lookup of the active
+        // element is accessible)
+        callback.getTopComponent().putClientProperty("formDesigner", this); // NOI18N
 
         // needed for deserialization...
         if (formEditorSupport != null) {

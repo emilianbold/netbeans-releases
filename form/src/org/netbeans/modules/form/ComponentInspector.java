@@ -105,7 +105,9 @@ public class ComponentInspector extends TopComponent
     private ComponentInspector() {
         explorerManager = new ExplorerManager();
 
-        associateLookup(setupActionMap(getActionMap()));
+        associateLookup(
+            ExplorerUtils.createLookup(explorerManager, setupActionMap(getActionMap()))
+        );
 
         emptyInspectorNode = new EmptyInspectorNode();
         explorerManager.setRootContext(emptyInspectorNode);
@@ -120,13 +122,13 @@ public class ComponentInspector extends TopComponent
         setToolTipText(FormUtils.getBundleString("HINT_ComponentInspector")); // NOI18N
     }
 
-    Lookup setupActionMap(javax.swing.ActionMap map) {
+    javax.swing.ActionMap setupActionMap(javax.swing.ActionMap map) {
         map.put(DefaultEditorKit.copyAction, copyActionPerformer);
         map.put(DefaultEditorKit.cutAction, cutActionPerformer);
         //map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(explorerManager));
         map.put("delete", deleteActionPerformer); // NOI18N
 
-        return ExplorerUtils.createLookup(explorerManager, map);
+        return map;
     }
 
     private void createComponents() {
