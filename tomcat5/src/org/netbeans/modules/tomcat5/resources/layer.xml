@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -17,12 +17,18 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="J2EE">
-        <folder name="ExecPerformersStorage">
-            <file name="org-netbeans-modules-tomcat5-Tomcat5ExecPerformer$Factory.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.Tomcat5ExecPerformer$Factory.getTomcatFactory" />
-            </file>    
+        <folder name="Jsr88Plugins">
+            <folder name="Tomcat5">
+                <file name="Descriptor" url="deployment.xml"/>
+                <file name="Factory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+            </folder>
         </folder>
     </folder>
+
     <folder name="Services">
 
         <!-- Recognize text/tomcat50+xml: -->
@@ -33,12 +39,9 @@ Microsystems, Inc. All Rights Reserved.
           </file>
         </folder>
 
-        <folder name="TomcatInstallations">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.tomcat.tomcat5.resources.Bundle"/>
-            <!-- Actually empty. Modules like bundled Tomcat can add custom installation -->
-        </folder>
     </folder>
-    
+
+    <!-- PENDING: settings for storing of Tomcat instances    
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans_org_netbeans_modules_tomcat5">
@@ -73,5 +76,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    -->
 
 </filesystem>

@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD J2EEServer 1.0//EN" "http://www.netbeans.org/dtds/netbeans-deployment.dtd">
+-->
+<netbeans-deployment>
+    
+    <icon>/org/netbeans/modules/tomcat5/resources/tomcat5</icon>
+    
+    <!--
+    The disconnected-string element contains the String parameter to DeploymentFactory.getDisconnectedDeploymentManager()
+    -->
+    <disconnected-string></disconnected-string>
+    
+    <!--
+    The finder-ui must be a class-name for a dialog that is shown when the Find Server action
+    is run on the plugin node.  If the user selects a server from this dialog, the class
+    should install it in the /J2EE/InstalledServers/ section of the DefaultFileSystem.
+    -->
+    <finder-ui></finder-ui>
+    <!--
+    The  name-mapper must be a class-name that implements TargetNameResolver.
+    This class provides mapping between names in jsr88 and jsr77
+    -->
+    <name-mapper></name-mapper>
+    
+    <container-limitation><war-deploy/></container-limitation>
+    
+    <!-- config-bean* 
+    <config-bean></config-bean>
+    -->
+    
+    <!--
+    The jsp-compilation-class element specifies a class that wraps the
+    JSP2.0 compilation engine.  This class must implement
+    DeploymentManagerWrapper.
+    -->
+    <jsp-compilation-class></jsp-compilation-class>
+
+    <!--
+    incremental-deploy?, inplace-deploy?, start-server?, jsr77-ejb-shortcut?)>
+    -->
+</netbeans-deployment>

@@ -27,36 +27,22 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_root}/nbbuild/nbantext.jar"/>
-  <target name="s2binit">
-	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-	  <classpath>
-		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
-		<pathelement path="${nb_root}/schema2beans/anttask/s2banttask.jar"/>
-	  </classpath>
-	</taskdef>
-  </target>
-  
-  <target name="dd2beans_gen" depends="s2binit">
-      <echo message="generating bean graph for Tomcat 5 configuration file" />
-	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_server.dtd"
-	  mddFile="tomcat5.mdd"
-	  package="org.netbeans.modules.tomcat5.config"
-	  rootDir="src"/>
-  </target>
-  
-  <target name="compile" depends="dd2beans_gen">
+
+  <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
+        <!--
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
         <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement path="${nb_root}/core/external/xml-apis-1.0b2.jar" />
         <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
         <pathelement location="${nb_root}/web/core/netbeans/modules/jsp.jar"/>
-        <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/j2eeserver.jar"/>
-        <pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
+        -->
+        <pathelement location="${nb_root}/j2eeserver/netbeans/modules/j2eeserver.jar"/>
+        <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/ext/jsr88javax.jar"/>
+        <!--<pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>-->
         <fileset dir="${nb_root}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
@@ -97,7 +83,6 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="clean">
-    <antcall target="clean-ddgen-src"/>  
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
@@ -110,19 +95,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
   </target>
 
-  <target name="clean-ddgen-check">
-    <available property="have-config" file="${tomcat5_dir}/config"/>
-  </target>
-
-  <target name="clean-ddgen-src" if="have-config" depends="clean-ddgen-check">
-        <delete>
-            <fileset dir="${tomcat5_dir}/config">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${tomcat5_dir}/config"/>
-  </target>
-  
   <!-- This target will only work *inside* the IDE! -->
   <target depends="jars" description="Test the module inside the running IDE." name="test">
     <nbinstaller action="reinstall" module="netbeans/modules/tomcat5.jar"/>
