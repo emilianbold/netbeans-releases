@@ -37,6 +37,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.modules.jemmysupport.I18NSupport;
 
 import org.openide.src.*;
 import org.openide.cookies.SourceCookie;
@@ -53,7 +54,7 @@ import org.openide.util.NbBundle;
  */
 public class NodeGenerator {
     
-    private static final String nodeTemplate = NbBundle.getMessage(NodeGenerator.class, "NodeTemplate");
+    private static final String nodeTemplate = I18NSupport.filterI18N(NbBundle.getMessage(NodeGenerator.class, "NodeTemplate"));
     private static final String prefixInline = NbBundle.getMessage(NodeGenerator.class, "Prefix_inline");
     private static final String prefixNew = NbBundle.getMessage(NodeGenerator.class, "Prefix_new");
     
@@ -201,7 +202,7 @@ public class NodeGenerator {
             if (shortcut!=null && shortcut.length()>0) {
                 this.shortcuts=new String[]{shortcut};
             }
-            name=toJavaIdentifier(popupPath)+"Action"; // NOI18N
+            name=toJavaIdentifier(i18n.filterI18N(popupPath))+"Action"; // NOI18N
             noBlock=defaultNoBlock;
             inline=defaultInline;
         }
@@ -287,7 +288,7 @@ public class NodeGenerator {
             sb.append(new SimpleDateFormat().format(new Date()));
             sb.append("\n */\n\npackage "); // NOI18N
             sb.append(actionsPackage);
-            sb.append(";\n\nimport org.netbeans.jellytools.actions.*;\nimport java.awt.event.KeyEvent;\n\n/** "); // NOI18N
+            sb.append(";\n\nimport org.netbeans.jellytools.actions.*;\nimport org.netbeans.jellytools.Bundle;\nimport java.awt.event.KeyEvent;\n\n/** "); // NOI18N
             sb.append(name);
             sb.append(" Class\n * @author "); // NOI18N
             sb.append(System.getProperty("user.name")); // NOI18N
@@ -311,16 +312,12 @@ public class NodeGenerator {
         protected String getConstructorArgs() {
             StringBuffer sb = new StringBuffer();
             if (menuPath!=null && menuPath.length()>0) {
-                sb.append('\"');
-                sb.append(menuPath);
-                sb.append("\", "); // NOI18N
+                sb.append(i18n.translatePath(menuPath));
             } else {
                 sb.append("null, "); // NOI18N
             }
             if (popupPath!=null && popupPath.length()>0) {
-                sb.append('\"');
-                sb.append(popupPath);
-                sb.append('\"');
+                sb.append(i18n.translatePath(popupPath));
             } else {
                 sb.append("null"); // NOI18N
             }
@@ -460,6 +457,7 @@ public class NodeGenerator {
     private String nodeName;
     private boolean defaultInline;
     private boolean defaultNoBlock;
+    private I18NSupport i18n;
     
     private NodeGenerator(String actionsPackage, String nodePackage, String nodeName, boolean defaultInline, boolean defaultNoBlock) {
         this.actionsPackage=actionsPackage;
@@ -469,6 +467,7 @@ public class NodeGenerator {
         this.defaultNoBlock=defaultNoBlock;
         searchForActions();
         matchingRecords=new ArrayList();
+        i18n=new I18NSupport();
     }
     
     /** Creates new instance of NodeGenerator
