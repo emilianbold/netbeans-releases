@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.image;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import javax.swing.*;
@@ -32,30 +33,43 @@ class NBImageIcon extends ImageIcon implements Serializable {
     /** Construct a new icon.
     * @param obj the data object to represent the image in
     */
-    public NBImageIcon(ImageDataObject obj) {
-        super(obj.getImageURL());
+    public NBImageIcon(ImageDataObject obj) throws IOException {
+        //super(obj.getImageURL()); // PENDING for the time URL is incorrectly cached (in Toolkit)
+        super(obj.getImageData());
         this.obj = obj;
     }
 
-    // Get an object to be written to the stream instead of this object.
+
+    /** Get an object to be written to the stream instead of this object.
+    */
     public Object writeReplace() {
         return new ResolvableHelper(obj);
     }
 
-    // Helper class for serialization.
+    /** Helper class for serialization.
+    */
     static class ResolvableHelper implements Serializable {
-        // generated Serialized Version UID
+        /** generated Serialized Version UID
+        */
         static final long serialVersionUID = -1120520132882774882L;
-        // serializable data object
+        /** serializable data object
+        */
         ImageDataObject obj;
 
+        /** Constructs ResolvableHelper object for given ImageDataObject.
+        */
         ResolvableHelper(ImageDataObject obj) {
             this.obj = obj;
         }
 
-        // Restore with the same data object.
+        /** Restore with the same data object.
+        */
         public Object readResolve() {
-            return new NBImageIcon(obj);
+            try {
+                return new NBImageIcon(obj);
+            } catch (IOException ioe) {
+                return new ImageIcon(new byte[0]); // empty icon
+            }
         }
     }
 }
