@@ -93,6 +93,18 @@ Microsystems, Inc. All Rights Reserved.
     bundle CDATA #REQUIRED
 >
 
+<!-- Absolute bounds rectangle of the mode, stored in attributes
+     x, y, width, height, where x, y is location of left top point of bounds 
+     rectangle.
+-->
+<!ELEMENT bounds    EMPTY >
+<!ATTLIST bounds
+    x CDATA #REQUIRED
+    y CDATA #REQUIRED
+    width CDATA #REQUIRED
+    height CDATA #REQUIRED
+>
+
 <!-- Relative (percentage) bounds rectangle of the mode, stored in attributes
      x, y, width, height, where x, y is location of left top point of bounds 
      rectangle, it is relative to desktopi: size of main window (mdi) or width 
