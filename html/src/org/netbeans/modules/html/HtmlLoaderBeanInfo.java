@@ -16,7 +16,9 @@ package org.netbeans.modules.html;
 import java.beans.*;
 import java.awt.Image;
 
+import org.openide.TopManager;
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.Utilities;
 
 /** Html data loader bean info.
 *
@@ -28,15 +30,10 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace ();
+	    TopManager.getDefault().getErrorManager().notify(ie);
             return null;
         }
     }
-
-    /** Icons for image data loader. */
-    private static Image icon;
-    private static Image icon32;
 
     /** @param type Desired type of the icon
     * @return returns the Image loader's icon
@@ -44,27 +41,10 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
                 (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            if (icon == null)
-                icon = loadImage("/org/netbeans/modules/html/htmlLoader.gif"); // NOI18N
-            return icon;
+	    return Utilities.loadImage("org/netbeans/modules/html/htmlLoader.gif"); // NOI18N
         } else {
-            if (icon32 == null)
-                icon32 = loadImage ("/org/netbeans/modules/html/htmlLoader32.gif"); // NOI18N
-            return icon32;
+	    return Utilities.loadImage ("org/netbeans/modules/html/htmlLoader32.gif"); // NOI18N
         }
     }
 
 }
-
-/*
-* Log
-*  6    Gandalf   1.5         1/16/00  Jesse Glick     
-*  5    Gandalf   1.4         1/13/00  Ian Formanek    NOI18N
-*  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  2    Gandalf   1.1         2/11/99  Jan Jancura     
-*  1    Gandalf   1.0         1/11/99  Jan Jancura     
-* $
-*/
