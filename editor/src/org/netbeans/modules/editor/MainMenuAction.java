@@ -169,12 +169,18 @@ public abstract class MainMenuAction extends SystemAction implements Presenter.M
             public ShowToolBarMenu(String text, Icon icon){
                 super(text, icon);
             }
+
+            private String getMenuItemText(){
+                return NbBundle.getBundle(MainMenuAction.class).getString(
+                    "show_editor_toolbar_main_menu_view_item"); //NOI18N
+            }
+            
             public Component getComponent(){
                 JCheckBoxMenuItem cmi = getShowToolBarCheckBoxMenuItem();
                 if (cmi!=null){
                     SHOW_TOOLBAR_MENU.setAction(getActionByName(ExtKit.toggleToolbarAction));
                     SHOW_TOOLBAR_MENU.setState(isToolbarVisible());
-                    SHOW_TOOLBAR_MENU.setText(cmi.getText());
+                    SHOW_TOOLBAR_MENU.setText(getMenuItemText());
                     SHOW_TOOLBAR_MENU.setIcon(BLANK_ICON);
                     SHOW_TOOLBAR_MENU.setEnabled(ShowToolBarAction.isMainMenuActionEnabled());
                 }
