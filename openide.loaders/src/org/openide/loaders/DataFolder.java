@@ -1219,7 +1219,7 @@ implements Serializable, DataObject.Container {
         * @return the help context
         */
         public HelpCtx getHelpCtx() {
-            return new HelpCtx (NewFolder.class);
+            return HelpCtx.DEFAULT_HELP;
         }
 
         /** Create the object.

@@ -383,7 +383,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         if (test != null)
             return test;
         else
-            return new HelpCtx (InstanceDataObject.class);
+            return HelpCtx.DEFAULT_HELP;
     }
 
 

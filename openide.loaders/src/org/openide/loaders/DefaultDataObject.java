@@ -69,7 +69,7 @@ implements org.openide.cookies.OpenCookie {
     * @return help context
     */
     public HelpCtx getHelpCtx () {
-        return new HelpCtx (DefaultDataObject.class);
+        return HelpCtx.DEFAULT_HELP;
     }
 
     
