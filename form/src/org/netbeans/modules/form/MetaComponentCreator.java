@@ -719,7 +719,8 @@ public class MetaComponentCreator {
     {
         ComponentContainer targetCont = 
             targetComp instanceof ComponentContainer
-                && !(targetComp instanceof RADVisualContainer) ?
+                && !(targetComp instanceof RADVisualContainer)
+                && !(targetComp instanceof RADMenuComponent) ?
             (ComponentContainer) targetComp : null;
 
         formModel.addComponent(newMetaComp, targetCont);
