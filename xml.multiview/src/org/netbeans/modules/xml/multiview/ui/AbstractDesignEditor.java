@@ -162,12 +162,10 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
      * @return the JComponent
      */
     public JComponent getStructureView(){
-        System.out.println("getStructuerView () "+structureView);
         if (structureView ==null){
             structureView = createStructureComponent();
             structureView.addPropertyChangeListener(new NodeSelectedListener());
         }
-        System.out.println("structureView= "+structureView);
         return structureView;
     }
     /**
@@ -252,7 +250,6 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
     
     class NodeSelectedListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            System.out.println("propChanged "+evt.getPropertyName());
             if (contentView.isSectionHeaderClicked()) {
                 contentView.setSectionHeaderClicked(false);
                 return;

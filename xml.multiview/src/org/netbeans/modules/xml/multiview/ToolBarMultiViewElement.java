@@ -89,7 +89,6 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     
     public javax.swing.JComponent getToolbarRepresentation() {
     
-        System.out.println("getToolbarRepr()");
         /*
         if (toolbar==null) {
             toolbar=getToolBar();

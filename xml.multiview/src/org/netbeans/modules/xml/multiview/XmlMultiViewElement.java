@@ -65,7 +65,7 @@ public class XmlMultiViewElement implements MultiViewElement {
     }
     
     public org.openide.util.Lookup getLookup() {
-        return Lookups.fixed(new Object[] {this});
+        return comp.getLookup();
     }
     
     public javax.swing.JComponent getToolbarRepresentation() {
