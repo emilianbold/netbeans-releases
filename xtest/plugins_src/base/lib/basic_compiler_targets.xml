@@ -51,7 +51,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy todir="${compile.destdir.root}">
             <fileset dir="${basedir}">
                 <include name="**/data/**"/>
-                <exclude name="**/src/**"/>
+                <!-- ignore ${xtest.testype}/src handled above -->
+                <exclude name="*/src/**"/>
             </fileset>
         </copy>
     </target>
