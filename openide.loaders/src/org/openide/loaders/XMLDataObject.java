@@ -493,7 +493,7 @@ public class XMLDataObject extends MultiDataObject {
         emgr().log ("parsePrimaryFile");
         String loc = getPrimaryFile().getURL().toExternalForm();
 
-        return XMLUtil.parse(new InputSource(loc), false, false, errorHandler, getSystemResolver());
+        return XMLUtil.parse(new InputSource(loc), false, /* #36295 */true, errorHandler, getSystemResolver());
     }
 
 
