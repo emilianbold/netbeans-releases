@@ -204,7 +204,7 @@ class HTTPFileObject extends FileObject {
 
         // Read the name of the parent filesystem and find it if mounted
         fileSystemName = (String)in.readObject( );
-        newParentFileSystem = (HTTPFileSystem)org.openide.TopManager.getDefault( ).getRepository( ).findFileSystem( fileSystemName );
+        newParentFileSystem = (HTTPFileSystem)Repository.getDefault( ).findFileSystem( fileSystemName );
 
         // Read the name of this file and initialize it
         newURIStem = (String)in.readObject( );

@@ -32,6 +32,7 @@ import org.openide.awt.SplittedPanel;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.Workspace;
+import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -480,7 +481,7 @@ public class IndexSearch
                 final URL furl = url;
                 if( task != null )
                     task.cancel();
-                task = RequestProcessor.postRequest( new Runnable(){
+                task = RequestProcessor.getDefault().post( new Runnable(){
                     public void run(){
                         quickBrowser.setURL( furl );
                     }
@@ -610,7 +611,7 @@ public class IndexSearch
     public static IndexSearch getDefault() {
         if ( indexSearch == null ) {
             indexSearch = new IndexSearch ();
-            Workspace workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+            Workspace workspace = WindowManager.getDefault().getCurrentWorkspace();
             org.netbeans.modules.javadoc.JavadocModule.registerTopComponent(indexSearch);
             /*
             Mode myMode = workspace.createMode(

@@ -17,7 +17,6 @@ import java.net.URL;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
 
-import org.openide.TopManager;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -67,7 +66,7 @@ public class SrcFinder extends Object {
         // System.out.println("PACKAGE :" + thePackage ); // NOI18N
         // System.out.println("FILENAME:" + filename ); // NOI18N
 
-        Repository repository = TopManager.getDefault().getRepository();
+        Repository repository = Repository.getDefault();
 
         FileObject fo = repository.find( thePackage, filename, "java" ); // NOI18N
 

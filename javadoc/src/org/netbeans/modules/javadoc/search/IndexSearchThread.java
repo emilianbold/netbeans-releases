@@ -162,7 +162,7 @@ public abstract class IndexSearchThread extends Thread  {
     }
 
     public void go() {
-        rpTask = RequestProcessor.postRequest( this, 0, NORM_PRIORITY );
+        rpTask = RequestProcessor.getDefault().post( this, 0, NORM_PRIORITY );
     }
 
     public void finish() {
