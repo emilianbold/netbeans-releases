@@ -43,10 +43,16 @@ the first time you execute the web module
     or modifying the module. If someone tries to run a stopped web module, the 
     server returns HTTP Status 503, which indicates that the application is not 
     currently available.</li>
-  <li><b>Open in Browser.</b> Redeploys the selected web module in the IDE's
-    default browser.</li>
-  <li><b>View Shared Context Log.</b> Displays the server log file. This item is enabled 
-    when the server is running.</li>
+  <li><b>Open in Browser.</b> Opens the selected web module's URL in the IDE's
+    default browser. This item is enabled when the server is running.</li>
+  <li><b>View Context Log.</b> Displays the context log file. The server does not need to be 
+    running for this item to be enabled, but the context must have a logger defined 
+    in the <tt>context.xml</tt> file. For example, when you create a web module,
+    the NetBeans IDE creates a <tt>context.xml</tt> file that includes a logger element:
+    <pre><tt>      &lt;Context path="/MyApp"&gt;
+         &lt;Logger className="org.apache.catalina.logger.FileLogger" 
+         prefix="MyApp" suffix=".log" timestamp="true"/&gt;
+      &lt;/Context&gt;    </pre></tt></li>
   <li><a href="tomcat_context_delete.html"><b>Undeploy.</b></a> Removes the web 
     module's context from the server. The IDE 
     will recreate the context if the web module is subsequently executed from 

@@ -46,7 +46,7 @@ help\
         <mapID target="webmod_contextxml" url="webmod/mod_contextxml.html" />
 
         <!-- CSH topics -->
-        <mapID target="context_help" url="webmod/mod_contextxml.html" />
+        <mapID target="context_help" url="tomcat/tomcat_plugintro.html" />
 	<mapID target="org.netbeans.modules.tomcat5.nodes.TomcatTargetNode.WebModules" 
            url="tomcat/tomcat_context_node.html" />
 	<mapID target="org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode" 

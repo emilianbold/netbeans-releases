@@ -17,8 +17,8 @@
 
 <tocitem text="Servers and Databases">
 <tocitem text="Tomcat Server">
-	<tocitem text="Setting Up the Tomcat Server">
 	<tocitem text="About the Tomcat Server" target="tomcat_plugin" />
+	<tocitem text="Setting Up the Tomcat Server">
         <tocitem text="Viewing the Tomcat Server in the IDE" target="tomcat_top_node" />
         <tocitem text="Setting a Web Module Context for the Tomcat Server" target="tomcat_context_add" />
 	<tocitem text="Starting and Stopping a Tomcat Server" target="tomcat_start" />
@@ -27,7 +27,7 @@
 	<tocitem text="Customizing a Tomcat Server" target="tomcat_internal_props"/>
 	<tocitem text="Adding a Tomcat Server" target="tomcat_addinstall" />
 	</tocitem>
-	<tocitem text="Running with the Tomcat Server">
+	<tocitem text="Using the Tomcat Server">
 	<tocitem text="Targeting a Tomcat Server for Running Web Modules" target="tomcat_default" />
 	<tocitem text="Running a Web Module Using Tomcat" target="webmod_singletest" />    
         <tocitem text="Running a JSP File Using a Tomcat Server" target="jsp_run" />

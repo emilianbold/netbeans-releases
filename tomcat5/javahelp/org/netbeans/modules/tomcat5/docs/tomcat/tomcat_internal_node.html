@@ -34,8 +34,10 @@
   <li><b>Refresh.</b> Shows the status (started or stopped) of the server.</li>
   <li><b>Remove.</b> Removes the server from the Server Registry. Note that you 
     cannot remove the bundled Tomcat server.</li>
-  <li><b>View Shared Context Log.</b> Displays the server log file. This item is enabled 
-    when the server is running.</li>
+  <li><b>View Shared Context Log.</b> Displays the server log file as defined in
+    the <tt>server.xml</tt> file. This item is enabled 
+    when the server is running. If no logger is defined in the <tt>context.xml</tt> 
+    file, logging for that context is performed in this shared context log. </li>
   <li><b><a href="tomcat_default.html">Set as Default</a>.</b> Tells the IDE to 
     use this server for executing web modules. The current default server is shown 
     in parentheses next to the Server Registry node.</li>
