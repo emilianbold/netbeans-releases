@@ -39,7 +39,7 @@ import org.netbeans.jemmy.drivers.InputDriverInstaller;
  * 
  */
 
-public final class JemmyProperties {
+public class JemmyProperties {
 
     /**
      * The event queue model mask.
@@ -60,7 +60,7 @@ public final class JemmyProperties {
 
     Hashtable properties;
 
-    private JemmyProperties() {
+    protected JemmyProperties() {
 	super();
 	properties = new Hashtable();
 	setProperty("timeouts", new Timeouts());
@@ -148,7 +148,7 @@ public final class JemmyProperties {
 	return(getProperties().removeProperty(propertyName));
     }
 
-    public String[] getCurrentKeys() {
+    public static String[] getCurrentKeys() {
 	return(getProperties().getKeys());
     }
 

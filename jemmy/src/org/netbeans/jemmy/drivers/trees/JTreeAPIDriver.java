@@ -57,19 +57,25 @@ public class JTreeAPIDriver extends SupportiveDriver implements TreeDriver {
     }
 
     public void editItem(ComponentOperator oper, int index, Object newValue, Timeout waitEditorTime) {
+	JTextComponentOperator textoper = startEditingAndReturnEditor(oper, index, waitEditorTime);
+	TextDriver text = DriverManager.getTextDriver(JTextComponentOperator.class);
+	text.clearText(textoper);
+	text.typeText(textoper, newValue.toString(), 0);
+	((JTreeOperator)oper).stopEditing();
+    }
+
+    public void startEditing(ComponentOperator oper, int index, Timeout waitEditorTime) {
+	startEditing(oper, index, waitEditorTime);
+    }
+
+    private JTextComponentOperator startEditingAndReturnEditor(ComponentOperator oper, int index, Timeout waitEditorTime) {
 	checkSupported(oper);
 	JTreeOperator toper = (JTreeOperator)oper;
 	toper.startEditingAtPath(toper.getPathForRow(index));
 	toper.getTimeouts().
 	    setTimeout("ComponentOperator.WaitComponentTimeout", waitEditorTime.getValue());
-	JTextComponentOperator textoper = 
-	    new JTextComponentOperator((JTextComponent)toper.
-				       waitSubComponent(new JTextComponentOperator.
-							JTextComponentFinder()));
-	TextDriver text = DriverManager.getTextDriver(JTextComponentOperator.class);
-	text.clearText(textoper);
-	text.typeText(textoper, newValue.toString(), 0);
-	toper.stopEditing();
+	return(new JTextComponentOperator((JTextComponent)toper.
+					  waitSubComponent(new JTextComponentOperator.
+							   JTextComponentFinder())));
     }
-
 }

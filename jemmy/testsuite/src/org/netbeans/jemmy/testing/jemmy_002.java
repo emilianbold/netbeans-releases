@@ -75,7 +75,7 @@ public class jemmy_002 extends JemmyTest {
 
 	    JMenuBarOperator mbo = new JMenuBarOperator(JMenuBarOperator.findJMenuBar(win));
 
-	    mbo.pushMenu("menu|menuItem", "|", true, true);
+	    mbo.pushMenu("menu|submenu|subsubmenu|menuItem", "|", true, true);
 	    JLabelOperator lbo = new JLabelOperator(JLabelOperator.waitJLabel(win, "Menu \"menu/menuItem\" has been pushed", false, true));
 
 

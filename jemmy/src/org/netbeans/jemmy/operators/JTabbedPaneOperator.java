@@ -290,11 +290,21 @@ public class JTabbedPaneOperator extends JComponentOperator
 		      anotherOperator.getProperties());
     }
 
+    public int findPage(String label, StringComparator comparator) {
+	for(int i = 0; i < getTabCount(); i++) {
+	    if(comparator.equals(getTitleAt(i), label)) {
+		return(i);
+	    }
+	}
+	return(-1);
+    }
+
     /**
      * Searches tab index by tab title.
      * isCaptionEqual method is used to compare page title with
      * match.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @deprecated Use findPage(String) or findPage(String, StringComparator)
      */
     public int findPage(String label, boolean ce, boolean ccs) {
 	return(findPage(label, new DefaultStringComparator(ce, ccs)));
@@ -318,17 +328,22 @@ public class JTabbedPaneOperator extends JComponentOperator
 	return(getComponentAt(index));
     }
 
-    /**
-     * Selects tab by tab title.
-     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     */
-    public Component selectPage(String label, boolean ce, boolean ccs) {
-	int index = findPage(label, ce, ccs);
+    public Component selectPage(String label, StringComparator comparator) {
+	int index = findPage(label, comparator);
 	if(index != -1) {
 	    return(selectPage(index));
 	} else {
 	    throw(new NoSuchPageException(label));
 	}
+    }
+
+    /**
+     * Selects tab by tab title.
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @deprecated Use selectPage(String) or selectPage(String, StringComparator)
+     */
+    public Component selectPage(String label, boolean ce, boolean ccs) {
+	return(selectPage(label, new DefaultStringComparator(ce, ccs)));
     }
 
     /**
@@ -661,15 +676,6 @@ public class JTabbedPaneOperator extends JComponentOperator
 	public NoSuchPageException(String item) {
 	    super("No such page as \"" + item + "\"", getSource());
 	}
-    }
-
-    private int findPage(String label, StringComparator comparator) {
-	for(int i = 0; i < getTabCount(); i++) {
-	    if(comparator.equals(getTitleAt(i), label)) {
-		return(i);
-	    }
-	}
-	return(-1);
     }
 
     private static class JTabbedPaneByItemFinder implements ComponentChooser {

@@ -146,7 +146,7 @@ public class JComponentOperator extends ContainerOperator
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      */
     public static JComponent findJComponent(Container cont, String toolTipText, boolean ce, boolean ccs, int index) {
-	return(findJComponent(cont, new JComponentByTipFinder(toolTipText, ce, ccs), index));
+	return(findJComponent(cont, new JComponentByTipFinder(toolTipText, new DefaultStringComparator(ce, ccs)), index));
     }
 
     /**
@@ -197,7 +197,7 @@ public class JComponentOperator extends ContainerOperator
      * @throws TimeoutExpiredException
      */
     public static JComponent waitJComponent(Container cont, String toolTipText, boolean ce, boolean ccs, int index) {
-	return(waitJComponent(cont, new JComponentByTipFinder(toolTipText, ce, ccs), index));
+	return(waitJComponent(cont, new JComponentByTipFinder(toolTipText, new DefaultStringComparator(ce, ccs)), index));
     }
 
     /**
@@ -777,20 +777,20 @@ public class JComponentOperator extends ContainerOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class JComponentByTipFinder implements ComponentChooser {
+    public static class JComponentByTipFinder implements ComponentChooser {
 	String label;
+	StringComparator comparator;
 	boolean compareExactly;
 	boolean compareCaseSensitive;
-	public JComponentByTipFinder(String lb, boolean ce, boolean ccs) {
+	public JComponentByTipFinder(String lb, StringComparator comparator) {
 	    label = lb;
-	    compareExactly = ce;
-	    compareCaseSensitive = ccs;
+	    this.comparator = comparator;
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JComponent) {
 		if(((JComponent)comp).getToolTipText() != null) {
-		    return(isCaptionEqual(((JComponent)comp).getToolTipText(),
-					  label, compareExactly, compareCaseSensitive));
+		    return(comparator.equals(((JComponent)comp).getToolTipText(),
+					     label));
 		}
 	    }
 	    return(false);
@@ -800,7 +800,7 @@ public class JComponentOperator extends ContainerOperator
 	}
     }
 
-    private static class JComponentFinder implements ComponentChooser {
+    public static class JComponentFinder implements ComponentChooser {
 	ComponentChooser subFinder;
 	public JComponentFinder(ComponentChooser sf) {
 	    subFinder = sf;

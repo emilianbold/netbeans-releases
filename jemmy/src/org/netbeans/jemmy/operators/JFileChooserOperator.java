@@ -396,12 +396,21 @@ public class JFileChooserOperator extends JComponentOperator
 	listOper.clickOnItem(index, clickCount);
     }
 
+    public void clickOnFile(String file, StringComparator comparator, int clickCount) {
+	output.printTrace("Click " + Integer.toString(clickCount) + 
+			  "times on \"" + file + 
+			  "\" file in JFileChooser\n    : " +
+			  getSource().toString());
+	clickOnFile(findFileIndex(file, comparator), clickCount);
+    }
+
     /**
      * Clicks on file in the list.
      * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
      * @see #clickOnFile(int, int)
      * @see #clickOnFile(String, boolean, boolean)
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @deprecated Use clickOnFile(String, int) or clickOnFile(String, StringComparator, int)
      */
     public void clickOnFile(String file, boolean ce, boolean cc, int clickCount) {
 	clickOnFile(file, new DefaultStringComparator(ce, cc), clickCount);
@@ -411,12 +420,17 @@ public class JFileChooserOperator extends JComponentOperator
 	clickOnFile(file, getComparator(), clickCount);
     }
 
+    public void clickOnFile(String file, StringComparator comparator) {
+	clickOnFile(file, comparator, 1);
+    }
+
     /**
      * Clicks 1 time on file in the list.
      * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
      * @see #clickOnFile(int, int)
      * @see #clickOnFile(String, boolean, boolean, int)
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @deprecated Use clickOnFile(String) or clickOnFile(String, StringComparator)
      */
     public void clickOnFile(String file, boolean ce, boolean cc) {
 	clickOnFile(file, ce, cc, 1);
@@ -426,12 +440,18 @@ public class JFileChooserOperator extends JComponentOperator
 	clickOnFile(file, 1);
     }
 
+    public File enterSubDir(String dir, StringComparator comparator) {
+	clickOnFile(dir, comparator, 2);
+	return(getCurrentDirectory());
+    }
+
     /**
      * Enters into subdir curently displayed in the list.
      * @param dir Directory name (tmp1). Do not use full path (/tmp/tmp1) here.
      * @see #clickOnFile(int, int)
      * @see #clickOnFile(String, boolean, boolean)
      * @see #clickOnFile(String, boolean, boolean, int)
+     * @deprecated Use enterSubDir(String) or enterSubDir(String, StringComparator)
      */
     public File enterSubDir(String dir, boolean ce, boolean cc) {
 	clickOnFile(dir, ce, cc, 2);
@@ -443,12 +463,17 @@ public class JFileChooserOperator extends JComponentOperator
 	return(getCurrentDirectory());
     }
 
+    public void selectFile(String file, StringComparator comparator) {
+	clickOnFile(file, comparator);
+    }
+
     /**
      * Selects a file curently in the list.
      * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
      * @see #clickOnFile(int, int)
      * @see #clickOnFile(String, boolean, boolean)
      * @see #clickOnFile(String, boolean, boolean, int)
+     * @deprecated Use selectFile(String) or selectFile(String, StringComparator)
      */
     public void selectFile(String file, boolean ce, boolean cc) {
 	clickOnFile(file, ce, cc);
@@ -458,10 +483,21 @@ public class JFileChooserOperator extends JComponentOperator
 	clickOnFile(file);
     }
 
+    public void selectPathDirectory(String dir, StringComparator comparator) {
+	output.printTrace("Select \"" + dir + "\" directory in JFileChooser\n    : " +
+			  getSource().toString());
+	JComboBoxOperator comboOper = new JComboBoxOperator(getPathCombo());
+	comboOper.copyEnvironment(this);
+	comboOper.setOutput(output.createErrorOutput());
+	comboOper.selectItem(findDirIndex(dir, comparator));
+	waitPainted(-1);
+    }
+
     /**
      * Selects directory from the combo box above.
      * @param dir Directory name (tmp1). Do not use full path (/tmp/tmp1) here.
      * @throws TimeoutExpiredException
+     * @deprecated Use selectPathDirectory(String) or selectPathDirectory(String, StringComparator)
      */
     public void selectPathDirectory(String dir, boolean ce, boolean cc) {
 	selectPathDirectory(dir, new DefaultStringComparator(ce, cc));
@@ -476,9 +512,20 @@ public class JFileChooserOperator extends JComponentOperator
 	selectPathDirectory(dir, getComparator());
     }
 
+    public void selectFileType(String filter, StringComparator comparator) {
+	output.printTrace("Select \"" + filter + "\" file type in JFileChooser\n    : " +
+			  getSource().toString());
+	JComboBoxOperator comboOper = new JComboBoxOperator(getFileTypesCombo());
+	comboOper.copyEnvironment(this);
+	comboOper.setOutput(output.createErrorOutput());
+	comboOper.selectItem(findFileTypeIndex(filter, comparator));
+	waitPainted(-1);
+    }
+
     /**
      * Selects file type from the combo box below.
      * @throws TimeoutExpiredException
+     * @deprecated Use selectFileType(String) or selectFileType(String, StringComparator)
      */
     public void selectFileType(String filter, boolean ce, boolean cc) {
 	selectFileType(filter, new DefaultStringComparator(ce, cc));
@@ -492,9 +539,15 @@ public class JFileChooserOperator extends JComponentOperator
 	selectFileType(filter, getComparator());
     }
 
+    public boolean checkFileDisplayed(String file, StringComparator comparator) {
+	waitPainted(-1);
+	return(findFileIndex(file, comparator) != -1);
+    }
+
     /**
      * Checks if file is currently displayed in the list.
      * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
+     * @deprecated Use checkFileDisplayed(String) or checkFileDisplayed(String, StringComparator)
      */
     public boolean checkFileDisplayed(String file, boolean ce, boolean cc) {
 	return(checkFileDisplayed(file, new DefaultStringComparator(ce, cc)));
@@ -527,6 +580,29 @@ public class JFileChooserOperator extends JComponentOperator
 	    result[i] = (File)listModel.getElementAt(i);
 	}
 	return(result);
+    }
+
+    public void waitFileCount(final int count) {
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(getFileCount() == count);
+		}
+		public String getDescription() {
+		    return("Count of files to be equal " +
+			   Integer.toString(count));
+		}
+	    });
+    }
+
+    public void waitFileDisplayed(final String fileName) {
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(checkFileDisplayed(fileName));
+		}
+		public String getDescription() {
+		    return("\"" + fileName + "\"file to be displayed");
+		}
+	    });
     }
 
     ////////////////////////////////////////////////////////
@@ -1023,39 +1099,6 @@ public class JFileChooserOperator extends JComponentOperator
 	    }
 	}
 	return(-1);
-    }
-
-    private void selectPathDirectory(String dir, StringComparator comparator) {
-	output.printTrace("Select \"" + dir + "\" directory in JFileChooser\n    : " +
-			  getSource().toString());
-	JComboBoxOperator comboOper = new JComboBoxOperator(getPathCombo());
-	comboOper.copyEnvironment(this);
-	comboOper.setOutput(output.createErrorOutput());
-	comboOper.selectItem(findDirIndex(dir, comparator));
-	waitPainted(-1);
-    }
-
-    private void clickOnFile(String file, StringComparator comparator, int clickCount) {
-	output.printTrace("Click " + Integer.toString(clickCount) + 
-			  "times on \"" + file + 
-			  "\" file in JFileChooser\n    : " +
-			  getSource().toString());
-	clickOnFile(findFileIndex(file, comparator), clickCount);
-    }
-
-    private void selectFileType(String filter, StringComparator comparator) {
-	output.printTrace("Select \"" + filter + "\" file type in JFileChooser\n    : " +
-			  getSource().toString());
-	JComboBoxOperator comboOper = new JComboBoxOperator(getFileTypesCombo());
-	comboOper.copyEnvironment(this);
-	comboOper.setOutput(output.createErrorOutput());
-	comboOper.selectItem(findFileTypeIndex(filter, comparator));
-	waitPainted(-1);
-    }
-
-    private boolean checkFileDisplayed(String file, StringComparator comparator) {
-	waitPainted(-1);
-	return(findFileIndex(file, comparator) != -1);
     }
 
     private static class JFileChooserJDialogFinder implements ComponentChooser {

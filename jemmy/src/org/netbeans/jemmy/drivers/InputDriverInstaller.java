@@ -18,6 +18,7 @@
 package org.netbeans.jemmy.drivers;
 
 import org.netbeans.jemmy.EventDispatcher;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeout;
 
@@ -25,6 +26,17 @@ import org.netbeans.jemmy.drivers.input.KeyEventDriver;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
 import org.netbeans.jemmy.drivers.input.MouseEventDriver;
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
+
+import org.netbeans.jemmy.operators.ButtonOperator;
+import org.netbeans.jemmy.operators.CheckboxOperator;
+import org.netbeans.jemmy.operators.ChoiceOperator;
+import org.netbeans.jemmy.operators.LabelOperator;
+import org.netbeans.jemmy.operators.ListOperator;
+import org.netbeans.jemmy.operators.ScrollPaneOperator;
+import org.netbeans.jemmy.operators.ScrollbarOperator;
+import org.netbeans.jemmy.operators.TextAreaOperator;
+import org.netbeans.jemmy.operators.TextComponentOperator;
+import org.netbeans.jemmy.operators.TextFieldOperator;
 
 
 public class InputDriverInstaller {
@@ -50,23 +62,51 @@ public class InputDriverInstaller {
 	Class clss= EventDispatcher.class;
     }
     public void install() {
-	Driver keyR = new KeyRobotDriver(robotAutoDelay);
-	Driver keyE = new KeyEventDriver();
-	Driver mouseR = new MouseRobotDriver(robotAutoDelay);
-	Driver mouseE = new MouseEventDriver();
-	DriverManager.removeDriver(DriverManager.KEY_DRIVER_ID,
-				   keyE.getSupported());
-	DriverManager.removeDriver(DriverManager.KEY_DRIVER_ID,
-				   keyR.getSupported());
-	DriverManager.removeDriver(DriverManager.MOUSE_DRIVER_ID,
-				   mouseE.getSupported());
-	DriverManager.removeDriver(DriverManager.MOUSE_DRIVER_ID,
-				   mouseR.getSupported());
-	DriverManager.setDriver(DriverManager.KEY_DRIVER_ID, keyR);
-	DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, mouseR);
 	if(useEventDrivers) {
+	    Driver keyE = new KeyEventDriver();
+	    Driver mouseE = new MouseEventDriver();
+	    DriverManager.removeDriver(DriverManager.KEY_DRIVER_ID,
+				       keyE.getSupported());
+	    DriverManager.removeDriver(DriverManager.MOUSE_DRIVER_ID,
+				       mouseE.getSupported());
 	    DriverManager.setDriver(DriverManager.KEY_DRIVER_ID, keyE);
 	    DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, mouseE);
+	    try {
+		Class[] awtOperators = 
+		    {
+			ButtonOperator.class,
+			CheckboxOperator.class,
+			ChoiceOperator.class,
+			LabelOperator.class,
+			ListOperator.class,
+			ScrollPaneOperator.class,
+			ScrollbarOperator.class,
+			TextAreaOperator.class,
+			TextComponentOperator.class,
+			TextFieldOperator.class
+		    };
+		Driver keyR = new KeyRobotDriver(robotAutoDelay, awtOperators);
+		Driver mouseR = new MouseRobotDriver(robotAutoDelay, awtOperators);
+		DriverManager.removeDriver(DriverManager.KEY_DRIVER_ID,
+					   keyR.getSupported());
+		DriverManager.removeDriver(DriverManager.MOUSE_DRIVER_ID,
+					   mouseR.getSupported());
+		DriverManager.setDriver(DriverManager.KEY_DRIVER_ID, keyR);
+		DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, mouseR);
+	    } catch(JemmyException e) {
+		if(!(e.getInnerException() instanceof ClassNotFoundException)) {
+		    throw(e);
+		}
+	    }
+	} else {
+	    Driver keyR = new KeyRobotDriver(robotAutoDelay);
+	    Driver mouseR = new MouseRobotDriver(robotAutoDelay);
+	    DriverManager.removeDriver(DriverManager.KEY_DRIVER_ID,
+				       keyR.getSupported());
+	    DriverManager.removeDriver(DriverManager.MOUSE_DRIVER_ID,
+				       mouseR.getSupported());
+	    DriverManager.setDriver(DriverManager.KEY_DRIVER_ID, keyR);
+	    DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, mouseR);
 	}
     }
 }

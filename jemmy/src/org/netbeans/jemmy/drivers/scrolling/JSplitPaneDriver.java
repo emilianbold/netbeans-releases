@@ -97,7 +97,7 @@ public class JSplitPaneDriver extends SupportiveDriver implements ScrollDriver {
     }
 
     private void moveTo(JSplitPaneOperator oper, ComponentOperator divOper, int x, int y) {
-	DriverManager.getMouseDriver(divOper.getClass()).
+	DriverManager.getMouseDriver(divOper).
 	    dragNDrop(divOper, divOper.getCenterX(), divOper.getCenterY(), x, y,
 		      oper.getDefaultMouseButton(), 0, 
 		      oper.getTimeouts().create("ComponentOperator.BeforeDragTimeout"), 
@@ -123,7 +123,7 @@ public class JSplitPaneDriver extends SupportiveDriver implements ScrollDriver {
 							       getTrueChooser("JButton")),
 						 index));
 	bo.copyEnvironment(divOper);
-	ButtonDriver bdriver = DriverManager.getButtonDriver(bo.getClass());
+	ButtonDriver bdriver = DriverManager.getButtonDriver(bo);
 	bdriver.push(bo);
 	bdriver.push(bo);
     }

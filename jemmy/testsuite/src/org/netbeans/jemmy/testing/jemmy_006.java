@@ -30,7 +30,7 @@ public class jemmy_006 extends JemmyTest {
 		getOutput().printStackTrace(e);
 	    }
 
-	    EventDispatcher.waitQueueEmpty();
+	    new QueueTool().waitEmpty(100);
 
 	    JFrame frm =JFrameOperator.waitJFrame("Application_006", true, true);
 	    
@@ -43,11 +43,7 @@ public class jemmy_006 extends JemmyTest {
 	    Demonstrator.nextStep("Select root");
 	    
 	    to.selectRow(0);
-	    if(!to.isRowSelected(0)) {
-		getOutput().printErrLine("Root was not selected");
-		finalize();
-		return(1);
-	    }
+	    to.waitSelected(0);
 
 	    Demonstrator.nextStep("Expand first node00 tree path");
 	

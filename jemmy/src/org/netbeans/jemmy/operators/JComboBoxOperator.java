@@ -404,7 +404,7 @@ implements Timeoutable, Outputable {
 	return(-1);
     }
     
-    private void selectItem(String item, StringComparator comparator) {
+    public void selectItem(String item, StringComparator comparator) {
 	output.printLine("Select \"" + item + "\" item in combobox\n    : " +
 			 getSource().toString());
 	output.printGolden("Select \"" + item + "\" item in combobox");
@@ -418,6 +418,7 @@ implements Timeoutable, Outputable {
      * @param cc Compare case sensitivelly.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
+     * @deprecated Use selectItem(String) or selectItem(String, StringComparator)
      */
     public void selectItem(String item, boolean ce, boolean cc) {
 	selectItem(item, new DefaultStringComparator(ce, cc));

@@ -32,14 +32,18 @@ import org.netbeans.jemmy.drivers.SupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JComponentOperator;
 
-class EventDriver extends SupportiveDriver {
+public class EventDriver extends SupportiveDriver {
     QueueTool queueTool;
-    protected EventDriver() {
-	super(new Class[] {ContainerOperator.class});
+    public EventDriver(Class[] supported) {
+	super(supported);
 	queueTool = new QueueTool();
     }
-    protected void dispatchEvent(Component comp, AWTEvent event) {
+    public EventDriver() {
+	this(new Class[] {ComponentOperator.class});
+    }
+    public void dispatchEvent(Component comp, AWTEvent event) {
 	Dispatcher disp = new Dispatcher(comp, event);
 	queueTool.invokeAndWait(disp);
     }

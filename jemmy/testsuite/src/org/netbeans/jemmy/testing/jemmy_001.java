@@ -241,30 +241,7 @@ public class jemmy_001 extends JemmyTest {
 	    Demonstrator.showFinalComment("Test passed");
 
 	    Dumper.dumpComponent(operator_1.getSource(), getOutput().getOutput());
-	    /*
-	    try {
-		if(!System.getProperty("java.version").startsWith("1.2")) {
-		    Object[] params = {operator_1.getSource(),
-				       System.getProperty("user.dir") +
-				       System.getProperty("file.separator") +
-				       "combo.png"};
-		    Class[] classes = {Class.forName("java.awt.Component"),
-				       params[1].getClass()};
-		    new ClassReference("org.netbeans.jemmy.util.PNGEncoder").
-			invokeMethod("captureScreen",
-				     params,
-				     classes);
-		}
-	    } catch(ClassNotFoundException e) {
-		getOutput().printStackTrace(e);
-	    } catch(java.lang.reflect.InvocationTargetException e) {
-		getOutput().printStackTrace(e);
-	    } catch(NoSuchMethodException e) {
-		getOutput().printStackTrace(e);
-	    } catch(IllegalAccessException e) {
-		getOutput().printStackTrace(e);
-	    }
-	    */
+
 	} catch(Exception e) {
 	    finalize();
 	    throw(new TestCompletedException(1, e));

@@ -520,3 +520,17 @@ Text component clearing now works through ActionProducer.
 21846, 21769, 21771 and 21872 fixes
 
 #VERSION 2.0.beta
+
+#VERSION 2.0.alpha
+
+Focus, Window, Menu drivers.
+
+Correct way to install input drivers depending on mode.
+
+One more method in TreeDriver - startEditing.
+
+All method containing two boolean parameters
+(compare exactly, compare case sensitively) have been made deprecated.
+
+22726, 22953 fixes
+

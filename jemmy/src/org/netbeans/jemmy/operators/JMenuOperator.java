@@ -17,6 +17,7 @@
 
 package org.netbeans.jemmy.operators;
 
+import org.netbeans.jemmy.Action;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.Outputable;
@@ -26,6 +27,10 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+
+import org.netbeans.jemmy.drivers.MenuDriver;
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.PathChooser;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -43,6 +48,7 @@ import javax.swing.event.MenuListener;
  * <BR><BR>Timeouts used: <BR>
  * JMenuOperator.WaitBeforePopupTimeout - time to sleep before popup expanding <BR>
  * JMenuOperator.WaitPopupTimeout - time to wait popup displayed <BR>
+ * JMenuOperator.PushMenuTimeout - time for the whole menu operation<BR>
  * JMenuItemOperator.PushMenuTimeout - time between button pressing and releasing<BR>
  * ComponentOperator.WaitComponentTimeout - time to wait button displayed <BR>
  * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>
@@ -58,15 +64,18 @@ implements Outputable, Timeoutable{
 
     private final static long WAIT_POPUP_TIMEOUT = 10000;
     private final static long WAIT_BEFORE_POPUP_TIMEOUT = 0;
+    private final static long PUSH_MENU_TIMEOUT = 10000;
 
     private Timeouts timeouts;
     private TestOut output;
+    private MenuDriver driver;
 
     /**
      * Constructor.
      */
     public JMenuOperator(JMenu menu) {
 	super(menu);
+	driver = DriverManager.getMenuDriver(this);
     }
 
     /**
@@ -233,6 +242,7 @@ implements Outputable, Timeoutable{
     static {
 	Timeouts.initDefault("JMenuOperator.WaitBeforePopupTimeout", WAIT_BEFORE_POPUP_TIMEOUT);
 	Timeouts.initDefault("JMenuOperator.WaitPopupTimeout", WAIT_POPUP_TIMEOUT);
+	Timeouts.initDefault("JMenuOperator.PushMenuTimeout", PUSH_MENU_TIMEOUT);
     }
 
     /**
@@ -278,22 +288,42 @@ implements Outputable, Timeoutable{
 	return(output);
     }
 
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = DriverManager.getMenuDriver(this);
+    }
+
     /**
      * Pushes menu.
      * @param choosers Array of choosers to find menuItems to push.
      * @return Last pushed JMenuItem.
      * @throws TimeoutExpiredException
      */
-    public JMenuItem pushMenu(ComponentChooser[] choosers) {
-	return(pushMenu(converChoosers(choosers), true, true));
+    public JMenuItem pushMenu(final ComponentChooser[] choosers) {
+	return((JMenuItem)produceTimeRestricted(new org.netbeans.jemmy.Action() {
+		public Object launch(Object obj) {
+		    return(driver.pushMenu(JMenuOperator.this, converChoosers(choosers)));
+		}
+		public String getDescription() {
+		    return("Menu pushing");
+		}
+	    }, getTimeouts().getTimeout("JMenuOperator.PushMenuTimeout")));
     }
 
     /**
      * Executes <code>pushMenu(choosers)</code> in a separate thread.
      * @see #pushMenu(ComponentChooser[])
      */
-    public JMenuItem pushMenuNoBlock(ComponentChooser[] choosers) {
-	return(pushMenu(converChoosers(choosers), true, false));
+    public void pushMenuNoBlock(final ComponentChooser[] choosers) {
+	produceNoBlocking(new NoBlockingAction("Menu pushing") {
+		public Object doAction(Object param) {
+		    return(driver.pushMenu(JMenuOperator.this, converChoosers(choosers)));
+		}
+	    });
+    }
+
+    public JMenuItem pushMenu(String[] names, StringComparator comparator) {
+	return(pushMenu(JMenuItemOperator.createChoosers(names, comparator)));
     }
 
     /**
@@ -304,17 +334,23 @@ implements Outputable, Timeoutable{
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
      * @return Last pushed JMenuItem.
+     * @deprecated Use pushMenu(String[]) or pushMenu(String[], StringComparator)
      */
     public JMenuItem pushMenu(String[] names, boolean ce, boolean ccs) {
 	return(pushMenu(names, new DefaultStringComparator(ce, ccs)));
     }
 
+    public void pushMenuNoBlock(String names[], StringComparator comparator) {
+	pushMenuNoBlock(JMenuItemOperator.createChoosers(names, comparator));
+    }
+
     /**
      * Executes <code>pushMenu(names, ce, ccs)</code> in a separate thread.
      * @see #pushMenu(String[], boolean, boolean)
+     * @deprecated Use pushMenuNoBlock(String[]) or pushMenuNoBlock(String[], StringComparator)
      */
-    public JMenuItem pushMenuNoBlock(String[] names, boolean ce, boolean ccs) {
-	return(pushMenuNoBlock(names, new DefaultStringComparator(ce, ccs)));
+    public void pushMenuNoBlock(String[] names, boolean ce, boolean ccs) {
+	pushMenuNoBlock(names, new DefaultStringComparator(ce, ccs));
     }
 
     /**
@@ -332,8 +368,14 @@ implements Outputable, Timeoutable{
      * Executes <code>pushMenu(names)</code> in a separate thread.
      * @see #pushMenu(String[])
      */
-    public JMenuItem pushMenuNoBlock(String[] names) {
-	return(pushMenuNoBlock(names, getComparator()));
+    public void pushMenuNoBlock(String[] names) {
+	pushMenuNoBlock(names, getComparator());
+    }
+
+    public JMenuItem pushMenu(String path, String delim, StringComparator comparator) {
+	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	return(pushMenu(parseString(path, delim), comparator));
     }
 
     /**
@@ -345,21 +387,25 @@ implements Outputable, Timeoutable{
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @return Last pushed JMenuItem.
      * @throws TimeoutExpiredException
+     * @deprecated Use pushMenuNoBlock(String) or pushMenuNoBlock(String, StringComparator)
      */
     public JMenuItem pushMenu(String path, String delim, boolean ce, boolean ccs) {
+	return(pushMenu(path, delim, new DefaultStringComparator(ce, ccs)));
+    }
+
+    public void pushMenuNoBlock(String path, String delim, StringComparator comparator) {
 	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
 	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
-	return(pushMenu(parseString(path, delim), new DefaultStringComparator(ce, ccs)));
+	pushMenuNoBlock(parseString(path, delim), comparator);
     }
 
     /**
      * Executes <code>pushMenu(path, delim, ce, ccs)</code> in a separate thread.
      * @see #pushMenu(String, String, boolean, boolean)
+     * @deprecated Use pushMenuNoBlock(String) or pushMenuNoBlock(String, StringComparator)
      */
-    public JMenuItem pushMenuNoBlock(String path, String delim, boolean ce, boolean ccs) {
-	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
-	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
-	return(pushMenuNoBlock(parseString(path, delim), new DefaultStringComparator(ce, ccs)));
+    public void pushMenuNoBlock(String path, String delim, boolean ce, boolean ccs) {
+	pushMenuNoBlock(parseString(path, delim), new DefaultStringComparator(ce, ccs));
     }
 
     /**
@@ -381,10 +427,10 @@ implements Outputable, Timeoutable{
      * Executes <code>pushMenu(path, delim)</code> in a separate thread.
      * @see #pushMenu(String, String)
      */
-    public JMenuItem pushMenuNoBlock(String path, String delim) {
+    public void pushMenuNoBlock(String path, String delim) {
 	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
 	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
-	return(pushMenuNoBlock(parseString(path, delim)));
+	pushMenuNoBlock(parseString(path, delim));
     }
 
     /**
@@ -416,7 +462,7 @@ implements Outputable, Timeoutable{
 		}}));}
 
     /**Maps <code>JMenu.add(Action)</code> through queue*/
-    public JMenuItem add(final Action action) {
+    public JMenuItem add(final javax.swing.Action action) {
 	return((JMenuItem)runMapping(new MapAction("add") {
 		public Object map() {
 		    return(((JMenu)getSource()).add(action));
@@ -500,7 +546,7 @@ implements Outputable, Timeoutable{
 		}});}
 
     /**Maps <code>JMenu.insert(Action, int)</code> through queue*/
-    public JMenuItem insert(final Action action, final int i) {
+    public JMenuItem insert(final javax.swing.Action action, final int i) {
 	return((JMenuItem)runMapping(new MapAction("insert") {
 		public Object map() {
 		    return(((JMenu)getSource()).insert(action, i));
@@ -586,131 +632,18 @@ implements Outputable, Timeoutable{
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    JMenuItem pushMenu(JMenuItemFinder[] choosers, boolean pressMouse, boolean blocking) {
-	class JMenuItemWaiter implements Waitable {
-	    ComponentSearcher searcher;
-	    ComponentChooser chooser;
-	    public JMenuItemWaiter(JPopupMenu cont, ComponentChooser chooser) {
-		searcher = new ComponentSearcher(cont);
-		searcher.setOutput(output.createErrorOutput());
-		this.chooser = chooser;
-	    }
-	    public Object actionProduced(Object obj) {
-		return(searcher.findComponent(chooser));
-	    }
-	    public String getDescription() {
-		return("");
-	    }
-	}
-	if(choosers.length == 0) {
-	    output.printLine("Pushing menu " + ((JMenu)getSource()).getText());
-	    output.printGolden("Pushing menu " + ((JMenu)getSource()).getText());
-            if(blocking) {
-                push();
-            } else {
-                pushNoBlock();
-            }
-	    return((JMenuItem)getSource());
-	}
-	getEventDispatcher().setOutput(output.createErrorOutput());
-	enterMouse();
-	if(pressMouse && !isPopupMenuVisible()) {
-	    pressMouse();
-	}
-	timeouts.sleep("JMenuOperator.WaitBeforePopupTimeout");
-	output.printLine("Expanding menu " + ((JMenu)getSource()).getText());
-	output.printGolden("Expanding menu " + ((JMenu)getSource()).getText());
-	JPopupMenu popup = waitPopupMenu();
-	Waiter waiter = new Waiter(new JMenuItemWaiter(popup, choosers[0]));
-	waiter.setOutput(output.createErrorOutput());
-	waiter.setTimeouts(timeouts);
-	JMenuItem item = null;
-	try {
-	    item = (JMenuItem)waiter.waitAction(null);
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	}
-	if(item instanceof JMenu) {
-	    exitMouse();
-	    JMenuItemFinder[] nextChoosers = new JMenuItemFinder[choosers.length - 1];
-	    for(int i = 0; i < choosers.length - 1; i++) {
-		nextChoosers[i] = choosers[i+1];
-	    }
-	    JMenuOperator mo = new JMenuOperator((JMenu)item);
-	    mo.copyEnvironment(this);
-	    return(mo.pushMenu(nextChoosers, false, blocking));
-	} else {
-	    releaseMouse();
-	    exitMouse();
-	    JMenuItemOperator mio = new JMenuItemOperator(item);
-	    mio.copyEnvironment(this);
-	    if(blocking) {
-		mio.push();
-	    } else {
-		mio.pushNoBlock();
-	    }
-	    return(item);
-	}
-    }
-
-    private JMenuItemFinder[] converChoosers(ComponentChooser[] choosers) {
-	JMenuItemFinder[] realChoosers = new JMenuItemFinder[choosers.length];
-	for(int i = 0; i < choosers.length; i++) {
-	    realChoosers[i] = new JMenuItemFinder(choosers[i]);
-	}
-	return(realChoosers);
-    }
-
-    private JMenuItem pushMenu(String[] names, StringComparator comparator) {
-	return(pushMenu(JMenuItemOperator.createChoosers(names, comparator)));
-    }
-
-    private JMenuItem pushMenuNoBlock(String names[], StringComparator comparator) {
-	return(pushMenuNoBlock(JMenuItemOperator.createChoosers(names, comparator)));
-    }
-
-    private JPopupMenu waitPopupMenu() {
-	try {
-	    Waiter waiter = (new Waiter(new Waitable() {
-		public Object actionProduced(Object obj) {
-		    JPopupMenu popup = getPopupMenu();
-		    if(popup != null && popup.isShowing()) {
-			return(popup);
-		    } else {
-			return(null);
-		    }
+    static PathChooser converChoosers(final ComponentChooser[] choosers) {
+	return(new PathChooser() {
+		public boolean checkPathComponent(int depth, Object component) {
+		    return(choosers[depth].checkComponent((Component)component));
 		}
-		public String getDescription() {
-		    return("Popup menu under " + ((JMenu)getSource()).getText() + " menu");
+		public int getDepth() {
+		    return(choosers.length);
 		}
-	    }));
-	    Timeouts times = timeouts.cloneThis();
-	    times.setTimeout("Waiter.WaitingTime",
-			     times.getTimeout("JMenuOperator.WaitPopupTimeout"));
-	    waiter.setTimeouts(times);
-	    return((JPopupMenu)waiter.waitAction(null));
-	} catch (InterruptedException e) {
-	    return(null);
-	}
+	    });
     }
 
-    private static class JMenuItemFinder implements ComponentChooser {
-	ComponentChooser subFinder;
-	public JMenuItemFinder(ComponentChooser sf) {
-	    subFinder = sf;
-	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JMenuItem) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
-	}
-    }
-
-    private static class JMenuByLabelFinder implements ComponentChooser {
+    public static class JMenuByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public JMenuByLabelFinder(String lb, StringComparator comparator) {
@@ -731,7 +664,7 @@ implements Outputable, Timeoutable{
 	}
     }
     
-    private static class JMenuFinder implements ComponentChooser {
+    public static class JMenuFinder implements ComponentChooser {
 	ComponentChooser subFinder;
 	public JMenuFinder(ComponentChooser sf) {
 	    subFinder = sf;

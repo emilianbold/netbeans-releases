@@ -31,6 +31,7 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.FocusDriver;
 import org.netbeans.jemmy.drivers.KeyDriver;
 import org.netbeans.jemmy.drivers.MouseDriver;
 
@@ -98,6 +99,7 @@ import java.util.Locale;
  * ComponentOperator.BeforeDragTimeout - time to sleep before grag'n'drop operations <BR>
  * ComponentOperator.AfterDragTimeout - time to sleep after grag'n'drop operations <BR>
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
+ * ComponentOperator.WaitStateTimeout
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -122,6 +124,7 @@ public class ComponentOperator extends Operator
     private EventDispatcher dispatcher;
     private KeyDriver kDriver;
     private MouseDriver mDriver;
+    private FocusDriver fDriver;
 
     /**
      * Constructor.
@@ -131,6 +134,7 @@ public class ComponentOperator extends Operator
 	source = comp;
 	kDriver = DriverManager.getKeyDriver(getClass());
 	mDriver = DriverManager.getMouseDriver(getClass());
+	fDriver = DriverManager.getFocusDriver(getClass());
 	setEventDispatcher(new EventDispatcher(comp));
     }
 
@@ -708,6 +712,10 @@ public class ComponentOperator extends Operator
      */
     public void makeComponentVisible() {
 	getVisualizer().makeVisible((ComponentOperator)this);
+    }
+
+    public void getFocus() {
+	fDriver.giveFocus(this);
     }
 
     /**

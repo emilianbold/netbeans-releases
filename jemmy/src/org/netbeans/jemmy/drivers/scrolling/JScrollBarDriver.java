@@ -66,7 +66,7 @@ public class JScrollBarDriver extends AbstractScrollDriver {
     }
     protected void step(ComponentOperator oper, ScrollAdjuster adj) {
 	JButtonOperator boper = findAButton(oper, adj.getScrollDirection());
-	DriverManager.getButtonDriver(boper.getClass()).push(boper);
+	DriverManager.getButtonDriver(boper).push(boper);
     }
     protected void jump(ComponentOperator oper, ScrollAdjuster adj) {
 	JButtonOperator lessButton = findAButton(oper, adj.DECREASE_SCROLL_DIRECTION);
@@ -94,33 +94,33 @@ public class JScrollBarDriver extends AbstractScrollDriver {
 	    } else {
 		return;
 	    }
-	    DriverManager.getMouseDriver(oper.getClass()).
+	    DriverManager.getMouseDriver(oper).
 		clickMouse(oper, x, y, 1, oper.getDefaultMouseButton(), 0, new Timeout("", 0));
 	}
     }
     protected void startPushAndWait(ComponentOperator oper, int direction, int orientation) {
 	JButtonOperator boper = findAButton(oper, direction);
-	DriverManager.getButtonDriver(boper.getClass()).press(boper);
+	DriverManager.getButtonDriver(boper).press(boper);
     }
     protected void stopPushAndWait(ComponentOperator oper, int direction, int orientation) {
 	JButtonOperator boper = findAButton(oper, direction);
-	DriverManager.getButtonDriver(boper.getClass()).release(boper);
+	DriverManager.getButtonDriver(boper).release(boper);
     }
     protected Point startDragging(ComponentOperator oper) {
 	JButtonOperator lessButton = findAButton(oper, ScrollAdjuster.DECREASE_SCROLL_DIRECTION);
 	JButtonOperator moreButton = findAButton(oper, ScrollAdjuster.INCREASE_SCROLL_DIRECTION);
 	Point pnt = getClickPoint((JScrollBarOperator)oper, lessButton, moreButton, ((JScrollBarOperator)oper).getValue());
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper.getClass());
+	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	mdriver.moveMouse(oper, pnt.x, pnt.y);
 	mdriver.pressMouse(oper, pnt.x, pnt.y, oper.getDefaultMouseButton(), 0);
 	return(pnt);
     }
     protected void drop(ComponentOperator oper, Point pnt) {
-	DriverManager.getMouseDriver(oper.getClass()).
+	DriverManager.getMouseDriver(oper).
 	    releaseMouse(oper, pnt.x, pnt.y, oper.getDefaultMouseButton(), 0);
     }
     protected void drag(ComponentOperator oper, Point pnt) {
-	DriverManager.getMouseDriver(oper.getClass()).
+	DriverManager.getMouseDriver(oper).
 	    dragMouse(oper, pnt.x, pnt.y, oper.getDefaultMouseButton(), 0);
     }
     protected Timeout getScrollDeltaTimeout(ComponentOperator oper) {
@@ -132,7 +132,7 @@ public class JScrollBarDriver extends AbstractScrollDriver {
 	    return(false);
 	}
 	boolean result = false;
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper.getClass());
+	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	JButtonOperator less = findAButton(oper, ScrollAdjuster.DECREASE_SCROLL_DIRECTION);
 	JButtonOperator more = findAButton(oper, ScrollAdjuster.INCREASE_SCROLL_DIRECTION);
 	Point pnt = getClickPoint((JScrollBarOperator)oper, less, more, ((JScrollBarOperator)oper).getValue());

@@ -39,8 +39,14 @@ public class Application_002 extends TestFrame {
 		}
 	    });
 
+	MyMenu subsubmenu = new MyMenu("subsubmenu");
+	subsubmenu.add(menuItem);
+
+	MyMenu submenu = new MyMenu("submenu");
+	submenu.add(subsubmenu);
+
 	MyMenu menu = new MyMenu("menu");
-	menu.add(menuItem);
+	menu.add(submenu);
 
 	MyMenuItem menu0Item = new MyMenuItem("menu0Item");
 	menuLabel = new JLabel("Menu has not been pushed yet");

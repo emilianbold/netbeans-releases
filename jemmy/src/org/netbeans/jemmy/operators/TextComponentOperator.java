@@ -306,10 +306,7 @@ public class TextComponentOperator extends ComponentOperator
     }
 
     public void changeCaretPosition(final int position) {
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    driver.changeCaretPosition(TextComponentOperator.this, position);
@@ -322,10 +319,7 @@ public class TextComponentOperator extends ComponentOperator
     }
 
     public void selectText(final int startPosition, final int finalPosition) {
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    driver.selectText(TextComponentOperator.this, startPosition, finalPosition);
@@ -360,10 +354,7 @@ public class TextComponentOperator extends ComponentOperator
 	output.printLine("Clearing text in text component\n    : " +
 			 getSource().toString());
 	output.printGolden("Clearing text in text component");
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    driver.clearText(TextComponentOperator.this);
@@ -381,10 +372,7 @@ public class TextComponentOperator extends ComponentOperator
 			 "in text component\n    : " +
 			 getSource().toString());
 	output.printGolden("Typing text \"" + text + "\" in text component");
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    driver.typeText(TextComponentOperator.this, text, caretPosition);
@@ -400,10 +388,7 @@ public class TextComponentOperator extends ComponentOperator
 	typeText(text, getCaretPosition());
     }
     public void enterText(final String text) {
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    driver.enterText(TextComponentOperator.this, text);

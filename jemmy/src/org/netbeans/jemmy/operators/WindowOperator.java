@@ -26,6 +26,9 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.WindowWaiter;
 
+import org.netbeans.jemmy.drivers.WindowDriver;
+import org.netbeans.jemmy.drivers.DriverManager;
+
 import java.awt.Component;
 import java.awt.Window;
 
@@ -49,12 +52,14 @@ public class WindowOperator extends ContainerOperator
 implements Outputable{
 
     TestOut output;
+    WindowDriver driver;
 
     /**
      * Constructor.
      */
     public WindowOperator(Window w) {
 	super(w);
+	driver = DriverManager.getWindowDriver(getClass());
     }
 
     /**
@@ -193,38 +198,6 @@ implements Outputable{
 	return(waitWindow(owner, chooser, 0));
     }
 
-    protected static Window waitWindow(ComponentChooser chooser, int index,
-				       Timeouts timeouts, TestOut output) {
-	try {
-	    WindowWaiter waiter = new WindowWaiter();
-	    waiter.setTimeouts(timeouts);
-	    waiter.setOutput(output);
-	    return(waiter.waitWindow(chooser, index));
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	    return(null);
-	}
-    }
-
-    protected static Window waitWindow(WindowOperator owner, ComponentChooser chooser, int index) {
-	return(waitWindow((Window)owner.getSource(), 
-			  chooser, index, 
-			  owner.getTimeouts(), owner.getOutput()));
-    }
-
-    protected static Window waitWindow(Window owner, ComponentChooser chooser, int index,
-				       Timeouts timeouts, TestOut output) {
-	try {
-	    WindowWaiter waiter = new WindowWaiter();
-	    waiter.setTimeouts(timeouts);
-	    waiter.setOutput(output);
-	    return(waiter.waitWindow(owner, chooser, index));
-	} catch(InterruptedException e) {
-	    JemmyProperties.getCurrentOutput().printStackTrace(e);
-	    return(null);
-	}
-    }
-
     /**
      * Defines print output streams or writers.
      * @param out Identify the streams or writers used for print output.
@@ -247,22 +220,51 @@ implements Outputable{
 	return(output);
     }
 
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (WindowDriver)DriverManager.
+	    getDriver(DriverManager.WINDOW_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
+    }
+
     public void activate() {
  	output.printLine("Activate window\n    " + getSource().toString());
  	output.printGolden("Activate window");
- 	if(getFocusOwner() == null) {
- 	    getEventDispatcher().invokeExistingMethod("toFront", null, null);
- 	}
- 	getEventDispatcher().dispatchWindowEvent(WindowEvent.WINDOW_ACTIVATED);
+	driver.activate(this);
     }
 
-    /**
-     * Notifies the window that it is being closed.
-     */    
     public void close() {
- 	output.printLine("Close window\n    " + getSource().toString());
- 	output.printGolden("Close window");
- 	getEventDispatcher().dispatchWindowEvent(WindowEvent.WINDOW_CLOSING);
+ 	output.printLine("Closing window\n    " + getSource().toString());
+ 	output.printGolden("Closing window");
+	driver.close(this);
+    }
+
+    public void move(int x, int y) {
+ 	output.printLine("Moving frame\n    " + getSource().toString());
+ 	output.printGolden("Moving frame");
+	driver.move(this, x, y);
+    }
+
+    public void resize(int width, int height) {
+ 	output.printLine("Resizing frame\n    " + getSource().toString());
+ 	output.printGolden("Resizing frame");
+	driver.resize(this, width, height);
+    }
+
+    public void waitClosed() {
+	getOutput().printLine("Wait window to be closed \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait window to be closed");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(!comp.isVisible());
+		}
+		public String getDescription() {
+		    return("Closed window");
+		}
+	    });
     }
 
     ////////////////////////////////////////////////////////
@@ -354,4 +356,37 @@ implements Outputable{
 
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
+
+    protected static Window waitWindow(ComponentChooser chooser, int index,
+				       Timeouts timeouts, TestOut output) {
+	try {
+	    WindowWaiter waiter = new WindowWaiter();
+	    waiter.setTimeouts(timeouts);
+	    waiter.setOutput(output);
+	    return(waiter.waitWindow(chooser, index));
+	} catch(InterruptedException e) {
+	    output.printStackTrace(e);
+	    return(null);
+	}
+    }
+
+    protected static Window waitWindow(WindowOperator owner, ComponentChooser chooser, int index) {
+	return(waitWindow((Window)owner.getSource(), 
+			  chooser, index, 
+			  owner.getTimeouts(), owner.getOutput()));
+    }
+
+    protected static Window waitWindow(Window owner, ComponentChooser chooser, int index,
+				       Timeouts timeouts, TestOut output) {
+	try {
+	    WindowWaiter waiter = new WindowWaiter();
+	    waiter.setTimeouts(timeouts);
+	    waiter.setOutput(output);
+	    return(waiter.waitWindow(owner, chooser, index));
+	} catch(InterruptedException e) {
+	    JemmyProperties.getCurrentOutput().printStackTrace(e);
+	    return(null);
+	}
+    }
+
 }

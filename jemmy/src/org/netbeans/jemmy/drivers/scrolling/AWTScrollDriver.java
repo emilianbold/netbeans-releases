@@ -35,7 +35,7 @@ public abstract class AWTScrollDriver extends AbstractScrollDriver {
     protected void step(ComponentOperator oper, ScrollAdjuster adj) {
 	if(adj.getScrollDirection() != ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION) {
 	    Point clickPoint = getClickPoint(oper, adj.getScrollDirection(), adj.getScrollOrientation());
-	    DriverManager.getMouseDriver(oper.getClass()).
+	    DriverManager.getMouseDriver(oper).
 		clickMouse(oper, clickPoint.x, clickPoint.y, 1, 
 			   Operator.getDefaultMouseButton(),
 			   0, 
@@ -46,7 +46,7 @@ public abstract class AWTScrollDriver extends AbstractScrollDriver {
     protected void jump(ComponentOperator oper, ScrollAdjuster adj) {}
     protected void startPushAndWait(ComponentOperator oper, int direction, int orientation) {
 	Point clickPoint = getClickPoint(oper, direction, orientation);
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper.getClass());
+	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	mdriver.moveMouse(oper, clickPoint.x, clickPoint.y);
 	mdriver.pressMouse(oper, clickPoint.x, clickPoint.y,
 			   Operator.getDefaultMouseButton(),
@@ -54,7 +54,7 @@ public abstract class AWTScrollDriver extends AbstractScrollDriver {
     }
     protected void stopPushAndWait(ComponentOperator oper, int direction, int orientation) {
 	Point clickPoint = getClickPoint(oper, direction, orientation);
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper.getClass());
+	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	mdriver.releaseMouse(oper, clickPoint.x, clickPoint.y,
 			     Operator.getDefaultMouseButton(),
 			     0);

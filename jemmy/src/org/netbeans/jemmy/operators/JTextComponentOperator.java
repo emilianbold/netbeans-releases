@@ -398,10 +398,7 @@ public class JTextComponentOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void enterText(final String text) {
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    driver.enterText(JTextComponentOperator.this, text);
@@ -424,10 +421,7 @@ public class JTextComponentOperator extends JComponentOperator
      */
     public void changeCaretPosition(final int position) {
 	output.printLine("Change caret position to " + Integer.toString(position));
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    driver.changeCaretPosition(JTextComponentOperator.this, position);
@@ -459,10 +453,7 @@ public class JTextComponentOperator extends JComponentOperator
 			 (before ? "before" : "after") + " " +
 			 Integer.toString(index) + "'th instance of \"" +
 			 text + "\" text");
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	int offset = getPositionByText(text, index);
 	if(offset == -1) {
 	    throw(new NoSuchTextException(text));
@@ -504,10 +495,7 @@ public class JTextComponentOperator extends JComponentOperator
 			 "in text component\n    : " +
 			 getSource().toString());
 	output.printGolden("Typing text \"" + text + "\" in text component");
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    driver.typeText(JTextComponentOperator.this, text, caretPosition);
@@ -546,10 +534,7 @@ public class JTextComponentOperator extends JComponentOperator
 			 Integer.toString(finalPosition) + 
 			 " in text component\n    : " +
 			 getSource().toString());
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    driver.selectText(JTextComponentOperator.this, startPosition, finalPosition);
@@ -576,10 +561,7 @@ public class JTextComponentOperator extends JComponentOperator
 			 Integer.toString(index) + "'th instance of \"" +
 			 text + "\" text in component\n    : " +
 			 getSource().toString());
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	int start = getPositionByText(text, index);
 	if(start == -1) {
 	    throw(new NoSuchTextException(text));
@@ -607,10 +589,7 @@ public class JTextComponentOperator extends JComponentOperator
 	output.printLine("Clearing text in text component\n    : " +
 			 getSource().toString());
 	output.printGolden("Clearing text in text component");
-	if(!hasFocus()) {
-	    makeComponentVisible();
-	    clickMouse(1);
-	}
+	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    driver.clearText(JTextComponentOperator.this);

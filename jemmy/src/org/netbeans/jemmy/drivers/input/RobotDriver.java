@@ -39,8 +39,8 @@ public class RobotDriver extends SupportiveDriver {
     protected ClassReference robotReference = null;
     protected QueueTool qtool;
 
-    public RobotDriver(Timeout autoDelay) {
-	super(new Class[] {ComponentOperator.class, ScrollPaneOperator.class});
+    public RobotDriver(Timeout autoDelay, Class[] supported) {
+	super(supported);
 	qtool = new QueueTool();
 	qtool.setOutput(TestOut.getNullOutput());
 	try {
@@ -66,6 +66,9 @@ public class RobotDriver extends SupportiveDriver {
 	}
     }
 
+    public RobotDriver(Timeout autoDelay) {
+	this(autoDelay, new Class[] {ComponentOperator.class});
+    }
 
     /**
      * Press key.

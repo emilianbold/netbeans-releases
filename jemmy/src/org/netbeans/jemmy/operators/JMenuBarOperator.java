@@ -17,6 +17,7 @@
 
 package org.netbeans.jemmy.operators;
 
+import org.netbeans.jemmy.Action;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.Outputable;
@@ -24,6 +25,9 @@ import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
+
+import org.netbeans.jemmy.drivers.MenuDriver;
+import org.netbeans.jemmy.drivers.DriverManager;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -61,12 +65,14 @@ public class JMenuBarOperator extends JComponentOperator
 
     private TestOut output;
     private Timeouts timeouts;
+    private MenuDriver driver;
 
     /**
      * Constructor.
      */
     public JMenuBarOperator(JMenuBar b) {
 	super(b);
+	driver = DriverManager.getMenuDriver(getClass());
     }
 
     /**
@@ -171,24 +177,46 @@ public class JMenuBarOperator extends JComponentOperator
 	return(timeouts);
     }
 
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = DriverManager.getMenuDriver(this);
+    }
+
     /**
      * Pushes menu.
      * @param choosers Array of choosers to find menuItems to push.
      * @return Last pushed JMenuItem.
      * @throws TimeoutExpiredException
      */
-    public JMenuItem pushMenu(ComponentChooser[] choosers) {
-	return(pushMenu(choosers, true));
+    public JMenuItem pushMenu(final ComponentChooser[] choosers) {
+	return((JMenuItem)produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    return(driver.pushMenu(JMenuBarOperator.this, 
+					   JMenuOperator.converChoosers(choosers)));
+		}
+		public String getDescription() {
+		    return("Menu pushing");
+		}
+	    }, getTimeouts().getTimeout("JMenuOperator.PushMenuTimeout")));
     }
 
     /**
      * Executes <code>pushMenu(choosers)</code> in a separate thread.
      * @see #pushMenu(ComponentChooser[])
      */
-    public JMenuItem pushMenuNoBlock(ComponentChooser[] choosers) {
-	return(pushMenu(choosers, false));
+    public void pushMenuNoBlock(final ComponentChooser[] choosers) {
+	produceNoBlocking(new NoBlockingAction("Menu pushing") {
+		public Object doAction(Object param) {
+		    return(driver.pushMenu(JMenuBarOperator.this, 
+					   JMenuOperator.converChoosers(choosers)));
+		}
+	    });
     }
 
+    public JMenuItem pushMenu(String[] names, StringComparator comparator) {
+ 	return(pushMenu(JMenuItemOperator.createChoosers(names, comparator)));
+    }
+ 
     /**
      * Pushes menu.
      * @param names Menu items texts.
@@ -197,17 +225,23 @@ public class JMenuBarOperator extends JComponentOperator
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @return Last pushed JMenuItem.
      * @throws TimeoutExpiredException
+     * @deprecated Use pushMenu(String[]) or pushMenu(String[], StringComparator)
      */
     public JMenuItem pushMenu(String[] names, boolean ce, boolean ccs) {
 	return(pushMenu(names, new DefaultStringComparator(ce, ccs)));
     }
 
+    public void pushMenuNoBlock(String[] names, StringComparator comparator) {
+ 	pushMenuNoBlock(JMenuItemOperator.createChoosers(names, comparator));
+    }
+ 
     /**
      * Executes <code>pushMenu(names, ce, ccs)</code> in a separate thread.
      * @see #pushMenu(String[], boolean,boolean)
+     * @deprecated Use pushMenuNoBlock(String[]) or pushMenuNoBlock(String[], StringComparator)
      */
-    public JMenuItem pushMenuNoBlock(String[] names, boolean ce, boolean ccs) {
-	return(pushMenuNoBlock(names, new DefaultStringComparator(ce, ccs)));
+    public void pushMenuNoBlock(String[] names, boolean ce, boolean ccs) {
+	pushMenuNoBlock(names, new DefaultStringComparator(ce, ccs));
     }
 
     /**
@@ -224,10 +258,14 @@ public class JMenuBarOperator extends JComponentOperator
      * Executes <code>pushMenu(names)</code> in a separate thread.
      * @see #pushMenu(String[])
      */
-    public JMenuItem pushMenuNoBlock(String[] names) {
-	return(pushMenuNoBlock(names, getComparator()));
+    public void pushMenuNoBlock(String[] names) {
+	pushMenuNoBlock(names, getComparator());
     }
 
+    public JMenuItem pushMenu(String path, String delim, StringComparator comparator) {
+ 	return(pushMenu(parseString(path, delim), comparator));
+    }
+ 
     /**
      * Pushes menu.
      * @param path String menupath representation ("File/New", for example).
@@ -237,17 +275,23 @@ public class JMenuBarOperator extends JComponentOperator
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @return Last pushed JMenuItem.
      * @throws TimeoutExpiredException
+     * @deprecated Use pushMenu(String, String) or pushMenu(String, String, StringComparator)
      */
     public JMenuItem pushMenu(String path, String delim, boolean ce, boolean ccs) {
 	return(pushMenu(parseString(path, delim), ce, ccs));
     }
 
+    public void pushMenuNoBlock(String path, String delim, StringComparator comparator) {
+ 	pushMenuNoBlock(parseString(path, delim), comparator);
+    }
+ 
     /**
      * Executes <code>pushMenu(path, delim, ce, ccs)</code> in a separate thread.
      * @see #pushMenu(String, String, boolean, boolean)
+     * @deprecated Use pushMenuNoBlock(String, String) or pushMenuNoBlock(String, String, StringComparator)
      */
-    public JMenuItem pushMenuNoBlock(String path, String delim, boolean ce, boolean ccs) {
-	return(pushMenuNoBlock(parseString(path, delim), ce, ccs));
+    public void pushMenuNoBlock(String path, String delim, boolean ce, boolean ccs) {
+	pushMenuNoBlock(parseString(path, delim), ce, ccs);
     }
 
     /**
@@ -265,8 +309,8 @@ public class JMenuBarOperator extends JComponentOperator
      * Executes <code>pushMenu(path, delim)</code> in a separate thread.
      * @see #pushMenu(String, String)
      */
-    public JMenuItem pushMenuNoBlock(String path, String delim) {
-	return(pushMenuNoBlock(parseString(path, delim)));
+    public void pushMenuNoBlock(String path, String delim) {
+	pushMenuNoBlock(parseString(path, delim));
     }
 
     /**
@@ -431,43 +475,6 @@ public class JMenuBarOperator extends JComponentOperator
 
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
-
-    private JMenuItem pushMenu(ComponentChooser[] choosers, boolean blocking) {
-	makeComponentVisible();
-	JMenuItem menuItem = (JMenuItem)(new ComponentSearcher((Container)getSource()).findComponent(choosers[0]));
-	if(menuItem instanceof JMenu) {
-	    ComponentChooser[] nextChoosers = new ComponentChooser[choosers.length - 1];
-	    for(int i = 0; i < choosers.length - 1; i++) {
-		nextChoosers[i] = choosers[i+1];
-	    }
-	    JMenuOperator mo = new JMenuOperator((JMenu)menuItem);
-	    mo.copyEnvironment(this);
-	    if(blocking) {
-		return(mo.pushMenu(nextChoosers));
-	    } else {
-		return(mo.pushMenuNoBlock(nextChoosers));
-	    }
-	} else {
-	    JMenuItemOperator mio = new JMenuItemOperator(menuItem);
-	    output.printLine("Pushing menu " + mio.getText());
-	    output.printGolden("Pushing menu " + mio.getText());
-	    mio.copyEnvironment(this);
-	    if(blocking) {
-		mio.push();
-	    } else {
-		mio.pushNoBlock();
-	    }
-	    return(menuItem);
-	}
-    }
-
-    private JMenuItem pushMenu(String[] names, StringComparator comparator) {
-	return(pushMenu(JMenuItemOperator.createChoosers(names, comparator)));
-    }
-
-    private JMenuItem pushMenuNoBlock(String[] names, StringComparator comparator) {
-	return(pushMenuNoBlock(JMenuItemOperator.createChoosers(names, comparator)));
-    }
 
     private static class JMenuBarFinder extends Object implements ComponentChooser {
 	public JMenuBarFinder() {

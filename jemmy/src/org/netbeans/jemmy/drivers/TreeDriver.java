@@ -27,4 +27,5 @@ public interface TreeDriver extends MultiSelListDriver {
     public void expandItem(ComponentOperator oper, int index);
     public void collapseItem(ComponentOperator oper, int index);
     public void editItem(ComponentOperator oper, int index, Object newValue, Timeout waitEditorTime);
+    public void startEditing(ComponentOperator oper, int index, Timeout waitEditorTime);
 }

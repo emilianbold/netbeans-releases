@@ -39,18 +39,20 @@ public abstract class TextKeyboardDriver extends SupportiveDriver implements Tex
 	super(supported);
     }
     public void changeCaretPosition(ComponentOperator oper, int position) {
+	DriverManager.getFocusDriver(oper).giveFocus(oper);
 	checkSupported(oper);
 	changeCaretPosition(oper, position, 0);
     }
     public void selectText(ComponentOperator oper, int startPosition, int finalPosition) {
 	changeCaretPosition(oper, startPosition);
-	DriverManager.getKeyDriver(oper.getClass()).pressKey(oper, KeyEvent.VK_SHIFT, 0);
+	DriverManager.getKeyDriver(oper).pressKey(oper, KeyEvent.VK_SHIFT, 0);
 	changeCaretPosition(oper, finalPosition, InputEvent.SHIFT_MASK);
-	DriverManager.getKeyDriver(oper.getClass()).releaseKey(oper, KeyEvent.VK_SHIFT, 0);
+	DriverManager.getKeyDriver(oper).releaseKey(oper, KeyEvent.VK_SHIFT, 0);
     }
     public void clearText(ComponentOperator oper) {
+	DriverManager.getFocusDriver(oper).giveFocus(oper);
 	checkSupported(oper);
-	KeyDriver kdriver = DriverManager.getKeyDriver(oper.getClass());
+	KeyDriver kdriver = DriverManager.getKeyDriver(oper);
 	Timeout pushTime = oper.getTimeouts().create("ComponentOperator.PushKeyTimeout");
 	Timeout betweenTime = getBetweenTimeout(oper);
 	while(getCaretPosition(oper) > 0) {
@@ -64,7 +66,7 @@ public abstract class TextKeyboardDriver extends SupportiveDriver implements Tex
     }
     public void typeText(ComponentOperator oper, String text, int caretPosition) {
 	changeCaretPosition(oper, caretPosition);
-	KeyDriver kDriver = DriverManager.getKeyDriver(oper.getClass());
+	KeyDriver kDriver = DriverManager.getKeyDriver(oper);
 	CharBindingMap map = oper.getCharBindingMap();
 	Timeout pushTime = oper.getTimeouts().create("ComponentOperator.PushKeyTimeout");
 	Timeout betweenTime = getBetweenTimeout(oper);
@@ -80,7 +82,7 @@ public abstract class TextKeyboardDriver extends SupportiveDriver implements Tex
     }
     public void enterText(ComponentOperator oper, String text) {
 	changeText(oper, text);
-	DriverManager.getKeyDriver(oper.getClass()).pushKey(oper, KeyEvent.VK_ENTER, 0,
+	DriverManager.getKeyDriver(oper).pushKey(oper, KeyEvent.VK_ENTER, 0,
 					     new Timeout("", 0));
     }
     public abstract String getText(ComponentOperator oper);
@@ -107,7 +109,7 @@ public abstract class TextKeyboardDriver extends SupportiveDriver implements Tex
 	}
     }
     private void push(ComponentOperator oper, NavigationKey key, int preModifiers) {
-	DriverManager.getKeyDriver(oper.getClass()).
+	DriverManager.getKeyDriver(oper).
 	    pushKey(oper, key.getKeyCode(), key.getModifiers() | preModifiers,
 		    oper.getTimeouts().create("ComponentOperator.PushKeyTimeout"));
 	getBetweenTimeout(oper).sleep();

@@ -47,7 +47,7 @@ public class jemmy_031 extends JemmyTest {
 		return(1);
 	    }
 
-	    new QueueTool().waitEmpty();
+	    new QueueTool().waitEmpty(100);
 
 	    File curDir = new File(System.getProperty("user.dir"));
 
@@ -68,13 +68,14 @@ public class jemmy_031 extends JemmyTest {
 	    }
 	    if(firsFile != null) {
 		chooseoper.selectFileType("No directory", true, true);
-		new QueueTool().waitEmpty();
+		new QueueTool().waitEmpty(100);
 		if(!chooseoper.checkFileDisplayed(firsFile.getName(), true, true)) {
 		    getOutput().printErrLine("selectFileType does not work.");
 		    finalize();
 		    return(1);
 		}
 	    }
+	    Thread.sleep(100);
 	    File firsDir = null;
 	    for(int i = 0; i < allFiles.length; i++) {
 		if(allFiles[i].isDirectory()) {
@@ -84,30 +85,19 @@ public class jemmy_031 extends JemmyTest {
 	    }
 	    if(firsDir != null) {
 		chooseoper.selectFileType("No file", true, true);
-		new QueueTool().waitEmpty();
-		if(!chooseoper.checkFileDisplayed(firsDir.getName(), true, true)) {
-		    getOutput().printErrLine("selectFileType does not work.");
-		    finalize();
-		    return(1);
-		}
+		new QueueTool().waitEmpty(100);
+		chooseoper.waitFileDisplayed(firsDir.getName());
 	    }
+	    Thread.sleep(100);
 	    chooseoper.selectFileType("Nothing", true, true);
-	    new QueueTool().waitEmpty();
-	    if(chooseoper.getFileCount() != 0) {
-		getOutput().printErrLine("selectFileType does not work.");
-		finalize();
-		return(1);
-	    }
+	    chooseoper.waitFileCount(0);
+	    Thread.sleep(100);
 	    chooseoper.selectFileType("All", false, false);
-	    new QueueTool().waitEmpty();
-	    if(chooseoper.getFileCount() != allFiles.length) {
-		getOutput().printErrLine("selectFileType does not work.");
-		finalize();
-		return(1);
-	    }
+	    chooseoper.waitFileCount(allFiles.length);
+	    Thread.sleep(100);
 
 	    chooseoper.goUpLevel();
-	    new QueueTool().waitEmpty();
+	    new QueueTool().waitEmpty(100);
 
 	    if(!chooseoper.getCurrentDirectory().equals(curDir.getParentFile())) {
 		getOutput().printErrLine("Wrong current directory : " + chooseoper.getCurrentDirectory().toString());
@@ -118,7 +108,7 @@ public class jemmy_031 extends JemmyTest {
 
 	    chooseoper.enterSubDir(curDir.getCanonicalPath().substring(curDir.getParentFile().getCanonicalPath().length() + 1),
 				   true, true);
-	    new QueueTool().waitEmpty();
+	    new QueueTool().waitEmpty(100);
 
 	    if(!chooseoper.getCurrentDirectory().equals(curDir)) {
 		getOutput().printErrLine("Wrong current directory : " + chooseoper.getCurrentDirectory().toString());
@@ -128,7 +118,7 @@ public class jemmy_031 extends JemmyTest {
 	    }
 
 	    chooseoper.selectPathDirectory(curDir.getParentFile().getName(), true, true);
-	    new QueueTool().waitEmpty();
+	    new QueueTool().waitEmpty(100);
 
 	    if(!chooseoper.getCurrentDirectory().equals(curDir.getParentFile())) {
 		getOutput().printErrLine("Wrong current directory : " + chooseoper.getCurrentDirectory().toString());
@@ -138,7 +128,7 @@ public class jemmy_031 extends JemmyTest {
 	    }
 
 	    chooseoper.goHome();
-	    new QueueTool().waitEmpty();
+	    new QueueTool().waitEmpty(100);
 
 	    File homeDir = new File(System.getProperty("user.home"));
 

@@ -89,7 +89,7 @@ public abstract class TextAPIDriver extends SupportiveDriver implements TextDriv
     }
     public void enterText(ComponentOperator oper, String text) {
 	changeText(oper, text);
-	DriverManager.getKeyDriver(oper.getClass()).
+	DriverManager.getKeyDriver(oper).
 	    pushKey(oper, KeyEvent.VK_ENTER, 0,
 		    new Timeout("", 0));
     }

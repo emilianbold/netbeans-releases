@@ -20,9 +20,13 @@ package org.netbeans.jemmy.operators;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.FrameWaiter;
+import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
+
+import org.netbeans.jemmy.drivers.FrameDriver;
+import org.netbeans.jemmy.drivers.DriverManager;
 
 import java.awt.Component;
 import java.awt.Image;
@@ -43,9 +47,14 @@ import java.util.Hashtable;
  *	
  */
 
-public class FrameOperator extends WindowOperator {
+public class FrameOperator extends WindowOperator implements Outputable {
+
+    TestOut output;
+    FrameDriver driver;
+
     public FrameOperator(Frame w) {
 	super(w);
+	driver = DriverManager.getFrameDriver(getClass());
     }
 
     /**
@@ -123,6 +132,37 @@ public class FrameOperator extends WindowOperator {
     }
 
     /**
+     * Defines print output streams or writers.
+     * @param out Identify the streams or writers used for print output.
+     * @see org.netbeans.jemmy.Timeoutable
+     * @see org.netbeans.jemmy.Timeouts
+     */
+    public void setOutput(TestOut out) {
+	super.setOutput(out);
+	output = out;
+    }
+    
+    /**
+     * Returns print output streams or writers.
+     * @return an object that contains references to objects for
+     * printing to output and err streams.
+     * @see org.netbeans.jemmy.Timeoutable
+     * @see org.netbeans.jemmy.Timeouts
+     */
+    public TestOut getOutput() {
+	return(output);
+    }
+
+    public void copyEnvironment(Operator anotherOperator) {
+	super.copyEnvironment(anotherOperator);
+	driver = 
+	    (FrameDriver)DriverManager.
+	    getDriver(DriverManager.FRAME_DRIVER_ID,
+		      getClass(), 
+		      anotherOperator.getProperties());
+    }
+
+    /**
      * Waits for title. Uses getComparator() comparator.
      * @param title Title to wait for.
      */
@@ -131,6 +171,27 @@ public class FrameOperator extends WindowOperator {
 			      getSource().toString());
 	getOutput().printGolden("Wait \"" + title + "\" title");
 	waitState(new FrameByTitleChooser(title, getComparator()));
+    }
+
+    public void iconify() {
+ 	output.printLine("Iconifying frame\n    " + getSource().toString());
+ 	output.printGolden("Iconifying frame");
+	driver.iconify(this);
+    }
+    public void deiconify() {
+ 	output.printLine("Deiconifying frame\n    " + getSource().toString());
+ 	output.printGolden("Deiconifying frame");
+	driver.deiconify(this);
+    }
+    public void maximize() {
+ 	output.printLine("Maximizing frame\n    " + getSource().toString());
+ 	output.printGolden("Maximizing frame");
+	driver.maximize(this);
+    }
+    public void demaximize() {
+ 	output.printLine("Demaximizing frame\n    " + getSource().toString());
+ 	output.printGolden("Demaximizing frame");
+	driver.demaximize(this);
     }
 
     /**

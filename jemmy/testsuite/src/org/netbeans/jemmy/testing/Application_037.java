@@ -8,6 +8,8 @@ public class Application_037 extends TestFrame {
 	super("Application_037");
 
 	Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+	size.width = size.width / 2;
+	size.height = size.height / 2;
 
 	JScrollBar swhscroll = new JScrollBar(JScrollBar.HORIZONTAL, 0, 10, 0, 100);
 	JScrollBar swvscroll = new JScrollBar(JScrollBar.VERTICAL  , 0, 10, 0, 100);

@@ -347,7 +347,7 @@ public class JListOperator extends JComponentOperator
 	return(findItemIndex(chooser, 0));
     }
 
-    private int findItemIndex(String item, StringComparator comparator, int index){
+    public int findItemIndex(String item, StringComparator comparator, int index){
 	return(findItemIndex(new BySubStringListItemChooser(item, comparator), index));
     }
 
@@ -357,6 +357,7 @@ public class JListOperator extends JComponentOperator
      * @param cc Compare text case sensitively.
      * @param index
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @deprecated Use findItemIndex(String, int) or findItemIndex(String, StringComparator, int)
      */
     public int findItemIndex(String item, boolean ce, boolean cc, int index){
 	return(findItemIndex(item, new DefaultStringComparator(ce, cc), index));
@@ -371,11 +372,16 @@ public class JListOperator extends JComponentOperator
 	return(findItemIndex(item, getComparator(), index));
     }
     
+    public int findItemIndex(String item, StringComparator comparator){
+	return(findItemIndex(item, comparator, 0));
+    }
+
     /**
      * Searched  item by text.
      * @param ce Compare text exactly.
      * @param cc Compare text case sensitively.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @deprecated Use findItemIndex(String) or findItemIndex(String, StringComparator)
      */
     public int findItemIndex(String item, boolean ce, boolean cc) {
 	return(findItemIndex(item, ce, cc, 0));
@@ -448,7 +454,7 @@ public class JListOperator extends JComponentOperator
 	return(result);
     }
     
-    Object clickOnItem(String item, StringComparator comparator, int clickCount) {
+    public Object clickOnItem(String item, StringComparator comparator, int clickCount) {
 	int index = findItemIndex(item, comparator, 0);
 	if(index != -1) {
 	    return(clickOnItem(index, clickCount));
@@ -465,6 +471,7 @@ public class JListOperator extends JComponentOperator
      * @param clickCount count click.
      * @return Click point or null if list does not contains itemIndex'th item.
      * @throws NoSuchItemException
+     * @deprecated Use clickOnItem(String, int) or clickOnItem(String, StringComparator, int)
      */
     public Object clickOnItem(String item, boolean ce, boolean cc, int clickCount) {
 	return(clickOnItem(item, new DefaultStringComparator(ce, cc), clickCount));
@@ -482,6 +489,10 @@ public class JListOperator extends JComponentOperator
 	return(clickOnItem(item, getComparator(), clickCount));
     }
 
+    public Object clickOnItem(String item, StringComparator comparator) {
+	return(clickOnItem(item, comparator, 1));
+    }
+
     /**
      * Finds item by item text, and do simple mouse click on it.
      * @param item Item text.
@@ -489,6 +500,7 @@ public class JListOperator extends JComponentOperator
      * @param cc Compare case sensitively.
      * @return Click point or null if list does not contains itemIndex'th item.
      * @throws NoSuchItemException
+     * @deprecated Use clickOnItem(String) or clickOnItem(String, StringComparator)
      */
     public Object clickOnItem(String item, boolean ce, boolean cc) {
 	return(clickOnItem(item, ce, cc, 1));
@@ -534,6 +546,10 @@ public class JListOperator extends JComponentOperator
 					    (int)rect.getHeight());
     }
 
+    public void scrollToItem(String item, StringComparator comparator) {
+	scrollToItem(findItemIndex(item, comparator));
+    }
+
     /**
      * Scrolls to an item if the list is on a JScrollPane component.
      * @param item Item text
@@ -541,6 +557,7 @@ public class JListOperator extends JComponentOperator
      * @param cc Compare case sensitively.
      * @see #scrollToItem(String, boolean, boolean)
      * @throws TimeoutExpiredException
+     * @deprecated Use scrollToItem(String) or scrollToItem(String, StringComparator)
      */
     public void scrollToItem(String item, boolean ce, boolean cc) {
 	scrollToItem(findItemIndex(item, ce, cc));

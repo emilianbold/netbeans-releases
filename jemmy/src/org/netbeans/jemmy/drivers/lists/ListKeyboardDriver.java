@@ -40,8 +40,8 @@ public class ListKeyboardDriver extends ListAPIDriver implements MultiSelListDri
 	if(loper.isMultipleMode()) {
 	    super.selectItem(loper, index);
 	}
-	MouseDriver mDriver = DriverManager.getMouseDriver(oper.getClass());
-	KeyDriver   kDriver = DriverManager.getKeyDriver  (oper.getClass());
+	/*
+	MouseDriver mDriver = DriverManager.getMouseDriver(oper);
 	mDriver.clickMouse(oper, 
 			   oper.getCenterXForClick(),
 			   oper.getCenterYForClick(),
@@ -49,6 +49,9 @@ public class ListKeyboardDriver extends ListAPIDriver implements MultiSelListDri
 			   oper.getDefaultMouseButton(),
 			   0,
 			   oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
+	*/
+	DriverManager.getFocusDriver(oper).giveFocus(oper);
+	KeyDriver   kDriver = DriverManager.getKeyDriver(oper);
 	int current = loper.getSelectedIndex();
 	int diff = 0;
 	int key = 0;

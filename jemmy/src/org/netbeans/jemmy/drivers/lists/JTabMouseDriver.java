@@ -40,7 +40,7 @@ public class JTabMouseDriver extends SupportiveDriver implements ListDriver {
 		getUI().
 		getTabBounds((JTabbedPane)oper.getSource(),
 			     index);
-	    DriverManager.getMouseDriver(oper.getClass()).
+	    DriverManager.getMouseDriver(oper).
 		clickMouse(oper, 
 			   (int)(rect.getX() + rect.getWidth() / 2),
 			   (int)(rect.getY() + rect.getHeight() / 2),

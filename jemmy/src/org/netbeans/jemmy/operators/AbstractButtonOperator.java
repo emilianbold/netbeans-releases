@@ -307,11 +307,7 @@ public class AbstractButtonOperator extends JComponentOperator
 
     public void copyEnvironment(Operator anotherOperator) {
 	super.copyEnvironment(anotherOperator);
-	driver = 
-	    (ButtonDriver)DriverManager.
-	    getDriver(DriverManager.BUTTON_DRIVER_ID,
-		      getClass(), 
-		      anotherOperator.getProperties());
+	driver = DriverManager.getButtonDriver(this);
     }
 
     /**

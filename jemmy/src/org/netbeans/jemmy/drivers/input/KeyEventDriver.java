@@ -32,6 +32,9 @@ import org.netbeans.jemmy.drivers.KeyDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 public class KeyEventDriver extends EventDriver implements KeyDriver {
+    public KeyEventDriver(Class[] supported) {
+	super(supported);
+    }
     public KeyEventDriver() {
 	super();
     }

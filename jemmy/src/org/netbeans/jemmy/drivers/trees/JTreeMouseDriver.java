@@ -24,12 +24,17 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.text.JTextComponent;
 
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Timeout;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.MouseDriver;
+import org.netbeans.jemmy.drivers.PathChooser;
 import org.netbeans.jemmy.drivers.SupportiveDriver;
 import org.netbeans.jemmy.drivers.TextDriver;
 import org.netbeans.jemmy.drivers.TreeDriver;
@@ -48,7 +53,7 @@ public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
     }
     public void selectItems(ComponentOperator oper, int[] indices) {
 	checkSupported(oper);
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper.getClass());
+	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	JTreeOperator toper = (JTreeOperator)oper;
 	Point p = toper.getPointToClick(indices[0]);
 	Timeout clickTime = oper.getTimeouts().create("ComponentOperator.MouseClickTimeout");
@@ -64,7 +69,7 @@ public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
     public void expandItem(ComponentOperator oper, int index) {
 	checkSupported(oper);
 	JTreeOperator toper = (JTreeOperator)oper;
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper.getClass());
+	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	if(!toper.isExpanded(index)) {
 	    Point p = toper.getPointToClick(index);
 	    mdriver.clickMouse(oper, p.x, p.y, 2, Operator.getDefaultMouseButton(),
@@ -76,7 +81,7 @@ public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
     public void collapseItem(ComponentOperator oper, int index) {
 	checkSupported(oper);
 	JTreeOperator toper = (JTreeOperator)oper;
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper.getClass());
+	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	if(toper.isExpanded(index)) {
 	    Point p = toper.getPointToClick(index);
 	    mdriver.clickMouse(oper, p.x, p.y, 2, Operator.getDefaultMouseButton(),
@@ -86,10 +91,25 @@ public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
     }
 
     public void editItem(ComponentOperator oper, int index, Object newValue, Timeout waitEditorTime) {
+	JTextComponentOperator textoper = startEditingAndReturnEditor(oper, index, waitEditorTime);
+	TextDriver text = DriverManager.getTextDriver(JTextComponentOperator.class);
+	text.clearText(textoper);
+	text.typeText(textoper, newValue.toString(), 0);
+	DriverManager.getKeyDriver(oper).
+	    pushKey(textoper, KeyEvent.VK_ENTER, 0,
+		    oper.getTimeouts().
+		    create("ComponentOperator.PushKeyTimeout"));
+    }
+
+    public void startEditing(ComponentOperator oper, int index, Timeout waitEditorTime) {
+	startEditing(oper, index, waitEditorTime);
+    }
+
+    private JTextComponentOperator startEditingAndReturnEditor(ComponentOperator oper, int index, Timeout waitEditorTime) {
 	checkSupported(oper);
 	JTreeOperator toper = (JTreeOperator)oper;
 	Point p = toper.getPointToClick(index);
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper.getClass());
+	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	mdriver.clickMouse(oper, p.x, p.y, 1, Operator.getDefaultMouseButton(),
 			   0, oper.getTimeouts().
 			   create("ComponentOperator.MouseClickTimeout"));
@@ -99,17 +119,8 @@ public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
 			   create("ComponentOperator.MouseClickTimeout"));
 	toper.getTimeouts().
 	    setTimeout("ComponentOperator.WaitComponentTimeout", waitEditorTime.getValue());
-	JTextComponentOperator textoper = 
-	    new JTextComponentOperator((JTextComponent)toper.
-				       waitSubComponent(new JTextComponentOperator.
-							JTextComponentFinder()));
-	TextDriver text = DriverManager.getTextDriver(JTextComponentOperator.class);
-	text.clearText(textoper);
-	text.typeText(textoper, newValue.toString(), 0);
-	DriverManager.getKeyDriver(oper.getClass()).
-	    pushKey(textoper, KeyEvent.VK_ENTER, 0,
-		    oper.getTimeouts().
-		    create("ComponentOperator.PushKeyTimeout"));
+	return(new JTextComponentOperator((JTextComponent)toper.
+					  waitSubComponent(new JTextComponentOperator.
+							   JTextComponentFinder())));
     }
-
 }

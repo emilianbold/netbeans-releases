@@ -144,8 +144,9 @@ public class jemmy_032 extends JemmyTest {
 		return(1);
 	    }
 
-
+	    Thread.sleep(100);
 	    mo.pushMenu("", "|", false, false);
+	    Thread.sleep(100);
 	    JPopupMenuOperator pmo = new JPopupMenuOperator();
 	    JMenuItemOperator mio = new JMenuItemOperator(pmo, "");
 

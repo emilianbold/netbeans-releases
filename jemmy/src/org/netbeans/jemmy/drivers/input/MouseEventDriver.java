@@ -29,6 +29,12 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 public class MouseEventDriver extends EventDriver implements MouseDriver {
+    public MouseEventDriver(Class[] supported) {
+	super(supported);
+    }
+    public MouseEventDriver() {
+	super();
+    }
     public void pressMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
 	dispatchEvent(oper.getSource(),
 		      MouseEvent.MOUSE_PRESSED, 

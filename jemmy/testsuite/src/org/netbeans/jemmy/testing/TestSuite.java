@@ -47,6 +47,9 @@ public class TestSuite extends Task {
     public void setResultDir(File runDir) {
 	this.resultDir = runDir;
     }
+    public void setRunDir(File runDir) {
+	this.runDir = runDir;
+    }
     public void setTestsLocation(File testsLocation) {
 	this.testsLocation = testsLocation;
     }
@@ -76,10 +79,9 @@ public class TestSuite extends Task {
 		    if(!testName.startsWith("#")) {
 			File testDir = createTestDir(testName);
 			JemmyProperties.setCurrentOutput(createTestOutput(testDir));
-			//		    copyContent(createTestLocationDir(testName), testDir);
 			System.setProperty("user.dir", createTestLocationDir(testName).getAbsolutePath());
 			Test test = new Test(testName);
-			if(test.startTest(null) == Test.TEST_PASSED_STATUS) {
+			if(new TestRunner(test).doIt() == Test.TEST_PASSED_STATUS) {
 			    System.out.println(testName + " PASSED");
 			    passed++;
 			} else {
@@ -87,10 +89,6 @@ public class TestSuite extends Task {
 			    failed++;
 			}
 			System.out.flush();
-		    }
-		    try {
-			qt.waitEmpty(3000);
-		    } catch(TimeoutExpiredException e) {
 		    }
 		} catch(IOException e) {
 		    e.printStackTrace();
@@ -159,7 +157,7 @@ public class TestSuite extends Task {
 				  System.getProperty("file.separator") +
 				  "run"));
 	}
-	if(runDir == null) {
+	if(runDir == null && !runDir.equals("")) {
 	    runDir = new File(resultDir.getAbsolutePath() +
 			      System.getProperty("file.separator") +
 			      start);
@@ -192,5 +190,30 @@ public class TestSuite extends Task {
 	    loadDefaults(timeoutsFile.getAbsolutePath());
 	JemmyProperties.getProperties().initDispatchingModel(true, robot);
 	Operator.setDefaultVerification(true);
+    }
+    class TestRunner implements Runnable {
+	Test test;
+	int status;
+	boolean finished = false;
+	QueueTool qTool;
+	public TestRunner(Test test) {
+	    this.test = test;
+	    qTool = new QueueTool();
+	}
+	public void run() {
+	    sun.awt.SunToolkit.createNewAppContext();
+	    JemmyProperties.push();
+	    qTool.waitEmpty(100);
+	    status = test.startTest(null);
+	    JemmyProperties.pop();
+	    finished = true;
+	}
+	public int doIt() {
+	    new Thread(new ThreadGroup("test"), this).start();
+	    while(!finished) {
+		try { Thread.sleep(100); } catch(Exception e) {}
+	    }
+	    return(status);
+	}
     }
 }

@@ -88,14 +88,42 @@ public class jemmy_029 extends JemmyTest {
 
 	    JMenuBarOperator mbo = new JMenuBarOperator(new ContainerOperator(win));
 	    mbo.pushMenuNoBlock("Menu|MenuItem", "|", false, false);
-	    new JButtonOperator(new JDialogOperator("Modal"), "").push();
+
+	    Thread.sleep(1000);
+
+	    JDialogOperator modal = new JDialogOperator("Modal");
+	    new JButtonOperator(modal, "").push();
+	    modal.waitClosed();
+
+	    Thread.sleep(1000);
+
 	    mbo.pushMenuNoBlock("Menu|MenuItem", "|");
-	    new JButtonOperator(new JDialogOperator("Modal"), "").push();
-	    String[] names = {"Menu", "MenuItem"};
-	    mbo.pushMenuNoBlock(names, false, false);
-	    new JButtonOperator(new JDialogOperator("Modal"), "").push();
-	    mbo.pushMenuNoBlock(names);
-	    new JButtonOperator(new JDialogOperator("Modal"), "").push();
+
+	    Thread.sleep(1000);
+
+	    modal = new JDialogOperator("Modal");
+	    new JButtonOperator(modal, "").push();
+	    modal.waitClosed();
+
+	    Thread.sleep(1000);
+
+	    mbo.pushMenuNoBlock(new String[] {"Menu", "MenuItem"}, false, false);
+
+	    Thread.sleep(1000);
+
+	    modal = new JDialogOperator("Modal");
+	    new JButtonOperator(modal, "").push();
+	    modal.waitClosed();
+
+	    Thread.sleep(1000);
+
+	    mbo.pushMenuNoBlock(new String[] {"Menu", "MenuItem"});
+
+	    Thread.sleep(1000);
+
+	    modal = new JDialogOperator("Modal");
+	    new JButtonOperator(modal, "").push();
+	    modal.waitClosed();
 
 	} catch(Exception e) {
 	    finalize();

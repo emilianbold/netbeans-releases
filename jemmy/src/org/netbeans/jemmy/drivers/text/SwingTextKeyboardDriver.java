@@ -37,7 +37,8 @@ public class SwingTextKeyboardDriver extends TextKeyboardDriver {
     public void clearText(ComponentOperator oper) {
 	if(oper instanceof JTextAreaOperator ||
 	   oper instanceof JEditorPaneOperator) {
-	    KeyDriver kdriver = DriverManager.getKeyDriver(oper.getClass());
+	    DriverManager.getFocusDriver(oper).giveFocus(oper);
+	    KeyDriver kdriver = DriverManager.getKeyDriver(oper);
 	    selectText(oper, 0, getText(oper).length());
 	    kdriver.pushKey(oper, KeyEvent.VK_DELETE, 0, 
 			    oper.getTimeouts().create("ComponentOperator.PushKeyTimeout"));

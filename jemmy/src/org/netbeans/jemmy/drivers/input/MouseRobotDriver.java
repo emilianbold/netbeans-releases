@@ -32,6 +32,9 @@ public class MouseRobotDriver extends RobotDriver implements MouseDriver {
     public MouseRobotDriver(Timeout autoDelay) {
 	super(autoDelay);
     }
+    public MouseRobotDriver(Timeout autoDelay, Class[] supported) {
+	super(autoDelay, supported);
+    }
     public void pressMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
 	pressModifiers(oper, modifiers);
 	makeAnOperation("mousePress", 
@@ -87,7 +90,10 @@ public class MouseRobotDriver extends RobotDriver implements MouseDriver {
 	moveMouse(oper, oper.getCenterXForClick(), oper.getCenterYForClick());
     }
     public void exitMouse(ComponentOperator oper) {
-	moveMouse(oper, -1, -1);
+	//better not go anywhere
+	//exit will be executed during the next
+	//mouse move anyway.
+	//	moveMouse(oper, -1, -1);
     }
     protected int getAbsoluteX(ComponentOperator oper, int x) {
 	return(oper.getSource().getLocationOnScreen().x + x);

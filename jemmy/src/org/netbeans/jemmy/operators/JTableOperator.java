@@ -407,6 +407,14 @@ implements Outputable, Timeoutable {
 	clickOnCell(row, column, 1);
     }
 
+    public int findCellRow(String text, StringComparator comparator, int index) {
+	return((int)findCellPoint(text, comparator, index).getX());
+    }
+
+    public int findCellColumn(String text, StringComparator comparator, int index) {
+	return((int)findCellPoint(text, comparator, index).getY());
+    }
+
     /**
      * Searches cell row by cell text.
      * @param text Text to search by.
@@ -414,6 +422,7 @@ implements Outputable, Timeoutable {
      * @param ccs Compare case sensitively.
      * @param index Ordinal index in suitable cells.
      * @see #findCellRow(String, int)
+     * @deprecated Use findCellRow(String, int) or findCellRow(String, StringComparator, int)
      */
     public int findCellRow(String text, boolean ce, boolean ccs, int index) {
 	return((int)findCellPoint(text, ce, ccs, index).getX());
@@ -426,9 +435,18 @@ implements Outputable, Timeoutable {
      * @param ccs Compare case sensitively.
      * @param index Ordinal index in suitable cells.
      * @see #findCellColumn(String, int)
+     * @deprecated Use findCellColumn(String, int) or findCellColumn(String, StringComparator, int)
      */
     public int findCellColumn(String text, boolean ce, boolean ccs, int index) {
 	return((int)findCellPoint(text, ce, ccs, index).getX());
+    }
+
+    public int findCellRow(String text, StringComparator comparator) {
+	return(findCellRow(text, comparator, 0));
+    }
+
+    public int findCellColumn(String text, StringComparator comparator) {
+	return(findCellColumn(text, comparator, 0));
     }
 
     /**
@@ -437,6 +455,7 @@ implements Outputable, Timeoutable {
      * @param ce Compare exactly.
      * @param ccs Compare case sensitively.
      * @see #findCellRow(String)
+     * @deprecated Use findCellRow(String) or findCellRow(String, StringComparator)
      */
     public int findCellRow(String text, boolean ce, boolean ccs) {
 	return(findCellRow(text, ce, ccs, 0));
@@ -448,6 +467,7 @@ implements Outputable, Timeoutable {
      * @param ce Compare exactly.
      * @param ccs Compare case sensitively.
      * @see #findCellColumn(String)
+     * @deprecated Use findCellColumn(String) or findCellColumn(String, StringComparator)
      */
     public int findCellColumn(String text, boolean ce, boolean ccs) {
 	return(findCellColumn(text, ce, ccs, 0));
@@ -1447,14 +1467,18 @@ implements Outputable, Timeoutable {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private Point findCellPoint(String text, boolean ce, boolean ccs, int index) {
+    private Point findCellPoint(String text, StringComparator comparator, int index) {
 	return(findCellPoint(new BySubStringTableCellChooser(text, 
-							     new DefaultStringComparator(ce, ccs)), 
+							     comparator), 
 			     index));
     }
 
+    private Point findCellPoint(String text, boolean ce, boolean ccs, int index) {
+	return(findCellPoint(text, new DefaultStringComparator(ce, ccs), index));
+    }
+
     private Point findCellPoint(String text, int index) {
-	return(findCellPoint(new BySubStringTableCellChooser(text, getComparator()), index));
+	return(findCellPoint(text, getComparator(), index));
     }
 
     private Point findCellPoint(ComponentChooser chooser, int index) {

@@ -29,7 +29,7 @@ public class ButtonMouseDriver extends SupportiveDriver implements ButtonDriver 
 	super(new Class[] {ComponentOperator.class});
     }
     public void press(ComponentOperator oper) {
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper.getClass());
+	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	mdriver.moveMouse(oper, 
 			  oper.getCenterXForClick(),
 			  oper.getCenterYForClick());
@@ -40,15 +40,17 @@ public class ButtonMouseDriver extends SupportiveDriver implements ButtonDriver 
 			   0);
     }
     public void release(ComponentOperator oper) {
-	DriverManager.getMouseDriver(oper.getClass()).
+	DriverManager.
+	    getMouseDriver(oper).
 	    releaseMouse(oper, 
-		       oper.getCenterXForClick(),
-		       oper.getCenterYForClick(),
-		       oper.getDefaultMouseButton(),
-		       0);
+			 oper.getCenterXForClick(),
+			 oper.getCenterYForClick(),
+			 oper.getDefaultMouseButton(),
+			 0);
     }
     public void push(ComponentOperator oper) {
-	DriverManager.getMouseDriver(oper.getClass()).
+	DriverManager.
+	    getMouseDriver(oper).
 	    clickMouse(oper, 
 		       oper.getCenterXForClick(),
 		       oper.getCenterYForClick(),

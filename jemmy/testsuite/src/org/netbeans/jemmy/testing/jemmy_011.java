@@ -24,6 +24,8 @@ public class jemmy_011 extends JemmyTest {
 	    (new ClassReference("org.netbeans.jemmy.testing.Application_011")).startApplication();
 
 	    EventDispatcher.waitQueueEmpty();
+	    JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitFocusTimeout",
+							    1000);
 
 	    JFrame frm0 = JFrameOperator.waitJFrame("Application_011", false, true);
 	    JFrameOperator frmo = new JFrameOperator(frm0);
@@ -100,16 +102,9 @@ public class jemmy_011 extends JemmyTest {
 		public Object launch(Object obj) {
 		    try {
 			boxOper.requestFocus();
-			if(!boxOper.hasFocus()) {
-			    getOutput().printErrLine("Check box does not have focus");
-			    return(null);
-			}
-			Thread.currentThread().sleep(3000);
+			boxOper.waitHasFocus();
 			boxOper.push();
 			radio1Oper.push();
-		    } catch (InterruptedException e) {
-			getOutput().printStackTrace(e);
-			return(null);
 		    } catch (TimeoutExpiredException e) {
 			getOutput().printStackTrace(e);
 			return(null);

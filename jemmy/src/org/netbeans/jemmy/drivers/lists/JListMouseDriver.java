@@ -48,7 +48,7 @@ public class JListMouseDriver extends SupportiveDriver implements MultiSelListDr
     protected void clickOnItem(JListOperator oper, int index, int modifiers) {
 	oper.scrollToItem(index);
 	Rectangle rect = oper.getCellBounds(index, index);
-	DriverManager.getMouseDriver(oper.getClass()).
+	DriverManager.getMouseDriver(oper).
 	    clickMouse(oper, 
 		       rect.x + rect.width / 2,
 		       rect.y + rect.height / 2,

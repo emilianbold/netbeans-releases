@@ -569,7 +569,7 @@ public class JTreeOperator extends JComponentOperator
 	return(findRow(chooser, 0));
     }
 
-    private int findRow(String item, StringComparator comparator, int index){
+    public int findRow(String item, StringComparator comparator, int index){
 	return(findRow(new BySubStringTreeRowChooser(item, comparator), index));
     }
 
@@ -580,6 +580,7 @@ public class JTreeOperator extends JComponentOperator
      * @param boolean ccs Compare case sensitivelly.
      * @param index
      * @return Row index or -1 if search was insuccessful.
+     * @deprecated Use findRow(String, int) or findRow(String, StringComparator, int)
      */
     public int findRow(String item, boolean ce, boolean cc, int index){
 	return(findRow(item, 
@@ -600,12 +601,17 @@ public class JTreeOperator extends JComponentOperator
 		       index));
     }
 
+    public int findRow(String item, StringComparator comparator){
+	return(findRow(item, comparator, 0));
+    }
+
     /**
      * Searches a row by substring.
      * @param item Substring.
      * @param boolean ce Compare exactly
      * @param boolean ccs Compare case sensitivelly.
      * @return Row index or -1 if search was insuccessful.
+     * @deprecated Use findRow(String) or findRow(String, StringComparator)
      */
     public int findRow(String item, boolean ce, boolean cc) {
 	return(findRow(item, ce, cc, 0));
@@ -642,6 +648,10 @@ public class JTreeOperator extends JComponentOperator
 	return(findRow(chooser, 0));
     }
 
+    public TreePath findPath(String[] names, int[] indexes, StringComparator comparator) {
+	return(findPath(new StringArrayPathChooser(names, indexes, comparator)));
+    }
+
     /**
      * Searches path in tree.
      * Can be used to find one of the nodes with the same text.
@@ -667,6 +677,7 @@ public class JTreeOperator extends JComponentOperator
      * @see #findPath(String, String, String, boolean, boolean)
      * @see #findPath(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
+     * @deprecated Use findPath(String[], int[]) or findCellRow(String[], int[], StringComparator)
      */
     public TreePath findPath(String[] names, int[] indexes, boolean ce, boolean ccs) {
 	return(findPath(names, indexes, new DefaultStringComparator(ce, ccs)));
@@ -687,6 +698,11 @@ public class JTreeOperator extends JComponentOperator
 	return(findPath(names, indexes, getComparator()));
     }
 
+    public TreePath findPath(String[] names, StringComparator comparator) {
+	int[] indexes = new int[0];
+	return(findPath(names, indexes, comparator));
+    }
+
     /**
      * Searches path in tree.
      * @param names Node texts array.
@@ -698,6 +714,7 @@ public class JTreeOperator extends JComponentOperator
      * @see #findPath(String, String, String, boolean, boolean)
      * @see #findPath(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
+     * @deprecated Use findPath(String[]) or findCellRow(String[], StringComparator)
      */
     public TreePath findPath(String[] names, boolean ce, boolean ccs) {
 	int[] indexes = new int[0];
@@ -720,6 +737,15 @@ public class JTreeOperator extends JComponentOperator
 	return(findPath(names, indexes, getComparator()));
     }
 
+    public TreePath findPath(String path, String indexes, String delim, StringComparator comparator) {
+	String[] indexStrings = parseString(indexes, delim);
+	int[] indInts = new int[indexStrings.length];
+	for(int i = 0; i < indexStrings.length; i++) {
+	    indInts[i] = Integer.parseInt(indexStrings[i]);
+	}
+	return(findPath(parseString(path, delim), indInts, comparator));
+    }
+
     /**
      * Searches path in tree.
      * @param path String representing tree path.
@@ -735,14 +761,10 @@ public class JTreeOperator extends JComponentOperator
      * @see #findPath(String[], int[], boolean, boolean)
      * @see #findPath(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
+     * @deprecated Use findPath(String, String, String) or findCellRow(String, String, String, StringComparator)
      */
     public TreePath findPath(String path, String indexes, String delim, boolean ce, boolean ccs) {
-	String[] indexStrings = parseString(indexes, delim);
-	int[] indInts = new int[indexStrings.length];
-	for(int i = 0; i < indexStrings.length; i++) {
-	    indInts[i] = Integer.parseInt(indexStrings[i]);
-	}
-	return(findPath(parseString(path, delim), indInts, ce, ccs));
+	return(findPath(path, indexes, delim, new DefaultStringComparator(ce, ccs)));
     }
 
     /**
@@ -760,12 +782,11 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public TreePath findPath(String path, String indexes, String delim) {
-	String[] indexStrings = parseString(indexes, delim);
-	int[] indInts = new int[indexStrings.length];
-	for(int i = 0; i < indexStrings.length; i++) {
-	    indInts[i] = Integer.parseInt(indexStrings[i]);
-	}
-	return(findPath(parseString(path, delim), indInts, getComparator()));
+	return(findPath(path, indexes, delim, getComparator()));
+    }
+
+    public TreePath findPath(String path, String delim, StringComparator comparator) {
+	return(findPath(parseString(path, delim), comparator));
     }
 
     /**
@@ -780,6 +801,7 @@ public class JTreeOperator extends JComponentOperator
      * @see #findPath(String[], int[], boolean, boolean)
      * @see #findPath(String, String, String, boolean, boolean)
      * @throws TimeoutExpiredException
+     * @deprecated Use findPath(String, String) or findCellRow(String, String, StringComparator)
      */
     public TreePath findPath(String path, String delim, boolean ce, boolean ccs) {
 	return(findPath(parseString(path, delim), ce, ccs));
@@ -994,30 +1016,8 @@ public class JTreeOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void clickForEdit(TreePath path) {
-	if(!isEditing() || !getEditingPath().equals(path)) {
-	    if(!isPathSelected(path)) {
-		clickOnPath(path);
-	    }
-	    timeouts.sleep("JTreeOperator.BeforeEditTimeout");
-	    clickOnPath(path);
-	    Waiter editingWaiter = new Waiter(new Waitable() {
-		public Object actionProduced(Object obj) {
-		    return(isEditing() ? "" : null);
-		}
-		public String getDescription() {
-		    return("Wait JTree editing");
-		}
-	    });
-	    editingWaiter.setOutput(output.createErrorOutput());
-	    editingWaiter.setTimeouts(timeouts.cloneThis());
-	    editingWaiter.getTimeouts().setTimeout("Waiter.WaitingTime",
-						   timeouts.getTimeout("JTreeOperator.WaitEditingTimeout"));
-	    try {
-		editingWaiter.waitAction(null);
-	    } catch(InterruptedException e) {
-		output.printStackTrace(e);
-	    }
-	}
+	driver.startEditing(this, getRowForPath(path), 
+			    timeouts.create("JTreeOperator.WaitEditingTimeout"));
     }
 
     /**
@@ -1200,10 +1200,19 @@ public class JTreeOperator extends JComponentOperator
      * @param path
      */
     public void waitSelected(final TreePath path) {
-	TreePath[] paths = {path};
-	waitSelected(paths);
+	waitSelected(new TreePath[] {path});
     }
 
+    public void waitSelected(int[] rows) {
+ 	TreePath[] paths = new TreePath[rows.length];
+ 	for(int i = 0; i < rows.length; i++) {
+ 	    paths[i] = getPathForRow(rows[i]);
+ 	}
+    }
+    public void waitSelected(int row) {
+ 	waitSelected(new int[] {row});
+    }
+ 
     /**
      * Wat for text in certain row.
      * @param rowText Text to be compared with row text be <code>getComparator()</code> comparator.
@@ -2009,10 +2018,6 @@ public class JTreeOperator extends JComponentOperator
 	    addChildrenToDump(table, names[i], subNodes[i]);
 	}
 	return(names);
-    }
-
-    private TreePath findPath(String[] names, int[] indexes, StringComparator comparator) {
-	return(findPath(new StringArrayPathChooser(names, indexes, comparator)));
     }
 
     /**

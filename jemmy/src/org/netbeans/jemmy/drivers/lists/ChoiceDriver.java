@@ -44,11 +44,11 @@ public class ChoiceDriver extends SupportiveDriver implements ListDriver {
 	    diff = current - index;
 	    key = KeyEvent.VK_UP;
 	}
-	DriverManager.getMouseDriver(oper.getClass()).
+	DriverManager.getMouseDriver(oper).
 	    clickMouse(oper, oper.getCenterXForClick(), oper.getCenterYForClick(),
 		       1, oper.getDefaultMouseButton(), 0,
 		       oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
-	KeyDriver kdriver = DriverManager.getKeyDriver(oper.getClass());
+	KeyDriver kdriver = DriverManager.getKeyDriver(oper);
 	Timeout pushTimeout = oper.getTimeouts().create("ComponentOperator.PushKeyTimeout");
 	for(int i = 0; i < diff; i++) {
 	    kdriver.pushKey(oper, key, 0, pushTimeout);

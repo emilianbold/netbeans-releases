@@ -19,6 +19,8 @@ public class jemmy_020 extends JemmyTest {
 	try {
 	    (new ClassReference("org.netbeans.jemmy.testing.Application_020")).startApplication();
 
+	    new QueueTool().waitEmpty(100);
+
 	    String allChars = " !\"#$%&'()*,-./0123456789:;<>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
 	    EventDispatcher.waitQueueEmpty();

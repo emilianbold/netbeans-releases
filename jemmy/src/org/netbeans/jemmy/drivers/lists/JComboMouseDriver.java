@@ -32,12 +32,12 @@ public class JComboMouseDriver extends SupportiveDriver implements ListDriver {
     public void selectItem(ComponentOperator oper, int index) {
 	JComboBoxOperator coper = (JComboBoxOperator)oper;
 	if(!coper.isPopupVisible()) {
-	    DriverManager.getButtonDriver(coper.getButton().getClass()).
+	    DriverManager.getButtonDriver(coper.getButton()).
 		push(coper.getButton());
 	}
 	JListOperator list = new JListOperator(coper.waitList());
 	coper.getTimeouts().sleep("JComboBoxOperator.BeforeSelectingTimeout");
-	DriverManager.getListDriver(list.getClass()).
+	DriverManager.getListDriver(list).
 	    selectItem(list, index);
     }
 }

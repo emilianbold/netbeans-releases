@@ -27,6 +27,11 @@ import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.FrameDriver;
+import org.netbeans.jemmy.drivers.WindowDriver;
+
+
 import org.netbeans.jemmy.util.EmptyVisualizer;
 
 import java.awt.Component;
@@ -71,20 +76,24 @@ import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 public class JInternalFrameOperator extends JComponentOperator
     implements Outputable, Timeoutable {
 
-    protected JButtonOperator minOper;
-    protected JButtonOperator maxOper;
-    protected JButtonOperator closeOper;
-    protected ComponentOperator titleOperator;
+    protected JButtonOperator minOper = null;
+    protected JButtonOperator maxOper = null;
+    protected JButtonOperator closeOper = null;
+    protected ContainerOperator titleOperator = null;
     private TestOut output;
     private Timeouts timeouts;
     private JDesktopIconOperator iconOperator;
+
+    WindowDriver wDriver;
+    FrameDriver  fDriver;
 
     /**
      * Constructor.
      */
     public JInternalFrameOperator(JInternalFrame b) {
 	super(b);
-	initOperators();
+	wDriver = DriverManager.getWindowDriver(getClass());
+	fDriver = DriverManager.getFrameDriver(getClass());
     }
 
     /**
@@ -349,8 +358,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	output.printGolden("Iconify JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(false);
 	makeComponentVisible();
-	minOper.clickMouse();
-	initOperators();
+	fDriver.iconify(this);
     }
 
     /**
@@ -364,8 +372,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	output.printLine("Deiconify JInternalFrame\n    : " + getSource().toString());
 	output.printGolden("Deiconify JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(true);
-	iconOperator.pushButton();
-	initOperators();
+	fDriver.deiconify(this);
     }
 
     /**
@@ -380,12 +387,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	output.printGolden("Maximize JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(false);
 	makeComponentVisible();
-	if(!isMaximum()) {
-	    if(!isSelected()) {
-		activate();
-	    }
-	    maxOper.push();
-	}
+	fDriver.maximize(this);
     }
 
     /**
@@ -400,12 +402,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	output.printGolden("Demaximize JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(false);
 	makeComponentVisible();
-	if(isMaximum()) {
-	    if(!isSelected()) {
-		activate();
-	    }
-	    maxOper.push();
-	}
+	fDriver.demaximize(this);
     }
 
     /**
@@ -427,10 +424,8 @@ public class JInternalFrameOperator extends JComponentOperator
 			   Integer.toString(x) + "," +
 			   Integer.toString(y) + ")" +
 			   " position");
-	titleOperator.dragNDrop(titleOperator.getCenterY(),
-				titleOperator.getCenterY(),
-				x - getX() + titleOperator.getCenterY(),
-				y - getY() + titleOperator.getCenterY());
+	checkIconified(false);
+	wDriver.move(this, x, y);
     }
 
     /**
@@ -452,10 +447,7 @@ public class JInternalFrameOperator extends JComponentOperator
 			   Integer.toString(height) + ")" +
 			   " size");
 	checkIconified(false);
-	dragNDrop(getWidth() - 1,
-		  getHeight() - 1,
-		  width - 1,
-		  height - 1);
+	wDriver.resize(this, width, height);
     }
 
     /**
@@ -466,8 +458,12 @@ public class JInternalFrameOperator extends JComponentOperator
      */
     public void activate() {
 	checkIconified(false);
-	moveToFront();
-	titleOperator.clickMouse();
+	wDriver.activate(this);
+    }
+
+    public void close() {
+	checkIconified(false);
+	wDriver.close(this);
     }
 
     /**
@@ -520,6 +516,31 @@ public class JInternalFrameOperator extends JComponentOperator
 	} else {
 	    scrollToRectangle(0, 0, getWidth(), getHeight());
 	}
+    }
+
+    public JButtonOperator getMinimizeButton() {
+	initOperators();
+	return(minOper);
+    }
+
+    public JButtonOperator getMaximizeButton() {
+	initOperators();
+	return(maxOper);
+    }
+
+    public JButtonOperator getCloseButton() {
+	initOperators();
+	return(closeOper);
+    }
+
+    public ContainerOperator getTitleOperator() {
+	initOperators();
+	return(titleOperator);
+    }
+
+    public JDesktopIconOperator getIconOperator() {
+	initOperators();
+	return(iconOperator);
     }
 
     /**
@@ -936,54 +957,35 @@ public class JInternalFrameOperator extends JComponentOperator
 	iconOperator = new JDesktopIconOperator(((JInternalFrame)getSource()).getDesktopIcon());
 	iconOperator.copyEnvironment(this);
 	Container titlePane = findTitlePane();
-	if(titlePane != null) {
-	    titleOperator = new ComponentOperator(titlePane);
-	    titleOperator.copyEnvironment(this);
-	    ComponentSearcher cs = new ComponentSearcher(titlePane);
-	    cs.setOutput(output.createErrorOutput());
-	    int bttCount = 0;
-	    if(getContainer(new ComponentChooser() {
-		    public boolean checkComponent(Component comp) {
-			return(comp instanceof JDesktopPane);
-		    }
-		    public String getDescription() {
-			return("Desctop pane");
-		    }
-		}) != null) {
-		minOper = 
-		    new JButtonOperator((JButton)cs.findComponent(new AbstractButtonOperator.
-								  AbstractButtonFinder(ComponentSearcher.
-										       getTrueChooser("Minimize button")),
-								  bttCount));
-		minOper.copyEnvironment(this);
-		minOper.setVisualizer(new EmptyVisualizer());
-		bttCount++;
-		if(((JInternalFrame)getSource()).isMaximizable()) {
-		    maxOper = 
-			new JButtonOperator((JButton)cs.findComponent(new AbstractButtonOperator.
-								      AbstractButtonFinder(ComponentSearcher.
-											   getTrueChooser("Maximize button")),
-								      bttCount));
-		    maxOper.copyEnvironment(this);
-		    maxOper.setVisualizer(new EmptyVisualizer());
+	if(!isIcon() && titlePane != null) {
+	    if(titleOperator == null) {
+		titleOperator = new ContainerOperator(titlePane);
+		int bttCount = 0;
+		if(getContainer(new ComponentChooser() {
+			public boolean checkComponent(Component comp) {
+			    return(comp instanceof JDesktopPane);
+			}
+			public String getDescription() {
+			    return("Desctop pane");
+			}
+		    }) != null) {
+		    minOper = new JButtonOperator(titleOperator, bttCount);
 		    bttCount++;
+		    if(((JInternalFrame)getSource()).isMaximizable()) {
+			maxOper = new JButtonOperator(titleOperator, bttCount);
+			bttCount++;
+		    } else {
+			maxOper = null;
+		    }
 		} else {
+		    minOper = null;
 		    maxOper = null;
 		}
-	    } else {
-		minOper = null;
-		maxOper = null;
-	    }
-	    if(((JInternalFrame)getSource()).isClosable()) {
-		closeOper = 
-		    new JButtonOperator((JButton)cs.findComponent(new AbstractButtonOperator.
-								  AbstractButtonFinder(ComponentSearcher.
-										       getTrueChooser("Close button")),
-								  bttCount));
-		closeOper.copyEnvironment(this);
-		closeOper.setVisualizer(new EmptyVisualizer());
-	    } else {
-		closeOper = null;
+		if(isClosable()) {
+		    closeOper = new JButtonOperator(titleOperator, bttCount);
+		} else {
+		    closeOper = null;
+		}
 	    }
 	} else {
 	    titleOperator = null;
@@ -1054,22 +1056,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	}
 
 	public void pushButton() {
-	    ComponentSearcher bSearcher = new ComponentSearcher((Container)getSource());
-	    bSearcher.setOutput(output.createErrorOutput());
-	    JButtonOperator bOper = new JButtonOperator((JButton)bSearcher.findComponent(new ComponentChooser() {
-		public boolean checkComponent(Component comp) {
-		    return(comp instanceof JButton);
-		}
-		public String getDescription() {
-		    return("JButton");
-		}
-	    }));
-	    bOper.copyEnvironment(this);
-	    try {
-		bOper.push();
-	    } catch(TimeoutExpiredException e) {
-		output.printStackTrace(e);
-	    }
+	    new JButtonOperator(this).push();
 	}
     }
 

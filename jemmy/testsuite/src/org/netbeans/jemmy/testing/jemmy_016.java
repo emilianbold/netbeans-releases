@@ -32,6 +32,11 @@ public class jemmy_016 extends JemmyTest {
 		getOutput().printStackTrace(e);
 	    }
 
+	    new QueueTool().waitEmpty(100);
+
+	    JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",
+							    30000);
+
 	    JFrame win =JFrameOperator.waitJFrame("APPLICATION", false, false);
 
 	    tpo = new JTabbedPaneOperator(new JFrameOperator(win), "Page1");

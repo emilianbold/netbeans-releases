@@ -55,14 +55,14 @@ public class JTableMouseDriver extends SupportiveDriver implements TableDriver {
 	TextDriver text = DriverManager.getTextDriver(JTextComponentOperator.class);
 	text.clearText(textoper);
 	text.typeText(textoper, value.toString(), 0);
-	DriverManager.getKeyDriver(oper.getClass()).
+	DriverManager.getKeyDriver(oper).
 	    pushKey(textoper, KeyEvent.VK_ENTER, 0,
 		    oper.getTimeouts().
 		    create("ComponentOperator.PushKeyTimeout"));
     }
     protected void clickOnCell(JTableOperator oper, int row, int column, int clickCount) {
 	Point point = oper.getPointToClick(row, column);
-	DriverManager.getMouseDriver(oper.getClass()).
+	DriverManager.getMouseDriver(oper).
 	    clickMouse(oper, point.x, point.y, clickCount, 
 		       oper.getDefaultMouseButton(), 
 		       0, 
