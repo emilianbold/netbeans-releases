@@ -21,7 +21,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <h2>Obtaining a Database Schema</h2>
     <p><small><a href="#seealso">See Also</a></small></p>
-    <p>The IDE allows you to capture and create a persistent database schema.</p>
+    <p>The IDE allows you to capture and create a persistent database schema which can then be
+    used in other projects.</p>
     <p>To connect to a database to retrieve a schema, the database 
     driver first needs to be added to the IDE. Database drivers can be added in the Runtime window. For more,
     see <a href="nbdocs:/org/netbeans/modules/db/docs/adddriver.html">Adding a New Driver</a>.</p>
@@ -32,11 +33,12 @@ Microsystems, Inc. All Rights Reserved.
         <li>Make sure the database server is running.</li>
         <li>Choose File&nbsp;<img src="images/arrow.gif">&nbsp;New File to open the New File 
         wizard.</li>
-        <li>Select the Project type.</li>        
+        <li>Select the Project where the schema should be saved.</li>        
         <li>Select Database in the Categories pane.</li>
         <li>Select Schema in the File Types pane and click Next.</li>
         <li>For File Name, provide a name for the schema.</li>
-        <li>Specify where to save the schema or use the default location and click Next.</li>
+        <li>Specify where to save the schema or use the default location. By default the IDE saves the schema in the <tt>conf</tt> folder in the <tt>src</tt> folder of the project selected in Step 2 above.</li>
+        <li>Click Next.</li>        
         <li>Select an existing database connection from the list or select Add Connection
         to create a new connection. For more, see <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a>.</li>
         <li>Click Next.       
@@ -69,13 +71,12 @@ Microsystems, Inc. All Rights Reserved.
         </li>
         <li>Click Finish to complete capturing the schema.</li>
     </ol>
-    <p>The IDE displays a progress bar with information about the status of the 
+    <p>The IDE displays a progress window with information about the status of the 
     capturing of the database schema, including the table and view information 
     it is capturing.</p>
-    <p>When schema capturing is complete, the progress bar closes.</p>           
+    <p>When schema capturing is complete, the progress window closes.</p>           
     <p>The IDE saves the captured schema in XML format and displays the schema node 
-    (&nbsp;<img src="images/dbschemanode.gif" width="15" height="14">&nbsp;) in the Files window 
-    in the location you specified.</p>
+    (&nbsp;<img src="images/dbschemanode.gif" width="15" height="14">&nbsp;) in the Files window.</p>
     
     
     <table>
