@@ -137,6 +137,12 @@ public class J2SEProjectGenerator {
         if (!isLibrary) {
             ep.setProperty("main.class", mainClass == null ? "" : mainClass); // NOI18N
         }
+        
+        ep.setProperty("javac.compilerarg", ""); // NOI18N
+        ep.setComment("javac.compilerarg", new String[] {
+            "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_javac.compilerarg"), // NOI18N
+        }, false);
+
         ep.setProperty("javac.source", "${default.javac.source}"); // NOI18N
         ep.setProperty("javac.target", "${default.javac.target}"); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
