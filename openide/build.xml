@@ -760,5 +760,23 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
 ]]></echo>
 
     </target>
+    
+    
+    <!-- support for testing under main trunk version of the ide -->
+    <target name="test-single" >
+        <tempfile property="temp.file" />
+        <echo message="xtest#includes=${test.includes}" file="${temp.file}" />
+        <replace file="${temp.file}" token=".java" value="" />
+        <replace file="${temp.file}" token="." value="/" />
+        <replace file="${temp.file}" token="#" value="." />
+        <echo file="${temp.file}" append="true" >*class
+        </echo>
+        <loadproperties srcfile="${temp.file}" />
+        <echo message="xtest.includes: ${xtest.includes}" /> 
+        <delete file="${temp.file}" />
+        <ant dir="test" inheritall="true" >
+            <property name="xtest.attribs" value="empty" />
+        </ant>
+    </target>
 
 </project>
