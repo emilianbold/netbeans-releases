@@ -259,10 +259,13 @@ public class ProjectTab extends TopComponent
         initValues( id );
 // fix for #55701 (Expanding of previously expanded folder in explorer slows down startup)
 // the expansion scales very bad now and can prolong startup up to several minutes
-// disabling the expansion of nodes after start altogether, hopefully temporarily
-// (thus getting back to how it worked in NB 4.0 FCS)
-//        btv.expandNodes( exPaths );
-//        selectPaths( selPaths );
+// disabling the expansion of nodes after start altogether
+// (thus getting back to how it worked in NB 4.0 FCS, but letting the user turn it back on)
+        if (System.getProperty ("netbeans.keep.expansion") != null)
+        {
+            btv.expandNodes( exPaths );
+            selectPaths( selPaths );
+        }
 
     }
     
