@@ -96,6 +96,26 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>      
     </testbag>
+
+    <!-- Regression tests of fixed issues. -->
+    <testbag testattribs="ide,regr,stable" executor="ide" name="testbag_5" resultsprocessor="unit">
+        <testset dir="regr/src">
+            <patternset>
+                <include name="org/openide/text/TextTest.class"/>
+                <include name="org/openide/text/UndoRedoTest.class"/>
+            </patternset>
+        </testset>      
+    </testbag>
+    
+    <!-- Regression tests of open issues. Do not include to stable. -->
+    <testbag testattribs="code,regr-unstable" executor="code" name="testbag_6" resultsprocessor="unit">
+        <testset dir="regr/src">
+            <patternset>
+                <include name="org/openide/text/ReloadDeadlockTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->
