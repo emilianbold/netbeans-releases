@@ -61,6 +61,8 @@ public class DataViewWindow extends TopComponent {
         try {
             bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
+            this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewWindowA11yDesc"));
+
             Node tempNode = node;
             while(!(tempNode instanceof ConnectionNode))
                 tempNode = tempNode.getParentNode();
@@ -92,6 +94,7 @@ public class DataViewWindow extends TopComponent {
             queryarea.setWrapStyleWord(true);
             queryarea.setDropTarget(new DropTarget(queryarea, new ViewDropTarget()));
             queryarea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTextAreaA11yName"));
+            queryarea.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewTextAreaA11yDesc"));
             queryarea.setToolTipText(bundle.getString("ACS_DataViewTextAreaA11yDesc"));
             JScrollPane scrollpane = new JScrollPane(queryarea);
             sublayout.setConstraints(scrollpane, subcon);
@@ -108,17 +111,18 @@ public class DataViewWindow extends TopComponent {
             subcon.anchor = GridBagConstraints.SOUTH;
             rcmdscombo = new JComboBox(new ComboModel());
             rcmdscombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewComboBoxA11yName"));
+            rcmdscombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewComboBoxA11yDesc"));
             rcmdscombo.setToolTipText(bundle.getString("ACS_DataViewComboBoxA11yDesc"));
             sublayout.setConstraints(rcmdscombo, subcon);
             subpane.add(rcmdscombo);
             rcmdscombo.addActionListener(new ActionListener() {
-                                             public void actionPerformed(ActionEvent e) {
-                                                 JComboBox source = (JComboBox)e.getSource();
-                                                 RecentCommand cmd = (RecentCommand)source.getSelectedItem();
-                                                 if (cmd != null)
-                                                     setCommand(cmd.getCommand());
-                                             }
-                                         });
+                public void actionPerformed(ActionEvent e) {
+                    JComboBox source = (JComboBox)e.getSource();
+                    RecentCommand cmd = (RecentCommand)source.getSelectedItem();
+                    if (cmd != null)
+                        setCommand(cmd.getCommand());
+                }
+            });
 
 
             // Button Execute
@@ -135,15 +139,16 @@ public class DataViewWindow extends TopComponent {
             sublayout.setConstraints(fetchbtn, subcon);
             subpane.add(fetchbtn);
             fetchbtn.addActionListener(new ActionListener() {
-                                           public void actionPerformed(ActionEvent e) {
-                                               executeCommand();
-                                           }
-                                       });
+                public void actionPerformed(ActionEvent e) {
+                    executeCommand();
+                }
+            });
 
             // Table with results
             //      TableSorter sorter = new TableSorter();
             jtable = new JTable(dbadaptor/*sorter*/);
-//            jtable.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTableA11yName"));
+            jtable.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTableA11yName"));
+            jtable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewTableA11yDesc"));
             jtable.setToolTipText(bundle.getString("ACS_DataViewTableA11yDesc"));
             jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             //    	sorter.addMouseListenerToHeaderInTable(table);
@@ -173,15 +178,13 @@ public class DataViewWindow extends TopComponent {
 
     /** Returns query used by panel.
     */
-    public String getCommand()
-    {
+    public String getCommand() {
         return queryarea.getText();
     }
 
     /** Sets query used by panel.
     */
-    public void setCommand(String command)
-    {
+    public void setCommand(String command) {
         queryarea.setText(command);
     }
 
@@ -199,91 +202,76 @@ public class DataViewWindow extends TopComponent {
         }
     }
 
-    class ColDef
-    {
+    class ColDef {
         private String name;
         private boolean writable;
         private boolean bric;
         int datatype;
 
-        public ColDef(String name, boolean flag)
-        {
+        public ColDef(String name, boolean flag) {
             this.name = name;
             writable = flag;
         }
 
-        public String getName()
-        {
+        public String getName() {
             return name;
         }
 
-        public void setName(String name)
-        {
+        public void setName(String name) {
             this.name = name;
         }
 
-        public int getDataType()
-        {
+        public int getDataType() {
             return datatype;
         }
 
-        public void setDataType(int type)
-        {
+        public void setDataType(int type) {
             datatype = type;
         }
 
-        public boolean isWritable()
-        {
+        public boolean isWritable() {
             return writable;
         }
 
-        public void setWritable(boolean flag)
-        {
+        public void setWritable(boolean flag) {
             writable = flag;
         }
 
-        public boolean isBestRowIdentifierColumn()
-        {
+        public boolean isBestRowIdentifierColumn() {
             return bric;
         }
 
-        public void setBestRowIdentifierColumn(boolean flag)
-        {
+        public void setBestRowIdentifierColumn(boolean flag) {
             bric = flag;
         }
     }
     
-     static int tstrg = 0; 
-        static int gtcmd = 0;
+    static int tstrg = 0; 
+    static int gtcmd = 0;
 
-    class RecentCommand
-    {
+    class RecentCommand {
         private String command;
         
         /** The command with no new lines */
         private String shortCommand;
 
-        public RecentCommand(String cmd)
-        {
+        public RecentCommand(String cmd) {
             command = cmd;
             shortCommand = getShortCommand();
         }
-        
-       
 
-        public String toString()
-        {
+        public String toString() {
             return shortCommand;
         }
 
-        public String getCommand()
-        {           
+        public String getCommand() {
             return command;
         }
 
-        public boolean equals(Object obj)
-        {
-            if (obj instanceof RecentCommand) return ((RecentCommand)obj).getShortCommand().equals(shortCommand);
+        public boolean equals(Object obj) {
+            if (obj instanceof RecentCommand)
+                return ((RecentCommand)obj).getShortCommand().equals(shortCommand);
+            
             return super.equals(obj);
         }
         
@@ -293,8 +281,7 @@ public class DataViewWindow extends TopComponent {
          *
          * @return the command for display in the JComboBox
          */
-         private String getShortCommand() 
-        {
+         private String getShortCommand()  {
             StringTokenizer tokenizer = new StringTokenizer(command);
             StringBuffer buffer = new StringBuffer();
             while (tokenizer.hasMoreElements()) { 
@@ -305,107 +292,92 @@ public class DataViewWindow extends TopComponent {
         }
     }
 
-    class ComboModel extends AbstractListModel implements MutableComboBoxModel
-
-    {
+    class ComboModel extends AbstractListModel implements MutableComboBoxModel{
         Vector commands;
         Object selected;
 
         static final long serialVersionUID =-5831993904798984334L;
-        public ComboModel()
-        {
+        public ComboModel() {
             this(new Vector(1));
         }
 
-        public ComboModel(Vector elems)
-        {
+        public ComboModel(Vector elems) {
             commands = elems;
         }
 
-        public Object getSelectedItem()
-        {
+        public Object getSelectedItem() {
             return selected;
         }
 
-        public void setSelectedItem(Object anItem)
-        {
+        public void setSelectedItem(Object anItem) {
             selected = anItem;
             fireContentsChanged(this,-1,-1);
         }
 
-        public void addElement(Object obj)
-        {
+        public void addElement(Object obj) {
             if (!commands.contains(obj)) {
                 commands.add(obj);
                 fireContentsChanged(this,-1,-1);
             }
         }
 
-        public void removeElement(Object obj)
-        {
+        public void removeElement(Object obj) {
             commands.removeElement(obj);
             fireContentsChanged(this,-1,-1);
         }
 
-        public void insertElementAt(Object obj, int index)
-        {
+        public void insertElementAt(Object obj, int index) {
             if (!commands.contains(obj)) {
                 commands.insertElementAt(obj, index);
                 fireContentsChanged(this,-1,-1);
             }
         }
 
-        public void removeElementAt(int index)
-        {
+        public void removeElementAt(int index) {
             commands.removeElementAt(index);
             fireContentsChanged(this,-1,-1);
         }
 
-        public int getSize()
-        {
+        public int getSize() {
             return commands.size();
         }
 
-        public Object getElementAt(int index)
-        {
+        public Object getElementAt(int index) {
             return commands.get(index);
         }
     }
 
-    class ViewDropTarget implements DropTargetListener
-    {
+    class ViewDropTarget implements DropTargetListener {
         /** User is starting to drag over us */
-        public void dragEnter (DropTargetDragEvent dtde)
-        {
+        public void dragEnter (DropTargetDragEvent dtde) {
             dtde.acceptDrag(dtde.getDropAction());
         }
 
         /** User drags over us */
-        public void dragOver (DropTargetDragEvent dtde)
-        {
+        public void dragOver (DropTargetDragEvent dtde) {
         }
 
-        public void dropActionChanged (DropTargetDragEvent dtde)
-        {
+        public void dropActionChanged (DropTargetDragEvent dtde) {
         }
 
         /** User exits the dragging */
-        public void dragExit (DropTargetEvent dte)
-        {
+        public void dragExit (DropTargetEvent dte) {
         }
 
-        private ColumnNodeInfo getNodeInfo(Transferable t)
-        {
+        private ColumnNodeInfo getNodeInfo(Transferable t) {
             Node n = NodeTransfer.node(t, NodeTransfer.MOVE);
-            if (n != null) return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
+            if (n != null)
+                return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
+            
             n = NodeTransfer.node(t, NodeTransfer.COPY);
-            if (n != null) return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
+            if (n != null)
+                return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
+            
             return null;
         }
 
         /** Performs the drop action */
-        public void drop (DropTargetDropEvent dtde)
-        {
+        public void drop (DropTargetDropEvent dtde) {
             String query = null;
             Object obj = null;
             Transferable t = dtde.getTransferable();
@@ -413,9 +385,9 @@ public class DataViewWindow extends TopComponent {
 
             try {
                 DataFlavor multiFlavor = new DataFlavor (
-                                             NbBundle.getBundle(ExTransferable.class).getString("MultiNodeMimeType"), //NOI18N
-                                             NbBundle.getBundle (ExTransferable.class).getString ("transferFlavorsMultiFlavorName") //NOI18N
-                                         );
+                    NbBundle.getBundle(ExTransferable.class).getString("MultiNodeMimeType"), //NOI18N
+                    NbBundle.getBundle (ExTransferable.class).getString ("transferFlavorsMultiFlavorName") //NOI18N
+                );
 
                 if (t.isDataFlavorSupported(multiFlavor)) {
                     MultiTransferObject mobj = (MultiTransferObject)t.getTransferData(ExTransferable.multiFlavor);
@@ -465,9 +437,7 @@ public class DataViewWindow extends TopComponent {
         static final long serialVersionUID =7729426847826999963L;
 
         /** Constructor */
-        public DataModel(DatabaseNodeInfo node_info)
-        throws SQLException
-        {
+        public DataModel(DatabaseNodeInfo node_info) throws SQLException {
             this.node_info = node_info;
         }
 
@@ -582,8 +552,7 @@ public class DataViewWindow extends TopComponent {
         /** Returns column name
         * @param column Column index
         */
-        public String getColumnName(int column)
-        {
+        public String getColumnName(int column) {
             if (column < coldef.size()) {
                 String cname = ((ColDef)coldef.elementAt(column)).getName();
                 return cname;
@@ -595,8 +564,7 @@ public class DataViewWindow extends TopComponent {
         /** Returns column renderer/editor class
         * @param column Column index
         */
-        public Class getColumnClass(int column)
-        {
+        public Class getColumnClass(int column) {
             if (column < coldef.size()) {
                 int coltype = ((ColDef)coldef.elementAt(column)).getDataType();
                 switch (coltype) {
@@ -619,54 +587,61 @@ public class DataViewWindow extends TopComponent {
 
         /** Returns true, if cell is editable
         */
-        public boolean isCellEditable(int row, int column)
-        {
-            if (!editable) return false;
-            if (column < coldef.size()) return ((ColDef)coldef.elementAt(column)).isWritable();
+        public boolean isCellEditable(int row, int column) {
+            if (!editable)
+                return false;
+            
+            if (column < coldef.size())
+                return ((ColDef)coldef.elementAt(column)).isWritable();
+            
             return false;
         }
 
         /** Returns colun count
         */
-        public int getColumnCount()
-        {
-            if (coldef == null) return 0;
+        public int getColumnCount() {
+            if (coldef == null)
+                return 0;
+            
             return coldef.size();
         }
 
         /** Returns row count
         */
-        public int getRowCount()
-        {
-            if (data == null) return 0;
+        public int getRowCount() {
+            if (data == null)
+                return 0;
+            
             return data.size();
         }
 
         /** Returns value at specified position
         */
-        public Object getValueAt(int aRow, int aColumn)
-        {
+        public Object getValueAt(int aRow, int aColumn) {
             Vector row = null;
-            if (aRow < data.size()) row = (Vector)data.elementAt(aRow);
-            if (row != null && aColumn<row.size()) return row.elementAt(aColumn);
+            if (aRow < data.size())
+                row = (Vector)data.elementAt(aRow);
+            if (row != null && aColumn<row.size())
+                return row.elementAt(aColumn);
+            
             return null;
         }
 
-        private String format(Object value, int type)
-        {
-            if (value == null) return "null"; //NOI18N
+        private String format(Object value, int type) {
+            if (value == null)
+                return "null"; //NOI18N
+            
             switch(type) {
-            case Types.INTEGER:
-            case Types.DOUBLE:
-            case Types.FLOAT: return value.toString();
-            case Types.BIT: return ((Boolean)value).booleanValue() ? "1" : "0"; //NOI18N
-            case Types.DATE: return value.toString();
-            default: return "\""+value.toString()+"\""; //NOI18N
+                case Types.INTEGER:
+                case Types.DOUBLE:
+                case Types.FLOAT: return value.toString();
+                case Types.BIT: return ((Boolean)value).booleanValue() ? "1" : "0"; //NOI18N
+                case Types.DATE: return value.toString();
+                default: return "\""+value.toString()+"\""; //NOI18N
             }
         }
 
-        public void setValueAt(Object value, int row, int column)
-        {
+        public void setValueAt(Object value, int row, int column) {
             int enucol = 0;
             StringBuffer where = new StringBuffer();
             HashMap map = new HashMap();
