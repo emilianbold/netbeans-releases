@@ -177,7 +177,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="test-build" depends="init,test-init,jar">
         <mkdir dir="${build.test.classes.dir}"/>
         <javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}"
-               debug="true" deprecation="${build.compile.deprecation}"
+               debug="true" deprecation="${build.compiler.deprecation}"
                source="1.4" includeantruntime="false">
             <classpath refid="test.cp"/>
         </javac>
@@ -194,7 +194,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- XXX consider forcing deprecation=true -->
         <!-- XXX consider deleting the .class file first to force a rebuild -->
         <javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}"
-               debug="true" deprecation="${build.compile.deprecation}"
+               debug="true" deprecation="${build.compiler.deprecation}"
                source="1.4" includeantruntime="false" includes="${javac.includes}">
             <classpath refid="test.cp"/>
         </javac>
