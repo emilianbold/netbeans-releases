@@ -203,6 +203,8 @@ public class NonGui extends NbTopManager implements Runnable {
     public void run () {
         StartLog.logStart ("TopManager initialization (org.netbeans.core.NonGui.run())"); //NOI18N
         
+        InstalledFileLocatorImpl.prepareCache();
+        
         // because of KL Group components, we define a property netbeans.design.time
         // which serves instead of Beans.isDesignTime () (which returns false in the IDE)
         System.getProperties ().put ("netbeans.design.time", "true"); // NOI18N
@@ -440,6 +442,8 @@ public class NonGui extends NbTopManager implements Runnable {
         
         org.netbeans.Main.finishInitialization();
         StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
+        
+        InstalledFileLocatorImpl.discardCache();
     }
 
 
