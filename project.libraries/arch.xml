@@ -128,7 +128,7 @@
 -->
  <answer id="compat-i18n">
   <p>
-   Yes; GUI should be internationalization, and library definitions should
+   Yes; GUI is internationalization, and library definitions
    support localized display names.
   </p>
  </answer>
@@ -594,7 +594,9 @@
 -->
  <answer id="lookup-lookup">
  <p>
- No.
+ Yes.
+ It lookups the instances of org.netbeans.spi.project.libraries.LibraryProvider interface in the default lookup.
+ This interface represents a read only storage of libraries. There can be multiple instances of this interface.  
  </p>
  </answer>
 
