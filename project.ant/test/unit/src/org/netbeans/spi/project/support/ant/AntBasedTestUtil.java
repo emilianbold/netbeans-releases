@@ -117,7 +117,7 @@ public class AntBasedTestUtil {
             }
             this.helper = helper;
             AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
-            refHelper = new ReferenceHelper(helper, aux);
+            refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
             genFilesHelper = new GeneratedFilesHelper(helper);
             l = Lookups.fixed(new Object[] {
                 new TestInfo(),
@@ -183,8 +183,8 @@ public class AntBasedTestUtil {
             
             public AntArtifact[] getBuildArtifacts() {
                 return new AntArtifact[] {
-                    helper.createSimpleAntArtifact("jar", "build.jar", "dojar", "clean"),
-                    helper.createSimpleAntArtifact("javadoc", "build.javadoc", "dojavadoc", "clean"),
+                    helper.createSimpleAntArtifact("jar", "build.jar", helper.getStandardPropertyEvaluator(), "dojar", "clean"),
+                    helper.createSimpleAntArtifact("javadoc", "build.javadoc", helper.getStandardPropertyEvaluator(), "dojavadoc", "clean"),
                 };
             }
             

@@ -71,7 +71,7 @@ public class SimpleAntArtifactTest extends NbTestCase {
      * Check that {@link SimpleAntArtifact} works as documented.
      */
     public void testSimpleAntArtifact() throws Exception {
-        AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", "dojar", "clean");
+        AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", sisterh.getStandardPropertyEvaluator(), "dojar", "clean");
         assertEquals("correct type", "jar", art.getType());
         assertEquals("correct target name", "dojar", art.getTargetName());
         assertEquals("correct clean target name", "clean", art.getCleanTargetName());

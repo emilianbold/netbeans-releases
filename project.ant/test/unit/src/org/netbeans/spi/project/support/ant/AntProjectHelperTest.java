@@ -184,15 +184,16 @@ public class AntProjectHelperTest extends NbTestCase {
      * Test that Ant properties can be evaluated with proper (recursive) substitutions.
      * @throws Exception if anything unexpected happens
      */
-    public void testEvaluate() throws Exception {
-        assertEquals("shared.prop correct", "value1", h.evaluate("shared.prop"));
-        assertEquals("private.prop correct", "value2", h.evaluate("private.prop"));
-        assertEquals("overridden.prop correct", "value4", h.evaluate("overridden.prop"));
-        assertEquals("derived.prop correct", "value2:value1:${undefined.prop}", h.evaluate("derived.prop"));
-        assertEquals("tempdir correct", System.getProperty("java.io.tmpdir") + "/foo", h.evaluate("tempdir"));
-        assertEquals("global.prop correct", "value5", h.evaluate("global.prop"));
-        assertEquals("does not have other defs", null, h.evaluate("bogus.prop"));
-        Map m = h.evaluateAll();
+    public void testStandardPropertyEvaluator() throws Exception {
+        PropertyEvaluator pev = h.getStandardPropertyEvaluator();
+        assertEquals("shared.prop correct", "value1", pev.getProperty("shared.prop"));
+        assertEquals("private.prop correct", "value2", pev.getProperty("private.prop"));
+        assertEquals("overridden.prop correct", "value4", pev.getProperty("overridden.prop"));
+        assertEquals("derived.prop correct", "value2:value1:${undefined.prop}", pev.getProperty("derived.prop"));
+        assertEquals("tempdir correct", System.getProperty("java.io.tmpdir") + "/foo", pev.getProperty("tempdir"));
+        assertEquals("global.prop correct", "value5", pev.getProperty("global.prop"));
+        assertEquals("does not have other defs", null, pev.getProperty("bogus.prop"));
+        Map m = pev.getProperties();
         assertEquals("shared.prop correct", "value1", m.get("shared.prop"));
         assertEquals("private.prop correct", "value2", m.get("private.prop"));
         assertEquals("overridden.prop correct", "value4", m.get("overridden.prop"));
@@ -201,7 +202,7 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("global.prop correct", "value5", m.get("global.prop"));
         assertEquals("does not have other defs", null, m.get("bogus.prop"));
         assertEquals("correct evaluateString", "value1:value2",
-            h.evaluateString("${shared.prop}:${private.prop}"));
+            pev.evaluate("${shared.prop}:${private.prop}"));
     }
     
     /**
@@ -273,7 +274,7 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("three properties defined", 3, ep.size());
         ep.put("testprop", "testval");
         assertTrue("uncommitted changes do not modify project", !pm.isModified(p));
-        assertEquals("uncommitted changes not yet in project properties", null, h.evaluate("testprop"));
+        assertEquals("uncommitted changes not yet in project properties", null, h.getStandardPropertyEvaluator().getProperty("testprop"));
         assertEquals("uncommitted changes fire no events", 0, l.events().length);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         assertTrue("committed changes do modify project", pm.isModified(p));
@@ -282,14 +283,14 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("correct helper", h, evs[0].getHelper());
         assertEquals("correct path", AntProjectHelper.PROJECT_PROPERTIES_PATH, evs[0].getPath());
         assertTrue("expected change", evs[0].isExpected());
-        assertEquals("committed changes are in project properties", "testval", h.evaluate("testprop"));
+        assertEquals("committed changes are in project properties", "testval", h.getStandardPropertyEvaluator().getProperty("testprop"));
         Properties props = AntBasedTestUtil.slurpProperties(h, AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertNotNull("project.properties already exists", props);
         assertEquals("project.properties does not yet contain testprop", null, props.getProperty("testprop"));
         pm.saveProject(p);
         assertTrue("project is now saved", !pm.isModified(p));
         assertEquals("saving changes fires no new events", 0, l.events().length);
-        assertEquals("committed & saved changes are in project properties", "testval", h.evaluate("testprop"));
+        assertEquals("committed & saved changes are in project properties", "testval", h.getStandardPropertyEvaluator().getProperty("testprop"));
         props = AntBasedTestUtil.slurpProperties(h, AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertNotNull("project.properties still exists", props);
         assertEquals("project.properties now contains testprop", "testval", props.getProperty("testprop"));

@@ -58,7 +58,7 @@ public class SharabilityQueryImplTest extends NbTestCase {
         props.setProperty("build3.dir", new File(externalF, "build").getAbsolutePath());
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
         ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(projdir));
-        sqi = h.createSharabilityQuery(new String[] {"${src.dir}", "${src2.dir}"},
+        sqi = h.createSharabilityQuery(h.getStandardPropertyEvaluator(), new String[] {"${src.dir}", "${src2.dir}"},
                                        new String[] {"${build.dir}", "${build2.dir}", "${build3.dir}", "${dist.dir}"});
     }
     

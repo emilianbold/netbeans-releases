@@ -100,6 +100,7 @@ public class ReferenceHelperTest extends NbTestCase {
     /** The master project's reference helper. */
     private ReferenceHelper r;
     //private AntBasedTestUtil.TestListener l;
+    private PropertyEvaluator pev;
     
     protected void setUp() throws Exception {
         super.setUp();
@@ -151,6 +152,8 @@ public class ReferenceHelperTest extends NbTestCase {
         props.setProperty("build.jar", "dist/proj3.jar");
         seph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
         //l = new AntBasedTestUtil.TestListener();
+        
+        pev = h.getStandardPropertyEvaluator();
     }
     
     protected void tearDown() throws Exception {
@@ -177,7 +180,7 @@ public class ReferenceHelperTest extends NbTestCase {
         // Test simple adding of a reference.
         ReferenceHelper.RawReference ref = new ReferenceHelper.RawReference("otherproj", "jar", URI.create("build.xml"), "dojar", "clean");
         assertTrue("successfully added a raw ref to otherproj.dojar", r.addRawReference(ref));
-        assertNull("project.properties not changed", h.evaluate("project.otherproj"));
+        assertNull("project.properties not changed", pev.getProperty("project.otherproj"));
         assertTrue("project is modified", pm.isModified(p));
         ref = r.getRawReference("otherproj", "dojar");
         assertNotNull("found otherproj.dojar", ref);
@@ -336,7 +339,7 @@ public class ReferenceHelperTest extends NbTestCase {
     public void testAddRemoveArtifact() throws Exception {
         // Add one artifact. Check that the raw reference is there.
         assertFalse("project not initially modified", pm.isModified(p));
-        AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", "dojar", "clean");
+        AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", sisterh.getStandardPropertyEvaluator(), "dojar", "clean");
         assertTrue("added a ref to proj2.dojar", r.addReference(art));
         assertTrue("project now modified", pm.isModified(p));
         ReferenceHelper.RawReference[] refs = r.getRawReferences();
@@ -353,18 +356,18 @@ public class ReferenceHelperTest extends NbTestCase {
             props.getProperty("project.proj2"));
         assertEquals("correct evaluated ${project.proj2}",
             FileUtil.toFile(sisterprojdir),
-            h.resolveFile(h.evaluate("project.proj2")));
+            h.resolveFile(pev.getProperty("project.proj2")));
         assertEquals("correct ${reference.proj2.dojar}", "${project.proj2}/dist/proj2.jar",
             props.getProperty("reference.proj2.dojar"));
         assertEquals("correct evaluated ${reference.proj2.dojar}",
             new File(new File(FileUtil.toFile(sisterprojdir), "dist"), "proj2.jar"),
-            h.resolveFile(h.evaluate("reference.proj2.dojar")));
+            h.resolveFile(pev.getProperty("reference.proj2.dojar")));
         // Check no-op adds.
         pm.saveProject(p);
         assertFalse("no-op add", r.addReference(art));
         assertFalse("project not modified by no-op add", pm.isModified(p));
         // Try another artifact from the same project.
-        art = sisterh.createSimpleAntArtifact("javadoc", "build.javadoc", "dojavadoc", "clean");
+        art = sisterh.createSimpleAntArtifact("javadoc", "build.javadoc", sisterh.getStandardPropertyEvaluator(), "dojavadoc", "clean");
         assertTrue("added a ref to proj2.dojavadoc", r.addReference(art));
         assertTrue("project now modified", pm.isModified(p));
         refs = r.getRawReferences();
@@ -388,13 +391,13 @@ public class ReferenceHelperTest extends NbTestCase {
             props.getProperty("reference.proj2.dojavadoc"));
         assertEquals("correct evaluated ${reference.proj2.dojavadoc}",
             new File(new File(FileUtil.toFile(sisterprojdir), "build"), "javadoc"),
-            h.resolveFile(h.evaluate("reference.proj2.dojavadoc")));
+            h.resolveFile(pev.getProperty("reference.proj2.dojavadoc")));
         pm.saveProject(p);
         assertFalse("no-op add", r.addReference(art));
         assertFalse("project not modified by no-op add", pm.isModified(p));
         // Try modifying the second artifact in some way.
         // Note that only changes in the type, clean target, and artifact path count as modifications.
-        art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc", "dojavadoc", "clean");
+        art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc", sisterh.getStandardPropertyEvaluator(), "dojavadoc", "clean");
         assertTrue("successful modification of proj2.dojavadoc by type", r.addReference(art));
         assertTrue("project modified by ref mod", pm.isModified(p));
         refs = r.getRawReferences();
@@ -405,10 +408,10 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
         assertEquals("correct target name", "dojavadoc", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
-        art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc", "dojavadoc", "realclean");
+        art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc", sisterh.getStandardPropertyEvaluator(), "dojavadoc", "realclean");
         assertTrue("successful modification of proj2.dojavadoc by clean target", r.addReference(art));
         pm.saveProject(p);
-        art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc.complete", "dojavadoc", "realclean");
+        art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc.complete", sisterh.getStandardPropertyEvaluator(), "dojavadoc", "realclean");
         assertTrue("successful modification of proj2.dojavadoc by artifact location property", r.addReference(art));
         assertTrue("project modified by ref mod", pm.isModified(p));
         refs = r.getRawReferences();
@@ -430,7 +433,7 @@ public class ReferenceHelperTest extends NbTestCase {
             props.getProperty("reference.proj2.dojavadoc"));
         assertEquals("correct evaluated ${reference.proj2.dojavadoc}",
             new File(new File(FileUtil.toFile(sisterprojdir), "build"), "complete-javadoc"),
-            h.resolveFile(h.evaluate("reference.proj2.dojavadoc")));
+            h.resolveFile(pev.getProperty("reference.proj2.dojavadoc")));
         // Check that changing the value of the artifact location property
         // in the subproject modifies this project.
         pm.saveProject(p);
@@ -447,7 +450,7 @@ public class ReferenceHelperTest extends NbTestCase {
             props.getProperty("reference.proj2.dojavadoc"));
         assertEquals("correct evaluated ${reference.proj2.dojavadoc}",
             new File(new File(FileUtil.toFile(sisterprojdir), "build"), "total-javadoc"),
-            h.resolveFile(h.evaluate("reference.proj2.dojavadoc")));
+            h.resolveFile(pev.getProperty("reference.proj2.dojavadoc")));
         // Now try removing first ref. Should remove raw ref, ref property, but not project property.
         pm.saveProject(p);
         assertTrue("remove proj2.dojar succeeded", r.removeReference("proj2", "dojar"));
@@ -491,11 +494,11 @@ public class ReferenceHelperTest extends NbTestCase {
      * @throws Exception in case of unexpected failures
      */
     public void testSubprojectProviderImpl() throws Exception {
-        AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", "dojar", "clean");
+        AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", sisterh.getStandardPropertyEvaluator(), "dojar", "clean");
         assertTrue("added a ref to proj2.dojar", r.addReference(art));
-        art = sisterh.createSimpleAntArtifact("javadoc", "build.javadoc", "dojavadoc", "clean");
+        art = sisterh.createSimpleAntArtifact("javadoc", "build.javadoc", sisterh.getStandardPropertyEvaluator(), "dojavadoc", "clean");
         assertTrue("added a ref to proj2.dojavadoc", r.addReference(art));
-        art = seph.createSimpleAntArtifact("jar", "build.jar", "dojar", "clean");
+        art = seph.createSimpleAntArtifact("jar", "build.jar", seph.getStandardPropertyEvaluator(), "dojar", "clean");
         assertTrue("added a ref to proj3.dojar", r.addReference(art));
         SubprojectProvider sp = r.createSubprojectProvider();
         Set/*<Project>*/ subprojs = sp.getSubProjects();
@@ -523,7 +526,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("can add a ref to an artifact", "${reference.proj2.dojar}", r.createForeignFileReference(f, "jar"));
         assertEquals("creating reference second time must return already existing ID", "${reference.proj2.dojar}", r.createForeignFileReference(f, "jar"));
         assertNotNull("ref added", r.getRawReference("proj2", "dojar"));
-        String refval = h.evaluate("reference.proj2.dojar");
+        String refval = pev.getProperty("reference.proj2.dojar");
         assertEquals("reference correctly evaluated", "../proj2/dist/proj2.jar", refval);
         assertEquals("reference correctly evaluated", f, h.resolveFile(refval));
         AntArtifact art = r.getForeignFileReferenceAsArtifact("${reference.proj2.dojar}");
@@ -543,7 +546,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertNull("ref removed", r.getRawReference("proj2-1", "dojar"));
         r.destroyForeignFileReference("${reference.proj2.dojar}");
         assertNull("ref removed", r.getRawReference("proj2", "dojar"));
-        assertNull("project ref property removed", h.evaluate("reference.proj2.dojar"));
+        assertNull("project ref property removed", pev.getProperty("reference.proj2.dojar"));
         assertEquals("no refs remaining", 0, r.getRawReferences().length);
         
         // test non-collocated foreign project reference
@@ -554,7 +557,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("can add a reference to a direct artifact", "${reference.proj3.dojar}", r.createForeignFileReference(art));
         assertEquals("creating reference second time must return already existing ID", "${reference.proj3.dojar}", r.createForeignFileReference(art));
         assertNotNull("ref added", r.getRawReference("proj3", "dojar"));
-        refval = h.evaluate("reference.proj3.dojar");
+        refval = pev.getProperty("reference.proj3.dojar");
         String val = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty("reference.proj3.dojar");
         assertEquals("reference was not correctly set", "${project.proj3}/dist/proj3.jar", val);
         assertEquals("reference correctly evaluated", f, h.resolveFile(refval));
@@ -566,7 +569,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("correct target name", "dojar", art.getTargetName());
         r.destroyForeignFileReference("${reference.proj3.dojar}");
         assertNull("ref removed", r.getRawReference("proj3", "dojar"));
-        assertNull("project ref property removed", h.evaluate("reference.proj3.dojar"));
+        assertNull("project ref property removed", pev.getProperty("reference.proj3.dojar"));
         assertEquals("no refs remaining", 0, r.getRawReferences().length);
 
         // test foreign file reference for collocated jar
@@ -597,7 +600,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("Reference was not correctly evaluated", "../jars3/mylib.jar", refval);
         assertTrue("Reference was not removed", r.removeReference(ref));
         assertFalse("There should not be any reference", r.removeReference(ref));
-        refval = h.evaluateString(ref);
+        refval = pev.evaluate(ref);
         assertEquals("Reference was not removed", ref, refval);
         
         // test foreign file reference for non-collocated jar
@@ -627,7 +630,7 @@ public class ReferenceHelperTest extends NbTestCase {
         refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
         assertEquals("Reference was not correctly evaluated", f.getAbsolutePath(), refval);
         r.destroyForeignFileReference(ref);
-        refval = h.evaluateString(ref);
+        refval = pev.evaluate(ref);
         assertEquals("Reference was not removed", ref, refval);
         
     }

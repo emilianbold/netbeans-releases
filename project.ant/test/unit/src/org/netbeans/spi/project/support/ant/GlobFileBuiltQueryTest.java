@@ -69,7 +69,7 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
         bar = TestUtil.createFileFromContent(null, scratch, "src/pkg/Bar.java");
         fooTest = TestUtil.createFileFromContent(null, scratch, "test/src/pkg/FooTest.java");
         nonsense = TestUtil.createFileFromContent(null, scratch, "misc-src/whatever/Nonsense.java");
-        fbqi = h.createGlobFileBuiltQuery(new String[] {
+        fbqi = h.createGlobFileBuiltQuery(h.getStandardPropertyEvaluator(), new String[] {
             "${src.dir}/*.java",
             "${test.src.dir}/*.java",
         }, new String[] {
