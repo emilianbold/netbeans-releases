@@ -25,11 +25,11 @@ Microsystems, Inc. All Rights Reserved.
     </target>
   
     <target name="build-init" depends="projectized.build-init">
-        <ant dir="external" target="unscramble"/>
+        <ant dir="../external" target="unscramble"/>
     </target>
     
     <target name="netbeans-extra">
-        <copy file="./external/html40.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+        <copy file="../external/html40.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
     </target>
     
 </project>
