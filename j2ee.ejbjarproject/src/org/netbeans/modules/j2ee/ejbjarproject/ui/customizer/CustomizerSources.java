@@ -42,26 +42,23 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         File pf = FileUtil.toFile( projectFolder );
         this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
         
-        
         EjbJarSourceRootsUi.EditMediator emSR = EjbJarSourceRootsUi.registerEditMediator(
             (EjbJarProject)uiProperties.getProject(),
+            ((EjbJarProject)uiProperties.getProject()).getSourceRoots(),
             sourceRoots,
             addSourceRoot,
             removeSourceRoot, 
             upSourceRoot, 
-            downSourceRoot,
-            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
-            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInTests") );
+            downSourceRoot);
         
         EjbJarSourceRootsUi.EditMediator emTSR = EjbJarSourceRootsUi.registerEditMediator(
             (EjbJarProject)uiProperties.getProject(),
+            ((EjbJarProject)uiProperties.getProject()).getTestSourceRoots(),
             testRoots,
             addTestRoot,
             removeTestRoot, 
             upTestRoot, 
-            downTestRoot,
-            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
-            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInSources"));
+            downTestRoot);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );

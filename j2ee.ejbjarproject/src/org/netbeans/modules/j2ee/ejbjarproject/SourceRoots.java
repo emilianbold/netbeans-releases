@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.ejbjarproject;
@@ -69,21 +69,25 @@ public final class SourceRoots {
     private List sourceRootURLs;
     private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
-    private int rootIndex = 2;
+    private final boolean isTest;
+    private final File projectDir;
 
     /**
      * Creates new SourceRoots
      * @param helper
      * @param evaluator
      * @param elementName the name of XML element under which are declared the roots
+     * @param newRootNameTemplate template for new property name of source root
      */
-    SourceRoots (UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, String elementName, String newRootNameTemplate) {
+    SourceRoots (UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, String elementName, boolean isTest, String newRootNameTemplate) {
         assert helper != null && evaluator != null && refHelper != null && elementName != null && newRootNameTemplate != null;
         this.helper = helper;
         this.evaluator = evaluator;
         this.refHelper = refHelper;
         this.elementName = elementName;
-        this.newRootNameTemplate = newRootNameTemplate;
+        this.isTest = isTest;
+        this.newRootNameTemplate = newRootNameTemplate;        
+        this.projectDir = FileUtil.toFile(this.helper.getAntProjectHelper().getProjectDirectory());
         this.support = new PropertyChangeSupport(this);
         this.listener = new ProjectMetadataListener();
         this.evaluator.addPropertyChangeListener (WeakListeners.propertyChange(this.listener,this.evaluator));
@@ -256,10 +260,12 @@ public final class SourceRoots {
                             if (rootName == null) {
                                 //Root is new generate property for it
                                 props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                rootName = MessageFormat.format(newRootNameTemplate, new Object[]{new Integer(rootIndex)});
+                                String[] names = newRoot.getPath().split("/");  //NOI18N
+                                rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],""});    //NOI18N
+                                int rootIndex = 1;
                                 while (props.containsKey(rootName)) {
                                     rootIndex++;
-                                    rootName = MessageFormat.format(newRootNameTemplate, new Object[]{new Integer(rootIndex)});
+                                    rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],new Integer(rootIndex)});
                                 }
                                 File f = FileUtil.normalizeFile(new File(URI.create(newRoot.toExternalForm())));
                                 File projDir = FileUtil.toFile(helper.getAntProjectHelper().getProjectDirectory());
@@ -278,7 +284,7 @@ public final class SourceRoots {
                             Element newRootNode = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); //NOI18N
                             newRootNode.setAttribute("id",rootName);    //NOI18N
                             String label = (String) newRoots2lab.get (newRoot);
-                            if (label != null && label.length()>0) {
+                            if (label != null && label.length()>0 && !label.equals (getRootDisplayName(null,rootName))) { //NOI18N
                                 newRootNode.setAttribute("name",label); //NOI18N
                             }
                             ownerElement.appendChild (newRootNode);
@@ -288,6 +294,54 @@ public final class SourceRoots {
                     }
                 }
         );
+    }
+
+    /**
+     * Translates root name into display name of source/test root
+     * @param rootName the name of root got from {@link SourceRoots#getRootNames}
+     * @param propName the name of property the root is stored in
+     * @return the label to be displayed
+     */
+    public String getRootDisplayName (String rootName, String propName) {
+        if (rootName == null || rootName.length() ==0) {
+            //If the prop is src.dir use the default name
+            if (isTest && "test.src.dir".equals(propName)) {    //NOI18N
+                rootName = DEFAULT_TEST_LABEL;
+            }
+            else if (!isTest && "src.dir".equals(propName)) {   //NOI18N
+                rootName = DEFAULT_SOURCE_LABEL;
+            }
+            else {
+                //If the name is not given, it should be either a relative path in the project dir
+                //or absolute path when the root is not under the project dir
+                File sourceRoot = helper.getAntProjectHelper().resolveFile(evaluator.getProperty(propName));
+                rootName = createInitialDisplayName(sourceRoot);                
+            }
+        }
+        return rootName;
+    }
+    
+    /**
+     * Creates initial display name of source/test root
+     * @param sourceRoot the source root
+     * @return the label to be displayed
+     */
+    public String createInitialDisplayName (File sourceRoot) {
+        String rootName;
+        if (sourceRoot != null) {
+            String srPath = sourceRoot.getAbsolutePath();
+            String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
+            if (srPath.startsWith(pdPath)) {
+                rootName = srPath.substring(pdPath.length());
+            }
+            else {
+                rootName = sourceRoot.getAbsolutePath();
+            }
+        }
+        else {
+            rootName = isTest ? DEFAULT_TEST_LABEL : DEFAULT_SOURCE_LABEL;
+        }
+        return rootName;
     }
 
     private void resetCache (boolean isXMLChange, String propName) {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -57,41 +57,28 @@ final class EjbJarSourceRootsUi {
         URL[] rootURLs = roots.getRootURLs();
         Object[][] data = new Object[rootURLs.length] [2];
         for (int i=0; i< rootURLs.length; i++) {
-            data[i][0] = new File (URI.create (rootURLs[i].toExternalForm()));
-            if (rootLabels[i].length()>0) {
-                data[i][1] = rootLabels[i];
-            }
-            else if ( "src.dir".equals(rootProps[i])) {   //NOI18N
-                data[i][1] = SourceRoots.DEFAULT_SOURCE_LABEL;
-            }
-            else if ( "test.src.dir".equals(rootProps[i])) { //NOI18N
-                data[i][1] = SourceRoots.DEFAULT_TEST_LABEL;
-            }
-            else {
-                data[i][1] = ""; //NOI18N
-            }
+            data[i][0] = new File (URI.create (rootURLs[i].toExternalForm()));            
+            data[i][1] = roots.getRootDisplayName(rootLabels[i], rootProps[i]);
         }
         return new SourceRootsModel(data);
                 
     }
     
     public static EditMediator registerEditMediator( EjbJarProject master,
+                                             SourceRoots sourceRoots,
                                              JTable rootsList,
                                              JButton addFolderButton,
                                              JButton removeButton,
                                              JButton upButton,
-                                             JButton downButton,
-                                             String errorMessagePOR,
-                                             String errorMessageRR ) {
+                                             JButton downButton) {
         
         EditMediator em = new EditMediator( master,
+                                            sourceRoots,
                                             rootsList,
                                             addFolderButton,
                                             removeButton,
                                             upButton,
-                                            downButton,
-                                            errorMessagePOR,
-                                            errorMessageRR);
+                                            downButton);
         
         // Register the listeners        
         // On all buttons
@@ -129,21 +116,18 @@ final class EjbJarSourceRootsUi {
         final JButton upButton;
         final JButton downButton;
         private final Project project;
+        private final SourceRoots sourceRoots;
         private final Set ownedFolders;
         private DefaultTableModel rootsModel;
         private EditMediator relatedEditMediator;
-        private final String errorMessageRR;
-        private final String errorMessagePOR;
-
         
         public EditMediator( EjbJarProject master,
+                             SourceRoots sourceRoots,
                              JTable rootsList,
                              JButton addFolderButton,
                              JButton removeButton,
                              JButton upButton,
-                             JButton downButton,
-                             String errorMessagePOR,
-                             String errorMessageRR ) {
+                             JButton downButton) {
 
             if ( !( rootsList.getModel() instanceof DefaultTableModel ) ) {
                 throw new IllegalArgumentException( "Jtable's model has to be of class DefaultTableModel" ); // NOI18N
@@ -154,11 +138,10 @@ final class EjbJarSourceRootsUi {
             this.removeButton = removeButton;
             this.upButton = upButton;
             this.downButton = downButton;
-            this.errorMessagePOR = errorMessagePOR;
-            this.errorMessageRR = errorMessageRR;
             this.ownedFolders = new HashSet();
 
             this.project = master;
+            this.sourceRoots = sourceRoots;
 
             this.ownedFolders.clear();
             this.rootsModel = (DefaultTableModel)rootsList.getModel();
@@ -190,16 +173,16 @@ final class EjbJarSourceRootsUi {
                 chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
                 chooser.setMultiSelectionEnabled( true );
                 chooser.setDialogTitle( NbBundle.getMessage( EjbJarSourceRootsUi.class, "LBL_SourceFolder_DialogTitle" )); // NOI18N
-                File curDir = FoldersListSettings.getDefault().getLastUsedSourceRootFolder();
-                chooser.setCurrentDirectory (curDir);
+                File curDir = FileUtil.toFile(this.project.getProjectDirectory());
+                if (curDir != null) {
+                    chooser.setCurrentDirectory (curDir);
+                }
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( addFolderButton ) ); // Sow the chooser
                 
                 if ( option == JFileChooser.APPROVE_OPTION ) {
                     
                     File files[] = chooser.getSelectedFiles();
                     addFolders( files );
-                    curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
-                    FoldersListSettings.getDefault().setLastUsedSourceRootFolder(curDir);
                 }
                 
             }
@@ -287,17 +270,34 @@ final class EjbJarSourceRootsUi {
                 }
                 else {
                     int current = lastIndex + 1 + i;
-                    rootsModel.insertRow( current, new Object[] {normalizedFile,""}); //NOI18N
+                    rootsModel.insertRow( current, new Object[] {normalizedFile, sourceRoots.createInitialDisplayName(normalizedFile)}); //NOI18N
                     selectionModel.addSelectionInterval(current,current);
-                    this.ownedFolders.add(normalizedFile);
+                    this.ownedFolders.add (normalizedFile);
                 }
             }
             if (rootsFromOtherProjects.size() > 0 || rootsFromRelatedSourceRoots.size() > 0) {
-                JPanel warning = new WarningDlg (rootsFromOtherProjects, rootsFromRelatedSourceRoots,
-                    this.errorMessagePOR, this.errorMessageRR);
-                DialogDescriptor dd = new DialogDescriptor(warning,NbBundle.getMessage(EjbJarSourceRootsUi.class,"TITLE_InvalidRoot"),
-                    true, new Object[] {DialogDescriptor.OK_OPTION},DialogDescriptor.OK_OPTION,
-                    DialogDescriptor.DEFAULT_ALIGN, new HelpCtx (EjbJarSourceRootsUi.class),null);
+                JButton closeOption = new JButton (NbBundle.getMessage(EjbJarSourceRootsUi.class,"CTL_EjbJarSourceRootsUi_Close"));
+                closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(EjbJarSourceRootsUi.class,"AD_EjbJarSourceRootsUi_Close"));
+                rootsFromOtherProjects.addAll(rootsFromRelatedSourceRoots);
+                JPanel warning = new WarningDlg (rootsFromOtherProjects);                
+                String message = NbBundle.getMessage(EjbJarSourceRootsUi.class,"MSG_InvalidRoot");
+                JOptionPane optionPane = new JOptionPane (new Object[] {message, warning},
+                    JOptionPane.WARNING_MESSAGE,
+                    0, 
+                    null, 
+                    new Object[0], 
+                    null);
+                optionPane.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(EjbJarSourceRootsUi.class,"AD_InvalidRootDlg"));
+                DialogDescriptor dd = new DialogDescriptor (optionPane,
+                    NbBundle.getMessage(EjbJarSourceRootsUi.class,"TITLE_InvalidRoot"),
+                    true,
+                    new Object[] {
+                        closeOption,
+                    },
+                    closeOption,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    null);                
                 DialogDisplayer.getDefault().notify(dd);
             }
             // fireActionPerformed();
@@ -407,81 +407,77 @@ final class EjbJarSourceRootsUi {
         }
         
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,int row, int column) {
-            File root = (File) value;
-            String pfPath = projectFolder.getAbsolutePath() + File.separatorChar;
-            String srPath = root.getAbsolutePath();
             String displayName;
-            if (srPath.startsWith(pfPath)) {
-                displayName = srPath.substring(pfPath.length());
+            if (value instanceof File) {
+                File root = (File) value;
+                String pfPath = projectFolder.getAbsolutePath() + File.separatorChar;
+                String srPath = root.getAbsolutePath();            
+                if (srPath.startsWith(pfPath)) {
+                    displayName = srPath.substring(pfPath.length());
+                }
+                else {
+                    displayName = srPath;
+                }
             }
             else {
-                displayName = srPath;
+                displayName = null;
             }
             Component c = super.getTableCellRendererComponent(table, displayName, isSelected, hasFocus, row, column);
             if (c instanceof JComponent) {
-                ((JComponent)c).setToolTipText(displayName);
+                ((JComponent) c).setToolTipText (displayName);
             }
             return c;
-        }                        
-        
+        }                                
     }
 
     private static class WarningDlg extends JPanel {
 
-        public WarningDlg (Set projectOwned, Set related, String messagePOR, String messageRR) {
-            this.initGui (projectOwned, related, messagePOR, messageRR);
+        public WarningDlg (Set invalidRoots) {            
+            this.initGui (invalidRoots);
         }
 
-        private void initGui (Set projectOwned, Set related, String messagePOR, String messageRR) {
-            setLayout( new GridBagLayout ());
-            if (projectOwned.size()>0) {
-                JLabel tf = new JLabel(messagePOR);
-                GridBagConstraints c = new GridBagConstraints();
-                c.gridx = GridBagConstraints.RELATIVE;
-                c.gridy = GridBagConstraints.RELATIVE;
-                c.gridwidth = GridBagConstraints.REMAINDER;
-                c.fill = GridBagConstraints.HORIZONTAL;
-                c.weightx = 1.0;
-                c.insets = new Insets (12,12,12,12);
-                ((GridBagLayout)this.getLayout()).setConstraints(tf,c);
-                this.add (tf);
-                JList proots = new JList (projectOwned.toArray());
-                proots.setCellRenderer (new InvalidRootRenderer(true));
-                JScrollPane p = new JScrollPane (proots);
-                c = new GridBagConstraints();
-                c.gridx = GridBagConstraints.RELATIVE;
-                c.gridy = GridBagConstraints.RELATIVE;
-                c.gridwidth = GridBagConstraints.REMAINDER;
-                c.fill = GridBagConstraints.BOTH;
-                c.weightx = c.weighty = 1.0;
-                c.insets = new Insets (0,12,12,12);
-                ((GridBagLayout)this.getLayout()).setConstraints(p,c);
-                this.add (p);
-            }
-            if (related.size()>0) {
-                JLabel tf = new JLabel(messageRR);
-                GridBagConstraints c = new GridBagConstraints();
-                c.gridx = GridBagConstraints.RELATIVE;
-                c.gridy = GridBagConstraints.RELATIVE;
-                c.gridwidth = GridBagConstraints.REMAINDER;
-                c.fill = GridBagConstraints.HORIZONTAL;
-                c.weightx = 1.0;
-                c.insets = new Insets (projectOwned.size()>0?0:12,12,12,12);
-                ((GridBagLayout)this.getLayout()).setConstraints(tf,c);
-                this.add (tf);
-                JList rroots = new JList (related.toArray());
-                JScrollPane p = new JScrollPane (rroots);
-                rroots.setCellRenderer (new InvalidRootRenderer(false));
-                c = new GridBagConstraints();
-                c.gridx = GridBagConstraints.RELATIVE;
-                c.gridy = GridBagConstraints.RELATIVE;
-                c.gridwidth = GridBagConstraints.REMAINDER;
-                c.fill = GridBagConstraints.BOTH;
-                c.weightx = c.weighty = 1.0;
-                c.insets = new Insets (0,12,12,12);
-                ((GridBagLayout)this.getLayout()).setConstraints(p,c);
-                this.add (p);
-            }
+        private void initGui (Set invalidRoots) {
+            setLayout( new GridBagLayout ());                        
+            JLabel label = new JLabel ();
+            label.setText (NbBundle.getMessage(EjbJarSourceRootsUi.class,"LBL_InvalidRoot"));
+            label.setDisplayedMnemonic(NbBundle.getMessage(EjbJarSourceRootsUi.class,"MNE_InvalidRoot").charAt(0));            
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.weightx = 1.0;
+            c.insets = new Insets (12,0,6,0);
+            ((GridBagLayout)this.getLayout()).setConstraints(label,c);
+            this.add (label);            
+            JList roots = new JList (invalidRoots.toArray());
+            roots.setCellRenderer (new InvalidRootRenderer(true));
+            JScrollPane p = new JScrollPane (roots);
+            c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.BOTH;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.weightx = c.weighty = 1.0;
+            c.insets = new Insets (0,0,12,0);
+            ((GridBagLayout)this.getLayout()).setConstraints(p,c);
+            this.add (p);
+            label.setLabelFor(roots);
+            roots.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(EjbJarSourceRootsUi.class,"AD_InvalidRoot"));
+            JLabel label2 = new JLabel ();
+            label2.setText (NbBundle.getMessage(EjbJarSourceRootsUi.class,"MSG_InvalidRoot2"));
+            c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.weightx = 1.0;
+            c.insets = new Insets (0,0,0,0);
+            ((GridBagLayout)this.getLayout()).setConstraints(label2,c);
+            this.add (label2);            
         }
 
         private static class InvalidRootRenderer extends DefaultListCellRenderer {
@@ -509,9 +505,7 @@ final class EjbJarSourceRootsUi {
                         }
                     }
                 }
-                Component c =  super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
-                c.setForeground (new Color (164,0,0));
-                return c;
+                return super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
             }
         }
     }
