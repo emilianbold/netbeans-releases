@@ -308,6 +308,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         
         synchronized (HttpServerSettings.OPTIONS) {
             old = putProperty(PROP_PORT, new Integer(p), false);
+            if (p == ((Integer)old).intValue())
+                return;
             restartIfNecessary(true);
         }
         firePropertyChange(PROP_PORT, old, new Integer(p));
