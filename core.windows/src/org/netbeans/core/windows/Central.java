@@ -509,7 +509,6 @@ final class Central implements ControllerHandler {
         
         TopComponent old = getModeSelectedTopComponent(mode);
         if(selected == old) {
-            System.out.println("returning on " + selected.getClass());
             return;
         }
         
