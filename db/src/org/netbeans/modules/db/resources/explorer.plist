@@ -1841,7 +1841,18 @@
 				perm = "write";
 			}
 		);
-		properties = ();
+		properties = (
+                        {
+				code = name;
+				writable = NO;
+			},
+			{
+				code = unique;
+				name = "Unique";
+				class = java.lang.String;
+				writable = NO;
+			}
+                );
 	};
 
 	indexcolumn = {
