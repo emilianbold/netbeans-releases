@@ -29,8 +29,11 @@ import java.io.*;
 public class SimpleDiff extends Object implements Diff {
     
     private static final int BUFSIZE = 1024;
+    private final LineDiff lineDiff;
+    
     /** Creates new SimpleDiff */
     public SimpleDiff() {
+        lineDiff = new LineDiff(false);
     }
     
     /**
@@ -102,21 +105,6 @@ public class SimpleDiff extends Object implements Diff {
     }
     
     protected boolean textualCompare(final File first, final File second, File diff) throws java.io.IOException {
-        BufferedReader r1 = new BufferedReader(new FileReader(first));
-        BufferedReader r2 = new BufferedReader(new FileReader(second));
-        
-        while (true) {
-            String s1 = r1.readLine();
-            String s2 = r2.readLine();
-            if (s1 == null) {
-                if (s2 == null)
-                    return false;   // files equal
-                else
-                    return true;  // files differ in length
-            }
-            if (!s1.equals(s2)) {
-                return true;    // files differ
-            }
-        }
+        return lineDiff.diff(first, second, diff);
     }
 }
