@@ -123,7 +123,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     }
     openForms.put (this, getFormManager ());
     if (!listenerRegistered) {
-      TopComponent.getRegistry ().addPropertyChangeListener (editorFocusChangeListener);
+      TopComponent.getRegistry ().addPropertyChangeListener (
+        org.openide.util.WeakListener.propertyChange (
+          editorFocusChangeListener,TopComponent.getRegistry ()
+        )
+      );
       listenerRegistered = true;
     }
 
@@ -471,6 +475,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  43   Gandalf   1.42        1/9/00   Pavel Buzek     
  *  42   Gandalf   1.41        1/9/00   Pavel Buzek     
  *  41   Gandalf   1.40        1/9/00   Pavel Buzek     #2918
  *  40   Gandalf   1.39        1/8/00   Ian Formanek    Fixes problem with 
