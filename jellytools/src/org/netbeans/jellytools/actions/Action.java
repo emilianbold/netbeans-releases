@@ -12,25 +12,29 @@
  */
 package org.netbeans.jellytools.actions;
 
-import java.lang.IllegalArgumentException;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.ComponentVisualizer;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
+import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.jemmy.util.EmptyVisualizer;
-
 import org.openide.util.actions.SystemAction;
+
 
 /** Ancestor class for all blocking actions.<p>
  * It handles performing action through main menu (MENU_MODE), popup menu
@@ -84,9 +88,9 @@ public class Action {
     protected Shortcut[] shortcuts;
 
     /** Comparator used as default for all Action instances. It is set in static clause. */
-    private static Operator.StringComparator defaultComparator;
+    private static StringComparator defaultComparator;
     /** Comparator used for this action instance. */
-    private Operator.StringComparator comparator;
+    private StringComparator comparator;
 
     /** creates new Action instance without API_MODE and SHORTCUT_MODE support
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
@@ -157,7 +161,7 @@ public class Action {
         // very often clash between Cut and Execute menu items.
         // Substring criterion is set according to default string comparator
         boolean compareExactly = !Operator.getDefaultStringComparator().equals("abc", "a"); // NOI18N
-        defaultComparator = new Operator.DefaultStringComparator(compareExactly, true);
+        defaultComparator = new DefaultStringComparator(compareExactly, true);
     }
     
     private void perform(int mode) {
@@ -328,8 +332,8 @@ public class Action {
         for (int i=0; i<nodes.length; i++) {
             paths[i]=nodes[i].getTreePath();
         }
-        Operator.ComponentVisualizer treeVisualizer = nodes[0].tree().getVisualizer();
-        Operator.ComponentVisualizer oldVisualizer = null;
+        ComponentVisualizer treeVisualizer = nodes[0].tree().getVisualizer();
+        ComponentVisualizer oldVisualizer = null;
         // If visualizer of JTreeOperator is EmptyVisualizer, we need
         // to avoid making tree component visible in callPopup method.
         // So far only known case is tree from TreeTableOperator.
@@ -375,9 +379,10 @@ public class Action {
     /** performs action through API  
      * @throws UnsupportedOperationException when action does not support API mode */    
     public void performAPI() {
-        if (systemActionClass==null)
+        if (systemActionClass==null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define SystemAction");
-        SystemAction.get(systemActionClass).actionPerformed(null);    
+        }
+        SystemAction.get(systemActionClass).actionPerformed(new ActionEvent(new Container(), 0, null));
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
@@ -536,14 +541,14 @@ public class Action {
      *                   new Operator.DefaultStringComparator(true, true);
      *                   to search string item exactly and case sensitive)
      */
-    public void setComparator(Operator.StringComparator comparator) {
+    public void setComparator(StringComparator comparator) {
         this.comparator = comparator;
     }
 
     /** Gets comparator set for this action instance.
      * @return comparator set for this action instance.
      */
-    public Operator.StringComparator getComparator() {
+    public StringComparator getComparator() {
         if(comparator == null) {
             comparator = defaultComparator;
         }
@@ -619,8 +624,8 @@ public class Action {
             for (int i=0; i<nodes.length; i++) {
                 paths[i]=nodes[i].getTreePath();
             }
-            Operator.ComponentVisualizer treeVisualizer = nodes[0].tree().getVisualizer();
-            Operator.ComponentVisualizer oldVisualizer = null;
+            ComponentVisualizer treeVisualizer = nodes[0].tree().getVisualizer();
+            ComponentVisualizer oldVisualizer = null;
             // If visualizer of JTreeOperator is EmptyVisualizer, we need
             // to avoid making tree component visible in callPopup method.
             // So far only known case is tree from TreeTableOperator.
