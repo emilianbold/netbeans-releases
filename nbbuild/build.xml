@@ -34,7 +34,6 @@ ToDo:
 - tasks to create: source zip; API examples
 Modules:
 ant (has build system, but not integrated into master)
-crosscompile
 emacs
 innertesters
 javacvs
@@ -54,6 +53,7 @@ treefs
 
   <!-- Override this with the Ant command, e.g. -Dmodules=... -->
   <property name="modules" value="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
+  <!-- Optional: crosscompile -->
 
   <!-- Ditto (note: need not necessarily be a number at all): -->
   <property name="buildnumber" value="123"/>
