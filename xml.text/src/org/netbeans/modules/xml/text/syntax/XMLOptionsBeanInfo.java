@@ -23,7 +23,7 @@ import org.netbeans.modules.editor.options.OptionSupport;
 public class XMLOptionsBeanInfo extends org.netbeans.modules.editor.options.BaseOptionsBeanInfo {
 
     public XMLOptionsBeanInfo () {
-        super ("/org/netbeans/modules/editor/resources/htmlOptions"); // NOI18N
+        super ("/org/netbeans/modules/xml/text/resources/xmlEditorOptions"); // NOI18N
     }
 
     protected Class getBeanClass() {
@@ -31,7 +31,7 @@ public class XMLOptionsBeanInfo extends org.netbeans.modules.editor.options.Base
     }
 	
     protected String[] getPropNames() {
-		String parentNames[] = super.getPropNames();
+        String parentNames[] = super.getPropNames();
         return OptionSupport.mergeStringArrays(parentNames, XMLOptions.XML_PROP_NAMES);
     }
 	
