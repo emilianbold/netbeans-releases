@@ -24,6 +24,7 @@ ${javadoc.title}      display title of docs, e.g. "Foo API"
 ${javadoc.packages}   list of packages to build, e.g. "org.netbeans.api.foo,org.netbeans.spi.foo"
 ${javadoc.classpath}  classpath for source files (probably same as what you use for <javac>)
 Optional:
+${javadoc.files}      selector describing which files to build
 ${javadoc.main.page}  link to main page, e.g. org/netbeans/api/foo/doc-files/api.html
 ${javadoc.docfiles}   doc-files directory such as ${javadoc.base}/api/doc; default none
 ${javadoc.apichanges} API change list XML file; default no change list
@@ -93,12 +94,25 @@ cause it to fail.
         <property name="javadoc.check.external.links" value="false"/>
         <property name="javadoc.header" value="&amp;nbsp;"/>
         <mkdir dir="${javadoc.out.dir}"/>
+        
+        <condition property="javadoc.files.provided">
+        	<isset property="javadoc.files" />
+        </condition>
+        
+        <!-- default value for javadoc-files -->
+        <selector id="all-java-files" >
+            <filename name="**/*.java" />
+        </selector>
+        <property name="javadoc.files" value="all-java-files" />
     </target>
 
     <target name="javadoc-check-timestamps" depends="javadoc-init">
         <uptodate targetfile="${javadoc.out.zip}" property="javadoc.up.to.date">
             <srcfiles dir="${javadoc.src}">
-                <include name="**/*.java"/>
+                <and>
+                    <selector refid="${javadoc.files}" />
+                    <filename name="**/*.java" />
+                </and>
             </srcfiles>
             <srcfiles dir="${javadoc.docfiles}"/>
             <srcfiles refid="javadoc.css.files"/>
@@ -136,7 +150,23 @@ cause it to fail.
         <!-- if no packages are specified, this is used to generate index.html from the overview page -->
         <copy file="${javadoc.overview}" tofile="${javadoc.out.dir}/index.html" />
     </target>
-    <target name="javadoc-stage-main" depends="javadoc-init,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title" unless="javadoc.should.not.be.generated">
+    
+    <target name="javadoc-stage-main" depends="javadoc-init,javadoc-check-timestamps,javadoc-exec-files,javadoc-exec-packages" unless="javadoc.should.not.be.generated" >
+        <copy todir="${javadoc.out.dir}">
+            <fileset refid="javadoc.css.files"/>
+        </copy>
+    </target>
+    
+    <target name="javadoc-exec-condition" depends="javadoc-check-timestamps" >
+        <condition property="javadoc.exec.packages">
+            <or>
+                <isset property="javadoc.files.provided"/>
+                <isset property="javadoc.should.not.be.generated"/>
+            </or>
+        </condition>
+    </target>
+    
+    <target name="javadoc-exec-packages" depends="javadoc-init,javadoc-exec-condition,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title,javadoc-exec-condition" unless="javadoc.exec.packages" >
         <tstamp/>
         <property name="javadoc.footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
         <javadoc source="1.4" author="false" destdir="${javadoc.out.dir}" packagenames="${javadoc.packages}" stylesheetfile="${javadoc.css.main}" windowtitle="NetBeans ${javadoc.title}" overview="${javadoc.overview}" splitindex="true" use="true" version="false">
@@ -166,9 +196,37 @@ cause it to fail.
             <header>${javadoc.header}</header>
             <bottom>${javadoc.footer}</bottom>
         </javadoc>
-        <copy todir="${javadoc.out.dir}">
-            <fileset refid="javadoc.css.files"/>
-        </copy>
+    </target>
+    
+    <target name="javadoc-exec-files" depends="javadoc-init,javadoc-exec-condition,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title" if="javadoc.files.provided" unless="javadoc.up.to.date" >
+        <tstamp/>
+        <property name="javadoc.footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
+        <javadoc source="1.4" author="false" destdir="${javadoc.out.dir}" packagenames="${javadoc.packages}" stylesheetfile="${javadoc.css.main}" windowtitle="NetBeans ${javadoc.title}" overview="${javadoc.overview}" splitindex="true" use="true" version="false" useexternalfile="true" >
+            <fileset dir="${javadoc.docfiles}"/>
+            <fileset dir="${javadoc.src}" >
+                <and>
+                    <selector refid="${javadoc.files}" />
+                    <filename name="**/*.java" />
+                </and>
+            </fileset>
+            <classpath path="${javadoc.classpath}"/>
+            <!-- XXX note, this does not support more than one group -->
+            <group packages="${javadoc.packages}">
+                <title>${javadoc.hyperlinked.title}</title>
+            </group>
+            <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="../../openide/api/doc"/>
+            <link href="${javadoc.docs.openide}" offline="true" packagelistloc="../../openide/javadoc/OpenAPIs"/>
+            <link href="${javadoc.docs.openide/io}" offline="true" packagelistloc="../../openide/io/javadoc/InputOutputAPI"/>
+            <link href="${javadoc.docs.openide/execution}" offline="true" packagelistloc="../../openide/execution/javadoc/ExecutionAPI"/>
+            <link href="${javadoc.docs.openide/compiler}" offline="true" packagelistloc="../../openide/compiler/javadoc/CompilerAPI"/>
+            <link href="${javadoc.docs.openide/loaders}" offline="true" packagelistloc="../../openide/loaders/javadoc/LoadersAPI"/>
+            <link href="${javadoc.docs.core/javahelp}" offline="true" packagelistloc="../../core/javahelp/javadoc/JavaHelpAPI"/>
+            <link href="${javadoc.docs.core/term}" offline="true" packagelistloc="../../core/term/javadoc/TerminalEmulatorAPI"/>
+            <link href="${javadoc.docs.java/api}" offline="true" packagelistloc="../../java/api/javadoc/JavaSupportAPIs"/>
+            <doctitle>NetBeans ${javadoc.title}</doctitle>
+            <header>${javadoc.header}</header>
+            <bottom>${javadoc.footer}</bottom>
+        </javadoc>
     </target>
 
     <target name="javadoc-stage-apichanges" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">
