@@ -383,11 +383,6 @@ the Options window:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_props6.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRunTest" url="project/csh/proj_j2sestand_props7.html" />
 
-<!-- New web project and web project from existing sources :-->
-<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="project/csh/proj_webstand_wiz.html" />
-<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="project/csh/proj_webexist_wiz1.html" />
-<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$SecondPanel" url="project/csh/proj_webexist_wiz2.html" />
-
 <!-- Freeform J2SE and Web Project Properties dialog:-->
 <mapID target="org.netbeans.modules.ant.freeform.ui.GeneralPanel" url="project/csh/proj_j2sefree_props1.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel" url="project/csh/proj_j2sefree_props2.html" />
