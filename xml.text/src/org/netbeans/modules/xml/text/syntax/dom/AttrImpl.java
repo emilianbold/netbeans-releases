@@ -14,6 +14,7 @@
 package org.netbeans.modules.xml.text.syntax.dom;
 
 import java.util.*;
+import javax.swing.text.BadLocationException;
 
 import org.w3c.dom.*;
 import org.netbeans.modules.xml.text.syntax.*;
@@ -132,7 +133,44 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
     }
     
     public void setValue(String value) {
-        throw new ROException();
+        TokenItem next = first;
+        for (; next != null; next = next.getNext()) {
+            if (next.getTokenID() == VALUE) {
+                // fuzziness to relax minor tokenization changes
+                String image = next.getImage();
+                if (image.length() == 1) {
+                    char test = image.charAt(0);
+                    if (test == '"' || test == '\'') {
+                        next = next.getNext();
+                    }
+                }
+                break;  // we are after opening "'"
+            }            
+        }
+        if (next == null) return;                
+        if (next.getTokenID() == VALUE) {
+            BaseDocument doc = (BaseDocument)syntax.getDocument();
+            doc.atomicLock();
+            try {
+                doc.remove( next.getOffset() + 1, next.getImage().length() - 2 );
+                doc.insertString( next.getOffset() + 1, value, null);
+                doc.invalidateSyntaxMarks();
+            } catch( BadLocationException e ) {
+                throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
+            } finally {
+                doc.atomicUnlock();
+            }
+        }
+        
+        try {
+            first = syntax.getTokenChain(first.getOffset(), next.getOffset() + next.getImage().length());
+        } catch (BadLocationException e) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
+        }
+    }
+    
+    public void setNodeValue(String value) {
+        setValue(value);
     }
     
     /**
