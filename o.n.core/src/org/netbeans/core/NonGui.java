@@ -97,7 +97,7 @@ public class NonGui extends NbTopManager implements Runnable {
         if (homeDir == null) {
             homeDir = System.getProperty ("netbeans.home");
             if (homeDir == null) {
-                System.out.println(NbBundle.getBundle("org.netbeans.core.Naming",java.util.Locale.getDefault(),Main.class.getClassLoader()).getString("CTL_Netbeanshome_property"));
+                System.out.println(NbBundle.getBundle("org.netbeans.core.Bundle",java.util.Locale.getDefault(),Main.class.getClassLoader()).getString("CTL_Netbeanshome_property"));
                 doExit (1);
             }
         }
@@ -514,8 +514,3 @@ public class NonGui extends NbTopManager implements Runnable {
 
 
 }
-
-
-/*
-* Log:
-*/
