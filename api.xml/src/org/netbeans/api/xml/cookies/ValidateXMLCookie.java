@@ -15,8 +15,6 @@ package org.netbeans.api.xml.cookies;
 
 import org.openide.nodes.Node;
 
-import org.netbeans.api.xml.parsers.ProcessorNotifier;
-
 /**
  * Validate XML document entity (in polyform manner).
  * <p>Implemenmtation must follow XML 1.0 specification for processors
@@ -43,10 +41,10 @@ public interface ValidateXMLCookie extends Node.Cookie {
 
     /**
      * Validate XML document entity.
-     * @param report optional listener (<code>null</code> allowed)
-     *               giving judgement details
+     * @param observer optional listener (<code>null</code> allowed)
+     *               giving judgement details via {@link XMLProcessorMessage}s.
      * @return true if validity check passes
      */
-    boolean validateXML(ProcessorNotifier l);
+    boolean validateXML(CookieObserver observer);
 
 }

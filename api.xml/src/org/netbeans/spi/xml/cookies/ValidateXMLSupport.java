@@ -14,8 +14,7 @@ package org.netbeans.spi.xml.cookies;
 
 import org.openide.loaders.DataObject;
 
-import org.netbeans.api.xml.cookies.ValidateXMLCookie;
-import org.netbeans.api.xml.parsers.ProcessorNotifier;
+import org.netbeans.api.xml.cookies.*;
 
 /**
  * <code>ValidateXMLCookie</code> implementation support simplifing cookie 
@@ -56,7 +55,7 @@ public class ValidateXMLSupport extends TestXMLSupport implements ValidateXMLCoo
     }
 
     // inherit JavaDoc
-    public boolean validateXML(ProcessorNotifier l) {
+    public boolean validateXML(CookieObserver l) {
         return super.validateXML(l);
     }
 }

@@ -27,8 +27,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
-import org.netbeans.api.xml.cookies.TransformableCookie;
-import org.netbeans.api.xml.parsers.ProcessorNotifier;
+import org.netbeans.api.xml.cookies.*;
 
 /**
  * Perform Transform action on XML document.
@@ -60,7 +59,7 @@ public final class TransformableSupport implements TransformableCookie {
      * @param listener optional listener (<code>null</code> allowed)
      *                 giving judgement details.
      */
-    public void transform (Source transformSource, Result outputResult, ProcessorNotifier notifier)
+    public void transform (Source transformSource, Result outputResult, CookieObserver notifier)
             throws IOException, TransformerConfigurationException, TransformerException {
         URL url = dataObject.getPrimaryFile().getURL();
         Source xmlSource = new StreamSource (url.toExternalForm());
@@ -79,27 +78,10 @@ public final class TransformableSupport implements TransformableCookie {
             transformer.transform (xmlSource, outputResult);
             
         } catch (TransformerConfigurationException ex) {
-            // thrown if error in style sheet, unwrap first TransformerException
-            TransformerException tException = ex;
-            do {                
-                Throwable wrapped = tException.getException();
-                if (wrapped instanceof TransformerException) {
-                    tException = (TransformerException) wrapped;
-                } else {
-                    tException = null;
-                }
-            } while (tException instanceof TransformerConfigurationException);
-            
-            if (tException instanceof TransformerException) {
-                if (notifier != null) {
-                    ProcessorNotifier.Message message = new ProcessorNotifier.Message(tException);
-                    notifier.fatalError(message);
-                }
-            } else {
-                if (notifier != null) {
-                    notifier.message(ex.getLocalizedMessage());
-                }
-                
+            // thrown if error in style sheet
+            if (notifier != null) {
+                CookieObserver.Message message = new DefaultXMLProcessorMessage(ex, CookieObserver.Message.FATAL_ERROR_LEVEL);
+                notifier.receive(message);
             }
         }                
     }
@@ -119,26 +101,26 @@ public final class TransformableSupport implements TransformableCookie {
 
     private static class Proxy implements ErrorListener {
         
-        private final ProcessorNotifier peer;
+        private final CookieObserver peer;
         
-        public Proxy (ProcessorNotifier peer) {
+        public Proxy (CookieObserver peer) {
             if (peer == null) throw new NullPointerException();
             this.peer = peer;
         }
         
         public void error(TransformerException tex) throws javax.xml.transform.TransformerException {
-            ProcessorNotifier.Message message = new ProcessorNotifier.Message(tex);
-            peer.error(message);
+            CookieObserver.Message message = new DefaultXMLProcessorMessage(tex, CookieObserver.Message.ERROR_LEVEL);
+            peer.receive(message);
         }
         
         public void fatalError(TransformerException tex) throws javax.xml.transform.TransformerException {
-            ProcessorNotifier.Message message = new ProcessorNotifier.Message(tex);
-            peer.fatalError(message);            
+            CookieObserver.Message message = new DefaultXMLProcessorMessage(tex, CookieObserver.Message.FATAL_ERROR_LEVEL);
+            peer.receive(message);            
         }
         
         public void warning(TransformerException tex) throws javax.xml.transform.TransformerException {
-            ProcessorNotifier.Message message = new ProcessorNotifier.Message(tex);
-            peer.warning(message);            
+            CookieObserver.Message message = new DefaultXMLProcessorMessage(tex, CookieObserver.Message.WARNING_LEVEL);
+            peer.receive(message);            
         }
         
     }

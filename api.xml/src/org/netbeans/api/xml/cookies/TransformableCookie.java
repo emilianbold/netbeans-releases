@@ -21,8 +21,6 @@ import javax.xml.transform.TransformerConfigurationException;
 
 import org.openide.nodes.Node;
 
-import org.netbeans.api.xml.parsers.ProcessorNotifier;
-
 /**
  * Transform this object by XSL Transformation.
  * <p>
@@ -39,10 +37,10 @@ public interface TransformableCookie extends Node.Cookie {
      *
      * @param transformSource source of transformation.
      * @param outputResult result of transformation.
-     * @param notifier optional notifier (<code>null</code> allowed)
-     *                 giving judgement details.
+     * @param observer optional notifier (<code>null</code> allowed)
+     *                 giving judgement details via {@link XMLProcessorMessage}s.
      */
-    public void transform (Source transformSource, Result outputResult, ProcessorNotifier notifier)
+    public void transform (Source transformSource, Result outputResult, CookieObserver observer)
         throws IOException, TransformerConfigurationException, TransformerException;
     
 }

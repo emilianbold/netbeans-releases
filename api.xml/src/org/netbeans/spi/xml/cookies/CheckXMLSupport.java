@@ -14,8 +14,7 @@ package org.netbeans.spi.xml.cookies;
 
 import org.openide.loaders.DataObject;
 
-import org.netbeans.api.xml.cookies.CheckXMLCookie;
-import org.netbeans.api.xml.parsers.ProcessorNotifier;
+import org.netbeans.api.xml.cookies.*;
 
 /**
  * <code>CheckXMLCookie</code> implementation support simplifing cookie providers
@@ -72,7 +71,7 @@ public class CheckXMLSupport extends TestXMLSupport implements CheckXMLCookie {
     }
 
     // inherit JavaDoc
-    public boolean checkXML(ProcessorNotifier l) {
+    public boolean checkXML(CookieObserver l) {
         return super.checkXML(l);
     }
 }

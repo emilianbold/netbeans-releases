@@ -15,8 +15,6 @@ package org.netbeans.api.xml.cookies;
 
 import org.openide.nodes.Node;
 
-import org.netbeans.api.xml.parsers.ProcessorNotifier;
-
 /**
  * Fast (and preferably standalone mode) XML parsed entity syntax checker.
  * <p>Implemenmtation should follow XML specification for non-validating
@@ -35,10 +33,10 @@ public interface CheckXMLCookie extends Node.Cookie {
     
     /**
      * Check XML parsed entity for syntax wellformedness.
-     * @param report optional listener (<code>null</code> allowed)
-     *               giving judgement details.
+     * @param observer optional listener (<code>null</code> allowed)
+     *               giving judgement details via {@link XMLProcessorMessage}s.
      * @return <code>true</code> if syntax check passes
      */
-    boolean checkXML(ProcessorNotifier l);
+    boolean checkXML(CookieObserver observer);
     
 }
