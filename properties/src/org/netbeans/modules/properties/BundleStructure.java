@@ -59,8 +59,12 @@ public class BundleStructure extends PropertyChangeSupport {
     /** Array of PropertiesFileEntry */
     private Object entries[];
 
-    /** List of keys sorted by the alphabet */
-    private SortedArrayList keyList;
+    /** List of keys. */
+    private ArrayList keyList;
+    
+    /** Comapartor which sorts keylist. Default set is sort according keys 
+     * in ascending order. */
+    private KeyComparator comparator = new KeyComparator(0, true);
 
     protected PropertyBundleSupport support = new PropertyBundleSupport(this);
 
@@ -89,7 +93,7 @@ public class BundleStructure extends PropertyChangeSupport {
                   }
 
               };
-        obj.addPropertyChangeListener(new WeakListener.PropertyChange(pcl));
+        obj.addPropertyChangeListener(WeakListener.propertyChange(pcl, obj));
 
         //PENDING move the column corresponding to curNode to the beginning
     }
@@ -151,7 +155,7 @@ public class BundleStructure extends PropertyChangeSupport {
 
     /** Retrieves index for a key from the list, by name */
     public int getKeyIndexByName(String keyName) {
-        return keyList.setContains(keyName);
+        return keyList.indexOf(keyName);
     }
 
     /** Retrieves keyIndex-th key in the entryIndex-th entry from the list, indexed from 0
@@ -175,6 +179,29 @@ public class BundleStructure extends PropertyChangeSupport {
         else
             throw new InternalError(getClass().getName() +" - KeyList not initialized");
     }
+    
+    /** Resorts the keylist according the values of entry which index is given to this method.
+     * @param index sorts accordinng nth-1 entry values, 0 means sort by keys,
+     * if less than 0 it re-compares keylist with the same un-changed comparator.
+     */
+    public void sort(int index) {
+        if(index >= 0)
+            comparator.setIndex(index);
+        Collections.sort(keyList, comparator);
+        support.fireBundleDataChanged();
+    }
+
+    /** Gets index accoring which is bundle key list sorted.
+     * @return index, 0 means accrding keys */
+    public int getSortIndex() {
+        return comparator.getIndex();
+    }
+    
+    /** Gets current order of sort. 
+     @return true if ascending, alse descending order */
+    public boolean getSortOrder() {
+        return comparator.isAscending();
+    }
 
     /** Updates internal entries from the underlying dataobject */
     protected synchronized void updateEntries() {
@@ -197,19 +224,36 @@ public class BundleStructure extends PropertyChangeSupport {
 
     /** Constructs a set of keys from the entries (from scratch) */
     protected synchronized void buildKeySet() {
-        keyList = new SortedArrayList(new KeyComparator());
+        keyList = new ArrayList() {
+            public boolean equals(Object obj) {
+                if(!(obj instanceof ArrayList))
+                    return false;
+                ArrayList list2 = (ArrayList)obj;
+                
+                if(this.size() != list2.size())
+                    return false;
+                for(int i=0; i<this.size(); i++) {
+                    if(!this.contains(list2.get(i)) || !list2.contains(this.get(i)))
+                        return false;
+                }
+                return true;
+            }
+        };
 
         // for all entries add all keys
         for (int index = 0; index < getEntryCount(); index++) {
             PropertiesFileEntry entry = getNthEntry(index);
             PropertiesStructure ps = entry.getHandler().getStructure();
             if (ps != null) {
-                for (Iterator it = ps.nonEmptyItems(); it.hasNext(); )
-                    keyList.setAdd(((Element.ItemElem)it.next()).getKey());
+                for (Iterator it = ps.nonEmptyItems(); it.hasNext(); ) {
+                    String key = ((Element.ItemElem)it.next()).getKey();  
+                    if(!(keyList.contains(key)))
+                        keyList.add(key);
+                }
             }
-            else;
-            //System.out.println("Warning : Properties structure not created / BundleStructure.buildKeySet()");
         }
+        
+        Collections.sort(keyList, comparator);
     }
 
     // event methods
@@ -250,7 +294,8 @@ public class BundleStructure extends PropertyChangeSupport {
     void oneFileChanged(StructHandler handler) {
         // PENDING - events should be finer
         // find out whether global key table has changed and fire a change according to that
-        SortedArrayList oldKeyList = keyList;
+        ArrayList oldKeyList = keyList;         
+        
         buildKeySet();
         if (!keyList.equals(oldKeyList)) {
             support.fireBundleDataChanged();
@@ -272,4 +317,75 @@ public class BundleStructure extends PropertyChangeSupport {
         support.fireBundleDataChanged();
     }
 
+    /** Inner class. Comparator which compares keys according which locale (column on table was selected) */
+    private final class KeyComparator implements Comparator {
+
+        /** Index of column to compare with. */
+        private int index;
+        
+        /** Flag if ascending order should be performed. */
+        private boolean ascending;
+        
+        public KeyComparator(int index, boolean ascending) {
+            this.index = index;
+            this.ascending = ascending;
+        }
+        
+        public void setIndex(int index) {
+            // if same column toggle order
+            if(this.index == index)
+                ascending = !ascending;
+            else
+                ascending = true;
+            this.index = index;
+        }
+        
+        public int getIndex() {
+            return index;
+        }
+        
+        public boolean isAscending() {
+            return ascending;
+        }
+        
+        public int compare(Object o1, Object o2) {
+            String str1;
+            String str2;
+            
+            // key column
+            if (index==0) {
+                str1 = (String)o1;
+                str2 = (String)o2;
+            } else {
+                Element.ItemElem item1 = getItem(index-1, getKeyIndexByName((String)o1));
+                Element.ItemElem item2 = getItem(index-1, getKeyIndexByName((String)o2));
+                if(item1 == null) {
+                    if(item2 == null)
+                        return 0;
+                    else
+                        return ascending ? 1 : -1;
+                } else
+                    if(item2 == null)
+                        return ascending ? -1 : 1;
+                
+                str1 = item1.getValue();
+                str2 = item2.getValue();
+
+                if(str1 == null) {
+                    if(str2 == null)
+                        return 0;
+                    else
+                        return ascending ? 1 : -1;
+                } else
+                    if(str2 == null)
+                        return ascending ? -1 : 1;
+            }
+            
+            int res = str1.compareToIgnoreCase(str2);
+
+            return ascending ? res : -res;
+        }
+        
+    } // end of inner KeyComparator
+    
 }

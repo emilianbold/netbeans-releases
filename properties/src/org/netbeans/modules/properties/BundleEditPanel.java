@@ -16,20 +16,23 @@ package org.netbeans.modules.properties;
 
 
 import java.awt.Color;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.SystemColor;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.ResourceBundle;
-import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableCellEditor;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.Settings;
@@ -39,22 +42,21 @@ import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.modules.properties.syntax.PropertiesOptions;
 import org.netbeans.modules.properties.syntax.PropertiesTokenContext;
 
-import org.openide.util.NbBundle;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.DataObject;
 import org.openide.DialogDescriptor;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.MultiDataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.options.SystemOption;
 import org.openide.TopManager;
+import org.openide.util.NbBundle;
+import org.openide.windows.Mode;
+import org.openide.windows.Workspace;
 
 
 /**
  * @author  Petr Jiricka
  */
 public class BundleEditPanel extends javax.swing.JPanel {
-
-    private static final int DEFAULT_TABLE_WIDTH = 600;
-    private static final int DEFAULT_KEY_WIDTH   = 150;
 
     private DataObject dobj;
     private PropertiesTableModel ptm;
@@ -80,9 +82,28 @@ public class BundleEditPanel extends javax.swing.JPanel {
         this.ptm = ptm;
 
         initComponents ();
+        
+        // header renderer
+        final javax.swing.table.DefaultTableCellRenderer headerRenderer = new javax.swing.table.DefaultTableCellRenderer() {
+	    public java.awt.Component getTableCellRendererComponent(JTable table, Object value,
+                         boolean isSelected, boolean hasFocus, int row, int column) {
+	        if (table != null) {
+	            javax.swing.table.JTableHeader header = table.getTableHeader();
+	            if (header != null) {
+	                setForeground(header.getForeground());
+	                setBackground(header.getBackground());
+	                setFont(header.getFont());
+	            }
+                }
 
-        // this subclass of Default column model is provided only due to set of widths
-        // of columns (it works bad under jdk 1.2)
+                setText((value == null) ? "" : value.toString());
+		setBorder(javax.swing.UIManager.getBorder("TableHeader.cellBorder"));
+	        return this;
+            }
+        };
+
+        // this subclass of Default column model is provided due correct set of column widths 
+        // see the JTable and horizontal scrolling problem in Java Discussion Forum
         theTable.setColumnModel(new javax.swing.table.DefaultTableColumnModel() {
             public void addColumn(TableColumn aColumn) {
                 if (aColumn == null) {
@@ -92,22 +113,17 @@ public class BundleEditPanel extends javax.swing.JPanel {
                 tableColumns.addElement(aColumn);
                 aColumn.addPropertyChangeListener(this);
                 recalcWidthCache();
-
-                setColumnWidths(totalColumnWidth);
+                // this method call is only difference with overriden superclass method
+                setColumnWidths();
+                
+                // set header renderer this 'ugly' way (for each column),
+                // in jdk1.2 is not possible to set default renderer
+                // for JTableHeader like in jdk1.3
+                aColumn.setHeaderRenderer(headerRenderer);
                 
                 // Post columnAdded event notification
                 fireColumnAdded(new javax.swing.event.TableColumnModelEvent(this, 0,
                                                           getColumnCount() - 1));
-            }
-            
-            protected void recalcWidthCache() {
-                try {
-                    totalColumnWidth = theTable.getWidth();
-                } catch(NullPointerException e) {
-                    // just catch it, no handling
-                }
-                if (totalColumnWidth == 0)
-                    super.recalcWidthCache();
             }
         });
         
@@ -190,6 +206,19 @@ public class BundleEditPanel extends javax.swing.JPanel {
                                                }
                                            });
 
+        // listens on clikcs on table header, detects column and sort accordingly to chosen one
+        theTable.getTableHeader().addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                TableColumnModel colModel = theTable.getColumnModel();
+                int columnModelIndex = colModel.getColumnIndexAtX(e.getX());
+                int modelIndex = colModel.getColumn(columnModelIndex).getModelIndex();
+                // not detected column
+                if (modelIndex < 0)
+                    return;
+                ((PropertiesDataObject)dobj).getBundleStructure().sort(modelIndex);
+            }
+        });
+
     }
 
     /** Updates colors from properties options. */
@@ -210,17 +239,34 @@ public class BundleEditPanel extends javax.swing.JPanel {
         if(keyBackground == null) keyBackground = ((Coloring)map.get("default")).getBackColor(); // NOI18N
         if(valueColor == null) valueColor = ((Coloring)map.get("default")).getBackColor(); // NOI18N
         if(valueBackground == null) valueBackground = ((Coloring)map.get("default")).getBackColor(); // NOI18N
-        if(shadowColor == null) shadowColor = new Color(SystemColor.controlHighlight.getRGB());                    
+        if(shadowColor == null) shadowColor = new Color(SystemColor.controlHighlight.getRGB());
     }
     
-    // see above setting of table column model
-    /** Calculates width of columns from the width of table component. */
-    private void setColumnWidths(int entireWidth) {
+    /** Calculates width of columns from the table component. 
+    */
+    void setColumnWidths() {
+        int totalWidth = theTable.getParent().getWidth();
+        if(totalWidth == 0) {
+            try {
+                Workspace currWS = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+                Mode editorMode = currWS.findMode(org.openide.text.CloneableEditorSupport.EDITOR_MODE);
+                totalWidth = editorMode.getBounds().width;
+            } catch (NullPointerException npe) {
+                // just catch exception
+                // means the editor mode is was not yet reconstructed
+            }
+        }
+        int columnCount = theTable.getColumnModel().getColumnCount();
+        int columnWidth = totalWidth/columnCount;
+        
+        if(columnWidth < totalWidth/5)
+            columnWidth = totalWidth/5;
+        
         // set the column widths
         for (int i = 0; i < theTable.getColumnModel().getColumnCount(); i++) {
             TableColumn column = theTable.getColumnModel().getColumn(i);
-  
-            column.setWidth(entireWidth/theTable.getColumnModel().getColumnCount());            
+
+            column.setPreferredWidth(columnWidth);
         }
     }
     
@@ -340,6 +386,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
             }
             ));
             theTable.setCellSelectionEnabled(true);
+            theTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
             scrollPane.setViewportView(theTable);
             
             gridBagConstraints2 = new java.awt.GridBagConstraints();
