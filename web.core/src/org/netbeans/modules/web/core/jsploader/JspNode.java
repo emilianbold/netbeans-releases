@@ -92,7 +92,7 @@ public class JspNode extends DataNode {
         ps.setName(EXECUTION_SET_NAME);
         ps.setDisplayName(NbBundle.getBundle(JspNode.class).getString("PROP_executionSetName"));
         ps.setShortDescription(NbBundle.getBundle(JspNode.class).getString("HINT_executionSetName"));
-
+        
         ps.put(new PropertySupport.ReadWrite (
                    PROP_REQUEST_PARAMS,
                    String.class,
@@ -131,6 +131,11 @@ public class JspNode extends DataNode {
         ps.setShortDescription(NbBundle.getBundle(JspNode.class).getString("HINT_textfileSetName")); // NOI18N
         sheet.put(ps);
     
+        Node.PropertySet[] tmp = sheet.toArray();
+        for(int i = 0; i < tmp.length; i++){
+            tmp[i].setValue("helpID", JspNode.class.getName() + ".PropertySheet");
+        }
+        
         return sheet;
     }
 
