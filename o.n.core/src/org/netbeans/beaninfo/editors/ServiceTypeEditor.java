@@ -72,7 +72,6 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
         this.clazz = clazz;
         this.message = getString (message);
         this.none = none;
-        update ();
     }
 
     /**
@@ -98,7 +97,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
     
     /** Updates the list of executors.
      */
-    private void update () {
+    private void updateTags () {
         java.util.LinkedList names = new java.util.LinkedList ();
         Enumeration ee = TopManager.getDefault ().getServices ().services (clazz);
         while (ee.hasMoreElements()) {
@@ -158,7 +157,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
     /** @return tags */
     public String[] getTags() {
         if (!createNewInstance) {
-            update ();
+            updateTags ();
             return tags;
         }
         return null;
