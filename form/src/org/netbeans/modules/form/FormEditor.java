@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form;
 
 import java.awt.*;
@@ -427,9 +425,11 @@ final public class FormEditor extends Object
         /** Currently focused form or null if no form is opened/focused */
         transient private FormManager2 formManager;
 
+        private static final java.net.URL iconURL = 
+            ComponentInspector.class.getResource("/org/netbeans/modules/form/resources/inspector.gif"); // NOI18N
+
         /** The Inspector's icon */
-        private final static Image inspectorIcon = Toolkit.getDefaultToolkit().getImage(
-            ComponentInspector.class.getResource("/org/netbeans/modules/form/resources/inspector.gif")); // NOI18N
+        private final static Image inspectorIcon = Toolkit.getDefaultToolkit().getImage(iconURL);
 
         static final long serialVersionUID =4248268998485315927L;
         ComponentInspector() {
@@ -467,7 +467,7 @@ final public class FormEditor extends Object
             Mode ourMode = realWorkspace.findMode(this);
             if ((ourMode == null) && workspace.equals(visualWorkspace)) {
                 // create new mode for CI and set the bounds properly
-                ourMode = workspace.createMode("ComponentInspector", getName(), null); //NOI18N
+                ourMode = workspace.createMode("ComponentInspector", getName(), iconURL); //NOI18N
                 Rectangle workingSpace = workspace.getBounds();
                 ourMode.setBounds(new Rectangle(workingSpace.x +(workingSpace.width * 3 / 10), workingSpace.y,
                                                 workingSpace.width * 2 / 10, workingSpace.height / 2));
