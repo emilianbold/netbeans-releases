@@ -250,14 +250,17 @@ public class TomcatManager implements DeploymentManager {
         }
         return baseDir;
     }
-    
+
     public FileSystem getCatalinaBaseFileSystem() {
         if (catalinaFS!=null) return catalinaFS;
-        catalinaFS = findFileSystem(getCatalinaBaseDir());
+        File baseDir = getCatalinaBaseDir();
+        if (baseDir==null) baseDir = getCatalinaHomeDir();
+        if (baseDir==null) return null;
+        catalinaFS = findFileSystem(baseDir);
         if (catalinaFS==null) {
             catalinaFS = new LocalFileSystem();
             try {
-                ((LocalFileSystem)catalinaFS).setRootDirectory(getCatalinaBaseDir());
+                ((LocalFileSystem)catalinaFS).setRootDirectory(baseDir);
                 catalinaFS.setHidden(true);
                 Repository.getDefault().addFileSystem(catalinaFS);
             } catch (Exception ex) {
@@ -265,8 +268,8 @@ public class TomcatManager implements DeploymentManager {
             }
         }
         return catalinaFS;
-    }   
-    
+    }
+
     private FileSystem findFileSystem(java.io.File file) {
         String fileName = file.getAbsolutePath();
         java.util.Enumeration e = Repository.getDefault().getFileSystems();
