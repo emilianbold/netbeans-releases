@@ -23,6 +23,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Arrays;
@@ -107,9 +108,18 @@ final class ViewHierarchy {
     /** Updates the view hierarchy according to new structure. */
     public void updateViewHierarchy(ModeStructureAccessor modeStructureAccessor, 
     boolean addingAllowed) {
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        
         updateAccessors(modeStructureAccessor);
         splitRoot = updateViewForAccessor(modeStructureAccessor.getSplitRootAccessor(), addingAllowed);
         updateSeparateViews(modeStructureAccessor.getSeparateModeAccessors());
+
+        // XXX #37632 Ensure focus is preserved.
+        // When updating hierarchy, e.g. when removing split, and then attaching
+        // its one part back which contained focus, the focus has to remain at the place.
+        if(focusOwner != null) {
+            focusOwner.requestFocus();
+        }
     }
     
     /** Puts new instances of accessors in and reuses the old relevant views. */

@@ -297,6 +297,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 
                 hierarchy.updateDesktop(wsa);
                 hierarchy.updateSplits();
+                hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOPCOMPONENT_ACTIVATED) {
                 debugLog("TopComponent activated, tc=" + viewEvent.getNewValue()); // NOI18N
                 hierarchy.updateDesktop(wsa);
