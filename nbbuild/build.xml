@@ -46,6 +46,10 @@ workspaceswitcher
     </jar>
   </target>
 
+  <target name="firststart-params" if="nogui">
+    <property name="firststart.args.additorial" value="-nogui -nosplash"/>
+  </target>
+
   <target name="setup-jdkhome-1">
     <!-- Note: user-configured -Djavahome=... will always override this: -->
     <property name="javahome" location="${java.home}"/>
@@ -63,7 +67,7 @@ workspaceswitcher
     <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
   </target>
 
-  <target name="init" depends="bootstrap,setup-jdkhome-4">
+  <target name="init" depends="bootstrap,setup-jdkhome-4, firststart-params">
     <tstamp/>
     <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
@@ -71,8 +75,9 @@ workspaceswitcher
     <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnumber" value="dev-000"/>
+    <property name="firststart.args.additorial" value=""/>
     <!-- Best to leave this alone, though, unless you know what you are doing: -->
-    <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true -single"/>
+    <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true -single ${firststart.args.additorial}"/>
     <!-- But this it is OK to change: -->
     <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true -single"/>
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
@@ -301,7 +306,6 @@ workspaceswitcher
 
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
-
 
   <target name="virgin" depends="firststart-merge"
           description="Create a virgin build that has never been started.">
