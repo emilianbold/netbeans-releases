@@ -261,8 +261,11 @@ public class IndexSearch
         getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_PanelA11yName"));  // NOI18N
         getAccessibleContext().setAccessibleDescription(ResourceUtils.getBundledString("ACS_SEARCH_PanelA11yDesc"));  // NOI18N
         searchComboBox.getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_SearchComboBoxA11yName"));  // NOI18N
+        searchComboBox.getAccessibleContext().setAccessibleDescription(ResourceUtils.getBundledString("ACS_SEARCH_SearchComboBoxA11yDesc")); // NOI18N
         resultsList.getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_ResultsListA11yName"));  // NOI18N
+        resultsList.getAccessibleContext().setAccessibleDescription(ResourceUtils.getBundledString("ACS_SEARCH_ResultsListA11yDesc")); // NOI18N
         quickBrowser.getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_QuickBrowserA11yName"));  // NOI18N
+        quickBrowser.getAccessibleContext().setAccessibleDescription(ResourceUtils.getBundledString("ACS_SEARCH_QuickBrowserA11yDesc"));  // NOI18N
     }
 
     /** This method is called from within the constructor to
