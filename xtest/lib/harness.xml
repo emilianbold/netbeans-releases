@@ -239,7 +239,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="localresults-clean">
-        <delete dir="${xtest.results}"/>
+        <delete dir="results"/>
     </target>
 
     <target name="localworkdir-clean">
