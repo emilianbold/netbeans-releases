@@ -224,7 +224,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module classfile..."/>
     <ant dir="../classfile" target="netbeans"/>
   </target>
-  <target name="all-classclosure" depends="all-openide,all-classfile,all-logger">
+  <target name="all-classclosure" depends="all-openide,all-classfile,all-logger,all-java/srcmodel">
     <echo message="Building module classclosure..."/>
     <ant dir="../classclosure" target="netbeans"/>
   </target>
@@ -310,7 +310,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
-  <target name="all-junit" depends="all-openide">
+  <target name="all-junit" depends="all-openide,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module junit..."/>
     <ant dir="../junit" target="netbeans"/>
   </target>
@@ -372,7 +372,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module metrics..."/>
     <ant dir="../metrics" target="netbeans"/>
   </target>
-  <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans,all-html,all-httpserver">
+  <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans,all-html,all-httpserver,all-openide/deprecated">
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
@@ -518,16 +518,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/jspsyntax..."/>
     <ant dir="../web/jspsyntax" target="netbeans"/>
   </target>
-  <target name="all-web/jspdebug" depends="all-web/core">
+  <target name="all-web/jspdebug" depends="all-web/core,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module web/jspdebug..."/>
     <ant dir="../web/jspdebug" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/taglibed" depends="all-web/core,all-jarpackager,all-core,all-xml/core">
+  <target name="all-web/taglibed" depends="all-web/core,all-jarpackager,all-core,all-xml/core,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module web/taglibed..."/>
     <ant dir="../web/taglibed" target="netbeans"/>
   </target>
-  <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-xml/catalog,all-j2eeserver,all-html,all-openidex">
+  <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-xml/catalog,all-j2eeserver,all-html,all-openidex,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module web/advanced..."/>
     <ant dir="../web/advanced" target="netbeans"/>
   </target>

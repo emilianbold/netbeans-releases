@@ -2,8 +2,10 @@ OpenIDE-Module: org.netbeans.modules.web.monitor/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/monitor/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/web/monitor/MonitorModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/web/monitor/resources/layer.xml
-OpenIDE-Module-Specification-Version: 1.7
+OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.html/1,org.netbeans.modules.httpserver/1,org.netbeans.modules.schema2beans/1
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.html/1,org.netbeans.modules.httpserver/1,org.netbeans.modules.schema2beans/1, org.openide.deprecated > 1.0
+OpenIDE-Module-Requires: org.openide.TopManager
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.14
 Class-Path: docs/monitor.jar
+
