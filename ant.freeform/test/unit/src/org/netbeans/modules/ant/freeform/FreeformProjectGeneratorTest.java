@@ -142,13 +142,13 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertEquals("Script was not correctly saved", null, ((FreeformProjectGenerator.TargetMapping)list2.get(0)).script);
         assertEquals("Script was not correctly saved", "${ant.script.two}", ((FreeformProjectGenerator.TargetMapping)list2.get(1)).script);
         assertEquals("Script was not correctly saved", "${ant.script.three}", ((FreeformProjectGenerator.TargetMapping)list2.get(2)).script);
-        assertEquals("Project must have 3 actions", 3, ap.getSupportedActions().length);
+        assertEquals("Project must have 3 actions plus 4 extras (run, javadoc, test, redeploy): " + Arrays.asList(ap.getSupportedActions()), 7, ap.getSupportedActions().length);
         assertTrue("Action clean must be enabled", ap.isActionEnabled("clean", Lookup.EMPTY));
         assertTrue("Action build must be enabled", ap.isActionEnabled("build", Lookup.EMPTY));
         assertTrue("Action rebuild must be enabled", ap.isActionEnabled("rebuild", Lookup.EMPTY));
         boolean ok = false;
         try {
-            assertFalse("Action javadoc must be disabled", ap.isActionEnabled("javadoc", Lookup.EMPTY));
+            assertFalse("Action twiddle must be disabled", ap.isActionEnabled("twiddle", Lookup.EMPTY));
         } catch (IllegalArgumentException ex) {
             ok = true;
         }
