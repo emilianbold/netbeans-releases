@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.editor;
 
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
@@ -166,7 +168,12 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         }
         
         presenter.setEnabled(action != null);
-        addAccelerators(action, presenter, Utilities.getFocusedComponent());
+        JTextComponent comp = Utilities.getFocusedComponent();
+        if (comp != null){
+            addAccelerators(action, presenter, comp);
+        } else {
+            presenter.setAccelerator(getDefaultAccelerator());
+        }
     }
     
     /** Get the text of the menu item */
@@ -174,6 +181,11 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     
     /** Get the action name */
     protected abstract String getActionName();
+    
+    /** Get default accelerator */
+    protected KeyStroke getDefaultAccelerator(){
+        return null;
+    }
     
     
     public static class ShowToolBarAction extends MainMenuAction{
@@ -277,6 +289,9 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             return ExtKit.gotoSourceAction;
         }
         
+        protected KeyStroke getDefaultAccelerator(){
+            return KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_MASK);
+        }
     }
 
     
@@ -302,6 +317,11 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         protected String getActionName() {
             return ExtKit.gotoSuperImplementationAction;
         }
+        
+        protected KeyStroke getDefaultAccelerator(){
+            return KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_MASK);
+        }
+        
     }
 
     public static class GoToDeclarationAction extends MainMenuAction{
@@ -326,6 +346,11 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         protected String getActionName() {
             return ExtKit.gotoDeclarationAction;
         }
+        
+        protected KeyStroke getDefaultAccelerator(){
+            return KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK);
+        }
+        
         
     }
     
