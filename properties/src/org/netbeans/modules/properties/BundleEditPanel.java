@@ -251,6 +251,7 @@ public class BundleEditPanel extends JPanel {
         buttonPanel = new javax.swing.JPanel();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
+        autoResizeCheck = new javax.swing.JCheckBox();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
@@ -259,7 +260,6 @@ public class BundleEditPanel extends JPanel {
         
         
           table.setCellSelectionEnabled(true);
-            table.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
             scrollPane.setViewportView(table);
             
             gridBagConstraints2 = new java.awt.GridBagConstraints();
@@ -350,6 +350,8 @@ public class BundleEditPanel extends JPanel {
           }
           );
           gridBagConstraints4 = new java.awt.GridBagConstraints();
+          gridBagConstraints4.gridx = 0;
+          gridBagConstraints4.gridy = 1;
           gridBagConstraints4.fill = java.awt.GridBagConstraints.HORIZONTAL;
           gridBagConstraints4.insets = new java.awt.Insets(11, 11, 0, 11);
           gridBagConstraints4.anchor = java.awt.GridBagConstraints.SOUTH;
@@ -366,11 +368,25 @@ public class BundleEditPanel extends JPanel {
           );
           gridBagConstraints4 = new java.awt.GridBagConstraints();
           gridBagConstraints4.gridx = 0;
-          gridBagConstraints4.gridy = 1;
+          gridBagConstraints4.gridy = 2;
           gridBagConstraints4.fill = java.awt.GridBagConstraints.HORIZONTAL;
           gridBagConstraints4.insets = new java.awt.Insets(5, 11, 11, 11);
           gridBagConstraints4.anchor = java.awt.GridBagConstraints.SOUTH;
           buttonPanel.add(removeButton, gridBagConstraints4);
+          
+          
+        autoResizeCheck.setSelected(true);
+          autoResizeCheck.setText(NbBundle.getBundle(PropertiesModule.class).getString("CTL_AutoResize"));
+          autoResizeCheck.addActionListener(new java.awt.event.ActionListener() {
+              public void actionPerformed(java.awt.event.ActionEvent evt) {
+                  autoResizeCheckActionPerformed(evt);
+              }
+          }
+          );
+          gridBagConstraints4 = new java.awt.GridBagConstraints();
+          gridBagConstraints4.insets = new java.awt.Insets(12, 12, 0, 11);
+          gridBagConstraints4.anchor = java.awt.GridBagConstraints.NORTHWEST;
+          buttonPanel.add(autoResizeCheck, gridBagConstraints4);
           
           
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -380,6 +396,13 @@ public class BundleEditPanel extends JPanel {
         add(buttonPanel, gridBagConstraints1);
         
     }//GEN-END:initComponents
+
+    private void autoResizeCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoResizeCheckActionPerformed
+        if(autoResizeCheck.isSelected())
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        else
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+    }//GEN-LAST:event_autoResizeCheckActionPerformed
 
     private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         stopEditing();
@@ -463,6 +486,7 @@ public class BundleEditPanel extends JPanel {
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton addButton;
     private javax.swing.JButton removeButton;
+    private javax.swing.JCheckBox autoResizeCheck;
     // End of variables declaration//GEN-END:variables
 
 

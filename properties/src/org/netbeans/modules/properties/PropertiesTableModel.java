@@ -68,14 +68,24 @@ public class PropertiesTableModel extends AbstractTableModel {
             switch (evt.getChangeType()) {
             // structure changed
             case PropertyBundleEvent.CHANGE_STRUCT:
-                cancelEditingInTables(getDefaultCancelSelector());
-                fireTableStructureChanged(); 
+                // Note: Nornal way would be use the next commented out rows, which should do in effect
+                // the same thing like reseting the model, but it doesn't, therefore we reset the model directly.
+                
+                //cancelEditingInTables(getDefaultCancelSelector());
+                //fireTableStructureChanged(); 
+
+                Object[] list = PropertiesTableModel.super.listenerList.getListenerList();
+                for(int i = 0; i < list.length; i++) {
+                    if(list[i] instanceof JTable) {
+                        ((JTable)list[i]).setModel(PropertiesTableModel.this);
+                    }
+                }
                 break;
             // all items changed (keyset)
             case PropertyBundleEvent.CHANGE_ALL:
                 cancelEditingInTables(getDefaultCancelSelector());
                 // reset all header values as well
-                Object[] list = PropertiesTableModel.super.listenerList.getListenerList();
+                list = PropertiesTableModel.super.listenerList.getListenerList();
                 for (int i = 0; i < list.length; i++) {
                     if (list[i] instanceof JTable) {
                         JTable jt = (JTable)list[i];
@@ -98,12 +108,12 @@ public class PropertiesTableModel extends AbstractTableModel {
                     break;
                 }
                 cancelEditingInTables(new CancelSelector() {
-                                          public boolean doCancelEditing(int row, int column) {
-                                              if (!(row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()))
-                                                  return false;
-                                              return (column == index + 1);
-                                          }
-                                      });
+                    public boolean doCancelEditing(int row, int column) {
+                        if (!(row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()))
+                            return false;
+                        return (column == index + 1);
+                    }
+                });
                 fireTableColumnChanged(index + 1);
                 //System.out.println(PropertiesTableModel.this.toString());
                 break;
@@ -127,6 +137,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                 //System.out.println(PropertiesTableModel.this.toString());
                 break;
             }
+            
         }
     }  // End of inner class TablePropertyBundleListener.
 
@@ -284,13 +295,16 @@ public class PropertiesTableModel extends AbstractTableModel {
         }
     }
 
-    /** Returns true for all cells */
+    /** Overrides superclass method.
+     * @return true for all cells */
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return true;
     }
 
     /** Fires a TableModelEvent - change of one column */
     public void fireTableColumnChanged(int index) {
+        int columnModelIndex = index;
+        
         // reset the header value as well
         Object list[] = listenerList.getListenerList();
         for (int i = 0; i < list.length; i++) {
@@ -298,14 +312,15 @@ public class PropertiesTableModel extends AbstractTableModel {
                 JTable jt = (JTable)list[i];
                 try {
                     TableColumn column = jt.getColumnModel().getColumn(index);
-                    column.setHeaderValue(jt.getModel().getColumnName(column.getModelIndex()));
+                    columnModelIndex = column.getModelIndex();
+                    column.setHeaderValue(jt.getModel().getColumnName(columnModelIndex));
                 } catch (ArrayIndexOutOfBoundsException abe) {
                     // only catch exception
                 }
                 jt.getTableHeader().repaint();
             }
         }
-        fireTableChanged(new TableModelEvent(this, 0, getRowCount() - 1, index));
+        fireTableChanged(new TableModelEvent(this, 0, getRowCount() - 1, columnModelIndex));
     }
 
     /** Overrides superclass method. */
