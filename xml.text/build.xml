@@ -43,8 +43,6 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath refID="cp"/>
         </javac>
-
-        <for-each locations="compat"/>
     </target>
 
     <target name="jars" depends="compile">
@@ -59,7 +57,6 @@ Microsystems, Inc. All Rights Reserved.
              manifest="manifest-subst.mf"
              compress="false">
             <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-            <fileset dir="compat/src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </jar>    
     </target>
 
@@ -105,8 +102,6 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="xml-text-edit.nbm"/>
-
-        <for-each locations="compat"/>
     </target>
 
     <target name="real-clean" depends="clean">
