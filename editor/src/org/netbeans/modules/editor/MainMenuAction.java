@@ -34,6 +34,7 @@ import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -63,7 +64,10 @@ public abstract class MainMenuAction extends SystemAction implements Presenter.M
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;        
     }
-    
+
+    public String getName() {
+        return "";
+    }
 
     private static boolean isOpen(Document doc){
         if (doc==null) return false;
@@ -97,14 +101,18 @@ public abstract class MainMenuAction extends SystemAction implements Presenter.M
         return (component == null) ? BaseKit.getKit(NbEditorKit.class) : Utilities.getKit(component);
     }
 
-    
-    public boolean isEnabled() {
+    protected static boolean isMainMenuActionEnabled(){
         JTextComponent component = Utilities.getFocusedComponent();
         if (component!=null){
             Document doc = component.getDocument();
             return isOpen(doc);
         }
+
         return false;
+    }
+    
+    public boolean isEnabled() {
+        return isMainMenuActionEnabled();
     }
     
     private static Object getSettingValue(BaseKit kit, String settingName) {
@@ -140,10 +148,6 @@ public abstract class MainMenuAction extends SystemAction implements Presenter.M
             return SHOW_TOOLBAR_MENU;
         }
         
-        public String getName() {
-            return "";
-        }
-
         private static JCheckBoxMenuItem getShowToolBarCheckBoxMenuItem(){
             Action action = getActionByName(ExtKit.toggleToolbarAction);
             if (action instanceof BaseAction){
@@ -172,6 +176,7 @@ public abstract class MainMenuAction extends SystemAction implements Presenter.M
                     SHOW_TOOLBAR_MENU.setState(isToolbarVisible());
                     SHOW_TOOLBAR_MENU.setText(cmi.getText());
                     SHOW_TOOLBAR_MENU.setIcon(BLANK_ICON);
+                    SHOW_TOOLBAR_MENU.setEnabled(ShowToolBarAction.isMainMenuActionEnabled());
                 }
                 return super.getComponent();
             }
@@ -189,7 +194,7 @@ public abstract class MainMenuAction extends SystemAction implements Presenter.M
         }
         
         public String getName() {
-            return NbBundle.getBundle(ShowLineNumbersAction.class).getString(
+            return NbBundle.getBundle(MainMenuAction.class).getString(
                 "show-line-numbers-action"); //NOI18N
         }   
         
@@ -225,11 +230,160 @@ public abstract class MainMenuAction extends SystemAction implements Presenter.M
                     SHOW_LINE_MENU.setState(isLineNumbersVisible());
                     SHOW_LINE_MENU.setText(cmi.getText());
                     SHOW_LINE_MENU.setIcon(BLANK_ICON);
+                    SHOW_LINE_MENU.setEnabled(ShowLineNumbersAction.isMainMenuActionEnabled());
                 }
                 return super.getComponent();
             }
         }
         
+        
+    }
+    
+    public static class GoToSourceAction extends MainMenuAction{
+        
+        private final JMenuItem GOTO_SOURCE_MENU = new GoToSourceMenu("", BLANK_ICON);        
+
+        public GoToSourceAction(){
+            super();
+        }
+        
+        private String getMenuItemText(){
+            return NbBundle.getBundle(MainMenuAction.class).getString(
+                "goto_source_main_menu_edit_item"); //NOI18N
+        }
+        
+        public JMenuItem getMenuPresenter() {
+            return GOTO_SOURCE_MENU;
+        }
+
+        class GoToSourceMenu extends JMenuItem{
+            public GoToSourceMenu(String text, Icon icon){
+                super(text, icon);
+            }
+            public Component getComponent(){
+                BaseKit kit = getKit();
+                String txt = getMenuItemText();
+                if (MainMenuAction.isMainMenuActionEnabled() || kit == null){
+                    GOTO_SOURCE_MENU.setEnabled(false);                    
+                    GOTO_SOURCE_MENU.setText(txt);
+                    GOTO_SOURCE_MENU.setIcon(BLANK_ICON);
+                }
+
+                Action action = getActionByName(ExtKit.gotoSourceAction);
+                if (action instanceof BaseAction && kit instanceof JavaKit){
+                    GOTO_SOURCE_MENU.setEnabled(true);
+                    GOTO_SOURCE_MENU.setAction(action);
+                    GOTO_SOURCE_MENU.setText(txt);
+                    GOTO_SOURCE_MENU.setIcon(BLANK_ICON);
+                }else{
+                    GOTO_SOURCE_MENU.setEnabled(false);
+                    GOTO_SOURCE_MENU.setText(txt);
+                    GOTO_SOURCE_MENU.setIcon(BLANK_ICON);
+                }
+
+
+                return super.getComponent();
+            }
+        }
+        
+    }
+
+    
+    public static class GoToSuperAction extends MainMenuAction{
+        
+        private final JMenuItem GOTO_SUPER_MENU = new GoToSuperMenu("", BLANK_ICON);        
+
+        public GoToSuperAction(){
+            super();
+        }
+        
+        private String getMenuItemText(){
+            return NbBundle.getBundle(MainMenuAction.class).getString(
+                "goto_super_implementation_main_menu_edit_item"); //NOI18N
+        }
+        
+        public JMenuItem getMenuPresenter() {
+            return GOTO_SUPER_MENU;
+        }
+
+        class GoToSuperMenu extends JMenuItem{
+            public GoToSuperMenu(String text, Icon icon){
+                super(text, icon);
+            }
+            public Component getComponent(){
+                BaseKit kit = getKit();
+                String txt = getMenuItemText();
+                if (MainMenuAction.isMainMenuActionEnabled() || kit == null){
+                    GOTO_SUPER_MENU.setEnabled(false);                    
+                    GOTO_SUPER_MENU.setText(txt);
+                    GOTO_SUPER_MENU.setIcon(BLANK_ICON);
+                }
+
+                Action action = getActionByName(JavaKit.gotoSuperImplementationAction);
+                if (action instanceof BaseAction && kit instanceof JavaKit){
+                    GOTO_SUPER_MENU.setEnabled(true);
+                    GOTO_SUPER_MENU.setAction(action);
+                    GOTO_SUPER_MENU.setText(txt);
+                    GOTO_SUPER_MENU.setIcon(BLANK_ICON);
+                }else{
+                    GOTO_SUPER_MENU.setEnabled(false);
+                    GOTO_SUPER_MENU.setText(txt);
+                    GOTO_SUPER_MENU.setIcon(BLANK_ICON);
+                }
+
+
+                return super.getComponent();
+            }
+        }
+        
+    }
+
+    public static class GoToDeclarationAction extends MainMenuAction{
+        
+        private final JMenuItem GOTO_DECL_MENU = new GoToDeclarationMenu("", BLANK_ICON);        
+
+        public GoToDeclarationAction(){
+            super();
+        }
+        
+        private String getMenuItemText(){
+            return NbBundle.getBundle(MainMenuAction.class).getString(
+                "goto_declaration_main_menu_edit_item"); //NOI18N
+        }
+        
+        public JMenuItem getMenuPresenter() {
+            return GOTO_DECL_MENU;
+        }
+
+        class GoToDeclarationMenu extends JMenuItem{
+            public GoToDeclarationMenu(String text, Icon icon){
+                super(text, icon);
+            }
+            public Component getComponent(){
+                BaseKit kit = getKit();
+                String txt = getMenuItemText();
+                if (MainMenuAction.isMainMenuActionEnabled() || kit == null){
+                    GOTO_DECL_MENU.setEnabled(false);                    
+                    GOTO_DECL_MENU.setText(txt);
+                    GOTO_DECL_MENU.setIcon(BLANK_ICON);
+                }
+
+                Action action = getActionByName(ExtKit.gotoDeclarationAction);
+                if (action instanceof BaseAction && kit instanceof JavaKit){
+                    GOTO_DECL_MENU.setEnabled(true);
+                    GOTO_DECL_MENU.setAction(action);
+                    GOTO_DECL_MENU.setText(txt);
+                    GOTO_DECL_MENU.setIcon(BLANK_ICON);
+                }else{
+                    GOTO_DECL_MENU.setEnabled(false);
+                    GOTO_DECL_MENU.setText(txt);
+                    GOTO_DECL_MENU.setIcon(BLANK_ICON);
+                }
+
+
+                return super.getComponent();
+            }
+        }
         
     }
     
