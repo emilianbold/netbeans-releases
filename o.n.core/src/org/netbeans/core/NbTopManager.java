@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.ChangeEvent;
@@ -559,6 +560,28 @@ public abstract class NbTopManager {
      */
     private static void readEnvMap () throws IOException {
         java.util.Properties env = System.getProperties ();
+        
+        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.5")) >= 0) { // NOI18N
+            try {
+                java.lang.reflect.Method getenv = System.class.getMethod("getenv", null);
+                Map m = (Map)getenv.invoke(null, null);
+                for (Iterator it = m.entrySet().iterator(); it.hasNext(); ) {
+                    Map.Entry entry = (Map.Entry)it.next();
+                    String key = (String)entry.getKey();
+                    String value = (String)entry.getValue();
+                
+                    env.put("Env-".concat(key), value); // NOI18N
+                    // E.g. on Turkish Unix, want env-display not env-d\u0131splay:
+                    env.put("env-".concat(key.toLowerCase(Locale.US)), value); // NOI18N
+                }
+                return;
+            } catch (Exception e) {
+                IOException ioe = new IOException();
+                ioe.initCause(e);
+                throw ioe;
+            }
+        }
+
         String envfile = System.getProperty("netbeans.osenv"); // NOI18N
         if (envfile != null) {
                 // XXX is any non-ASCII encoding even defined? unclear...
