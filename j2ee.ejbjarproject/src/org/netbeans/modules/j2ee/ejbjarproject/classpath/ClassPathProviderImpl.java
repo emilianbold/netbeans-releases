@@ -135,7 +135,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
             }
             else {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "javac.test.classpath", evaluator)); // NOI18N
+                new ProjectClassPathImplementation(helper, "${javac.test.classpath}:${" // NOI18N
+                        + EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH
+                        + "}", evaluator, false)); // NOI18N
             }
             cache[3+type] = cp;
         }
