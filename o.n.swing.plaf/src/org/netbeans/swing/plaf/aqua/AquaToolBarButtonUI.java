@@ -85,12 +85,14 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
     }
     
     private void drawDivider (Graphics2D g, Rectangle r) {
+        /*
         g.setColor (Color.GRAY);
         Composite comp = g.getComposite();
         
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
         g.drawLine (r.width-1, 0, r.width-1, r.height-1);
         g.setComposite(comp);
+         */
     }
     
     private static boolean isLast (AbstractButton b) {
@@ -121,7 +123,9 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
             if (iconH <= r.height) {
                 iconY = (r.height / 2) - (iconH / 2);
             }
-            iconY -= 1;
+            if (iconH > 20) {
+                iconY += 2;
+            }
             ic.paintIcon(b, g, iconX, iconY);
         }
     }
