@@ -177,13 +177,15 @@ public class EntityOverviewPanel extends EntityOverviewForm {
 
     private void initPrimaryKeyFieldComboBox() {
         final JComboBox primaryKeyFieldComboBox = getPrimaryKeyFieldComboBox();
-        primaryKeyFieldComboBox.removeAllItems();
-        primaryKeyFieldComboBox.addItem(PK_COMPOUND);
+        final Object selectedItem = primaryKeyFieldComboBox.getSelectedItem();
         CmpField[] cmpFields = entityHelper.cmpFields.getCmpFields();
+        String[] items = new String[cmpFields.length + 1];
+        items[0] = PK_COMPOUND;
         for (int i = 0; i < cmpFields.length; i++) {
-            CmpField cmpField = cmpFields[i];
-            primaryKeyFieldComboBox.addItem(cmpField.getFieldName());
+            items[i+1] = cmpFields[i].getFieldName();
         }
+        primaryKeyFieldComboBox.setModel(new DefaultComboBoxModel(items));
+        //primaryKeyFieldComboBox.setSelectedItem(selectedItem);
     }
 
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
