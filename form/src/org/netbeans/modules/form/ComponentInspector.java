@@ -13,11 +13,9 @@
 
 package org.netbeans.modules.form;
 
-import java.util.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.awt.datatransfer.*;
-import javax.swing.*;
 import javax.swing.text.DefaultEditorKit;
 
 import org.openide.*;
@@ -52,20 +50,12 @@ public class ComponentInspector extends TopComponent
     private ReloadAction reloadAction = (ReloadAction)
                 SystemAction.findObject(ReloadAction.class, true);
 
-//    private DeleteAction deleteAction = (DeleteAction)
-//                SystemAction.findObject(DeleteAction.class, true);
-//    private CopyAction copyAction = (CopyAction)
-//                SystemAction.findObject(CopyAction.class, true);
-//    private CutAction cutAction = (CutAction)
-//                SystemAction.findObject(CutAction.class, true);
     private PasteAction pasteAction = (PasteAction)
                 SystemAction.findObject(PasteAction.class, true);
 
     private CopyCutActionPerformer copyActionPerformer = new CopyCutActionPerformer(true);
     private CopyCutActionPerformer cutActionPerformer = new CopyCutActionPerformer(false);
     private DeleteActionPerformer deleteActionPerformer = new DeleteActionPerformer();
-
-//    private boolean actionsAttached = false;
 
     private ClipboardListener clipboardListener;
 
@@ -82,9 +72,6 @@ public class ComponentInspector extends TopComponent
     private static final String iconURL =
         "org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
 
-    /** The name "Component Inspector" */
-//    private static String INSPECTOR_TITLE;
-
     private static ComponentInspector instance;
 
     // ------------
@@ -93,36 +80,34 @@ public class ComponentInspector extends TopComponent
     /** Gets default instance. Don't use directly, it reserved for '.settings' file only,
      * i.e. deserialization routines, otherwise you can get non-deserialized instance. */
     public static synchronized ComponentInspector getDefault() {
-        if(instance == null) {
+        if (instance == null)
             instance = new ComponentInspector();
-        }
         return instance;
     }
 
     /** Finds default instance. Use in client code instead of {@link #getDefault()}. */
     public static synchronized ComponentInspector getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("ComponentInspector"); // NOI18N
-            if(instance == null) {
+            if (instance == null) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
                     "Can not find ComponentInspector component for its ID. Returned " + tc)); // NOI18N
                 instance = new ComponentInspector();
             }
         }
-        
         return instance;
     }
-    
+
     /** Overriden to explicitely set persistence type of ComponentInspector
      * to PERSISTENCE_ALWAYS */
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
-    
+
     private ComponentInspector() {
         explorerManager = new ExplorerManager();
 
-        ActionMap map = getActionMap ();
+        javax.swing.ActionMap map = getActionMap ();
         map.put(DefaultEditorKit.copyAction, copyActionPerformer);
         map.put(DefaultEditorKit.cutAction, cutActionPerformer);
         map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(explorerManager));
@@ -140,9 +125,6 @@ public class ComponentInspector extends TopComponent
         createComponents();
 
         setIcon(Utilities.loadImage(iconURL));
-//        if (INSPECTOR_TITLE == null)
-//            INSPECTOR_TITLE = FormUtils.getBundleString("CTL_InspectorTitle"); // NOI18N
-//        setName(INSPECTOR_TITLE);
         setName(FormUtils.getBundleString("CTL_InspectorTitle")); // NOI18N
         setToolTipText(FormUtils.getBundleString("HINT_ComponentInspector")); // NOI18N
     }
@@ -179,11 +161,6 @@ public class ComponentInspector extends TopComponent
         return new HelpCtx("gui.component-inspector"); // NOI18N
     }
 
-    /** Fixed preferred size (as the inherited preferred size is too big). */
-//    public Dimension getPreferredSize() {
-//        return new Dimension(250, 400);
-//    }
-
     /** Replaces this in object stream. */
     public Object writeReplace() {
         return new ResolvableHelper();
@@ -203,8 +180,7 @@ public class ComponentInspector extends TopComponent
 
     synchronized void attachActions() {
         ExplorerUtils.activateActions(explorerManager, true);
-//        actionsAttached = true;
-        updateActions();
+        updatePasteAction();
 
         Clipboard c = getClipboard();
         if (c instanceof ExClipboard) {
@@ -217,27 +193,13 @@ public class ComponentInspector extends TopComponent
 
     synchronized void detachActions() {
         ExplorerUtils.activateActions(explorerManager, false);
-//        actionsAttached = false;
 
         Clipboard c = getClipboard();
         if (c instanceof ExClipboard) {
             ExClipboard clip = (ExClipboard) c;
             clip.removeClipboardListener(clipboardListener);
         }
-
-//        if (deleteActionPerformer == deleteAction.getActionPerformer())
-//            deleteAction.setActionPerformer(null);
-//        if (copyActionPerformer == copyAction.getActionPerformer()) {
-//            copyAction.setActionPerformer(null);
-//            pasteAction.setPasteTypes(null);
-//        }
-//        if (cutActionPerformer == cutAction.getActionPerformer())
-//            cutAction.setActionPerformer(null);
     }
-
-//    boolean getActionsAttached() {
-//        return actionsAttached;
-//    }
 
     /** This method focuses the ComponentInspector on given form.
      * @param form the form to focus on
@@ -295,18 +257,12 @@ public class ComponentInspector extends TopComponent
             else
                 getExplorerManager().setRootContext(formNode);
         }
-//        setName(INSPECTOR_TITLE);
 
         if (visibility > 0)
             open();
         else if (visibility < 0)
             close();
     }
-
-    // from ExplorerPanel
-//    protected void updateTitle() {
-//        setName(INSPECTOR_TITLE);
-//    }
 
     public FormEditorSupport getFocusedForm() {
         return focusedForm;
@@ -327,59 +283,6 @@ public class ComponentInspector extends TopComponent
 
     // ---------------
     // actions
-
-    private void updateActions() {
-/*        boolean noPerformers = false;
-        Node[] selected = getExplorerManager().getSelectedNodes();
-        int n = selected != null ? selected.length : 0;
-        int i;
-
-        if (n > 0) {
-            if (n > 1) {
-                HashMap allNodes = new HashMap(101);
-                for (i=0; i < n; i++)
-                    if (!checkNodeParents(selected[i], allNodes)) {
-                        noPerformers = true;
-                        break;
-                    }
-            }
-
-            if (!noPerformers) {
-                for (i=0; i < n; i++)
-                    if (!selected[i].canCopy()) {
-                        copyAction.setActionPerformer(null);
-                        break;
-                    }
-                if (i == n)
-                    copyAction.setActionPerformer(copyActionPerformer);
-
-                for (i=0; i < n; i++)
-                    if (!selected[i].canCut()) {
-                        cutAction.setActionPerformer(null);
-                        break;
-                    }
-                if (i == n)
-                    cutAction.setActionPerformer(cutActionPerformer);
-
-                for (i=0; i < n; i++)
-                    if (!selected[i].canDestroy()) {
-                        deleteAction.setActionPerformer(null);
-                        break;
-                    }
-                if (i == n)
-                    deleteAction.setActionPerformer(deleteActionPerformer);
-            }
-        }
-        else noPerformers = true; // no selected nodes
-
-        if (noPerformers) {
-            deleteAction.setActionPerformer(null);
-            copyAction.setActionPerformer(null);
-            cutAction.setActionPerformer(null);
-        }
-*/
-        updatePasteAction();
-    }
 
     private void updatePasteAction() {
         Node[] selected = getExplorerManager().getSelectedNodes();
@@ -440,7 +343,7 @@ public class ComponentInspector extends TopComponent
         pasteAction.setPasteTypes(null);
     }
 
-    private boolean checkNodeParents(Node node, Map set) {
+    private boolean checkNodeParents(Node node, java.util.Map set) {
         if (set.get(node) != null)
             return false; // the node is in the set (as parent of another node)
         
@@ -456,8 +359,6 @@ public class ComponentInspector extends TopComponent
 
         return true;
     }
-
-    // -------------
 
     private Clipboard getClipboard() {
         Clipboard c = (java.awt.datatransfer.Clipboard)
@@ -538,7 +439,7 @@ public class ComponentInspector extends TopComponent
         public void run() {
             if (TopComponent.getRegistry().getActivated() == ComponentInspector.this)
                 setActivatedNodes(getExplorerManager().getSelectedNodes());
-            updateActions();
+            updatePasteAction();
             timer.stop();
         }
     }
@@ -552,7 +453,7 @@ public class ComponentInspector extends TopComponent
     }
 
     // performer for DeleteAction
-    private class DeleteActionPerformer extends AbstractAction
+    private class DeleteActionPerformer extends javax.swing.AbstractAction
                                         implements ActionPerformer, Mutex.Action
     {
         private Node[] nodesToDestroy;
@@ -627,7 +528,7 @@ public class ComponentInspector extends TopComponent
     }
 
     // performer for CopyAction and CutAction
-    private class CopyCutActionPerformer extends AbstractAction
+    private class CopyCutActionPerformer extends javax.swing.AbstractAction
                                          implements ActionPerformer
     {
         private boolean copy;
