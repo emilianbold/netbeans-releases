@@ -294,13 +294,25 @@ public class ResultsUtils {
     
     
     public static UnitTestSuite getUnitTestSuite(File suiteFile) throws Exception {
-        Document doc = getDOMDocFromFile(suiteFile);
-        XMLBean xmlBean = XMLBean.getXMLBean(doc);    
-        if (xmlBean instanceof UnitTestSuite) {
-            return (UnitTestSuite)xmlBean;
-        } else {
-            System.out.println("getUnitTestSuite():xmlBean:"+xmlBean);
-            return null;
+        try {
+            UnitTestSuite aSuite = UnitTestSuite.loadFromFile(suiteFile);
+            return aSuite;
+        } catch (Exception e) {
+            // there was som problem with getting the suite - create the new one
+            // and put the message of the exception to the unexpcectedMessage field
+            UnitTestSuite aSuite = new UnitTestSuite();
+            // get the name of the suite (from the filename)
+            // assume the suite is always named as TEST-{suitename}.xml
+            int beginIndex = "TEST-".length();
+            int endIndex = suiteFile.getName().lastIndexOf(".xml");
+            String suiteName = suiteFile.getName().substring(beginIndex,endIndex);
+            aSuite.setName(suiteName);
+            aSuite.setUnexpectedFailure("XTest installed empty suite file, because the original one was corrupted. Exception caught :"
+                        +e.getMessage());
+            // save the suite
+            aSuite.saveXMLBean(suiteFile);
+            // return it 
+            return aSuite;
         }
     }
     
