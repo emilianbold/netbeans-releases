@@ -109,13 +109,19 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         /* Create search type panels: */
         Map sortedCriteria = SearchProjectSettings.getInstance()
                              .sortCriteriaBySearchType();
+        Collection processedClassNames = new ArrayList();
         for (it = searchTypeList.iterator(); it.hasNext(); ) {
             SearchType searchType = (SearchType) it.next();
+            String className = searchType.getClass().getName();
+            if (processedClassNames.contains(className)) {
+                continue;
+            }
+            processedClassNames.add(className);
             SearchTypePanel newPanel = new SearchTypePanel(searchType);
             Collection savedCriteria = (sortedCriteria == null)
                     ? null
                     : (Collection)
-                      sortedCriteria.get(searchType.getClass().getName());
+                      sortedCriteria.get(className);
             
             int index = orderedSearchTypePanels.indexOf(newPanel);
             if (savedCriteria != null) {

@@ -389,50 +389,32 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         SearchType copy = (SearchType) searchType.clone();
         copy.setName(name);
         
-        /* serialize the copy of the search type: */
-        ObjectOutputStream oos = null;
-        byte[] serializedData;
+        SearchCriterion toSave;
         try {
-            ByteArrayOutputStream bos;
-            oos = new ObjectOutputStream(bos = new ByteArrayOutputStream(8192));
-            oos.writeObject(copy);
-            serializedData = bos.toByteArray();
+            toSave = new SearchCriterion(copy);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);       //PENDING
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
             return;
-        } finally {
-            if (oos != null) {
-                try {
-                    oos.close();
-                } catch (IOException ex2) {
-                    /* give up */
-                }
-            }
         }
-        oos = null;
         
-        /* modify an existing or create a new criterion: */
-        SearchCriterion foundCriterion = null;
+        /* file the new criterion into the list of saved criteria: */
+        String className = toSave.searchTypeClassName;
+        boolean found = false;
         if (savedCriteria != null) {
             for (int i = 0; i < savedCriteria.length; i++) {
-                if (savedCriteria[i].criterionName.equals(name)) {
-                    foundCriterion = savedCriteria[i];
+                if (savedCriteria[i].name.equals(name)
+                        && savedCriteria[i].searchTypeClassName.equals(className)) {
+                    found = true;
+                    SearchProjectSettings.getInstance()
+                            .replaceSearchCriterion(name, className, toSave);
+                    savedCriteria[i] = toSave;
                     break;
                 }
             }
         }
-        if (foundCriterion != null) {
-            foundCriterion.searchTypeClassName = copy.getClass().getName();
-            foundCriterion.criterionData = serializedData;
-            SearchProjectSettings.getInstance().markSearchCriteriaChanged();
-        } else {
-            SearchCriterion c = new SearchCriterion();
-            c.isDefault = false;        //PENDING
-            c.criterionName = name;
-            c.searchTypeClassName = copy.getClass().getName();
-            c.criterionData = serializedData;
-            SearchProjectSettings.getInstance().addSearchCriterion(c);
-            addSavedCriteria(Collections.singleton(c));
+        if (!found) {
+            SearchProjectSettings.getInstance().addSearchCriterion(toSave);
+            addSavedCriteria(Collections.singleton(toSave));
         }
     }
     

@@ -13,6 +13,11 @@
 
 package org.netbeans.modules.search;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import org.openidex.search.SearchType;
+
 /**
  * <!-- PENDING -->
  *
@@ -25,15 +30,44 @@ final class SearchCriterion implements java.io.Serializable {
     /** */
     String searchTypeClassName;
     /** */
-    String criterionName;
+    String name;
     /** */
     boolean isDefault;
-    /** */
+    /** <!-- PENDING --> */
     byte[] criterionData;
 
+    /**
+     * Creates a new <code>SearchCriterion</code> from an instance
+     * of <code>SearchType</code>.
+     * The created <code>SearchCriterion</code> is initially not
+     * {@linkplain #isDefault default}.
+     *
+     * @param  searchType  instance of <code>SearchType</code> to create
+     *                     a <code>SearchCriterion</code> for
+     * @exception  java.io.IOException  if some error occured during creation
+     */
+    SearchCriterion(SearchType searchType) throws IOException {
+        this.name = searchType.getName();
+        searchTypeClassName = searchType.getClass().getName();
+        isDefault = false;
+        
+        /* serialize the search type: */
+        ObjectOutputStream oos = null;
+        try {
+            ByteArrayOutputStream bos;
+            oos = new ObjectOutputStream(bos = new ByteArrayOutputStream(8192));
+            oos.writeObject(searchType);
+            criterionData = bos.toByteArray();
+        } finally {
+            if (oos != null) {
+                oos.close();
+            }
+        }
+    }
+    
     /** */
     public String toString() {
-        return criterionName;
+        return name;
     }
     
 }
