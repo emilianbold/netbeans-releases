@@ -42,8 +42,10 @@ public class JUnitTestRunnerLauncher {
         } catch (Throwable t) {
             System.out.println("Error - during test run caught exception: "+t.getMessage());
             t.printStackTrace();
+            System.exit(-1);
         }
         if (DEBUG) System.out.println("VM finished");
+        System.exit(0);
     }
     
 }
