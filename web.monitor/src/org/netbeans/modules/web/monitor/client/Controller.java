@@ -1279,9 +1279,8 @@ public class Controller  {
 	    t.join(2000);
 	}
 	catch(InterruptedException ie) {
-	    t.destroy();
 	}
-	t.stop();
+	t = null; 
 	if(!sc.isServerGood()) {
 	    if(debug) 
 		log("showReplay(): No host"); // NOI18N
