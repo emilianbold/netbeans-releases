@@ -119,6 +119,12 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   public DataFolder menus () {
     return findSessionFolder ("Menus");
   }
+
+  /** Startup folder.
+  */
+  public DataFolder startup () {
+    return findSessionFolder ("Startup");
+  }
     
   /**
    * Returns a DataFolder subfolder of the session folder.  In the DataFolder
@@ -146,6 +152,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  10   Gandalf   1.9         2/19/99  Jaroslav Tulach added startup directory
 *  9    Gandalf   1.8         2/12/99  Ian Formanek    Reflected renaming 
 *       Desktop -> Workspace
 *  8    Gandalf   1.7         2/11/99  Ian Formanek    Renamed FileSystemPool ->

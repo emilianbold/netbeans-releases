@@ -84,7 +84,7 @@ public class NbTopManager extends TopManager {
   /** nodeOperation */
   static NodeOperation nodeOperation;
   /** clipboard */
-  static ExClipboard clipboard;
+  private static ExClipboard clipboard;
 
   /** ProjectOperation main variable */
   static NbProjectOperation projectOperation;
@@ -153,6 +153,9 @@ public class NbTopManager extends TopManager {
   * @return the clipboard for whole system
   */
   public ExClipboard getClipboard () {
+    if (clipboard == null) {
+      clipboard = new CoronaClipboard ("");
+    }
     return clipboard;
   }
 
