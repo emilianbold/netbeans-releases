@@ -24,6 +24,7 @@ import org.openide.TopManager;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.InstanceSupport;
 import org.openide.filesystems.*;
 import org.openide.util.datatransfer.*;
 import org.openide.util.*;
@@ -57,7 +58,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
         setIconBase ("/org/netbeans/core/resources/repository"); // NOI18N
         setName (NbBundle.getBundle (DataSystem.class).getString ("dataSystemName"));
         setShortDescription (NbBundle.getBundle (DataSystem.class).getString ("CTL_Repository_Hint"));
-        getCookieSet().add(fsp);
+        getCookieSet().add(new InstanceSupport.Instance (fsp));
     }
 
     /** Constructor. Uses default file system pool.
