@@ -39,10 +39,10 @@ Microsystems, Inc. All Rights Reserved.
                  classpath="${driver.classpath}"/>
      <nbtaskdef classpath="${driver.classpath};${xerces.classpath}">
      	<taskdef name="for" classname="org.netbeans.xtest.driver.ForTask"/>  
-     	<taskdef name="mconfig" classname="org.netbeans.xtest.driver.MasterConfigReader2"/>  
      	<taskdef name="checkout" classname="org.netbeans.xtest.driver.CheckoutNeeded"/>
      	<taskdef name="list" classname="org.netbeans.xtest.driver.ListReader"/>
-     	<taskdef name="resolve" classname="org.netbeans.xtest.driver.ResolveInstance"/>
+     	<taskdef name="instances" classname="org.netbeans.xtest.driver.InstancePropertiesParser"/>
+     	<taskdef name="setproperty" classname="org.netbeans.xtest.driver.PropertySetter"/>
         <taskdef name="reportinfo" classname="org.netbeans.xtest.pe.XTestResultsReportTask"/>
         <taskdef name="buildinfo" classname="org.netbeans.xtest.pe.ParseBuildInfo"/>
      </nbtaskdef>
@@ -83,8 +83,11 @@ Microsystems, Inc. All Rights Reserved.
    </target>
 
    <target name="start" depends="init,localresults-clean,install-ide">
+     <instances property="xtest.instance.postfixes"/>
+     <echo message="Found following instances: ${xtest.instance.postfixes}"/>
      <antcall target="checkout-system"/>
      <antcall target="checkout-modules"/>
+
      <!-- prebuild specific stuff -> this needs to be more enhanced !!! -->
      <antcall target="prebuild"/>
      <!-- create results dir, get info about tested build and create testreport file -->
@@ -102,7 +105,7 @@ Microsystems, Inc. All Rights Reserved.
             host="${xtest.machine}" comment="${xtest.testrun.comment}" />
      
      
-     <for list="${xtest.instance.list}" delimiters="," property="xtest.instancecfg">
+     <for list="${xtest.instance.postfixes}" delimiters="," property="xtest.instance.postfix">
        <antcall target="test-one-repository"/>
      </for>     
      <antcall target="pack-results"/>     
@@ -131,15 +134,18 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${archive.file}" todir="${xtest.results}/../"/>        
    </target>
 
-   <target name="test-one-repository" depends="splitproperty">
+   <target name="test-one-repository">
+     <setproperty input="xtest.instance.cvs.workdir${xtest.instance.postfix}"
+                  output="xtest.instance.wdir"/>
+     <setproperty input="xtest.instance.location${xtest.instance.postfix}"
+                  output="xtest.instance.loc"/>                   
+     <setproperty input="xtest.instance.config${xtest.instance.postfix}"
+                  output="xtest.config"/>
+     <property name="xtest.instance.dir" location="${xtest.instance.wdir}/${xtest.instance.loc}"/>
      <echo message="Testing xtest instance ${xtest.instance.dir} with config ${xtest.config}"/>
-     <antcall target="build"/>
+     <!-- <antcall target="build"/> -->
+     <antcall target="clean"/>
      <antcall target="execute"/>
-   </target>
-   
-   <target name="splitproperty">
-     <resolve instance="${xtest.instancecfg}" instanceDirProperty="xtest.instance.dir"
-                                           instanceConfigProperty="xtest.config"/>
    </target>
    
   <!-- ======== -->
@@ -156,11 +162,9 @@ Microsystems, Inc. All Rights Reserved.
    </target>
    
    <target name="checkout-modules" depends="init,actionlist" if="xtest.execute_actions.checkout">
-      <mconfig instances="${xtest.instance.list}"/>
-      <echo message="${xtest.driver.modules}"/>     
-      <checkout modules="${xtest.driver.modules}" repos="${xtest.cvs.repositories}" quiet="true"/>
+      <checkout repos="${xtest.cvs.repositories}" quiet="true"/>
    </target>
-
+   
   <!-- ======== -->
   <!-- Building -->
   <!-- ======== -->
@@ -172,6 +176,11 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.source.location" value="ide"/>
         <property name="netbeans.home" value="${ide.home}"/>
      </ant>
+   </target>
+   
+   <target name="clean" depends="actionlist" if="xtest.execute_actions.checkout">
+      <property name="xtest.nobuildxtest" value="true"/>
+      <ant dir="${xtest.instance.dir}" target="cleantests"/>
    </target>
    
    <target name="prebuild" if="xtest.prebuild.dir">   
@@ -190,7 +199,6 @@ Microsystems, Inc. All Rights Reserved.
      <property name="xtest.nobuildxtest" value="true"/>
      <!-- <ant dir="${xtest.instance.dir}" target="cleanresults"/>
      <ant dir="${xtest.instance.dir}" target="localresults-clean"/> -->
-     
      <ant dir="${xtest.instance.dir}" target="runtests">
        	<property name="netbeans.home" value="${ide.home}"/>
       	<property name="xtest.mode" value="ide"/>
