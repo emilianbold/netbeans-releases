@@ -116,6 +116,10 @@ public class RADConnectionPropertyEditor
                 designValue.initialize();
             }
 
+            if (designValue.radComponent != null
+                    && designValue.radComponent.getCodeExpression() == null)
+                return null; // invalid component (probably deleted)
+
             switch (designValue.type) {
                 case RADConnectionDesignValue.TYPE_VALUE:
                     if ("java.lang.String".equals(designValue.requiredTypeName)) return "\""+designValue.value+"\""; // NOI18N
@@ -280,6 +284,9 @@ public class RADConnectionPropertyEditor
         String getName() {
             if (needsInit)
                 initialize();
+
+            if (radComponent != null && radComponent.getCodeExpression() == null)
+                return FormEditor.getFormBundle().getString("CTL_CONNECTION_INVALID"); // NOI18N
 
             switch (type) {
                 case TYPE_PROPERTY:
@@ -518,8 +525,17 @@ public class RADConnectionPropertyEditor
      */
 
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
+        if (designValue == null)
+            return null;
+
+        String componentName = designValue.radComponent != null ?
+                                   designValue.radComponent.getName() :
+                                   designValue.radComponentName;
+
+        if (componentName == null && designValue.radComponent != null)
+            return null; // invalid component (probably deleted)
+
         org.w3c.dom.Element el = doc.createElement(XML_CONNECTION);
-        if (designValue == null) return null;
         String typeString;
         switch (designValue.type) {
             case RADConnectionDesignValue.TYPE_VALUE: typeString = VALUE_VALUE; break;
@@ -537,24 +553,15 @@ public class RADConnectionPropertyEditor
                 el.setAttribute(ATTR_REQUIRED_TYPE, designValue.requiredTypeName);
                 break;
             case RADConnectionDesignValue.TYPE_PROPERTY:
-                el.setAttribute(ATTR_COMPONENT,
-                                designValue.radComponent != null ?
-                                    designValue.radComponent.getName() :
-                                    designValue.radComponentName);
+                el.setAttribute(ATTR_COMPONENT, componentName);
                 el.setAttribute(ATTR_NAME, designValue.propertyName);
                 break;
             case RADConnectionDesignValue.TYPE_METHOD:
-                el.setAttribute(ATTR_COMPONENT,
-                                designValue.radComponent != null ?
-                                    designValue.radComponent.getName() :
-                                    designValue.radComponentName);
+                el.setAttribute(ATTR_COMPONENT, componentName);
                 el.setAttribute(ATTR_NAME, designValue.methodName);
                 break;
             case RADConnectionDesignValue.TYPE_BEAN:
-                el.setAttribute(ATTR_COMPONENT,
-                                designValue.radComponent != null ?
-                                    designValue.radComponent.getName() :
-                                    designValue.radComponentName);
+                el.setAttribute(ATTR_COMPONENT, componentName);
                 break;
             case RADConnectionDesignValue.TYPE_CODE:
                 el.setAttribute(ATTR_CODE, designValue.userCode);

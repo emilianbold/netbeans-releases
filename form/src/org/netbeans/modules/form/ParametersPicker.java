@@ -131,9 +131,14 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                 propertyButton.setSelected(true);
                 selectedComponent = value.getRADComponent();
                 selectedProperty = value.getProperty();
-                if (selectedComponent == formModel.getTopRADComponent()) {
+                if (selectedComponent.getCodeExpression() == null) {
+                    propertyLabel.setText(
+                        FormEditor.getFormBundle().getString("CTL_CONNECTION_INVALID")); // NOI18N
+                }
+                else if (selectedComponent == formModel.getTopRADComponent()) {
                     propertyLabel.setText(selectedProperty.getName());
-                } else {
+                }
+                else {
                     propertyLabel.setText(selectedComponent.getName() + "." + selectedProperty.getName()); // NOI18N
                 }
                 break;
@@ -141,9 +146,14 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                 methodButton.setSelected(true);
                 selectedComponent = value.getRADComponent();
                 selectedMethod = value.getMethod();
-                if (selectedComponent == formModel.getTopRADComponent()) {
+                if (selectedComponent.getCodeExpression() == null) {
+                    methodLabel.setText(
+                        FormEditor.getFormBundle().getString("CTL_CONNECTION_INVALID")); // NOI18N
+                }
+                else if (selectedComponent == formModel.getTopRADComponent()) {
                     methodLabel.setText(selectedMethod.getName());
-                } else {
+                }
+                else {
                     methodLabel.setText(selectedComponent.getName() + "." + selectedMethod.getName()); // NOI18N
                 }
                 break;
