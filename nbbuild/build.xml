@@ -228,7 +228,7 @@ workspaceswitcher
     <echo message="Building module usersguide..."/>
     <ant dir="../usersguide" target="netbeans"/>
   </target>
-  <target name="all-utilities" depends="all-openide,all-openidex,all-editor">
+  <target name="all-utilities" depends="all-openide,all-openidex">
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
   </target>

@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile">
     <javac srcdir="src" destdir="src">
       <classpath>
-        <pathelement location="../editor/netbeans/lib/ext/nb-editor.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
         <pathelement location="../core/release/lib/ext/regexp.jar"/>
