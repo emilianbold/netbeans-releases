@@ -800,11 +800,11 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     
     public List/*StubDescriptor*/ getStubDescriptors() {
         ArrayList stubs = new ArrayList(2);
-        stubs.add(jaxrpcClientStub);
         String version = project.getWebModule().getJ2eePlatformVersion();
         if(WebModule.J2EE_14_LEVEL.equals(version)) {
             stubs.add(jsr109ClientStub);
         }
+        stubs.add(jaxrpcClientStub);
         return stubs;
     }
     
