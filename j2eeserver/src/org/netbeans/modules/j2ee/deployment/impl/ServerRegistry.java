@@ -311,7 +311,7 @@ public final class ServerRegistry implements java.io.Serializable {
     public ServerString getDefaultInstance() {
         if (defaultInstance == null) {
             defaultInstance = ServerStringConverter.readServerInstance(DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE);
-            System.out.println("getDefaultInstance.1: defaultInstance="+defaultInstance);
+            //System.out.println("getDefaultInstance.1: defaultInstance="+defaultInstance);
         }
         
         if (defaultInstance == null) {
