@@ -82,6 +82,8 @@ All Rights Reserved.
 ]]></echo>
         <!-- replace back accidentally replaced name of the directory -->
         <replace file="release/nb-launch.jnlp" token="D#I#R#_#N#A#M#E" value="${dirname}${file.separator}"/>
+        
+        <echo message="JNLP file release/nb-launch.jnlp has been generated. You can pass it to javaws." />
     </target>
     
     <target depends="jars" name="copy-to-release">
