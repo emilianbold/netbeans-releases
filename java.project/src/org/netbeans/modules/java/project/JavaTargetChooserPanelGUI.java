@@ -121,26 +121,24 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         rootComboBox.setSelectedItem( preselectedGroup );
         updatePackages();                
         Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder, packageComboBox.getModel());
-        if ( preselectedPackage != null ) {            
-            if ( isPackage ) {
-                
-                String docName = preselectedPackage.toString().length() == 0 ? 
-                    DEFAULT_NEW_PACKAGE_NAME : 
-                    preselectedPackage.toString() + "." + DEFAULT_NEW_PACKAGE_NAME;
-                
-                documentNameTextField.setText( docName );                    
-                int docNameLen = docName.length();
-                int defPackageNameLen = DEFAULT_NEW_PACKAGE_NAME.length();
-                
-                documentNameTextField.setSelectionEnd( docNameLen - 1 );
-                documentNameTextField.setSelectionStart( docNameLen - defPackageNameLen );                
-            }
-            else {
+        if ( isPackage ) {
+            String docName = preselectedPackage == null || preselectedPackage.toString().length() == 0 ? 
+                DEFAULT_NEW_PACKAGE_NAME : 
+                preselectedPackage.toString() + "." + DEFAULT_NEW_PACKAGE_NAME;
+
+            documentNameTextField.setText( docName );                    
+            int docNameLen = docName.length();
+            int defPackageNameLen = DEFAULT_NEW_PACKAGE_NAME.length();
+
+            documentNameTextField.setSelectionEnd( docNameLen - 1 );
+            documentNameTextField.setSelectionStart( docNameLen - defPackageNameLen );                
+        } else {
+            if (preselectedPackage != null) {
                 packageComboBox.setSelectedItem( preselectedPackage );
-                if (template != null) {
-                    documentNameTextField.setText (NEW_CLASS_PREFIX + template.getName ());
-                    documentNameTextField.selectAll ();
-                }
+            }
+            if (template != null) {
+                documentNameTextField.setText (NEW_CLASS_PREFIX + template.getName ());
+                documentNameTextField.selectAll ();
             }
         }
         // Determine the extension
