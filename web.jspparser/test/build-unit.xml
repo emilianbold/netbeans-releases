@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-api-web-webmodule.jar"/>
 		<pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-modules-web-core.jar"/>
                 <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-modules-web-jspparser.jar"/>
-                <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
+                <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
                 <pathelement location="../../external/servlet-api-2.4.jar"/>
                 <pathelement location="../../external/jsp-api-2.0.jar"/>
                 <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
