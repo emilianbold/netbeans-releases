@@ -61,7 +61,7 @@ final class Services extends ServiceType.Registry implements LookupListener {
     /** Lookup containing all current default services. */
     private InstanceLookup lookupDefTypes = new InstanceLookup();
     /** Lookup containing all current services. */
-    private ProxyLookup proxyLookup;
+    private PL proxyLookup;
     /** Result containing all current services. */
     private Lookup.Result allTypes;
     /** Result containing all services declared in manifest files. */
@@ -161,7 +161,7 @@ final class Services extends ServiceType.Registry implements LookupListener {
     
     /** Lookup containing all current services. */
     public Lookup getLookup() {
-        proxyLookup = new ProxyLookup(new Lookup[] {lookupDefTypes, lookup});
+        proxyLookup = new PL (new Lookup[] {lookupDefTypes, lookup});
         return proxyLookup;
     }
     
@@ -276,7 +276,7 @@ final class Services extends ServiceType.Registry implements LookupListener {
                 register((ServiceType) it.next(), false);
             }
         }
-        proxyLookup.setLookups(new Lookup[] {lookupDefTypes, lookup});
+        proxyLookup.change (new Lookup[] {lookupDefTypes, lookup});
     }
     
     /** Convert list of ManifestSection.ServiceSections ServiceTypes and register them. */
@@ -515,11 +515,23 @@ final class Services extends ServiceType.Registry implements LookupListener {
             }
             return type;
         }
-    
+  
+    private static final class PL extends ProxyLookup {
+        public PL (Lookup[] arr) {
+            super (arr);
+        }
+
+        public void change (Lookup[] arr) {
+            setLookups (arr);
+        }
+    }
 }
 
 /*
 * $Log$
+* Revision 1.49  2001/07/09 14:00:01  jtulach
+* ProxyLookup.getDelegates and setDelegates are protected. ProxyLookup is not final.
+*
 * Revision 1.48  2001/06/20 18:09:07  jpokorsky
 * #13034 fixed: deadlock in Services during second startup
 *

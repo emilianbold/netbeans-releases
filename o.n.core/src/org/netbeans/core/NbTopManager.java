@@ -90,12 +90,8 @@ public abstract class NbTopManager extends TopManager {
     /** stores main shortcut context*/
     private Keymap shortcutContext;
 
-    /** the lookup that delegates to top manager's methods */
-    private static org.netbeans.core.lookup.TMLookup tmLookup;
     /** dynamic lookup service for this top mangager */
     private org.netbeans.core.lookup.InstanceLookup instanceLookup;
-    /** main lookup service of the system */
-    private org.openide.util.Lookup lookup;
 
     /** default repository */
     private Repository repository;
@@ -160,15 +156,6 @@ public abstract class NbTopManager extends TopManager {
         putSystemProperty ("org.openide.major.version", p.getSpecificationTitle (), "IDE/1"); // NOI18N
         putSystemProperty ("netbeans.buildnumber", p.getImplementationVersion (), "OwnBuild"); // NOI18N
         
-        if (System.getProperties ().get ("java.naming.factory.initial") == null) { // NOI18N
-          // we would like to use our own implementation of JNDI, so the
-          // OpenAPI can find the right implementations
-          System.getProperties().put (
-            "java.naming.factory.initial", // NOI18N
-            "org.netbeans.core.lookup.Jndi" // NOI18N
-          );
-        }
-
         if (System.getProperties ().get ("org.openide.util.Lookup") == null) { // NOI18N
           // update the top manager to our main if it has not been provided yet
           System.getProperties().put (
@@ -299,85 +286,6 @@ public abstract class NbTopManager extends TopManager {
         }
     }
     
-    /** Main lookup of the system.
-     */
-    public final org.openide.util.Lookup getLookup () {
-        if (lookup != null) {
-            return lookup;
-        }
-        
-        synchronized (this) {
-            if (lookup != null) {
-                return lookup;
-            }
-            
-            lookup = new org.openide.util.lookup.ProxyLookup (
-                // XXX: pair method with YYY few lines bellow
-                proxiedLookups ()
-            );
-            return lookup;
-        }
-    }
-    
-    /** When all module classes are accessible thru systemClassLoader, this
-     * method is called to initialize the FolderLookup.
-     */
-    final synchronized void modulesClassPathInitialized () {
-        // replace the lookup by new one
-
-        org.openide.util.lookup.ProxyLookup pl = (org.openide.util.lookup.ProxyLookup)lookup;
-        
-        // YYY: pair method with XXX few lines above
-        org.openide.util.Lookup[] arr = proxiedLookups ();
-        if (pl != null) {
-            pl.setLookups (arr);
-        }
-    }
-    
-    /** Initializes the top manager lookup and also returns the array 
-     * of lookups we should delegate to.
-     */
-    private org.openide.util.Lookup[] proxiedLookups () {
-        boolean force;
-        
-        // second call to this method will initialize all objects correctly
-        if (tmLookup == null) {
-            // first time initialization
-            tmLookup = new org.netbeans.core.lookup.TMLookup ();
-            force = false;
-        } else {
-            force = true;
-        }
-        
-        if (force) {
-            // either we are asked to create all known lookups or 
-            return new org.openide.util.Lookup[] {
-                tmLookup,
-                getInstanceLookup (),
-                getServicesLookup (),
-                Services.getDefault().getLookup()
-            };
-        } else {
-            return new org.openide.util.Lookup[] { tmLookup };
-        }
-    }   
-    
-    
-    /** Creates the lookup for service directory.
-     */
-    private static Lookup getServicesLookup () {
-        try {
-            DataFolder rootFolder = DataFolder.findFolder (
-                org.openide.TopManager.getDefault ().getRepository ().getDefaultFileSystem ().getRoot ()
-            );
-            DataFolder df = DataFolder.create (rootFolder, "Services"); // NOI18N
-            
-            return new FolderLookup (df, "SL[").getLookup (); // NOI18N
-        } catch (java.io.IOException ex) {
-            ex.printStackTrace();
-            throw new IllegalStateException ("Cannot initialize folder Services"); // NOI18N
-        }
-    }
     
     //
     // Implementation of methods from TopManager
@@ -963,17 +871,51 @@ public abstract class NbTopManager extends TopManager {
     
     /** The default lookup for the system.
      */
-    public static final class Lkp extends org.openide.util.Lookup {
-        /** Just delegates to top manager lookup.
-         */
-        public Object lookup (Class clazz) {
-            return NbTopManager.get ().getLookup ().lookup (clazz);
+    public static final class Lkp extends org.openide.util.lookup.ProxyLookup {
+        private FolderLookup lookup;
+
+        /** Initialize the lookup to delegate to NbTopManager.
+        */
+        public Lkp () {
+            super (new Lookup[] { new org.netbeans.core.lookup.TMLookup () });
         }
-        
-        /** Template lookup.
+
+        /** When all module classes are accessible thru systemClassLoader, this
+         * method is called to initialize the FolderLookup.
          */
-        public Result lookup (Template t) {
-            return NbTopManager.get ().getLookup ().lookup (t);
+        static final synchronized void modulesClassPathInitialized () {
+            // replace the lookup by new one
+
+            Lookup lookup = Lookup.getDefault ();
+            if (lookup instanceof Lkp) {
+                Lkp lkp = (Lkp)lookup;
+
+                
+                try {
+                    DataFolder rootFolder = DataFolder.findFolder (
+                        org.openide.TopManager.getDefault ().getRepository ().getDefaultFileSystem ().getRoot ()
+                    );
+                    DataFolder df = DataFolder.create (rootFolder, "Services"); // NOI18N
+
+                    FolderLookup folder = new FolderLookup (df, "SL["); // NOI18N
+                    lkp.lookup = folder;
+                    
+                    // extend the lookup
+                    Lookup[] arr = new org.openide.util.Lookup[] {
+                        lkp.getLookups ()[0],
+                        NbTopManager.get ().getInstanceLookup (),
+                        folder.getLookup (),
+                        Services.getDefault().getLookup()
+                    };
+
+                    lkp.setLookups (arr);
+
+                } catch (java.io.IOException ex) {
+                    ex.printStackTrace();
+                    throw new IllegalStateException ("Cannot initialize folder Services"); // NOI18N
+                }
+            }
         }
+
     }
 }
