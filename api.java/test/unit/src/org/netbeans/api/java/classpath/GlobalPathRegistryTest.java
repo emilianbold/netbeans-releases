@@ -84,7 +84,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         L l = new L();
         r.addPathRegistryListener(l);
         r.register("b", new ClassPath[] {cp1, cp2});
-        GlobalPathRegistry.PathRegistryEvent e = l.event();
+        GlobalPathRegistryEvent e = l.event();
         assertNotNull("got an event", e);
         assertTrue("was an addition", l.added());
         assertEquals("right registry", r, e.getRegistry());
@@ -113,15 +113,15 @@ public class GlobalPathRegistryTest extends NbTestCase {
         assertEquals("right changed paths", Collections.singleton(cp2), e.getChangedPaths());
     }
     
-    private static final class L implements GlobalPathRegistry.PathRegistryListener {
+    private static final class L implements GlobalPathRegistryListener {
         
-        private GlobalPathRegistry.PathRegistryEvent e;
+        private GlobalPathRegistryEvent e;
         private boolean added;
         
         public L() {}
         
-        public synchronized GlobalPathRegistry.PathRegistryEvent event() {
-            GlobalPathRegistry.PathRegistryEvent _e = e;
+        public synchronized GlobalPathRegistryEvent event() {
+            GlobalPathRegistryEvent _e = e;
             e = null;
             return _e;
         }
@@ -130,13 +130,13 @@ public class GlobalPathRegistryTest extends NbTestCase {
             return added;
         }
         
-        public synchronized void pathsAdded(GlobalPathRegistry.PathRegistryEvent e) {
+        public synchronized void pathsAdded(GlobalPathRegistryEvent e) {
             assertNull("checked for last event", this.e);
             this.e = e;
             added = true;
         }
         
-        public synchronized void pathsRemoved(GlobalPathRegistry.PathRegistryEvent e) {
+        public synchronized void pathsRemoved(GlobalPathRegistryEvent e) {
             assertNull("checked for last event", this.e);
             this.e = e;
             added = false;

@@ -125,8 +125,8 @@ public final class GlobalPathRegistry {
         if (id == null || paths == null) {
             throw new NullPointerException();
         }
-        PathRegistryEvent evt = null;
-        PathRegistryListener[] _listeners = null;
+        GlobalPathRegistryEvent evt = null;
+        GlobalPathRegistryListener[] _listeners = null;
         synchronized (this) {
             List l = (List)this.paths.get(id);
             if (l == null) {
@@ -144,8 +144,8 @@ public final class GlobalPathRegistry {
                 l.add(paths[i]);
             }
             if (added != null && !added.isEmpty()) {
-                _listeners = (PathRegistryListener[])listeners.toArray(new PathRegistryListener[listeners.size()]);
-                evt = new PathRegistryEvent(this, id, Collections.unmodifiableSet(added));
+                _listeners = (GlobalPathRegistryListener[])listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
+                evt = new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(added));
             }
             // Invalidate cache for getSourceRoots and findResource:
             sourceRoots = null;
@@ -168,8 +168,8 @@ public final class GlobalPathRegistry {
         if (id == null || paths == null) {
             throw new NullPointerException();
         }
-        PathRegistryEvent evt = null;
-        PathRegistryListener[] _listeners = null;
+        GlobalPathRegistryEvent evt = null;
+        GlobalPathRegistryListener[] _listeners = null;
         synchronized (this) {
             List l = (List)this.paths.get(id);
             if (l == null) {
@@ -190,8 +190,8 @@ public final class GlobalPathRegistry {
             }
             this.paths.put(id, l2);
             if (removed != null && !removed.isEmpty()) {
-                _listeners = (PathRegistryListener[])listeners.toArray(new PathRegistryListener[listeners.size()]);
-                evt = new PathRegistryEvent(this, id, Collections.unmodifiableSet(removed));
+                _listeners = (GlobalPathRegistryListener[])listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
+                evt = new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(removed));
             }
             sourceRoots = null;
         }
@@ -207,7 +207,7 @@ public final class GlobalPathRegistry {
      * Add a listener to the registry.
      * @param l a listener to add
      */
-    public synchronized void addPathRegistryListener(PathRegistryListener l) {
+    public synchronized void addPathRegistryListener(GlobalPathRegistryListener l) {
         if (l == null) {
             throw new NullPointerException();
         }
@@ -218,7 +218,7 @@ public final class GlobalPathRegistry {
      * Remove a listener to the registry.
      * @param l a listener to remove
      */
-    public synchronized void removePathRegistryListener(PathRegistryListener l) {
+    public synchronized void removePathRegistryListener(GlobalPathRegistryListener l) {
         if (l == null) {
             throw new NullPointerException();
         }
@@ -290,69 +290,5 @@ public final class GlobalPathRegistry {
         }
         return null;
     }
-    
-    /**
-     * Event listener interface for being notified of changes in the set of
-     * available paths.
-     */
-    public interface PathRegistryListener extends EventListener {
-        
-        /**
-         * Called when some paths are added.
-         * Only applies to the first copy of a path that is added.
-         * @param event an event giving details
-         */
-        public void pathsAdded(PathRegistryEvent event);
-        
-        /**
-         * Called when some paths are removed.
-         * Only applies to the last copy of a path that is removed.
-         * @param event an event giving details
-         */
-        public void pathsRemoved(PathRegistryEvent event);
-        
-    }
-    
-    /**
-     * Event object giving details of a change in the path registry.
-     */
-    public static final class PathRegistryEvent extends EventObject {
-        
-        private final String id;
-        private final Set/*<ClassPath>*/ changed;
-        
-        PathRegistryEvent(GlobalPathRegistry r, String id, Set/*<ClassPath>*/ changed) {
-            super(r);
-            assert id != null;
-            assert changed != null && !changed.isEmpty();
-            this.id = id;
-            this.changed = changed;
-        }
-        
-        /**
-         * Get the affected registry.
-         * @return the registry
-         */
-        public GlobalPathRegistry getRegistry() {
-            return (GlobalPathRegistry)getSource();
-        }
-        
-        /**
-         * Get the type of classpaths that were added or removed.
-         * @return the type, e.g. {@link ClassPath#SOURCE}
-         */
-        public String getId() {
-            return id;
-        }
-        
-        /**
-         * Get a set of classpaths that were added or removed.
-         * @return an immutable and nonempty set of {@link ClassPath}s of the given type
-         */
-        public Set/*<ClassPath>*/ getChangedPaths() {
-            return changed;
-        }
-        
-    }
-    
+
 }
