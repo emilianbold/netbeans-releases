@@ -1420,8 +1420,6 @@ class JavaCodeGenerator extends CodeGenerator {
         int spacesPerTab = 4;
         boolean braceOnNewLine = false;
 
-        IndentEngine engine = IndentEngine.find(
-                              formModel.getFormEditorSupport().getDocument());
         if (refEngine != null) {
             Class engineClass = refEngine.getClass();
 
