@@ -112,9 +112,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
     /** loader pool */
     private DataLoaderPool loaderPool;
 
-    /** status text */
-    private String statusText = " "; // NOI18N
-
     /** initializes properties about builds etc. */
     static {
         org.openide.filesystems.FileObject fo = null;
@@ -473,18 +470,17 @@ public abstract class NbTopManager /*extends TopManager*/ {
         public void setStatusText(String text) {
             ChangeListener[] _listeners;
             synchronized (this) {
+                if (text.equals(this.text)) return;
                 this.text = text;
                 if (listeners == null || listeners.isEmpty()) {
-                    _listeners = null;
+                    return;
                 } else {
                     _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
                 }
             }
-            if (_listeners != null) {
-                ChangeEvent e = new ChangeEvent(this);
-                for (int i = 0; i < _listeners.length; i++) {
-                    _listeners[i].stateChanged(e);
-                }
+            ChangeEvent e = new ChangeEvent(this);
+            for (int i = 0; i < _listeners.length; i++) {
+                _listeners[i].stateChanged(e);
             }
         }
         public synchronized String getStatusText() {
