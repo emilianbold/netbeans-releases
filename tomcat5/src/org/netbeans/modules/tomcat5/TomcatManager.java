@@ -33,7 +33,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 import org.w3c.dom.Document;
 import org.xml.sax.*;
@@ -49,11 +49,9 @@ import org.netbeans.modules.tomcat5.nodes.DebuggingTypeEditor;
 
 import org.openide.util.NbBundle;
 
-//import org.netbeans.modules.debugger.AbstractDebuggerInfo;
-//import org.netbeans.modules.debugger.CoreDebugger;
-//import org.netbeans.modules.debugger.AbstractDebugger;
-//import org.openide.debugger.DebuggerInfo;
-//import org.openide.debugger.Debugger;
+import org.netbeans.api.debugger.*;
+import org.netbeans.api.debugger.jpda.*;
+
 import org.openide.util.Lookup;
 
 /** DeploymentManager that can deploy to 
@@ -336,95 +334,97 @@ public class TomcatManager implements DeploymentManager {
      */
     public boolean isDebugged() {
         
-        boolean found = false;
-        
-//        CoreDebugger d = (CoreDebugger)Lookup.getDefault().lookup (Debugger.class);
-//
-//        if (d == null) {
-//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Debugger cannot be found in lookup.");
-//            return false;
-//        }
-//
-//        DebuggerInfo serverDInfo = null;
-//        String serverPName = "";
-//
-//        int debuggers = d.getDebuggers().length;
-//        try {
-//            serverDInfo = getStartTomcat().getDebugInfo(null);
-//        } catch (Exception e) {
-//            // don't care - just a try
-//        }
-//
-//        if (serverDInfo == null) {
-//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
-//        }
-//        if (serverDInfo instanceof AbstractDebuggerInfo) {
-//            serverPName = ((AbstractDebuggerInfo)serverDInfo).getProcessName();
-//        }
-//
-//        for (int i=0; i < debuggers; i++) {
-//            if (d.getDebuggers()[i] instanceof AbstractDebugger) {
-//                DebuggerInfo di = ((AbstractDebugger)d.getDebuggers()[i]).getDebuggerInfo();
-//                if (di instanceof AbstractDebuggerInfo) {
-//                    String pname = ((AbstractDebuggerInfo)di).getProcessName();
-//                    if (serverPName.equalsIgnoreCase(pname)) {
-//                        found = true;
-//                        break;
-//                    } 
-//                }
-//            }
-//        }
+        ServerDebugInfo sdi = null;
 
-        return found;
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+
+        try {
+            sdi = getStartTomcat().getDebugInfo(null);
+        } catch (Exception e) {
+            // don't care - just a try
+        }
+
+        if (sdi == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
+        }
+
+        for (int i=0; i < sessions.length; i++) {
+            Session s = sessions[i];
+            if (s != null) {
+                Object o = s.lookupFirst(AttachingDICookie.class);
+                if (o != null) {
+                    AttachingDICookie attCookie = (AttachingDICookie)o;
+                    if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
+                        if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                            if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
+                                return true;
+                            }
+                        } else {
+                            if (attCookie.getPortNumber() == sdi.getPort()) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
     }
-    
+        
     /**
      * Returns true if this server is started in debug mode AND debugger is attached to it 
      * AND threads are suspended (e.g. debugger stopped on breakpoint)
      */
     public boolean isSuspended() {
-        boolean suspended = false;
-        
-//        CoreDebugger d = (CoreDebugger)Lookup.getDefault().lookup (Debugger.class);
-//
-//        if (d == null) {
-//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Debugger cannot be found in lookup.");
-//            return false;
-//        }
-//
-//        DebuggerInfo serverDInfo = null;
-//        String serverPName = "";
-//
-//        int debuggers = d.getDebuggers().length;
-//        try {
-//            serverDInfo = getStartTomcat().getDebugInfo(null);
-//        } catch (Exception e) {
-//            // don't care - just a try
-//        }
-//
-//        if (serverDInfo == null) {
-//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
-//        }
-//        if (serverDInfo instanceof AbstractDebuggerInfo) {
-//            serverPName = ((AbstractDebuggerInfo)serverDInfo).getProcessName();
-//        }
-//
-//        for (int i=0; i < debuggers; i++) {
-//            if (d.getDebuggers()[i] instanceof AbstractDebugger) {
-//                DebuggerInfo di = ((AbstractDebugger)d.getDebuggers()[i]).getDebuggerInfo();
-//                if (di instanceof AbstractDebuggerInfo) {
-//                    String pname = ((AbstractDebuggerInfo)di).getProcessName();
-//                    if (serverPName.equalsIgnoreCase(pname)) {
-//                        if (((AbstractDebugger)d.getDebuggers()[i]).getState() == Debugger.DEBUGGER_STOPPED) {
-//                            suspended = true;
-//                            break;
-//                        }
-//                    } 
-//                }
-//            }
-//        }
 
-        return suspended;
+        ServerDebugInfo sdi = null;
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+
+        try {
+            sdi = getStartTomcat().getDebugInfo(null);
+        } catch (Exception e) {
+            // don't care - just a try
+        }
+
+        if (sdi == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
+        }
+
+        for (int i=0; i < sessions.length; i++) {
+            Session s = sessions[i];
+            if (s != null) {
+                Object o = s.lookupFirst(AttachingDICookie.class);
+                if (o != null) {
+                    AttachingDICookie attCookie = (AttachingDICookie)o;
+                    if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
+                        if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                            if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
+                                Object d = s.lookupFirst(JPDADebugger.class);
+                                if (d != null) {
+                                    JPDADebugger jpda = (JPDADebugger)d;
+                                    if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        } else {
+                            if (attCookie.getPortNumber() == sdi.getPort()) {
+                                Object d = s.lookupFirst(JPDADebugger.class);
+                                if (d != null) {
+                                    JPDADebugger jpda = (JPDADebugger)d;
+                                    if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     /** Returns username.
