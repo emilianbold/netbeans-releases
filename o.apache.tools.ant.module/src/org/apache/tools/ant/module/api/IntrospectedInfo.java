@@ -239,15 +239,18 @@ public final class IntrospectedInfo implements Serializable {
             while (e.hasMoreElements ()) {
                 String name = (String) e.nextElement ();
                 //if (dbg) AntModule.err.log ("\tname=" + name);
-                if (Task.class.isAssignableFrom (clazz) && (name.equals ("location") || name.equals ("taskname") || name.equals ("description"))) { // NOI18N
-                    // IntrospectionHelper is supposed to exclude such things, but I guess not.
-                    // "description" may be OK to actually show on nodes, but since it is common // NOI18N
-                    // to all tasks it should not be stored as such.
-                    continue;
-                }
                 try {
                     String type = helper.getAttributeType (name).getName ();
                     //if (dbg) AntModule.err.log ("\ttype=" + type);
+                    if (Task.class.isAssignableFrom (clazz) &&
+                        ((name.equals ("location") && type.equals ("org.apache.tools.ant.Location")) || // NOI18N
+                         (name.equals ("taskname") && type.equals ("java.lang.String")) || // NOI18N
+                         (name.equals ("description") && type.equals ("java.lang.String")))) { // NOI18N
+                        // IntrospectionHelper is supposed to exclude such things, but I guess not.
+                        // "description" may be OK to actually show on nodes, but since it is common // NOI18N
+                        // to all tasks it should not be stored as such.
+                        continue;
+                    }
                     info.attrs.put (name, type);
                 } catch (BuildException be) {
                     AntModule.err.notify (ErrorManager.INFORMATIONAL, be);
