@@ -28,6 +28,7 @@ import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.UserCancelException;
 
 
 /** 
@@ -35,6 +36,7 @@ import org.openide.util.NbBundle;
  * in Menu | File | Open file... .
  *
  * @author Jesse Glick
+ * @author Marian Petras
  */
 public class OpenFileAction extends CallableSystemAction {
 
@@ -71,7 +73,7 @@ public class OpenFileAction extends CallableSystemAction {
      * <code>JFileChooser</code> should handle such situations.
      *
      * @return  directory to be used as a current directory,
-     *          or <code>null</code> if the resulution failed
+     *          or <code>null</code> if the resolution failed
      */
     private File resolveInitialDirectory() {
         if (currDir != null) {
@@ -96,7 +98,7 @@ public class OpenFileAction extends CallableSystemAction {
      *
      * @return  the initialized file chooser
      */
-    private JFileChooser prepareFileChooser() {
+    protected JFileChooser prepareFileChooser() {
         JFileChooser chooser = new JFileChooser(resolveInitialDirectory());
         HelpCtx.setHelpIDString(chooser, getHelpCtx().getHelpID());
         
@@ -106,10 +108,10 @@ public class OpenFileAction extends CallableSystemAction {
         /* initialize file filters */
         FileFilter currentFilter = chooser.getFileFilter();
         chooser.addChoosableFileFilter(new Filter(
-            new String[] {OpenFile.JAVA_EXT},
+            new String[] {OpenFileImpl.JAVA_EXT},
             NbBundle.getBundle(getClass()).getString("TXT_JavaFilter")));
         chooser.addChoosableFileFilter(new Filter(
-            new String[] {OpenFile.TXT_EXT}, 
+            new String[] {OpenFileImpl.TXT_EXT}, 
             NbBundle.getBundle(getClass()).getString("TXT_TxtFilter")));
         chooser.setFileFilter(currentFilter);
         
@@ -117,15 +119,22 @@ public class OpenFileAction extends CallableSystemAction {
     }
     
     /**
-     * {inheritDoc} Displays a file chooser dialog and opens the selected files.
+     * Displays the specified file chooser and returns a list of selected files.
+     *
+     * @param  chooser  file chooser to display
+     * @return  array of selected files,
+     * @exception  org.openide.util.UserCancelException
+     *                     if the user cancelled the operation
      */
-    public void performAction() {
-        JFileChooser chooser = prepareFileChooser();
-        File[] files = null;
-        
-        while (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+    public static File[] chooseFilesToOpen(JFileChooser chooser)
+            throws UserCancelException {
+        File[] files;
+        do {
+            int selectedOption = chooser.showOpenDialog(null);
+            if (selectedOption != JFileChooser.APPROVE_OPTION) {
+                throw new UserCancelException();
+            }
             files = chooser.getSelectedFiles();
-
             if (files.length == 0) {
                 // In jdk.1.2 is in fact not supported multi selection -> bug.
                 // Try to get the first file and open.
@@ -138,17 +147,27 @@ public class OpenFileAction extends CallableSystemAction {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                             SettingsBeanInfo.getString("MSG_noFileSelected"),   //NOI18N
                             NotifyDescriptor.WARNING_MESSAGE));
-
-                    continue;
                 }
             }
-            
-            for (int i = 0; i < files.length; i++) {
-                OpenFile.open(files[i], false, null, 0, -1);
-            }
-            break;
+        } while (files.length == 0);
+        return files;
+    }
+    
+    /**
+     * {@inheritDoc} Displays a file chooser dialog
+     * and opens the selected files.
+     */
+    public void performAction() {
+        JFileChooser chooser = prepareFileChooser();
+        File[] files;
+        try {
+            files = chooseFilesToOpen(chooser);
+        } catch (UserCancelException ex) {
+            return;
         }
-
+        for (int i = 0; i < files.length; i++) {
+            OpenFile.open(files[i].getPath());
+        }
         currDir = chooser.getCurrentDirectory();
     }
     
