@@ -400,7 +400,7 @@ public final class ProjectEar extends J2eeAppProvider
         for (int i = 0; i < modListeners.size(); i++) {
             ModuleListener ml = (ModuleListener) modListeners.get(i);
             try {
-                ml.addModule(jm);
+                ml.removeModule(jm);
             } catch (RuntimeException rex) {
                 org.openide.ErrorManager.getDefault().log(rex.getLocalizedMessage());                
             }
