@@ -280,7 +280,7 @@ public class RegenerateXMLTask extends Task{
                 }
             }
             if (failure && testBag.xmlat_unexpectedFailure == null) 
-                testBag.xmlat_unexpectedFailure = "some suites did not finish correctly";
+                testBag.xmlat_unexpectedFailure = "Some suites did not finish correctly:";
                 
         }
 

@@ -60,15 +60,26 @@ Microsystems, Inc. All Rights Reserved.
            <equals arg1="${xtest.reuse.ide}" arg2="false"/>
         </condition>
         <antcall target="delete-userdir"/>
-        
-        <condition property="xtest.reuse.and.noexist">
+
+        <available file="${xtest.userdir}/var/log/messages.log" property="ide.old.userdir.available"/>
+        <available file="${xtest.userdir}/lock" property="ide.old.userdir.locked"/>
+        <!-- If user wants to reuse userdir and userdir is locked or empty, it 
+             sets xtest.reuse.and.invalid property which is used in check-userdir target.
+             Then it is generated message according to reason of failure. -->
+        <condition property="xtest.reuse.and.invalid">
            <not>
               <or>
                  <equals arg1="${xtest.ide.reuse.userdir}" arg2="false"/>
-                 <available file="${xtest.userdir}/var/log/messages.log" property="ide.userdir.available"/>
+                 <and>
+                    <isset property="ide.old.userdir.available"/>
+                    <not>
+                        <isset property="ide.old.userdir.locked"/>
+                    </not>
+                 </and>   
               </or>
            </not>
         </condition>
+        
         <antcall target="check-userdir"/>
         <antcall target="ide_test_bootstrap_cont"/>
     </target>
@@ -134,7 +145,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.netbeans.classpath" value="${_helper_xtest.netbeans.classpath};${tbag.classpath}"/>
     </target>
     
-    <target name="ide_test_bootstrap_cont" unless="xtest.reuse.and.noexist" 
+    <target name="ide_test_bootstrap_cont" unless="xtest.reuse.and.invalid" 
             depends="ide_set_netbeans_classpath_default,ide_set_netbeans_classpath_test_core">
 
         <ide-jvmargs jvmargs="${xtest.ide.jvmargs}" property="xtest.ide.commandline.jvmargs"/>
@@ -268,9 +279,17 @@ removed !!!!
         
     </target>
     
+    <target name="check-userdir" if="xtest.reuse.and.invalid">
+        <antcall target="check-userdir-available"/>
+        <antcall target="check-userdir-locked"/>
+    </target>
 
-    <target name="check-userdir" if="xtest.reuse.and.noexist">
-        <testbaginfo unexpectedFailure="This testbag wants to reuse old userdir, but it doesn't exists. Testbag wasn't executed." outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
+    <target name="check-userdir-available" unless="ide.old.userdir.available">
+        <testbaginfo unexpectedFailure="This testbag wants to reuse old userdir, but it doesn't exist. Testbag wasn't executed." outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
+    </target>
+    
+    <target name="check-userdir-locked" if="ide.old.userdir.locked">
+        <testbaginfo unexpectedFailure="This testbag wants to reuse old userdir, but it is locked from previous session. Testbag wasn't executed." outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
     </target>
     
     <target name="delete-userdir" if="xtest.reuse.ide.false">
