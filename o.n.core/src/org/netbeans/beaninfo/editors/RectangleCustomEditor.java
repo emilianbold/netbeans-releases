@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -104,7 +104,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
             if ((x < 0) || (y < 0) || (width < 0) || (height < 0)) {
                 IllegalStateException ise = new IllegalStateException();
                 ErrorManager.getDefault().annotate(
-                    ise, ErrorManager.ERROR, null, 
+                    ise, ErrorManager.USER, null, 
                     bundle.getString("CTL_NegativeSize"), null, null);
                 throw ise;
             }
@@ -112,7 +112,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
             ErrorManager.getDefault().annotate(
-                ise, ErrorManager.ERROR, null, 
+                ise, ErrorManager.USER, null, 
                 bundle.getString("CTL_InvalidValue"), null, null);
             throw ise;
         }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -82,7 +82,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
             if ((top < 0) || (left < 0) || (bottom < 0) || (right < 0)) {
                 IllegalStateException ise = new IllegalStateException();
                 ErrorManager.getDefault().annotate(
-                    ise, ErrorManager.ERROR, null, 
+                    ise, ErrorManager.USER, null, 
                     bundle.getString("CTL_NegativeSize"), null, null);
                 throw ise;
             }
@@ -90,7 +90,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
             ErrorManager.getDefault().annotate(
-                ise, ErrorManager.ERROR, null, 
+                ise, ErrorManager.USER, null, 
                 bundle.getString("CTL_InvalidValue"), null, null);
             throw ise;
         }
