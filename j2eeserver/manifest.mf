@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.j2eeserver/1
+OpenIDE-Module: org.netbeans.modules.j2eeserver/2
 OpenIDE-Module-Install: org/netbeans/modules/j2ee/IntegrationModule.class
 OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@

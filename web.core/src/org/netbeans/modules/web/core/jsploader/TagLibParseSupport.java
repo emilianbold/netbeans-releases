@@ -16,8 +16,7 @@ package org.netbeans.modules.web.core.jsploader;
 import java.beans.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
-
-import javax.servlet.jsp.tagext.*;
+import java.io.IOException;
 
 import org.openide.TopManager;
 import org.openide.ErrorManager;
@@ -29,10 +28,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-
-import org.apache.jasper.runtime.JspLoader;
-import org.apache.jasper.compiler.JspReader;
-import org.apache.jasper.compiler.Parser;
 
 /**
  *
@@ -117,19 +112,25 @@ public class TagLibParseSupport implements Node.Cookie {
         public void run() {
             try {
                 try {
-                    JspInfo info = parsePage(JspCompileUtil.getContextPath(jspdo.getPrimaryFile()));
-                    getTagLibEditorData(false).applyParsedData(info.getTagLibraryData(), 
-                                                          jspdo.getPrimaryFile().getFileSystem());
-                    getTagLibEditorData(false).setBeanData(info.getBeans());
-                }
-                catch (Exception e) { 
-                    // this exception signifies that a parse error occurred in the page - 
-                    // can't really do anything
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-                        // only report the error in netbeans.debug.exceptions mode, as this is a usual 
-                        // and common exception, which does not imply a bug or an unusual condition
-                        TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+                    JspParserAPI parser = JspCompileUtil.getJspParser();
+                    if (parser == null) {
+                        TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, 
+                        new NullPointerException());
                     }
+                    else {
+                        JspParserAPI.ParseResult result = 
+                            parser.parsePage(jspdo, JspCompileUtil.getContextPath(jspdo.getPrimaryFile()));
+                        if (result.isParsingSuccess()) {
+                            JspInfo info = result.getPageInfo();
+                            getTagLibEditorData(false).applyParsedData(info.getTagLibraryData(), 
+                                                                  jspdo.getPrimaryFile().getFileSystem());
+                            getTagLibEditorData(false).setBeanData(info.getBeans());
+                        }
+                        // if failure do nothing
+                    }
+                }
+                catch (IOException e) { 
+                    TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
                 }
             }
             finally {
@@ -140,26 +141,6 @@ public class TagLibParseSupport implements Node.Cookie {
         }
     }
    
-    private JspInfo parsePage(String compilationURI)
-    throws Exception {
-        OptionsImpl options = new OptionsImpl(jspdo);
-        
-        ParsingDescriptor pd = new ParsingDescriptor(
-            JspCompileUtil.getContextRoot(jspdo.getPrimaryFile()).getFileSystem(), compilationURI);
-        String jspResource = JspCompileUtil.getContextPath(jspdo.getPrimaryFile());
-
-        AnalyzerCompilerContext ctxt = new AnalyzerCompilerContext(jspResource, pd, options);
-        JspReader reader = JspReader.createJspReader(jspResource, ctxt, "8859_1");
-        ctxt.setReader(reader);
-
-        AnalyzerParseEventListener listener = new AnalyzerParseEventListener(reader, ctxt, 
-            false, AnalyzerParseEventListener.ERROR_IGNORE);
-        Parser parser = new Parser(reader, listener);
-        listener.beginPageProcessing();
-        parser.parse();
-        listener.endPageProcessing();
-        return listener.getJspInfo();
-    }
 
     /** Data structure which provides data to JSP syntax coloring and code completion for one page. 
     * It does not attempt to faithfully represent the tag library as specified by the JSP spec,
@@ -191,7 +172,7 @@ public class TagLibParseSupport implements Node.Cookie {
             TreeMap otherMap = new TreeMap();
             for (int i = 0; i < taglibs.length; i++) {
                 String prefix = taglibs[i].getPrefix();
-                otherMap.put(prefix, new TagLibData(taglibs[i], fs));
+                otherMap.put(prefix, createTagLibData(taglibs[i], fs));
             }
             boolean coloringChanged = false;
             if (libraryMap.size() != otherMap.size()) {
@@ -227,105 +208,31 @@ public class TagLibParseSupport implements Node.Cookie {
         }
 
     }
-
-    /** Information about one tag library. */
-    public static class TagLibData {
-
-        private String prefix;
-        private TagLibraryInfo tagLibraryInfo;
-
-        /** Map of (String tagName, TagData tagData) */
-        private TreeMap tagMap = new TreeMap();
-
-        // pending - put tags in
-        public TagLibData(JspInfo.TagLibraryData info, FileSystem fs) {
-            this.prefix = info.getPrefix();
-            tagLibraryInfo = null;
-
-            // find the tag library            
-            ContextDescriptor desc = new ContextDescriptor(fs);
-            FileObject tagLibFile = desc.getResourceAsObject(info.getResolvedURI());
-            if (tagLibFile != null) {
-                try {
-                    DataObject tagLib = (DataObject)DataObject.find(tagLibFile);
-                    TagLibraryInfoSupport sup = TagLibraryInfoSupport.getTagLibraryInfoSupport(tagLib);
-                    if (sup != null) {
-                        tagLibraryInfo = sup.getTagLibraryInfo(prefix, info.getUnresolvedURI());
-                    }
-                }
-                catch (DataObjectNotFoundException e) { /* ignore */ }
-                catch (ClassCastException e) { /* ignore */ }
-            }
-            
-            // now try to get the tags from tagLibraryInfo
-            if (tagLibraryInfo != null) {
-                TagInfo tagInfo[] = tagLibraryInfo.getTags();
-                for (int i = 0; i < tagInfo.length; i++) {
-                    String name = tagInfo[i].getTagName();
-                    tagMap.put(name, new TagData(name, tagInfo[i].getBodyContent()));
-                }
-            }
+    
+    static TagLibData createTagLibData(JspInfo.TagLibraryData info, FileSystem fs) {
+        JspParserAPI parser = JspCompileUtil.getJspParser();
+        if (parser == null) {
+            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, 
+            new NullPointerException());
+            return null;
         }
-
-        boolean equalsColoringInformation(TagLibData other) {
-            if (!prefix.equals(other.prefix))
-                return false;
-            // as the prefixes are ordered alphabetically, just compare the 
-            // corresponding TagData in both arrays of tags
-            TagData[] myTagData    = getTagData();
-            TagData[] otherTagData = other.getTagData();
-            if (myTagData.length != otherTagData.length)
-                return false;
-            for (int i = 0; i < myTagData.length; i++) {
-                if (!myTagData[i].equalsColoringInformation(otherTagData[i]))
-                    return false;
-            }
-            return true;
+        else {
+            return parser.createTagLibData(info, fs);
         }
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public TagData[] getTagData() {
-            return (TagData[])tagMap.values().toArray(new TagData[tagMap.size()]);
-        }
-
-        public TagData getTagData(String tagName) {
-            return (TagData)tagMap.get(tagName);
-        }
+    }
+    
+    /** Information about one tag library, to be implemented by the JSPParser module. */
+    public static abstract class TagLibData {
         
-        public TagLibraryInfo getTagLibraryInfo() {
-            return tagLibraryInfo;
-        }
+        public abstract boolean equalsColoringInformation(TagLibData other);
+        
+        public abstract String getPrefix();
+        
+        /** Should really return javax.servlet.tagext.TagLibraryInfo,
+         * only returning object so we don't depend on servlet.jar.
+         */
+        public abstract Object getTagLibraryInfo();
+            
     }
 
-    /** Information about one tag. */
-    public static class TagData {
-
-        private String tagName;
-        private String bodyContent;
-        //private String[] attributeNames = new String[0];
-
-        public TagData(String tagName, String bodyContent) {
-            this.tagName = tagName;
-            this.bodyContent = bodyContent;
-        }
-
-        boolean equalsColoringInformation(TagData other) {
-            return (tagName.equals(other.tagName) && bodyContent.equals(other.bodyContent));
-        }
-
-        public String getTagName() {
-            return tagName;
-        }
-
-        public String getBodyContent() {
-            return bodyContent;
-        }
-
-        /*public String[] getAttributes() {
-            return attributeNames;
-        }*/
-    }
 }

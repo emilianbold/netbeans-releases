@@ -302,7 +302,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             // add all tags for the given prefix
             TagLibParseSupport.TagLibData tagLibData = support.getTagLibEditorData().getTagLibData(prefix);
             if (tagLibData != null) {
-                TagLibraryInfo tli = tagLibData.getTagLibraryInfo();
+                TagLibraryInfo tli = (TagLibraryInfo)tagLibData.getTagLibraryInfo();
                 if (tli != null) {
                     TagInfo[] tags = tli.getTags();
                     for (int i = 0; i < tags.length; i++) {
@@ -341,7 +341,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             // add all attributes for the given prefix and tag name
             TagLibParseSupport.TagLibData tagLibData = support.getTagLibEditorData().getTagLibData(prefix);
             if (tagLibData != null) {
-                TagLibraryInfo tli = tagLibData.getTagLibraryInfo();
+                TagLibraryInfo tli = (TagLibraryInfo)tagLibData.getTagLibraryInfo();
                 if (tli != null) {
                     TagInfo tagInfo = tli.getTag(tag);
                     if (tagInfo != null) {
@@ -957,7 +957,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     // add all tags for the given prefix
                     TagLibParseSupport.TagLibData tagLibData = support.getTagLibEditorData().getTagLibData(prefix);
                     if (tagLibData != null) {
-                        TagLibraryInfo tli = tagLibData.getTagLibraryInfo();
+                        TagLibraryInfo tli = (TagLibraryInfo)tagLibData.getTagLibraryInfo();
                         if (tli != null) {
                             ti = tli.getTag(name);
                         }

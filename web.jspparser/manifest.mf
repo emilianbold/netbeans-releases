@@ -1,0 +1,9 @@
+OpenIDE-Module: org.netbeans.modules.web.jspparser/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/jspparser/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/web/jspparser/layer.xml
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.web.core/1 > 1.1.5, org.netbeans.modules.servletapi23/1
+OpenIDE-Module-Package-Dependencies: [javax.servlet.ServletException], [org.apache.jasper.Constants], [org.apache.jasper.JasperError]
+Class-Path: ext/jasper-runtime.jar ext/jasper-compiler.jar

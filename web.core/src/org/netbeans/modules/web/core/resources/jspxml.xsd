@@ -1,0 +1,367 @@
+<?xml version ="1.0"?>
+<!DOCTYPE schema [
+<!-- Patterns -->
+<!ENTITY Identifier     "(\p{L}|_|$)(\p{N}|\p{L}|_|$)*">
+<!ENTITY TypeName       "&Identifier;(\.&Identifier;)*">
+<!ENTITY WS             "\s*">
+<!ENTITY Import         "&TypeName;(\.\*)?">
+<!ENTITY ImportList     "&Import;(&WS;,&WS;&Import;)*">
+<!ENTITY SetProp        "(&Identifier;|\*)">
+<!ENTITY RelativeURL    "[^:#/\?]*(:{0,0}|[#/\?].*)">
+<!ENTITY Length         "[0-9]*&#x25;?">
+<!ENTITY AsciiName      "[A-Za-z0-9_-]*">
+<!ENTITY ContentType    "&AsciiName;/&AsciiName;(;&WS;(encoding=)?&AsciiName;)?">
+<!ENTITY Buffer         "[0-9]+kb">
+]>
+
+<!--Conforms to w3c http://www.w3.org/1999/XMLSchema draft of 7 April 2000-->
+
+<schema xmlns = "http://www.w3.org/1999/XMLSchema"
+        xmlns:jsp = "http://java.sun.com/JSP/Page"
+        targetNamespace = "http://java.sun.com/xschema/jsp_1_2.xsd"
+        elementFormDefault = "qualified"
+        attributeFormDefault = "unqualified">
+
+    <annotation>
+        <documentation>
+            XML Schema for JSP 1.2.
+            Contributed 00/7/22 Bob Foster, WebGain.
+            
+            Note: All patterns tested with ActiveState Perl
+            5.6.0.616-MSWin32. (\p{L}|_) form is used instead
+            of equivalent [\p{L}_] because when tested \p{L}
+            didn't work inside []. Tested patterns were
+            copied to schema eliminating ^ and $ at start
+            and end and replacing \$ with $.
+
+            Suggested status of schema:
+            
+            This schema is based upon the 7 April 2000 final draft of the
+            w3c XMLSchema working group (http://www.w3.org/XML/Schema).
+            XMLSchema is still a work in progress and the schema may
+            need to be updated to reflect later versions.
+            
+            A JSP translator should reject an XML-format file that is
+            not strictly valid according to this schema or does not observe
+            the constraints documented here. A translator is not required
+            to use this schema for validation, to use a validating parser
+            or even to be namespace-aware.
+        </documentation>
+    </annotation>
+
+    <complexType name = "Body" content = "mixed">
+        <annotation>
+            <documentation>
+                Body defines the "top-level" elements in root and beanInfo.
+            </documentation>
+        </annotation>
+        <group ref = "Bodygroup" minOccurs = "0" maxOccurs = "unbounded"/>
+    </complexType>
+
+    <group name = "Bodygroup">
+        <choice>
+            <element ref = "directive.page"/>
+            <element ref = "directive.include"/>
+            <element ref = "scriptlet"/>
+            <element ref = "declaration"/>
+            <element ref = "expression"/>
+            <element ref = "useBean"/>
+            <element ref = "setProperty"/>
+            <element ref = "getProperty"/>
+            <element ref = "include"/>
+            <element ref = "forward"/>
+            <element ref = "plugin"/>
+            <element ref = "text"/>
+        </choice>
+    </group>
+
+    <simpleType name = "Bool" base = "NMTOKEN">
+        <annotation>
+            <documentation>
+                Bool would be boolean except it does not accept 1 and 0.
+            </documentation>
+        </annotation>
+        <enumeration value = "true"/>
+        <enumeration value = "false"/>
+        <enumeration value = "yes"/>
+        <enumeration value = "no"/>
+    </simpleType>
+
+    <simpleType name = "Identifier" base = "string">
+        <annotation>
+            <documentation>
+                Identifier is an unqualified Java identifier.
+            </documentation>
+        </annotation>
+        <pattern value = "&Identifier;"/>
+    </simpleType>
+    
+    <simpleType name = "TypeName" base = "string">
+        <annotation>
+            <documentation>
+                TypeName is one or more Java identifiers separated by dots
+                with no whitespace.
+            </documentation>
+        </annotation>
+        <pattern value = "&TypeName;"/>
+    </simpleType>
+    
+    <simpleType name = "ImportList" base = "string">
+        <annotation>
+            <documentation>
+                ImportList is one or more typeNames separated by commas.
+                Whitespace is allowed before and after the comma.
+            </documentation>
+        </annotation>
+        <pattern value = "&ImportList;"/>
+    </simpleType>
+    
+    <simpleType name = "SetProp" base = "string">
+        <annotation>
+            <documentation>
+                SetProp is an Identifier or *.
+            </documentation>
+        </annotation>
+        <pattern value = "&SetProp;"/>
+    </simpleType>
+    
+    <simpleType name = "RelativeURL" base = "uriReference">
+        <annotation>
+            <documentation>
+                RelativeURL is a uriReference with no colon character
+                before the first /, ? or #, if any (RFC2396).
+            </documentation>
+        </annotation>
+        <pattern value = "&RelativeURL;"/>
+    </simpleType>
+
+    <simpleType name = "Length" base = "string">
+        <annotation>
+            <documentation>
+                Length is nn or nn%.
+            </documentation>
+        </annotation>
+        <pattern value = "&Length;"/>
+    </simpleType>
+    
+    <element name = "root" type = "Body">
+        <annotation>
+            <documentation>
+                The root element of all JSP documents is named root.
+                
+                In a document, root must be used as:
+                
+                    &lt;jsp:root xmlns:jsp="jsp-1.2-schema-namespace-identifier">
+                    ...
+                    &lt;/jsp:root>
+                
+                In other words, the namespace prefix "jsp:" must be explicitly
+                specified for all JSP-defined elements. This allows both
+                Schema-validating parsers and parsers that are not
+                namespace-aware to operate properly.
+
+                Authors may, if they wish, include schema location information.
+                If specified, the information may appear as attributes of
+                the root element as follows:
+
+                    xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+                    xsi:schemaLocation="jsp-1.2-schema-namespace-identifier
+                                        jsp-1.2-schema-xsd-file-location"
+
+                Documents that are intended to be schema-valid should not
+                specify the system identifier of a DTD in a DOCTYPE declaration.
+                (The JSP DTD exports no general entities and is not conditional
+                on any parameter entities.)
+            </documentation>
+        </annotation>
+	<attribute name = "root" use = "required" type = "string"/>
+    </element>
+    
+    <element name = "directive.page">
+        <annotation>
+            <documentation>
+                directive.page is the "page directive".
+            </documentation>
+        </annotation>
+        <complexType content = "empty">
+            <attribute name = "language" use = "default" value = "java" type = "string"/>
+            <attribute name = "extends" type = "TypeName"/>
+            <attribute name = "contentType" use = "default" value = "text/html; ISO-8859-1">
+                <simpleType base = "string">
+                    <pattern value = "&ContentType;"/>
+                </simpleType>
+            </attribute>
+            <attribute name = "import" type = "ImportList"/>
+            <attribute name = "session" use = "default" value = "true" type = "Bool"/>
+            <attribute name = "buffer" use = "default" value = "8kb">
+                <simpleType base = "string">
+                    <pattern value = "&Buffer;"/>
+                </simpleType>
+            </attribute>
+            <attribute name = "autoFlush" use = "default" value = "true" type = "Bool"/>
+            <attribute name = "isThreadSafe" use = "default" value = "true" type = "Bool"/>
+            <attribute name = "info" type = "string"/>
+            <attribute name = "errorPage" type = "RelativeURL"/>
+        </complexType>
+    </element>
+    
+    <element name = "directive.include">
+        <annotation>
+            <documentation>
+                directive.include is the "include directive".
+		This element does not appear on XML views of JSP pages.
+            </documentation>
+        </annotation>
+        <complexType content = "empty">
+            <attribute name = "file" use = "required" type = "RelativeURL"/>
+        </complexType>
+    </element>
+    
+    <element name = "scriptlet" type = "string"/>
+    
+    <element name = "declaration" type = "string"/>
+    
+    <element name = "expression" type = "string"/>
+    
+    <element name = "text" type = "string"/>
+
+    <element name = "useBean">
+        <annotation>
+            <documentation>
+                useBean instantiates or accesses a bean in the specified scope.
+                
+                Constraint: The allowed combinations of attributes are:
+                
+                    class [type] | type [( class | beanName)]
+                
+            </documentation>
+        </annotation>
+        <complexType base = "Body" derivedBy = "extension">
+            <attribute name = "id" use = "required" type = "Identifier"/>
+            <attribute name = "class" type = "TypeName"/>
+            <attribute name = "type" type = "TypeName"/>
+            <attribute name = "beanName" type = "TypeName"/>
+            <attribute name = "scope" use = "default" value = "page">
+                <simpleType base = "NMTOKEN">
+                    <enumeration value = "page"/>
+                    <enumeration value = "session"/>
+                    <enumeration value = "request"/>
+                    <enumeration value = "application"/>
+                </simpleType>
+            </attribute>
+        </complexType>
+    </element>
+    
+    <element name = "setProperty">
+        <annotation>
+            <documentation>
+                setProperty changes the value of an object property.
+                
+                Constraint: The object named by the name must have been
+                "introduced" to the JSP processor using either the
+                jsp:useBean action or a custom action with an associated
+                VariableInfo entry for this name.
+                                
+                ???The spec is interpreted as restricting the values of
+                property to (Identifier | '*').
+                
+                Constraint: The allowed combinations of attributes are:
+                                
+                    (property="*" | property="^*" (value | param))
+                
+            </documentation>
+        </annotation>
+        <complexType content = "empty">
+            <attribute name = "name" use = "required" type = "Identifier"/>
+            <attribute name = "property" use = "required" type = "SetProp"/>
+            <attribute name = "value" type = "string"/>
+            <attribute name = "param" type = "string"/>
+        </complexType>
+    </element>
+    
+    <element name = "getProperty">
+        <annotation>
+            <documentation>
+                getProperty obtains the value of an object property.
+                
+                Constraint: The object named by the name must have been
+                "introduced" to the JSP processor using either the
+                jsp:useBean action or a custom action with an associated
+                VariableInfo entry for this name.
+                
+                ???The spec is interpreted as restricting the values of
+                property to Identifier.
+            </documentation>
+        </annotation>
+        <complexType content = "empty">
+            <attribute name = "name" use = "required" type = "Identifier"/>
+            <attribute name = "property" use = "required" type = "Identifier"/>
+        </complexType>
+    </element>
+    
+    <element name = "include">
+        <complexType content = "elementOnly">
+            <element ref = "param" minOccurs = "0" maxOccurs = "unbounded"/>
+            <attribute name = "flush" use = "default" value = "false" type = "Bool"/>
+            <attribute name = "page" use = "required" type = "RelativeURL"/>
+        </complexType>
+    </element>
+    
+    <element name = "forward">
+        <complexType content = "elementOnly">
+            <element ref = "param" minOccurs = "0" maxOccurs = "unbounded"/>
+            <attribute name = "page" use = "required" type = "RelativeURL"/>
+        </complexType>
+    </element>
+    
+    <element name = "plugin">
+        <complexType content = "elementOnly">
+            <sequence>
+                <element ref = "params" minOccurs = "0" maxOccurs = "1"/>
+                <element name = "fallback" minOccurs = "0" maxOccurs = "1"/>
+            </sequence>
+            <attribute name = "type" use = "required">
+                <simpleType base = "NMTOKEN">
+                    <enumeration value = "bean"/>
+                    <enumeration value = "applet"/>
+                </simpleType>
+            </attribute>
+            <attribute name = "code" type = "uriReference"/>
+            <attribute name = "codebase" type = "uriReference"/>
+            <attribute name = "align">
+                <simpleType base = "NMTOKEN">
+                    <enumeration value = "top"/>
+                    <enumeration value = "middle"/>
+                    <enumeration value = "bottom"/>
+                    <enumeration value = "left"/>
+                    <enumeration value = "right"/>
+                </simpleType>
+            </attribute>
+            <attribute name = "archive">
+                <simpleType base = "uriReference" derivedBy = "list"/>
+            </attribute>
+            <attribute name = "height" type = "Length"/>
+            <attribute name = "hspace" type = "int"/>
+            <attribute name = "jreversion" use = "default" value = "1.2" type = "string"/>
+            <attribute name = "name" type = "NMTOKEN"/>
+            <attribute name = "vspace" type = "int"/>
+            <attribute name = "width" type = "Length"/>
+            <attribute name = "nspluginurl" type = "uriReference"/>
+            <attribute name = "iepluginurl" type = "uriReference"/>
+        </complexType>
+    </element>
+    
+    <element name = "params">
+        <complexType content = "elementOnly">
+            <element ref = "param" minOccurs = "1" maxOccurs = "unbounded"/>
+        </complexType>
+    </element>
+    
+    <element name = "param">
+        <complexType content = "empty">
+            <attribute name = "name" use = "required" type = "NMTOKEN"/>
+            <attribute name = "value" use = "required" type = "string"/>
+        </complexType>
+    </element>
+    
+</schema>

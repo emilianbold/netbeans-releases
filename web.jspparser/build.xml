@@ -12,7 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="web_jspsyntax" default="netbeans" basedir=".">
+<project name="web_jspparser" default="netbeans" basedir=".">
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
@@ -33,38 +33,41 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compile" depends="web-core.compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/netbeans/modules/web/core/syntax/"/>
+      <include name="org/netbeans/modules/web/jspparser/"/>
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${nb_root}/editor/netbeans/modules/ext/nb-editor.jar"/>
-        <pathelement location="${nb_root}/editor/netbeans/modules/editor.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
         <pathelement location="${core_root}/src/"/>
         <pathelement location="${binroot}/web/servletapi23/release/modules/ext/servlet-2.3.jar"/>
+        <pathelement location="${binroot}/web/jspparser/release/modules/ext/jasper-runtime.jar"/>
+        <pathelement location="${binroot}/web/jspparser/release/modules/ext/jasper-compiler.jar"/>
         <fileset dir="${nb_root}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
+        <!-- Hopefully set up by nbbuild/build.xml: -->
+        <pathelement location="${jdkhome}/lib/tools.jar"/>
       </classpath>
     </javac>
-
   </target>
 
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/jsp-syntax.jar"
+    <locjar jarfile="netbeans/modules/jsp-parser.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
 	    compress="false">
-      <include name="org/netbeans/modules/web/core/syntax/"/>
+      <include name="org/netbeans/modules/web/jspparser/"/>
       <locale name="ja"/>
     </locjar>
   </target>
 
   <target name="release">
     <copy todir="netbeans">
-      <fileset dir="release" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="${binroot}/web/jspparser/release" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
     </copy>
   </target>
 
@@ -75,11 +78,11 @@ Microsystems, Inc. All Rights Reserved.
   <!-- Complicated: actually two NBMs must be made. -->
   <target name="nbm" depends="netbeans">
     <delete dir="Info"/>
-    <makenbm file="web-jspsyntax.nbm"
+    <makenbm file="web-jspparser.nbm"
              topdir="."
-             module="netbeans/modules/jsp-syntax.jar"
+             module="netbeans/modules/jsp-parser.jar"
 	     homepage="http://web.${homepage.base}/"
-	     distribution="http://${dist.base}/web-jspsyntax.nbm">
+	     distribution="http://${dist.base}/web-jspparser.nbm">
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
@@ -92,14 +95,14 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <delete file="web-jspsyntax.nbm"/>
+    <delete file="web-jspparser.nbm"/>
     <delete dir="Info"/>
     <delete dir="netbeans"/>
   </target>
 
   <!-- This target will only work *inside* the IDE! -->
   <target depends="jars" description="Test the module inside the running IDE." name= "test">
-    <nbinstaller action="reinstall" module="netbeans/modules/jsp-syntax.jar"/>
+    <nbinstaller action="reinstall" module="netbeans/modules/jsp-parser.jar"/>
   </target>
 
 </project>

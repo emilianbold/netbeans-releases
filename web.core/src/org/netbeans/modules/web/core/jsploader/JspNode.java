@@ -58,9 +58,6 @@ public class JspNode extends DataNode {
     private static final String SHEETNAME_TEXT_PROPERTIES = "textProperties"; // NOI18N
     private static final String PROP_ENCODING = "encoding"; // NOI18N
 
-    /** extended attribute for attributes */
-    private static final String EA_REQPARAMS = WebExecSupport.EA_REQPARAMS;
-
     private static final String ICON_BASE = "org/netbeans/modules/web/core/resources/jspObject"; // NOI18N
 
     public static final String PROP_REQUEST_PARAMS   = "requestparams"; // NOI18N

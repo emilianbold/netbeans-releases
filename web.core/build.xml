@@ -26,15 +26,30 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nbm_alias" value="nb_ide"/>
   <property name="storepass" value="?"/>
 
-  <target name="compile">
+  <target name="setup-jdkhome-1">
+    <!-- Note: user-configured -Djavahome=... will always override this: -->
+    <property name="javahome" location="${java.home}"/>
+    <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
+  </target>
+  <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
+    <property name="jdkhome" value="${javahome}"/>
+    <property name="jdkhome-valid" value="true"/>
+  </target>
+  <target name="setup-jdkhome-3" depends="setup-jdkhome-1" unless="javahome-valid">
+    <property name="jdkhome" location="${javahome}/.."/>
+    <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
+  </target>
+  <target name="setup-jdkhome" depends="setup-jdkhome-2,setup-jdkhome-3" unless="jdkhome-valid">
+    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
+  </target>
+
+  <target name="compile" depends="setup-jdkhome">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
-        <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/>
-        <pathelement location="${binroot}/httpserver/release/modules/ext/webserver.jar"/>
-        <pathelement location="${binroot}/web/release/modules/ext/jasper.jar"/>
+        <pathelement location="${nb_root}/openidex/netbeans/modules/autoload/openidex.jar"/>
         <pathelement location="${nb_root}/html/netbeans/modules/html.jar"/>
         <pathelement location="${nb_root}/java/netbeans/modules/java.jar"/>
         <pathelement location="${nb_root}/jarpackager/netbeans/modules/jarpackager.jar"/>
@@ -66,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="release">
     <copy todir="netbeans">
-      <fileset dir="${binroot}/web/release" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="${binroot}/web/core/release" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
     </copy>
   </target>
 

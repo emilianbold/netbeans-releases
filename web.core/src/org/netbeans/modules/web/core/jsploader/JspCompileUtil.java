@@ -26,10 +26,10 @@ import java.util.StringTokenizer;
 import java.util.Enumeration;
 import java.text.MessageFormat;
 
-import org.apache.jasper.JspCompilationContext;
+/*import org.apache.jasper.JspCompilationContext;
 import org.apache.jasper.compiler.JspReader;
 import org.apache.jasper.compiler.Parser;
-import org.apache.jasper.runtime.JspLoader;
+import org.apache.jasper.runtime.JspLoader;*/
 
 import org.openide.TopManager;
 import org.openide.ErrorManager;
@@ -42,6 +42,8 @@ import org.openide.filesystems.FileSystemCapability;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataFolder;
 import org.openide.compiler.Compiler;
 import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
@@ -64,6 +66,8 @@ import org.netbeans.modules.web.webdata.WebResourceImpl;
 * @author Petr Jiricka
 */
 public class JspCompileUtil {
+    
+    private static JspParserFactory parserFactory;
 
     /** Returns the current JspCompileContext for the given page. */
     public static FfjJspCompileContext getCurrentCompileContext(DataObject jsp) {
@@ -89,8 +93,21 @@ public class JspCompileUtil {
     
     /** Gets WebStandardData implementation for a given resource. */
     public static WebStandardData.WebResource getResourceData(FileObject fo) {
-        return WebDataFactory.getFactory().findResource(fo.getPackageNameExt('/','.'), 
-                                                        WebDataFactory.getFactory().findWebModule(fo));
+    	WebStandardData.WebResource result = WebDataFactory.getFactory().
+    	    findResource(fo.getPackageNameExt('/','.'), WebDataFactory.getFactory().findWebModule(fo));
+    	// hack to work around a bug in WebDataFactoryImpl
+    	try {
+    	    DataObject res = DataObject.find(fo);
+    	    if ((res instanceof JspDataObject) && (!(result instanceof WebStandardData.WebJsp))) {
+    	    	// bug in the factory
+                result = WebDataFactory.getFactory().getWebJsp(fo.getPackageNameExt('/','.'), 
+                             WebDataFactory.getFactory().findWebModule(fo));
+    	    }
+    	}
+    	catch (DataObjectNotFoundException e) {
+    	    TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
+    	}
+    	return result;
     }
 
     
@@ -320,8 +337,43 @@ public class JspCompileUtil {
         return result;
     }
 
+    /** Returns a JSP parser registered for this module. 
+     * May return null in case of a serious error.
+     */
+    public static synchronized JspParserAPI getJspParser() {
+        if (parserFactory == null) {
+            FileObject f = TopManager.getDefault().getRepository().findResource("/J2EE/JSPParser"); // NOI18N
+            if (f != null) {
+                try {
+                    DataFolder folder = (DataFolder)DataObject.find(f).getCookie(DataFolder.class);
+                    parserFactory = new JspParserFactory(folder);
+                } 
+                catch (DataObjectNotFoundException ex) {
+                    TopManager.getDefault().getErrorManager().notify(ErrorManager.EXCEPTION, ex);
+                }
+            } else {
+                TopManager.getDefault().getErrorManager().notify(ErrorManager.EXCEPTION, new Exception("file was not found"));
+            }
+        }
+        return (parserFactory == null) ? null : parserFactory.getJspParser();
+    }
+    
+    /** Returns a FileObject whose resource path is relativePath relatively to folder rootFolder. 
+     *  Null if does not exist.
+     */
+    public static FileObject findRelativeResource(FileObject rootFolder, String relativePath) throws FileStateInvalidException {
+        if (!rootFolder.isFolder())
+            throw new IllegalArgumentException();
+        String rootPath = rootFolder.getPackageName('/');
+        if (!(rootPath.endsWith("/")))
+            rootPath = rootPath + "/";
+        if (relativePath.startsWith("/"))
+            relativePath = relativePath.substring(1);
+        return rootFolder.getFileSystem().findResource(rootPath + relativePath);
+    }
+    
 
-    public static JspInfo analyzePage(JspDataObject jspPage, String compilationURI, 
+/*    public static JspInfo analyzePage(JspDataObject jspPage, String compilationURI, 
     boolean doSaveIncluded, int errorReportingMode) throws Exception {
         OptionsImpl options = new OptionsImpl(jspPage);
         
@@ -340,7 +392,7 @@ public class JspCompileUtil {
         parser.parse();
         listener.endPageProcessing();
         return listener.getJspInfo();
-    }
+    }*/
 
 
     public static FileSystem mountJarIfNotMounted(String jarFileName) throws IOException {

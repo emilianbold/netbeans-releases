@@ -80,6 +80,9 @@ import org.netbeans.modules.java.JavaExternalCompilerType;
 import org.netbeans.modules.java.JExternalCompilerGroup;
 import org.netbeans.modules.java.environment.Utilities;
 import org.netbeans.modules.java.Util;
+import org.openidex.nodes.looks.Look;
+import org.openidex.nodes.looks.DefaultLook;
+import org.openidex.nodes.looks.LookNode;
 
 /** Object that provides main functionality for internet data loader.
 *
@@ -96,6 +99,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     public static final String PROP_CONTENT_LANGUAGE   = "contentLanguage"; // NOI18N
     public static final String PROP_SCRIPTING_LANGUAGE = "scriptingLanguage"; // NOI18N
 //    public static final String PROP_ENCODING = "encoding"; // NOI18N
+    public static final String PROP_SERVER_CHANGE = "PROP_SERVER_CHANGE";// NOI18N
 
     
     transient private EditorCookie servletEdit;
@@ -125,7 +129,43 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     }
 
     protected org.openide.nodes.Node createNodeDelegate () {
-        return new JspNode (this);
+        Lookup.Template template = new Lookup.Template( org.openidex.nodes.looks.Look.class ); 
+        Lookup.Result result = Lookup.getDefault().lookup( template );
+        Collection cls = result.allInstances(); 
+        Look defaultLook = null;
+        Look wellKnown = null;
+        Object o = new JspNode (this);
+
+        for( Iterator it = cls.iterator(); it.hasNext();  ) {
+            Look look = (Look)it.next();
+            // System.out.println ("Inspecting look " + look);
+
+            if (look.isLookStandalone (o) == false) continue;
+            // System.out.println ("\tpassed");
+            
+            // skip some well known looks
+            if (DefaultLook.class.equals(look.getClass())) {
+                if (wellKnown == null) {
+                    wellKnown = look;
+                }
+            } else if (JspServletDefaultLook.class.equals(look.getClass())) {
+                wellKnown = look;                    
+            } else {
+                // System.out.println ("\tand using as default");
+                defaultLook = look;
+                break;
+            }
+        }
+
+        if (defaultLook == null) {
+            defaultLook = wellKnown;
+        }
+
+        // System.out.println ("Default look for " + this + " = " + defaultLook);
+
+        LookNode ret = new LookNode (o, defaultLook);
+        // System.out.println ("Testing " + ret.getLook());
+        return ret;
     }
 
     /** Gets a cookie - special handling of CompilerCookie. */
@@ -263,98 +303,115 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             }
 
             // get the JspCompilationInfo
-            JspInfo jspInfo = JspCompileUtil.analyzePage(this, JspCompileUtil.getContextPath(getPrimaryFile()), 
-                true, AnalyzerParseEventListener.ERROR_REPORT_ACCURATE);
-            JspCompilationInfo compInfo = new JspCompilationInfo(jspInfo, getPrimaryFile());
-            // update information about pages included in this page
-            updateIncludedPagesInfo(compInfo);
-            
-            // acquire compilers for the beans
-            DataObject beans[] = compInfo.getBeans();
-            CompilerJob beansJob = new CompilerJob(Compiler.DEPTH_ZERO);
-            for (int i = 0; i < beans.length; i++) {
-                CompilerCookie c = (CompilerCookie)beans[i].getCookie(CompilerCookie.Compile.class);
-                if (c != null) {
-                    c.addToJob(beansJob, Compiler.DEPTH_ZERO);
+            JspParserAPI parser = JspCompileUtil.getJspParser();
+            if (parser == null) {
+                TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, 
+                new NullPointerException());
+            }
+            JspParserAPI.ParseResult result = parser.analyzePage(this, JspCompileUtil.getContextPath(getPrimaryFile()), 
+                true, JspParserAPI.ERROR_REPORT_ACCURATE);
+            if (result.isParsingSuccess()) {
+                // parse success
+                JspInfo jspInfo = result.getPageInfo();
+                
+                JspCompilationInfo compInfo = new JspCompilationInfo(jspInfo, getPrimaryFile());
+                // update information about pages included in this page
+                updateIncludedPagesInfo(compInfo);
+
+                // acquire compilers for the beans
+                DataObject beans[] = compInfo.getBeans();
+                CompilerJob beansJob = new CompilerJob(Compiler.DEPTH_ZERO);
+                for (int i = 0; i < beans.length; i++) {
+                    CompilerCookie c = (CompilerCookie)beans[i].getCookie(CompilerCookie.Compile.class);
+                    if (c != null) {
+                        c.addToJob(beansJob, Compiler.DEPTH_ZERO);
+                    }
+                    else {
+                    }
+                }
+                // now refresh the folders
+                CompilerJob refreshBeansJob = new CompilerJob(Compiler.DEPTH_ZERO);
+                RefreshCompiler rc;
+                for (int i = 0; i < beans.length; i++) {
+                    rc = new RefreshCompiler(beans[i].getPrimaryFile().getParent());
+                    rc.dependsOn(beansJob);
+                    refreshBeansJob.add(rc);
+                }
+
+
+                // add it, add dependencies, error page info
+                jspCompiler.setErrorPage(compInfo.isErrorPage());
+                //jspCompiler.setEncoding(compInfo.getEncoding());
+                jspCompiler.setCompilationURI(JspCompileUtil.getContextPath(getPrimaryFile()));
+                jspCompiler.dependsOn (refreshBeansJob);
+                job.add(jspCompiler);
+
+                // compiler which creates the line mapping
+                Compiler lmc = createPostTranslateCompiler(jspType, compInfo); // new LineManglerCompiler(this, jspType);
+                if ( null != lmc) {
+                    lmc.dependsOn(jspCompiler);
+                    job.add(lmc);
+                }
+
+                // add the compiler for the generated servlet
+                CompileData plugin = getPlugin();
+                JavaCompilerType.IndirectCompiler servletComp = 
+                    getServletCompiler(CompilerCookie.Build.class, 
+                    plugin.getServerInstance(),
+                    plugin.getServletEncoding(),
+                    plugin.getAdditionalClassPath());
+                if (servletComp == null) {
+                    Compiler error = new ErrorCompiler(getPrimaryFile(), new Exception(
+                                                           NbBundle.getBundle(JspDataObject.class).getString("CTL_BadCompilerType")), true);
+                    job.add(error);
                 }
                 else {
+                    // compile the servlet
+                    servletComp.dependsOn(jspCompiler);
+                    if (lmc != null) {
+                        servletComp.dependsOn(lmc);
+                    }
+                    jspCompiler.servletCompiler = servletComp;
+                    job.add(servletComp);
+                    // rename the class
+                    Compiler ren = new RenameCompiler(jspCompiler);
+                    ren.dependsOn(servletComp);
+                    job.add(ren);
+                    // refresh the folder
+                    // PENDING this part is specific for Tomcat, it should be more general
+                    Compiler refr = new RefreshCompiler(JspCompileUtil.suggestContextOutputRoot(getPrimaryFile(),
+                        JspCompileUtil.getCurrentServerInstance(this).getServer()));
+                    refr.dependsOn(ren);
+                    job.add(refr);
                 }
-            }
-            // now refresh the folders
-            CompilerJob refreshBeansJob = new CompilerJob(Compiler.DEPTH_ZERO);
-            RefreshCompiler rc;
-            for (int i = 0; i < beans.length; i++) {
-                rc = new RefreshCompiler(beans[i].getPrimaryFile().getParent());
-                rc.dependsOn(beansJob);
-                refreshBeansJob.add(rc);
-            }
 
-
-            // add it, add dependencies, error page info
-            jspCompiler.setErrorPage(compInfo.isErrorPage());
-            jspCompiler.setEncoding(compInfo.getEncoding());
-            jspCompiler.setCompilationURI(JspCompileUtil.getContextPath(getPrimaryFile()));
-            jspCompiler.dependsOn (refreshBeansJob);
-            job.add(jspCompiler);
-
-            // compiler which creates the line mapping
-            Compiler lmc = createPostTranslateCompiler(jspType, compInfo); // new LineManglerCompiler(this, jspType);
-	    if ( null != lmc) {
-		lmc.dependsOn(jspCompiler);
-		job.add(lmc);
-	    }
-
-            // add the compiler for the generated servlet
-            CompileData plugin = getPlugin();
-            JavaCompilerType.IndirectCompiler servletComp = 
-                getServletCompiler(CompilerCookie.Build.class, 
-                plugin.getServerInstance(),
-                plugin.getServletEncoding(),
-                plugin.getAdditionalClassPath());
-            if (servletComp == null) {
-                Compiler error = new ErrorCompiler(getPrimaryFile(), new Exception(
-                                                       NbBundle.getBundle(JspDataObject.class).getString("CTL_BadCompilerType")), true);
-                job.add(error);
-            }
-            else {
-                // compile the servlet
-                servletComp.dependsOn(jspCompiler);
-                if (lmc != null) {
-                    servletComp.dependsOn(lmc);
+                // add compilers for referenced pages - jsp:include and jsp:forward
+                if (ServletSettings.options ().isCompileIncludedForwarded()) {
+                    JspDataObject usedPages[] = compInfo.getReferencedPages();
+                    for (int i = 0; i < usedPages.length; i++) {
+                        JspDataObject jspdo = usedPages[i];
+                        if (jspdo.getCookie(CompilerCookie.Compile.class) != null) {
+                            jspdo.createCompiler(job, CompilerCookie.Compile.class, /*depth,*/ false);
+                        }
+                    }
                 }
-                jspCompiler.servletCompiler = servletComp;
-                job.add(servletComp);
-                // rename the class
-                Compiler ren = new RenameCompiler(jspCompiler);
-                ren.dependsOn(servletComp);
-                job.add(ren);
-                // refresh the folder
-                // PENDING this part is specific for Tomcat, it should be more general
-                Compiler refr = new RefreshCompiler(JspCompileUtil.suggestContextOutputRoot(getPrimaryFile(),
-                    JspCompileUtil.getCurrentServerInstance(this).getServer()));
-                refr.dependsOn(ren);
-                job.add(refr);
-            }
 
-            // add compilers for referenced pages - jsp:include and jsp:forward
-            if (ServletSettings.OPTIONS.isCompileIncludedForwarded()) {
-                JspDataObject usedPages[] = compInfo.getReferencedPages();
-                for (int i = 0; i < usedPages.length; i++) {
-                    JspDataObject jspdo = usedPages[i];
-                    if (jspdo.getCookie(CompilerCookie.Compile.class) != null) {
+                // add compilers for error pages
+                if (ServletSettings.options ().isCompileErrorPage()) {
+                    JspDataObject errorPage[] = compInfo.getErrorPage();
+                    for (int i = 0; i < errorPage.length; i++) {
+                        JspDataObject jspdo = errorPage[i];
                         jspdo.createCompiler(job, CompilerCookie.Compile.class, /*depth,*/ false);
                     }
                 }
-            }
-
-            // add compilers for error pages
-            if (ServletSettings.OPTIONS.isCompileErrorPage()) {
-                JspDataObject errorPage[] = compInfo.getErrorPage();
-                for (int i = 0; i < errorPage.length; i++) {
-                    JspDataObject jspdo = errorPage[i];
-                    jspdo.createCompiler(job, CompilerCookie.Compile.class, /*depth,*/ false);
-                }
-            }
+            } // end of successful parse branch
+            else {
+                // parse failure
+                JspParserAPI.ErrorDescriptor[] errors = result.getErrors();
+                Compiler failure = new FailureCompiler(errors);
+                job.add(failure);
+            } // end of parse failure branch
+            
         }
         catch (FileStateInvalidException e) {
             //e.printStackTrace();
@@ -366,11 +423,11 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             Compiler error = new ErrorCompiler(getPrimaryFile(), e, false);
             job.add(error);
         }
-        catch (Throwable e) {
+/*        catch (Throwable e) {
             //e.printStackTrace();
             Compiler error = new ErrorCompiler(getPrimaryFile(), e, false);
             job.add(error);
-        }
+        }*/
 //printJob(job);
 //System.out.println("created JSP compiler for " + getPrimaryFile().getPackageNameExt('/','.'));
     }
@@ -386,7 +443,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         CompilerType ct = CompilerSupport.getCompilerType (getPrimaryEntry());
         
         if (ct == null) {
-            ct = ServletSettings.OPTIONS.getCompiler();
+            ct = ServletSettings.options ().getCompiler();
         }
         
         return ct;
@@ -912,10 +969,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return false;
     }
     
-    // PENDING - JavaDoc: what is this method for ?
-    protected void newServerInstance() {
-    }
-    
     /////// -------- FIELDS AND METHODS FOR MANIPULATING THE PARSED INFORMATION -------- ////////
     
     /** Updates the information about statically included pages for these pages.
@@ -953,8 +1006,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             }
             // primary file changed or files changed
             if (WebContextObject.PROP_NEW_SERVER_INSTANCE.equals(evt.getPropertyName())) {
-                refreshPlugin(true);
-                newServerInstance();
+                serverChange();
             }
             // the context object has changed
             if (DataObject.PROP_VALID.equals(evt.getPropertyName())) {
@@ -993,7 +1045,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         
         private void serverChange() {
             refreshPlugin(true);
-            newServerInstance();
+            firePropertyChange0(PROP_SERVER_CHANGE, null, null);
         }
         
     }

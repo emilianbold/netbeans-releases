@@ -83,7 +83,7 @@ public class Util {
             return InetAddress.getLocalHost().getHostName();
         }
         catch (UnknownHostException e) {
-            return "localhost"; // NOI18N
+            return "127.0.0.1"; // NOI18N
         }
     }
 

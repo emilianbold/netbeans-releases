@@ -108,6 +108,11 @@ public class JspLoader extends UniFileLoader {
         super (clazz);
     }
     
+    /** For subclasses. */
+    protected JspLoader(String str) {
+        super (str);
+    }
+    
     protected JspDataObject createJspObject(FileObject pf, final UniFileLoader l) 
         throws DataObjectExistsException {
         return new JspDataObject (pf, l);

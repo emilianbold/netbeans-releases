@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="JSP_Servlet">
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet_JSP.html" />
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-
       <file name="webapp.warImage" url="templates/WebModule.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/context/resources/WebModule.html"/>
@@ -72,37 +71,62 @@ Microsystems, Inc. All Rights Reserved.
               <![CDATA[
                   <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
                   <Library>
-                      <Archive name="modules/ext/servlet-2.2.jar"/>
+                      <Archive name="modules/ext/servlet-2.3.jar"/>
                   </Library>
               ]]>
           </file>
       </folder>
   </folder>
-    <folder name="Services">
-	<folder name="Hidden">
+  <folder name="Services">
+    <folder name="Hidden">
 	    <attr name="hidden" boolvalue="true" />
 	    <file name="org-netbeans-modules-web-core-resources-EntityCatalog.xml" >
 		<![CDATA[
 		    <!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtds/EntityCatalog-1_0.dtd">
 		    <catalog>
 			<!-- public ID defined by XMLDataObject -->
-			<public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web.dtd"/>
-                        <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglib_1_1.dtd"/>
+                        <public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-app_2_2.dtd"/>
+                        <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglibrary_1_1.dtd"/>
+                        <public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-app_2_3.dtd"/>
+                        <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglibrary_1_2.dtd"/>
 		    </catalog>
 		]]>
-	    </file>
-	</folder>
+            </file>
+    </folder>
 
-    <file name="org-netbeans-modules-web-core-ServletSettings.settings">
+    <folder name="Looks">
+        <!-- JSPDefaultLook class defines Basic look -->
+        <file name="org.netbeans.modules.web.core.jsploader.JspServletDefaultLook$Servlet-Basic.xml">
+            <![CDATA[
+                <!DOCTYPE Look PUBLIC "-//NetBeans IDE//DTD Looks//EN" "http://www.netbeans.org/dtds/Looks-1_0.dtd" >
+                <Look name="JSP/Servlet Basic">
+                    <Standalone class="org.netbeans.modules.web.core.jsploader.JspNode"/>
+                    <Standalone class="org.netbeans.modules.web.core.jsploader.ServletDataNode"/>
+                </Look>
+            ]]>
+        </file>
+    </folder> <!-- Looks -->
+
+
+    <!--
+    <file name="org-netbeans-modules-web-core-ServletSettingsNode.instance">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif" />
+    </file>
+    -->
+    
+    <folder name="JSP_Servlet">
+      <file name="org-netbeans-modules-web-core-ServletSettings.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif" />
         <attr name="SystemFileSystem.layer" stringvalue="project" />
         <![CDATA[<?xml version="1.0"?>
         <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
             <settings version="1.0">
-                <module name="org.netbeans.modules.web.core" spec="1.4"/>
+                <module name="org.netbeans.modules.web.core" spec="1.5"/>
                 <instanceof class="java.io.Externalizable"/>
                 <instanceof class="org.openide.util.SharedClassObject"/>
+                <instanceof class="org.netbeans.modules.web.core.ServletSupportModule$Settings"/>
                 <instanceof class="org.netbeans.modules.web.core.WebBrowser$Factory"/>
                 <instanceof class="org.netbeans.modules.web.core.ServletSettings"/>
                 <instanceof class="org.openide.options.SystemOption"/>
@@ -111,7 +135,8 @@ Microsystems, Inc. All Rights Reserved.
                 <instance class="org.netbeans.modules.web.core.ServletSettings"/>
             </settings>
         ]]>
-    </file>
+      </file>
+    </folder>
 
     <!-- Recognize text/x-jsp -->
     <folder name="MIMEResolver">
@@ -124,10 +149,23 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="UI">
         <folder name="Services">
             <folder name="Building">
-                <file name="org-netbeans-modules-web-core-ServletSettings.shadow">
-<![CDATA[Services/org-netbeans-modules-web-core-ServletSettings.settings
-SystemFileSystem
-]]>
+                <file name="ServletSettingsNode.instance">
+                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.ServletSettingsNode.getBuildingNode"/>
+                     <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
+                </file>
+            </folder>
+            
+            <folder name="DebuggingAndExecuting">
+                <file name="ServletSettingsNode.instance">
+                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.ServletSettingsNode.getExecutionDebuggingNode"/>
+                     <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
+                </file>
+            </folder>
+            
+            <folder name="IDEConfiguration">
+                <file name="ServletSettingsNode.instance">
+                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.ServletSettingsNode.getConfigurationNode"/>
+                     <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
                 </file>
             </folder>
         </folder>
@@ -150,6 +188,8 @@ SystemFileSystem
         <file name="org-netbeans-modules-web-execution-WebAppExecPerformer$Factory.instance">
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.WebAppExecPerformer$Factory.getWebAppFactory" />
         </file>    
+    </folder>
+    <folder name="JSPParser">
     </folder>
   </folder>
   
