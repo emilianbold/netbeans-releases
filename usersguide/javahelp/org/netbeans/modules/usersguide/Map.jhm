@@ -573,9 +573,9 @@
 <mapID target="gui.options.component-palette" url="pending.html" />
 <!--TODO need page for options window node -->
 <!-- csh page for event handler dialog box -->
-<mapID target="gui.csh.handlers" url="gui/events/intro.html" />
+<mapID target="gui.csh.handlers" url="gui/gui_manageevents.html" />
 <!-- csh page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) -->
-<mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/csh/modifiers.html" /> 
+<mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/gui_modifiers.html" /> 
 <!-- GUI csh page needed; 2003/03/07 can't find this ID in the code-->
 <mapID target="gui.csh.icon" url="pending.html" />
 
@@ -791,9 +791,8 @@
    <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="filesystems/filesystems_diff.html" />
    <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="filesystems/filesystems_diff.html" />
    <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="filesystems/filesystems_diff.html" />
-   <!--QUESTION(tm) : remap these ids to new merge doc?-->
-   <!--<mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />
-   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />-->
+   <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/vcs-nb/vcs_mergeresolve.html" />
+   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/vcs-nb/vcs_mergeresolve.html" />
    <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/vcs_merge.html" />
    <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/vcs_merge.html" />-->
 <!--possibly remap the following target to configure_options.html -->
