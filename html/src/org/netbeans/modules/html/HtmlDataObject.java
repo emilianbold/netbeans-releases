@@ -30,6 +30,7 @@ public class HtmlDataObject extends MultiDataObject {
   private static final String HTML_ICON_BASE =
     "/com/netbeans/developer/modules/loaders/html/htmlObject";
 
+static final long serialVersionUID =8354927561693097159L;
   /** New instance.
   * @param pf primary file object for this data object
   * @param loader the data loader creating it

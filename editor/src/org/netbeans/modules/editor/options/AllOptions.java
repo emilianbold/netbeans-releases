@@ -25,6 +25,7 @@ import org.openide.text.PrintSettings;
 */
 public class AllOptions extends ContextSystemOption {
 
+static final long serialVersionUID =-5703125420292694573L;
   public AllOptions() {
     addOption(new PlainOptions());
     addOption(new JavaOptions());
@@ -44,6 +45,8 @@ public class AllOptions extends ContextSystemOption {
 
 /*
  * Log
+ *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  4    Gandalf   1.3         7/20/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/9/99   Ales Novak      print options change
  *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package 

@@ -41,6 +41,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
   /* The FileObject containing the URL String */
   private FileObject urlFile;
 
+static final long serialVersionUID =6829522922370124627L;
   /** New instance.
   * @param pf primary file object for this data object
   */
@@ -263,6 +264,8 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
 
 /*
  * Log
+ *  13   Gandalf   1.12        8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  12   Gandalf   1.11        7/11/99  Ian Formanek    employed EditAction
  *  11   Gandalf   1.10        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  10   Gandalf   1.9         6/9/99   Ian Formanek    ---- Package Change To 

@@ -108,6 +108,7 @@ public class BaseOptions extends OptionSupport {
     TOKEN_COLORING_ARRAY_PROP
   };
 
+static final long serialVersionUID =-5469192431366914841L;
   public BaseOptions() {
     this(BaseKit.class, BASE);
   }
@@ -310,6 +311,8 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  6    Gandalf   1.5         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  5    Gandalf   1.4         7/29/99  Miloslav Metelka 
  *  4    Gandalf   1.3         7/26/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
