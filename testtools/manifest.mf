@@ -1,19 +1,8 @@
-Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.testtools/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/testtools/Bundle.properties
-Class-Path: docs/testtools.jar
-OpenIDE-Module-Specification-Version: 1.11
+OpenIDE-Module-Specification-Version: 1.12
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/testtools/mf-layer.xml
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.junit/2 > 2.5, org.netbeans.modules.jemmy/2, org.netbeans.modules.jemmysupport/1 > 1.3, org.netbeans.modules.jellytools/2 > 2.0.38, org.netbeans.modules.xtest/1, org.netbeans.core/1 > 1.0, org.netbeans.core.windows/2, org.netbeans.modules.java/1, org.apache.tools.ant.module/3 > 3.1, org.openide.src > 1.0, org.openide.compiler > 1.0, org.openide.execution > 1.0, org.netbeans.libs.xerces/1 > 1.2
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.junit/2 > 2.5, org.netbeans.modules.jemmy/2, org.netbeans.modules.jemmysupport/1 > 1.3, org.netbeans.modules.jellytools/2 > 2.0.38, org.netbeans.modules.xtest/1, org.netbeans.core/1 > 1.0, org.netbeans.core.windows/2, org.netbeans.modules.java/1, org.apache.tools.ant.module/3 > 3.1, org.openide.src > 1.0, org.openide.execution > 1.0, org.netbeans.libs.xerces/1 > 1.2
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.40
-OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help,  dataloader.group, org.openide.execution.ExecutionEngine 
-
-Name: org/netbeans/modules/testtools/XTestDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.apache.tools.ant.module.loader.AntProjectDataObject
-
-Name: org/netbeans/modules/testtools/ConfigDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.apache.tools.ant.module.loader.AntProjectDataObject
-
+OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
