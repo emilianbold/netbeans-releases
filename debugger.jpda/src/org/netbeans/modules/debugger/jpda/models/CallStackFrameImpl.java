@@ -186,7 +186,7 @@ public class CallStackFrameImpl implements CallStackFrame {
     /**
      * Sets this frame current.
      *
-     * @see JPDADebugger#getCurrentCallStackFrame
+     * @see org.netbeans.api.debugger.jpda.JPDADebugger#getCurrentCallStackFrame
      */
     public void makeCurrent () {
         ctm.getDebugger ().setCurrentCallStackFrame (this);
