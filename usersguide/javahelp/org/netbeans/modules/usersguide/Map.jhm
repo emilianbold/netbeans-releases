@@ -32,20 +32,25 @@
 <mapID target="proj_process" url="project/proj_process.html" />
 <mapID target="proj_quickref" url="project/proj_quickref.html" />
 <mapID target="proj_templates" url="project/proj_templates.html" />
+<mapID target="proj_stand_about" url="project/proj_stand_about.html" />
+<mapID target="proj_free_about" url="project/proj_free_about.html" />
+<mapID target="proj_free_add" url="project/proj_free_add.html" />
+<mapID target="proj_free_classpath" url="project/proj_free_classpath.html" />
+<mapID target="proj_free_targets" url="project/proj_free_targets.html" />
 
 <mapID target="explorer" url="objects/explorer.html" />
 
-<mapID target="filesystems.classpath" url="filesystems/filesystems_classpath.html" />
-<mapID target="filesystems.mount" url="filesystems/filesystems_mounting.html" />
-<mapID target="filesystems.openfile" url="filesystems/filesystems_openfile.html" />
-<mapID target="filesystems.order" url="filesystems/filesystems_order.html" />
-<mapID target="filesystems.removing" url="filesystems/filesystems_removing.html" />
-<mapID target="filesystems.disable-compile" url="filesystems/filesystems_disable-compile.html" />
-<mapID target="filesystems.diff" url="filesystems/filesystems_diff.html" />
-<mapID target="filesystems.jdk" url="filesystems/filesystems_jdk.html" />
-<mapID target="filesystems.ignore-files" url="filesystems/filesystems_ignore-files.html" />
-<mapID target="filesystems.hiding" url="filesystems/filesystems_hiding.html" />
-<mapID target="filesystems.backup" url="filesystems/filesystems_backup.html" />
+<!--<mapID target="filesystems.classpath" url="filesystems/filesystems_classpath.html" />-->
+<!--<mapID target="filesystems.mount" url="filesystems/filesystems_mounting.html" />-->
+<!--<mapID target="filesystems.openfile" url="filesystems/filesystems_openfile.html" />-->
+<!--<mapID target="filesystems.order" url="filesystems/filesystems_order.html" />-->
+<!--<mapID target="filesystems.removing" url="filesystems/filesystems_removing.html" />-->
+<!--<mapID target="filesystems.disable-compile" url="filesystems/filesystems_disable-compile.html" />-->
+<!--<mapID target="filesystems.diff" url="filesystems/filesystems_diff.html" />-->
+<!--<mapID target="filesystems.jdk" url="filesystems/filesystems_jdk.html" />-->
+<!--<mapID target="filesystems.ignore-files" url="filesystems/filesystems_ignore-files.html" />-->
+<!--<mapID target="filesystems.hiding" url="filesystems/filesystems_hiding.html" />-->
+<!--<mapID target="filesystems.backup" url="filesystems/filesystems_backup.html" />-->
 
 <mapID target="objects.file-extensions" url="objects/objects_file-extensions.html" />
 <mapID target="objects.icons" url="objects/objects_icons.html" />
@@ -169,11 +174,6 @@
 <mapID target="java.sync.update-interface" url="java/synchronizing/update-interface.html" />
 <mapID target="java.sync.template" url="java/synchronizing/template.html" />
 <mapID target="java.override" url="java/override.html" />
-<mapID target="java.import" url="java/imt/import.html" />
-<mapID target="java.import.resolve-ids" url="java/imt/resolve-ids.html" />
-<mapID target="java.import.create-imports" url="java/imt/create-imports.html" />
-<mapID target="java.import.remove-unused" url="java/imt/remove-unused.html" />
-<mapID target="java.import.configuring" url="java/imt/configuring.html" />
 <mapID target="java.java_sources" url="java/java_sources.html" />
 <mapID target="java.encoding" url="java/encoding.html" />
 <mapID target="java.assertions" url="java/assertions.html" />
@@ -183,14 +183,6 @@
 
 <!--csh page for projects|settings|Java Sources-->
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
-
-<!--csh page for projects|settings|Java Source|Import Management Tool Settings, gone soon
-<mapID target="org.netbeans.modules.java.imptool.ImpToolSettings" url="java/imt/configuring.html" /> -->
-
-<!--csh page for Import Management Tool panels, gone soon
-<mapID target="java.import.FqnPanel" url="java/imt/resolve-ids.html" />
-<mapID target="java.import.ImportPanel" url="java/imt/create-imports.html" />
-<mapID target="java.import.ResolvePanel" url="java/imt/remove-unused.html" />-->
 
 <!-- Following csh page hooked to both method and constructor customizer dialogs -->
 <mapID target="java.method.customizer" url="pending.html" />
@@ -213,7 +205,10 @@
 <mapID target="run_app" url="run/run_app.html" />
 <mapID target="run_args" url="run/run_args.html" />
 <mapID target="run_classpath" url="run/run_classpath.html" />
-<!--<mapID target="run_file" url="run/run_file.html" />-->
+<mapID target="run_file" url="run/run_file.html" />
+<mapID target="run_process" url="run/run_process.html" />
+<mapID target="run_quickref" url="run/run_quickref.html" />
+<mapID target="run_jvm_args" url="run/run_jvm_args.html" />
 
 <mapID target="editing.intro" url="editing/intro.html" />
 <mapID target="editing.editorwindow" url="editing/editorwindow.html" />
@@ -248,7 +243,6 @@
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />
 <mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
 <mapID target="editing.editor-props" url="editing/configuring/editor-props.html" />
-<mapID target="editing.indentation" url="editing/configuring/indentation.html" />
 <mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
 <mapID target="editing.tasks" url="editing/tasks_viewing.html" />
 <mapID target="editor.hiding" url="editing/editor_hiding.html" />
@@ -264,9 +258,6 @@
 <mapID target="editing.csh.shortcutseq" url="editing/configuring/shortcut-seq.html" />
 <!-- Csh page (and help topic) for Tools->Options, Printing node and subnodes -->
 <mapID target="editing.printing" url="editing/configuring/printing.html" />
-<!-- Csh pages for separate indentation engines, currently hooked to same page-->
-<mapID target="editing.indentation.simple" url="editing/configuring/indentation.html" />
-<mapID target="editing.indentation.java" url="editing/configuring/indentation.html" />
 <!-- This is a csh mapping for the indentation node in the Options window -->
 <mapID target="org.netbeans.core.services.IndentEngines" url="editing/configuring/indentation.html" />
 <!-- These are csh pages hooked up to Editor Settings nodes of Options window -->
@@ -276,12 +267,6 @@
 <mapID target="editing.editor.plain" url="editing/configuring/editor-props.html" />
 <mapID target="editing.editor.jsp" url="editing/configuring/editor-props.html" />
 <mapID target="editing.editor.properties" url="editing/configuring/editor-props.html" />
-<!-- Csh pages for scroll insets and Fonts and Color property editors -->
-<mapID target="editing.scrollinsets" url="editing/configuring/insets.html" />
-<mapID target="editing.fonts" url="editing/configuring/fontsandcolors.html" />
-
-<!-- Csh page for Java Code Folding dialog box -->
-<mapID target="editing.codefolding" url="editing/editor_folding.html" />
 
 <mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 <mapID target="debug.menu" url="debug/environment/debug_menu.html" />
@@ -390,25 +375,11 @@
 <mapID target="debug.properties.thread" url="debug/properties/threads_properties.html" />
 <mapID target="debug.properties.variable" url="debug/properties/locals_properties.html" />
 
-<mapID target="javadoc.jump" url="javadoc/javadoc_jump.html" />
-<mapID target="javadoc.indices" url="javadoc/doc_indices.html"/>
-<mapID target="javadoc.search" url="javadoc/search.html" />
+<mapID target="javadoc.add" url="javadoc/javadoc_add.html" />
+<mapID target="javadoc.jdk" url="javadoc/javadoc_jdk.html" />
 <mapID target="javadoc.source_editor" url="javadoc/show_in_editor.html" />
 <mapID target="javadoc.accuracy" url="javadoc/accuracy.html" />
 <mapID target="javadoc.generate" url="javadoc/generate.html" />
-<mapID target="javadoc.search.path" url="javadoc/search_path.html" />
-<mapID target="javadoc.filesystem.unmount" url="javadoc/filesystems_removing.html" />
-<mapID target="javadoc.case.sensitive" url="javadoc/case_sensitive.html" />
-<mapID target="javadoc.output" url="javadoc/output.html" />
-<mapID target="javadoc.stylesheet" url="javadoc/stylesheet.html" />
-<mapID target="javadoc.doclet" url="javadoc/doclet.html" />
-<mapID target="javadoc.searchengine" url="javadoc/searchengine.html" />
-<mapID target="javadoc.externaljavadoc" url="javadoc/externaljavadoc.html" />
-
-<mapID target="javadoc.search.window" url="javadoc/search_window.html" />
-<mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
-<mapID target="javadoc.doc.window" url="javadoc/doc_comment_window.html" />
-<mapID target="javadoc.manager.window" url="javadoc/manager.html" />
 
 <!--JUnit map ids-->
 <mapID target="junit_about" url="junit/junit_about.html" />
@@ -416,53 +387,7 @@
 <mapID target="junit_quickref" url="junit/junit_quickref.html" />
 <mapID target="junit_creatingtests" url="junit/junit_creatingtests.html" />
 <mapID target="junit_runningtests" url="junit/junit_runningtests.html" />	
-<mapID target="junit_configuringsettings" url="junit/junit_configuringsettings.html" />
-
-<!--old VCS map ids-->
-
-<!--<mapID target="vcs.overview" url="vcs-nb/vcs_overview.html" />
-<mapID target="vcs.output" url="vcs-nb/vcs_output.html" />
-<mapID target="vcs.annotate" url="vcs-nb/vcs_annotate.html" />
-<mapID target="vcs.diffs" url="vcs-nb/vcs_diffs.html" />
-<mapID target="vcs.patch" url="vcs-nb/vcs_patch.html" />
-<mapID target="vcs.cygwin" url="vcs-nb/vcs_cygwin.html" />
-<mapID target="vcs.globalsettings" url="vcs-nb/vcs_globalsettings.html" />
-<mapID target="vcs.refresh" url="vcs-nb/vcs_refresh.html" />
-<mapID target="vcs.mountpoint" url="vcs-nb/vcs_mountpoint.html" />
-<mapID target="vcs.groups" url="vcs-nb/vcsgroups/vcs_groups.html" />
-<mapID target="vcs.groupsadd" url="vcs-nb/vcsgroups/vcs_groupsadd.html" />
-<mapID target="vcs.groupsaddfile" url="vcs-nb/vcsgroups/vcs_groupsaddfile.html" />
-<mapID target="vcs.groupscommands" url="vcs-nb/vcsgroups/vcs_groupscommands.html" />
-<mapID target="vcs.groupsmovefile" url="vcs-nb/vcsgroups/vcs_groupsmovefile.html" />
-<mapID target="vcs.groupsproperties" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
-<mapID target="vcs.groupsresolve" url="vcs-nb/vcsgroups/vcs_groupsresolve.html" />
-<mapID target="vcs.groupsverify" url="vcs-nb/vcsgroups/vcs_groupsverify.html" />
-<mapID target="vcs.binary" url="vcs-nb/vcs_binary.html" />
-<mapID target="vcs.cvs-intro" url="vcs-nb/cvs-nb/cvs_intro.html" />
-<mapID target="cvs.checkout" url="vcs-nb/cvs-nb/cvs_checkout.html" />
-<mapID target="cvs.commands" url="vcs-nb/cvs-nb/cvs_commands.html" />
-<mapID target="cvs.merge-resolve" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />
-<mapID target="cvs.merge" url="vcs-nb/cvs-nb/cvs_merge.html" />
-<mapID target="cvs.local" url="vcs-nb/cvs-nb/cvs_local.html" />
-<mapID target="args_add" url="vcs-nb/cvs-nb/args/args_add.html"/>
-<mapID target="args_annotate" url="vcs-nb/cvs-nb/args/args_annotate.html"/>
-<mapID target="args_checkout" url="vcs-nb/cvs-nb/args/args_checkout.html"/>
-<mapID target="args_commit" url="vcs-nb/cvs-nb/args/args_commit.html"/>
-<mapID target="args_diff" url="vcs-nb/cvs-nb/args/args_diff.html"/>
-<mapID target="args_global" url="vcs-nb/cvs-nb/args/args_global.html"/>
-<mapID target="args_log" url="vcs-nb/cvs-nb/args/args_log.html"/>
-<mapID target="args_remove" url="vcs-nb/cvs-nb/args/args_remove.html"/>
-<mapID target="args_tag" url="vcs-nb/cvs-nb/args/args_tag.html"/>
-<mapID target="args_update" url="vcs-nb/cvs-nb/args/args_update.html"/>
-<mapID target="vcsgeneric.mounting" url="vcs-nb/vcsgeneric/vcsgeneric_mounting.html" />
-<mapID target="vcsgeneric.wizard" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
-<mapID target="vcsgeneric.calling" url="vcs-nb/vcsgeneric/vcsgeneric_calling.html" />
-<mapID target="vcsgeneric.custom-pvcs" url="vcs-nb/vcsgeneric/vcsgeneric_custom-pvcs.html" />
-<mapID target="vcsgeneric.custom-vss" url="vcs-nb/vcsgeneric/vcsgeneric_custom-vss.html" />
-<mapID target="vcsgeneric.custom-cvs" url="vcs-nb/vcsgeneric/vcsgeneric_custom-cvs.html" />
-<mapID target="vcsgeneric.filesystemproperties" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
-<mapID target="vcsgeneric.newprofile" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
-<mapID target="vcs.revexplorer" url="vcs-nb/vcs_revexplorer.html" />-->
+<mapID target="junit_configuring" url="junit/junit_configuring.html" />
 
 <!--new VCS map ids-->
 
@@ -742,19 +667,6 @@
 
    <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />
 
-
-   <mapID target="org.netbeans.modules.editor.options.ColoringArrayEditor$FakeNode" url="pending.html" />
-
-<mapID target="org.netbeans.modules.editor.options.ColoringArrayEditorPanel" url="pending.html" />
-
-   <mapID target="org.netbeans.modules.editor.options.ColoringEditorPanel" url="pending.html" /> 
-
-   <mapID target="org.netbeans.modules.form.editors2.ColorEditor$NbColorChooser" url="pending.html" />
-
-   <mapID target="org.netbeans.beaninfo.editors.ColorEditor$NbColorChooser" url="editing/configuring/colorchooser.html" /> 
-
-   <mapID target="org.netbeans.beaninfo.editors.FontEditor$FontPanel" url="editing/configuring/fontsandcolors.html" /> 
-
 <!--OptionsAction is Options window--> 
    <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
 <!--root Options node + category nodes-->
@@ -801,10 +713,6 @@
    <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />-->
    <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/vcs_merge.html" />
    <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/vcs_merge.html" />-->
-
-  
-    
-    
 
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
    <mapID target="org.netbeans.core.NbMainExplorer" url="objects/explorer.html" /> 
@@ -913,39 +821,6 @@
 
    <mapID target="org.netbeans.modules.httpserver.HttpServerSettings" url="webbrowser/httpserver-options.html" />
 
-<!--these six added for AU wizard 26 March 2002-->
-   <mapID target="org.netbeans.modules.autoupdate.FirstPanel" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.LoginPanel" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.UpdatePanel" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.DownloadProgressPanel" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.ResultsPanel" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.SelectModulesPanel" url="modules/autoupdate.html" />
-
-   <mapID target="org.netbeans.modules.autoupdate.AutoCheckInfo" url="modules/autoupdate.html" />
-   
-<!--this ID applies only to FFJ update center -->
-   <mapID target="org.netbeans.modules.autoupdateffj.QuantumLoginPanel" url="modules/autoupdate.html" />
-
-   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.update" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.$Checker" url="modules/autoupdate.html" /> 
-   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.Downloader" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.AutoupdateType" url="modules/autoupdate.html" /> 
-   <mapID target="org.netbeans.modules.autoupdate.IncompleteDialog" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.CertificateDialog" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.UpdateAction" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.update" url="modules/autoupdate.html" /> 
-   <mapID target="org.netbeans.modules.autoupdate.$Checker" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.Downloader" url="modules/autoupdate.html" /> 
-   <mapID target="org.netbeans.modules.autoupdate.UpdateAction" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.LicenceDialog" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.ConnectingErrorDialog" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.Wizard" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.CertDialog" url="pending.html" />
-   <mapID target="org.netbeans.modules.autoupdate.ProxyDialog" url="modules/autoupdate.html" />   
-   <mapID target="org.netbeans.modules.autoupdate.Settings" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.XMLAutoupdateType" url="modules/autoupdate.html" />
-
-
    <mapID target="org.netbeans.modules.beans.BiFeatureNode" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.BiIncludeAllAction" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.BiNode" url="pending.html" />
@@ -1036,7 +911,6 @@
    <mapID target="org.netbeans.modules.form.PropertyPicker" url="pending.html" />
    <mapID target="org.netbeans.core.NbNodeOperation$Sheet" url="pending.html" /> 
 
-   <mapID target="org.netbeans.core.ShortcutsEditor" url="shortcuts/kybdshortcuts.html" />
    <mapID target="org.netbeans.core.ActionsPanel" url="pending.html" />
 
    <mapID target="org.netbeans.modules.editor.java.JCExtension" url="pending.html" />
@@ -1048,73 +922,17 @@
    <mapID target="org.openide.loaders.NewObjectPanel" url="objects/objects_new.html" />
    <mapID target="org.openide.loaders.ClassNamePanel" url="objects/objects_new.html" />
 
-<!--QUESTION(tm) : should these ids be remapped to new docs or removed?
 
-   <mapID target="vcsgeneric.profile.cvs.commit" url="vcs-nb/cvs-nb/args/args_commit.html" />
-   <mapID target="vcsgeneric.profile.cvs.update" url="vcs-nb/cvs-nb/args/args_update.html" />
-   <mapID target="vcsgeneric.profile.cvs.addDir" url="vcs-nb/cvs-nb/args/args_add.html" />
-   <mapID target="vcsgeneric.profile.cvs.addFile" url="vcs-nb/cvs-nb/args/args_add.html" />
-   <mapID target="vcsgeneric.profile.cvs.remove" url="vcs-nb/cvs-nb/args/args_remove.html" />
-   <mapID target="vcsgeneric.profile.cvs.log" url="vcs-nb/cvs-nb/args/args_log.html" />
-   <mapID target="vcsgeneric.profile.cvs.annotate" url="vcs-nb/cvs-nb/args/args_annotate.html" />
-   <mapID target="vcsgeneric.profile.cvs.checkout" url="vcs-nb/cvs-nb/args/args_checkout.html" />
-   <mapID target="vcsgeneric.profile.cvs.addTag" url="vcs-nb/cvs-nb/args/args_tag.html" />
-   <mapID target="vcsgeneric.profile.cvs.diffG" url="vcs-nb/cvs-nb/args/args_diff.html" />
-   <mapID target="vcsgeneric.profile.cvs.diffT" url="vcs-nb/cvs-nb/args/args_diff.html" />-->
-   
-<!--QUESTION(tm) : should these ids be remapped to new docs or removed?  
-
-   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeMainNode" url="vcs-nb/vcs_commands_node.html" />
-   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode" url="vcs-nb/vcs_commands_node.html" />
-   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeCommandNode" url="vcs-nb/vcs_commands_node.html" />
-   <mapID target="org.netbeans.modules.vcscore.versioning.impl.VersioningDataSystem" url="vcs-nb/vcs_revexplorer.html" />
-   <mapID target="org.netbeans.modules.vcscore.versioning.impl.VersioningDataFolder" url="vcs-nb/vcs_revexplorer.html" />
-   <mapID target="org.netbeans.modules.vcscore.versioning.impl.RootFolderNode" url="vcs-nb/vcs_revexplorer.html" />
-   <mapID target="org.netbeans.modules.vcscore.versioning.impl.VersioningDataNode" url="vcs-nb/vcs_revexplorer.html" />
-   <mapID target="org.netbeans.modules.vcscore.versioning.RevisionNode" url="vcs-nb/vcs_revexplorer.html" />
    <mapID target="org.netbeans.modules.vcscore.settings.GeneralVcsSettingsNode" url="vcs-nb/vcs_globalsettings.html" />
-   <mapID target="org.netbeans.modules.vcscore.grouping.MainVcsGroupNode" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
-   <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupSettings" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
-   <mapID target="org.netbeans.modules.vcscore.search.VcsSearchType" url="objects/search/search_status.html" />
-   <mapID target="VCS_VariableEditor" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
-   <mapID target="VCS_CommandEditor" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
-   <mapID target="org.netbeans.modules.vcs.advanced.VcsCustomizer" url="vcs-nb/vcsgeneric/vcsgeneric_customizer.html" />-->
 
    <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
 
-   <!--<mapID target="org.netbeans.modules.vcs.advanced.profilesSettings.VcsSettingsNode" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />-->
-   
-   <!--VCS CSH and VCS property sheet helpIDs-->
-   <!--<mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_properties" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />-->
-   <!--<mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_expert" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />-->
-   <!--<mapID target="org.netbeans.modules.vcscore.grouping.MainVcsGroupNode_properties" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />-->
-   <!--<mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupNode_properties" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />-->
-   
    <!--Begin helpIDs for Versioning Explorer-->
-   <!--Generic VCS FS node-->
-   <!--<mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem" url="pending.html" />-->
-   <!--Generic VCS properties and expert tabs-->
-   <!--<mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem_properties" url="pending.html" />-->
-   <!--<mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem_expert" url="pending.html" />-->
-
-   <!--Begin helpIDs for VCS Commands nodes in Runtime window-->
-   <!--helpID for the properties sheet of FS nodes in Runtime window-->
-   <!--<mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode_properties" url="vcs-nb/vcs_commands_node.html" />-->
-   <!--helpID for the properties sheet of Generic VCS commands on Runtime window-->
-   <!--<mapID target="org.netbeans.modules.vcscore.runtime.VcsRuntimeCommand_properties" url="vcs-nb/vcs_commands_node.html" />-->
-   <!--csh for VCS Generic mount wizard-->
-   <!--<mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.ProfilePanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />-->
-   <!--<mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.AdvancedPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />-->
-   <!--<mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.EnvironmentPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />-->
-   <!--csh for Verify VCS Group-->
-   <!--<mapID target="org.netbeans.modules.vcscore.ui.VerifyGroupPanel" url="vcs-nb/vcsgroups/vcs_groupsresolve.html" />-->
-   <!--<mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diffs.html" />-->
-   <!--csh for filesystems-->
-   <!--<mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />-->
+   <mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diffs.html" />
    <!--csh for versioning menu items-->
-   <!--<mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcsgroups/vcs_groups.html" />-->
+   <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcsgroups/vcs_groups.html" />
 
    <!--csh for java actions-->
    <mapID target="org.netbeans.modules.java.imptool.ImpToolAction" url="java/imt/import.html" />
@@ -1136,7 +954,11 @@
    <mapID target="org.netbeans.editor.BaseKit$CopyAction" url="pending.html" />
    <mapID target="org.netbeans.editor.BaseKit$PasteAction" url="pending.html" />
 
-
+   <mapID target="org.netbeans.modules.autoupdate.XMLAutoupdateType" url="modules/autoupdate.html" />
+   <mapID target="org.netbeans.modules.autoupdate.Settings" url="modules/autoupdate.html" />
+   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.UpdateAction" url="modules/autoupdate.html" />
+   <mapID target="org.netbeans.modules.autoupdate.UpdateAction" url="modules/autoupdate.html" />
+   
    <mapID target="org.netbeans.modules.search.ResultViewTopComponent" url="objects/search/search_results-window.html" />
    <mapID target="org.netbeans.modules.search.RepositorySearchAction" url="objects/search/search.html" />
    <mapID target="org.openidex.search.SearchType" url="objects/search/search_predefining.html" />
@@ -1178,9 +1000,6 @@
 
    <mapID target="org.netbeans.beaninfo.editors.FileEditor" url="pending.html" />
    <!--Property Viewer: Working Directory (File) dialogue; Project | Settings | Filesystems Settings | (mounted CVS client)| Working Directory-->
-
-   <mapID target="org.netbeans.core.ExitDialog.dialog" url="objects/objects_saving.html" />
-   <!--Save dialog-->
 
 <!--from j2eeserver module-->
   <mapID target="credits_html" url="credits.html" />

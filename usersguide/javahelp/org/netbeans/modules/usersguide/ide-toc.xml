@@ -19,22 +19,41 @@
     <tocitem text="Starting With the Basic IDE Tasks" target="gs.howto" />
   </tocitem>
   
-  <tocitem text="Starting with Projects" >
+  <tocitem text="Working with Projects" >
     <tocitem text="About Projects" target="tbd" />
     <tocitem text="Working with Projects" target="proj_process"/>
     <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
-    <tocitem text="Creating a Project" target="proj_creating" />
-    <tocitem text="Project Templates" target="tbd" />
+    <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Setting the Main Project" target="proj_main" />
-      <tocitem text="Working with Files" >
-        <tocitem text="Viewing the Physical Layout of Project Files" target="tbd" />
-        <tocitem text="Creating a New File" target="tbd" />
-        <tocitem text="Creating a Java Package" target="tbd" />
-        <tocitem text="Searching Files" target="search" />
-        <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
-        <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
-        <tocitem text="Hiding File Extensions" target="objects.show-extensions" />
-      </tocitem>
+    <tocitem text="Standard Projects" target="tbd" >
+      <tocitem text="About Standard Projects" target="proj_stand_about" />
+      <tocitem text="Creating a Standard J2SE Project" target="tbd" />
+      <tocitem text="Creating a Standard Web Application Project" target="tbd" />
+      <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
+      <tocitem text="Managing the Classpath" target="comp_classpath" />
+      <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
+      <tocitem text="Setting the Target JDK" target="tbd" />
+      <tocitem text="Customizing the IDE-Generated Ant Script" target="tbd" />
+    </tocitem>
+    <tocitem text="Freeform Projects" target="tbd" >
+      <tocitem text="About Freeform Projects" target="proj_free_about" />
+      <tocitem text="Creating a J2SE Project with Existing Ant Script" target="tbd" />
+      <tocitem text="Creating a Web Application with Existing Ant Script" target="tbd" />
+      <tocitem text="Adding a Source Directory to a Freeform Project" target="proj_free_add" />
+      <tocitem text="Declaring the Classpath in Freeform Projects" target="proj_free_classpath" />
+      <tocitem text="Setting the Target JDK" target="tbd" />
+      <tocitem text="Linking Ant Targets to IDE Commands" target="proj_free_targets" />
+      <tocitem text="Writing Ant Targets for IDE Commands" target="tbd" />
+    </tocitem>
+  </tocitem>
+  <tocitem text="Working with Files" >
+    <tocitem text="Viewing the Physical Layout of Project Files" target="tbd" />
+    <tocitem text="Creating a New File" target="tbd" />
+    <tocitem text="Creating a Java Package" target="tbd" />
+    <tocitem text="Searching Files" target="search" />
+    <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
+    <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
+    <tocitem text="Hiding File Extensions" target="objects.show-extensions" />
   </tocitem>
 
   <tocitem text="Editing Source Files" >
@@ -79,7 +98,6 @@
       <tocitem text="Opening a Java File With 'Go To Class'" target="editing.fastopen"/>
       <tocitem text="Adding a Java Import Statement With Fast Import" target="editing.fastimport"/>
     </tocitem>
-    <tocitem text="Using the Import Management Tool" target="java.import"/>
     <tocitem text="Synchronizing Source Code">
       <tocitem text="About" target="java.sync.intro"/>
       <tocitem text="Setting Source Synchronization Properties" target="java.sync.properties" />
@@ -139,22 +157,26 @@
   </tocitem>
 
   <tocitem text="Building Java Applications" >
-    <tocitem text="About Building" target="tbd" />
-    <tocitem text="Working with Builds" target="comp_process" />
-    <tocitem text="Building Tasks: Quick Reference" target="comp_quickref" />
-    <tocitem text="Building a Project" target="comp_project" />
-    <tocitem text="Compiling a Single File" target="comp_file" />
-    <tocitem text="Setting the Compilation Classpath" target="comp_classpath" />
-    <tocitem text="Creating Build Dependencies Between Projects" target="comp_dependencies" />
-    <tocitem text="Using Libraries" target="comp_libraries" />
-    <tocitem text="Building a JAR File" target="comp_jar" />
-    <tocitem text="Output Window" target="output.window"/>
+     <tocitem text="About Building" target="tbd" />
+     <tocitem text="Working with Builds" target="comp_process" />
+     <tocitem text="Building Tasks: Quick Reference" target="comp_quickref" />
+     <tocitem text="Building a Project" target="comp_project" />
+     <tocitem text="Compiling a Single File" target="comp_file" />
+     <tocitem text="Setting the Compilation Classpath" target="comp_classpath" />
+     <tocitem text="Creating Build Dependencies Between Projects" target="comp_dependencies" />
+     <tocitem text="Building a JAR File" target="comp_jar" />
+     <tocitem text="Output Window" target="output.window"/>
   </tocitem>
-  
+
   <tocitem text="Running Java Applications" >
-      <tocitem text="Running an Application" target="run_app" />
-      <tocitem text="Setting the Runtime Classpath" target="run_classpath" />
-      <tocitem text="Setting the Main Class and Arguments" target="run_args" />
+    <tocitem text="About Running Java Applications" target="tbd" />
+    <tocitem text="Working with Project Execution" target="run_process" />
+    <tocitem text="Running Tasks: Quick Reference" target="run_quickref" />
+    <tocitem text="Running an Application" target="run_app" />
+    <tocitem text="Running a Single File" target="run_file" />
+    <tocitem text="Setting the Runtime Classpath" target="run_classpath" />
+    <tocitem text="Setting the Main Class and Arguments" target="run_args" />
+    <tocitem text="Setting JVM Arguments" target="run_jvm_args" />
   </tocitem>
 
   <tocitem text="Debugging Java Applications">
@@ -257,57 +279,6 @@
     <tocitem text="Installing Ant Documentation" target="ant_docs" />
   </tocitem>
   
-  <!--NEW VCS IDS :
-  
-  <tocitem text="Using Version Control in the IDE" >
-    <tocitem text="About" target="vcs.overview" />
-    <tocitem text="Mounting a VCS Working Directory" target="vcsgeneric.mounting" />
-    <tocitem text="Setting a Relative Mount Point" target="vcs.mountpoint" />
-    <tocitem text="Calling Version Control Commands" target="vcsgeneric.calling" />
-    <tocitem text="VCS Command Output" target="vcs.output" />
-    <tocitem text="Versioning Window" target="vcs.revexplorer" />
-    <tocitem text="Refreshing VCS File Status Information" target="vcs.refresh" />
-    <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
-    <tocitem text="Adding a Binary File to a VCS Repository" target="vcs.binary" />         
-    <tocitem text="Searching for a File by VCS Status" target="search.status" />
-    <tocitem text="VCS Profiles" target="vcsgeneric.newprofile" />
-    <tocitem text="VCS Support on Windows 95, Windows 98, and Windows ME" target="vcs.cygwin" />
-    <tocitem text="Configuring Version Control Settings" target="vcs.globalsettings" />
-    <tocitem text="CVS Support" >
-      <tocitem text="About" target="vcs.cvs-intro" />
-      <tocitem text="Getting Files from a CVS Repository" target="cvs.checkout" />
-      <tocitem text="CVS Commands" target="cvs.commands" />
-      <tocitem text="Merging File Revisions" target="cvs.merge" />
-      <tocitem text="Resolving Merge Conflicts" target="cvs.merge-resolve" />
-      <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
-      <tocitem text="Setting Up a Local CVS Repository" target="cvs.local" />
-      <tocitem text="CVS Command Arguments" >
-        <tocitem text="Add Arguments" target="args_add"/>
-        <tocitem text="Annotate Arguments" target="args_annotate"/>
-        <tocitem text="Checkout Arguments" target="args_checkout"/>
-        <tocitem text="Commit Arguments" target="args_commit"/>
-        <tocitem text="Diff Arguments" target="args_diff"/>
-        <tocitem text="Global Arguments" target="args_global"/>
-        <tocitem text="Log Arguments" target="args_log"/>
-        <tocitem text="Remove Arguments" target="args_remove"/>
-        <tocitem text="Add Tag Arguments" target="args_tag"/>
-        <tocitem text="Update Arguments" target="args_update"/>
-      </tocitem>
-    </tocitem>  
-    <tocitem text="Using VCS Groups" > 
-      <tocitem text="About" target="vcs.groups" />
-      <tocitem text="Adding and Deleting a VCS Group" target="vcs.groupsadd" />
-      <tocitem text="Adding Files to VCS Groups" target="vcs.groupsaddfile" />
-      <tocitem text="Moving and Removing Files From VCS Groups" target="vcs.groupsmovefile" />
-      <tocitem text="Calling VCS Commands on VCS Groups" target="vcs.groupscommands" />
-      <tocitem text="Preparing VCS Groups for Check-In to the Repository" target="vcs.groupsverify" />
-      <tocitem text="Resolving Problems With Grouped Files" target="vcs.groupsresolve" />
-      <tocitem text="Configuring VCS Group Settings" target="vcs.groupsproperties" />
-    </tocitem>
-  </tocitem>-->
-  
-  <!--NEW VCS IDS -->
-  
   <tocitem text="Using Version Control in the IDE" >
     <tocitem text="About" target="vcs.about" />
 	<tocitem text="Working with Version Control" target="vcs.overview" />
@@ -325,8 +296,8 @@
   </tocitem>
   
   <tocitem text="Working With Javadoc Documentation">
-    <tocitem text="Adding a Javadoc Library to a Project" target="tbd" />
-    <tocitem text="Adding the JDK Javadoc to the IDE" target="tbd"/>
+    <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
+    <tocitem text="Adding the JDK Javadoc to the IDE" target="javadoc.jdk"/>
     <tocitem text="Viewing Javadoc Documentation" target="javadoc.source_editor"/>
     <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
     <tocitem text="Entering Javadoc Comments in Source Code" target="javadoc.accuracy"/>
@@ -401,13 +372,13 @@
       <tocitem text="Displaying Help in a Web Browser" target="accessibility.alternate.browser" />
   </tocitem>
   
-  <tocitem text="JUnit Module"><!--QUESTION(tm) : now that junit is built in should this title change? should this section live elsewhere in the TOC?-->
-    <tocitem text="About the JUnit Module" target="junit_about"></tocitem>
+  <tocitem text="Testing with JUnit">
+    <tocitem text="About JUnit" target="junit_about"></tocitem>
     <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
     <tocitem text="JUnit Tasks: Quick Reference" target="junit_quickref"></tocitem>
-    <tocitem text="Test Generation" target="junit_creatingtests"></tocitem>
-    <tocitem text="Working with Tests" target="junit_runningtests"></tocitem>
-    <tocitem text="Configuring JUnit Module Settings" target="junit_configuringsettings"></tocitem>
+    <tocitem text="Creating Unit Tests with JUnit" target="junit_creatingtests"></tocitem>
+    <tocitem text="Running JUnit Tests" target="junit_runningtests"></tocitem>
+    <tocitem text="Configuring JUnit" target="junit_configuring"></tocitem>
   </tocitem>
     
 </tocitem>
