@@ -106,6 +106,10 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         layoutModel.setPadding (defaultRenderer.getPadding());
         pixelsToAdd = defaultRenderer.getPixelsToAddToSelection();
         repaintPolicy = createRepaintPolicy();
+        if (displayer.getSelectionModel().getSelectedIndex() != -1) {
+            tabState.setSelected(displayer.getSelectionModel().getSelectedIndex());
+            tabState.setActive(displayer.isActive());
+        }
     }
 
     protected void uninstall() {

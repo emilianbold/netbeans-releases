@@ -55,6 +55,35 @@ public abstract class TabbedContainerUI extends ComponentUI {
     public void installUI(JComponent c) {
         assert c == container;
     }
+    
+    /**
+     * This method is called if TabbedContainer.updateUI() gets called after
+     * a UI delegate has been installed (in other words, the user did something
+     * like switch look and feels or switch the Windows desktop theme).
+     * <p>
+     * Normally, the only UI delegate that exists for TabbedContainer is
+     * DefaultTabbedContainerUI, so it makes no sense to replace one with
+     * another, since they do the same thing.
+     * <p>
+     * However, this method can be used to update the tab displayer component's
+     * UI.  Subclasses are expected to override this method to call 
+     * updateUI() on the displayer, or do whatever is appropriate to ensure that
+     * the UI will look right after the change - or to return true from this
+     * method, in which the entire UI delegate for the tabbed container will
+     * be replaced.
+     * @return false
+     */
+    protected boolean uichange() {
+        return false;
+    }
+    
+    /**
+     * Accessor method for TabbedContainer
+     * @see uichange
+     */
+    final boolean shouldReplaceUI() {
+        return uichange();
+    }
 
 
     /** Get the bounds of a tab.  Note that for non-rectangular tabs

@@ -62,8 +62,6 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
      * Flag to ensure listeners attached, since ComponentShown notifications are not always
      * reliable.
      */
-    private boolean listenersAttached = false;
-
     /** UIManager key for the border of the tab displayer in editor ui type. */
     public static final String KEY_EDITOR_CONTENT_BORDER = "TabbedContainer.editor.contentBorder"; //NOI18N
     /** UIManager key for the border of the tab displayer in editor ui type */
@@ -225,6 +223,12 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
     protected void uninstall() {
 
     }
+    
+    protected boolean uichange() {
+        tabDisplayer.updateUI();
+        installBorders();
+        return false;
+    }    
 
     /**
      * Installs the content displayer component and its layout manager
@@ -306,16 +310,10 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
      * you will need to call this method when the component is shown.
      */
     protected void attachModelAndSelectionListeners() {
-        if (!listenersAttached) {
-            try {
-                container.getModel().addComplexListDataListener(modelListener);
-                container.addPropertyChangeListener(propertyChangeListener);
-                tabDisplayer.setActive (container.isActive());
-                tabDisplayer.addActionListener (actionListener);
-            } finally {
-                listenersAttached = true;
-            }
-        }
+        container.getModel().addComplexListDataListener(modelListener);
+        container.addPropertyChangeListener(propertyChangeListener);
+        tabDisplayer.setActive (container.isActive());
+        tabDisplayer.addActionListener (actionListener);
     }
 
     /**
@@ -327,15 +325,9 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
      * you will need to call this method when the component is hidden.
      */
     protected void detachModelAndSelectionListeners() {
-        try {
-//            if (listenersAttached) {
-                container.getModel().removeComplexListDataListener(modelListener);
-                container.removePropertyChangeListener(propertyChangeListener);
-                tabDisplayer.removeActionListener (actionListener);
-//            }
-        } finally {
-            listenersAttached = false;
-        }
+        container.getModel().removeComplexListDataListener(modelListener);
+        container.removePropertyChangeListener(propertyChangeListener);
+        tabDisplayer.removeActionListener (actionListener);
     }
 
     /**

@@ -68,7 +68,7 @@ public class TestFrame extends javax.swing.JFrame {
         }
 
         JLabel jb1 = new JLabel("Label 1");
-        JButton jb2 = new JButton("Button 2");
+        final JButton jb2 = new JButton("Button 2 - Update UI");
         JButton jb3 = new JButton("Click me to remove this tab");
         JLabel jb4 = new JLabel("Label 4");
         JLabel jb5 = new JLabel("Label 5");
@@ -145,10 +145,20 @@ public class TestFrame extends javax.swing.JFrame {
                 tab.getModel().setIconsAndText(indices, newText, icons);
             }
         });
+        
+        
 
         jb3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 tab.getModel().removeTab(3);
+            }
+        });
+        
+        jb2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                UIManager.put ("EditorTabDisplayerUI", "org.netbeans.swing.tabcontrol.plaf.WinClassicEditorTabDisplayerUI");
+                UIManager.put ("ViewTabDisplayerUI", "org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI");
+                tab.updateUI();
             }
         });
 

@@ -197,12 +197,15 @@ public abstract class AbstractTabDisplayerUI extends TabDisplayerUI {
         if (componentListener != null) {
             displayer.removeComponentListener(componentListener);
         }
+        displayer.getModel().removeComplexListDataListener(modelListener);
+        displayer.getModel().removeChangeListener(modelListener);
         displayer.removePropertyChangeListener(propertyChangeListener);
         selectionModel.removeChangeListener(selectionListener);
         mouseListener = null;
         componentListener = null;
         propertyChangeListener = null;
         selectionListener = null;
+        modelListener = null;
     }
     
     protected HierarchyListener createHierarchyListener() {

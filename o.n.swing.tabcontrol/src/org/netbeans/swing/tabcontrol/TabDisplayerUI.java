@@ -47,13 +47,19 @@ public abstract class TabDisplayerUI extends ComponentUI {
 
     public void installUI(JComponent c) {
         assert c == displayer;
-        selectionModel = createSelectionModel();
+        selectionModel = displayer.getSelectionModel();
+        
+        //Will only be non-null if we are in the middle of an L&F change - don't
+        //replace it so listeners are not clobbered
+        if (selectionModel == null) {
+            selectionModel = createSelectionModel();
+        }
+        
         installSelectionModel();
     }
 
     public void uninstallUI(JComponent c) {
         assert c == displayer;
-        uninstallSelectionModel();
     }
 
     /**
@@ -158,14 +164,6 @@ public abstract class TabDisplayerUI extends ComponentUI {
      */
     private void installSelectionModel() {
         displayer.setSelectionModel(selectionModel);
-    }
-
-    /**
-     * Unnstalls the selection model from the tab control via a package private
-     * method.
-     */
-    private void uninstallSelectionModel() {
-        displayer.setSelectionModel(null);
     }
 
     /** Get the command associated with a given point if the default mouse button

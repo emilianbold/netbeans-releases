@@ -319,6 +319,23 @@ public class TabbedContainer extends JComponent {
         setFocusTraversalPolicy(new TCFTP());
     }
 
+    /**
+     * Overridden as follows:  When called by the superclass constructor (before
+     * the <code>type</code> field is set), it will simply return; the  
+     * TabbedContainer constructor will call updateUI() explicitly later.
+     * <p>
+     * Will first search UIManager for a matching UI class.  If non-null
+     * (by default it is set in the core/swing/plaf library), it will compare
+     * the found class name with the current UI.  If they are a match, it
+     * will call TabbedContainerUI.shouldReplaceUI() to decide whether to
+     * actually do anything or not (in most cases it would just replace an
+     * instance of DefaultTabbedContainerUI with another one; but this call
+     * allows DefaultTabbedContainerUI.uichange() to update the tab displayer
+     * as needed).
+     * <p>
+     * If no UIManager UI class is defined, this method will silently use an
+     * instance of DefaultTabbedContainerUI.
+     */
     public void updateUI() {
         if (!initialized) {
             //Block the superclass call to updateUI(), which comes before the
@@ -328,7 +345,14 @@ public class TabbedContainer extends JComponent {
             return;
         }
         TabbedContainerUI ui = null;
-        if (UIManager.get(getUIClassID()) != null) { //Avoid a stack trace
+        String UIClass = (String) UIManager.get(getUIClassID());
+        if (getUI() != null && (getUI().getClass().getName().equals(UIClass) | UIClass == null)) {
+            if (!getUI().shouldReplaceUI()) {
+                return;
+            }
+        }
+        
+        if (UIClass != null) { //Avoid a stack trace
             try {
                 ui = (TabbedContainerUI) UIManager.getUI(this);
             } catch (Error e) {
