@@ -73,7 +73,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
      */
     public MenuBar(DataFolder folder) {
         super();
-        // PENDING(david) -- setBorder(new MenuBorder());
+        setBorder (javax.swing.BorderFactory.createEmptyBorder());
         DataFolder theFolder = folder;
         if (theFolder == null) {
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Menu");
