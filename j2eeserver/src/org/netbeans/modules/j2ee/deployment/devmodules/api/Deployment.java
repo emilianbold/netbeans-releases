@@ -24,7 +24,6 @@ import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -194,15 +193,18 @@ public final class Deployment {
     }
     
     public String [] getInstancesOfServer (String id) {
-        if (id == null  || ServerRegistry.getInstance ().getServer (id) == null) 
-            return getServerInstanceIDs();
-        
-        ServerInstance sis [] = ServerRegistry.getInstance ().getServer (id).getInstances ();
-        String ids [] = new String [sis.length];
-        for (int i = 0; i < sis.length; i++) {
-            ids [i] = sis [i].getUrl ();
+        if (id != null) {
+            Server server = ServerRegistry.getInstance().getServer(id);
+            if (server != null) {
+                ServerInstance sis [] = ServerRegistry.getInstance ().getServer (id).getInstances ();
+                String ids [] = new String [sis.length];
+                for (int i = 0; i < sis.length; i++) {
+                    ids [i] = sis [i].getUrl ();
+                }
+                return ids;
+            }
         }
-        return ids;
+        return new String[0];
     }
     
     public String [] getServerIDs () {
