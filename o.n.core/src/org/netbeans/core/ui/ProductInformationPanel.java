@@ -513,7 +513,7 @@ public class ProductInformationPanel extends JPanel {
                     repaint();
                 }
             });
-            setLabelFor(this);
+
             getAccessibleContext().setAccessibleDescription(getText());
             getAccessibleContext().setAccessibleName(getText());
         }
