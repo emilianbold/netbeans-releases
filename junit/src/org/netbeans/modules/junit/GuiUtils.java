@@ -230,6 +230,7 @@ public final class GuiUtils {
         textArea.setDisabledTextColor(textArea.getForeground());
         textArea.setEnabled(false);
         textArea.setOpaque(false);
+        textArea.setPreferredSize(new java.awt.Dimension(16379,0));
         return textArea;
     }
     

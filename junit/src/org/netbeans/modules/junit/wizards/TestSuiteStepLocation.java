@@ -79,12 +79,13 @@ class TestSuiteStepLocation implements WizardDescriptor.Panel {
         box.add(optCode);
         box.add(Box.createVerticalStrut(11));
         box.add(optComments);
+        box.add(Box.createVerticalStrut(1000));
         
         /* tune layout of the components within the box: */
         infoLabel.setAlignmentX(0.0f);
         optCode.setAlignmentX(0.0f);
         optComments.setAlignmentX(0.0f);
-
+     
         return box;
     }
 
