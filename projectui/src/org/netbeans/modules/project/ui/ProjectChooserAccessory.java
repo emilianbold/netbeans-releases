@@ -354,15 +354,18 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         if ( defaultAccessory ) {
             chooser.setAccessory( new ProjectChooserAccessory( chooser, opls.isOpenSubprojects(), opls.isOpenAsMain() ) );
         }
-        chooser.setFileView( new ProjectFileView( chooser.getFileSystemView() ) );                
         
+        File currDir = null;
         String dir = opls.getLastOpenProjectDir();
         if ( dir != null ) {
             File d = new File( dir );
             if ( d.exists() && d.isDirectory() ) {
-                chooser.setCurrentDirectory( d );
+                currDir = d;
             }
         }
+        
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, currDir);
+        chooser.setFileView( new ProjectFileView( chooser.getFileSystemView() ) );                
         
         return chooser;    
         
