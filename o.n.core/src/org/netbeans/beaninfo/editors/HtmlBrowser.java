@@ -93,12 +93,11 @@ public class HtmlBrowser extends Object {
         }
         
         public java.lang.String[] getTags () {
-            ArrayList list = new ArrayList ();
-            list.add (NbBundle.getBundle (FactoryEditor.class).getString ("CTL_UnspecifiedBrowser"));
             FileObject fo = TopManager.getDefault ().getRepository ()
             .getDefaultFileSystem ().findResource (BROWSER_FOLDER);
             DataFolder folder = DataFolder.findFolder (fo);
             DataObject [] dobjs = folder.getChildren ();
+            ArrayList list = new ArrayList (dobjs.length);
             for (int i = 0; i<dobjs.length; i++) {
                 if (!Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute (EA_HIDDEN)))
                     list.add (dobjs[i].getNodeDelegate ().getDisplayName ());
