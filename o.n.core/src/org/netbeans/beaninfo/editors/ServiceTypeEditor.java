@@ -32,6 +32,8 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
     private static final String PROPERTY_NEW_TYPE = "createNew"; // NOI18N
     /** Name of the custom property that can be passed in PropertyEnv. */
     private static final String PROPERTY_SUPERCLASS = "superClass"; // NOI18N
+    /** Name of the custom property that can be passed in PropertyEnv. */
+    private static final String PROPERTY_NONE_SERVICE_CLASS = "noneServiceClass"; // NOI18N
     
     /** tagx */
     private String[] tags;
@@ -87,6 +89,10 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
         Object sup = env.getFeatureDescriptor().getValue(PROPERTY_SUPERCLASS);
         if (sup instanceof Class) {
             clazz = (Class)sup;
+        }
+        Object no = env.getFeatureDescriptor().getValue(PROPERTY_NONE_SERVICE_CLASS);
+        if (no instanceof ServiceType) {
+            none = (ServiceType)no;
         }
     }
     
