@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>Specifying a Style Sheet</TITLE>
+<link rel="StyleSheet" href="../ide.css" type="text/css">
+</HEAD>
+<BODY>
+
+<h2>Specifying a Style Sheet</h2>
+<p>
+A style sheet includes a set of stylistic rules that describe how to
+present HTML pages, including the size, color, and font of the text.
+You can replace the existing style sheet with your own style sheet for the following HTML pages in the IDE.
+<ul>
+<li>Readme and What's New
+</li>
+<li>Javadoc documentation
+</li>
+<li>Online help
+</li>
+</ul>
+<p>
+<b>To change the stylesheet for <code>README.html</code> and <code>WHATISNEW.html</code>:</b>
+</p>
+<ol>
+<li>Go to the top-level of the IDE installation directory.
+<p>
+This directory is the directory in which 
+which <code>README.html</code> and <code>WHATISNEW.html</code> reside.
+</li>
+<li>Edit or replace the <code>.css</code> file.
+</li>
+</ol>
+<p>
+<b>To change the stylesheet for Javadoc documentation:</b>
+</p>
+<ol>
+<li>From the main window, choose Tools <img src="../images/arrow.gif" alt="and 
+choose"> Options.
+</li>
+<li>In the Options window, expand the Code Documentation node.
+</li>
+<li>Expand the Doclets node and select Standard Doclet.
+</li>
+<li>In the property sheet, scroll down to the Style Sheet File property 
+and enter the filename of the style sheet to use to generate Javadoc documentation.
+</li>
+</ol>
+<p>
+<b>To change the stylesheet for the online help:</b>
+</p>
+<ol>
+<li>In the IDE's installation directory, go to the <code>modules</code>
+directory.
+</li>
+<li>Unjar <code>usersguide.jar</code> using the command-line jar tool 
+that comes with the JDK.
+<pre>
+jar xf usersguide.jar
+</pre>
+</li>
+<li>Expand the <code>usersguide</code> directory until you get 
+to the help files.
+</li>
+<li>Edit or replace the <code>ide.css</code> file.
+</li>
+</ol>
+<table>
+<tr>
+<th colspan=2 align=left>See also</th>
+</tr>
+<tr>
+<td width="23"></td>
+<td>
+<a href="accessibility_home.html">Accessibility</a>
+</td>
+</tr>
+</table>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+</body>
+</html>
