@@ -224,6 +224,7 @@ final class ResultView extends TopComponent
     
     protected void componentActivated() {
         ExplorerUtils.activateActions(explorerManager, true);
+        treeView.requestFocusInWindow();
     }
     
     protected void componentDeactivated() {
