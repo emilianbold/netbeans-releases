@@ -201,7 +201,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         jTextArea1.setLineWrap(true);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "MSG_ClasspathPanel_jTextArea"));
         jTextArea1.setWrapStyleWord(true);
-        jTextArea1.setDisabledTextColor(new java.awt.Color(51, 51, 51));
+        jTextArea1.setDisabledTextColor(java.awt.Color.black);
         jTextArea1.setEnabled(false);
         jTextArea1.setSelectedTextColor(new java.awt.Color(0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
