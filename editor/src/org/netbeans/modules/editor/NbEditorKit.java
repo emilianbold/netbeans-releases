@@ -16,6 +16,7 @@ package org.netbeans.modules.editor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -629,7 +630,16 @@ public class NbEditorKit extends ExtKit {
             if (km != null) {
                 KeyStroke[] keys = km.getKeyStrokesForAction(a);
                 if (keys != null && keys.length > 0) {
-                    item.setAccelerator(keys[0]);
+                    boolean added = false;
+                    for (int i = 0; i<keys.length; i++){
+                        if ((keys[i].getKeyCode() == KeyEvent.VK_MULTIPLY) ||
+                            keys[i].getKeyCode() == KeyEvent.VK_ADD){
+                            item.setAccelerator(keys[i]);
+                            added = true;
+                            break;
+                        }
+                    }
+                    if (added == false) item.setAccelerator(keys[0]);
                 }
             }
         }

@@ -14,6 +14,7 @@
 package org.netbeans.modules.editor;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
@@ -92,6 +93,12 @@ public abstract class NbCodeFoldingAction extends SystemAction {
             MultiKeymap mkm = bk.getKeymap();
             KeyStroke[] ks = mkm.getKeyStrokesForAction(a);
             if (ks != null && ks.length > 0) {
+                for (int i = 0; i<ks.length; i++){
+                    if ((ks[i].getKeyCode() == KeyEvent.VK_MULTIPLY) ||
+                        ks[i].getKeyCode() == KeyEvent.VK_ADD){
+                            return ks[i];
+                    }
+                }
                 return ks[0];
             }            
         }
