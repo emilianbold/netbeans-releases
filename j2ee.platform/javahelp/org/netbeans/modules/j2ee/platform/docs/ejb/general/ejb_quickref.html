@@ -23,9 +23,203 @@
     <th scope="col" align="left">Follow these steps</th>
   </tr>
   <tr valign="top"> 
-    <td>To come</td>
-    <td> To come</td>
+    <td>Create an EJB module project.</td>
+    <td> 
+      <ol>
+        <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
+          Project (Ctrl-Shift-N).</li>
+        <li>Select the right <a href="../editing/create_ejb_project.html">template</a> 
+          from the Enterprise category.&nbsp;</li>
+      </ol>
+    </td>
   </tr>
+  <tr valign="top"> 
+    <td>Create an enterprise bean.</td>
+    <td> 
+      <ol>
+        <li>Select the project node for any EJB module project</li>
+        <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
+          (Ctrl-N).</li>
+        <li>Select an <a href="../editing/create_ejb.html">enterprise bean template</a> 
+          from the Enterprise category.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Generate CMP entity beans from a database.</td>
+    <td> 
+      <ol>
+        <li>Create a <a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">database 
+          schema file</a> for the database or choose Tools <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;PointBase 
+          Database <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Start 
+          Local PointBase Database.</li>
+        <li>Right-click the EJB module project node and choose New <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;<a href="../editing/generate_cmp_beans.html">CMP 
+          Entity Beans from Database</a>.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td> Build an EJB module. </td>
+    <td> 
+      <ul>
+        <li>If the module is part of an enterprise application, right-click the 
+          enterprise application project and choose <a href="../deploy/build_ejb.html">Build 
+          Project</a>.</li>
+        <li>If the module is a stand-along EJB module, right-click the EJB module 
+          project and choose Build Project.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Package a JAR file on an EJB module's classpath in the EJB JAR file.</td>
+    <td> 
+      <ol>
+        <li>Right-click the EJB project's node and choose Properties. </li>
+        <li>Click Libraries in the left panel of the dialog box.</li>
+        <li>Select the checkbox in the Package collumn for the classpath item.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Verify an EJB module.</td>
+    <td> 
+      <ul>
+        <li>Right-click the project's node and choose <a href="../../enterprise/general/ent_app_verify.html">Verify 
+          Project</a>.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Deploy an EJB module.</td>
+    <td> 
+      <ul>
+        <li>If the module is part of an enterprise application, right-click the 
+          enterprise application project and choose <a href="../deploy/deploy_ejb.html">Run 
+          Project</a>.</li>
+        <li>If the module is a stand-along EJB module, right-click the EJB module 
+          project and choose Run Project.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Generate a reference to an enterprise bean.</td>
+    <td> 
+      <ol>
+        <li>Open any Java class file from an EJB module project or web application 
+          project.</li>
+        <li>Right-click anywhere inside the class file and choose Enterprise Resources 
+          <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;<a href="../editing/call_ejb.html">Call 
+          Enterprise Bean</a>.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add an EJB module to an enterprise application.</td>
+    <td> 
+      <ul>
+        <li>Right-click the enterprise application project's node and choose <a href="../../enterprise/general/add_modules_to_ent_app.html">Add 
+          J2EE Module</a>.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Edit an EJB module's deployment descriptors.</td>
+    <td> 
+      <ol>
+        <li>Expand Configuration Files node for the EJB module project.</li>
+        <li>Double-click <tt>ejb-jar.xml</tt> or <tt>sun-ejb-jar.xml</tt> to open 
+          the deployment descriptors in a <a href="../configuring/config_ejb_dd.html">visual 
+          editor</a>.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add a business method to an enterprise bean.</td>
+    <td> 
+      <ol>
+        <li>Open the bean class for the enterprise bean in the Source Editor.</li>
+        <li>Right-click anywhere in the bean class and choose EJB Methods <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;<a href="../editing/define_business_method.html">Add 
+          Business Method</a>.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add a finder method to an enterprise bean.</td>
+    <td> 
+      <ol>
+        <li>Open the bean class for the enterprise bean in the Source Editor.</li>
+        <li>Right-click anywhere in the bean class and choose EJB Methods <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;<a href="../editing/define_finder_method.html">Add 
+          Finder Method</a>.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add a select method to an enterprise bean.</td>
+    <td> 
+      <ol>
+        <li>Open the bean class for the enterprise bean in the Source Editor.</li>
+        <li>Right-click anywhere in the bean class and choose EJB Methods <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;<a href="../editing/define_select_method.html">Add 
+          Select Method</a>.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add a CMP field to an enterprise bean.</td>
+    <td> 
+      <ol>
+        <li>Open the bean class for the enterprise bean in the Source Editor.</li>
+        <li>Right-click anywhere in the bean class and choose EJB Methods <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;<a href="../editing/define_cmp_field.html">Add 
+          CMP Field</a>.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Set up container-managed relationships between entity beans.</td>
+    <td> 
+      <ol>
+        <li>Expand the Configuration Files node for the project and double-click 
+          <tt>ejb-jar.xml</tt>. </li>
+        <li>Click <a href="../configuring/ejb_relationship.html">CMP Relationships</a> 
+          in the top of the visual editor.</li>
+        <li>Add, edit, or remove CMP relationships in the table.</li>
+        <li>Update any CMP mappings in <tt>sun-ejb-jar.xml</tt>.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Debug an EJB module.</td>
+    <td> 
+      <ul>
+        <li>If the module is part of an enterprise application, right-click the 
+          enterprise application project and choose <a href="../debug/debug_ejb.html">Debug 
+          Project</a>.</li>
+        <li>If the module is a stand-along EJB module, right-click the EJB module 
+          project and choose Debug Project.</li>
+      </ul>
+      </td>
+  </tr>
+  <!--
+  <tr valign="top"> 
+    <td>Generate database lookup code.</td>
+    <td> 
+      <ol>
+        <li>Open the bean class for the enterprise bean in the Source Editor.</li>
+        <li>Right-click anywhere in the bean class and choose Enterprise Resources 
+          <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Use 
+          Database. </li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Generate JMS message code.</td>
+    <td> 
+      <ol>
+        <li>Open the bean class for the enterprise bean in the Source Editor.</li>
+        <li>Right-click anywhere in the bean class and choose EJB Methods <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Send 
+          JMS Message.</li>
+      </ol>
+    </td>
+  </tr>-->
 </table>
 <hr>
 <small><a href="../../credits.html">Legal Notices</a></small> 
