@@ -215,6 +215,7 @@ public class OptionsAction extends CallableSystemAction {
             if (singleton == null) {
                 singleton = this;
             }
+            singleton.scheduleValidation();
             return singleton;
         }
         

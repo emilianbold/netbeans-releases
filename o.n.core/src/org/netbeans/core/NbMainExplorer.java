@@ -544,18 +544,18 @@ public final class NbMainExplorer extends CloneableTopComponent
         public Node getRootContext () {
             return getExplorerManager().getRootContext();
         }
-
-        /** Overrides superclass version - adds request for initialization
-        * of the icon and other attributes, also re-attaches listener to the
-        * root context */
-        public void readExternal (java.io.ObjectInput oi)
-        throws java.io.IOException, ClassNotFoundException {
-            super.readExternal(oi);
+        
+        /** Deserialization of ExploreTab, if subclass overwrites this method it
+            MUST call scheduleValidation() */
+        public Object readResolve() throws java.io.ObjectStreamException {
             // put a request for later validation
             // we must do this here, because of ExplorerManager's deserialization.
             // Root context of ExplorerManager is validated AFTER all other
             // deserialization, so we must wait for it
+            //Bugfix #17622, call of scheduleValidation() moved from
+            //readExternal().
             scheduleValidation();
+            return this;
         }
 
         /** Implementation of DeferredPerformer.DeferredCommand
@@ -619,7 +619,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         // we must do this here, because of ExplorerManager's deserialization.
         // Root context of ExplorerManager is validated AFTER all other
         // deserialization, so we must wait for it
-        final void scheduleValidation() {
+        protected final void scheduleValidation() {
             valid = false;
             WindowManagerImpl.deferredPerformer().putRequest(this, null);
         }
@@ -933,7 +933,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             
             return DEFAULT;
         }
-
+        
         /** Exchanges deserialized root context to projects root context
         * to keep the uniquennes. */
         protected void validateRootContext () {
