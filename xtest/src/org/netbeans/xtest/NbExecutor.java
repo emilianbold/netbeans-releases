@@ -49,7 +49,8 @@ public class NbExecutor extends Task {
                                             "running.mode",
                                             "basedir",
                                             "user.dir",
-                                            "scrambler"};
+                                            "scrambler",
+                                            "jdkhome"};
 
     public void setTargetName(String name) {
         this.targetName = name;
