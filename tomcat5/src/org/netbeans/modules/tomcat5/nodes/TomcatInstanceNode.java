@@ -103,7 +103,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
             }
             return port;
         };
-        return new Integer(8080);
+        return TomcatManager.DEFAULT_SERVER_PORT;
     }
 
     private Boolean getClassic() {
@@ -111,7 +111,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         if (m != null){
             return  m.getClassic();
         };
-        return Boolean.FALSE;
+        return TomcatManager.DEFAULT_CLASSIC;
     }
 
     private String getDebugType() {
@@ -135,7 +135,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         if (m != null){
             return  m.getDebugPort();
         };
-        return new Integer(11555);
+        return TomcatManager.DEFAULT_DEBUG_PORT;
     }
     
     private Integer getAdminPort () {
@@ -143,7 +143,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         if (m != null){
             return m.getAdminPort();
         };
-        return new Integer(8005);
+        return TomcatManager.DEFAULT_ADMIN_PORT;
     }
 
     private void setClassic (Boolean classic) {
