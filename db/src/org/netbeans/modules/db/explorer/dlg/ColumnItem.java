@@ -216,13 +216,26 @@ public class ColumnItem extends Hashtable
 	{
 		String name = getName();
 		int size = getSize();
-		if (name == null || name.length()==0) return false;
+		int scale = getScale();
+    
+    if (size < scale)
+      return false;
+		if (name == null || name.length() == 0)
+      return false;
+    
 		return true;
 	}
+  /** Getter for property scale.
+   * @return Value of property scale.
+   */
+  public int getScale() {
+		return ((Integer)get(SCALE)).intValue();
+  }
 }	
 
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         3/3/00   Radko Najman    added scale property
  *  7    Gandalf   1.6         11/27/99 Patrik Knakal   
  *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
