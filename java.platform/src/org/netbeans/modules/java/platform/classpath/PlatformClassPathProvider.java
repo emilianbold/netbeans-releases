@@ -13,21 +13,19 @@
 
 package org.netbeans.modules.java.platform.classpath;
 
-import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.net.URL;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 
 
 public class PlatformClassPathProvider implements ClassPathProvider {
-    
+
+
+
     /** Creates a new instance of PlatformClassPathProvider */
     public PlatformClassPathProvider() {
     }
@@ -37,26 +35,56 @@ public class PlatformClassPathProvider implements ClassPathProvider {
         if (fo == null || type == null) {
             throw new IllegalArgumentException();
         }
-        JavaPlatformManager manager = JavaPlatformManager.getDefault();
-        JavaPlatform[] platforms = manager.getInstalledPlatforms();
+        JavaPlatform lp = this.getLastUsedPlatform(fo);
+        JavaPlatform[] platforms;
+        if (lp != null) {
+            platforms = new JavaPlatform[] {lp};
+        }
+        else {
+            JavaPlatformManager manager = JavaPlatformManager.getDefault();
+            platforms = manager.getInstalledPlatforms();
+        }
         for (int i=0; i<platforms.length; i++) {
             ClassPath bootClassPath = platforms[i].getBootstrapLibraries();
             ClassPath libraryPath = platforms[i].getStandardLibraries();
             ClassPath sourcePath = platforms[i].getSourceFolders();
-            if (ClassPath.SOURCE.equals(type) && sourcePath != null && sourcePath.contains(fo)) {
+            FileObject root = null;
+            if (ClassPath.SOURCE.equals(type) && sourcePath != null &&
+                (root = sourcePath.findOwnerRoot(fo))!=null) {
+                this.setLastUsedPlatform (root,platforms[i]);
                 return sourcePath;
             }
             else if (ClassPath.BOOT.equals(type) &&
-                    ((bootClassPath != null && bootClassPath.contains (fo)) ||
-                    (sourcePath != null && sourcePath.contains(fo)) ||
-                    (libraryPath != null && libraryPath.contains(fo)))) {
+                    ((bootClassPath != null && (root = bootClassPath.findOwnerRoot (fo))!=null) ||
+                    (sourcePath != null && (root = sourcePath.findOwnerRoot(fo)) != null) ||
+                    (libraryPath != null && (root = libraryPath.findOwnerRoot(fo))!=null))) {
+                this.setLastUsedPlatform (root,platforms[i]);
                 return bootClassPath;
             }
             else if (ClassPath.COMPILE.equals(type) &&
-                    libraryPath != null && libraryPath.contains(fo)) {
+                    libraryPath != null && (root = libraryPath.findOwnerRoot(fo))!=null) {
+                this.setLastUsedPlatform (root,platforms[i]);
                 return libraryPath;
             }
         }
         return null;
     }
+
+
+    private synchronized void setLastUsedPlatform (FileObject root, JavaPlatform platform) {
+        this.lastUsedRoot = root;
+        this.lastUsedPlatform = platform;
+    }
+
+    private synchronized JavaPlatform getLastUsedPlatform (FileObject file) {
+        if (this.lastUsedRoot != null && FileUtil.isParentOf(this.lastUsedRoot,file)) {
+            return lastUsedPlatform;
+        }
+        else {
+            return null;
+        }
+    }
+
+    private FileObject lastUsedRoot;
+    private JavaPlatform lastUsedPlatform;
 }

@@ -14,6 +14,7 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -32,12 +33,21 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
 
     public ClassPath findClassPath(FileObject file, String type) {
         assert file != null;
-        Library[] libraries = LibraryManager.getDefault().getLibraries();
+        Library[] libraries;
+        Library ll = this.getLastUsedLibrary(file);
+        if (ll != null) {
+            libraries = new Library[] {ll};
+        }
+        else {
+            libraries = LibraryManager.getDefault().getLibraries();
+        }
         for (int i=0; i< libraries.length; i++) {
             if (J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(libraries[i].getType())) {
                 List resources = Util.getResourcesRoots(libraries[i].getContent (J2SELibraryTypeProvider.VOLUME_TYPE_SRC));
                 ClassPath sourcePath = ClassPathSupport.createClassPath((URL[]) resources.toArray(new URL[resources.size()]));
-                if (sourcePath.contains(file)) {
+                FileObject root;
+                if ((root = sourcePath.findOwnerRoot(file))!=null) {
+                    this.setLastUsedLibrary(root,libraries[i]);
                     if (ClassPath.SOURCE.equals(type)) {
                         return sourcePath;
                     }
@@ -56,4 +66,22 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
         }
         return null;
     }
+
+
+    private synchronized Library getLastUsedLibrary (FileObject fo) {
+        if (this.lastUsedRoot != null && FileUtil.isParentOf(this.lastUsedRoot,fo)) {
+            return this.lastUsedLibrary;
+        }
+        else {
+            return null;
+        }
+    }
+
+    private synchronized void setLastUsedLibrary (FileObject root, Library lib) {
+        this.lastUsedRoot = root;
+        this.lastUsedLibrary = lib;
+    }
+
+    private FileObject lastUsedRoot;
+    private Library lastUsedLibrary;
 }
