@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.tomcat5.nodes;
 
+import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.io.File;
 import java.util.LinkedList;
@@ -26,6 +27,7 @@ import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.tomcat5.ide.Customizer;
 import org.netbeans.modules.tomcat5.nodes.actions.SharedContextLogAction;
 import org.netbeans.modules.tomcat5.nodes.actions.EditServerXmlAction;
 import org.netbeans.modules.tomcat5.ide.MonitorSupport;
@@ -95,6 +97,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         }
         return NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
             new Object []{portStr});
+    }
+    
+    public boolean hasCustomizer() {
+        return true;
+    }
+    
+    public Component getCustomizer() {
+        return new Customizer(getTomcatManager());
     }
     
     /** Returns the TomcatManager for this node, or null if TomcatManager was not found - which 
