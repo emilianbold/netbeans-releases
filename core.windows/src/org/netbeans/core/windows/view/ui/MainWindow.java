@@ -315,8 +315,6 @@ public final class MainWindow extends JFrame {
 
     /** Prepares main window, has to be called after {@link initializeComponents()}. */
     public void prepareWindow() {
-        pack();
-        
         initializeBounds();
     }
 
