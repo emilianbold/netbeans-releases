@@ -520,17 +520,21 @@
       <tocitem text="RMI Registry Browser Commands" target="rmi_registrybrowser_using" />
     </tocitem>
     <tocitem text="Specifying RMI Settings for a Project" target="rmi_settings_intro">
+      <tocitem text="RMI Module Settings" target="rmi_settings_mod" />
+      <tocitem text="RMI Registry Settings" target="rmi_settings_regis" />
+      <tocitem text="RMI Activation Settings" target="rmi_settings_activ" />
       <tocitem text="RMI Compiler Settings" target="rmi_settings_compilernode" />	
       <tocitem text="RMI Execution Settings" target="rmi_settings_executionnode" />
       <tocitem text="RMI Debugging Settings" target="rmi_settings_debuggernode" />	
     </tocitem>
     <tocitem text="Using the RMI Activation Browser" target="rmi_activatebrowser">
       <tocitem text="Starting the RMI Activation Browser" target="rmi_activate_starting" />
+      <tocitem text="Adding an Activation Browser" target="rmi_activ_instance" />
+      <tocitem text="Adding an Activation Group" target="rmi_activ_group" />
       <tocitem text="Displaying the Activation System Node" target="rmi_activate_usingsystem" />
       <tocitem text="Displaying the Activation Group Node" target="rmi_activate_usinggroup" />
       <tocitem text="Displaying the Activatable Objects Node" target="rmi_activate_usingobject" />	
     </tocitem>
-    <tocitem text="RMI Wizard" target="rmi_wizard" />
   </tocitem>
   <tocitem text="Generating Code With JNDI" target="jndi_intro">
     <tocitem text="JNDI Concepts" target="jndi_concepts_basics" />
