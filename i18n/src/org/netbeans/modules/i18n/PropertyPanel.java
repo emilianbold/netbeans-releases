@@ -232,7 +232,7 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.gridy = 0;
         gridBagConstraints1.gridwidth = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(replaceFormatTextField, gridBagConstraints1);
         
@@ -240,7 +240,7 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(replaceFormatLabel, gridBagConstraints1);
         
