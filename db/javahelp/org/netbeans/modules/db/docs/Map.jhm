@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
 <mapID target="testdriver" url="testdriver.html" />
 <mapID target="dbadapt" url="dbadapt.html" />
 <mapID target="connunsupp" url="connusupp.html" />
+<mapID target="delobj" url="delobj.html" />
 
 <mapID target="addcopycols" url="addcopycols.html" />
 <mapID target="createtables" url="createtables.html" />

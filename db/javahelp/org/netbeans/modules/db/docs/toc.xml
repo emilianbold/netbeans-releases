@@ -35,6 +35,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <tocitem text="Creating Views" target="createviews" />
 
+<tocitem text="Deleting an Object" target="delobj" />
+
 <tocitem text="Enabling and Disabling Debug Mode to Monitor SQL Commands" target="manipsql" />
 
 <tocitem text="Hints and Tips for Use with the Database Explorer" target="misc" />
