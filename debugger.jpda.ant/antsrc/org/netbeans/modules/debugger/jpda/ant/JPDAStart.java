@@ -287,7 +287,7 @@ public class JPDAStart extends Task {
     private static boolean isValid(File f, Project project) {
         // check that file does not contain ${something}
         if (f.getPath().indexOf("${") != -1 && !f.exists()) { // NOI18N
-            project.log("Classpath item "+f+" will be ignored.", Project.MSG_DEBUG); // NOI18N
+            project.log("Classpath item "+f+" will be ignored.", Project.MSG_VERBOSE); // NOI18N
             return false;
         }
         return true;
