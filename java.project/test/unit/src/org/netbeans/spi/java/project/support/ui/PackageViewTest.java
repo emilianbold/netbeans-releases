@@ -79,13 +79,52 @@ public class PackageViewTest extends NbTestCase {
                      new int[] { 0, }, 
                      true ); // Needs to compute the nodes first
         
+        // Testing files/folders in ignored folders
+                     
         // Create ignored folder             
         FileUtil.createFolder( root, "src/KRTEK.folder" );
         assertNodes( ch, 
                      new String[] { "a.b.c", },
                      new int[] { 0, } );
         
+        // Create file in ignored folder
+        FileUtil.createData( root, "src/KRTEK.folder/nonignored.file" );
+        assertNodes( ch, 
+                     new String[] { "a.b.c", },
+                     new int[] { 0, } );             
+                     
+        // Create folder in ignored folder             
+        FileObject nonignoredFolder = FileUtil.createFolder( root, "src/KRTEK.folder/nonignored.folder" );
+        assertNodes( ch, 
+                     new String[] { "a.b.c", },
+                     new int[] { 0, } );
+                     
+        // Create file in NONignored folder which is under ignored folder            
+        FileObject nonignoredFile = FileUtil.createData( root, "src/KRTEK.folder/nonignored.folder/nonignored.file" );
+        assertNodes( ch, 
+                     new String[] { "a.b.c", },
+                     new int[] { 0, } );
+             
+        // Rename the file             
+        FileLock nfLock = nonignoredFile.lock();
+        nonignoredFile.rename( nfLock, "othername.file", null );
+        nfLock.releaseLock();     
+        assertNodes( ch, 
+                     new String[] { "a.b.c", },
+                     new int[] { 0, } );
 
+        // Delete the file and folder
+        nonignoredFile.delete();             
+        assertNodes( ch, 
+                     new String[] { "a.b.c", },
+                     new int[] { 0, } );
+        nonignoredFolder.delete();
+        assertNodes( ch, 
+                     new String[] { "a.b.c", },
+                     new int[] { 0, } );
+
+                     
+                     
         // Create some other folder
         FileUtil.createFolder( root, "src/e/f/g" );
         assertNodes( ch, 
@@ -254,13 +293,15 @@ public class PackageViewTest extends NbTestCase {
         lock.releaseLock();
         assertNodes( ch, 
                      new String[] { "a.b.c", "t.r.g", "t.r.h", "t.r.i" },
-                     new int[] { 0, 0, 1, 0 } );
-        
+                     new int[] { 0, 0, 1, 0 } );                
+                     
         // Test truncated package names
         FileUtil.createFolder(root, "src/org/foo/something/whatever");
         assertNodes( ch, 
                      new String[] { "a.b.c", "o.foo.som.whatever", "t.r.g", "t.r.h", "t.r.i" },
                      new int[] { 0, 0, 0, 1, 0 } );
+        
+                     
                      
     }
     

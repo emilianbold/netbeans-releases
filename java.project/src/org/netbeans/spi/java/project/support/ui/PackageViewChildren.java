@@ -295,7 +295,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
 
     public void fileFolderCreated( FileEvent fe ) {
         FileObject fo = fe.getFile();        
-        if ( FileUtil.isParentOf( root, fo ) && VisibilityQuery.getDefault().isVisible( fo ) ) {
+        if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
             cleanEmptyKeys( fo );                
             add( fo, false );
             findNonExcludedPackages( fo );
@@ -305,7 +305,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     
     public void fileDataCreated( FileEvent fe ) {
         FileObject fo = fe.getFile();
-        if ( FileUtil.isParentOf( root, fo ) && VisibilityQuery.getDefault().isVisible( fo ) ) {
+        if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
             FileObject parent = fo.getParent();
             if ( !VisibilityQuery.getDefault().isVisible( parent ) ) {
                 return; // Adding file into ignored directory
@@ -326,7 +326,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
         // System.out.println("FILE DELETED " + FileUtil.getRelativePath( root, fo ) );
         
-        if ( FileUtil.isParentOf( root, fo ) && VisibilityQuery.getDefault().isVisible( fo ) ) {
+        if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
             
             // System.out.println("IS FOLDER? " + fo + " : " + fo.isFolder() );
                                   /* Hack for MasterFS see #42464 */
@@ -450,6 +450,23 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         */
         
     }
+    
+    /** Test whether file and all it's parent up to parent paremeter
+     * are visible
+     */    
+    private boolean isVisible( FileObject parent, FileObject file ) {
+        
+        do {    
+            if ( !VisibilityQuery.getDefault().isVisible( file ) )  {
+                return false;
+            }
+            file = file.getParent();
+        }
+        while ( file != null && file != parent );    
+                
+        return true;        
+    }
+    
 
     // Implementation of ChangeListener ------------------------------------
         
