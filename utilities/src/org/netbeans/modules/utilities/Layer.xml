@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
         <file name="netbeans-faq.url">
-            <![CDATA[http://www.netbeans.org/articles/faqs/index.html]]>
+            <![CDATA[http://www.netbeans.org/devhome/faqs/index.html]]>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
         <file name="ffj-kb.url">
