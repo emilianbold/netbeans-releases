@@ -63,6 +63,25 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
         }
     }
 
+    /** Gets code for setting up one component's constraints and adding the
+     * component to the layout (container).
+     * @return one component's layout code
+     */
+    public CodeGroup getComponentCode(int index) {
+        // hack: be sure that the constraints object is associated with the
+        // primary component (to be able to get its preferred size)
+        LayoutConstraints constr = getConstraints(index);
+        if (constr instanceof AbsoluteLayoutConstraints) {
+            AbsoluteLayoutConstraints absConstr =
+                (AbsoluteLayoutConstraints) constr;
+            if (absConstr.refComponent == null)
+                absConstr.refComponent =
+                    getLayoutContext().getPrimaryComponent(index);
+        }
+
+        return super.getComponentCode(index);
+    }
+
     /** Sets up the layout (without adding components) on a real container,
      * according to the internal metadata representation.
      * @param container instance of a real container to be set
