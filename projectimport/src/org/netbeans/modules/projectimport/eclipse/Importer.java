@@ -250,18 +250,28 @@ final class Importer {
                 NewJ2SEPlatform plat = NewJ2SEPlatform.create(fo);
                 plat.run();
                 if (plat.isValid()) {
-                    String displayName = createPlatformDisplayName(plat);
-                    String antName = createPlatformAntName(displayName);
-                    plat.setDisplayName(displayName);
-                    plat.setAntName(antName);
-                    FileObject platformsFolder = Repository.getDefault().
-                            getDefaultFileSystem().findResource(
-                            "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
-                    assert platformsFolder != null;
-                    DataObject dobj = PlatformConvertor.create(plat,
-                            DataFolder.findFolder(platformsFolder), antName);
-                    nbPlf = (JavaPlatform) dobj.getNodeDelegate().getLookup().
-                            lookup(JavaPlatform.class);
+                    if (plat.findTool("javac")!= null) {    //NOI18N
+                        String displayName = createPlatformDisplayName(plat);
+                        String antName = createPlatformAntName(displayName);
+                        plat.setDisplayName(displayName);
+                        plat.setAntName(antName);
+                        FileObject platformsFolder = Repository.getDefault().
+                                getDefaultFileSystem().findResource(
+                                "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
+                        assert platformsFolder != null;
+                        DataObject dobj = PlatformConvertor.create(plat,
+                                DataFolder.findFolder(platformsFolder), antName);
+                        nbPlf = (JavaPlatform) dobj.getNodeDelegate().getLookup().
+                                lookup(JavaPlatform.class);
+                    }
+                    else {
+                        //tzezula: TODO: User should be notified in the UI
+                        // that the platform is JRE and can't be used
+                        ErrorManager.getDefault().log(ErrorManager.ERROR,
+                            "The Eclipse Project platform can't be used," + // NOI18N
+                            "it is an JRE, the NetBeans project requires JDK," +    //NOI18N
+                            "the default platform will be used."); // NOI18N
+                    }
                 } else {
                     // tzezula: TODO: User should be notified in the UI and
                     // probably default platform is used (not sure if it is
