@@ -33,9 +33,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${core/term.dir}/${nb.modules.dir}/org-netbeans-lib-terminalemulator.jar"/>
+        <pathelement location="${core/output2.dir}/${nb.modules.dir}/org-netbeans-core-output2.jar"/>
         <pathelement location="${core/windows.dir}/${nb.modules.dir}/org-netbeans-core-windows.jar"/>
-        <pathelement location="${core/output.dir}/${nb.modules.dir}/org-netbeans-core-output.jar"/>
         <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/> <!--XXX core.???.dir? -->
         <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
          
