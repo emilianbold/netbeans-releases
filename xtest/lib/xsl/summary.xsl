@@ -16,7 +16,7 @@
 
 <xsl:include href="library.xsl"/>
 
-<xsl:key name="module" match="TestBag" use="@module"/>
+<xsl:key name="module" match="TestBag" use="concat(@module,parent::*/@runID)"/>
 
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
@@ -71,7 +71,9 @@
 		<TR></TR>
 		<!-- testrun details -->
 		<xsl:for-each select="TestRun">
+			<!--
 			<xsl:sort select="@timeStamp" order="descending"/>
+			-->
 			<TR class="pass">
 				<TD>
 					<A href="#{@runID}">
@@ -101,7 +103,8 @@
 </xsl:template>
 
 <xsl:template match="TestRun">
-	<A NAME="{@runID}"><H2>Test Run</H2></A>
+	<xsl:variable name="currentRunID" select="@runID"/>
+	<A NAME="{$currentRunID}"><H2>Test Run</H2></A>
 	<UL>
 		<xsl:if test="@name">
 			<LI>Name:<xsl:value-of select="@name"/></LI>
@@ -119,7 +122,7 @@
 
 	</UL>
 	
-	<xsl:variable name="uniqueModule" select="TestBag[generate-id(.)=generate-id(key('module',./@module)[1])]"/>
+	<xsl:variable name="uniqueModule" select="TestBag[generate-id(.)=generate-id(key('module',concat(./@module,$currentRunID))[1])]"/>
 	
 	<!-- summary for the testrun -->
 	<TABLE width="98%" cellspacing="2" cellpadding="5" border="0">
@@ -204,7 +207,7 @@
 			<TD align="center">-</TD>
 			<TD align="center">-</TD>
 			<xsl:variable name="testsPass" select="sum(parent::*/TestBag[@module=$currentModule]/@testsPass)"/>
-			<xsl:variable name="testsTotal" select="sum(parent::*/TestBag[@module=$currentModule]/@testsPass)"/>
+			<xsl:variable name="testsTotal" select="sum(parent::*/TestBag[@module=$currentModule]/@testsTotal)"/>
 			<TD><B><xsl:value-of select="$testsTotal"/></B></TD>
 			<TD><B><xsl:value-of select="$testsPass"/></B></TD>
 			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/></B></TD>
