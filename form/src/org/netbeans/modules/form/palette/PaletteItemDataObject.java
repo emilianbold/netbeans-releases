@@ -17,6 +17,9 @@ import java.util.*;
 import java.io.*;
 import java.beans.*;
 
+import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
+
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
@@ -148,126 +151,37 @@ class PaletteItemDataObject extends MultiDataObject {
             paletteItem = item;
             return;
         }
-
+        
         // parse the XML file
-        org.w3c.dom.Element mainElement = null;
         try {
-            org.w3c.dom.Document doc = XMLUtil.parse(
-                new org.xml.sax.InputSource(getPrimaryFile().getURL().toExternalForm()),
-                false, false, null, null);
-
-            mainElement = doc.getDocumentElement();
-        }
-        catch (java.io.IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        catch (org.xml.sax.SAXException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        // TODO report errors, validate using DTD?
-
-        // read the DOM tree
-        if (mainElement == null)
-            return;
-
-        if (!XML_ROOT.equals(mainElement.getTagName()))
-            return;
-
-        if (!mainElement.getAttribute(ATTR_VERSION).startsWith("1.")) // NOI18N
-            return; // unsupported version
-
-        // TODO item ID (for now we take the class name as the ID)
-
-        String componentClassName = null;
-        List cpTypeList = new ArrayList(); // list for classpath type entries
-        List cpNameList = new ArrayList(); // list for classpath root name entries
-
-        // root element ok, read the content
-        org.w3c.dom.NodeList childNodes = mainElement.getChildNodes();
-        for (int i=0, n=childNodes.getLength(); i < n; i++) {
-            org.w3c.dom.NamedNodeMap attr = childNodes.item(i).getAttributes();
-            String nodeName = childNodes.item(i).getNodeName();
-            org.w3c.dom.Node node;
-
-            if (TAG_COMPONENT.equals(nodeName)) {
-                node = attr.getNamedItem(ATTR_CLASSNAME);
-                if (node != null) {
-                    componentClassName = node.getNodeValue();
-
-                    node = attr.getNamedItem(ATTR_TYPE);
-                    if (node != null)
-                        item.setComponentExplicitType(node.getNodeValue());
-
-//                    node = attr.getNamedItem(ATTR_IS_CONTAINER);
-//                    if (node != null)
-//                        item.isContainer_explicit =
-//                            Boolean.valueOf(node.getNodeValue());
+            XMLReader reader = XMLUtil.createXMLReader();
+            PaletteItemHandler handler = new PaletteItemHandler();
+            reader.setContentHandler(handler);
+            InputSource input = new InputSource(getPrimaryFile().getURL().toExternalForm());
+            reader.parse(input);
+            // TODO report errors, validate using DTD?
+            
+            item.setComponentExplicitType(handler.componentExplicitType);
+            if (handler.componentClassName != null || displayName_key != null) {
+                String[] cpTypes;
+                String[] cpNames;
+                if (handler.cpTypeList.size() > 0) {
+                    cpTypes = new String[handler.cpTypeList.size()];
+                    handler.cpTypeList.toArray(cpTypes);
+                    cpNames = new String[handler.cpNameList.size()];
+                    handler.cpNameList.toArray(cpNames);
+                } else {
+                    cpTypes = cpNames = null;
                 }
+                
+                item.setComponentClassSource(handler.componentClassName, cpTypes, cpNames);
+                
+                paletteItem = item;
             }
-
-            else if (TAG_CLASSPATH.equals(nodeName)) {
-                org.w3c.dom.NodeList cpNodes = childNodes.item(i).getChildNodes();
-                for (int j=0, m=cpNodes.getLength(); j < m; j++) {
-                    attr = cpNodes.item(j).getAttributes();
-                    nodeName = cpNodes.item(j).getNodeName();
-
-                    if (TAG_RESOURCE.equals(nodeName)) {
-                        node = attr.getNamedItem(ATTR_TYPE);
-                        if (node != null) {
-                            String type = node.getNodeValue();
-                            node = attr.getNamedItem(ATTR_NAME);
-                            if (node != null) {
-                                cpTypeList.add(type);
-                                cpNameList.add(node.getNodeValue());
-                            }
-                        }
-                    }
-                }
-            }
-
-            else if (TAG_DESCRIPTION.equals(nodeName)) {
-                node = attr.getNamedItem(ATTR_BUNDLE);
-                if (node != null)
-                    bundleName = node.getNodeValue();
-
-                node = attr.getNamedItem(ATTR_DISPLAY_NAME_KEY);
-                if (node != null)
-                    displayName_key = node.getNodeValue();
-
-                node = attr.getNamedItem(ATTR_TOOLTIP_KEY);
-                if (node != null)
-                    tooltip_key = node.getNodeValue();
-            }
-
-            else if (TAG_ICON16.equals(nodeName)) {
-                node = attr.getNamedItem(ATTR_URL);
-                if (node != null)
-                    icon16URL = node.getNodeValue();
-                // TODO support also class resource name for icons
-            }
-
-            else if (TAG_ICON32.equals(nodeName)) {
-                node = attr.getNamedItem(ATTR_URL);
-                if (node != null)
-                    icon32URL = node.getNodeValue();
-                // TODO support also class resource name for icons
-            }
-        }
-
-        if (componentClassName != null || displayName_key != null) {
-            String[] cpTypes;
-            String[] cpNames;
-            if (cpTypeList.size() > 0) {
-                cpTypes = new String[cpTypeList.size()];
-                cpTypeList.toArray(cpTypes);
-                cpNames = new String[cpNameList.size()];
-                cpNameList.toArray(cpNames);
-            }
-            else cpTypes = cpNames = null;
-
-            item.setComponentClassSource(componentClassName, cpTypes, cpNames);
-
-            paletteItem = item;
+        } catch (SAXException saxex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, saxex);
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
         }
     }
 
@@ -540,4 +454,74 @@ class PaletteItemDataObject extends MultiDataObject {
             return null;
         }
     }
+    
+    private class PaletteItemHandler extends DefaultHandler {
+        List cpTypeList; // list for classpath type entries
+        List cpNameList; // list for classpath root name entries
+        String componentClassName;
+        String componentExplicitType;
+        
+        public void startDocument() throws SAXException {
+            cpTypeList = new ArrayList();
+            cpNameList = new ArrayList();
+            componentClassName = null;
+            componentExplicitType = null;
+        }
+                
+        public void startElement(String uri, String localName, String qName,
+            Attributes attributes) throws SAXException {
+            if (XML_ROOT.equals(qName)) {
+                String version = attributes.getValue(ATTR_VERSION);
+                if (version == null) {
+                    String message = NbBundle.getBundle(PaletteItemDataObject.class)
+                        .getString("MSG_UnknownPaletteItemVersion"); // NOI18N
+                    throw new SAXException(message);
+                } else if (!version.startsWith("1.")) { // NOI18N
+                    String message = NbBundle.getBundle(PaletteItemDataObject.class)
+                        .getString("MSG_UnsupportedPaletteItemVersion"); // NOI18N
+                    throw new SAXException(message);
+                }
+                // TODO item ID (for now we take the class name as the ID)
+            } else if (TAG_COMPONENT.equals(qName)) {
+                String className = attributes.getValue(ATTR_CLASSNAME);
+                componentClassName = className;
+                componentExplicitType = attributes.getValue(ATTR_TYPE);
+            } else if (TAG_CLASSPATH.equals(qName)) {
+                // Content is processed in the next branch
+            } else if (TAG_RESOURCE.equals(qName)) {
+                String type = attributes.getValue(ATTR_TYPE);
+                String name = attributes.getValue(ATTR_NAME);
+                if ((type != null) && (name != null)) {
+                    cpTypeList.add(type);
+                    cpNameList.add(name);
+                }
+            } else if (TAG_DESCRIPTION.equals(qName)) {
+                String bundle = attributes.getValue(ATTR_BUNDLE);
+                if (bundle != null) {
+                    PaletteItemDataObject.this.bundleName = bundle;
+                }
+                String displayNameKey = attributes.getValue(ATTR_DISPLAY_NAME_KEY);
+                if (displayNameKey != null) {
+                    PaletteItemDataObject.this.displayName_key = displayNameKey;
+                }
+                String tooltipKey = attributes.getValue(ATTR_TOOLTIP_KEY);
+                if (tooltipKey != null) {
+                    PaletteItemDataObject.this.tooltip_key = tooltipKey;
+                }
+            } else if (TAG_ICON16.equals(qName)) {
+                String url = attributes.getValue(ATTR_URL);
+                if (url != null) {
+                    PaletteItemDataObject.this.icon16URL = url;
+                }
+                // TODO support also class resource name for icons
+            } else if (TAG_ICON32.equals(qName)) {
+                String url = attributes.getValue(ATTR_URL);
+                if (url != null) {
+                    PaletteItemDataObject.this.icon32URL = url;
+                }
+                // TODO support also class resource name for icons
+            }
+        }
+    }
+    
 }
