@@ -432,7 +432,7 @@ is divided into following sections:
     </target>
     <target name="run-debug">
         <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
-        <xsl:attribute name ="depends">init,compile</xsl:attribute>
+        <xsl:attribute name ="depends">dist</xsl:attribute>
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
         <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}" clientModuleUri="${{client.module.uri}}"/>
         <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
