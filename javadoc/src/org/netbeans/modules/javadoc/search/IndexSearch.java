@@ -273,6 +273,7 @@ public class IndexSearch
         byReferenceButton = new javax.swing.JToggleButton();
         byTypeButton = new javax.swing.JToggleButton();
         quickViewButton = new javax.swing.JToggleButton();
+        helpButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -363,9 +364,21 @@ public class IndexSearch
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         jPanel1.add(quickViewButton, gridBagConstraints);
+
+        helpButton.setToolTipText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp_tooltip"));
+        helpButton.setText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp"));
+        helpButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                helpButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        jPanel1.add(helpButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -374,6 +387,10 @@ public class IndexSearch
         add(jPanel1, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
+        TopManager.getDefault().showHelp(getHelpCtx());
+    }//GEN-LAST:event_helpButtonActionPerformed
 
     private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showSource
         showSource();
@@ -542,6 +559,7 @@ public class IndexSearch
     private javax.swing.JToggleButton byReferenceButton;
     private javax.swing.JToggleButton byNameButton;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JButton helpButton;
     // End of variables declaration//GEN-END:variables
 
 
