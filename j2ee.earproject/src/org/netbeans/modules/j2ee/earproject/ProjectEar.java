@@ -163,6 +163,10 @@ public final class ProjectEar extends J2eeAppProvider
     public String getServerID () {
         return project.getServerID(); //helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_TYPE);
     }
+    
+    public void setServerInstanceID(String severInstanceID) {
+        // TODO: implement when needed
+    }
 
     public String getServerInstanceID () {
         return project.getServerInstanceID(); //helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_INSTANCE);

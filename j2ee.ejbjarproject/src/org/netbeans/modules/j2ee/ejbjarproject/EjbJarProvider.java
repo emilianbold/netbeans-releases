@@ -150,6 +150,10 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
     }
     
+    public void setServerInstanceID(String severInstanceID) {
+        EjbJarProjectProperties.setServerInstance(project, helper, severInstanceID);
+    }
+    
     public Iterator getArchiveContents() throws java.io.IOException {
         return new IT(getContentDirectory());
     }
