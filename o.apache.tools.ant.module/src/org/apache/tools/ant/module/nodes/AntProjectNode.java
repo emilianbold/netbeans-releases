@@ -92,7 +92,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         AntProjectCookie main = (AntProjectCookie) getCookie (AntProjectCookie.class);
         Element projel = main.getProjectElement ();
         if (projel != null) {
-            getCookieSet ().add (new ElementSupport.Instance (projel, Project.class));
+            getCookieSet ().add (new ElementSupport.Introspection (projel, Project.class.getName ()));
         } else {
             ElementCookie cookie = (ElementCookie) getCookie (ElementCookie.class);
             if (cookie != null) {

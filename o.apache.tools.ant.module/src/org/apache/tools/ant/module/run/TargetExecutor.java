@@ -33,7 +33,6 @@ import org.apache.tools.ant.taskdefs.Taskdef;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.api.AntTargetCookie;
 import org.apache.tools.ant.module.api.DefinitionRegistry;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 
@@ -42,7 +41,6 @@ import org.apache.tools.ant.module.api.IntrospectedInfo;
 public class TargetExecutor implements Runnable {
 
     private AntProjectCookie pcookie;
-    private AntTargetCookie cookie;
     private InputOutput io;
     private boolean ok = false;
     private int verbosity = AntSettings.getDefault ().getVerbosity ();
@@ -52,21 +50,9 @@ public class TargetExecutor implements Runnable {
     /** targets may be null to indicate default target */
     public TargetExecutor (AntProjectCookie pcookie, String[] targets) {
         this.pcookie = pcookie;
-        cookie = null;
         targetNames = ((targets == null) ? null : Arrays.asList (targets));
     }
   
-    /** @deprecated use other constructor instead */
-    public TargetExecutor (AntTargetCookie cookie) throws IOException {
-        pcookie = cookie.getProjectCookie ();
-        this.cookie = cookie;
-        Element el = cookie.getTargetElement ();
-        if (el == null) throw new IOException ("No <target> found"); // NOI18N
-        String targetName = el.getAttribute ("name"); // NOI18N
-        if (targetName.length () == 0) throw new IOException ("<target> had no name"); // NOI18N
-        targetNames = Collections.singletonList (targetName);
-    }
-    
     public void setVerbosity (int v) {
         verbosity = v;
     }
@@ -114,10 +100,6 @@ public class TargetExecutor implements Runnable {
         } else {
             name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
         }
-        /*
-        String name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_target",
-                                           projectName, fileName, cookie.getTargetElement ().getAttribute ("name")); // NOI18N
-        */
         final ExecutorTask task;
         synchronized (this) {
             // Note that this redirects stdout/stderr from

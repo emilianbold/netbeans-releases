@@ -41,11 +41,9 @@ import org.openide.util.actions.SystemAction;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.api.AntTargetCookie;
 import org.apache.tools.ant.module.api.ElementCookie;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.run.TargetExecutor;
-import org.apache.tools.ant.module.xml.AntTargetSupport;
 import org.apache.tools.ant.module.xml.ElementSupport;
 
 /** A node representing an Ant build target.
@@ -54,8 +52,10 @@ public class AntTargetNode extends ElementNode {
 
     public AntTargetNode (final AntProjectCookie project, final Element targetElem) {
         super (targetElem, new AntTargetChildren (targetElem));
+        /*
         AntTargetCookie targetCookie = new AntTargetSupport (project, targetElem);
         getCookieSet().add(targetCookie);
+         */
         if (project.getFile () != null) {
             getCookieSet ().add (new ExecCookie () {
                     public void start () {
@@ -70,7 +70,7 @@ public class AntTargetNode extends ElementNode {
     }
 
     protected ElementCookie createElementCookie () {
-        return new ElementSupport.Instance (el, Target.class);
+        return new ElementSupport.Introspection (el, Target.class.getName ());
     }
 
     protected void initDisplay () {
