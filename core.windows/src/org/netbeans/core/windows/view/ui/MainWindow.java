@@ -148,10 +148,8 @@ public final class MainWindow extends JFrame {
         
         Color fillC = (Color)UIManager.get("nb_workplace_fill"); //NOI18N
         if (fillC != null) {
-            System.err.println("Workplace fill is " + fillC);
             desktopPanel.setBackground(fillC);
         }
-        
 
         getContentPane().add(desktopPanel, BorderLayout.CENTER);
         //#38810 start - focusing the main window in case it's not active and the menu is
