@@ -52,10 +52,13 @@ public class DocumentationSettings extends SystemOption {
     private static final String PROP_ASK_AFTER_GEN       = "askAfterGenerating";   //NOI18N
        
     static final long serialVersionUID =-574331845406968391L;
-    
+
+    private transient boolean initializing = false;
+
     /** Constructor for DocumentationSettings */
     protected void initialize () {
         super.initialize ();
+        initializing = true;
         if( getProperty( PROP_SEARCH_SORT ) == null )
             setIdxSearchSort("A");   //NOI18N
         if( getProperty( PROP_SEARCH_NO_HTML ) == null )
@@ -74,6 +77,7 @@ public class DocumentationSettings extends SystemOption {
             setAskBeforeGenerating( false );
         if( getProperty( PROP_ASK_AFTER_GEN ) == null )
             setAskAfterGenerating( true );
+        initializing = false;
     }
 
     public static DocumentationSettings getDefault(){
@@ -99,7 +103,7 @@ public class DocumentationSettings extends SystemOption {
     /** Setter for autocommentModifierMask
     */  
     public void setAutocommentModifierMask(int mask) {
-        putProperty( PROP_AUTOCOMENT_MOD_MASK, new Integer(mask), true );
+        putProperty( PROP_AUTOCOMENT_MOD_MASK, new Integer(mask), !(initializing || isReadExternal()) );
         //autocommentModifierMask = mask;
     }
 
@@ -113,7 +117,7 @@ public class DocumentationSettings extends SystemOption {
     /** Setter for autocommentPackage
     */  
     public void setAutocommentPackage(boolean pckg) {
-        putProperty( PROP_AUTOCOMENT_PACKAGE, pckg ? Boolean.TRUE : Boolean.FALSE, true );
+        putProperty( PROP_AUTOCOMENT_PACKAGE, pckg ? Boolean.TRUE : Boolean.FALSE, !(initializing || isReadExternal()) );
         //autocommentPackage = pckg;
     }
 
@@ -128,7 +132,7 @@ public class DocumentationSettings extends SystemOption {
     /** Setter for documentation autocommentErrorMask
     */  
     public void setAutocommentErrorMask(int mask) {
-        putProperty( PROP_AUTOCOMENT_ERR_MASK, new Integer(mask), true );
+        putProperty( PROP_AUTOCOMENT_ERR_MASK, new Integer(mask), !(initializing || isReadExternal()) );
         //autocommentErrorMask = mask;
     }
 
@@ -144,7 +148,7 @@ public class DocumentationSettings extends SystemOption {
      *@param idxSearchSort New value of property idxSearchSort.
      */
     public void setIdxSearchSort(String idxSearchSort) {
-        putProperty( PROP_SEARCH_SORT , idxSearchSort, true );
+        putProperty( PROP_SEARCH_SORT , idxSearchSort, !(initializing || isReadExternal()) );
         //this.idxSearchSort = idxSearchSort;
     }
 
@@ -160,7 +164,7 @@ public class DocumentationSettings extends SystemOption {
      *@param idxSearchNoHtml New value of property idxSearchNoHtml.
      */
     public void setIdxSearchNoHtml(boolean idxSearchNoHtml) {
-        putProperty( PROP_SEARCH_NO_HTML, idxSearchNoHtml ? Boolean.TRUE : Boolean.FALSE, true );
+        putProperty( PROP_SEARCH_NO_HTML, idxSearchNoHtml ? Boolean.TRUE : Boolean.FALSE, !(initializing || isReadExternal()) );
         //this.idxSearchNoHtml = idxSearchNoHtml;
     }
 
@@ -176,7 +180,7 @@ public class DocumentationSettings extends SystemOption {
      *@param idxSearchSplit New value of property idxSearchSplit.
      */
     public void setIdxSearchSplit(int idxSearchSplit) {
-        putProperty( PROP_SEARCH_SPLIT , new Integer(idxSearchSplit), true );
+        putProperty( PROP_SEARCH_SPLIT , new Integer(idxSearchSplit), !(initializing || isReadExternal()) );
         //this.idxSearchSplit = idxSearchSplit;
     }
 
@@ -191,7 +195,7 @@ public class DocumentationSettings extends SystemOption {
      * @param autocommentSplit Position of the splitter in the autocomment window.
      */
     public void setAutocommentSplit(int autocommentSplit) {
-        putProperty( PROP_AUTOCOMENT_SPLIT , new Integer(autocommentSplit), true );
+        putProperty( PROP_AUTOCOMENT_SPLIT , new Integer(autocommentSplit), !(initializing || isReadExternal()) );
         //this.autocommentSplit = autocommentSplit;
     }
     
@@ -203,6 +207,9 @@ public class DocumentationSettings extends SystemOption {
         JavadocType type = null;
         if (javadocType != null) {
             type = (JavadocType)javadocType.getServiceType();
+            if (type == null) {
+                type = (JavadocType)Lookup.getDefault().lookup(org.netbeans.modules.javadoc.settings.ExternalJavadocSettingsService.class);
+            }
         }
         if (type == null) {
             if (isWriteExternal()) {
@@ -219,9 +226,9 @@ public class DocumentationSettings extends SystemOption {
     public void setExecutor(ServiceType executor) {
         if (executor == null &&
             isReadExternal()) {
-            putProperty(PROP_EXECUTOR, null, true);
+            putProperty(PROP_EXECUTOR, null, false);
         } else {
-            putProperty( PROP_EXECUTOR , new JavadocType.Handle(executor), true );        
+            putProperty( PROP_EXECUTOR , new JavadocType.Handle(executor), !(initializing || isReadExternal()) );
 	}
     }
     
@@ -250,9 +257,9 @@ public class DocumentationSettings extends SystemOption {
     public void setSearchEngine(ServiceType search) {
         if (search == null &&
             isReadExternal()) {
-            putProperty(PROP_SEARCH, null, true);
+            putProperty(PROP_SEARCH, null, false);
         } else {
-            putProperty( PROP_SEARCH , new JavadocSearchType.Handle( search ), true );
+            putProperty( PROP_SEARCH , new JavadocSearchType.Handle( search ), !(initializing || isReadExternal()));
 	}        
     }    
 
@@ -272,9 +279,9 @@ public class DocumentationSettings extends SystemOption {
     public void setFileSystemSettings(java.util.HashMap map){        
         if (map == null &&
             isReadExternal()) {
-            putProperty( PROP_FS_SETTING, null, true);
+            putProperty( PROP_FS_SETTING, null, false);
         } else {
-            java.util.HashMap old = (java.util.HashMap)putProperty( PROP_FS_SETTING , map, true );
+            java.util.HashMap old = (java.util.HashMap)putProperty( PROP_FS_SETTING , map, !(initializing || isReadExternal()));
             if( old != null && old.equals(map) )
                 firePropertyChange(PROP_FS_SETTING, null, null);
 	}                
@@ -285,7 +292,7 @@ public class DocumentationSettings extends SystemOption {
     }
 
     public void setAskBeforeGenerating( boolean ask ){
-        putProperty( PROP_ASK_BEFORE_GEN, ask ? Boolean.TRUE : Boolean.FALSE, true );
+        putProperty( PROP_ASK_BEFORE_GEN, ask ? Boolean.TRUE : Boolean.FALSE, !(initializing || isReadExternal()) );
     }
 
     public boolean getAskAfterGenerating(){
@@ -293,6 +300,6 @@ public class DocumentationSettings extends SystemOption {
     }
 
     public void setAskAfterGenerating( boolean ask ){
-        putProperty( PROP_ASK_AFTER_GEN, ask ? Boolean.TRUE : Boolean.FALSE, true );
+        putProperty( PROP_ASK_AFTER_GEN, ask ? Boolean.TRUE : Boolean.FALSE, !(initializing || isReadExternal()) );
     }    
 }
