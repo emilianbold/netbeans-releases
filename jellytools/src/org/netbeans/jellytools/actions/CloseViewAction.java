@@ -7,57 +7,61 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
 
-import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventDispatcher;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
 
-/** Used to call "Close View" popup menu item,
- * "org.openide.actions.CloseViewAction" or Ctrl+F4 shortcut.
+/** Used to call "Close Window" popup menu item, "Window|Close Window" 
+ * main menu, "org.openide.actions.CloseViewAction" or Ctrl+F4 shortcut.
  * @see Action
  * @author Jiri.Skrivanek@sun.com
  */
 public class CloseViewAction extends Action {
     
-    
-    /** "Close" popup menu item. */
-    private static final String popupPath = Bundle.getStringTrimmed("org.openide.actions.Bundle",
-                                                                    "CloseView");
+    /** Window main menu item. */
+    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", 
+                                                                    "Menu/Window");
+    /** "Close Window" popup menu item. */
+    private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
+                                                                    "LBL_CloseWindowAction");
+    /** "Windows|Close Window" main menu item */
+    private static final String menuPath = windowItem+"|"+
+                            Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
+                                                    "CloseWindowAction");
     private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F4, KeyEvent.CTRL_MASK);
     
-    /** Create new CloseViewAction instance. It doesn't have main menu
-     * representation. */
+    /** Create new CloseViewAction instance. */
     public CloseViewAction() {
-        super(null, popupPath, "org.openide.actions.CloseViewAction", shortcut);
+        super(menuPath, popupPath, "org.openide.actions.CloseViewAction", shortcut);
     }
-    
-    /** Perform popup action on selected tab from given JTabbedPaneOperator.
-     * @param tabbedPaneOperator JTabbedPaneOperator instance on which perform
-     * the action
+
+    /** Performs popup action Close Window on given component operator 
+     * which is activated before the action. It only accepts TopComponentOperator
+     * as parameter.
+     * @param compOperator operator which should be activated and closed
      */
-    public void performPopup(JTabbedPaneOperator tabbedPaneOperator) {
-        int index = tabbedPaneOperator.getSelectedIndex();
-        Rectangle rc = tabbedPaneOperator.getBoundsAt(index);
-        // make rectagle visible in MDI
-        Object[] params = {rc};
-        Class[] pClasses = {Rectangle.class};
-        new EventDispatcher(tabbedPaneOperator.getSource()).invokeExistingMethod(
-                "scrollRectToVisible",
-                params,
-                pClasses,
-                JemmyProperties.getCurrentOutput());
-        // open popup
-        tabbedPaneOperator.clickForPopup(rc.x, rc.y);
-        new JPopupMenuOperator().pushMenu(popupPath, "|");
+    public void performPopup(ComponentOperator compOperator) {
+        if(compOperator instanceof TopComponentOperator) {
+            performPopup((TopComponentOperator)compOperator);
+        } else {
+            throw new UnsupportedOperationException(
+                    "CloseViewAction can only be called on TopComponentOperator.");
+        }
+    }
+
+    /** Performs popup action Close Window on given top component operator 
+     * which is activated before the action.
+     * @param compOperator operator which should be activated and closed
+     */
+    public void performPopup(TopComponentOperator tco) {
+        tco.pushMenuOnTab(popupPath);
     }
     
     /** Throws UnsupportedOperationException because CloseViewAction doesn't have

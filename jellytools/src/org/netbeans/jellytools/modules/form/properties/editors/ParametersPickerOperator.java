@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.form.properties.editors;
@@ -29,10 +29,9 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  * Usage:<br>
  * <pre>
  *      PropertySheetOperator pso = new PropertySheetOperator("Properties of doGarbage");
- *      PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
  *      String propertyName = "text";
- *      TextFieldProperty tfp = new TextFieldProperty(psto, propertyName);
- *      tfp.openEditor();
+ *      Property property = new Property(pso, propertyName);
+ *      property.openEditor();
  *      FormCustomEditorOperator fceo = new FormCustomEditorOperator(propertyName);
  *      // ParametersPickerOperator
  *      fceo.setMode("Form Connection");

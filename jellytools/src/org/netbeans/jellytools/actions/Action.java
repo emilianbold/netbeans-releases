@@ -381,14 +381,24 @@ public class Action {
      * @throws UnsupportedOperationException when action does not support API mode */    
     public void performAPI() {
         if (systemActionClass==null) {
-            throw new UnsupportedOperationException(getClass().toString()+" does not define SystemAction");
+            throw new UnsupportedOperationException(getClass().toString()+" does not support API call.");
         }
         try {
             // actions has to be invoked in dispatch thread (see http://www.netbeans.org/issues/show_bug.cgi?id=35755)
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
-                    SystemAction.get(systemActionClass).actionPerformed(
+                    if(SystemAction.class.isAssignableFrom(systemActionClass)) {
+                        // SystemAction used in IDE
+                        SystemAction.get(systemActionClass).actionPerformed(
                                                 new ActionEvent(new Container(), 0, null));
+                    } else {
+                        // action implements javax.swing.Action
+                        try {
+                            ((javax.swing.Action)systemActionClass.newInstance()).actionPerformed(null);
+                        } catch (Exception e) {
+                            throw new JemmyException("Exception when trying to create instance of action \""+systemActionClass.getName()+"\".", e);
+                        }
+                    }
                 }
             });
             Thread.sleep(AFTER_ACTION_WAIT_TIME);

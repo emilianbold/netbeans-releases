@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,10 +38,20 @@ public class ComponentPaletteOperator extends TopComponentOperator {
     private JToggleButtonOperator _tbConnectionMode;
     private JButtonOperator _btTestForm;
 
-    /** Creates an instance for the first ComponentPalette appearence
+    /** Waits for the Component Palette appearence and creates operator for it.
+     */
+    public ComponentPaletteOperator() {
+        super(waitTopComponent(null, null, 0, new PaletteTopComponentChooser()));
+    }
+
+    /**
+     * Creates an instance for the first ComponentPalette appearence
      * inside ContainerOperator. Usualy it is FormEditorOperator but Component
      * Palette can be docked to any window.
      * @param contOperator container where to find Component Palette
+     * @deprecated Use {@link ComponentPaletteOperator()} instead because
+     * there is no need to specify container. In fact the Component Palette
+     * is singleton window in IDE.
      */
     public ComponentPaletteOperator(ContainerOperator contOperator) {
         super(waitTopComponent(contOperator, null, 0, new PaletteTopComponentChooser()));

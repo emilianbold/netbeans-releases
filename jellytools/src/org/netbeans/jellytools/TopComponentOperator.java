@@ -7,25 +7,24 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.util.Iterator;
-import java.util.Set;
+import java.awt.EventQueue;
+import java.awt.Point;
 import javax.swing.JComponent;
-import org.netbeans.jellytools.JellyVersion;
+import org.netbeans.core.windows.view.ui.tabcontrol.TabLayoutModel;
+import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
+import org.netbeans.jellytools.actions.AttachWindowAction;
 import org.netbeans.jellytools.actions.CloneViewAction;
-import org.netbeans.jellytools.actions.DockingAction;
-import org.netbeans.jellytools.actions.UndockAction;
-
-import org.netbeans.jemmy.operators.JComponentOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jellytools.actions.CloseViewAction;
+import org.netbeans.jellytools.actions.MaximizeWindowAction;
+import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
@@ -33,37 +32,38 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JComponentOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.util.DefaultVisualizer;
-
 import org.openide.windows.TopComponent;
 
 /** Represents org.openide.windows.TopComponent. It is IDE wrapper for a lot of
- * panels in IDE which can be docked to a window. TopComponent is for example
- * Filesystems tab in the Explorer, every tab in the Source Editor, every tab
- * in the Output Window, Property sheet and many more.<br>
- * TopComponentOperator has slightly different behaviour of TopComponent Lookup.
- * TopComponent can be located by TopComponentOperator anywhere inside current
- * workspace or explicitly inside some Container.
+ * panels in IDE. TopComponent is for example Filesystems panel, every editor 
+ * panel or execution panel. TopComponent can be located by TopComponentOperator 
+ * anywhere inside IDE, if it is opened. It is by default activated which means
+ * it is put to foreground if there exist more top components in a split area.
+ * TopComponent can also be located explicitly inside some Container.
  *
  * <p>
  * Usage:<br>
  * <pre>
- *      EditorWindowOperator eo = new EditorWindowOperator();
- *      eo.selectPage("TopComponentOperator");
- *      TopComponentOperator tco = new TopComponentOperator(eo, "TopComponentOperator");
- *      tco.dockViewInto("Explorer|"+DockingAction.RIGHT);
- *      Thread.sleep(1000);
- *      tco.undockView();
- *      Thread.sleep(1000);
- *      tco.dockViewInto("Source Editor|"+DockingAction.CENTER);
- *      Thread.sleep(1000);
- *      tco.cloneView();
- *      Thread.sleep(1000);
+ *      TopComponentOperator tco = new TopComponentOperator("Execution");
+ *      tco.pushMenuOnTab("Maximize");
+ *      tco.restore();
+ *      tco.attachTo("Filesystems", AttachWindowAction.AS_LAST_TAB);
+ *      tco.attachTo("Output", AttachWindowAction.RIGHT);
  *      tco.close();
  * </pre>
  * @author Adam.Sotona@sun.com
  * @author Jiri.Skrivanek@sun.com
+ *
+ * @see org.netbeans.jellytools.ations.AttachWindowAction
+ * @see org.netbeans.jellytools.actions.CloneViewAction
+ * @see org.netbeans.jellytools.actions.CloseAllDocumentsAction
+ * @see org.netbeans.jellytools.actions.CloseViewAction
+ * @see org.netbeans.jellytools.actions.MaximizeWindowAction
+ * @see org.netbeans.jellytools.actions.RestoreWindowAction
  */
 public class TopComponentOperator extends JComponentOperator {
     
@@ -74,11 +74,11 @@ public class TopComponentOperator extends JComponentOperator {
         JemmyProperties.getCurrentTimeouts().initDefault("EventDispatcher.RobotAutoDelay", 0);
         DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, 
         new MouseRobotDriver(JemmyProperties.getCurrentTimeouts().create("EventDispatcher.RobotAutoDelay"), 
-//                                     new Class[] {TopComponentOperator.class}));
                              new String[] {TopComponentOperator.class.getName()}));
     }
     
     /** Waits for index-th TopComponent with given name in specified container.
+     * It is activated by default.
      * @param contOper container where to search
      * @param topComponentName name of TopComponent (it used to be label of tab)
      * @param index index of TopComponent to be find
@@ -90,6 +90,7 @@ public class TopComponentOperator extends JComponentOperator {
     }
     
     /** Waits for TopComponent with given name in specified container.
+     * It is activated by default.
      * @param contOper container where to search
      * @param topComponentName name of TopComponent (it used to be label of tab)
      */
@@ -98,6 +99,7 @@ public class TopComponentOperator extends JComponentOperator {
     }
     
     /** Waits for index-th TopComponent in specified container.
+     * It is activated by default.
      * @param contOper container where to search
      * @param index index of TopComponent to be find
      */
@@ -106,6 +108,7 @@ public class TopComponentOperator extends JComponentOperator {
     }
     
     /** Waits for first TopComponent in specified container.
+     * It is activated by default.
      * @param contOper container where to search
      */
     public TopComponentOperator(ContainerOperator contOper) {
@@ -113,6 +116,7 @@ public class TopComponentOperator extends JComponentOperator {
     }
     
     /** Waits for index-th TopComponent with given name in whole IDE.
+     * It is activated by default.
      * @param topComponentName name of TopComponent (it used to be label of tab)
      * @param index index of TopComponent to be find
      */
@@ -122,6 +126,7 @@ public class TopComponentOperator extends JComponentOperator {
     }
     
     /** Waits for first TopComponent with given name in whole IDE.
+     * It is activated by default.
      * @param topComponentName name of TopComponent (it used to be label of tab)
      */
     public TopComponentOperator(String topComponentName) {
@@ -129,6 +134,7 @@ public class TopComponentOperator extends JComponentOperator {
     }
   
     /** Creates new instance from given TopComponent.
+     * It is activated by default.
      * This constructor is used in properties.PropertySheetOperator.
      * @param jComponent instance of JComponent
      */
@@ -136,62 +142,110 @@ public class TopComponentOperator extends JComponentOperator {
         super(jComponent);
         makeComponentVisible();
     }
-    
-    public ComponentVisualizer getVisualizer() {
-        ComponentVisualizer v=super.getVisualizer();
-        if (v instanceof DefaultVisualizer)
-            ((DefaultVisualizer)v).switchTab(true);
-        return v;
+
+    /** Makes active window in which this top component resides (main window
+     * in joined mode) and then activates this top component to be in the
+     * foreground.
+     */    
+    public void makeComponentVisible() {
+        // Make active window in which this TopComponent resides. 
+        // It is necessary e.g. for keyboard focus
+        super.makeComponentVisible();
+        //  Check if it is really TopComponent. It doesn't have to be 
+        // for example for PropertySheetOperator in Options window.
+        // In that case do nothing.
+        if(getSource() instanceof TopComponent) {
+            // activate TopComponent, i.e. switch tab control to be active
+            if(EventQueue.isDispatchThread()) {
+                // if in dispatch thread, invoke directly
+                ((TopComponent)getSource()).requestActive();
+            } else {
+                // run it in dispatch thread
+                try {
+                    // actions has to be invoked in dispatch thread (see http://www.netbeans.org/issues/show_bug.cgi?id=35755)
+                    EventQueue.invokeAndWait(new Runnable() {
+                        public void run() {
+                            ((TopComponent)getSource()).requestActive();
+                        }
+                    });
+                } catch (Exception e) {
+                    throw new JemmyException("Exception while calling requestActive()", e);
+                }
+            }
+        }
     }
-    
-    /** Docks this TopComponent into new host. TopComponent is focused before
-     * action is performed.
-     * @param newLocationPath path where to dock TopComponent (e.g. "Explorer|Center"
-     * or "DockingAction.NEW_SINGLE_FRAME")
+
+    /** Attaches this top component to a new position defined by target top
+     * component and side.
+     * @param targetTopComponentName name of top component defining a position
+     * where to attach top component
+     * @param side side where to attach top component ({@link AttachWindowAction#LEFT}, 
+     * {@link AttachWindowAction#RIGHT}, {@link AttachWindowAction#TOP}, 
+     * {@link AttachWindowAction#BOTTOM}, {@link AttachWindowAction#AS_LAST_TAB})
      */
-    public void dockViewInto(String newLocationPath) {
-        if (!(getSource() instanceof TopComponent)) 
-            throw new JemmyException("Trying to call dockViewInto(...) method on non-TopComponent object");
-        makeComponentVisible();
-        ((TopComponent)getSource()).requestFocus();
-        // need to wait a little
-        new EventTool().waitNoEvent(500);
-        new DockingAction(newLocationPath).perform();
+    public void attachTo(String targetTopComponentName, String side) {
+        new AttachWindowAction(targetTopComponentName, side).perform(this);
+    }
+
+    /** Attaches this top component to a new position defined by target top
+     * component and side.
+     * @param targetTopComponentOperator operator of top component defining a position
+     * where to attach top component
+     * @param side side where to attach top component ({@link AttachWindowAction#LEFT}, 
+     * {@link AttachWindowAction#RIGHT}, {@link AttachWindowAction#TOP}, 
+     * {@link AttachWindowAction#BOTTOM}, {@link AttachWindowAction#AS_LAST_TAB})
+     */
+    public void attachTo(TopComponentOperator targetTopComponentOperator, String side) {
+        new AttachWindowAction(targetTopComponentOperator, side).perform(this);
     }
     
-    /** Undocks this TopComponent. TopComponent is focused before
+    /** Maximizes this top component. */
+    public void maximize() {
+        new MaximizeWindowAction().perform(this);
+    }
+
+    /** Restores maximized window. */
+    public void restore() {
+        new RestoreWindowAction().perform(this);
+    }
+    
+    /** Clones this TopComponent. TopComponent is activated before
      * action is performed. */
-    public void undockView() {
-        if (!(getSource() instanceof TopComponent)) 
-            throw new JemmyException("Trying to call undockView() method on non-TopComponent object");
-        makeComponentVisible();
-        ((TopComponent)getSource()).requestFocus();
-        // need to wait a little
-        new EventTool().waitNoEvent(500);
-        new UndockAction().perform();
+    public void cloneDocument() {
+        new CloneViewAction().perform(this);
     }
     
-    /** Clones this TopComponent. TopComponent is focused before
-     * action is performed. */
-    public void cloneView() {
-        makeComponentVisible();
-        if (!(getSource() instanceof TopComponent)) 
-            throw new JemmyException("Trying to call cloneView() method on non-TopComponent object");
-        ((TopComponent)getSource()).requestFocus();
-        // need to wait a little
-        new EventTool().waitNoEvent(500);
-        new CloneViewAction().perform();
+    /** Closes this TopComponent and wait until it is closed. 
+     * TopComponent is activated before action is performed. */
+    public void closeWindow() {
+        new CloseViewAction().perform(this);
+        waitComponentShowing(false);
     }
-    
-    /** Closes this TopComponent instance by IDE API call. */
+
+    /** Closes this TopComponent instance by IDE API call and wait until 
+     * it is not closed.
+     */
     public void close() {
         // used direct call of IDE API method because CloseViewAction closes
         // active TopComponent and not neccesarily this one
-        if (!(getSource() instanceof TopComponent)) 
-            throw new JemmyException("Trying to call close() method on non-TopComponent object");
         ((TopComponent)getSource()).close();
+        waitComponentShowing(false);
     }
-    
+
+    /** Closes all opened documents and waits until this top component is closed. */
+    public void closeAllDocuments() {
+        new CloseAllDocumentsAction().perform(this);
+        waitComponentShowing(false);
+    }
+
+    /** Saves this document by popup menu on tab. */
+    public void saveDocument() {
+        // Save Document
+        String saveItem = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
+                                                      "LBL_SaveDocumentAction");
+        pushMenuOnTab(saveItem);
+    }
+
     /** Finds index-th TopComponent with given name in IDE registry.
      * It takes into account only showing ones.
      * @param name name of TopComponent
@@ -204,6 +258,7 @@ public class TopComponentOperator extends JComponentOperator {
     
     /** Finds index-th TopComponent with given name in IDE registry.
      * It takes into account only showing ones.
+     * @param cont container where to search
      * @param name name of TopComponent
      * @param index index of TopComponent
      * @param subchooser ComponentChooser to determine exact TopComponent
@@ -262,6 +317,7 @@ public class TopComponentOperator extends JComponentOperator {
     /** Waits for index-th TopComponent with given name in IDE registry.
      * It throws JemmyException when TopComponent is not find until timeout
      * expires.
+     * @param cont container where to search
      * @param name name of TopComponent
      * @param index index of TopComponent
      * @param subchooser ComponentChooser to determine exact TopComponent
@@ -276,7 +332,9 @@ public class TopComponentOperator extends JComponentOperator {
                 }
                 public String getDescription() {
                     return("Wait TopComponent with name="+name+
-                           " index="+String.valueOf(index)+" loaded");
+                           " index="+String.valueOf(index)+
+                           (subchooser == null ? "" : " subchooser="+subchooser.getDescription())+
+                           " loaded");
                 }
             });
             Timeouts times = JemmyProperties.getCurrentTimeouts().cloneThis();
@@ -287,5 +345,38 @@ public class TopComponentOperator extends JComponentOperator {
         } catch(InterruptedException e) {
             return(null);
         }
+    }
+    
+    /** Makes top component active and pushes given menu on its tab.
+     * @param popupPath menu path separated by '|' (e.g. "CVS|Refresh")
+     */
+    public void pushMenuOnTab(String popupPath) {
+        this.makeComponentVisible();
+        TabbedAdapter ta = findTabbedAdapter();
+        int index = ta.indexOfTopComponent((TopComponent)getSource());
+        JComponent tabsComp = ta.getTabsDisplayer().getComponent();
+        TabLayoutModel mdl = ta.getTabsDisplayer().getTabsUI().getLayoutModel();
+        
+        Point p = tabsComp.getLocation();
+        int x = mdl.getX(index) + p.x;
+        int y = mdl.getY(index) + p.y;
+        // TODO - remove 4 when 36190 fixed
+        // need a constant to satisfy that we are in tab
+        new JPopupMenuOperator(JPopupMenuOperator.callPopup(tabsComp, x+4, y)).pushMenu(popupPath);
+    }
+    
+    /** Returns TabbedAdapter component from parents hierarchy. 
+     * Used also in EditorWindowOperator.
+     */
+    TabbedAdapter findTabbedAdapter() {
+        Component parent = getSource().getParent();
+        while(parent != null) {
+            if(parent instanceof TabbedAdapter) {
+                return (TabbedAdapter)parent;
+            } else {
+                parent = parent.getParent();
+            }
+        }
+        return null;
     }
 }

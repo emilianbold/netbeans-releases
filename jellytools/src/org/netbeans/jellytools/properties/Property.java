@@ -281,6 +281,8 @@ public class Property {
      * "a new item from list", "false", "TRUE")
      */
     public void setValue(String textValue) {
+        propertySheetOper.getOutput().printTrace("Setting value \""+textValue+
+                                                 "\" of property \""+getName()+"\".");
         if(!isEnabled()) {
             throw new JemmyException("Property \""+getName()+"\" is read only.");
         }
@@ -538,9 +540,9 @@ public class Property {
     }
     
     /** Gets short description for this property. Short description is also 
-     * used in tooltip.
-     * @return short description for this property.
-     */
+    * used in tooltip.
+    * @return short description for this property.
+    */
     public String getShortDescription() {
         return this.property.getShortDescription();
     }

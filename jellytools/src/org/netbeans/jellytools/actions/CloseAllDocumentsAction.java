@@ -12,94 +12,93 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-/** Used to call "Clone Document" popup menu item, "Window|Clone Document" main menu item or
- * "org.openide.actions.CloneViewAction".
+/** Used to call "Close All Documents" popup menu item, "Window|Close All Documents" 
+ * main menu, "org.netbeans.core.windows.actions.CloseAllDocumentsAction"
+ * or Ctrl+Shift+F4 shortcut.
  * @see Action
- * @see org.netbeans.jellytools.TopComponentOperator
  * @author Jiri.Skrivanek@sun.com
  */
-public class CloneViewAction extends Action {
-
+public class CloseAllDocumentsAction extends Action {
+    
     /** Window main menu item. */
     private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", 
                                                                     "Menu/Window");
-    /** "Window|Clone Document" main menu item. */
-    private static final String menuPath = windowItem
-                                            + "|"
-                                            + Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", 
-                                                                      "CloneWindowAction");
-
-    /** "Clone Document" popup menu item. */
+    /** "Close All Documents" popup menu item. */
     private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-                                                                    "LBL_CloneDocumentAction");
-
-    /** Create new CloneViewAction instance. */
-    public CloneViewAction() {
-        super(menuPath, popupPath, "org.openide.actions.CloneViewAction");
-    }
+                                                                    "LBL_CloseAllDocumentsAction");
+    /** "Windows|Close All Documents" main menu item */
+    private static final String menuPath = windowItem+"|"+
+                            Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
+                                                    "CTL_CloseAllDocumentsAction");
+    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F4, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
     
-    /** Performs popup action Clone Window on given component operator 
+    /** Create new CloseAllDocumentsAction instance. */
+    public CloseAllDocumentsAction() {
+        super(menuPath, popupPath, "org.netbeans.core.windows.actions.CloseAllDocumentsAction", shortcut);
+    }
+
+    /** Performs popup action Close All Documents on given component operator 
      * which is activated before the action. It only accepts TopComponentOperator
      * as parameter.
-     * @param compOperator operator which should be activated and cloned
+     * @param compOperator operator which should be activated
      */
     public void performPopup(ComponentOperator compOperator) {
         if(compOperator instanceof TopComponentOperator) {
             performPopup((TopComponentOperator)compOperator);
         } else {
             throw new UnsupportedOperationException(
-                    "CloneViewAction can only be called on TopComponentOperator.");
+                    "CloseAllDocumentsAction can only be called on TopComponentOperator.");
         }
     }
 
-    /** Performs popup action Clone Window on given top component operator 
-     * which is activated before the action. It only accepts TopComponentOperator
-     * as parameter.
-     * @param tco top component operator which should be activated and cloned
+    /** Performs popup action Close All Documents on given top component operator 
+     * which is activated before the action.
+     * @param compOperator operator which should be activated
      */
     public void performPopup(TopComponentOperator tco) {
         tco.pushMenuOnTab(popupPath);
     }
     
-    /** Throws UnsupportedOperationException because CloneViewAction doesn't have
+    /** Throws UnsupportedOperationException because CloseAllDocumentsAction doesn't have
      * popup representation on nodes.
      * @param nodes array of nodes
      */
     public void performPopup(Node[] nodes) {
         throw new UnsupportedOperationException(
-                    "CloneViewAction doesn't have popup representation on nodes.");
+                    "CloseAllDocumentsAction doesn't have popup representation on nodes.");
     }
 
-    /** Throws UnsupportedOperationException because CloneViewAction doesn't have
+    /** Throws UnsupportedOperationException because CloseAllDocumentsAction doesn't have
      * representation on nodes.
      * @param nodes array of nodes
      */
     public void performAPI(Node[] nodes) {
         throw new UnsupportedOperationException(
-                    "CloneViewAction doesn't have popup representation on nodes.");
+                    "CloseAllDocumentsAction doesn't have popup representation on nodes.");
     }
     
-    /** Throws UnsupportedOperationException because CloneViewAction doesn't have
+    /** Throws UnsupportedOperationException because CloseAllDocumentsAction doesn't have
      * representation on nodes.
      * @param nodes array of nodes
      */
     public void performMenu(Node[] nodes) {
         throw new UnsupportedOperationException(
-                    "CloneViewAction doesn't have popup representation on nodes.");
+                    "CloseAllDocumentsAction doesn't have popup representation on nodes.");
     }
     
-    /** Throws UnsupportedOperationException because CloneViewAction doesn't have
+    /** Throws UnsupportedOperationException because CloseAllDocumentsAction doesn't have
      * representation on nodes.
      * @param nodes array of nodes
      */
     public void performShortcut(Node[] nodes) {
         throw new UnsupportedOperationException(
-                    "CloneViewAction doesn't have popup representation on nodes.");
+                    "CloseAllDocumentsAction doesn't have popup representation on nodes.");
     }
     
 }

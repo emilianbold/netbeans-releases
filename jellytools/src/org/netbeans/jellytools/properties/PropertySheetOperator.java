@@ -13,9 +13,12 @@
 package org.netbeans.jellytools.properties;
 
 import java.awt.Component;
+import java.awt.Frame;
+import java.awt.Window;
 import javax.swing.JComponent;
 import org.netbeans.core.NbSheet;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.HelpAction;
 import org.netbeans.jellytools.actions.PropertiesAction;
@@ -24,13 +27,20 @@ import org.netbeans.jellytools.actions.SortByCategoryAction;
 import org.netbeans.jellytools.actions.SortByNameAction;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TestOut;
+import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
+import org.netbeans.jemmy.operators.WindowOperator;
 import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.windows.TopComponent;
 
 /**
  * Handles org.openide.explorer.propertysheet.PropertySheet which
@@ -56,12 +66,11 @@ import org.openide.explorer.propertysheet.PropertySheet;
  * @see HelpAction
  */
 public class PropertySheetOperator extends TopComponentOperator {
-    // in IDE PropertySheet extends JPanel (parent org.netbeans.core.NbSheet extends TopComponent)
-    
-    /** Operator for tabbed pane
-     * @deprecated will be removed because of property sheet rewrite
+    // In IDE PropertySheet extends JPanel (parent org.netbeans.core.NbSheet extends TopComponent).
+    /* In new window system global property sheet resides in main window and extends TopComponent.
+     * Other property sheets are opened in dialog and they do not behave as TopComponents.
      */
-    private JTabbedPaneOperator _tbpPropertySheetTabPane;
+    
     /** JTable representing property sheet. */
     private JTableOperator _tblSheet;
     private JLabelOperator _lblDescriptionHeader;
@@ -86,12 +95,12 @@ public class PropertySheetOperator extends TopComponentOperator {
         super(sheet);
     }
     
-    /** Waits for TopComponent with "Properties" in its name. */
+    /** Waits for property sheet anywhere in IDE. */
     public PropertySheetOperator() {
-        this(propertiesText);
+        this(waitPropertySheet(null, 0));
     }
     
-    /** Waits for TopComponent with name according to given mode ("No Properties",
+    /** Waits for property sheet with name according to given mode ("No Properties",
      * "Properties of" or "Properties of Multiple Objects").
      * @param mode type of shown properties
      * @see #MODE_NO_PROPERTIES
@@ -102,13 +111,13 @@ public class PropertySheetOperator extends TopComponentOperator {
         this(mode, "");
     }
     
-    /** Waits for TopComponent with name according to given mode ("No Properties",
+    /** Waits for property sheet with name according to given mode ("No Properties",
      * "Properties of" or "Properties of Multiple Objects") plus objectName
      * in case of one object property sheet. In case of usage
      * <code>
      * new PropertySheetOperator(PropertySheetOperator.MODE_PROPERTIES_OF_ONE_OBJECT, "MyClass");
      * </code>
-     * will be searched TopComponent with name "Properties of MyClass" (on
+     * will be searched property sheet with name "Properties of MyClass" (on
      * English locale).
      * @param mode type of shown properties
      * @param objectName name of object for that properties are shown (e.g. "MyClass")
@@ -118,39 +127,36 @@ public class PropertySheetOperator extends TopComponentOperator {
      */
     public PropertySheetOperator(int mode, String objectName) {
         this(Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_GlobalProperties",
-        new Object[]{new Integer(mode), objectName}));
+                              new Object[]{new Integer(mode), objectName}));
     }
     
-    /** Waits for TopComponent of PropertySheet with given name. Typically sheet
+    /** Waits for property sheet with given name. Typically sheet
      * name is used as window title.
      * @param sheetName name of sheet to find (e.g. "Properties of MyClass")
      */
     public PropertySheetOperator(String sheetName) {
-        this(null, sheetName);
+        this(waitPropertySheet(sheetName, 0));
     }
     
-    /** Waits for TopComponent of PropertySheet with given name in specified
+    /** Waits for property sheet with given name in specified
      * container.
      * @param contOper where to find
      * @param sheetName name of sheet to find (e.g. "Properties of MyClass")
      */
     public PropertySheetOperator(ContainerOperator contOper, String sheetName) {
-        super(waitTopComponent(contOper, sheetName, 0, new PropertySheetSubchooser()));
-        if(contOper != null) {
-            copyEnvironment(contOper);
-        }
+        super((JComponent)contOper.waitSubComponent(new PropertySheetSubchooser(sheetName, contOper.getComparator())));
+        copyEnvironment(contOper);
     }
     
-    /** Waits for non TopComponent PropertySheet in specified ContainerOperator.
-     * It is for example PropertySheet in Options
+    /** Waits for property sheet in specified ContainerOperator.
+     * It is for example PropertySheet in Options window.
      * @param contOper where to find
      */
     public PropertySheetOperator(ContainerOperator contOper) {
-        this(contOper,0);
+        this(contOper, 0);
     }
     
-    /** Waits for non TopComponent PropertySheet in specified ContainerOperator.
-     * It is for example PropertySheet in Options
+    /** Waits for index-th property sheet in specified ContainerOperator.
      * @param contOper where to find
      * @param index int index
      */
@@ -282,12 +288,126 @@ public class PropertySheetOperator extends TopComponentOperator {
         tblSheet();
     }
     
-    /** SubChooser to determine PropertySheet TopComponent
+    /** Closes this property sheet and waits until 
+     * it is not closed. In fact it closes container in which this property 
+     * sheet is placed. It can be a TopComponent in the main window or in a separate
+     * frame, or a dialog.
+     */
+    public void close() {
+        if(getSource() instanceof TopComponent) {
+            if(((TopComponent)getSource()).canClose()) {
+                // if it is regular TopComponent and it can be closed
+                super.close();
+                return;
+            }
+        } 
+        // close window where property sheet is hosted but not main window
+        if(getWindow() != MainWindowOperator.getDefault().getSource()) {
+            new WindowOperator(getWindow()).close();
+        }
+    }
+    
+    /** Finds property sheet anywhere in IDE. First it tries to find TopComponent
+     * representing global properties and if not found, it tries to find 
+     * property sheet in all dialogs owned by Main Window or other frames in SDI.
+     * @param sheetName name of property sheet
+     * @param index index of property sheet 
+     */
+    private static JComponent findPropertySheet(String sheetName, int index) {
+        // try to find PS in MainWindow
+        JComponent comp = findTopComponent(null, sheetName, index, new PropertySheetSubchooser());
+        if(comp != null) {
+            return comp;
+        }
+        // Try to find PS in a dialog which is owned by Main window or by other
+        // frame in SDI.
+        Frame[] frames;
+        MainWindowOperator mwo = MainWindowOperator.getDefault();
+        if(mwo.isMDI()) {
+            frames = new Frame[] {(Frame)mwo.getSource()};
+        } else {
+            frames = Frame.getFrames();
+        }
+        for(int frameIndex=0;frameIndex<frames.length;frameIndex++) {
+            Window[] windows = frames[frameIndex].getOwnedWindows();
+            for(int i=0;i<windows.length;i++) {
+                if(windows[i].isShowing()) {
+                    // only showing windows are interesting
+                    // create windows operator for found window
+                    WindowOperator wo = new WindowOperator(windows[i]);
+                    // supress output
+                    wo.setOutput(TestOut.getNullOutput());
+                    // try to find PropertySheet subcomponent
+                    comp = (JComponent)wo.findSubComponent(
+                                new PropertySheetSubchooser(sheetName, mwo.getComparator()), 
+                                index);
+                    if(comp != null) {
+                        return comp;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    /** Waits for property sheet anywhere in IDE. First it tries to find TopComponent
+     * representing global properties and if not found, it tries to find 
+     * property sheet in all dialogs owned by Main Window or other frames in SDI.
+     * @param sheetName name of property sheet
+     * @param index index of property sheet 
+     */
+    private static JComponent waitPropertySheet(final String sheetName, final int index) {
+        try {
+            Waiter waiter = new Waiter(new Waitable() {
+                public Object actionProduced(Object obj) {
+                    return findPropertySheet(sheetName, index);
+                }
+                public String getDescription() {
+                    return("Wait PropertySheet with name="+sheetName+
+                           " index="+index+" loaded");
+                }
+            });
+            Timeouts times = JemmyProperties.getCurrentTimeouts().cloneThis();
+            times.setTimeout("Waiter.WaitingTime", times.getTimeout("ComponentOperator.WaitComponentTimeout"));
+            waiter.setTimeouts(times);
+            waiter.setOutput(JemmyProperties.getCurrentOutput());
+            return (JComponent)waiter.waitAction(null);
+        } catch(InterruptedException e) {
+            throw new JemmyException("Interrupted.", e);
+        }
+    }
+
+    /** SubChooser to determine find property sheet.
      * Used in constructors.
      */
     private static final class PropertySheetSubchooser implements ComponentChooser {
+        
+        private String sheetName;
+        private StringComparator comparator;
+        
+        public PropertySheetSubchooser() {
+        }
+
+        public PropertySheetSubchooser(String sheetName, StringComparator comparator) {
+            this.sheetName = sheetName;
+            this.comparator = comparator;
+        }
+        
         public boolean checkComponent(Component comp) {
-            return (comp instanceof PropertySheet || comp instanceof NbSheet);
+            if(comp instanceof PropertySheet || comp instanceof NbSheet) {
+                if(sheetName == null) {
+                    return true;
+                } else {
+                    if(comp instanceof TopComponent) {
+                        String name = ((TopComponent)comp).getDisplayName();
+                        if(name == null) {
+                            name = comp.getName();
+                        }
+                        return comparator.equals(name, sheetName);
+                    }
+                }
+            }
+            return false;          
         }
         
         public String getDescription() {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,8 +23,6 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 
-import org.openide.windows.TopComponent;
-
 /**
  * Handles access to org.netbeans.modules.form.FormDesigner component.
  */
@@ -33,10 +31,23 @@ public class FormDesignerOperator extends TopComponentOperator {
     private ContainerOperator _componentLayer;
     private ContainerOperator _fakePane;
 
-    /** Searches for FormDesigner in the specified ContainerOperator. Usually
-     * it is FormEditorOperator. In such case it returns currenly selected pane,
-     * if there are more than one form being edited. But FormDesigner can be
-     * docked to any window.     
+    /** Waits for the form Designer appearence and creates operator for it.
+     * It is activated by defalt.
+     */
+    public FormDesignerOperator() {
+        super(waitTopComponent(null, null, 0, new FormDesignerChooser()));
+    }
+
+    /** Waits for the form Designer appearence and creates operator for it.
+     * It is activated by defalt.
+     * @param name name of form designer
+     */
+    public FormDesignerOperator(String name) {
+        super(waitTopComponent(null, name, 0, new FormDesignerChooser()));
+    }
+
+    
+    /** Searches for FormDesigner in the specified ContainerOperator.
      * @param contOper ContainerOperator where to find FormDesigner
      */
     public FormDesignerOperator(ContainerOperator contOper) {
@@ -187,10 +198,7 @@ public class FormDesignerOperator extends TopComponentOperator {
 
     private static class FormDesignerChooser implements ComponentChooser {
         public boolean checkComponent(Component comp) {
-            if(comp.getClass().getName().equals("org.netbeans.modules.form.FormDesigner")) {
-                return comp.isShowing();
-            }
-            return false;
+            return comp.getClass().getName().equals("org.netbeans.modules.form.FormDesigner");
         }
         public String getDescription() {
             return("Any FormDesigner");

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,10 +23,13 @@ import org.netbeans.core.projects.SettingChildren.FileStateProperty;
 
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OptionsViewAction;
+import org.netbeans.jellytools.properties.PropertySheetOperator;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -39,7 +42,7 @@ import org.netbeans.jemmy.operators.Operator;
  * treeTable() method returns TreeTable operator for
  * options list accessing.
  */
-public class OptionsOperator extends NbFrameOperator {
+public class OptionsOperator extends NbDialogOperator {
 
     /** 
      * Constant used for indication of project property definition level
@@ -65,8 +68,6 @@ public class OptionsOperator extends NbFrameOperator {
 
     private static int DEFINE_HERE = 0;
 
-    private JButtonOperator _btClose;
-    private JButtonOperator _btHelp;
     private TreeTableOperator _treeTable;
     
     /**
@@ -115,35 +116,6 @@ public class OptionsOperator extends NbFrameOperator {
         return _treeTable;
     }
 
-    /** Getter for close button.
-     * @return JButtonOperator instance
-     */
-    public JButtonOperator btClose() {
-        if(_btClose == null) {
-            _btClose = 
-                new JButtonOperator(this, 
-                                    Bundle.
-                                    getString("org.netbeans.core.Bundle", 
-                                              "CLOSED_OPTION_CAPTION")); 
-        }
-        return _btClose;
-    }
-
-    /** Getter for help button.
-     * @return JButtonOperator instance
-     */
-    public JButtonOperator btHelp() {
-        if(_btHelp == null) {
-            _btHelp = 
-                new JButtonOperator(this, 
-                                    Bundle.
-                                    getString("org.netbeans.core.Bundle", 
-                                              "HELP_OPTION_CAPTION")); 
-        }
-        return _btHelp;
-    }
-
-
     //shortcuts
     /** Selects an option in the options tree.
      * @param optionPath Path to the option in left (tree-like) column.
@@ -160,20 +132,31 @@ public class OptionsOperator extends NbFrameOperator {
         return(result);
     }
 
-    /**
-     * Pushes close button.
+    /** Selects an option in the options tree, waits for property sheet
+     * corresponding to selected node and returns instance of PropertySheetOperator.
+     * @param optionPath Path to the option in left (tree-like) column.
+     * @return PropertySheetOperator of selected option
      */
-    public void close() {
-        btClose().push();
+    public PropertySheetOperator getPropertySheet(String optionPath) {
+        selectOption(optionPath);
+        // wait for property sheet corresponding with selected node
+        final String nodeName = treeTable().tree().getSelectionPath().getLastPathComponent().toString();
+        try {
+            return (PropertySheetOperator)new Waiter(new Waitable() {
+                public Object actionProduced(Object optionsOper) {
+                    PropertySheetOperator pso = new PropertySheetOperator((OptionsOperator)optionsOper);
+                    return pso.getDescriptionHeader().equals(nodeName) ? pso: null;
+                }
+                public String getDescription() {
+                    return("Wait Property sheet for \""+nodeName+"\" is showing.");
+                }
+            }
+            ).waitAction(this);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Interrupted.", e);
+        }
     }
-
-    /**
-     * Pushes help button.
-     */
-    public void help() {
-        btHelp().push();
-    }
-
+    
     //definition levels
 
     /**

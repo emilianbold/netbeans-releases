@@ -7,15 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.jellytools;
 
 import java.awt.Component;
-import java.awt.Container;
-import javax.swing.JComponent;
 import org.netbeans.jellytools.actions.RuntimeViewAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
@@ -23,22 +21,23 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 /** Operator handling Runtime TopComponent.<p>
- * This operator is child of TopComponentOperator and thus it can be located
- * independently on Explorer (it can by found undocked or docked in other
- * NbFrame).<p>
  * Functionality related to Runtime tree is delegated to JTreeOperator (method
  * tree()) and nodes (method getRootNode()).<p>
  * Example:<p>
  * <pre>
- *  RuntimeTabOperator tab = ExplorerOperator.invoke().runtimeTab();
- *  // or when Explorer is already invoked
- *  RuntimeTabOperator tab = new ExplorerOperator().runtimeTab();
- *  // or when tab is already (un)docked sowhere else
- *  RuntimeTabOperator tab = RuntimeTabOperator();
+ *      RuntimeTabOperator rto = RuntimeTabOperator.invoke();
+ *      // or when Runtime pane is already opened
+ *      //RuntimeTabOperator rto = new RuntimeTabOperator();
+ *      
+ *      // get the tree if needed
+ *      JTreeOperator tree = rto.tree();
+ *      // work with nodes
+ *      rto.getRootNode().select();
+ *      Node node = new Node(rto.getRootNode(), "subnode|sub subnode");
+ * </pre> 
  *
- *  JTreeOperator tree = tab.tree();
- *  System.out.println(tab.getRootNode().getText());
- * </pre> */
+ * @see RuntimeViewAction
+ */
 public class RuntimeTabOperator extends TopComponentOperator {
 
     static final String RUNTIME_CAPTION = Bundle.getString("org.netbeans.core.Bundle", "UI/Runtime");
@@ -51,8 +50,10 @@ public class RuntimeTabOperator extends TopComponentOperator {
         this(null);
     }
     
-    /** Search for RuntimeTopComponent inside given Container
-     * @param contOper parent Container */    
+    /** Search for Runtime TopComponent inside given Container
+     * @param contOper parent Container 
+     * @deprecated Use {@link #RuntimeTabOperator()} instead.
+     */
     public RuntimeTabOperator(ContainerOperator contOper) {
         super(waitTopComponent(contOper, RUNTIME_CAPTION, 0, new RuntimeTabSubchooser()));
         if(contOper != null) {
@@ -60,7 +61,7 @@ public class RuntimeTabOperator extends TopComponentOperator {
         }
     }
 
-    /** invokes RuntimeTab and returns new instance of RuntimeTabOperator
+    /** invokes Runtime and returns new instance of RuntimeTabOperator
      * @return new instance of RuntimeTabOperator */    
     public static RuntimeTabOperator invoke() {
         viewAction.perform();
@@ -76,7 +77,7 @@ public class RuntimeTabOperator extends TopComponentOperator {
         return _tree;
     }
     
-    /** getter for RuntimeRootNode
+    /** getter for Runtime root node
      * @return RuntimeRootNode */    
     public Node getRootNode() {
         return new Node(tree(), "");

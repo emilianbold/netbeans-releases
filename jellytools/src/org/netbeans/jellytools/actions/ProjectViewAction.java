@@ -15,14 +15,13 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "View|Project" main menu item.
+/** Used to call "Window|Project" main menu item.
  * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class ProjectViewAction extends Action {
-    private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/View")
+    private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
                                            + "|"
                                            + Bundle.getStringTrimmed("org.netbeans.modules.projects.Bundle", "CTL_ViewProjectsTabAction");
-//    private static final Shortcut explorerShortcut = new Shortcut(KeyEvent.VK_2, KeyEvent.CTRL_MASK);
 
     /** creates new ProjectViewAction instance */    
     public ProjectViewAction() {

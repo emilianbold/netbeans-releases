@@ -7,37 +7,39 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.jellytools;
 
 import java.awt.Component;
-import java.awt.Container;
-import javax.swing.JComponent;
 import org.netbeans.jellytools.actions.ProjectViewAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-//import org.openide.windows.TopComponent;
 
 /** Operator handling Projects TopComponent.<p>
- * This operator is child of TopComponentOperator and thus it can be located
- * independently on Explorer (it can by found undocked or docked in other
- * NbFrame).<p>
  * Functionality related to Projects tree is delegated to JTreeOperator (method
  * tree()) and nodes (method getRootNode()).<p>
+ *
  * Example:<p>
  * <pre>
- *      ProjectsTabOperator tab = ProjectsTabOperator.invoke();
- *      // or when tab is already opened anywhere
- *      ProjectsTabOperator tab = new ProjectsTabOperator();
+ *      ProjectsTabOperator pto = ProjectsTabOperator.invoke();
+ *      // or when Runtime pane is already opened
+ *      //ProjectsTabOperator pto = new ProjectsTabOperator();
+ *      
+ *      // get the tree if needed
+ *      JTreeOperator tree = pto.tree();
+ *      // work with nodes
+ *      pto.getRootNode().select();
+ *      Node node = new Node(pto.getRootNode(), "subnode|sub subnode");
+ * </pre> 
  *
- *      JTreeOperator tree = tab.tree();
- *      System.out.println(tab.getRootNode().getText());
- * </pre> */
+ * @see ProjectViewAction
+ * @see ProjectRootNode
+ */
 public class ProjectsTabOperator extends TopComponentOperator {
     
     static final String PROJECT_CAPTION = Bundle.getStringTrimmed("org.netbeans.modules.projects.Bundle", "CTL_ProjectDesktop_name");
@@ -51,7 +53,9 @@ public class ProjectsTabOperator extends TopComponentOperator {
     }
     
     /** Search for Projects TopComponent inside given Container
-     * @param contOper parent Container */    
+     * @param contOper parent Container 
+     * @deprecated Use {@link #ProjectsTabOperator()} instead.
+     */
     public ProjectsTabOperator(ContainerOperator contOper) {
         super(waitTopComponent(contOper, PROJECT_CAPTION, 0, new ProjectsTabSubchooser()));
         if(contOper != null) {
@@ -59,7 +63,7 @@ public class ProjectsTabOperator extends TopComponentOperator {
         }
     }
 
-    /** invokes ProjectsTab and returns new instance of ProjectsTabOperator
+    /** invokes Projects and returns new instance of ProjectsTabOperator
      * @return new instance of ProjectsTabOperator */    
     public static ProjectsTabOperator invoke() {
         viewAction.perform();

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
@@ -15,14 +15,14 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "View|Output Window" main menu item, 
+/** Used to call "Window|Output" main menu item, 
  * "org.netbeans.core.output.OutputWindowAction" or Ctrl+4 shortcut.
  * @see Action 
  */
 public class OutputWindowViewAction extends Action {
     private static final String menu = 
         Bundle.getStringTrimmed("org.netbeans.core.Bundle", 
-                                "Menu/View") +
+                                "Menu/Window") +
         "|" +
         Bundle.getStringTrimmed("org.netbeans.core.output.Bundle", 
                                 "OutputWindow");

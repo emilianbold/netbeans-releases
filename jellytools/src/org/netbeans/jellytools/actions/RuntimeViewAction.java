@@ -12,18 +12,16 @@
  */
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "View|Runtime" main menu item or
+/** Used to call "Window|Runtime" main menu item or
  * "org.netbeans.core.actions.ViewRuntimeTabAction".
  * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class RuntimeViewAction extends Action {
-    private static final String runtimeMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/View")
+    private static final String runtimeMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
                                            + "|"
                                            + Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", "CTL_ViewRuntimeTabAction");
-//    private static final Shortcut explorerShortcut = new Shortcut(KeyEvent.VK_2, KeyEvent.CTRL_MASK);
 
     /** creates new RuntimeViewAction instance */    
     public RuntimeViewAction() {

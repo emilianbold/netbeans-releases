@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../core/term/netbeans/modules/autoload/terminalemulator.jar"/>
         <pathelement location="../core/windows/netbeans/modules/core-windows.jar"/>
+        <pathelement location="../core/output/netbeans/modules/autoload/core-output.jar"/>
         <pathelement location="../jemmy/jemmy.jar"/>
         <pathelement location="../xtest/external/junit-3.8.1.jar"/>
         <pathelement location="../xtest/nbjunit/netbeans/modules/ext/nbjunit.jar"/>
@@ -38,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
           <classpath>
             <path refid="jellytools.classpath"/>
           </classpath>
+          <include name="**/jellytools/**"/>
         </javac>
     </target>
 
@@ -53,16 +55,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="jars" depends="timestamp,compile" description="Create jars">
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-
-        <!-- Create jelly1 jar -->
-        <filter token="VERSION_SUBST" value="1.0"/>
-        <delete file="manifest-subst.mf"/>
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar basedir="src" compress="false" jarfile="jelly-nb.jar" 
-             manifest="manifest-subst.mf" excludesfile="../nbbuild/standard-jar-excludes.txt">
-          <include name="**/test/oo/**"/>
-        </jar>
-        
         <!-- Create jelly2 jar -->
         <delete file="manifest-subst.mf"/>
         <copy file="src/org/netbeans/jellytools/version_info" tofile="manifest-subst.mf" filtering="on"/>
@@ -80,34 +72,16 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="zipsrc" description="Create zip containing only sources">
-        <zip zipfile="jelly-nb-src.zip" basedir="src" includes="**/test/oo/**/*.java"/>
         <zip zipfile="jelly2-nb-src.zip" basedir="src" 
              includes="**/jellytools/**/*.java,org/netbeans/jellytools/version_info"
         />
     </target>
 
     <target name="javadoc" description="Javadoc for jellytools">
-        <uptodate property="jelly.javadoc.uptodate" targetfile="javadoc/jelly-nb-javadoc.zip" >
-    	      <srcfiles dir= "src/org/netbeans/test/oo" includes="**/*.java"/>
-        </uptodate>
-        <antcall target="create-jelly-javadoc"/>
         <uptodate property="jelly2.javadoc.uptodate" targetfile="javadoc/jelly2-nb-javadoc.zip" >
     	      <srcfiles dir= "src/org/netbeans/jellytools" includes="**/*.java"/>
         </uptodate>
         <antcall target="create-jelly2-javadoc"/>
-    </target>
-
-    <target name="create-jelly-javadoc" unless="jelly.javadoc.uptodate">
-        <mkdir dir="javadoc/jelly-nb-javadoc"/>
-        <javadoc destdir="javadoc/jelly-nb-javadoc" packagenames="org.netbeans.test.oo.*" Windowtitle="Jellytools API">
-            <sourcepath>
-                <pathelement location="src"/>
-            </sourcepath>
-            <classpath>
-                <path refid="jellytools.classpath"/>
-            </classpath>
-        </javadoc>
-        <zip zipfile="javadoc/jelly-nb-javadoc.zip" basedir="javadoc/jelly-nb-javadoc" includes="**"/>
     </target>
 
     <target name="create-jelly2-javadoc" unless="jelly2.javadoc.uptodate">
@@ -182,10 +156,8 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
 
     <mkdir dir="netbeans/modules/ext"/>
-    <copy file="jelly-nb.jar" tofile="netbeans/modules/ext/jelly-nb.jar" filtering="off"/>
     <copy file="jelly2-nb.jar" tofile="netbeans/modules/ext/jelly2-nb.jar" filtering="off"/>
     <mkdir dir="netbeans/docs"/>
-    <copy file="javadoc/jelly-nb-javadoc.zip" tofile="netbeans/docs/jelly-nb-javadoc.zip" filtering="off"/>
     <copy file="javadoc/jelly2-nb-javadoc.zip" tofile="netbeans/docs/jelly2-nb-javadoc.zip" filtering="off"/>
   </target>
 

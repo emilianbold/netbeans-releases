@@ -14,44 +14,47 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
-import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.Window;
 import org.netbeans.jellytools.actions.HelpAction;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.TestOut;
-import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JSplitPaneOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.WindowOperator;
 
 /** Class implementing all necessary methods for handling "IDE Help" Frame.
- * Normally the Help window is a JFrame and it even cannot be placed inside
- * MDI desktop. But be careful. Help window can be transformed to a JDialog 
- * when another modal dialog is shown. In such a case you have to use
- * JDialogOperator to find it.
+ * Normally the Help window is a JFrame.
+ * But the Help window can be transformed to a JDialog 
+ * when another modal dialog is shown. This operator can handle both states.
  *
+ * @see HelpAction
  * @author Adam.Sotona@sun.com
  * @author Jiri.Skrivanek@sun.com
  */
-public class HelpOperator extends JFrameOperator {
+public class HelpOperator extends WindowOperator {
 
-    /** Creates new HelpOperator that can handle it. It tries to find a JFrame
-     * which contains some javax.help.JHelp* sub component. Indeed it is
-     * a JFrame with "Help - All" title.
-     * @throws TimeoutExpiredException when JFrame not found
+    /** Creates new HelpOperator that can handle it. It tries to find a window
+     * which contains some javax.help.JHelp* sub component.
+     * It throws TimeoutExpiredException when window is not found
      */
     public HelpOperator() {
-        super(helpWindowChooser);
+        super(WindowOperator.waitWindow(new HelpWindowChooser()));
     }
 
-    /** Creates new HelpOperator that can handle it.
-     * @throws TimeoutExpiredException when JFrame not found
-     * @param title String help frame title */
+    /** Creates new HelpOperator that can handle it. It tries to find a window
+     * which contains some javax.help.JHelp* sub component and the window
+     * has given title.
+     * It throws TimeoutExpiredException when JFrame not found
+     * @param title String help frame title 
+     */
     public HelpOperator(String title) {
-        super(title);
+        super(WindowOperator.waitWindow(new HelpWindowChooser(title)));
     }
 
     private static final HelpAction helpAction = new HelpAction();
@@ -69,6 +72,18 @@ public class HelpOperator extends JFrameOperator {
     private JTextFieldOperator _txtSearchFind;
     private JEditorPaneOperator _txtContentViewer;
 
+    /** Returns title of help window. The help window can be either JFrame
+     * or JDialog.
+     * @return title of help window
+     */
+    public String getTitle() {
+        if(getSource() instanceof Frame) {
+            return ((Frame)getSource()).getTitle();
+        } else {
+            return ((Dialog)getSource()).getTitle();
+        }
+    }
+    
     /** invokes default help
      * @return HelpOperator for invoked help */    
     public static HelpOperator invoke() {
@@ -85,40 +100,40 @@ public class HelpOperator extends JFrameOperator {
     }
 
     /** Tries to find "" JButton in this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
     public JButtonOperator btBack() {
         if (_btBack==null) {
-            _btBack = new JButtonOperator(this, helpPackageChooser, 0);
+            _btBack = new JButtonOperator(this, helpButtonChooser, 0);
         }
         return _btBack;
     }
 
     /** Tries to find "" JButton in this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
     public JButtonOperator btNext() {
         if (_btNext==null) {
-            _btNext = new JButtonOperator(this, helpPackageChooser, 1);
+            _btNext = new JButtonOperator(this, helpButtonChooser, 1);
         }
         return _btNext;
     }
 
     /** Tries to find "" JButton in this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
     public JButtonOperator btPrint() {
         if (_btPrint==null) {
-            _btPrint = new JButtonOperator(this, helpPackageChooser, 2);
+            _btPrint = new JButtonOperator(this, helpButtonChooser, 2);
         }
         return _btPrint;
     }
 
     /** Tries to find "" JSplitPaneOperator in this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
     public JSplitPaneOperator splpHelpSplitPane() {
@@ -129,7 +144,7 @@ public class HelpOperator extends JFrameOperator {
     }
 
     /** Tries to find "" JTabbedPane in this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
     public JTabbedPaneOperator tbpHelpTabPane() {
@@ -140,18 +155,18 @@ public class HelpOperator extends JFrameOperator {
     }
 
     /** Tries to find "" JButton in this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
     public JButtonOperator btPageSetup() {
         if (_btPageSetup==null) {
-            _btPageSetup = new JButtonOperator(this, helpPackageChooser, 3);
+            _btPageSetup = new JButtonOperator(this, helpButtonChooser, 3);
         }
         return _btPageSetup;
     }
 
     /** Tries to find JTree in Contents tab of this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JTreeOperator
      */
     public JTreeOperator treeContents() {
@@ -163,7 +178,7 @@ public class HelpOperator extends JFrameOperator {
     }
 
     /** Tries to find JTree in Index tab of this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JTreeOperator
      */
     public JTreeOperator treeIndex() {
@@ -175,7 +190,7 @@ public class HelpOperator extends JFrameOperator {
     }
 
     /** Tries to find JTextField Find in Index tab of this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtIndexFind() {
@@ -187,7 +202,7 @@ public class HelpOperator extends JFrameOperator {
     }
 
     /** Tries to find JTree in Search tab of this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JTreeOperator
      */
     public JTreeOperator treeSearch() {
@@ -199,7 +214,7 @@ public class HelpOperator extends JFrameOperator {
     }
 
     /** Tries to find JTextField Find in Search tab of this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtSearchFind() {
@@ -211,7 +226,7 @@ public class HelpOperator extends JFrameOperator {
     }
 
     /** Tries to find null BasicContentViewerUI$JHEditorPane in this dialog.
-     * @throws TimeoutExpiredException when component not found
+     * It throws TimeoutExpiredException when component not found
      * @return JEditorPaneOperator
      */
     public JEditorPaneOperator txtContentViewer() {
@@ -222,28 +237,28 @@ public class HelpOperator extends JFrameOperator {
     }
 
     /** clicks on "Back" JButton
-     * @throws TimeoutExpiredException when MetalSplitPaneDivider$1 not found
+     * It throws TimeoutExpiredException when MetalSplitPaneDivider$1 not found
      */
     public void back() {
         btBack().push();
     }
 
     /** clicks on "Next" JButton
-     * @throws TimeoutExpiredException when JButton not found
+     * It throws TimeoutExpiredException when JButton not found
      */
     public void next() {
         btNext().push();
     }
 
     /** clicks on "Print" JButton
-     * @throws TimeoutExpiredException when JButton not found
+     * It throws TimeoutExpiredException when JButton not found
      */
     public void print() {
         btPrint().push();
     }
 
     /** clicks on "Page Setup" JButton
-     * @throws TimeoutExpiredException when JButton not found
+     * It throws TimeoutExpiredException when JButton not found
      */
     public void pageSetup() {
         btPageSetup().pushNoBlock();
@@ -309,28 +324,60 @@ public class HelpOperator extends JFrameOperator {
             return("any javax.help");
         }
     };
+
+    /** Compare title of window with given pattern. */
+    private static boolean compareTitle(WindowOperator oper, String expectedTitle) {
+        String title;
+        if(oper.getSource() instanceof Frame) {
+            title = ((Frame)oper.getSource()).getTitle();
+        } else {
+            title = ((Dialog)oper.getSource()).getTitle();
+        }
+        return oper.getComparator().equals(title, expectedTitle);
+    }
     
-    /** Implementation of ComponentChooser to choose such a frame which 
-     * contains some javax.help.JHelp* sub component. */
-    private static final ComponentChooser helpWindowChooser = new ComponentChooser() {
+    /** SubChooser to determine Window which contains some 
+     *  javax.help.JHelp* sub component.
+     */
+    private static final class HelpWindowChooser implements ComponentChooser {
+        
+        private String title;
+        
+        public HelpWindowChooser() {
+        }
+        
+        public HelpWindowChooser(String title) {
+            this.title = title;
+        }
+        
         public boolean checkComponent(Component comp) {
-            ContainerOperator contOper = new ContainerOperator((Container)comp);
-            contOper.setOutput(TestOut.getNullOutput());
-            return contOper.findSubComponent(jHelpChooser) != null;
+            WindowOperator winOper = new WindowOperator((Window)comp);
+            winOper.setOutput(TestOut.getNullOutput());
+            if(winOper.findSubComponent(jHelpChooser) != null) {
+                if(title != null) {
+                    return compareTitle(winOper, title);
+                } else {
+                    return true;
+                }
+            } 
+            return false;
         }
+        
         public String getDescription() {
-            return("containing any javax.help.JHelp component");
+            return "containing any javax.help.JHelp component"+
+                    (title == null ? "" : " and with title '"+title+"'");
         }
-    };
+    }
     
-    /** Implementation of ComponentChooser to choose component which 
-     * commes from package javax.help.*. */
-    private static final ComponentChooser helpPackageChooser = new ComponentChooser() {
+    /** SubChooser to find HelpButton in help window. */
+    private static final ComponentChooser helpButtonChooser = new ComponentChooser() {
+        
         public boolean checkComponent(Component comp) {
-            return comp.getClass().getName().startsWith("javax.help.");
+            return comp.getClass().getName().endsWith("HelpButton");
         }
+        
         public String getDescription() {
-            return("any javax.help.");
+            return "HelpButton";
         }
     };
 }

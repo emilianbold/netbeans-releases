@@ -32,7 +32,7 @@ import org.netbeans.jemmy.operators.Operator;
  * Timeouts used:<br>
  * SearchResultsOperator.SearchTime - maximum time for search to be performed.
  */
-public class SearchResultsOperator extends NbFrameOperator {
+public class SearchResultsOperator extends TopComponentOperator {
 
     private static final long SEARCH_TIME = 600000;
 
@@ -57,23 +57,11 @@ public class SearchResultsOperator extends NbFrameOperator {
      * Waits for window opened.
      */
     public SearchResultsOperator() {
-        super(getTitleToFind());
-        setDefaultStringComparator(oldComparator);
-        copyEnvironment(Operator.getEnvironmentOperator());
+        super(TITLE);
     }
 
     static {
 	Timeouts.initDefault("SearchResultsOperator.SearchTime", SEARCH_TIME);
-    }
-
-    /** Method to set exactly matching comparator to be used in constructor.
-     * @return "Search Results" - title of window to be found
-     */
-    private static String getTitleToFind() {
-        oldComparator = Operator.getDefaultStringComparator();
-        DefaultStringComparator comparator = new DefaultStringComparator(true, true);
-        setDefaultStringComparator(comparator);
-        return TITLE; 
     }
 
     //component access    
@@ -259,11 +247,11 @@ public class SearchResultsOperator extends NbFrameOperator {
     }
 
     /**
-     * Pushes "Show Details" button and returns an output window.
+     * Pushes "Show Details" button and returns TermOperator from output window.
      */
-    public OutputWindowOperator showDetails() {
+    public TermOperator showDetails() {
         btShowDetails().push();
-        return new OutputWindowOperator();
+        return new TermOperator(TITLE);
     }
 
     /**
@@ -277,7 +265,7 @@ public class SearchResultsOperator extends NbFrameOperator {
     /**
      * Pushes close button.
      */
-    public void close() {
+    public void closeByButton() {
         btClose().push();
     }
 
@@ -299,9 +287,10 @@ public class SearchResultsOperator extends NbFrameOperator {
     /**
      * Double clicks on position in list.
      */
-    public EditorWindowOperator showPosition(String position) {
+    public EditorOperator showPosition(String position) {
         lstPositions().clickOnItem(position, 2);
-        return(new EditorWindowOperator());
+        String selectedNode = treeResult().getSelectionPath().getLastPathComponent().toString();
+        return new EditorOperator(selectedNode);
     }
 
     /**

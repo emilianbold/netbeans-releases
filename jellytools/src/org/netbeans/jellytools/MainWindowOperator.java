@@ -17,17 +17,16 @@ import java.awt.Container;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import javax.swing.JComponent;
-import javax.swing.JMenuItem;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.WindowManagerImpl;
 
 import org.openide.awt.Toolbar;
 import org.openide.awt.StatusDisplayer;
 import org.openide.windows.WindowManager;
-import org.netbeans.core.windows.awt.TabControl;
-import org.netbeans.core.windows.UIModeManager;
-import org.netbeans.core.windows.WindowManagerImpl;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
@@ -43,8 +42,8 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
- * Handle NetBeans main window. It manipulates with toolbars and workspaces.
- * You can get text from status bar as well. To invoke menu items use
+ * Handle NetBeans main window. It manipulates with toolbars and 
+ * you can get text from status bar. To invoke menu items use
  * {@link org.netbeans.jellytools.actions actions}.
  * <br>
  * It is singleton, so to get instance use static method <code>getDefault()</code>.
@@ -55,7 +54,6 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
  *      mainWindow.waitStatusText("Finished");
  *      System.out.println("STATUS="+mainWindow.getStatusText());
  *      mainWindow.setSDI();
- *      mainWindow.switchToGUIEditingWorkspace();
  *      // push "Open" toolbar button in "System" toolbar
  *      mainWindow.getToolbarButton(mainWindow.getToolbar("System"), "Open").push();
  *      Thread.sleep(2000);
@@ -76,8 +74,6 @@ public class MainWindowOperator extends JFrameOperator {
     private static MainWindowOperator defaultMainWindowOperator;
     /** JMenuBarOperator instance. */
     private JMenuBarOperator _menuBar;
-    /** Special tab component for workspace switching */
-    private Component _tabControl;
     /** Instance of StatusTextTracer for this MainWindowOperator instance */
     private static StatusTextTracer statusTextTracer = null;
     
@@ -85,9 +81,7 @@ public class MainWindowOperator extends JFrameOperator {
      * title "NetBeans IDE..." or "Forte...".
      */
     private MainWindowOperator() {
-        super(Bundle.getString("org.netbeans.core.windows.Bundle",
-                               "CTL_MainWindow_Title",
-                               new String[] {System.getProperty("netbeans.buildnumber")}));
+        super((JFrame)WindowManager.getDefault().getMainWindow());
     }
     
     /** Returns instance of MainWindowOperator. It is singleton, so this method
@@ -111,23 +105,25 @@ public class MainWindowOperator extends JFrameOperator {
         return _menuBar;
     }
     
-    /** Checks whether NetBeans are in MDI (full screen) or
-     * SDI (multiple smaller windows) mode.
-     * @return  true if IDE is in MDI mode; false otherwise (SDI mode)
+    /** Checks whether NetBeans are in joined (full screen) or
+     * separated (multiple smaller windows) mode.
+     * @return  true if IDE is in joined mode; false otherwise (separated mode)
      */
     public static boolean isMDI() {
-        return UIModeManager.getDefault().getUIMode() == UIModeManager.MDI_MODE;
+        // TODO names of states will be changed http://www.netbeans.org/issues/show_bug.cgi?id=36933
+        return WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
     }
     
-    /** Makes IDE to switch to MDI (full screen) mode. */
+    /** Makes IDE to switch to joined (full screen) mode. */
     public static void setMDI() {
-        UIModeManager.getDefault().setUIMode(UIModeManager.MDI_MODE);
+        WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_JOINED);
         new EventTool().waitNoEvent(1000);
     }
     
-    /** Makes IDE to switch to SDI (multiple smaller windows) mode. */
+    /** Makes IDE to switch to separated (multiple smaller windows) mode. */
     public static void setSDI() {
-        UIModeManager.getDefault().setUIMode(UIModeManager.SDI_MODE);
+        // TODO - deprecate setSDI, setMDI; add new methods
+        WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_SEPARATED);
         new EventTool().waitNoEvent(1000);
     }
     
@@ -170,116 +166,6 @@ public class MainWindowOperator extends JFrameOperator {
         } finally {
             getStatusTextTracer().stop();
         }
-    }
-    
-    /***************** methods for workspace manipulation *******************/
-    
-    /** Switches to specified workspace.
-     * @param workspaceName name of workspace
-     */
-    public void switchToWorkspace(String workspaceName) {
-        ((TabControl)getTabControl()).setSelectedIndex(getTabIndex(workspaceName));
-        new EventTool().waitNoEvent(1000);
-    }
-    
-    /** Switches to GUIEditing workspace. */
-    public void switchToGUIEditingWorkspace() {
-        String label = Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
-                                               "CTL_GuiEditingWorkspaceName");
-        switchToWorkspace(label);
-    }
-    
-    /** Switches to Debugging workspace. */
-    public void switchToDebuggingWorkspace() {
-        String label = Bundle.getString("org.netbeans.modules.debugger.resources.Bundle",
-                                        "CTL_Debugging_workspace");
-        switchToWorkspace(label);
-    }
-    
-    /** Switches to Editing workspace. */
-    public void switchToEditingWorkspace() {
-        String label = Bundle.getStringTrimmed("org.netbeans.core.windows.Bundle",
-                                               "CTL_Workspace_Editing");
-        switchToWorkspace(label);
-    }
-    
-    /** Returns instance of special tab component for workspace switching.
-     * First time finds TabControl component in MainFrame, next time
-     * returns already found instance.
-     * @return instance of org.netbeans.core.windows.awt.TabControl
-     */
-    public Component getTabControl() {
-        if(_tabControl == null) {
-            ComponentChooser chooser = new ComponentChooser() {
-                public boolean checkComponent(Component comp) {
-                    return (comp instanceof TabControl);
-                }
-                public String getDescription() {
-                    return "org.netbeans.core.awt.TabControl";
-                }
-            };
-            _tabControl = findComponent((Container)this.getSource(), chooser);
-            if(_tabControl == null) {
-                throw new JemmyException("Component TabControl has not been found.");
-            }
-        }
-        return _tabControl;
-    }
-    
-    /** Returns number of workspaces present in IDE. Every workspace
-     * is represented by tab in main window.
-     * @return  number of workspaces
-     */
-    public int getTabCount() {
-        return ((TabControl)getTabControl()).getTabCount();
-    }
-    
-    /** Returns index of currently selected workspace.
-     * @return  index of selected workspace (starts from 0)
-     */
-    public int getSelectedIndex() {
-        return ((TabControl)getTabControl()).getSelectedIndex();
-    }
-    
-    /** Returns index of workspace identified by its name
-     * @param tabLabel name of workspace
-     * @return  index of workspace (starts from 0)
-     */
-    public int getTabIndex(String tabLabel) {
-        for(int i=0; i < getTabCount(); i++) {
-            if (getComparator().equals(((TabControl)getTabControl()).getTabLabel(i), tabLabel)) {
-                return i;
-            }
-        }
-        throw new JemmyException("Tab with label \""+tabLabel+"\" cannot be found");
-    }
-    
-    /** Clicks on tab in main window to switch workspace
-     * @param index  index of workspace to switch to (starts from 0)
-     */
-    public void clickOnTab(int index) {
-        new ComponentOperator(getTabControl()).clickMouse(getXForClick(index), 0, 1);
-        new EventTool().waitNoEvent(1000);
-    }
-    
-    /** Gets x-position of tab identified by its index.
-     * @param index index of workspace (starts from 0)
-     * @return x-position of desired tab
-     */
-    private int getXForClick(int index) {
-        for(int x = 0; x< getTabControl().getWidth(); x++) {
-            if (((TabControl)getTabControl()).pointToIndex(x) == index) return x;
-        }
-        throw new JemmyException("Point to click cannot be found for index="+index);
-    }
-    
-    /** Pushes pop-up menu on a workspace tab specified by its index.
-     * @param menuPath path of menu items (e.g. "Switch to Editing")
-     * @param index index of tab
-     */
-    public void pushMenuOnTab(String menuPath, int index) {
-        new ComponentOperator(getTabControl()).clickForPopup(getXForClick(index), 0);
-        new JPopupMenuOperator().pushMenu(menuPath, "|");
     }
     
     /***************** methods for toolbars manipulation *******************/
@@ -383,12 +269,15 @@ public class MainWindowOperator extends JFrameOperator {
         ComponentChooser chooser = new ComponentChooser() {
             public boolean checkComponent(Component comp) {
                 if(comp instanceof JPanel) {
-                    return comp.getClass().getName().equals("org.openide.awt.Toolbar$ToolbarBump");
+                    String className = comp.getClass().getName();
+                    return className.equals("org.openide.awt.Toolbar$ToolbarBump") ||
+                           // used in Windows L&F
+                           className.equals("org.openide.awt.Toolbar$ToolbarGrip");
                 }
                 return false;
             }
             public String getDescription() {
-                return "org.openide.awt.Toolbar$ToolbarBump";
+                return "org.openide.awt.Toolbar$ToolbarBump or org.openide.awt.Toolbar$ToolbarGrip";
             }
         };
         Component comp = findComponent((Container)toolbarOper.getSource(), chooser);
@@ -460,7 +349,6 @@ public class MainWindowOperator extends JFrameOperator {
     /** Performs verification by accessing all sub-components */
     public void verify() {
         menuBar();
-        getTabControl();
     }
     
     /** Class to trace messages printed to status bar of the Main Window.

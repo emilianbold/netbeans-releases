@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -20,11 +20,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JToolBar;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.jellytools.actions.SaveAction;
 
 import org.netbeans.jemmy.ComponentChooser;
@@ -36,7 +37,6 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -47,40 +47,40 @@ import org.openide.loaders.DataObject;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.text.Line.Set;
+import org.openide.windows.TopComponent;
 
 /**
- * Handle an editor pane in NetBeans IDE. It enables to get, select, insert or
+ * Handle an editor top component in NetBeans IDE. It enables to get, select, insert or
  * delete text, move caret, work with annotations and with toolbar buttons.
  * Majority of operations is done by JEditorPane API calls. If you want
  * to do operations by key navigation, use methods of JEditorPaneOperator
  * instance by {@link #txtEditorPane()}. For example, call
  * <code>txtEditorPane().changeCaretPosition(int)</code> instead of
  * <code>{@link #setCaretPosition(int)}</code>.
- * Use {@link EditorWindowOperator} to locate the Source Editor window and
- * to switch between editor panes.
- *
  * <p>
  * Usage:<br>
  * <pre>
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        String filename = "MyClass";
-        // switches to requested editor and gets EditorOperator instance
-        EditorOperator eo = ewo.getEditor(filename);
+        EditorOperator eo = new EditorOperator(filename);
         eo.setCaretPositionToLine(10);
         eo.insert("// My new comment\n");
         eo.select("// My new comment");
         eo.deleteLine(10);
         eo.getToolbarButton("Toggle Bookmark").push();
-
-        // or you can find Editor anywhere in current workspace by
-        new EditorOperator(filename);
+        // discard changes and close
+        eo.close(false);
+        // save changes and close
+        eo.close(true);
+        // try to close all opened documents (confirmation dialog may appear)
+        eo.closeAllDocuments();
+        // close all opened documents and discard all changes
+        eo.closeDiscardAll();
  * </pre>
  *
  * @author Jiri.Skrivanek@sun.com
- * @see EditorWindowOperator
  */
 public class EditorOperator extends TopComponentOperator {
 
@@ -97,24 +97,26 @@ public class EditorOperator extends TopComponentOperator {
     private JLabelOperator _lblStatusBar;
     private JComboBoxOperator _cboQuickBrowse;
     
-    /** Waits for first visible TopComponent with given name in whole IDE.
+    /** Waits for the first opened editor with given name. 
+     * If not active, it is activated.
      * @param filename name of file showed in the editor (it used to be label of tab)
      */
     public EditorOperator(String filename) {
         this(filename, 0);
     }
     
-    /** Waits for index-th visible TopComponent with given name in whole IDE.
+    /** Waits for index-th opened editor with given name.
+     * If not active, it is activated.
      * @param filename name of file showed in the editor (it used to be label of tab)
-     * @param index index of TopComponent to be find
+     * @param index index of editor to be find
      */    
     public EditorOperator(String filename, int index) {
         super(waitTopComponent(null, filename, index, new EditorSubchooser()));
         this.requestFocus(); // needed for pushKey() methods
     }
 
-    /** Waits for first visible TopComponent with given name in specified container.
-     * It doesn't find editor if it is not selected.
+    /** Waits for first open editor with given name in specified container.
+     * If not active, it is activated.
      * @param contOper container where to search
      * @param filename name of file showed in the editor (it used to be label of tab)
      */    
@@ -122,11 +124,11 @@ public class EditorOperator extends TopComponentOperator {
         this(contOper, filename, 0);
     }
 
-    /** Waits for index-th visible TopComponent with given name in specified container.
-     * It doesn't find editor if it is not selected.
+    /** Waits for index-th opened editor with given name in specified container.
+     * If not active, it is activated.
      * @param contOper container where to search
      * @param filename name of file showed in the editor (it used to be label of tab)
-     * @param index index of TopComponent to be find
+     * @param index index of editor to be find
      */    
     public EditorOperator(ContainerOperator contOper, String filename, int index) {
         super(waitTopComponent(contOper, filename, index, new EditorSubchooser()));
@@ -134,56 +136,63 @@ public class EditorOperator extends TopComponentOperator {
         this.requestFocus(); // needed for pushKey() methods
     }
 
-
-    /** Tries to close Editor and if a file is modified and confirmation
-     * dialog appears, it discards all changes.
-     * It works also if no file is modified, so it is a safe way how to close
+    /** Closes this editor and discards all changes.
+     * It works also if file is not modified, so it is a safe way how to close
      * Editor and no block further execution.
      */
     public void closeDiscard() {
         close(false);
     }
-        
-    /** Tries to close Editor and if a file is modified and confirmation
-     * dialog appears, it save or discards all changes.
+
+    /** Closes all opened documents and discards all changes.
      * It works also if no file is modified, so it is a safe way how to close
-     * Editor and no block further execution.
-     * @param save boolean true confirms save, false discards changes
+     * documents and no block further execution.
      */
-    public void close(final boolean save) {
-        produceNoBlocking(new NoBlockingAction("Close Save/Discard dialog") {
-            public Object doAction(Object param) {
-                String title = Bundle.getString("org.openide.text.Bundle", "LBL_SaveFile_Title");
-                int timeout = 10000;
-                int time = 0;
-                JDialog dialog = null;
-                // every 200 ms of 10000 ms try to find dialog
-                while(dialog == null && time < timeout) {
-                    dialog = JDialogOperator.findJDialog(title, false, false);
-                    try {
-                        Thread.sleep(200);
-                    } catch (Exception e) {
-                        throw new JemmyException("Waiting for Save/Discard dialog interrupted.", e);
-                    }
-                    time += 200;
-                }
-                if(dialog != null) {
-                    String name;
-                    if (save) {
-                        name = Bundle.getStringTrimmed("org.openide.text.Bundle", 
-                                                             "CTL_Save");
-                    } else {
-                        name = Bundle.getStringTrimmed("org.openide.text.Bundle", 
-                                                             "CTL_Discard");
-                    }
-                    new JButtonOperator(new JDialogOperator(dialog), name).push();
-                }
-                return(null);
-            }
-        });
-        super.close();
+    public static void closeDiscardAll() {
+        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode("editor"); //NOI18N
+        Iterator iter = mode.getOpenedTopComponents().iterator();
+        while(iter.hasNext()) {
+            EditorOperator.close((TopComponent)iter.next(), false);
+        }
+    }
+
+    /** Closes this editor and depending on given flag it saves or discards
+     * changes.
+     * @param save true - save changes, false - discard changes
+     */
+    public void close(boolean save) {
+        close((TopComponent)getSource(), save);
     }
     
+    /** Closes top component. If it is CloneableEditor top component,
+     * it saves it or not depending on given flag. Other top components like
+     * VCS outputs are closed directly.
+     * It is package private because it is also used by EditorWindowOperator. 
+     */
+    static void close(TopComponent tc, boolean save) {
+        if(tc instanceof CloneableEditor) {
+            CloneableEditor ce = (CloneableEditor)tc;
+            try {
+                Method cloneableEditorSupport = CloneableEditor.class.getDeclaredMethod("cloneableEditorSupport", null); // NOI18N
+                cloneableEditorSupport.setAccessible(true);
+                CloneableEditorSupport ces = (CloneableEditorSupport)cloneableEditorSupport.invoke(ce, null);
+                if(ces.isModified()) {
+                    if(save) {
+                        ces.saveDocument();
+                    } else {
+                        // make editor unmodified
+                        Method notifyUnmodified = CloneableEditorSupport.class.getDeclaredMethod("notifyUnmodified", null); // NOI18N
+                        notifyUnmodified.setAccessible(true);
+                        notifyUnmodified.invoke(ces, null);
+                    }
+                }
+            } catch (Exception e) {
+                throw new JemmyException("Setting editor unmodified by reflection or saving failed.", e);// NOI18N
+            }
+        }
+        tc.close();
+    }
+
     /** Returns operator of currently shown editor pane.
      * @return  JTabbedPaneOperator instance of editor pane
      */
@@ -768,5 +777,3 @@ public class EditorOperator extends TopComponentOperator {
         }
     }
 }
-
-
