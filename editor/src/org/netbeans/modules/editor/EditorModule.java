@@ -20,6 +20,7 @@ import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Field;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Map;
 import javax.swing.event.ChangeListener;
 import javax.swing.JEditorPane;
 import javax.swing.text.EditorKit;
@@ -244,11 +245,16 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
 
     private static class HackMap extends Hashtable {
 
+	private Map delegate;
+
         HackMap() {
+	    this( new Hashtable() );
         }
 
         HackMap(java.util.Map m) {
-            super(m);
+	    m.remove("text/plain");
+	    m.remove("text.html");
+            delegate = m;
         }
 
         private EditorKit findKit(String type) {
@@ -272,15 +278,26 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
         }
         
         public synchronized Object get(Object key) {
-            Object retVal = null;
-            // get kit from files
-            if(key instanceof String) retVal = findKit((String)key);
-            return retVal == null ? super.get(key) : retVal;
+            Object retVal = delegate.get(key);
+	    // we have to return null if remove was called before for that key
+	    // to allow overrides. JEditorPane will do the lookup
+	    // in its classs name database and it will
+	    // then call put() on us with new instance of the kit. 
+	    if (retVal == null && key instanceof String && super.get(key) == null) {
+		retVal = findKit((String)key);
+	    }
+            return retVal;
         }
         
         public synchronized Object put(Object key, Object value) {
             // maybe so some processing before
-            return super.put(key,value);
+            return delegate.put(key,value);
+        }
+
+        public synchronized Object remove(Object key) {
+	    // mark this type as removed to allow overrides
+	    super.put(key,key);
+            return delegate.remove(key);
         }
     }
     
