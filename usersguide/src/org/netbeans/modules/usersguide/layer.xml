@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- #13860: mount the examples dir: -->
     <folder name="Mount">
         <file name="org-netbeans-modules-usersguide-sampledir.instance">
-            <attr name="instanceClass" stringvalue="org.openide.filesystems.FileSystem"/>
+            <attr name="instanceClass" methodvalue="org.netbeans.modules.usersguide.UGModule.createFileSystemClass"/>
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.usersguide.UGModule.createFileSystem"/>
         </file>
     </folder>
