@@ -144,6 +144,31 @@ public class BaseDocumentUnitTestCase extends NbTestCase {
     }
 
     /**
+     * Assert whether the document available through {@link #getDocument()}
+     * has a content equal to <code>expectedText</code> and whether the caret
+     * position {@link #getCaretOffset()}
+     * indicated by "|" in the passed text is at the right place.
+     */
+    protected void assertDocumentTextAndCaret(String msg, String expectedTextAndCaretPipe) {
+        // [TODO] a more elaborated support could be done e.g. "||" to a real "|" etc.
+        int expectedCaretOffset = expectedTextAndCaretPipe.indexOf('|');
+        if (expectedCaretOffset == -1) { // caret position not indicated
+            fail("Caret position not indicated in '" + expectedTextAndCaretPipe + "'");
+        }
+
+        String expectedDocumentText= expectedTextAndCaretPipe.substring(0, expectedCaretOffset)
+            + expectedTextAndCaretPipe.substring(expectedCaretOffset + 1);
+
+        assertDocumentText(msg, expectedDocumentText);
+        if (expectedCaretOffset != getCaretOffset()) {
+            fail("caretOffset=" + getCaretOffset()
+                + " but expectedCaretOffset=" + expectedCaretOffset
+                + " in '" + expectedTextAndCaretPipe + "'"
+            );
+        }
+    }
+
+    /**
      * Create editor kit instance to be returned
      * by {@link #getEditorKit()}.
      * <br>
@@ -199,41 +224,48 @@ public class BaseDocumentUnitTestCase extends NbTestCase {
         
         private int blinkRate = 300;
         
-        private EventListenerList listenerList;
+        private EventListenerList listenerList = new EventListenerList();
         
         private ChangeEvent changeEvent;
         
         CaretImpl(Document doc, int dot) {
             this.doc = doc;
-            this.dot = dot;
-            
             doc.addDocumentListener(this);
+            setDot(dot);
         }
 
         public void deinstall (javax.swing.text.JTextComponent c) {
-            fail ("Not yet implemented");
+            fail("Not yet implemented");
         }
         
         public void install (javax.swing.text.JTextComponent c) {
-            fail ("Not yet implemented");
+            fail("Not yet implemented");
         }
         
         public java.awt.Point getMagicCaretPosition () {
-            fail ("Not yet implemented");
+            fail("Not yet implemented");
             return null;
         }
         
         public void setMagicCaretPosition (java.awt.Point p) {
-            fail ("Not yet implemented");
+            fail("Not yet implemented");
         }
         
-        public void setDot (int dot) {
-            mark = dot;
-            this.dot = dot;
+        public int getDot () {
+            return dot;
+        }
+        
+        public int getMark () {
+            return mark;
+        }
+        
+       public void setDot (int dot) {
+            this.mark = this.dot;
+            changeCaretPosition(dot);
         }
         
         public void moveDot (int dot) {
-            loadCaretOffset += dot;
+            changeCaretPosition(dot);
         }
         
         public int getBlinkRate () {
@@ -280,14 +312,6 @@ public class BaseDocumentUnitTestCase extends NbTestCase {
             }
         }
         
-        public int getDot () {
-            return loadCaretOffset;
-        }
-        
-        public int getMark () {
-            return mark;
-        }
-        
         public void paint (java.awt.Graphics g) {
         }
         
@@ -305,12 +329,13 @@ public class BaseDocumentUnitTestCase extends NbTestCase {
                 newMark += length;
                 changed |= 2;
             }
+            System.out.println("offset=" + offset + ", length=" + length
+                + ", changed=" + changed + ", newDot=" + newDot + ", newMark=" + newMark);
             if (changed != 0) {
                 if (newMark == newDot) {
                     setDot(newDot);
                     ensureValidPosition();
-                }
-                else {
+                } else {
                     setDot(newMark);
                     if (getDot() == newMark) {
                         moveDot(newDot);
@@ -352,7 +377,14 @@ public class BaseDocumentUnitTestCase extends NbTestCase {
             
         }
 
-        private void ensureValidPosition() {
+        private void changeCaretPosition(int dot) {
+            if (this.dot != dot) {
+                this.dot = dot;
+                fireChangeListener();
+            }
+        }
+        
+       private void ensureValidPosition() {
             int length = doc.getLength();
             if (dot > length || mark > length) {
                 setDot(length);
