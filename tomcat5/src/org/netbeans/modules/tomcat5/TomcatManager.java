@@ -16,7 +16,7 @@ package org.netbeans.modules.tomcat5;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Locale;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.*;
 import java.util.Enumeration;
 
 import javax.enterprise.deploy.model.DeployableObject;
@@ -91,6 +91,8 @@ public class TomcatManager implements DeploymentManager {
     private String catalinaHome;
     /** CATALINA_BASE of disconnected TomcatManager. */
     private String catalinaBase;
+    
+    private FileSystem catalinaFS;
     
     /** storage for HTTP connector port */
     private Integer serverPort;
@@ -206,6 +208,35 @@ public class TomcatManager implements DeploymentManager {
             }
         }
         return baseDir;
+    }
+    
+    public FileSystem getCatalinaBaseFileSystem() {
+        if (catalinaFS!=null) return catalinaFS;
+        catalinaFS = findFileSystem(getCatalinaBaseDir());
+        if (catalinaFS==null) {
+            catalinaFS = new LocalFileSystem();
+            try {
+                ((LocalFileSystem)catalinaFS).setRootDirectory(getCatalinaBaseDir());
+                catalinaFS.setHidden(true);
+                Repository.getDefault().addFileSystem(catalinaFS);
+            } catch (Exception ex) {
+                org.openide.ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, ex);
+            }
+        }
+        return catalinaFS;
+    }   
+    
+    private FileSystem findFileSystem(java.io.File file) {
+        String fileName = file.getAbsolutePath();
+        java.util.Enumeration e = Repository.getDefault().getFileSystems();
+        while (e.hasMoreElements()) {
+            FileSystem fs = (FileSystem)e.nextElement();
+            File fsFile = FileUtil.toFile(fs.getRoot());
+            if (fsFile==null) continue;
+            String fsFileName = fsFile.getAbsolutePath();
+            if (fileName.equals(fsFileName)) return fs;
+        }
+        return null;
     }
     
     /** Returns username.

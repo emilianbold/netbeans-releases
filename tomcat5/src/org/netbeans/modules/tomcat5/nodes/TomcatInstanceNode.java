@@ -19,6 +19,7 @@ import org.netbeans.modules.tomcat5.TomcatManager;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 
@@ -27,7 +28,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
  * @author  Petr Pisl
  */
 
-public class TomcatInstanceNode extends AbstractNode {
+public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     
     private static String  ICON_BASE = "org/netbeans/modules/tomcat5/resources/tomcat5"; // NOI18N
     
@@ -52,8 +53,9 @@ public class TomcatInstanceNode extends AbstractNode {
         lkp = lookup;
         setIconBase(ICON_BASE);
         this.setName("TomcatInstanceNode"); //NOI18N
+        getCookieSet().add(this);
     }
-        
+
     public String getDisplayName(){
         Integer port = getServerPort();
         String portStr = "";
@@ -72,6 +74,17 @@ public class TomcatInstanceNode extends AbstractNode {
         return new Integer(8080);
     }
     
+    public javax.swing.Action[] getActions(boolean context) {
+        return new SystemAction[] {
+                   SystemAction.get (AccessLogAction.class),
+                   SystemAction.get (ContextLogAction.class)
+               };        
+    }
+
+    DeploymentManager getDeploymentManager() {
+        return (DeploymentManager)lkp.lookup(DeploymentManager.class);
+    }
+
     private String getHome() {
         DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
         if (m instanceof TomcatManager){
