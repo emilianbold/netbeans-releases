@@ -675,6 +675,7 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // perform simple regexp search
+            editor.setCaretPosition(1, 1);
             new FindAction().perform();
             Find find = new Find();
             uncheckAll();
@@ -711,6 +712,7 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // perform simple regexp search
+            editor.setCaretPosition(1, 1);
             new FindAction().perform();
             Find find = new Find();
             uncheckAll();
