@@ -820,8 +820,12 @@ public class Controller { //XXX public only for debug access to logging code
      */
     private static class PMListener implements PopupMenuListener {
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-            ((JPopupMenu) e.getSource()).removeAll();
-            ((JPopupMenu) e.getSource()).setInvoker(null);
+            JPopupMenu popup = (JPopupMenu) e.getSource();
+            popup.removeAll();
+            popup.setInvoker(null);
+            popup.putClientProperty ("container", null); //NOI18N
+            popup.putClientProperty ("component", null); //NOI18N
+
         }
         
         public void popupMenuCanceled(PopupMenuEvent e) {
