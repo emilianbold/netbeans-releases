@@ -11,71 +11,68 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.utilities;
 
-import org.openide.modules.ModuleInstall;
-import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.openfile.Server;
 import org.netbeans.modules.openfile.Settings;
 import org.netbeans.modules.pdf.LinkProcessor;
 
-/** ModuleInstall class for Utilities module
-*
-* @author Jesse Glick, Petr Kuzel, Martin Ryzl
-*/
+import org.openide.modules.ModuleInstall;
+import org.openide.util.RequestProcessor;
+
+
+/** Module install class for Utilities module.
+ *
+ * @author Jesse Glick, Petr Kuzel, Martin Ryzl
+ */
 public class Installer extends ModuleInstall {
 
+    /** Serial version UID. */
     private final static long serialVersionUID = 1;
 
+    /** Installation instance for search 'sub-module'.  */
     private final org.netbeans.modules.search.Installer searchInstaller;
 
+    
+    /** Constructs modules installer. */
     public Installer() {
         searchInstaller = new org.netbeans.modules.search.Installer();
     }
 
-    /** Module installed for the first time. */
-    public void installed () {
-        searchInstaller.installed();
+    
+    /** Restores module. Restores search 'sub-module', schedules to start
+     * openfile server and inits pdf link processor. Overrides superclass method. */
+    public void restored() {
+        searchInstaller.restored();
 
-        // Don't ask:
-        RequestProcessor.postRequest (new Runnable () {
-                                          public void run () {
-                                              Settings.DEFAULT.isRunning ();
-                                          }
-                                      }, 60000);
-        
+        // Don't ask.
+        RequestProcessor.postRequest(new Runnable() {
+            public void run() {
+                Settings.DEFAULT.isRunning();
+                }
+            }, 60000
+        );
+
         LinkProcessor.init ();
-
     }
-
-    public void uninstalled () {
+    
+    /** Uninstalls module. Shuts down openfile server and uninstalls
+     * search 'sub-module'. Overrides superclass method. */
+    public void uninstalled() {
         // OpenFile:
-        Server.shutdown ();
+        Server.shutdown();
 
         searchInstaller.uninstalled();
     }
 
-    public boolean closing () {
+    /** Closes module. Shuts down openfile server. Overrides superclass method. */
+    public boolean closing() {
         // OpenFile:
-        Server.shutdown ();
+        Server.shutdown();
 
-        return true;
-    }
-
-    public void restored () {
-        //System.err.println("utilities.Installer.restored");
-        searchInstaller.restored();
-
-        // Don't ask:
-        RequestProcessor.postRequest (new Runnable () {
-                                          public void run () {
-                                              Settings.DEFAULT.isRunning ();
-                                          }
-                                      }, 60000);
-
-        LinkProcessor.init ();
-                                      
+        return super.closing();
     }
 
 }
