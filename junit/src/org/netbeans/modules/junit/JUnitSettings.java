@@ -71,8 +71,6 @@ public class JUnitSettings extends SystemOption {
 
     // XXX this property has to go too - will not work any longer, need some src -> test query
     private static final String PROP_FILE_SYSTEM         = "fileSystem";
-    public static final String PROP_SUITE_TEMPLATE      = "suiteTemplate";
-    public static final String PROP_CLASS_TEMPLATE      = "classTemplate";
     public static final String PROP_MEMBERS_PUBLIC      = "membersPublic";
     public static final String PROP_MEMBERS_PROTECTED   = "membersProtected";
     public static final String PROP_MEMBERS_PACKAGE     = "membersPackage";
@@ -110,8 +108,6 @@ public class JUnitSettings extends SystemOption {
         
         putProperty(PROP_VERSION, CURRENT_VERSION, true);
         putProperty(PROP_FILE_SYSTEM, "", true);
-        putProperty(PROP_SUITE_TEMPLATE, "Templates/JUnit/SimpleJUnitTest.java", true);
-        putProperty(PROP_CLASS_TEMPLATE, "Templates/JUnit/SimpleJUnitTest.java", true);
         putProperty(PROP_MEMBERS_PUBLIC, Boolean.TRUE, true);
         putProperty(PROP_MEMBERS_PROTECTED, Boolean.TRUE, true);
         putProperty(PROP_MEMBERS_PACKAGE, Boolean.TRUE, true);
@@ -133,8 +129,6 @@ public class JUnitSettings extends SystemOption {
     public void writeExternal (ObjectOutput out) throws IOException {
         out.writeObject(getProperty(PROP_VERSION));
         out.writeObject(getProperty(PROP_FILE_SYSTEM));
-        out.writeObject(getProperty(PROP_SUITE_TEMPLATE));
-        out.writeObject(getProperty(PROP_CLASS_TEMPLATE));
         out.writeObject(getProperty(PROP_MEMBERS_PUBLIC));
         out.writeObject(getProperty(PROP_MEMBERS_PROTECTED));
         out.writeObject(getProperty(PROP_MEMBERS_PACKAGE));
@@ -189,8 +183,6 @@ public class JUnitSettings extends SystemOption {
     
     private void readVersion40Options(ObjectInput in) throws IOException, ClassNotFoundException {
         putProperty(PROP_FILE_SYSTEM, in.readObject(), true);
-        putProperty(PROP_SUITE_TEMPLATE, in.readObject(), true);
-        putProperty(PROP_CLASS_TEMPLATE, in.readObject(), true);
         putProperty(PROP_MEMBERS_PUBLIC, in.readObject(), true);
         putProperty(PROP_MEMBERS_PROTECTED, in.readObject(), true);
         putProperty(PROP_MEMBERS_PACKAGE, in.readObject(), true);
@@ -211,8 +203,8 @@ public class JUnitSettings extends SystemOption {
     
     private void readVersion30Options(ObjectInput in) throws IOException, ClassNotFoundException {
         putProperty(PROP_FILE_SYSTEM, in.readObject(), true);
-        putProperty(PROP_SUITE_TEMPLATE, in.readObject(), true);
-        putProperty(PROP_CLASS_TEMPLATE, in.readObject(), true);
+        in.readObject();    //was PROP_SUITE_TEMPLATE
+        in.readObject();    //was PROP_CLASS_TEMPLATE
         putProperty(PROP_MEMBERS_PUBLIC, in.readObject(), true);
         putProperty(PROP_MEMBERS_PROTECTED, in.readObject(), true);
         putProperty(PROP_MEMBERS_PACKAGE, in.readObject(), true);
@@ -236,8 +228,8 @@ public class JUnitSettings extends SystemOption {
     
     private void readVersion29Options(ObjectInput in) throws IOException, ClassNotFoundException {
         putProperty(PROP_FILE_SYSTEM, in.readObject(), true);
-        putProperty(PROP_SUITE_TEMPLATE, in.readObject(), true);
-        putProperty(PROP_CLASS_TEMPLATE, in.readObject(), true);
+        in.readObject();    //was PROP_SUITE_TEMPLATE
+        in.readObject();    //was PROP_CLASS_TEMPLATE
         putProperty(PROP_MEMBERS_PUBLIC, in.readObject(), true);
         putProperty(PROP_MEMBERS_PROTECTED, in.readObject(), true);
         putProperty(PROP_MEMBERS_PACKAGE, in.readObject(), true);
@@ -266,8 +258,8 @@ public class JUnitSettings extends SystemOption {
     private void readPre29VersionOptions(ObjectInput in, Object firstProperty) throws IOException, ClassNotFoundException {
         try {            
             putProperty(PROP_FILE_SYSTEM, firstProperty, true);
-            putProperty(PROP_SUITE_TEMPLATE, in.readObject(), true);
-            putProperty(PROP_CLASS_TEMPLATE, in.readObject(), true);
+            in.readObject();    //was PROP_SUITE_TEMPLATE
+            in.readObject();    //was PROP_CLASS_TEMPLATE
             putProperty(PROP_MEMBERS_PUBLIC, in.readObject(), true);
             putProperty(PROP_MEMBERS_PROTECTED, in.readObject(), true);
             putProperty(PROP_MEMBERS_PACKAGE, in.readObject(), true);
@@ -302,22 +294,6 @@ public class JUnitSettings extends SystemOption {
     /** Default instance of this system option, for the convenience of associated classes. */
     public static JUnitSettings getDefault () {
         return (JUnitSettings) findObject (JUnitSettings.class, true);
-    }
-
-    public String getSuiteTemplate() {
-        return (String) getProperty(PROP_SUITE_TEMPLATE);
-    }
-
-    public void setSuiteTemplate(String newVal) {
-        putProperty(PROP_SUITE_TEMPLATE, newVal, true);
-    }
-
-    public String getClassTemplate() {
-        return (String) getProperty(PROP_CLASS_TEMPLATE);
-    }
-
-    public void setClassTemplate(String newVal) {
-        putProperty(PROP_CLASS_TEMPLATE, newVal, true);
     }
 
     public boolean isMembersPublic() {

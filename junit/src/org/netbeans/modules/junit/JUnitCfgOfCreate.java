@@ -111,44 +111,6 @@ public class JUnitCfgOfCreate extends JPanel {
         this.chkEnabled.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkEnabled.toolTip"));
         this.chkEnabled.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkEnabled.AD"));
         
-        // labels
-        
-        if (forFolders) {
-            this.cboSuiteClass.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AD"));
-            this.cboSuiteClass.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AN"));
-        }
-        
-        this.cboTestClass.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboTestClass.AD"));
-        this.cboTestClass.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboTestClass.AN"));
-        
-    }
-    
-    private void fillTemplates() {
-        NamedObject item;
-        FileObject  foJUnitTmpl;
-        FileObject  foTemplates[];
-        
-        foJUnitTmpl = Repository.getDefault().getDefaultFileSystem().findResource("Templates/JUnit");
-        if (null == foJUnitTmpl) return;
-        
-        foTemplates = foJUnitTmpl.getChildren();
-        for(int i = 0; i < foTemplates.length; i++) {
-            if (!foTemplates[i].getExt().equals("java"))
-                continue;
-            
-            item = new NamedObject(foTemplates[i], foTemplates[i].getName());
-            if (forFolders) {
-                // add template to Suite templates list
-                cboSuiteClass.addItem(item);
-                if (foTemplates[i].getPath().equals(JUnitSettings.getDefault().getSuiteTemplate()))
-                    cboSuiteClass.setSelectedItem(item);
-            }
-    
-            // add template to Class templates list
-            cboTestClass.addItem(item);
-            if (foTemplates[i].getPath().equals(JUnitSettings.getDefault().getClassTemplate()))
-                cboTestClass.setSelectedItem(item);
-        }
     }
     
     /**
@@ -166,7 +128,6 @@ public class JUnitCfgOfCreate extends JPanel {
         JUnitCfgOfCreate cfg = new JUnitCfgOfCreate(forFolders);
         
         // setup the panel
-        cfg.fillTemplates();
         cfg.chkPublic.setSelected(JUnitSettings.getDefault().isMembersPublic());
         cfg.chkProtected.setSelected(JUnitSettings.getDefault().isMembersProtected());
         cfg.chkPackage.setSelected(JUnitSettings.getDefault().isMembersPackage());
@@ -196,17 +157,6 @@ public class JUnitCfgOfCreate extends JPanel {
         
         // save panel settings
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            FileObject  foTemplate;
-            
-            if (forFolders) {
-                // store Suite class template
-                foTemplate = (FileObject) ((NamedObject) cfg.cboSuiteClass.getSelectedItem()).object;
-                JUnitSettings.getDefault().setSuiteTemplate(foTemplate.getPath());
-            }
-            
-            // store Test class template
-            foTemplate = (FileObject) ((NamedObject) cfg.cboTestClass.getSelectedItem()).object;
-            JUnitSettings.getDefault().setClassTemplate(foTemplate.getPath());
             
             // store code generation options
             JUnitSettings.getDefault().setMembersPublic(cfg.chkPublic.isSelected());
@@ -258,66 +208,8 @@ public class JUnitCfgOfCreate extends JPanel {
      * This method is called from within the constructor to initialize the form.
      */
     private void initComponents() {
-        createTemplatesPanel();
         createOptionsPanel();
         composeWholePanel();
-    }
-    
-    /**
-     * Creates a panel for choosing templates.
-     * The created panel is stored in variable {@link #jpTemplates jpTemplates}.
-     */
-    private void createTemplatesPanel() {
-        
-        GridBagConstraints gbc = new GridBagConstraints();
-        GridBagLayout gbl = new GridBagLayout();
-        jpTemplates = new SizeRestrictedPanel(gbl, false, true);
-        
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridy = 0;
-        
-        if (forFolders) {
-            /* create label and combo-box for the test suite template chooser */
-            JLabel lblSuiteClass = new JLabel();
-            Mnemonics.setLocalizedText(
-               lblSuiteClass,
-               bundle.getString("JUnitCfgOfCreate.lblSuiteClass.text"));//NOI18N
-            cboSuiteClass = new JComboBox();
-            lblSuiteClass.setLabelFor(cboSuiteClass);
-            
-            /* set layout: */
-            gbc.gridx = 0;
-            gbc.weightx = 0.0d;
-            gbc.insets = new Insets(0, 0, 5, 12);
-            jpTemplates.add(lblSuiteClass, gbc);
-        
-            gbc.gridx = 1;
-            gbc.weightx = 1.0d;
-            gbc.insets = new Insets(0, 0, 5, 0);
-            jpTemplates.add(cboSuiteClass, gbc);
-            
-            gbc.gridy++;
-        }
-        {
-            /* create label and combo-box for the test case template chooser */
-            JLabel lblTestClass = new JLabel();
-            Mnemonics.setLocalizedText(
-                lblTestClass,
-                bundle.getString("JUnitCfgOfCreate.lblTestClass.text"));//NOI18N
-            cboTestClass = new JComboBox();
-            lblTestClass.setLabelFor(cboTestClass);
-        
-            /* set layout: */
-            gbc.gridx = 0;
-            gbc.weightx = 0.0d;
-            gbc.insets = new Insets(0, 0, 0, 12);
-            jpTemplates.add(lblTestClass, gbc);
-        
-            gbc.gridx = 1;
-            gbc.weightx = 1.0d;
-            gbc.insets = new Insets(0, 0, 0, 0);
-            jpTemplates.add(cboTestClass, gbc);
-        }
     }
     
     /**
@@ -457,7 +349,7 @@ public class JUnitCfgOfCreate extends JPanel {
     }
     
     /**
-     * Composes the whole panel from the templates panel, code generation
+     * Composes the whole panel from the code generation
      * options panel and the &quot;Show this configuration dialog&quot;
      * checkbox.
      */
@@ -470,29 +362,21 @@ public class JUnitCfgOfCreate extends JPanel {
                 bundle.getString("JUnitCfgOfCreate.chkEnabled.text"));  //NOI18N
         
         /* decorate the option panels: */
-        addTitledBorder(jpTemplates,
-                  new Insets(12, 12, 11, 11),
-                  bundle.getString("JUnitCfgOfCreate.jpTemplates.title"));//NOI18N
         addTitledBorder(jpCodeGen,
                   new Insets(12, 12, 11, 12),
                   bundle.getString("JUnitCfgOfCreate.jpCodeGen.title"));//NOI18N
         
         /* compose the main panel: */
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(jpTemplates);
-        add(Box.createVerticalStrut(11));
         add(jpCodeGen);
         add(Box.createVerticalStrut(11));
         add(chkEnabled);
         
         /* tune the layout: */
-        jpTemplates.setAlignmentX(0.0f);
         jpCodeGen.setAlignmentX(0.0f);
         //chkEnabled.setAlignmentX(0.0f);   //not necessary - its the default
     }
 
-    private JComboBox cboSuiteClass;
-    private JComboBox cboTestClass;
     private JCheckBox chkAbstractImpl;
     private JCheckBox chkComments;
     private JCheckBox chkContent;
@@ -507,6 +391,5 @@ public class JUnitCfgOfCreate extends JPanel {
     private JCheckBox chkSetUp;
     private JCheckBox chkTearDown;
     private JComponent jpCodeGen;
-    private JComponent jpTemplates;
 
 }

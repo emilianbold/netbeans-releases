@@ -34,16 +34,6 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
 
     public PropertyDescriptor[] getPropertyDescriptors () {
         try {
-            PropertyDescriptor propSuiteTemplate = new PropertyDescriptor (JUnitSettings.PROP_SUITE_TEMPLATE, JUnitSettings.class);
-            propSuiteTemplate.setPropertyEditorClass(TemplatePropEd.class);
-            propSuiteTemplate.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_suite_template"));
-            propSuiteTemplate.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_suite_template"));
-
-            PropertyDescriptor propClassTemplate = new PropertyDescriptor (JUnitSettings.PROP_CLASS_TEMPLATE, JUnitSettings.class);
-            propClassTemplate.setPropertyEditorClass(TemplatePropEd.class);
-            propClassTemplate.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_class_template"));
-            propClassTemplate.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_class_template"));
-
             PropertyDescriptor propMembersPublic = new PropertyDescriptor (JUnitSettings.PROP_MEMBERS_PUBLIC, JUnitSettings.class);
             propMembersPublic.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_members_public"));
             propMembersPublic.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_members_public"));
@@ -138,7 +128,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             propRootSuiteClassName.setExpert(true);
                         
 
-            return new PropertyDescriptor[] { propSuiteTemplate, propClassTemplate,
+            return new PropertyDescriptor[] {
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
               propJavaDoc, propCfgConfigEnabled,
               propGenerateExceptionClasses, propGenerateAbstractImpl, propIncludePackagePrivateClasses, 
@@ -228,20 +218,4 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
         protected static int IS_DEFAULT     = 2;
     }
 
-    public static class TemplatePropEd extends SortedListPropEd {
-        public TemplatePropEd() {
-            FileObject  foJUnitTmpl;
-            FileObject  foTemplates[];
-
-            foJUnitTmpl = Repository.getDefault().getDefaultFileSystem().findResource("Templates/JUnit");
-            if (null != foJUnitTmpl) {
-                foTemplates = foJUnitTmpl.getChildren();
-                for(int i = 0; i < foTemplates.length; i++) {
-                    if (!foTemplates[i].getExt().equals("java"))
-                        continue;
-                    put(foTemplates[i].getName(), foTemplates[i].getPath(), SHOW_IN_LIST);
-                }
-            }
-        }
-    }
 }

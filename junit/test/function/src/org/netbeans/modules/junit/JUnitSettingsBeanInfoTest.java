@@ -41,7 +41,6 @@ public class JUnitSettingsBeanInfoTest extends TestCase {
         suite.addTest(SortedListPropEdTest.suite());
         suite.addTest(ExecutorPropEdTest.suite());
         suite.addTest(FileSystemPropEdTest.suite());
-        suite.addTest(TemplatePropEdTest.suite());
         
         return suite;
     }
@@ -260,28 +259,6 @@ public class JUnitSettingsBeanInfoTest extends TestCase {
         }
     }
     
-    public static class TemplatePropEdTest extends TestCase {
-
-        public TemplatePropEdTest(java.lang.String testName) {
-            super(testName);
-        }        
-        
-        public static void main(java.lang.String[] args) {
-            junit.textui.TestRunner.run(suite());
-        }
-        
-        public static Test suite() {
-            TestSuite suite = new TestSuite(TemplatePropEdTest.class);
-            
-            return suite;
-        }
-        
-        public void testDummy() {
-            // there is nothing to test in this class
-            // this exists here just to avoid - suite empty - error message
-        }
-    }
-
     // protected members
     JUnitSettingsBeanInfo jbi;
     

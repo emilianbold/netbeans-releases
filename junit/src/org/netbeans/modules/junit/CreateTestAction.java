@@ -116,12 +116,14 @@ public class CreateTestAction extends CookieAction {
         String temp = null;
         try {
             // get the Suite class template
-            temp = JUnitSettings.getDefault().getSuiteTemplate();
+            temp = NbBundle.getMessage(CreateTestAction.class,
+                                       "PROP_testSuiteTemplate");       //NOI18N
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
             doSuiteTempl = DataObject.find(fo);
             
             // get the Test class template
-            temp = JUnitSettings.getDefault().getClassTemplate();
+            temp = NbBundle.getMessage(CreateTestAction.class,
+                                       "PROP_testClassTemplate");       //NOI18N
             fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
             doTestTempl = DataObject.find(fo);
         }

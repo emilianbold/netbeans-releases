@@ -191,7 +191,9 @@ public class SimpleTestCaseWizardIterator
 
     public Set instantiate(TemplateWizard wiz) throws IOException {
         /* get the template DataObject... */
-        String templatePath = JUnitSettings.getDefault().getClassTemplate();
+        String templatePath = NbBundle.getMessage(
+                                      CreateTestAction.class,
+                                      "PROP_testClassTemplate");        //NOI18N
         FileObject template = Repository.getDefault().getDefaultFileSystem()
                               .findResource(templatePath);
         DataObject templateDataObj;
