@@ -35,12 +35,14 @@ public class PatternChildren extends ClassChildren {
 
     private MethodElementListener methodListener = new MethodElementListener();
     private FieldElementListener fieldListener = new FieldElementListener();
-
+    private StyleChangeListener  styleListener = new StyleChangeListener();
+    
     private PropertyChangeListener weakMethodListener = WeakListener.propertyChange( methodListener, null);
     // = new WeakListener.PropertyChange( methodListener );
     private PropertyChangeListener weakFieldListener = WeakListener.propertyChange( fieldListener, null);
     // = new WeakListener.PropertyChange( fieldListener );
-
+    private PropertyChangeListener weakStyleListener = WeakListener.propertyChange( styleListener, PropertyActionSettings.getDefault());
+    
     static {
         Integer i = new Integer (PatternFilter.METHOD | PatternFilter.PROPERTY |
                                  PatternFilter.IDXPROPERTY | PatternFilter.EVENT_SET
@@ -64,6 +66,7 @@ public class PatternChildren extends ClassChildren {
     public PatternChildren (ClassElement classElement) {
         super (classElement);
         patternAnalyser = new PatternAnalyser( classElement );
+        PropertyActionSettings.getDefault().addPropertyChangeListener(weakStyleListener);
     }
 
     public PatternChildren (ClassElement classElement, boolean isWritable ) {
@@ -230,6 +233,14 @@ public class PatternChildren extends ClassChildren {
         }
     }
 
+    final class StyleChangeListener implements PropertyChangeListener {
+        public void propertyChange ( PropertyChangeEvent e ) {
+            if( !e.getPropertyName().equals(PropertyActionSettings.PROP_STYLE) ) //ignore
+                return;            
+            refreshKeys(PatternFilter.ALL);
+        }
+    }
+    
     private static final class PatternComparator implements Comparator {
 
         public int compare( Object a, Object b ) {
