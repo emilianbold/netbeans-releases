@@ -32,7 +32,6 @@ import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import org.netbeans.spi.project.ui.NodePathResolver;
 import org.openide.ErrorManager;
 import org.openide.actions.PopupAction;
 
@@ -257,6 +256,23 @@ public class ProjectTab extends TopComponent
     public void selectNode( Object object ) {
         // System.out.println("Selecting node " + id + " : " + object );
         
+        ProjectsRootNode root = (ProjectsRootNode)manager.getRootContext();
+        Node selectedNode = root.findNode( object );
+        if ( selectedNode != null ) {
+            try {
+                manager.setSelectedNodes( new Node[] { selectedNode } );
+                open();
+                requestActive();                
+                return;
+            }
+            catch ( PropertyVetoException e ) {
+                // Bad day node found but can't be selected
+                return;
+            }
+        }
+        
+                
+        /* Nice old version with lookup and names 
         Node root = manager.getRootContext();
         
         Collection pathResolvers  = root.getLookup().lookup( new Lookup.Template( NodePathResolver.class ) ).allInstances();
@@ -286,6 +302,7 @@ public class ProjectTab extends TopComponent
                 }
             }            
         }
+        */
         
     }
     
