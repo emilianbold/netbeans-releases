@@ -23,17 +23,24 @@ import java.util.*;
  */
 final class BufferedPhadhail implements Phadhail, PhadhailListener {
     
-    private final Phadhail ph;
-    private Reference kids; // Reference<List<Phadhail>>
-    private int listenerCount = 0;
+    private static final Map instances = new WeakHashMap(); // Map<Phadhail,BufferedPhadhail>
     
     public static Phadhail forPhadhail(Phadhail ph) {
         if (ph.hasChildren() && !(ph instanceof BufferedPhadhail)) {
-            return new BufferedPhadhail(ph);
+            BufferedPhadhail bph = (BufferedPhadhail)instances.get(ph);
+            if (bph == null) {
+                bph = new BufferedPhadhail(ph);
+                instances.put(ph, bph);
+            }
+            return bph;
         } else {
             return ph;
         }
     }
+    
+    private final Phadhail ph;
+    private Reference kids; // Reference<List<Phadhail>>
+    private int listenerCount = 0;
     
     private BufferedPhadhail(Phadhail ph) {
         this.ph = ph;
@@ -132,7 +139,7 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
     }
     
     public String toString() {
-        return "BufferedPhadhail<" + ph + ">";
+        return "BufferedPhadhail<" + ph + ">@" + Integer.toHexString(System.identityHashCode(this));
     }
     
 }
