@@ -16,21 +16,37 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Services">
     <folder name="Diffs">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
-      <file name="org-netbeans-modules-diff-builtin-DefaultDiff.settings" url="DefaultDiff.settings"/>
+      <file name="org-netbeans-modules-diff-builtin-DefaultDiff.settings" url="DefaultDiff.settings">
+        <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.DefaultDiff"/>
+      </file>
+      <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.services"/>
     </folder>
     <folder name="DiffProviders">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
-      <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.settings" url="CmdlineDiffProvider.settings"/>
-      <file name="org-netbeans-modules-diff-builtin-provider-BuiltInDiffProvider.settings" url="BuiltInDiffProvider.settings"/>
+      <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.settings" url="CmdlineDiffProvider.settings">
+        <attr name="helpID" stringvalue="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider"/>
+      </file>
+      <file name="org-netbeans-modules-diff-builtin-provider-BuiltInDiffProvider.settings" url="BuiltInDiffProvider.settings">
+        <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider"/>
+      </file>
+      <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.providers"/>
     </folder>
     <folder name="DiffVisualizers">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
-      <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.settings" url="GraphicalDiffVisualizer.settings"/>
-      <file name="org-netbeans-modules-diff-builtin-visualizer-TextDiffVisualizer.settings" url="TextDiffVisualizer.settings"/>
+      <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.settings" url="GraphicalDiffVisualizer.settings">
+        <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer"/>
+      </file>
+      <file name="org-netbeans-modules-diff-builtin-visualizer-TextDiffVisualizer.settings" url="TextDiffVisualizer.settings">
+        <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer"/>
+      </file>
+      <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.visualizers"/>
     </folder>
     <folder name="MergeVisualizers">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.merge.builtin.visualizer.Bundle" />
-      <file name="org-netbeans-modules-merge-builtin-visualizer-GraphicalMergeVisualizer.settings" url="GraphicalMergeVisualizer.settings"/>
+      <file name="org-netbeans-modules-merge-builtin-visualizer-GraphicalMergeVisualizer.settings" url="GraphicalMergeVisualizer.settings">
+        <attr name="helpID" stringvalue="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer"/>
+      </file>
+      <attr name="helpID" stringvalue="org.netbeans.modules.merge.Merge.visualizers"/>
     </folder>
 
     <folder name="Hidden"> 
@@ -85,6 +101,7 @@ SystemFileSystem
 SystemFileSystem
 ]]>
             </file>
+            <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.types"/>
           </folder>
           <attr name="org-netbeans-modules-diff-DiffSettings.shadow/DiffTypes" boolvalue="true"/>
 

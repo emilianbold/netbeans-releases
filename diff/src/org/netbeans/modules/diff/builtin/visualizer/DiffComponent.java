@@ -122,6 +122,10 @@ public class DiffComponent extends org.openide.windows.TopComponent {
         putClientProperty("PersistenceType", "Never");
     }
     
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(DiffComponent.class);
+    }
+    
     private void showCurrentLine() {
         Difference diff = diffs[currentDiffLine];
         int line = diff.getFirstStart() + diffShifts[currentDiffLine][0];

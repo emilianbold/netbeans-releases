@@ -251,6 +251,14 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
         //ourNode.addNodeListener(WeakListener.node(nodeL, ourNode));
     }
     
+    protected CloneableEditor createCloneableEditor() {
+        return new CloneableEditor(this) {
+            public HelpCtx getHelpCtx() {
+                return new HelpCtx(TextDiffEditorSupport.class);
+            }
+        };
+    }
+    
     /** Let's the super method create the document and also annotates it
     * with Title and StreamDescription properities.
     *
