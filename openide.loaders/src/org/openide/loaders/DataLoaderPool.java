@@ -734,6 +734,8 @@ private static final class DefaultLoader extends MultiFileLoader {
     */
     protected SystemAction[] defaultActions () {
         return new SystemAction[] {
+                SystemAction.get (org.openide.actions.OpenAction.class),
+                null,
                 SystemAction.get (org.openide.actions.FileSystemAction.class),
                 null,
                 SystemAction.get (org.openide.actions.CutAction.class),
