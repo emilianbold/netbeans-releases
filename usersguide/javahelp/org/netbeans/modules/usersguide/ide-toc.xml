@@ -460,7 +460,7 @@
     <tocitem text="Building Web Applications"> 
 	<tocitem text="About Building Web Applications" target="concepts_war"  />
 <!--    <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" /> -->	
-        <tocitem text="Creating a WAR File" target="webmod_packagewar" />
+        <tocitem text="Building a WAR File" target="webmod_packagewar" />
 	<tocitem text="Adding an External Resource to a WAR File" target="war_xtrafiles" />
         <tocitem text="Adding a Servlet JAR File to a WAR File" target="webmod_addservlet" />
         <tocitem text="Adding a Tag Library to a WAR File" target="tagsupport_fromfilesys" />
@@ -548,8 +548,8 @@
       <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
     </tocitem>
 
-    <tocitem text="Server Plugins">
-      <tocitem text="About Server Plugins" target="general_about_the_j2eeserver_module_html"/>
+    <tocitem text="Servers">
+      <tocitem text="About Servers" target="general_about_the_j2eeserver_module_html"/>
     </tocitem>
 
 </tocitem>
