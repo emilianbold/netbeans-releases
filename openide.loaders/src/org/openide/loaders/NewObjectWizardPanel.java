@@ -113,6 +113,13 @@ final class NewObjectWizardPanel implements WizardDescriptor.FinishPanel {
                     errorMsg = NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", f.getNameExt()); //NOI18N
                     isOK = false;
                 }
+                if (org.openide.util.Utilities.isWindows ()) {
+                    if (TemplateWizard.checkCaseInsensitiveName (targetFolder.getPrimaryFile (), getPanelUI ().getNewObjectName (), extension)) {
+                        errorMsg = NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", getPanelUI ().getNewObjectName ()); // NOI18N
+                        isOK = false;
+                    }
+                }
+                
             }
         }
         wizard.putProperty("WizardPanel_errorMessage", errorMsg);//NOI18N

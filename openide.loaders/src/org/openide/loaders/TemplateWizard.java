@@ -611,6 +611,26 @@ public class TemplateWizard extends WizardDescriptor {
         return (Iterator)obj.getCookie (Iterator.class);
     }
     
+    // helper check for windows, its filesystem is case insensitive (workaround the bug #33612)
+    /** Check existence of file on case insensitive filesystem.
+     * Returns true if folder contains file with given name and extension.
+     * @param folder folder for search
+     * @param name name of file
+     * @param extension extension of file
+     * @return true if file with name and extension exists, false otherwise.
+     */    
+    static boolean checkCaseInsensitiveName (FileObject folder, String name, String extension) {
+        Enumeration children = folder.getChildren (true);
+        FileObject fo;
+        while (children.hasMoreElements ()) {
+            fo = (FileObject) children.nextElement ();
+            if (extension.equalsIgnoreCase (fo.getExt ()) && name.equalsIgnoreCase (fo.getName ())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /** Overriden to add/remove listener to/from displayed component. Also make recreation
      * of steps and content.
      */

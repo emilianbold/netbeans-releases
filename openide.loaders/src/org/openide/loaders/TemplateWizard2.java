@@ -19,6 +19,7 @@ import java.lang.ref.WeakReference;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.util.Enumeration;
 
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -33,7 +34,6 @@ import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /** Dialog that can be used in create from template.
  *
@@ -257,9 +257,16 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
             sb.append ('.');
             sb.append (extension);
         }
+        
         FileObject f = fs.findResource (sb.toString ());
         if (f != null) {
             return NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", sb.toString()); // NOI18N
+        }
+        
+        if (org.openide.util.Utilities.isWindows ()) {
+            if (TemplateWizard.checkCaseInsensitiveName (locationFolder.getPrimaryFile (), newObjectName.getText (), extension)) {
+                return NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", newObjectName.getText ()); // NOI18N
+            }
         }
 
         // all ok
