@@ -32,7 +32,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
     /** command that executes the browser */
     private String executable;
     
-    private transient PropertyChangeSupport pcs;
+    protected transient PropertyChangeSupport pcs;
     
     /** Creates new Browser */
     public ExtWebBrowser () {
@@ -70,7 +70,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
         if (org.openide.util.Utilities.isUnix ())
             impl = new UnixBrowserImpl (this);
         else if (org.openide.util.Utilities.isWindows ())
-            impl = new NbDdeBrowserImpl ();
+            impl = new NbDdeBrowserImpl (new WinWebBrowser ());
         return impl;
     }
     

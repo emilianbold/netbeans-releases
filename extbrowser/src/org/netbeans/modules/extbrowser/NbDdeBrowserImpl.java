@@ -56,6 +56,9 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     private static java.util.ResourceBundle bundle = 
         java.util.ResourceBundle.getBundle("org/netbeans/modules/extbrowser/Bundle"); // NOI18N
 
+    /** reference to creator */
+    private WinWebBrowser winBrowserFactory;
+    
     /** name of DDE server receiving URLEcho notifications */
     private String  ddeUrlEchoSrvName = "NETBEANSURL";    // NOI18N
     
@@ -74,12 +77,13 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     /** windowID of servicing window (-1 if there is no assocciated window) */
     private int     currWinID = -1;
     
-    /** Creates new NbDDEBrowserImpl */
-    public NbDdeBrowserImpl () {
+    /** Creates new UnixBrowserImpl */
+    public NbDdeBrowserImpl (WinWebBrowser winBrowserFactory) {
         super ();
         currWinID = -1;
+        this.winBrowserFactory = winBrowserFactory;
     }
-
+    
     // native private void createDDE (String name, String topic)
     // throws NbBrowserException;
 
@@ -89,7 +93,13 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     /** finds registry entry for browser opening */
     native private String getBrowserPath (String browser)
     throws NbBrowserException;
-    
+
+    /** returns the command that executes default application for opening of 
+     *  .html files
+     */
+    native private String getDefaultOpenCommand ()
+    throws NbBrowserException;
+
     /** creates service for WWW_*Progress* topics */
     /*
     private void initProgress () {
@@ -153,17 +163,9 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      */
     public void setURL(URL url) {
         try {
-            super.setURL (url);
             // internal protocols cannot be displayed in external viewer
             if (isInternalProtocol (url.getProtocol ())) {
-                if (url.getProtocol ().equals ("nbfs") // NOI18N
-                &&  url.getPath () != null)               
-                    url = new java.net.URL ("http", "localhost", getInternalServerPort (), 
-                        "/servlet/org.netbeans.modules.extbrowser.JavaDocServlet"+
-                        (url.getPath().startsWith ("/")? url.getPath(): "/"+url.getPath())+
-                        ((url.getRef()!=null)?"#"+url.getRef():"")); // NOI18N
-                else
-                    return;
+                url = WrapperServlet.createHttpURL (url);
             }
             byte [] data;
             boolean hasNoWindow = (currWinID == -1);
@@ -172,20 +174,20 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
             String winID;
             // IE problem
-            if (ExtBrowserSettings.OPTIONS.getBrowser().equals(ExtBrowserSettings.IEXPLORE))
+            if (getDDEServerName ().equals(ExtBrowserSettings.IEXPLORE))
                 winID = "0xFFFFFFFF";
             else
                 winID = "0x00000000"+Integer.toHexString (hasNoWindow? 0: currWinID).toUpperCase (); // NOI18N
             if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
                 
             try {
-                data = reqDdeMessage (ExtBrowserSettings.OPTIONS.getBrowser (),"WWW_Activate",winID,3000);
+                data = reqDdeMessage (getDDEServerName (),"WWW_Activate",winID,3000);
             }
             catch (NbBrowserException ex) {
                 // try to start browser and activet it again
                 data = null;
                 if (ExtBrowserSettings.OPTIONS.isStartWhenNotRunning ()) {
-                    String b = getBrowserPath (ExtBrowserSettings.OPTIONS.getBrowser ());
+                    String b = getBrowserPath (getDDEServerName ());
                     if (b != null) {
                         if (b.charAt(0) == '"') {
                             int from, to;
@@ -200,7 +202,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         Runtime.getRuntime ().exec (b);
                         // wait for browser start
                         Thread.currentThread ().sleep (7000);
-                        data = reqDdeMessage (ExtBrowserSettings.OPTIONS.getBrowser (),"WWW_Activate",winID,3000);
+                        data = reqDdeMessage (getDDEServerName (),"WWW_Activate",winID,3000);
                         hasNoWindow = false;
                     }
                 }
@@ -217,7 +219,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 return;
             }
             
-            if (ExtBrowserSettings.OPTIONS.getBrowser().equals(ExtBrowserSettings.IEXPLORE))
+            if (getDDEServerName ().equals(ExtBrowserSettings.IEXPLORE))
                 winID = hasNoWindow? "0": "-1";
             else
                 winID = "0x00000000"+Integer.toHexString (hasNoWindow? 0: currWinID).toUpperCase (); // NOI18N
@@ -226,9 +228,9 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             // nbfs can be displayed internally and in ext. viewer too
             String args1;
             args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(ddeProgressSrvName==null?"":ddeProgressSrvName);  // NOI18N
-            data = reqDdeMessage (ExtBrowserSettings.OPTIONS.getBrowser (),"WWW_OpenURL",args1,3000); // NOI18N
+            data = reqDdeMessage (getDDEServerName (),"WWW_OpenURL",args1,3000); // NOI18N
             if (data != null && data.length >= 4) {
-                if (!ExtBrowserSettings.OPTIONS.getBrowser ().equals ("IEXPLORE")) {
+                if (!getDDEServerName ().equals ("IEXPLORE")) {
                     currWinID=DdeBrowserSupport.getDWORDAtOffset (data, 0);
                     if (currWinID < 0) currWinID = -currWinID;
                 }
@@ -268,5 +270,28 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         
         return setting.getPort ();
     }
-    
+
+    private String getDDEServerName () {
+        String srv = winBrowserFactory.getDDEServer ();
+        if (srv != null)
+            return srv;
+        
+        try {
+            String cmd = getDefaultOpenCommand ();
+            if (cmd != null) {
+                if (cmd.toUpperCase ().indexOf (ExtBrowserSettings.IEXPLORE) >= 0)
+                    return ExtBrowserSettings.IEXPLORE;
+
+                if (cmd.toUpperCase ().indexOf (ExtBrowserSettings.NETSCAPE) >= 0)
+                    return ExtBrowserSettings.NETSCAPE;
+            }
+        }
+        catch (Exception ex) {
+            // some problem in native code likely
+            if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+                ex.printStackTrace ();
+        }
+        // guess IE
+        return ExtBrowserSettings.IEXPLORE;
+    }
 }

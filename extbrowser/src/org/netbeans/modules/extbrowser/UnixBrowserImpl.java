@@ -123,14 +123,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             super.setURL (url);
             // internal protocols cannot be displayed in external viewer
             if (isInternalProtocol (url.getProtocol ())) {
-                if (url.getProtocol ().equals ("nbfs") // NOI18N
-                &&  url.getPath () != null)               
-                    url = new java.net.URL ("http", "localhost", getInternalServerPort (), 
-                        "/servlet/org.netbeans.modules.extbrowser.JavaDocServlet"+
-                        (url.getPath().startsWith ("/")? url.getPath(): "/"+url.getPath())+
-                        ((url.getRef()!=null)?"#"+url.getRef():"")); // NOI18N
-                else
-                    return;
+                url = WrapperServlet.createHttpURL (url);
             }
             String cmd;
             if (currWinID != -1) {
