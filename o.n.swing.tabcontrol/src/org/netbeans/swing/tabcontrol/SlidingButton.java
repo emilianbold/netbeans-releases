@@ -58,7 +58,7 @@ public final class SlidingButton extends JToggleButton {
         setFocusable(false);
 //        setFocusPainted(false);
         setRolloverEnabled(true);
-        setIconTextGap(1);
+        setIconTextGap(3);
         setVerticalAlignment(SwingConstants.CENTER);
         setHorizontalAlignment(SwingConstants.CENTER);
 //        setMargin(new Insets(1,1,1,1));
