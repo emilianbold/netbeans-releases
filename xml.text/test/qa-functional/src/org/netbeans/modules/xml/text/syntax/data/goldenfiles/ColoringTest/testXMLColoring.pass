@@ -146,8 +146,9 @@ tag: </Descript
 tag: >
 text: 
     
-text: <![CDATA[CDATA <a a='"""&#x23;'><!----> <?t d?><!DOCTYPE Books PUBLIC "+//XML Test//EN" "any.dtd" [
+cdata-section: <![CDATA[CDATA <a a='"""&#x23;'><!----> <?t d?><!DOCTYPE Books PUBLIC "+//XML Test//EN" "any.dtd" [
       ]></a>section data]]>
+text: 
     `1234567890-=\qwertyuiop[]asdfghjkl;'zxcvbnm,./
     ~!@#$%^*()_+|QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM?
   
