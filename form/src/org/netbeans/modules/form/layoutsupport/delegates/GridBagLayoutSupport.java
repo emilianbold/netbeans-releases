@@ -668,7 +668,6 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 catch (Exception ex) { // should not happen
                     ex.printStackTrace();
                 }
-                    
             }
 
             public boolean supportsDefaultValue () {
@@ -698,6 +697,26 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             }
 
             protected void propertyValueChanged(Object old, Object current) {
+                // #36932 - GridBagLayout allows max. 512 grid size
+                if (current instanceof Integer) {
+                    int n = ((Integer)current).intValue();
+                    String name = getName();
+                    if (((name.endsWith("gridx") || name.endsWith("gridwidth")) // NOI18N
+                         && constraints.gridx + constraints.gridwidth > 512)
+                     || ((name.endsWith("gridy") || name.endsWith("gridheight")) // NOI18N
+                         && constraints.gridy + constraints.gridheight > 512))
+                    {
+                        boolean fire = isChangeFiring();
+                        setChangeFiring(false);
+                        try {
+                            setValue(old);
+                        }
+                        catch (Exception ex) {} // should not happen
+                        setChangeFiring(fire);
+                        return;
+                    }
+                }
+
                 if (isChangeFiring())
                     updateCodeExpression();
                 super.propertyValueChanged(old, current);
