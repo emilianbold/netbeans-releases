@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 <mapID target="org.netbeans.modules.db.HOMEID" url="dbexpovew.html" />
 <mapID target="dbexpovew" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 
+   <mapID target="server_aboutdbconnect" url="server_aboutdbconnect.html" />
 <mapID target="adddriver" url="adddriver.html" />
 <mapID target="connectdb" url="connectdb.html" />
 <mapID target="pointbasedb" url="pointbasedb.html" />
