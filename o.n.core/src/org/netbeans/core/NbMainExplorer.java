@@ -832,10 +832,8 @@ public final class NbMainExplorer extends CloneableTopComponent
         
         private static ProjectsTab DEFAULT;
         
+        /** Must have *default* constructor - deserialization from 3.2 supposes it */
         private ProjectsTab() {
-            if (DEFAULT == null) {
-                DEFAULT = this;
-            }
         }
         
         public static synchronized ProjectsTab getDefault() {
@@ -865,6 +863,12 @@ public final class NbMainExplorer extends CloneableTopComponent
             if (selectNode (obj, root)) {
                 requestFocus ();
             }
+        }
+        
+        /** Old (3.2) deserialization of the ProjectTab */
+        public Object readResolve() throws java.io.ObjectStreamException {
+            getDefault().scheduleValidation();
+            return getDefault();
         }
 
     } // end of ProjectsTab inner class
