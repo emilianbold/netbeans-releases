@@ -26,11 +26,16 @@ Microsystems, Inc. All Rights Reserved.
     <property name="build.compiler.debug" value="on"/>
 
 
+    <target name="init">
+        <property name="buildnumber" value="dev"/>
+        <echo message="buildnumber = ${buildnumber}"/>
+    </target>
+
     <target name="compile">
         <for-each locations="${submodules}"/>
     </target>
 
-    <target name="jars" depends="compile">
+    <target name="jars" depends="init,compile">
         <for-each locations="${submodules}"/>
     </target>
 

@@ -76,6 +76,9 @@ public class TransformableSupportTest extends NbTestCase {
     }
     
 
+    //
+    // class Observer
+    //
     
     private static class Observer implements CookieObserver {
         private int receives;

@@ -38,10 +38,6 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="init">
-        <tstamp/>
-        <property name="buildnumber" value="${DSTAMP}${TSTAMP}"/>
-        <echo message="buildnumber = ${buildnumber}"/>
-
         <property file="${xml_root}/spec-vers.properties"/>
         <filter token="API_SPEC_VERS_SUBST" value="${xml.api.specification.version}"/>
         <filter token="TAX_SPEC_VERS_SUBST" value="${xml.tax.specification.version}"/>
