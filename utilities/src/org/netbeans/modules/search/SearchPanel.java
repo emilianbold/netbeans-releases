@@ -179,7 +179,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
             options, 
             options[0],
             DialogDescriptor.BOTTOM_ALIGN, 
-            getHelpCtx(),
+            null,                                   //<null> HelpCtx - no help
             new ActionListener() {
                 public void actionPerformed(final ActionEvent evt) {
                     if(evt.getSource() == okButton) {
@@ -340,14 +340,6 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     }
 
    
-    /** Gets help context. */
-    private HelpCtx getHelpCtx() {
-        int index = tabbedPane.getModel().getSelectedIndex(); 
-        SearchTypePanel panel = (SearchTypePanel)getOrderedSearchTypePanels().get(index);
-        
-        return panel.getHelpCtx();
-    }    
-    
     /**
      * Gets type of customizer.
      *
