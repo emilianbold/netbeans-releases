@@ -149,6 +149,45 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         String golden = "ChangedChapterTitle.pass";
         assertFile(original, getGoldenFile(golden), getWorkDir());
     }
+    
+    public void testExternalChange() throws IOException {
+        System.out.println("testExternalChange()");
+        assertNotNull("Book DataObject not found",bookDO);
+        String golden = "ChangedChapterTitle.pass";
+        FileObject fo = bookDO.getPrimaryFile();
+        java.io.InputStream is = new java.io.FileInputStream(getGoldenFile(golden));
+        try {
+            org.openide.filesystems.FileLock lock = fo.lock();
+            java.io.OutputStream os = fo.getOutputStream(lock);
+            try {
+                
+                int b;
+                while ((b = is.read())!=-1) {
+                    char ch = (char)b;
+                    if (ch=='2') os.write(b);
+                    os.write(b);
+                }
+            } 
+            finally {
+                os.close();
+                is.close();
+                lock.releaseLock();
+            }
+        } catch (org.openide.filesystems.FileAlreadyLockedException ex) {
+            throw new AssertionFailedErrorException("Lock problem : ",ex);
+        }
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex){}
+        
+        XmlMultiViewEditorSupport editor  = (XmlMultiViewEditorSupport)bookDO.getCookie(EditorCookie.class);
+        javax.swing.text.Document doc = editor.getDocument();
+        try {
+            assertTrue("Document doesn't contain exetrnal changes: ",doc.getText(0,doc.getLength()).indexOf("22")>0);
+        } catch (javax.swing.text.BadLocationException ex) {
+            throw new AssertionFailedErrorException(ex);
+        }
+    }
     /**
      * Used for running test from inside the IDE by internal execution.
      *

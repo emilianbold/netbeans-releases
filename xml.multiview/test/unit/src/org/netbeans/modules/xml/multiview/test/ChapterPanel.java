@@ -38,7 +38,6 @@ public class ChapterPanel extends SectionInnerPanel {
     }
 
     public void setValue(javax.swing.JComponent source, Object value) {
-        System.out.println("setValue"+value);
         if (source==titleTF) {
             chapter.setTitle((String)value);
         } else if (source==lengthTF) {
