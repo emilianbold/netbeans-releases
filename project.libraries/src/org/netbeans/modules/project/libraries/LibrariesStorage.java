@@ -18,6 +18,7 @@ import java.net.URL;
 import java.io.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Properties;
 
 
 import org.openide.ErrorManager;
@@ -35,7 +36,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class LibrariesStorage extends FileChangeAdapter implements WriteableLibraryProvider {
 
-    private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";
+    private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";  //NOI18N
+    private static final String TIME_STAMPS_FILE = "libraries-timestamps.properties"; //NOI18B
 
     // persistent storage, it may be null for before first library is store into storage
     private FileObject storage = null;
@@ -53,6 +55,8 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
     //Flag if the storage is initialized
     //The storage needs to be lazy initialized, it is in lookup
     private boolean initialized;
+    
+    private Properties timeStamps;
 
 
     /**
@@ -89,7 +93,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
     // scans over storage and fetchs it ((fileset persistence files) into memory
     // ... note that providers can read their data during getVolume call
     private void loadFromStorage() {
-        // configure parser
+        // configure parser       
         libraries = new HashMap();
         librariesByFileNames = new HashMap();
         LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
@@ -107,8 +111,11 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                 if (provider == null) {
                     ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                 }
-                else {
-                    provider.libraryCreated (impl);
+                else {                    
+                    if (!isUpToDate(descriptorFile)) {
+                        provider.libraryCreated (impl);
+                        updateTimeStamp(descriptorFile);
+                    }
                     librariesByFileNames.put(descriptorFile.getPath(),impl);
                     libraries.put (impl.getName(),impl);
                 }
@@ -123,6 +130,11 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                 ErrorManager.getDefault().notify (e);
             }
         }
+        try {
+            saveTimeStamps();
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }       
     }
     
     private synchronized void initStorage () {
@@ -136,8 +148,8 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                     initialized = true;
                     return;
                 }
-            }
-            this.loadFromStorage();
+            }            
+            this.loadFromStorage();            
             this.storage.addFileChangeListener (this);
             initialized = true;
         }
@@ -315,6 +327,8 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                 // The code is provided by LibraryType implementator and can fire events -> may cause deadlocks
                 try {
                     provider.libraryCreated (impl);
+                    updateTimeStamp(fo);
+                    saveTimeStamps();
                 } catch (RuntimeException e) {
                     String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryCreatedError");
                     ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
@@ -375,6 +389,8 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                 try {
                     //TODO: LibraryTypeProvider should be extended by libraryUpdated method 
                     provider.libraryCreated (impl);
+                    updateTimeStamp(definitionFile);
+                    saveTimeStamps();
                 } catch (RuntimeException e) {
                     String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryCreatedError");
                     ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
@@ -395,7 +411,61 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         }
         return bundle;
     }
+    
+    private boolean isUpToDate (FileObject libraryDefinition) {
+        Properties timeStamps = getTimeStamps();
+        String ts = (String) timeStamps.get (libraryDefinition.getNameExt());
+        return ts == null ? false : Long.parseLong(ts) >= libraryDefinition.lastModified().getTime();
+    }
 
+    private void updateTimeStamp (FileObject libraryDefinition) {
+        Properties timeStamps = getTimeStamps();
+        timeStamps.put(libraryDefinition.getNameExt(), Long.toString(libraryDefinition.lastModified().getTime()));
+    }
+    
+    private void saveTimeStamps () throws IOException {        
+        if (this.storage != null) {
+            Properties timeStamps = getTimeStamps();
+            FileObject parent = storage.getParent();
+            FileObject timeStampFile = parent.getFileObject(TIME_STAMPS_FILE);
+            if (timeStampFile == null) {
+                timeStampFile = parent.createData(TIME_STAMPS_FILE);
+            }
+            FileLock lock = timeStampFile.lock();
+            try {
+                OutputStream out = timeStampFile.getOutputStream(lock);
+                try {
+                    timeStamps.store (out, null);    
+                } finally {
+                    out.close();
+                }
+            } finally {
+                lock.releaseLock();
+            }
+        }
+    }        
+    
+    private Properties getTimeStamps () {
+        if (this.timeStamps == null) {
+            this.timeStamps = new Properties();
+            if (this.storage != null) {
+                FileObject timeStampFile = storage.getParent().getFileObject(TIME_STAMPS_FILE);
+                if (timeStampFile != null) {
+                    try {
+                        InputStream in = timeStampFile.getInputStream();
+                        try {
+                            this.timeStamps.load (in);
+                        } finally {
+                            in.close();
+                        }
+                    } catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                    }
+                }
+            }
+        }
+        return this.timeStamps;
+    }
 
 } // end LibrariesStorage
 
