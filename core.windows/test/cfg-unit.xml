@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -23,10 +23,10 @@ Microsystems, Inc. All Rights Reserved.
     "**/*Hid.*"
 -->
 
-<mconfig name="core unit test config">
+<mconfig name="core/windows unit test config">
 
     <!-- Tests which should be run before commit to validate IDE. -->
-    <testbag testattribs="noncommit" executor="ide" name="Before Commit Validation" resultsprocessor="unit">
+    <testbag testattribs="noncommit" executor="ide" name="Before Commit Validation">
         <testset dir="unit/src">
             <patternset>
 		<include name="**/ValidateLayer*Test.class" />
@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
   
-    <testbag testattribs="stable" executor="code" name="testbag_1" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="unit-executor" name="testbag_1">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/windows/services/DialogDisplayer50960Test.class"/>
@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="ide" name="testbag_2">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/windows/persistence/*.class"/>
@@ -55,27 +55,23 @@ Microsystems, Inc. All Rights Reserved.
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->
     <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="empty" executor="code" name="testbag_empty" resultsprocessor="unit">
+    <testbag testattribs="empty" executor="unit-executor" name="testbag_empty" resultsprocessor="unit">
         <testset dir="unit/src"/>
     </testbag>
     <testbag testattribs="emptyide" executor="ide" name="testbag_emptyide" resultsprocessor="unit">
         <testset dir="unit/src"/>
     </testbag>
 
-    <testbag testattribs="dev" executor="code" name="testbag_dev" resultsprocessor="unit">
+    <testbag testattribs="dev" executor="unit-executor" name="testbag_dev" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <!-- Add your own code tests -->
+                <!-- Add your own unit tests -->
             </patternset>
         </testset>
     </testbag>
     
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
-    
+    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
-
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
-
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
 
 </mconfig>

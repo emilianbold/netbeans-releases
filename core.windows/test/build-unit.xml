@@ -12,57 +12,20 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="Unit tests" basedir="." default="all">
-   
-    <!-- ================== -->
-    <!-- Setting classpaths -->
-    <!-- ================== -->
+<project name="core/windows/test-unit" basedir="." default="all">
 
-    <path id="compiletest.classpath">
-        <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/> 
-        <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
-        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
-        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
-    </path>
-    <path id="codetest.classpath">
-	<pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
-        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
-        <!-- XXX -->
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        <pathelement location="${core/settings.dir}/${nb.modules.dir}/org-netbeans-modules-settings.jar"/>
-    </path>
-    
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-    
-    <target name="unit-compiler">
-        <buildTests srcDir="unit/src" compileexcludes="**/jars/**,**/data/**">
-            <classpath refid="compiletest.classpath"/>
-        </buildTests>
-    </target>
+   <!-- imports default-compiler which have all dependent jars on classpath. 
+        Other required jars add to nbproject/project.properties -->
+   <import file="../../../nbbuild/templates/xtest-unit.xml"/>
     
     <!-- ================ -->
-    <!-- Global Executors -->
+    <!-- Executors -->
     <!-- ================ -->
     
     <target name="runidetest">
+        <property name="xtest.ide.use.classloader" value="org.netbeans.core.windows"/>
         <executeTests  pluginName="ide">
             <classpath/>
-        </executeTests>
-    </target>
-    
-    <target name="runcodetest">
-        <executeTests  pluginName="jvm">
-            <classpath refid="codetest.classpath"/>
         </executeTests>
     </target>
 </project>
