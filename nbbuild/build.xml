@@ -2636,7 +2636,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       
       <mkdir dir="build/ModulesExportedInterfaces" />
       <property name="export.interfaces" location="build/ModulesExportedInterfaces" />
-      
+
+      <mkdir dir="build/APIChanges" />
+      <property name="export.apichanges" location="build/APIChanges" />
+            
       <!-- build javadoc for supported APIs -->
       <for-each startdir=".." target="javadoc" locations="${fixedmodules}"/>
       <!-- build javadoc for unsupported APIs -->
@@ -2644,6 +2647,21 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <taskdef name="simplemerge" classname="org.netbeans.nbbuild.SimpleMerge" classpath="nbantext.jar"/>
       <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${fixedmodules}"/>
       <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${modules}"/>
+      
+      <echo file="build/APIChanges/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;changes&gt;
+</echo>
+      
+      <echo file="build/APIChanges/footer.gen" >
+        &lt;/changes&gt;
+      </echo>
+      
+      <concat destfile="modules_javadoc/apichanges.xml" >
+          <fileset dir="build/APIChanges" includes="header.gen" />
+          <fileset dir="build/APIChanges" includes="*" excludes="*.gen" />
+          <fileset dir="build/APIChanges" includes="footer.gen" />
+      </concat>
+
       
       <echo file="build/ModulesExportedInterfaces/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;apis&gt;
@@ -2658,7 +2676,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
           <fileset dir="build/ModulesExportedInterfaces" includes="*" excludes="*.gen" />
           <fileset dir="build/ModulesExportedInterfaces" includes="footer.gen" />
       </concat>
-      
+            
       <tstamp>
         <format property="modules-javadoc-date" pattern="d MMM yyyy" locale="en" />
       </tstamp>
@@ -2678,12 +2696,26 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       >
         <param name="date" expression="${modules-javadoc-date}"/>
       </style>
+      
+      <style 
+        in="modules_javadoc/apichanges.xml" 
+        out="modules_javadoc/apichanges.html" 
+        style="javadoctools/export2apichanges.xsl"
+      >
+        <param name="date" expression="${modules-javadoc-date}"/>
+        <param name="changes-since-year" expression="${previous.release.year}"/>
+        <param name="changes-since-day" expression="${previous.release.day}"/>
+        <param name="changes-since-month" expression="${previous.release.month}"/>
+      </style>
+      
+      
     <taskdef 
         name="javadoc-index" 
         classpath="nbantext.jar" 
         classname="org.netbeans.nbbuild.JavadocIndex"
     />
-    
+
+        
     <javadoc-index target="modules_javadoc/allclasses.html" > 
         <packageslist dir="modules_javadoc" >
             <include name="**/allclasses-noframe.html" />

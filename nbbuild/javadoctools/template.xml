@@ -101,6 +101,9 @@ cause it to fail.
             <filename name="**/*.java" />
         </selector>
         <property name="javadoc.files" value="all-java-files" />
+        
+        <property file="../build.properties" />
+        
     </target>
 
     <target name="javadoc-check-timestamps" depends="javadoc-init">
@@ -242,12 +245,26 @@ cause it to fail.
         </javadoc>
     </target>
 
-    <target name="javadoc-stage-apichanges" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">
-        <ant dir="../../libs/external" target="unscramble"/>
-        <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
+    <target name="javadoc-stage-apichanges" depends="javadoc-init,javadoc-check-timestamps,javadoc-stage-export-apichanges" unless="javadoc.up.to.date">
         <style in="${javadoc.apichanges}" out="${javadoc.out.dir}/apichanges.html" style="apichanges.xsl">
             <param name="javadoc-url-base" expression="."/>
         </style>
+    </target>
+    <target name="javadoc-stage-export-apichanges" depends="javadoc-init,javadoc-check-timestamps,javadoc-stage-init-apichanges" if="export.apichanges">
+        <fail message="Need to specify the date of branching of previous.release.year: ${previous.release.year}" unless="previous.release.year" />
+        <fail message="Need to specify the date of branching of previous.release.month: ${previous.release.month}" unless="previous.release.month" />
+        <fail message="Need to specify the date of branching of previous.release.day: ${previous.release.day}" unless="previous.release.day" />
+    
+        <style in="${javadoc.apichanges}" out="${export.apichanges}/${javadoc.name}" style="export-apichanges.xsl">
+            <param name="changes-since-url" expression="${javadoc.name}/apichanges.html"/>
+            <param name="changes-since-year" expression="${previous.release.year}"/>
+            <param name="changes-since-day" expression="${previous.release.day}"/>
+            <param name="changes-since-month" expression="${previous.release.month}"/>
+        </style>
+    </target>
+    <target name="javadoc-stage-init-apichanges" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">
+        <ant dir="../../libs/external" target="unscramble"/>
+        <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
     </target>
 
     <target name="javadoc-stage-arch" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">

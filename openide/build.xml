@@ -499,7 +499,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
 </echo>
   </target>
   
-  <target name="javadoc" depends="javadoc-plain,export-interfaces" if="open-apis-force-rebuild" />
+  <target name="javadoc" depends="javadoc-plain,export-interfaces,export-apichanges" if="open-apis-force-rebuild" />
           
   <target name="all-javadoc" description="Create Open API documentation." >
         <ant dir="util" target="javadoc" />
@@ -681,6 +681,17 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     
   </target>
 
+  <target name="export-apichanges" depends="javadoc-plain" if="export.apichanges" >
+    <property file="../nbbuild/build.properties" />
+    <style style="../nbbuild/javadoctools/export-apichanges.xsl" in="api/doc/changes/apichanges.xml" out="${export.apichanges}/OpenAPIs.xml" >
+        <param name="changes-since-url" expression="OpenAPIs/apichanges.html"/>
+        <param name="changes-since-year" expression="${previous.release.year}"/>
+        <param name="changes-since-day" expression="${previous.release.day}"/>
+        <param name="changes-since-month" expression="${previous.release.month}"/>    
+    </style>
+  </target>
+  
+  
   <target name="apis-tidy" description="Run the Tidy HTML checker on API prose documents.">
     <apply parallel="true" failonerror="true" executable="tidy">
       <fileset dir="api/doc">
