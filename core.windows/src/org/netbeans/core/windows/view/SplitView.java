@@ -41,11 +41,6 @@ public class SplitView extends ViewElement {
     
     private JSplitPane splitPane;
     
-    /** Debugging flag. */
-    private static final boolean DEBUG = Debug.isLoggable(SplitView.class);
-
-    
-    
     public SplitView(Controller controller, double resizeWeight,
     int orientation, double location, ViewElement first, ViewElement second) {
         super(controller, resizeWeight);
@@ -212,7 +207,7 @@ public class SplitView extends ViewElement {
         if (resized) {
             getSplitPane().setResizeWeight(resize);
         }
-        debugLog("result of reweight is="+ (myWeight != resize));
+//        debugLog("result of reweight is="+ (myWeight != resize));
         return resized;
         
     }
