@@ -139,7 +139,6 @@ public class OptionsAction extends CallableSystemAction {
         // XXX #37673
         private transient Reference descriptorRef = new WeakReference(null);
         
-        private TTW ttwviev = null;
 
         private OptionsPanel () {
             validateRootContext ();
@@ -314,7 +313,6 @@ public class OptionsAction extends CallableSystemAction {
         /** Expands the node in explorer.
          */
         private static void expandNodes (Node n, final int depth, final Collection list) {
-            //assert EventQueue.isDispatchThread();
             if (depth == 0) {
                 return;
             }
@@ -348,21 +346,9 @@ public class OptionsAction extends CallableSystemAction {
             Node[] arr = n.getChildren().getNodes(true);
             for (int i = 0; i < arr.length; i++) {
                 final Node p = arr[i];
-                /*invokeLaterLowPriority(new Runnable() {
-                    public void run() {
-                        expandNodes(p, depth - 1, list);
-                    }
-                });*/
                 expandNodes(p, depth - 1, list);
             }
         }
-
-        private Collection getToExpand() {
-            return toExpand;
-        }
-        
-        
-        
         
         //
         // Model to implement the special handling of SettingChildren.* properties
@@ -399,10 +385,6 @@ public class OptionsAction extends CallableSystemAction {
             /** Active set of properties (columns) */
             private Node.Property active_set [] = null;
             PropertyChangeListener weakL = null;
-
-            JTree getTree () {
-                return tree;
-            }
             
             public TTW () {
                 super (new NTM ());
@@ -546,23 +528,5 @@ public class OptionsAction extends CallableSystemAction {
             }
         }
         
-    } // end of inner class OptionsPanel
-    
-    /**
-     * Similar to {@link EventQueue#invokeLater} but posts the event at the same
-     * priority as paint requests, to avoid bad visual artifacts.
-     * XXX later Mutex.EVENT etc. should do this automatically, in which case replace...
-     */
-    private static void invokeLaterLowPriority(Runnable r) {
-        Toolkit t = Toolkit.getDefaultToolkit();
-        EventQueue q = t.getSystemEventQueue();
-        q.postEvent(new PaintPriorityEvent(t, r));
-    }
-    
-    static final class PaintPriorityEvent extends InvocationEvent {
-        public PaintPriorityEvent(Toolkit t, Runnable runnable) {
-            super(t, PaintEvent.PAINT, runnable, null, false);
-        }
-    }
-    
+    } // end of inner class OptionsPanel    
 }
