@@ -16,6 +16,7 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -24,10 +25,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
+import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -70,7 +74,6 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         WizardDescriptor.Panel[] result = null;
         if (this.type == TYPE_EXT) {
             result =  new WizardDescriptor.Panel[] {
-                new PanelConfigureProject( this.type ),
                 new PanelSourceFolders.Panel ()
             };
         }
@@ -83,19 +86,9 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     }
     
     private String[] createSteps() {
-        String[] result = null;
-        if (this.type == TYPE_EXT) {
-            result = new String[] {
-                "Configure Project", // XXX I18N
-                "Set Source Root",         // XXX I18N
+            return new String[] {
+                NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureProject"), 
             };
-        }
-        else {
-            result = new String[] {
-                "Configure Project", // XXX I18N
-            };
-        }
-        return result;
     }
     
     
@@ -124,8 +117,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
                     // Returning FileObject of main class, will be called its preferred action
                     resultSet.add (mainClassFo);
                 } catch (Exception x) {
-                    // XXX
-                    x.printStackTrace();
+                    ErrorManager.getDefault().notify(x);
                 }
             }
         }
@@ -134,8 +126,10 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
+        FoldersListSettings.getDefault().setNewProjectCount(FoldersListSettings.getDefault().getNewProjectCount() + 1);
         resultSet.add (dir);
         return resultSet;
+
     }
     
         
@@ -167,12 +161,21 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         }
     }
     public void uninitialize(WizardDescriptor wiz) {
+        this.wiz.putProperty("projdir",null);           //NOI18N
+        this.wiz.putProperty("codename",null);          //NOI18N
+        this.wiz.putProperty("displayName",null);       //NOI18N
+        this.wiz.putProperty("mainClass",null);         //NOI18N
+        if (this.type == TYPE_EXT) {
+            this.wiz.putProperty("sourceRoot",null);    //NOI18N
+            this.wiz.putProperty("testRoot",null);      //NOI18N
+        }
         this.wiz = null;
         panels = null;
     }
     
     public String name() {
-        return "" + (index + 1) + " of " + panels.length; // XXX I18N
+        return MessageFormat.format (NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_IteratorName"),
+            new Object[] {new Integer (index + 1), new Integer (panels.length) });                                
     }
     
     public boolean hasNext() {
@@ -206,4 +209,23 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         
         return sourcesRoot.getFileObject (mainClass, "java"); // NOI18N
     }
+
+    static String getSystemName (String displayName) {
+        return displayName.replace(' ', '-' );      //NOI18N
+    }
+    
+    static String getPackageName (String displayName) {
+        StringBuffer builder = new StringBuffer ();
+        for (int i=0; i< displayName.length(); i++) {
+            char c = displayName.charAt(i);            
+            if ((i != 0 && Character.isJavaIdentifierPart (c)) || (i == 0 && Character.isJavaIdentifierStart(c))) {
+                builder.append(c);
+            }
+            else {
+                builder.append ('_');       //NOI18N
+            }
+        }
+        return builder.toString();
+    }
+    
 }

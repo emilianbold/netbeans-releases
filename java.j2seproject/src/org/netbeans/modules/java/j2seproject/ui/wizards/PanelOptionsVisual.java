@@ -8,15 +8,19 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
-/** XXX I18N
+/**
  *
  * @author  phrebejk
  */
-public class PanelOptionsVisual extends javax.swing.JPanel implements ActionListener {
+public class PanelOptionsVisual extends javax.swing.JPanel implements ActionListener, PropertyChangeListener {
     
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     
@@ -38,20 +42,24 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
                 createMainCheckBox.setSelected( lastMainClassCheck );
                 mainClassTextField.setEnabled( lastMainClassCheck );
                 break;
-            case NewJ2SEProjectWizardIterator.TYPE_EXT:
-                createMainCheckBox.setVisible( false );
-                mainClassTextField.setVisible( false );
-                break;
         }
 
     }
 
-    public void actionPerformed( ActionEvent e ) {
-        
+    public void actionPerformed( ActionEvent e ) {        
         if ( e.getSource() == createMainCheckBox ) {
             lastMainClassCheck = createMainCheckBox.isSelected();
             mainClassTextField.setEnabled( lastMainClassCheck );        
         }                
+    }
+    
+    public void propertyChange (PropertyChangeEvent event) {
+        if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
+            String newProjectName = NewJ2SEProjectWizardIterator.getPackageName((String) event.getNewValue());
+            this.mainClassTextField.setText (MessageFormat.format(
+                NbBundle.getMessage (PanelOptionsVisual.class,"TXT_ClassName"), new Object[] {newProjectName}
+            ));
+        }
     }
     
     /** This method is called from within the constructor to
@@ -68,8 +76,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
 
         setLayout(new java.awt.GridBagLayout());
 
-        setAsMainCheckBox.setSelected(true);
         setAsMainCheckBox.setText("Set as Main Project");
+        setAsMainCheckBox.setSelected(true);
+        setAsMainCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -78,8 +87,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(setAsMainCheckBox, gridBagConstraints);
 
-        createMainCheckBox.setSelected(true);
         createMainCheckBox.setText("Create Main Class:");
+        createMainCheckBox.setSelected(true);
+        createMainCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreateMainClass_CheckBoxMnemonic").charAt(0));
         createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -97,6 +107,10 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
     
     boolean valid() {
         return true;
+    }
+    
+    void read (WizardDescriptor d) {
+        //TODO:
     }
 
     void store( WizardDescriptor d ) {

@@ -6,46 +6,51 @@
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-/** XXX I18N
+/**
  *
  * @author  phrebejk
  */
 public class PanelProjectLocationVisual extends javax.swing.JPanel implements DocumentListener {
     
-    private static JFileChooser chooser = createChooser();
+    public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
     
     private PanelConfigureProject panel;
-    
-    private String oldName;
-    private String oldLocation;
-    
+    private PropertyChangeSupport support;
+        
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual( PanelConfigureProject panel ) {
+        this.support = new PropertyChangeSupport (this);
         initComponents();
         this.panel = panel;
-        
-        // Setup the defauld names
-        
-        File last = chooser.getSelectedFile() == null ? chooser.getCurrentDirectory() : chooser.getSelectedFile();
-        
-        projectLocationTextField.setText( last.getPath() );         
-        createdFolderTextField.setText( last.getPath() + File.separatorChar + projectNameTextField.getText() );
-        
-        // Setup oldValues
-        updateOldTexts();
-        
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener( this );
-        projectLocationTextField.getDocument().addDocumentListener( this );
-        
+        projectLocationTextField.getDocument().addDocumentListener( this );        
+    }
+    
+    
+    public String getProjectName () {
+        return this.projectNameTextField.getText ();
+    }
+    
+    public void addPropertyChangeListener (PropertyChangeListener listener) {
+        this.support.addPropertyChangeListener (listener);
+    }
+    
+    public void removePropertyChangeListener (PropertyChangeListener listener) {
+        this.support.removePropertyChangeListener (listener);
     }
     
     /** This method is called from within the constructor to
@@ -67,13 +72,14 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
 
         setLayout(new java.awt.GridBagLayout());
 
+        projectNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         projectNameLabel.setText("Project Name:");
+        projectNameLabel.setLabelFor(projectNameTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(projectNameLabel, gridBagConstraints);
 
-        projectNameTextField.setText("newProject");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -81,7 +87,9 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(projectNameTextField, gridBagConstraints);
 
+        projectLocationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         projectLocationLabel.setText("Project Location:");
+        projectLocationLabel.setLabelFor(projectLocationTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -112,7 +120,9 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
+        createdFolderLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
         createdFolderLabel.setText("Created Project Folder:");
+        createdFolderLabel.setLabelFor(createdFolderTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -123,10 +133,10 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         jPanel1.add(createdFolderTextField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -140,17 +150,22 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     }//GEN-END:initComponents
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
-        String command = evt.getActionCommand();
-        
-        if ( "BROWSE".equals( command ) ) { // NOI18N
-                
+        String command = evt.getActionCommand();        
+        if ( "BROWSE".equals( command ) ) { // NOI18N                
+            JFileChooser chooser = new JFileChooser ();
+            String path = this.projectLocationTextField.getText();
+            if (path.length() > 0) {
+                File f = new File (path);
+                if (f.exists ()) {
+                    chooser.setSelectedFile(f);
+                }
+            }
             if ( JFileChooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage( PanelConfigureProjectVisual.class, "LBL_NWP1_SelectProjectLocation" ) ) ) { //NOI18N
                 File projectDir = chooser.getSelectedFile();
                 projectLocationTextField.setText( projectDir.getAbsolutePath() );
             }            
             panel.fireChangeEvent();
         }
-
     }//GEN-LAST:event_browseLocationAction
     
     
@@ -163,7 +178,8 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     boolean valid( WizardDescriptor wizardDescriptor ) {
         
         if ( projectNameTextField.getText().length() == 0 ) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", "Project Name is not valid folder name." );
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage",
+            NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
         
@@ -171,10 +187,11 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", "Project Folder already exists and is not empty." );
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage",
+            NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderExists"));
             return false;
         }
-                
+        
         wizardDescriptor.putProperty( "WizardPanel_errorMessage", "" );
         return true;
     }
@@ -187,7 +204,27 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         
         d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "displayName", name ); // NOI18N      
-        d.putProperty( /*XXX Define somewhere */ "codename", name.replace(' ', '-' ) ); // NOI18N
+        d.putProperty( /*XXX Define somewhere */ "codename", NewJ2SEProjectWizardIterator.getSystemName(name)); // NOI18N
+        ProjectChooser.setProjectsFolder (new File(this.projectLocationTextField.getText()));
+    }
+    
+    void read (WizardDescriptor settings) {
+        String projectName = (String) settings.getProperty ("displayName"); //NOI18N
+        if (projectName == null) {
+            projectName = MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaProject"), new Object[]{
+                new Integer (FoldersListSettings.getDefault().getNewProjectCount()+1)
+            });
+        }
+        this.projectNameTextField.setText (projectName);
+        
+        File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
+        if (projectLocation == null) {
+            projectLocation = ProjectChooser.getProjectsFolder();
+        }
+        else {
+            projectLocation = projectLocation.getParentFile();
+        }
+        this.projectLocationTextField.setText (projectLocation.getAbsolutePath());
     }
         
     
@@ -217,14 +254,23 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     
     public void changedUpdate( DocumentEvent e ) {
         updateTexts( e );
+        if (this.projectNameTextField.getDocument() == e.getDocument()) {
+            this.support.firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+        }
     }
     
     public void insertUpdate( DocumentEvent e ) {
         updateTexts( e );
+        if (this.projectNameTextField.getDocument() == e.getDocument()) {
+            this.support.firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+        }
     }
     
     public void removeUpdate( DocumentEvent e ) {
         updateTexts( e );
+        if (this.projectNameTextField.getDocument() == e.getDocument()) {
+            this.support.firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+        }
     }
     
     
@@ -244,18 +290,9 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
             createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
             //}
             
-        }
-        
-        updateOldTexts();
-        
-        panel.fireChangeEvent(); // Notify that the panel changed
-        
-    }
-    
-    private void updateOldTexts() {
-        oldName = projectNameTextField.getText();
-        oldLocation = projectLocationTextField.getText();
-    }
+        }                
+        panel.fireChangeEvent(); // Notify that the panel changed        
+    }    
 
     
 }

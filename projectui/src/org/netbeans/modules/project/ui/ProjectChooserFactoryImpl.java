@@ -21,6 +21,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
+import java.io.File;
+
 /**
  * Factory to be implemented bu the ui implementation
  * @author Petr Hrebejk
@@ -37,5 +39,13 @@ public class ProjectChooserFactoryImpl implements ProjectChooserFactory {
     public WizardDescriptor.Panel createSimpleTargetChooser( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel ) {
         return new SimpleTargetChooserPanel( project, folders, bottomPanel );
     }
-    
+
+    public File getProjectsFolder() {
+        return OpenProjectListSettings.getInstance().getProjectsFolder();
+    }
+
+    public void setProjectsFolder(File file) {
+        OpenProjectListSettings.getInstance().setProjectsFolder (file);
+    }
+
 }

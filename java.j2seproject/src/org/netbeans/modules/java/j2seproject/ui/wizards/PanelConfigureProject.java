@@ -77,6 +77,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
+        component.read (wizardDescriptor);
     }
     
     public void storeSettings(Object settings) {

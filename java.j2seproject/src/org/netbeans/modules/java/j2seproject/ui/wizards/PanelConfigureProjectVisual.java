@@ -46,28 +46,28 @@ public class PanelConfigureProjectVisual extends JPanel {
         initComponents();
                 
         projectLocationPanel = new PanelProjectLocationVisual( panel );
-        locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
-        
+        locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );               
         optionsPanel = new PanelOptionsVisual( panel, type );
+        projectLocationPanel.addPropertyChangeListener(optionsPanel);
         optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
         
-        // Provide a name in the title bar.
-        setName("J2SE Project"); // XXX I18N
-        /*
-        try {
-            putClientProperty("WizardPanel_helpURL", // NOI18N
-                new URL("nbresloc:/org/netbeans/modules/java/j2seproject/ui/TrivialVisualHelp.html")); // NOI18N
-        } catch (MalformedURLException mfue) {
-            throw new IllegalStateException(mfue.toString());
+        if (type == NewJ2SEProjectWizardIterator.TYPE_APP) {
+            setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaAppNameAndLoc"));
+            jSeparator1.setVisible(true);
+        }                       
+        else {
+            jSeparator1.setVisible (false);
+            setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLibNameAndLoc"));            
         }
-        */
-        
-        
-        
     }
     
     boolean valid( WizardDescriptor wizardDescriptor ) {        
         return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid();
+    }
+    
+    void read (WizardDescriptor d) {
+        projectLocationPanel.read (d);
+        optionsPanel.read (d);
     }
     
     void store( WizardDescriptor d ) {
@@ -102,8 +102,8 @@ public class PanelConfigureProjectVisual extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         add(jSeparator1, gridBagConstraints);
 
         optionsContainer.setLayout(new java.awt.BorderLayout());

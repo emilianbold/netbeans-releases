@@ -15,7 +15,10 @@ package org.netbeans.modules.project.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+
 import org.openide.options.SystemOption;
+import org.openide.util.NbBundle;
 
 /** SystemOption to store the list of open projects
  *  XXX Should be removed later and changed either to registry
@@ -29,8 +32,9 @@ public class OpenProjectListSettings extends SystemOption {
     private static final String OPEN_AS_MAIN = "OpenAsMain";
     private static final String MAIN_PROJECT_DIR = "MainProjectDir";
     private static final String RECENT_PROJECTS_DIR_NAMES = "RecentProjectsDirectoryNames";
+    private static final String PROP_PROJECTS_FOLDER = "projectsFolder";    //NOI18N
     
-    // PERSISTENCE    
+    // PERSISTENCE
     private static final long serialVersionUID = 8754987489474L;
 
     
@@ -39,7 +43,7 @@ public class OpenProjectListSettings extends SystemOption {
     }
     
     public String displayName() {
-        return "XXX";
+        return NbBundle.getMessage (OpenProjectListSettings.class,"TXT_UISettings");
     }        
 
     public List getDirNames() {
@@ -93,6 +97,23 @@ public class OpenProjectListSettings extends SystemOption {
     public void setRecentProjectsDirNames( List list ) {
         putProperty( RECENT_PROJECTS_DIR_NAMES, list, true  );
     }
-    
-}        
+
+    public File getProjectsFolder () {
+        String result = (String) this.getProperty (PROP_PROJECTS_FOLDER);
+        if (result == null) {
+            result = System.getProperty("user.home");   //NOI18N
+        }
+        return new File(result);
+    }
+
+    public void setProjectsFolder (File folder) {
+        if (folder == null) {
+            this.putProperty(PROP_PROJECTS_FOLDER,null);
+        }
+        else {
+            this.putProperty(PROP_PROJECTS_FOLDER, folder.getAbsolutePath());
+        }
+    }
+
+}
 
