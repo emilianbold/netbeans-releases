@@ -312,10 +312,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
         public String[] getTags() {
             WindowManager wm = TopManager.getDefault().getWindowManager();
             Workspace[] wss = wm.getWorkspaces();
-            if (!namesInitialized) {
-                namesInitialized = true;
-                initializeNamesMap(wss);
-            }
+            initializeNamesMap(wss);
+
             // exclude browsing, running and debugging workspaces
             java.util.Vector tagList = new java.util.Vector();
             for (int i = wss.length; --i >= 0;) {
@@ -328,7 +326,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             // tagList.add(NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE"));
             String[] names = new String [tagList.size() + 1];
             for (int i=0, n = tagList.size(); i < n; i++)
-                names[i] =(String)namesMap.get(tagList.get(i));
+                names[i] = (String)namesMap.get(tagList.get(i));
+
             names[tagList.size()] = NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE");
             return names;
         }
@@ -341,7 +340,16 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             for (int i = 0; i < wss.length; i++) {
                 // create new string for each display name to be able to search
                 // using '==' operator in findProgrammaticName(String displayName) method
-                namesMap.put(wss[i].getName(), new String(wss[i].getDisplayName()));;
+                String displayName = wss[i].getDisplayName();                
+                int index = displayName.indexOf('&');
+                String part1 = "";
+                String part2 = "";                
+                if (index>0)
+                    part1 = displayName.substring(0, index);
+                if (index<(displayName.length()-1))
+                    part2 = displayName.substring(index+1, displayName.length());
+                
+                namesMap.put(wss[i].getName(), new String(part1 + part2));;
             }
         }
 
