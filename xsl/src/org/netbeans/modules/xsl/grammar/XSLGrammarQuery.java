@@ -106,7 +106,10 @@ public class XSLGrammarQuery implements GrammarQuery{
     /** The value of the public identifier of the DTD which was used when
      * resultGrammarQuery was previously created */
     private String lastDoctypePublic;
-     
+
+    // we cannot parse SGML DTD for HTML, let emulate it by XHTML DTD
+    private final static String XHTML_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Transitional//EN";
+    
     /** Creates a new instance of XSLGrammarQuery */
     public XSLGrammarQuery(DataObject dataObject) {
         this.dataObject = dataObject;
@@ -801,8 +804,18 @@ public class XSLGrammarQuery implements GrammarQuery{
                 String childNodeName = childOfRoot.getNodeName();
                 if (childNodeName != null && childNodeName.equals(outputElName)) {
                     Element outputEl = (Element)childOfRoot;
+                    String outputMethod = outputEl.getAttribute("method");
+                                        
                     String curDoctypePublic = outputEl.getAttribute("doctype-public");
                     String curDoctypeSystem = outputEl.getAttribute("doctype-system");
+                    
+                    if ("html".equals(outputMethod)) {                          // NOI18N
+                        // html is special case that can be emulated using XHTML
+                        curDoctypePublic = XHTML_PUBLIC_ID;
+                    } else if ("text".equals(outputMethod)) {                   // NOI18N
+                        // user error, ignore
+                        break;
+                    }
                     
                     if (curDoctypePublic != null && !curDoctypePublic.equals(lastDoctypePublic) || 
                       curDoctypePublic == null && lastDoctypePublic != null ||
