@@ -57,7 +57,7 @@ public class SectionNodePanel extends SectionPanel {
     protected void setExpandedViewMode() {
         getTitleButton().setVisible(true);
         getFoldButton().setVisible(false);
-        getSeparator().setVisible(false);
+        getHeaderSeparator().setVisible(false);
         Border emptyBorder = new EmptyBorder(0, 4, 4, 4);
         Border lineBorder;
         lineBorder = new JTextField().getBorder();
@@ -75,7 +75,7 @@ public class SectionNodePanel extends SectionPanel {
     protected void setInnerViewMode() {
         getTitleButton().setVisible(false);
         getFoldButton().setVisible(false);
-        getSeparator().setVisible(false);
+        getHeaderSeparator().setVisible(false);
         openInnerPanel();
         getFillerLine().setVisible(false);
         getFillerEnd().setVisible(false);

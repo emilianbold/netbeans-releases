@@ -50,7 +50,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         this.foldable=foldable;
         initComponents();
         setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        jSeparator1.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
+        headerSeparator.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
         titleButton.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         fillerLine.setForeground(SectionVisualTheme.getFoldLineColor());
@@ -103,6 +103,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     /** Method from NodeSectionPanel interface */
     public void setActive(boolean active) {
         titleButton.setBackground(active?SectionVisualTheme.getSectionHeaderActiveColor():SectionVisualTheme.getSectionHeaderColor());
+        //headerSeparator.setVisible(!active);
         if (active && !this.equals(sectionView.getActivePanel())) {
             sectionView.sectionSelected(true);
             sectionView.setActivePanel(this);
@@ -200,7 +201,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
 
         foldButton = new javax.swing.JToggleButton();
         titleButton = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
+        headerSeparator = new javax.swing.JSeparator();
         contentPanel = new javax.swing.JPanel();
         actionPanel = new javax.swing.JPanel();
         fillerLine = new javax.swing.JSeparator();
@@ -253,7 +254,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        add(jSeparator1, gridBagConstraints);
+        add(headerSeparator, gridBagConstraints);
 
         contentPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -329,7 +330,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     private javax.swing.JSeparator fillerEnd;
     private javax.swing.JSeparator fillerLine;
     private javax.swing.JToggleButton foldButton;
-    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator headerSeparator;
     private javax.swing.JButton titleButton;
     // End of variables declaration//GEN-END:variables
     

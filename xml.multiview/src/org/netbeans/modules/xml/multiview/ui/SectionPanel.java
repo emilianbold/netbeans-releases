@@ -65,7 +65,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         this.key = key;
 
         initComponents();
-        jSeparator1.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
+        headerSeparator.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
         fillerLine.setForeground(SectionVisualTheme.getFoldLineColor());
         fillerEnd.setForeground(SectionVisualTheme.getFoldLineColor());
         fillerLine.setVisible(false);
@@ -169,6 +169,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         //System.out.println("setActive = "+active +":"+node.getDisplayName());
         titleButton.setBackground(
                 active ? SectionVisualTheme.getSectionHeaderActiveColor() : SectionVisualTheme.getSectionHeaderColor());
+        //headerSeparator.setVisible(!active);
         if (headerButtons!=null) {
             for (int i=0;i<headerButtons.length;i++) headerButtons[i].setEnabled(active);
         }
@@ -197,7 +198,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
 
         foldButton = new javax.swing.JToggleButton();
         titleButton = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
+        headerSeparator = new javax.swing.JSeparator();
         actionPanel = new javax.swing.JPanel();
         fillerLine = new javax.swing.JSeparator();
         fillerEnd = new javax.swing.JSeparator();
@@ -249,7 +250,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        add(jSeparator1, gridBagConstraints);
+        add(headerSeparator, gridBagConstraints);
 
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 2, 0));
 
@@ -308,7 +309,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private javax.swing.JSeparator fillerEnd;
     private javax.swing.JSeparator fillerLine;
     private javax.swing.JToggleButton foldButton;
-    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator headerSeparator;
     private javax.swing.JButton titleButton;
     // End of variables declaration//GEN-END:variables
 
@@ -365,8 +366,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         return foldButton;
     }
 
-    protected JSeparator getSeparator() {
-        return jSeparator1;
+    protected JSeparator getHeaderSeparator() {
+        return headerSeparator;
     }
 
     protected JButton getTitleButton() {
