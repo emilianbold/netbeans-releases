@@ -48,6 +48,11 @@ public class JavaCodeGenerator extends CodeGenerator {
   protected static final String AUX_VARIABLE_MODIFIER = "JavaCodeGenerator_VariableModifier";
   protected static final String AUX_SERIALIZE_TO = "JavaCodeGenerator_SerializeTo";
   protected static final String AUX_CODE_GENERATION = "JavaCodeGenerator_CodeGeneration";
+  protected static final String AUX_CREATE_CODE_PRE = "JavaCodeGenerator_CreateCodePre";
+  protected static final String AUX_CREATE_CODE_POST = "JavaCodeGenerator_CreateCodePost";
+  protected static final String AUX_CREATE_CODE_CUSTOM = "JavaCodeGenerator_CreateCodeCustom";
+  protected static final String AUX_INIT_CODE_PRE = "JavaCodeGenerator_InitCodePre";
+  protected static final String AUX_INIT_CODE_POST = "JavaCodeGenerator_InitCodePost";
 
   protected static final String SECTION_INIT_COMPONENTS = "initComponents";
   protected static final String SECTION_VARIABLES = "variables";
@@ -127,7 +132,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     if (!component.getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
       return new Node.Property[] { variableProperty };
     } else {
-      return new Node.Property[] {
+      Node.Property[] props = new Node.Property[] {
         variableProperty,
         new PropertySupport.ReadWrite ("useDefaultModifiers", Boolean.TYPE, "Use Default Modifiers",  // [PENDING - localize]
                                        "If true, the global modifiers from Control Panel | Form Settings are used") {
@@ -207,6 +212,82 @@ public class JavaCodeGenerator extends CodeGenerator {
           }
           
         },
+        new PropertySupport.ReadWrite ("creationCodePre", String.class, "Pre Creation Code",  // [PENDING - localize]
+                                       "Code before creation of this component") {
+          public void setValue (Object value) {
+            if (!(value instanceof String)) {
+              throw new IllegalArgumentException ();
+            }
+            component.setAuxValue (AUX_CREATE_CODE_PRE, value);
+            regenerateInitializer ();
+            component.getNodeReference ().notifyPropertiesChange ();
+          }
+  
+          public Object getValue () {
+            Object value = component.getAuxValue (AUX_CREATE_CODE_PRE);
+            if (value == null) {
+              value = "";
+            }
+            return value;
+          }          
+        },
+        new PropertySupport.ReadWrite ("creationCodePost", String.class, "Post Creation Code",  // [PENDING - localize]
+                                       "Code after creation of this component") {
+          public void setValue (Object value) {
+            if (!(value instanceof String)) {
+              throw new IllegalArgumentException ();
+            }
+            component.setAuxValue (AUX_CREATE_CODE_POST, value);
+            regenerateInitializer ();
+            component.getNodeReference ().notifyPropertiesChange ();
+          }
+  
+          public Object getValue () {
+            Object value = component.getAuxValue (AUX_CREATE_CODE_POST);
+            if (value == null) {
+              value = "";
+            }
+            return value;
+          }
+        },
+        new PropertySupport.ReadWrite ("initCodePre", String.class, "Pre Init Code",  // [PENDING - localize]
+                                       "Code before initialization of this component") {
+          public void setValue (Object value) {
+            if (!(value instanceof String)) {
+              throw new IllegalArgumentException ();
+            }
+            component.setAuxValue (AUX_INIT_CODE_PRE, value);
+            regenerateInitializer ();
+            component.getNodeReference ().notifyPropertiesChange ();
+          }
+  
+          public Object getValue () {
+            Object value = component.getAuxValue (AUX_INIT_CODE_PRE);
+            if (value == null) {
+              value = "";
+            }
+            return value;
+          }          
+        },
+        new PropertySupport.ReadWrite ("initCodePost", String.class, "Post Init Code",  // [PENDING - localize]
+                                       "Code after initialization of this component") {
+          public void setValue (Object value) {
+            if (!(value instanceof String)) {
+              throw new IllegalArgumentException ();
+            }
+            component.setAuxValue (AUX_INIT_CODE_POST, value);
+            regenerateInitializer ();
+            component.getNodeReference ().notifyPropertiesChange ();
+          }
+  
+          public Object getValue () {
+            Object value = component.getAuxValue (AUX_INIT_CODE_POST);
+            if (value == null) {
+              value = "";
+            }
+            return value;
+          }
+        },
         new PropertySupport.ReadWrite ("serializeTo", String.class, "Serialize To",  // [PENDING - localize]
                                        "The file into which this component is serialized") {
           public void setValue (Object value) {
@@ -225,9 +306,42 @@ public class JavaCodeGenerator extends CodeGenerator {
             }
             return value;
           }
-          
-        },
+        }
       };
+      Integer generationType = (Integer)component.getAuxValue (AUX_CODE_GENERATION);
+      if ((generationType == null) || (generationType.equals(VALUE_GENERATE_CODE))) {
+        Node.Property[] moreProps = new Node.Property[props.length + 1];
+        for (int i=0, n=props.length; i<n; i++) {
+          moreProps [i] = props [i];
+        }
+        moreProps [moreProps.length -1] = 
+          new PropertySupport.ReadWrite ("creationCodeCustom", String.class, "Custom Creation Code",  // [PENDING - localize]
+                                         "Custom code for creation of the component") {
+            public void setValue (Object value) {
+              if (!(value instanceof String)) {
+                throw new IllegalArgumentException ();
+              }
+              component.setAuxValue (AUX_CREATE_CODE_CUSTOM, value);
+              regenerateInitializer ();
+              component.getNodeReference ().notifyPropertiesChange ();
+            }
+  
+            public Object getValue () {
+              Object value = component.getAuxValue (AUX_CREATE_CODE_CUSTOM);
+              if (value == null) {
+                value = "";
+              }
+              return value;
+            }          
+            public boolean canWrite () {
+              Integer genType = (Integer)component.getAuxValue (AUX_CODE_GENERATION);
+              return ((genType == null) || (genType.equals(VALUE_GENERATE_CODE)));
+            }
+          };
+        return moreProps;
+      } else {
+        return props;
+      }
     }
   }
 
@@ -248,6 +362,11 @@ public class JavaCodeGenerator extends CodeGenerator {
       RADForm form = formManager.getRADForm ();
       RADComponent top = form.getTopLevelComponent ();
       RADComponent[] nonVisualComponents = formManager.getNonVisualComponents ();
+      for (int i = 0; i < nonVisualComponents.length; i++) {
+        addCreateCode (nonVisualComponents[i], initCodeWriter);
+      }
+      addCreateCode (top, initCodeWriter);
+      
       for (int i = 0; i < nonVisualComponents.length; i++) {
         addInitCode (nonVisualComponents[i], initCodeWriter, initCodeBuffer, 0);
       }
@@ -365,11 +484,25 @@ public class JavaCodeGenerator extends CodeGenerator {
     }
   }
 
-  private void addInitCode (RADComponent comp, Writer initCodeWriter, AWTIndentStringWriter initCodeBuffer, int level) throws IOException {
-    //System.out.println("Adding init code for: "+comp.getName ());
+  private void addCreateCode (RADComponent comp, Writer initCodeWriter) throws IOException {
     if (!(comp instanceof FormContainer)) {
       generateComponentCreate (comp, initCodeWriter);
     }
+    if (comp instanceof ComponentContainer) {
+      RADComponent[] children = ((ComponentContainer)comp).getSubBeans ();
+      for (int i = 0; i < children.length; i++) {
+        addCreateCode (children[i], initCodeWriter);
+      }
+    }
+  }
+  
+  private void addInitCode (RADComponent comp, Writer initCodeWriter, AWTIndentStringWriter initCodeBuffer, int level) throws IOException {
+    //System.out.println("Adding init code for: "+comp.getName ());
+    /* all components are created before init code in addCreateCode ()
+    if (!(comp instanceof FormContainer)) {
+      generateComponentCreate (comp, initCodeWriter);
+    }
+    */
     generateComponentInit (comp, initCodeWriter);
     generateComponentEvents (comp, initCodeWriter);
     if (comp instanceof ComponentContainer) {
@@ -419,7 +552,14 @@ public class JavaCodeGenerator extends CodeGenerator {
       // do noty generate init for AWT separator as it is not a real component
       return;
     }
-    
+
+    String preCode = (String) comp.getAuxValue (AUX_CREATE_CODE_PRE);
+    String postCode = (String) comp.getAuxValue (AUX_CREATE_CODE_POST);
+    String customCreateCode = (String) comp.getAuxValue (AUX_CREATE_CODE_CUSTOM);
+    if ((preCode != null) && (!preCode.equals(""))) {
+      initCodeWriter.write (preCode);
+      initCodeWriter.write ("\n");
+    }
     Integer generationType = (Integer)comp.getAuxValue (AUX_CODE_GENERATION);
     if (comp.hasHiddenState () || ((generationType != null) && (generationType.equals (VALUE_SERIALIZE)))) {
       String serializeTo = (String)comp.getAuxValue (AUX_SERIALIZE_TO);
@@ -445,10 +585,19 @@ public class JavaCodeGenerator extends CodeGenerator {
       initCodeWriter.write ("e.printStackTrace ();\n");
       initCodeWriter.write ("}\n");
     } else {
-      initCodeWriter.write (comp.getName ());
-      initCodeWriter.write (" = new ");
-      initCodeWriter.write (comp.getBeanClass ().getName ());
-      initCodeWriter.write (" ();\n");
+      if ((customCreateCode != null) && (!customCreateCode.equals(""))) {
+        initCodeWriter.write (comp.getName () + " = ");
+        initCodeWriter.write (customCreateCode);
+      } else {
+        initCodeWriter.write (comp.getName () + " = ");
+        initCodeWriter.write ("new ");
+        initCodeWriter.write (comp.getBeanClass ().getName () + " ();");
+      }
+     initCodeWriter.write ("\n");
+    }
+    if ((postCode != null) && (!postCode.equals(""))) {
+      initCodeWriter.write (postCode);
+      initCodeWriter.write ("\n");
     }
   }
   
@@ -463,6 +612,12 @@ public class JavaCodeGenerator extends CodeGenerator {
     }
 
     Object genType = comp.getAuxValue (AUX_CODE_GENERATION);
+    String preCode = (String) comp.getAuxValue (AUX_INIT_CODE_PRE);
+    String postCode = (String) comp.getAuxValue (AUX_INIT_CODE_POST);
+    if ((preCode != null) && (!preCode.equals(""))) {
+      initCodeWriter.write (preCode);
+      initCodeWriter.write ("\n");
+    }
     if ((genType == null) || VALUE_GENERATE_CODE.equals (genType)) {
       // not serialized ==>> save
       RADComponent.RADProperty[] props = comp.getAllProperties ();
@@ -475,6 +630,10 @@ public class JavaCodeGenerator extends CodeGenerator {
   //      }
         }
       }
+    }
+    if ((postCode != null) && (!postCode.equals(""))) {
+      initCodeWriter.write (postCode);
+      initCodeWriter.write ("\n");
     }
   }
 
@@ -1243,6 +1402,9 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  56   Gandalf   1.55        11/1/99  Pavel Buzek     enable to enter a custom
+ *       code before/after creation and initialization of component and custom 
+ *       code for component creation
  *  55   Gandalf   1.54        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  54   Gandalf   1.53        10/6/99  Ian Formanek    Fixed bug 4199 - 
