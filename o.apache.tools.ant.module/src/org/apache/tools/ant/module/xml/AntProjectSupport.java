@@ -42,15 +42,15 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 
 public class AntProjectSupport implements AntProjectCookie, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable {
   
-    private File file;
-    private FileObject fo;
+    private final File file;
+    private final FileObject fo;
 
     private transient Document projDoc = null; // [PENDING] SoftReference
     private transient Throwable exception = null;
     private transient boolean parsed = false;
-    private transient Object parseLock = new Object ();
+    private transient Object parseLock; // see init()
 
-    private transient Set listeners = new HashSet ();
+    private transient Set listeners; // see init(); Set<ChangeListener>
     private transient EditorCookie editor = null;
     
     // milliseconds of quiet time after a textual document change after which
@@ -74,6 +74,17 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     private AntProjectSupport (FileObject fo, File f) {
         this.fo = fo;
         this.file = f;
+        init ();
+    }
+
+    private void init () {
+        parseLock = new Object ();
+        listeners = new HashSet ();
+    }
+
+    private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject ();
+        init ();
     }
     
     private EditorCookie getEditor () {
@@ -150,6 +161,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             }
             try {
                 InputSource in = new InputSource (rd);
+                // XXX set system ID on in??
                 parser.parse (in);
                 Document doc = parser.getDocument ();
                 if (editor != null) {
