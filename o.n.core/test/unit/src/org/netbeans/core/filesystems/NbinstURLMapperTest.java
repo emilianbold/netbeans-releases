@@ -18,6 +18,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLStreamHandlerFactory;
 import java.util.StringTokenizer;
 import org.openide.filesystems.*;
 import org.openide.util.Lookup;
@@ -33,11 +34,13 @@ public class NbinstURLMapperTest extends NbTestCase {
     private static final String FOLDER_NAME = "modules";    //NOI18N
 
     private FileSystem fs;
-    private FileObject testFile;
+    private File testFile;
     private int expectedLength;
 
     static {
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
+        URLStreamHandlerFactory fact = new NbinstURLStreamHandlerFactory();
+        URL.setURLStreamHandlerFactory(fact);
     }
 
     public NbinstURLMapperTest (String testName) throws IOException {
@@ -63,7 +66,7 @@ public class NbinstURLMapperTest extends NbTestCase {
         f.mkdir();
         f = new File (f,FILE_NAME);
         f.createNewFile();
-        testFile = FileUtil.fromFile (f)[0];
+        testFile = f;
         PrintWriter pw = null;
         try {
             pw = new PrintWriter(new FileWriter(f));
@@ -86,19 +89,16 @@ public class NbinstURLMapperTest extends NbTestCase {
 
     public void testFindFileObject () throws MalformedURLException, IOException {
         URL url = new URL ("nbinst:///modules/test.txt");  //NOI18N
-        FileObject[] fos = URLMapper.findFileObjects (url);
-        assertTrue ("URLMapper returned null, violation of API contract.",fos!=null);
-        assertTrue ("The nbinst URL was not resolved.",fos.length == 1);
-        assertEquals("URLMapper returned wrong file.",fos[0],testFile);
+        FileObject fo = URLMapper.findFileObject (url);
+        assertNotNull ("The nbinst URL was not resolved.",fo);
+        assertEquals("URLMapper returned wrong file.",FileUtil.toFile(fo),testFile);
         url = new URL ("nbinst://test-module/modules/test.txt");
-        fos = URLMapper.findFileObjects (url);
-        assertTrue ("URLMapper returned null, violation of API contract.",fos!=null);
-        assertTrue ("The nbinst URL was not resolved.",fos.length == 1);
-        assertEquals("URLMapper returned wrong file.",fos[0],testFile);
+        fo = URLMapper.findFileObject (url);
+        assertNotNull ("The nbinst URL was not resolved.",fo);
+        assertEquals("URLMapper returned wrong file.",FileUtil.toFile(fo),testFile);
         url = new URL ("nbinst://foo-module/modules/test.txt");
-        fos = URLMapper.findFileObjects (url);
-        assertTrue ("URLMapper returned null, violation of API contract.",fos!=null);
-        assertTrue ("The nbinst URL was resolved.",fos.length == 0);
+        fo = URLMapper.findFileObject (url);
+        assertNull ("The nbinst URL was resolved.",fo);
     }
 
     public void testURLConnection() throws MalformedURLException, IOException {
@@ -145,10 +145,10 @@ public class NbinstURLMapperTest extends NbTestCase {
     public static class Lkp extends ProxyLookup {
         public Lkp () {
             this.setLookups (new Lookup[] {
-                Lookups.fixed(new Object[] {new TestInstalledFileLocator(), new NbinstURLStreamHandlerFactory()})
+                Lookups.fixed(new Object[] {new TestInstalledFileLocator(), new NbinstURLStreamHandlerFactory(),
+                new NbinstURLMapper()})
             });
         }
-
     }
 
     public static class TestInstalledFileLocator extends InstalledFileLocator {
