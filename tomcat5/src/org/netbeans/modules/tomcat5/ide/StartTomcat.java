@@ -432,7 +432,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
         if (baseD!=null) {
             try {
                 //patch server.xml using S2B
-                tm.getCatalinaBaseFileSystem ();
+                tm.getCatalinaBaseFileObject ();
     //            try {
     //                lfs = new LocalFileSystem ();
     //                lfs.setRootDirectory (baseDir);

@@ -515,9 +515,9 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
     
     private FileObject getTomcatConf() {
-        FileSystem fs = getTomcatManager().getCatalinaBaseFileSystem();
-        if (fs != null) {
-            return fs.findResource("conf/server.xml"); //NOI18N
+        FileObject base = getTomcatManager().getCatalinaBaseFileObject();
+        if (base != null) {
+            return base.getFileObject("conf/server.xml"); //NOI18N
         }
         return null;
     }    

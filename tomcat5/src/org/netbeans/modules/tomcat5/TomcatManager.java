@@ -138,7 +138,7 @@ public class TomcatManager implements DeploymentManager {
     /** CATALINA_BASE of disconnected TomcatManager. */
     private String catalinaBase;
     
-    private FileSystem catalinaFS;
+    private FileObject catalinaBaseDir;
     
     private StartTomcat sTomcat;
     
@@ -285,39 +285,14 @@ public class TomcatManager implements DeploymentManager {
         return baseDir;
     }
 
-    public FileSystem getCatalinaBaseFileSystem() {
-        if (catalinaFS!=null) return catalinaFS;
+    public FileObject getCatalinaBaseFileObject() {
+        if (catalinaBaseDir!=null) return catalinaBaseDir;
         File baseDir = getCatalinaBaseDir();
         if (baseDir==null) baseDir = getCatalinaHomeDir();
         if (!baseDir.exists()) createBaseDir(baseDir,getCatalinaHomeDir());
         if (baseDir==null) return null;
-        catalinaFS = findFileSystem(baseDir);
-        if (catalinaFS==null) createCatalinaBaseFileSystem(baseDir);
-        return catalinaFS;
-    }
-    
-    public void createCatalinaBaseFileSystem(File baseDir) {
-        catalinaFS = new LocalFileSystem();
-        try {
-            ((LocalFileSystem)catalinaFS).setRootDirectory(baseDir);
-            catalinaFS.setHidden(true);
-            Repository.getDefault().addFileSystem(catalinaFS);
-        } catch (Exception ex) {
-            org.openide.ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, ex);
-        }  
-    }
-
-    private FileSystem findFileSystem(java.io.File file) {
-        String fileName = file.getAbsolutePath();
-        java.util.Enumeration e = Repository.getDefault().getFileSystems();
-        while (e.hasMoreElements()) {
-            FileSystem fs = (FileSystem)e.nextElement();
-            File fsFile = FileUtil.toFile(fs.getRoot());
-            if (fsFile==null) continue;
-            String fsFileName = fsFile.getAbsolutePath();
-            if (fileName.equals(fsFileName)) return fs;
-        }
-        return null;
+        catalinaBaseDir = FileUtil.toFileObject(baseDir);
+        return catalinaBaseDir;
     }
     
     public StartTomcat getStartTomcat(){
