@@ -94,7 +94,8 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
             DatabaseNode cnode = children.createSubnode(ninfo, true);
             ((ConnectionNodeInfo)cnode.getInfo()).connect();
         } catch (Exception e) {
-            e.printStackTrace();
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
+                e.printStackTrace();
             throw new DatabaseException(e.getMessage());
         }
     }
