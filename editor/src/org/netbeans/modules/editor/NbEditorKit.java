@@ -56,7 +56,7 @@ import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionUtilities;
-
+import org.netbeans.modules.editor.options.AllOptionsFolder;
 
 /**
 * Java editor kit with appropriate document
@@ -86,7 +86,12 @@ public class NbEditorKit extends ExtKit {
         contentTypeTable.put("org.netbeans.modules.xml.text.syntax.XMLKit", "text/xml");
         contentTypeTable.put("org.netbeans.modules.corba.idl.editor.coloring.IDLKit", "text/x-idl");
     }
-    
+
+    public NbEditorKit(){
+        super();
+        // lazy init of MIME options
+        AllOptionsFolder.getDefault().loadMIMEOption(this.getClass());
+    }
 
     public Document createDefaultDocument() {
         return new NbEditorDocument(this.getClass());
