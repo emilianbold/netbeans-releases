@@ -11,39 +11,44 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.pdf;
 
+
 import java.awt.Image;
-import java.beans.*;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.SimpleBeanInfo;
 
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
-/** BeanInfo for PDF loader.
+
+/** BeanInfo for <code>PDFDataLoader</code>.
+ *
  * @author Jesse Glick
  */
 public class PDFDataLoaderBeanInfo extends SimpleBeanInfo {
 
+    /** Gets additional bean infos. Overrides superclass method. */
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
                 ie.printStackTrace ();
             return null;
         }
     }
 
-    private static Image icon, icon32;
+    /** Gets icon. Overrides superclass method. */
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            if (icon == null)
-                icon = loadImage ("PDFDataIcon.gif");
-            return icon;
+            return Utilities.loadImage("/org/netbeans/modules/pdf/PDFDataIcon.gif"); // NOI18N
         } else {
-            if (icon32 == null)
-                icon32 = loadImage ("PDFDataIcon32.gif");
-            return icon32;
+            return Utilities.loadImage("/org/netbeans/modules/PDFDataIcon32.gif"); // NOI18N
         }
     }
 

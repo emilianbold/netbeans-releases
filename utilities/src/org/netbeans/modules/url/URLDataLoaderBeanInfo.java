@@ -11,19 +11,27 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.url;
 
-import java.beans.*;
+
 import java.awt.Image;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.SimpleBeanInfo;
 
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.Utilities;
 
-/** URL data loader bean info.
-*
-* @author Ian Formanek
-*/
+
+/** <code>URLDataLoader</code> bean info.
+ *
+ * @author Ian Formanek
+ */
 public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
 
+    /** Gets additional beaninfo. */
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
@@ -34,23 +42,14 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    /** Icons for url data loader. */
-    private static Image icon;
-    private static Image icon32;
-
     /** @param type Desired type of the icon
-    * @return returns the URL loader's icon
-    */
-    public Image getIcon(final int type) {
-        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
-                (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            if (icon == null)
-                icon = loadImage("/org/netbeans/modules/url/urlObject.gif"); // NOI18N
-            return icon;
+     * @return returns the URL loader's icon
+     */
+    public Image getIcon(int type) {
+        if((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
+            return Utilities.loadImage("/org/netbeans/modules/url/urlObject.gif"); // NOI18N
         } else {
-            if (icon32 == null)
-                icon32 = loadImage ("/org/netbeans/modules/url/urlObject32.gif"); // NOI18N
-            return icon32;
+            return Utilities.loadImage("/org/netbeans/modules/url/urlObject32.gif"); // NOI18N
         }
     }
 
