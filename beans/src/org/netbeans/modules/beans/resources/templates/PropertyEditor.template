@@ -1,0 +1,22 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Templates.Beans;
+
+import java.beans.*;
+
+/**
+ *
+ * @author  __USER__
+ * @version 
+ */
+public class PropertyEditor extends PropertyEditorSupport {
+
+    /** Creates new __NAME__ */
+    public PropertyEditor () {
+    }
+
+}

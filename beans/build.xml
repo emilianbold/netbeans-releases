@@ -14,7 +14,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="beans" default="netbeans" basedir=".">
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
   <target name="compile">
     <javac srcdir="src" destdir="src">
       <classpath>
@@ -25,10 +24,7 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
     </javac>
   </target>
-  <target name="tojar">
-    <tojar srcdir="src" unpackeddir="tojar"/>
-  </target>
-  <target name="jars" depends="compile,tojar">
+  <target name="jars" depends="compile">
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -62,7 +58,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
-        <include name="**/*.jar"/>
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
