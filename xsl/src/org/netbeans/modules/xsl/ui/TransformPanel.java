@@ -21,21 +21,16 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import java.util.Vector;
 
 import javax.xml.transform.*;
 
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
-import org.openide.nodes.NodeOperation;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.RepositoryNodeFactory;
-import org.openide.loaders.DataFilter;
 import org.openide.filesystems.*;
-import org.openide.util.UserCancelException;
-import org.openide.util.Utilities;
 import org.openide.util.Lookup;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 import org.netbeans.api.xml.cookies.TransformableCookie;
 
@@ -649,33 +644,20 @@ public final class TransformPanel extends javax.swing.JPanel {
     
     
     private void browseXSLTButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseXSLTButtonActionPerformed
-        // prepare content for selector
-        final Node content = Util.projectView();
-        NodeOperation op = NodeOperation.getDefault();
 
         try {
-            Node[] selected = op.select(
-                    Util.THIS.getString("LBL_select_xslt_script"),
-                    Util.THIS.getString("LBL_select_node"),
-                    content,
-                    new NodeAcceptor() {
-                        public boolean acceptNodes(Node[] nodes) {
-                            if ( nodes.length != 1 ) {
-                                return false;
-                            }
-
-                            DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
-                            if ( dataObject == null ) {
-                                return false;
-                            }
-                            return TransformUtil.isXSLTransformation(dataObject);
-                        }
-                    }
-            );
-
-            DataObject dataObject = (DataObject) selected[0].getCookie(DataObject.class);
-
-            setXSL(TransformUtil.getURLName(dataObject.getPrimaryFile()));
+            File selectedFile=getFileFromChooser(getXSL());
+            if (selectedFile==null) return;
+            FileObject fo = FileUtil.toFileObject(selectedFile);
+            DataObject dObj = DataObject.find(fo);
+            if (dObj==null || !TransformUtil.isXSLTransformation(dObj)) {
+                NotifyDescriptor desc =  new NotifyDescriptor.Message(
+                    Util.THIS.getString("MSG_notXslFile", //NOI18N
+                    selectedFile.getName()),NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+                return;
+            }
+            setXSL(TransformUtil.getURLName(fo));
 
             if ( ( userSetOutput == false ) && ( xmlHistory != null ) ) {
                 setOutput(xmlHistory.getXSLOutput(data.xsl));
@@ -688,9 +670,7 @@ public final class TransformPanel extends javax.swing.JPanel {
             updateComponents();
 
             setCaretPosition(transformComboBox);
-        } catch (UserCancelException exc) { // TopManager.getDefault().getNodeOperation().select
-            // ignore it
-            Util.THIS.debug(exc);
+            
         } catch (IOException exc) { // TransformUtil.getURLName (...)
             // ignore it
             Util.THIS.debug(exc);
@@ -700,35 +680,20 @@ public final class TransformPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_browseXSLTButtonActionPerformed
     
     private void browseInputButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseInputButtonActionPerformed
-        final Node content = Util.projectView();
-        NodeOperation op = NodeOperation.getDefault();
 
         try {
-            Node[] selected = op.select(
-                    Util.THIS.getString("LBL_select_xml_document"),
-                    Util.THIS.getString("LBL_select_node"),
-                    content,
-                    new NodeAcceptor() {
-                        public boolean acceptNodes(Node[] nodes) {
-                            if ( nodes.length != 1 ) {
-                                return false;
-                            }
-
-                            Object transformable = nodes[0].getCookie(TransformableCookie.class);
-                            return ( transformable != null );
-                        }
-                    }
-            );
-
-            DataObject dataObject = (DataObject) selected[0].getCookie(DataObject.class);
-
-            setInput(TransformUtil.getURLName(dataObject.getPrimaryFile()));
-            
-            if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug("TransformPanel.browseInputButtonActionPerformed:");
-                Util.THIS.debug("    dataObject = " + dataObject);
-                Util.THIS.debug("    dataObject.getPrimaryFile() = " + dataObject.getPrimaryFile());
+            File selectedFile=getFileFromChooser(getInput());
+            if (selectedFile==null) return;
+            FileObject fo = FileUtil.toFileObject(selectedFile);
+            DataObject dObj = DataObject.find(fo);
+            if (dObj==null || dObj.getCookie(TransformableCookie.class)==null) {
+                NotifyDescriptor desc =  new NotifyDescriptor.Message(
+                    Util.THIS.getString("MSG_notXmlFile", //NOI18N
+                    selectedFile.getName()),NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+                return;
             }
+            setInput(TransformUtil.getURLName(fo));
             
             if ( ( userSetOutput == false ) && ( xslHistory != null ) ) {
                 setOutput(xslHistory.getXMLOutput(data.xml));
@@ -741,10 +706,7 @@ public final class TransformPanel extends javax.swing.JPanel {
             updateComponents();
             
             setCaretPosition(inputComboBox);
-        } catch (UserCancelException exc) { // TopManager.getDefault().getNodeOperation().select
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("TransformPanel.browseInputButtonActionPerformed: EXCEPTION", exc);
             
-            // ignore it
         } catch (IOException exc) { // TransformUtil.getURLName (...)
             // ignore it
             Util.THIS.debug(exc);
@@ -1042,5 +1004,33 @@ public final class TransformPanel extends javax.swing.JPanel {
             return Util.THIS.getString("NAME_output_just_preview");
         }
     } // class Preview
+    
+    
+    /** Open the file chooser and return the file.
+     *@param oldUrl url where to start browsing
+     */
+    private File getFileFromChooser(String oldUrl) {
+        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+        if (oldUrl!=null) {
+            try {
+                File file=null;
+                java.net.URI url = new java.net.URI(oldUrl);
+                if (url!=null) {
+                    file = new File(url);
+                }
+                if (file!=null) {
+                    File parentDir = file.getParentFile();
+                    if (parentDir!=null && parentDir.exists() ) 
+                        chooser.setCurrentDirectory(parentDir);
+                }
+            } catch (java.net.URISyntaxException ex) {}
+            catch (java.lang.IllegalArgumentException x) {}
+        }
+        File selectedFile=null;
+        if ( chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION ) {
+            selectedFile = chooser.getSelectedFile();
+        }
+        return selectedFile;
+    }
 
 }
