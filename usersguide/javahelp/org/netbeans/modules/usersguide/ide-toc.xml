@@ -113,7 +113,7 @@
       <tocitem text="Using the Jump List" target="editing.jumplist"/>
       <tocitem text="Adding a Java Import Statement With Fast Import" target="editing.fastimport"/>
     <tocitem text="Synchronizing Source Code">
-      <tocitem text="Synchronizing Source in a New Interface" target="java.sync.new-interface" />
+      <tocitem text="Synchronizing Source With an Interface" target="java.sync.new-interface" />
       <tocitem text="Setting Source Synchronization Properties" target="java.sync.properties" />
       <tocitem text="Setting Synchronization Mode in a Template" target="java.sync.template" />
     </tocitem>
