@@ -438,8 +438,10 @@ public final class BeanInstaller extends Object {
     String globalBase = null; if (globalFolder != localFolder) globalBase = globalFolder.getAbsolutePath() + File.separator;
     
     File[] list = localFolder.listFiles ();
+    if (list == null) list = new File[0];
     if (globalBase != null) {
       File[] globalList = globalFolder.listFiles ();
+      if (globalList == null) globalList = new File[0];
       if (globalList.length > 0) {
         // add the list of jars in the global folder as well
         File[] newList = new File[list.length + globalList.length];
@@ -719,6 +721,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  21   Gandalf   1.20        10/12/99 Ian Formanek    Fixed problem with 
+ *       NullPointerException thrown under some conditions...
  *  20   Gandalf   1.19        10/10/99 Ian Formanek    Correctly works in 
  *       multi-user installation
  *  19   Gandalf   1.18        10/5/99  Jaroslav Tulach Change in DataShadow.
