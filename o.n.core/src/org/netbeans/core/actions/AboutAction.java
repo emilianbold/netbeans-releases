@@ -14,27 +14,32 @@
 package com.netbeans.developer.impl.actions;
 
 import com.netbeans.ide.util.HelpCtx;
+import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.ActionPerformer;
-import com.netbeans.ide.util.actions.CallbackSystemAction;
+import com.netbeans.ide.util.actions.CallableSystemAction;
+
+import com.netbeans.developer.impl.Splash;
 
 /** The action that shows the AboutBox.
 *
 * @author Ian Formanek
 * @version 0.10, Mar 01, 1998
 */
-public class AboutAction extends CallbackSystemAction {
+public class AboutAction extends CallableSystemAction {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 6074126305723764618L;
-  /** URL of icon for this action */
-  private static java.net.URL urlIcon = null;
+
+  /** Shows the dialog.
+  */
+  public void performAction () {
+    Splash.showSplashDialog ();
+  }
 
   /** URL to this action.
   * @return URL to the action icon
   */
-  public java.net.URL getDefaultIcon() {
-    if (urlIcon == null)
-      urlIcon = getClass().getResource("/com/netbeans/developer/impl/resources/actions/about.gif");
-    return urlIcon;
+  public String iconResource () {
+    return "/com/netbeans/developer/impl/resources/actions/about.gif";
   }
 
   public HelpCtx getHelpCtx() {
@@ -42,13 +47,14 @@ public class AboutAction extends CallbackSystemAction {
   }
 
   public String getName() {
-    return com.netbeans.developer.impl.Actions.getActionsBundle().getString("About");
+    return NbBundle.getBundle (this).getString("About");
   }
 
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/20/99  Jaroslav Tulach 
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
