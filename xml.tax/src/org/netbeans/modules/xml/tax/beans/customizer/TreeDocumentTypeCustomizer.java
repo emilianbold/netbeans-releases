@@ -180,6 +180,9 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
         });
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                nameFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 nameFieldFocusLost(evt);
             }
@@ -210,6 +213,9 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
         });
 
         publicField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                publicFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 publicFieldFocusLost(evt);
             }
@@ -242,6 +248,9 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
         });
 
         systemField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                systemFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 systemFieldFocusLost(evt);
             }
@@ -266,6 +275,25 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
         add(fillPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void systemFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_systemFieldFocusGained
+        if ("new".equals(getClientProperty("xml-edit-mode"))) {  // NOI18N
+            systemField.selectAll();
+        }
+    }//GEN-LAST:event_systemFieldFocusGained
+
+    private void publicFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_publicFieldFocusGained
+        if ("new".equals(getClientProperty("xml-edit-mode"))) {  // NOI18N
+            publicField.selectAll();
+        }
+
+    }//GEN-LAST:event_publicFieldFocusGained
+
+    private void nameFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusGained
+        if ("new".equals(getClientProperty("xml-edit-mode"))) {  // NOI18N
+            nameField.selectAll();
+        }
+    }//GEN-LAST:event_nameFieldFocusGained
     
     /**
      */

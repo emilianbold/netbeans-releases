@@ -91,6 +91,12 @@ public class SelectFileDialog extends JPanel {
             }
         });
 
+        fileField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                fileFieldFocusGained(evt);
+            }
+        });
+
         fileField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 fileFieldKeyReleased(evt);
@@ -115,6 +121,13 @@ public class SelectFileDialog extends JPanel {
         add(fillPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    /**
+     * Always select all context as we are in "new" mode
+     */
+    private void fileFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fileFieldFocusGained
+        fileField.selectAll();
+    }//GEN-LAST:event_fileFieldFocusGained
 
   private void fileFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fileFieldKeyReleased
         updateDialogUI();

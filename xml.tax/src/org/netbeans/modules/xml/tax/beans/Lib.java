@@ -20,6 +20,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDescriptor;
 
 import org.netbeans.tax.*;
+import javax.swing.JComponent;
 
 /**
  *
@@ -200,10 +201,17 @@ public class Lib {
     }
 
 
-
     /**
+     * Create Attribute dialo gin edit mode.
      */
     public static TreeAttribute createAttributeDialog () {
+        return createAttributeDialog(false);
+    }
+    
+    /**
+     * @param mone if true new mode is used instead of edit one
+     */
+    public static TreeAttribute createAttributeDialog (boolean mode) {
         try {
             TreeAttribute attr = new TreeAttribute (CREATE_ATTRIBUTE_NAME, CREATE_ATTRIBUTE_VALUE);
             Component customizer = getCustomizer (attr);
@@ -212,20 +220,31 @@ public class Lib {
                 return null;
             }
 
-	    return (TreeAttribute)customNode (attr, customizer, Util.getString ("TITLE_new_attribute"));
+	    return (TreeAttribute)customNode (attr, customizer, Util.getString ("TITLE_new_attribute"), mode);
 	} catch (TreeException exc) {
 	    Util.notifyTreeException (exc);
             return null;
         }
     }
 
+    
     /**
      */
-    private static TreeNode customNode (TreeNode treeNode, Component panel, String title) {
+    private static TreeNode customNode (TreeNode treeNode, Component panel, String title, boolean mode) {
 	DialogDescriptor dd = new DialogDescriptor
 	    (panel, title, true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
 	     DialogDescriptor.BOTTOM_ALIGN, null, null);
 
+        //??? Warning same code is also in tree.nodes.NodeFactory
+        if (panel instanceof JComponent) {
+            // set hints to the customizer component
+            if (mode) {
+                ((JComponent)panel).putClientProperty("xml-edit-mode", "new");  // NOI18N
+            } else {
+                ((JComponent)panel).putClientProperty("xml-edit-mode", "edit"); // NOI18N
+            }
+        }
+        
 	TopManager.getDefault ().createDialog (dd).show();
 
 	if (dd.getValue() != DialogDescriptor.OK_OPTION) {
