@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Points to directory with IDE to test-->
     <property location="../../nbbuild/netbeans" name="netbeans.home"/>
-    <property location="../../../nb_all" name="nb.repository"/>
+    <property location="../.." name="nb.repository"/>
     <property location="../../../nbextra" name="nbextra.repository"/>
     
     <!-- Name of tested module -->
