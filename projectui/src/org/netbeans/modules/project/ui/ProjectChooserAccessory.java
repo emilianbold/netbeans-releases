@@ -407,7 +407,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         chooser.setApproveButtonText( NbBundle.getMessage( ProjectChooserAccessory.class, "BTN_PrjChooser_ApproveButtonText" ) ); // NOI18N
         chooser.setApproveButtonMnemonic( NbBundle.getMessage( ProjectChooserAccessory.class, "MNM_PrjChooser_ApproveButtonText" ).charAt (0) ); // NOI18N
         chooser.setApproveButtonToolTipText (NbBundle.getMessage( ProjectChooserAccessory.class, "BTN_PrjChooser_ApproveButtonTooltipText")); // NOI18N
-        chooser.setMultiSelectionEnabled( true );        
+        // chooser.setMultiSelectionEnabled( true );        
         chooser.setDialogTitle( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Title" ) ); // NOI18N
         chooser.setFileFilter( ProjectDirFilter.INSTANCE );        
         chooser.setAcceptAllFileFilterUsed( false );
