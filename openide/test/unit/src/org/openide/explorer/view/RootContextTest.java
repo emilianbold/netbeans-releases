@@ -15,6 +15,8 @@
 package org.openide.explorer.view;
 
 import java.beans.PropertyVetoException;
+import javax.swing.ListSelectionModel;
+import javax.swing.tree.TreeSelectionModel;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -135,6 +137,7 @@ public class RootContextTest extends NbTestCase {
         initText ();
         
         TreeView view = new BeanTreeView ();
+        view.setSelectionMode (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         
         ExplorerPanel panel = new ExplorerPanel ();
         ExplorerManager mgr = panel.getExplorerManager ();
@@ -151,6 +154,7 @@ public class RootContextTest extends NbTestCase {
         initText ();
         
         TreeView view = new ContextTreeView ();
+        view.setSelectionMode (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         
         ExplorerPanel panel = new ExplorerPanel ();
         ExplorerManager mgr = panel.getExplorerManager ();
@@ -167,6 +171,7 @@ public class RootContextTest extends NbTestCase {
         initText ();
         
         TreeTableView view = new TreeTableView ();
+        view.setSelectionMode (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         
         ExplorerPanel panel = new ExplorerPanel ();
         ExplorerManager mgr = panel.getExplorerManager ();
@@ -183,6 +188,7 @@ public class RootContextTest extends NbTestCase {
         initText ();
         
         ListView view = new ListView (); 
+        view.setSelectionMode (ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         
         ExplorerPanel panel = new ExplorerPanel ();
         ExplorerManager mgr = panel.getExplorerManager ();
@@ -199,6 +205,7 @@ public class RootContextTest extends NbTestCase {
         initText ();
         
         ListTableView view = new ListTableView ();
+        view.setSelectionMode (ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         
         ExplorerPanel panel = new ExplorerPanel ();
         ExplorerManager mgr = panel.getExplorerManager ();
