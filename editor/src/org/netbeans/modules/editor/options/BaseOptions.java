@@ -190,30 +190,6 @@ public class BaseOptions extends OptionSupport {
         
         createMIMENode(typeName);
         
-        // Create evaluators for indentEngine and formatter
-        setSettingValue(NbEditorDocument.INDENT_ENGINE,
-        new Settings.Evaluator() {
-            public Object getValue(Class kitClass2, String settingName) {
-                return getIndentEngine();
-            }
-        },
-        null
-        );
-        
-        setSettingValue(NbEditorDocument.FORMATTER,
-        new Settings.Evaluator() {
-            public Object getValue(Class kitClass2, String settingName) {
-                IndentEngine eng = getIndentEngine();
-                return (eng != null)
-                    ? ((eng instanceof FormatterIndentEngine)
-                        ? ((FormatterIndentEngine)eng).getFormatter()
-                        : ((Formatter)new IndentEngineFormatter(getKitClass(), eng)))
-                    : null;
-            }
-        },
-        null
-        );
-        
     }
     
     /** Gets MIMEOptionNode that belongs to this bean */
@@ -235,8 +211,33 @@ public class BaseOptions extends OptionSupport {
     
     protected void updateSettingsMap(Class kitClass, Map settingsMap) {
         super.updateSettingsMap(kitClass, settingsMap);
-        if (coloringMapInitializer != null) {
-            coloringMapInitializer.updateSettingsMap(kitClass, settingsMap);
+
+        if (kitClass == getKitClass()) {
+            // Create evaluators for indentEngine and formatter
+            settingsMap.put(NbEditorDocument.INDENT_ENGINE,
+                new Settings.Evaluator() {
+                    public Object getValue(Class kitClass2, String settingName) {
+                        return getIndentEngine();
+                    }
+                }
+            );
+
+            settingsMap.put(NbEditorDocument.FORMATTER,
+                new Settings.Evaluator() {
+                    public Object getValue(Class kitClass2, String settingName) {
+                        IndentEngine eng = getIndentEngine();
+                        return (eng != null)
+                            ? ((eng instanceof FormatterIndentEngine)
+                                ? ((FormatterIndentEngine)eng).getFormatter()
+                                : ((Formatter)new IndentEngineFormatter(getKitClass(), eng)))
+                            : null;
+                    }
+                }
+            );
+
+            if (coloringMapInitializer != null) {
+                coloringMapInitializer.updateSettingsMap(kitClass, settingsMap);
+            }
         }
     }
     
