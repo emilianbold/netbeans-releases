@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -697,12 +697,29 @@ public class DataViewWindow extends TopComponent {
                             (new Integer(rcounter)).toString(),
                             (new Integer(step)).toString()
                         };
+                        
                         String cancel = bundle.getString("DataViewCancelButton"); //NOI18N
                         String nextset = bundle.getString("DataViewNextFetchButton"); //NOI18N
                         String allset = bundle.getString("DataViewAllFetchButton"); //NOI18N
+                        
+                        JButton fetchNext = new JButton(nextset);
+                        fetchNext.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewNextFetchButtonA11yDesc")); //NOI18N
+                        fetchNext.setMnemonic(bundle.getString("FetchNextFetchButton_Mnemonic").charAt(0)); //NOI18N
+                        
+                        JButton fetchAll = new JButton(allset);
+                        fetchAll.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewAllFetchButtonA11yDesc")); //NOI18N
+                        fetchAll.setMnemonic(bundle.getString("FetchAllFetchButton_Mnemonic").charAt(0)); //NOI18N
+                        
+                        JButton no = new JButton(cancel);
+                        no.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewCancelButtonA11yDesc")); //NOI18N
+                        no.setMnemonic(bundle.getString("FetchCancelButton_Mnemonic").charAt(0)); //NOI18N
+
+                        
                         String message = MessageFormat.format(bundle.getString("DataViewMessage"), arr); //NOI18N
-                        NotifyDescriptor ndesc = new NotifyDescriptor(message, bundle.getString("FetchDataTitle"), NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {nextset, allset, cancel}, NotifyDescriptor.CANCEL_OPTION); //NOI18N
-                        String retv = (String) DialogDisplayer.getDefault().notify(ndesc);
+                        NotifyDescriptor ndesc = new NotifyDescriptor(message, bundle.getString("FetchDataTitle"), NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {fetchNext, fetchAll, no}, NotifyDescriptor.CANCEL_OPTION); //NOI18N
+                        
+                        String retv = ((JButton) DialogDisplayer.getDefault().notify(ndesc)).getText();
+                        
                         if (retv.equals(allset))
                             limit = Integer.MAX_VALUE;
                         else
