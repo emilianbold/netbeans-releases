@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -82,10 +82,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     
     <target name="unit-compiler" depends="set_classpath">
-	<ant dir="../../nbbuild" target="bootstrap"/>
-        <ant dir="unit/src/org/netbeans/core/modules"/>
-        <ant dir="unit/src/org/netbeans/core/projects"/>
-        <ant dir="unit/src/org/netbeans/core/lookup/data"/>
         <ant dir="." antfile="${xtest.module_harness.antfile}"
              target="buildtests">
            <!-- This property contains directories to compile.
@@ -94,6 +90,9 @@ Microsystems, Inc. All Rights Reserved.
              -->
            <property name="compile.srcdir" value="unit/src"/>
        </ant>
+        <ant dir="unit/src/org/netbeans/core/modules"/>
+        <ant dir="unit/src/org/netbeans/core/projects"/>
+        <ant dir="unit/src/org/netbeans/core/lookup/data"/>
     </target>
 
     <!-- ================ -->
