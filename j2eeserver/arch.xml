@@ -482,6 +482,7 @@ Yes
         </question>
 -->
 <answer id="deploy-shared">
+Anywhere.
 </answer>
 <!--
         <question id="deploy-packages" when="init" >
@@ -515,6 +516,7 @@ Yes. Public packages of J2EE Server API module are specified in module manifest 
         </question>
 -->
 <answer id="deploy-dependencies">
+Tomcat plugin (org.netbeans.modules.tomcat5), Web Core (org.netbeans.modules.web.core), Web Projects (org.netbeans.modules.web.project).
 </answer>
 <!-- 
     </category>
@@ -556,6 +558,11 @@ There are no deviations from standard, only extensions of the standard.
         </question>
 -->
 <answer id="compat-version">
+The only settings are the server registry content and information about deployed modules.
+The format of server registry content settings is stable and should be read by
+future versions. It is stored in textual form (.nbattrs). The information about deployed 
+modules is a transient cache that allows the IDE to remember what modules were deployed 
+to which server from the IDE.
 </answer>
 <!-- 
     </category>
@@ -572,6 +579,10 @@ There are no deviations from standard, only extensions of the standard.
         </question>
 -->
 <answer id="resources-file">
+java.io.File is used in plugin API. The motivation is to make this API independent on 
+netbeans since this is an extension of the contracts definde in J2EE Deployment API.
+Filesystems are used for actual access to file contents and should also be used in plugin 
+code.
 </answer>
 <!-- 
         <question id="resources-layer" when="final">
@@ -589,6 +600,9 @@ There are no deviations from standard, only extensions of the standard.
         </question>
 -->
 <answer id="resources-layer">
+The server registry is defined in layer, it creates folder for registration of plugins 
+and server instances. Server registry instance is registered in layer file. Two handlers 
+for xml settings are registered for the settings related to deployed modules.
 </answer>
 <!-- 
         <question id="resources-read" when="final">
@@ -603,6 +617,8 @@ There are no deviations from standard, only extensions of the standard.
         </question>
 -->
 <answer id="resources-read">
+J2eeserver reads server registry contents from layer. This includes installed server 
+plugins as well as individual server instances (installations).
 </answer>
 <!--
         <question id="resources-mask" when="final">
@@ -619,6 +635,7 @@ There are no deviations from standard, only extensions of the standard.
     </category>
 -->
 <answer id="resources-mask">
+No.
 </answer>
 <!--
     <category id="lookup" name="Lookup of components">
@@ -635,7 +652,8 @@ There are no deviations from standard, only extensions of the standard.
         </question>
 -->
 <answer id="lookup-lookup">
-PENDING
+Folder lookup is used to read the definition of plugin (the additional optional 
+functionality registered by the plugin).
 </answer>
 <!--
         <question id="lookup-register" when="final" >
@@ -647,6 +665,7 @@ PENDING
         </question>
 -->
 <answer id="lookup-register">
+No.
 </answer>
 <!--
         <question id="lookup-remove" when="final" >
@@ -658,6 +677,7 @@ PENDING
         </question>
 -->
 <answer id="lookup-remove">
+No.
 </answer>
 <!--
     </category>
@@ -684,6 +704,7 @@ PENDING
         </question>
 -->
 <answer id="exec-property">
+No.
 </answer>
 <!--
         <question id="exec-component" when="impl" >
@@ -701,6 +722,7 @@ PENDING
         </question>
 -->
 <answer id="exec-component">
+No.
 </answer>
 <!--
         <question id="exec-classloader" when="impl" >
@@ -711,6 +733,7 @@ PENDING
         </question>
 -->
 <answer id="exec-classloader">
+No.
 </answer>
 <!--
         <question id="exec-reflection" when="impl" >
@@ -723,6 +746,7 @@ PENDING
         </question>
 -->
 <answer id="exec-reflection">
+Reflection is used in UI code that uses management API, deployment configuration code.
 </answer>
 <!--
         <question id="exec-privateaccess" when="final" >
@@ -735,6 +759,7 @@ PENDING
         </question>
 -->
 <answer id="exec-privateaccess">
+No.
 </answer>
 <!--
         <question id="exec-process" when="impl" >
@@ -747,6 +772,7 @@ PENDING
         </question>
 -->
 <answer id="exec-process">
+No.
 </answer>
 <!--
         <question id="exec-introspection" when="impl" >
@@ -761,6 +787,7 @@ PENDING
         </question>
 -->
 <answer id="exec-introspection">
+No.
 </answer>
 <!--
         <question id="exec-threading" when="impl">
@@ -783,6 +810,7 @@ PENDING
         </question>
 -->
 <answer id="exec-threading">
+N/A
 </answer>
 <!--
     </category>
@@ -793,6 +821,7 @@ PENDING
         </question>
 -->
 <answer id="format-types">
+None.
 </answer>
 <!--
         <question id="format-dnd" when="impl" >
@@ -805,6 +834,7 @@ PENDING
         </question>
 -->
 <answer id="format-dnd">
+None.
 </answer>
 <!--
         <question id="format-clipboard" when="impl" >
@@ -818,6 +848,7 @@ PENDING
         </question>
 -->
 <answer id="format-clipboard">
+None.
 </answer>
 <!--
     </category>
@@ -827,6 +858,7 @@ PENDING
         </question>
 -->
 <answer id="perf-startup">
+No.
 </answer>
 <!--
         <question id="perf-exit" when="final">
@@ -834,6 +866,7 @@ PENDING
         </question>
 -->
 <answer id="perf-exit">
+Yes. The module will stop any server instances that were started from IDE.
 </answer>
 <!--
         <question id="perf-scale" when="init">
@@ -867,7 +900,15 @@ Not aware of any.
         </question>
 -->
 <answer id="perf-mem">
-?
+<p>
+The amount of memory consumed by server registry corresponds with the number of 
+plugins and number of registered server instances. This is a small number, typically
+2 or 3, certainly less then 10.
+</p>
+<p>
+Memory consumption of configuration UI crresponds with number of open 
+configuration editors.
+</p>
 </answer>
 <!--
         <question id="perf-wakeup" when="final">
@@ -875,7 +916,7 @@ Not aware of any.
             even when the system is otherwise idle (no user interaction)?
         </question>
 -->
-<answer id="perf-wakeupp">
+<answer id="perf-wakeup">
 No.
 </answer>
 <!--
@@ -935,20 +976,6 @@ Performance of module does depend on plugin and devmodule performance.
 
 
 <!--
-        <question id="perf-wakeup" when="final">
-            Does any piece of your code wake up periodically and do something
-            even when the system is otherwise idle (no user interaction)?
-        </question>
--->
- <answer id="perf-wakeup">
-  <p>
-   XXX no answer for perf-wakeup
-  </p>
- </answer>
-
-
-
-<!--
         <question id="security-grant" when="final">
             Does your code grant additional rights to some other code?
             <hint>Avoid using a class loader that adds extra
@@ -960,7 +987,7 @@ Performance of module does depend on plugin and devmodule performance.
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+   No.
   </p>
  </answer>
 
@@ -977,7 +1004,7 @@ Performance of module does depend on plugin and devmodule performance.
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+   No.
   </p>
  </answer>
 </api-answers>
