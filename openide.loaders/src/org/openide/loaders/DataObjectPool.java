@@ -484,6 +484,9 @@ implements ChangeListener {
         if (l == TOKEN) FIND.set (l = new ArrayList());
         l.add (item);
     }
+    
+    private static final ErrorManager LISTENER = ErrorManager.getDefault().getInstance("org.openide.loaders.DataObjectPool.Listener"); // NOI18N
+    private static final boolean WILL_LOG_LISTENER = LISTENER.isLoggable(LISTENER.INFORMATIONAL);
 
     
     /** Listener used to distribute the File events to their DOs.
@@ -530,42 +533,75 @@ implements ChangeListener {
         }
 
         public void fileChanged(FileEvent fe) {
+            if (WILL_LOG_LISTENER) {
+                LISTENER.log ("fileChanged: " + fe); // NOI18N
+            }
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+                if (WILL_LOG_LISTENER) {
+                    LISTENER.log ("  to: " + dobj); // NOI18N
+                }
                 if (dobj != null) dobj.notifyFileChanged(fe);
             }
         }
 
         public void fileRenamed (FileRenameEvent fe) {
+            if (WILL_LOG_LISTENER) {
+                LISTENER.log ("fileRenamed: " + fe); // NOI18N
+            }
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+                if (WILL_LOG_LISTENER) {
+                    LISTENER.log ("  to: " + dobj); // NOI18N
+                }
                 if (dobj != null) dobj.notifyFileRenamed(fe);
             }
         }
 
         public void fileDeleted (FileEvent fe) {
+            if (WILL_LOG_LISTENER) {
+                LISTENER.log ("fileDeleted: " + fe); // NOI18N
+            }
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+                if (WILL_LOG_LISTENER) {
+                    LISTENER.log ("  to: " + dobj); // NOI18N
+                }
                 if (dobj != null) dobj.notifyFileDeleted(fe);
             }
         }
 
         public void fileDataCreated (FileEvent fe) {
+            if (WILL_LOG_LISTENER) {
+                LISTENER.log ("fileDataCreated: " + fe); // NOI18N
+            }
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+                if (WILL_LOG_LISTENER) {
+                    LISTENER.log ("  to: " + dobj); // NOI18N
+                }
                 if (dobj != null) dobj.notifyFileDataCreated(fe);
             }
             ShadowChangeAdapter.checkBrokenDataShadows(fe);
         }
         
         public void fileAttributeChanged (FileAttributeEvent fe) {
+            if (WILL_LOG_LISTENER) {
+                LISTENER.log ("fileAttributeChanged: " + fe); // NOI18N
+            }
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+                if (WILL_LOG_LISTENER) {
+                    LISTENER.log ("  to: " + dobj); // NOI18N
+                }
                 if (dobj != null) dobj.notifyAttributeChanged(fe);
             }
         }
 
         public void fileFolderCreated(FileEvent fe) {
+            if (WILL_LOG_LISTENER) {
+                LISTENER.log ("fileFolderCreated: " + fe); // NOI18N
+            }
             ShadowChangeAdapter.checkBrokenDataShadows(fe);
         }
     }
