@@ -554,10 +554,12 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             }
             Exception e = new Exception("Failed to lookup: "+ejbname+" type "+ejbtype);
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return;
         }
         DeploymentConfiguration config = cs.getDeploymentConfiguration();
         ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
         serverConfig.ensureResourceDefined(config, ejb, provider.getEnterpriseResourceDirectory());
+        saveConfiguration();
     }
     
     public void saveConfiguration() {

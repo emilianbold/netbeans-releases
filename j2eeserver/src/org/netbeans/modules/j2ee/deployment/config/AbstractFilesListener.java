@@ -123,10 +123,6 @@ public abstract class AbstractFilesListener  implements FileChangeListener {
     public void fileChanged(FileEvent e) {
         FileObject fo = e.getFile();
         if (isTarget(fo)) {
-            synchronized(listenedFOs) {
-                listenedFOs.add(fo);
-                fo.addFileChangeListener(this);
-            }
             targetChanged(fo);
         }
     }
