@@ -1,0 +1,40 @@
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
+
+<!-- The list of normal or fragment attributes can be specified here, e.g.: -->
+<!--
+    <jsp:directive.attribute name="title"
+                             required="true"/>
+    <jsp:directive.attribute name="author"
+                             required="false"/>
+-->
+
+<!-- Use expression language to work with attributes, e.g.: -->
+<!--
+    <jsp:text>
+      <book>
+        <title>${title}</title>
+        <author>${author}</author>
+      </book>
+    </jsp:text>
+-->
+
+</jsp:root>
+
+<!-- 
+Tag files with XML syntax can be used in XML documents similarly as normal JSP tags in JSP pages.
+Use urn:jsptagdir namespace prefix instead of taglib directive.
+
+This is an example (books.jspx):
+********************************************************
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+          xmlns:tags="urn:jsptagdir:/WEB-INF/tags"
+          version="2.0">
+<jsp:directive.page contentType="text/xml;charset=UTF-8"/>
+
+<jsp:text><![CDATA[<books>]]></jsp:text>
+<tags:Book title="Whom The Bells Tolls" author="Ernest Hamingway"/>
+<jsp:text><![CDATA[</books>]]></jsp:text>
+
+</jsp:root>
+********************************************************
+-->

@@ -46,9 +46,9 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>
       <!--  Tag File Document --> 
-      <file name="TagFileX.tagx" url="templates/TagFile.template"/>
+      <file name="TagFileX.tagx" url="templates/TagFileX.template"/>
       <!--  Tag File Segment --> 
-      <file name="TagFileF.tagf" url="templates/TagFile.template"/>
+      <file name="TagFileF.tagf" url="templates/TagFileF.template"/>
       <!-- Servlet --> 
       <file name="Servlet.java" url="templates/Servlet.template">
           <attr name="template" boolvalue="true"/>

@@ -1,0 +1,5 @@
+<%-- This file can be statically included to JSP page using include directive --%>
+<%-- e.g. <%@include file="/WEB-INF/tags/header.tagf" %>  --%>
+
+<% out.println("Page header created as a tag segment");  %>
+<hr>
