@@ -446,23 +446,25 @@
 <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_EXT" url="project/csh/proj_j2seexist_wiz.html" />
 
 <!-- New web project and web project from existing sources -->
-<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="project/csh/proj_j2sestand_wiz.html" />
-<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="project/csh/proj_j2sestand_wiz.html" />
-<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$SecondPanel" url="project/csh/proj_j2seexist_wiz.html" />
+<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="project/csh/proj_webstand_wiz.html" />
+<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="project/csh/proj_webexist_wiz1.html" />
+<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$SecondPanel" url="project/csh/proj_webexist_wiz2.html" />
 
-<!-- Freeform J2SE Project wizards -->
+<!-- Freeform J2SE and Web Project wizards -->
 <mapID target="org.netbeans.modules.ant.freeform.ui.BasicProjectInfoWizardPanel" url="project/csh/proj_j2sefree_wiz1.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel" url="project/csh/proj_j2sefree_wiz2.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.SourceFoldersWizardPanel" url="project/csh/proj_j2sefree_wiz3.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsPanel" url="project/csh/proj_j2sefree_wiz5.html" />
 
-<!-- Standard J2SE Project Properties dialog-->
+<!-- Standard J2SE and Web Project Properties dialog-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerGeneral" url="project/csh/proj_j2sestand_props1.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompile" url="project/csh/proj_j2sestand_props2.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompileTest" url="project/csh/proj_j2sestand_props3.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJar" url="project/csh/proj_j2sestand_props4.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" url="project/csh/proj_j2sestand_props5.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_props6.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsPanel" url="project/csh/proj_j2sefree_wiz5.html" />
 
 <!-- Standard Web Project Properties dialog-->
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerGeneral" url="web/overvw/WebCustomizerGeneral.html" />
