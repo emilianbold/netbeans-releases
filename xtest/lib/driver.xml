@@ -283,7 +283,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- hack end -->
     <getfilename file="${ide.install.path}" nameExtProperty="ide.install.path.filenameext" nameProperty="ide.install.path.filename"/>
     <property name="install.paramfile" value="${ide.copyto}/${ide.install.path.filename}.sp"/>
-    <echo message="forteHome=${ide.installto}${line.separator}jdkHome=${installer.java.home}${line.separator}${installer.params}" file="${install.paramfile}"/>
+    <echo message="installDir=${ide.installto}${line.separator}jdkHome=${installer.java.home}${line.separator}${installer.params}" file="${install.paramfile}"/>
     <exec executable="${ide.copyto}/${ide.install.path.filenameext}" failonerror="true">
       <arg line="-silent ${installer.args}"/>
     </exec>
@@ -293,7 +293,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="install-from-jarinstaller" depends="check-ide-param" if="ide.install.type.jarinstaller">
     <antcall target="clean-ide"/>
     <exec executable="${installer.java.home}/bin/java" failonerror="true">
-      <arg line="-DforteHome=${ide.installto} -DjdkHome=${installer.java.home} ${installer.params} -jar ${ide.install.path} -silent"/>
+      <arg line="-DinstallDir=${ide.installto} -DjdkHome=${installer.java.home} ${installer.params} -jar ${ide.install.path} -silent"/>
     </exec>
   </target>
   
