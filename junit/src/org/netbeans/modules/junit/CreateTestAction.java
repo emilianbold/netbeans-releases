@@ -301,7 +301,8 @@ public class CreateTestAction extends CookieAction {
 
                 
         if (foSource.isFolder()) {
-            // recurse to subfolders
+            // create test for all files (not folders) in the folder
+            // don't recurse           
             FileObject  childs[] = foSource.getChildren();
             LinkedList  mySuite = new LinkedList();
             progress.setMessage(getScanningMsg(foSource.getName()), false);
@@ -315,7 +316,7 @@ public class CreateTestAction extends CookieAction {
                     break;
                 }
 
-                if (childs[i].isData() && !("java".equals(childs[i].getExt()))) {
+                if (childs[i].isFolder() || (childs[i].isData() && !("java".equals(childs[i].getExt())))) {
                     continue;
                 }
 
