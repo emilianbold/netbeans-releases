@@ -4,10 +4,11 @@
 <!--Ant project for the Ant Module for Sun's Forte For Java IDE-->
 <!--@author Jayme Edwards-->
 
-<project name="Ant Module" default="all" basedir=".">
+<project name="Ant Module" default="netbeans" basedir=".">
+
+<!-- Older build code deprecated since the IDE has a standard build scheme now:
   <target name="setProps">
-    <!-- Removed (is this still necessary?). -jglick -->
-    <!-- <property name="build.compiler" value="classic"/> -->
+    <property name="build.compiler" value="classic"/>
     <property name="dist.classes" value="classes"/>
     <property name="module.package" value="org${file.separator}apache${file.separator}tools${file.separator}ant${file.separator}module"/>
     <property name="module.classes" value="${dist.classes}${file.separator}${module.package}"/>
@@ -42,6 +43,7 @@
     <jar jarfile="${module.libs}${file.separator}antmodule.jar" basedir="${dist.classes}" manifest="manifest.mf" includes="${module.package}${file.separator}**" excludes="**/*.jar.MAKEME"/>
   </target>
   <target name="all" depends="preClean,prepare,build,packTemplates,packModule,postClean"/>
+-->
 
   <!-- For including in an IDE build: -->
 
@@ -52,10 +54,9 @@
     <javac srcdir="src" destdir="src">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
-	<!-- [PENDING] these should all be in modules/ext with a Class-Path entry in the manifest: -->
-	<pathelement location="release/lib/ext/ant.jar"/>
-	<pathelement location="release/lib/ext/xalan.jar"/>
-	<pathelement location="release/lib/ext/xerces.jar"/>
+	<pathelement location="release/modules/ext/ant.jar"/>
+	<pathelement location="release/modules/ext/xalan.jar"/>
+	<pathelement location="release/modules/ext/xerces.jar"/>
 	<!-- Using IDE's version of jaxp + parser, these cannot be overridden: -->
 	<pathelement location="../core/release/lib/ext/jaxp.jar"/>
 	<pathelement location="../core/release/lib/ext/parser.jar"/>
@@ -69,7 +70,6 @@
 
   <target name="jars" depends="compile,tojar">
     <mkdir dir="netbeans/modules"/>
-    <!-- [PENDING] manifest.mf should have OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@ -->
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/modules/ant.jar"
@@ -82,20 +82,13 @@
   </target>
 
   <target name="release">
-    <copy todir="netbeans">
-      <fileset dir="release">
-        <!-- [PENDING] not the correct location anyway: -->
-        <exclude name="lib/antmodule.jar"/>
-        <!-- [PENDING] these should probably just be removed: -->
-        <exclude name="lib/ext/jaxp.jar"/>
-        <exclude name="lib/ext/parser.jar"/>
-        <exclude name="lib/ext/xml.jar"/>
-      </fileset>
+    <copy todir="netbeans" includeEmptyDirs="false">
+      <fileset dir="release"/>
     </copy>
   </target>
 
   <target name="javahelp">
-    <copy todir="netbeans/docs">
+    <copy todir="netbeans/docs" includeEmptyDirs="false">
       <fileset dir="javahelp"/>
     </copy>
   </target>
@@ -132,7 +125,6 @@
         <include name="**/*.jar"/>
       </fileset>
     </delete>
-    <!-- [PENDING] should be a .cvsignore listing these... -->
     <delete file="manifest-subst.mf"/>
     <delete file="ant.nbm"/>
     <delete dir="netbeans"/>
