@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.web.core.syntax.JspParserErrorAnnotation;
@@ -79,6 +80,19 @@ public class ErrorAnnotation {
         if (document == null)
             return;
         
+        // The active Jtext component
+        JTextComponent component = org.netbeans.editor.Utilities.getLastActiveComponent();
+        if (component != null){
+            if (errors != null && errors.length > 0){
+                // Place the first error in the status bar
+                org.netbeans.editor.Utilities.setStatusBoldText(component , " " + errors[0].getDescription()); //NOI18N
+            }
+            else{
+                // clear status bar
+                org.netbeans.editor.Utilities.clearStatusText(component);
+            }
+        }
+        
         // create annotations from errors
         newAnnotations = getAnnotations(errors, document);
         // which annotations are really new
@@ -130,7 +144,7 @@ public class ErrorAnnotation {
             int line = err.getLine();
 
             if (line<0) 
-                line = 1; // When error is outside the file, annotate the first line
+                continue; // When error is outside the file, don't annotate it
             int column = err.getColumn();
             String message = err.getDescription();
             LineSetAnnotation ann;
