@@ -24,11 +24,6 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.src</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.java.project</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
