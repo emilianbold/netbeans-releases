@@ -236,12 +236,8 @@ public class GroupParserTest extends NbTestCase {
         url = GroupParserTest.class.getResource(path);
         assertNotNull("url not found.",url);
         
-        FileObject [] foArray = URLMapper.findFileObjects(url);
-        assertNotNull("Test parent folder not found. Array is null.",foArray);
-        assertTrue("Test parent folder not found. Array is empty.",foArray.length > 0);
-        
-        FileObject parentFolder = foArray[0];
-        assertNotNull("Test parent folder not found. ParentFolder is null.",parentFolder);
+        FileObject parentFolder = URLMapper.findFileObject(url);
+        assertNotNull("Test parent folder not found. ParentFolder is null. for " + url, parentFolder);
         
         GroupParser groupParser = new GroupParser(name);
         groupParser.setInLocalFolder(true);

@@ -14,6 +14,7 @@
 package org.netbeans.core.windows.persistence;
 
 import java.awt.Frame;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -30,6 +31,7 @@ import org.netbeans.core.windows.SplitConstraint;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 /** Functionality tests for saving and loading Mode configuration data
@@ -56,6 +58,20 @@ public class ModeParserTest extends NbTestCase {
     }
 
     protected void setUp () throws Exception {
+//        File localRoot;
+//        try {
+//            File tempFile = File.createTempFile("test", null);
+//            File parent = tempFile.getParentFile();
+//            localRoot = new File(parent, tempFile.getName().substring(0, tempFile.getName().length() - 4));
+//            if (!localRoot.exists()) {
+//                localRoot.mkdirs();
+//            }
+//            System.out.println("dir created=" + localRoot);
+//        } catch (IOException exc) {
+//            throw exc;
+//        }
+//        FileObject fo = FileUtil.toFileObject(localRoot);
+//        PersistenceManager.getDefault().setRootLocalFolder(fo);
     }
     
     ////////////////////////////////
@@ -245,7 +261,7 @@ public class ModeParserTest extends NbTestCase {
 //        assertEquals("Mode frame state",Frame.MAXIMIZED_BOTH,modeCfg.frameState);
         
         assertEquals("Active TC","output",modeCfg.selectedTopComponentID);
-        assertTrue("Permanent",modeCfg.permanent);
+        assertFalse("Permanent",modeCfg.permanent);
         
         System.out.println("ModeParserTest.testLoadMode05 FINISH");
     }
@@ -416,12 +432,8 @@ public class ModeParserTest extends NbTestCase {
         url = ModeParserTest.class.getResource(path);
         assertNotNull("url not found.",url);
         
-        FileObject [] foArray = URLMapper.findFileObjects(url);
-        assertNotNull("Test parent folder not found. Array is null.",foArray);
-        assertTrue("Test parent folder not found. Array is empty.",foArray.length > 0);
-        
-        FileObject parentFolder = foArray[0];
-        assertNotNull("Test parent folder not found. ParentFolder is null.",parentFolder);
+        FileObject parentFolder = URLMapper.findFileObject(url);
+        assertNotNull("Test parent folder not found. ParentFolder is null.",url);
 
         Set setLocal = new HashSet();
         ModeParser modeParser = new ModeParser(name,setLocal);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mode version="2.0">
-    <name unique="mode02" />
+<mode version="2.1">
+    <name unique="mode05" />
     <kind type="sliding" />
     <slidingSide side="left" />
     <state type="joined" />
