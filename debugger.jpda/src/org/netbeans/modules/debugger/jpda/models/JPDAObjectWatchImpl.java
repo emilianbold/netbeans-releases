@@ -15,6 +15,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.Field;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
@@ -114,22 +115,44 @@ ObjectVariable {
         model.fireNodeChanged (this);
     }
     
-    protected void setValue (Value value) throws InvalidExpressionException {
+    protected void setValue (final Value value) 
+    throws InvalidExpressionException {
+        
+        // 1) get frame
         CallStackFrameImpl frame = (CallStackFrameImpl) model.getDebugger ().
             getCurrentCallStackFrame ();
         if (frame == null)
             throw new InvalidExpressionException ("No curent frame.");
-        LocalVariable local = null;
+        
+        // 2) try to set as a local variable value
         try {
-            local = frame.getStackFrame ().visibleVariableByName 
+            LocalVariable local = frame.getStackFrame ().visibleVariableByName 
                 (getExpression ());
+            if (local != null)
+                try {
+                    frame.getStackFrame ().setValue (local, value);
+                    return;
+                } catch (InvalidTypeException ex) {
+                    throw new InvalidExpressionException (ex);
+                } catch (ClassNotLoadedException ex) {
+                    throw new InvalidExpressionException (ex);
+                }
         } catch (AbsentInformationException ex) {
-            throw new InvalidExpressionException ("Can not set value to expression.");
+            // no local variable visible in this case
         }
-        if (local == null)
-            throw new InvalidExpressionException ("Can not set value to expression.");
+        
+        // 3) try tu set as a field
+        ObjectReference thisObject = frame.getStackFrame ().thisObject ();
+        if (thisObject == null)
+            throw new InvalidExpressionException 
+                ("Can not set value to expression.");
+        Field field = thisObject.referenceType ().fieldByName 
+            (getExpression ());
+        if (field == null)
+            throw new InvalidExpressionException 
+                ("Can not set value to expression.");
         try {
-            frame.getStackFrame ().setValue (local, value);
+            thisObject.setValue (field, value);
         } catch (InvalidTypeException ex) {
             throw new InvalidExpressionException (ex);
         } catch (ClassNotLoadedException ex) {

@@ -97,11 +97,13 @@ public class ThreadsTableModel implements TableModel, Constants {
         if (row instanceof MonitorModel.ThreadWithBordel) 
             row = ((MonitorModel.ThreadWithBordel) row).originalThread;
         if (row instanceof JPDAThread) {
-            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID))
+            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID)) {
                 if (value.equals (Boolean.TRUE))
                     ((JPDAThread) row).suspend ();
                 else 
                     ((JPDAThread) row).resume ();
+                return;
+            }
         }
         throw new UnknownTypeException (row);
     }
