@@ -294,6 +294,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module autoupdate..."/>
     <ant dir="../autoupdate" target="netbeans"/>
   </target>
+  <target name="all-autoupdate/updatecenters" depends="all-autoupdate">
+    <echo message="Building module autoupdate/updatecenters..."/>
+    <ant dir="../autoupdate/updatecenters" target="netbeans"/>
+  </target>
   <target name="all-beans" depends="all-openide,all-java,all-java/srcmodel">
     <echo message="Building module beans..."/>
     <ant dir="../beans" target="netbeans"/>
