@@ -1,0 +1,63 @@
+ 
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2004 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>About Business Methods</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+ 
+<h2>About Business Methods</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>A business method is a method inside an enterprise bean that performs some 
+  function and is available for any clients of the bean. Business methods are 
+  typically written in the bean class and registered in the bean's remote interface.</p>
+<p>An entity bean represents a persistent business object whose data is stored 
+  in a database. The bean adds behavior specific to that data. Therefore, an entity 
+  bean's business methods are typically accessor and mutator methods that enable 
+  you to read and update information in a database that represents a business 
+  concept.</p>
+<p>A session bean's business methods typically define tasks that the bean performs 
+  for clients. They are not necessarily associated with data in a database.</p>
+<p>In the IDE, you can generate business methods by right-clicking the bean node 
+  in the Projects window and choosing Add <img src="../../images/arrow.gif" width="5" height="11" alt="and add">&nbsp;Add 
+  Business Method. When you create an enterprise bean in the IDE, the IDE creates 
+  a special <tt><i>BeanName</i>RemoteBusiness</tt> interface in which it registers 
+  business methods. The <tt><i>BeanName</i>Remote</tt> interface extends the <tt><i>BeanName</i>RemoteBusiness</tt> 
+  and the bean class implements both the <tt><i>BeanName</i>Remote</tt> interface 
+  and the <tt><i>BeanName</i>RemoteBusiness</tt> interface. </p>
+<p>The advantage of this approach is that it lets you separate the business logic 
+  from implementation logic, and that it lets you check at compile-time that your 
+  bean implements the given interfaces. If you want to register business methods 
+  directly in your remote interface, delete the <tt><i>BeanName</i>RemoteBusiness.java</tt>, 
+  delete <tt><i>BeanName</i>RemoteBusiness</tt> from the list of interfaces <tt><i>BeanName</i>Remote</tt> 
+  extends and from the list of interfaces the bean class implements.</p>
+<table border="0">
+  <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+  </tr>
+  <tr valign="top" > 
+    <td width="23px" nowrap>&nbsp;</td>
+    <td nowrap> <a href="define_business_method.html">Defining a Business Method</a><br>
+      <a href="../general/about_session_beans.html">About Session Beans</a><br>
+      <a href="../general/about_entity_beans.html">About Entity Beans</a></td>
+  </tr>
+</table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>

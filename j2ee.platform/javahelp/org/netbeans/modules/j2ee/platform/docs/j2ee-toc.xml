@@ -185,7 +185,7 @@
 
     <tocitem text="Developing Enterprise Beans" >
         <tocitem text="About Enterprise Beans" >
-            <tocitem text="About Enterprise Beans" target="tbd" />
+            <tocitem text="About Enterprise Beans" target="about_ejbs" />
             <tocitem text="Working With Enterprise Beans" target="tbd" />
             <tocitem text="Enterprise Bean Tasks: Quick Reference" target="tbd" />
             <tocitem text="About Entity Beans" target="about_entity_beans" />
@@ -195,6 +195,7 @@
         <tocitem text="Creating and Editing Enterprise Beans" >
             <tocitem text="Creating an EJB Module Project" target="create_ejb_project" />
             <tocitem text="Creating an Enterprise Bean" target="create_ejb" />
+            <tocitem text="About Business Methods" target="about_business_method" />
             <tocitem text="Defining a Business Method" target="define_business_method" />
             <tocitem text="Defining a Finder Method" target="define_finder_method" />
             <tocitem text="Adding EJB QL to a Finder or Select Method" target="add_ejbql" />
@@ -206,9 +207,9 @@
         <tocitem text="Configuring EJB Modules" >
             <tocitem text="About Configuring EJB Modules" target="config_ejb_about" />
             <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
-            <tocitem text="Defining an EJB Module's Server-Specific Deploymnet Descriptor" target="tbd" />
             <tocitem text="Adding an External Enterprise Bean to an EJB Module" target="tbd" />
-            <tocitem text="Creating a Container-Managed Relationship in an EJB Module" target="tbd" /> 
+            <tocitem text="About Container-Managed Relationships" target="about_ejb_relationship" /> 
+            <tocitem text="Managing Container-Managed Relationships" target="ejb_relationship" /> 
         </tocitem>
         <tocitem text="Building and Deploying EJB Modules" >
             <tocitem text="Building an EJB Module" target="build_ejb" />

@@ -22,9 +22,6 @@
   represent data in a database that can be identified and found. Session beans 
   do not represent database data and therefore do not have data that can be found. 
 </p>
-<p>A typical finder method for an entity bean is the required <tt>findByPrimaryKey</tt> 
-  method that the entity bean wizard creates for you when you define a primary key for 
-  your entity bean. </p>
 <p><b>To define a finder method for an entity bean:</b></p>
 <ol>
   <li>In the Projects window, expand the Enterprise JavaBeans node. </li>
@@ -37,25 +34,26 @@
   </li>
   <li>In the New Finder Method dialog box, define the method signature: 
     <ol>
-      <li type="a"> Add text to the base <tt>find</tt> name of the method.</li>
+      <li type="a"> Add text to the base <tt>findBy</tt> name of the method.</li>
       <li>Specify the return cardinality for the method. This setting should match 
-        the return cardinality of the statement in the database (one-to-one, one-to-may). 
-        If you specify One, the statement returns the component interface. If 
-        you set Many, the statement returns a collection object.</li>
-      <li>Enter the EJB QL statement that the method will use to find the enterprise 
-        bean or beans that the method is to return.</li>
+        the return cardinality of the statement in the database. If you select 
+        One, the statement returns the bean's interface. If you select Many, the 
+        statement returns a <tt>java.util.Collection</tt> object.</li>
+      <li>If the bean uses container-managed persistence (CMP), enter the EJB 
+        QL statement that the method will use to find the enterprise bean or beans 
+        that the method is to return.</li>
       <li>Specify which interfaces to add the method to (remote and/or local).</li>
       <li>Specify any parameters that the method needs.</li>
     </ol>
   </li>
-  <li>Click OK to create the method.</li>
-  <li>The IDE adds the method signature to the home interface or local home interface 
-    or both, depending on the bean's component interface set. 
+  <li>Click OK to create the method.
+    <p> The IDE adds the method signature to the home interface or local home 
+      interface or both. 
     <ul>
-      <li>If the entity bean uses container-managed persistence (CMP), you are 
-        done. The container implements the finder method from the signature in 
-        the home interface or local home interface, so the home interface and 
-        the local home interface are the only places the method appears. </li>
+      <li>If the entity bean uses CMP, you are done. The IDE adds The container 
+        implements the finder method from the signature in the home interface 
+        or local home interface, so the home interface and the local home interface 
+        are the only places the method appears. </li>
       <li>If the entity bean uses bean-managed persistence (BMP), the IDE adds 
         an <tt>ejbFind<i>yourname</i></tt> method to the bean class so you can 
         implement the method. You must implement the <tt>ejbFind<i>yourname</i></tt> 
@@ -63,14 +61,6 @@
     </ul>
   </li>
 </ol>
-<table border="0" >
-  <tr valign="top"> 
-    <td><img src="../../images/tip.gif" alt="tip" ></td>
-    <td>When the IDE adds a method to the bean class, the IDE does not save the 
-      class. Only when you compile or save the class is the new method saved to 
-      disk.</td>
-  </tr>
-</table>
 <p><b>To view or edit existing finder methods:</b></p>
 <ol>
   <li>In the Projects window, expand the Configuration Files node for your EJB 
@@ -81,6 +71,22 @@
     all of the existing CMP finder methods.</li>
   <li>Click Add or Edit to make changes to the list finder methods. </li>
 </ol>
+<p><b>Notes</b></p>
+<ul class="note">
+  <li>When the IDE adds a finder method to an enterprise, it does not save the 
+    bean class or the bean interfaces. Only when you compile or save the project 
+    are the changes saved to disk.</li>
+  <li>To fully remove a finder method from both a enterprise bean, do one of the 
+    following: 
+    <ul>
+      <li>Delete the method from the bean's Home Methods list in the Projects 
+        window. </li>
+      <li>Delete the method from the CMP Finders header in the ejb-jar.xml graphical 
+        editor. </li>
+    </ul>
+    If you delete the finder method in the Source Editor, the IDE does not remove 
+    it from the bean interfaces.</li>
+</ul>
 <table border="0">
   <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
     </tr>

@@ -160,10 +160,12 @@
     <mapID target="about_msg_driven_beans" url="ejb/general/about_msg_driven_beans.html" />
     <mapID target="about_session_beans" url="ejb/general/about_session_beans.html" />
     <mapID target="about_deployment_descriptors" url="ejb/general/about_deployment_descriptors.html" />
+    <mapID target="about_ejbs" url="ejb/general/about_ejbs.html" />
 
     <mapID target="create_ejb" url="ejb/editing/create_ejb.html" />
     <mapID target="create_ejb_project" url="ejb/editing/create_ejb_project.html" />
     <mapID target="add_ejbql" url="ejb/editing/add_ejbql.html" />
+    <mapID target="about_business_method" url="ejb/editing/about_business_method.html" />
     <mapID target="define_business_method" url="ejb/editing/define_business_method.html" />
     <mapID target="define_cmp_field" url="ejb/editing/define_cmp_field.html" />
     <mapID target="define_finder_method" url="ejb/editing/define_finder_method.html" />
@@ -176,7 +178,9 @@
     <mapID target="deploy_ejb" url="ejb/deploy/deploy_ejb.html" />
 
     <mapID target="config_ejb_about" url="ejb/configuring/config_ejb_about.html" />
-
+    <mapID target="ejb_relationship" url="ejb/configuring/ejb_relationship.html" />
+    <mapID target="about_ejb_relationship" url="ejb/configuring/about_ejb_relationship.html" />
+    
     <!-- EJB Module from Existing Sources Project Wizard dialog box csh -->
 
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.ImportLocation" url="ejb/csh/ejb_with_source_wizard1.html" />

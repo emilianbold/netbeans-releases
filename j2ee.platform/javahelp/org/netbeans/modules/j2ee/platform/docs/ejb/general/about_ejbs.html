@@ -1,0 +1,78 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2004 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>About Enterprise Beans</title>
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+<h2>About Enterprise Beans</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Written in the Java programming language, an enterprise bean is a server-side 
+  component that encapsulates the business logic of an application. The business 
+  logic is the code that fulfills the purpose of the application. In an inventory 
+  control application, for example, the enterprise beans might implement the business 
+  logic in methods called <tt>checkInventoryLevel</tt> and <tt>orderProduct</tt>. 
+  By invoking these methods, remote clients can access the inventory services 
+  provided by the application.</p>
+<p>Enterprise beans provide the following advantages when developing large, distributed 
+  applications:</p>
+<ul>
+  <li>Because the EJB container provides system-level services to enterprise beans, 
+    the bean developer can concentrate on solving business problems. The EJB container, 
+    and not the bean developer, is responsible for system-level services such 
+    as transaction management and security authorization. </li>
+  <li>Because the beans, and not the clients, contain the application&#146;s business 
+    logic, the client developer can focus on the presentation of the client. The 
+    client developer does not have to code the routines that implement business 
+    rules or access databases. </li>
+  <li>Because enterprise beans are portable components, the application assembler 
+    can build new applications from existing beans. These applications can run 
+    on any compliant J2EE server provided that they use the standard APIs.</li>
+</ul>
+<p>You can develop the following types of enterprise beans:</p>
+<ul>
+  <li><b><a href="about_session_beans.html">Session Beans</a>.</b> Perform tasks 
+    for a client and implement Web services.</li>
+  <li><b><a href="about_entity_beans.html">Entity Beans</a>.</b> Represent a business 
+    entity object that exists in persistent storage.</li>
+  <li><b><a href="about_msg_driven_beans.html">Message-Driven Beans</a>.</b> Act 
+    as listeners for the Java Message Service API, processing<br>
+    messages asynchronously.</li>
+</ul>
+<p>For more infomation about developing enterprise beans, see the following documents:</p>
+<ul>
+  <li>Link 1</li>
+  <li>Link 2</li>
+</ul>
+<table border="0">
+  <tr> 
+    <th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+  </tr>
+  <tr valign="top"> 
+    <td width="23px">&nbsp;</td>
+    <td nowrap><a href="../editing/create_ejb_project.html">Creating an EJB Module 
+      Project</a><br>
+      <a href="../editing/create_ejb.html">Creating an Enterprise Bean</a><br>
+      <a href="../editing/define_business_method.html">Defining a Business Method</a><br>
+      <a href="../deploy/build_ejb.html">Building an EJB Module</a><br>
+      <a href="../deploy/deploy_ejb.html">Deploying an EJB Module </a></td>
+  </tr>
+</table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>

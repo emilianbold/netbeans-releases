@@ -1,0 +1,79 @@
+ 
+<html>
+
+<!--
+  *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+  *     Use is subject to license terms.
+-->
+<head>
+<title>Managing Container-Managed Relationships</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Managing Container-Managed Relationships</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Like a table in a relational database, an entity bean may be related to other 
+  entity beans. For example, in a college enrollment application, <tt>StudentBean</tt> 
+  and <tt>CourseBean</tt> would be related because students enroll in classes. 
+</p>
+<p>With bean-managed persistence, the code that you write implements the relationships. 
+  But with container-managed persistence, the EJB container takes care of the 
+  relationships for you. For this reason, relationships in entity beans with container-managed 
+  persistence are often referred to as container-managed relationships.</p>
+<p><b>To manage container-managed relationships for a CMP entity bean:</b></p>
+<ol>
+  <li>In the Projects window, expand the Configuration Files node for the EJB 
+    module project and double-click <tt>ejb-jar.xml</tt>.</li>
+  <li>In the top of the graphical editor, click CMP Relationships. 
+    <p> The visual editor displays a table of the existing container-managed relationships 
+      for the EJB module.
+  </li>
+  <li>Do one of the following: 
+    <ul>
+      <li>Select a relationship and click Edit to edit the relationship details.</li>
+      <li>Click Add to create a new relationship.</li>
+    </ul>
+  </li>
+  <li>In the dialog box, specify a name and description for the relationship.</li>
+  <li>For each end of the relationship, define the following: 
+    <ul>
+      <li>A distinct name for the relationship role and the entity bean in which 
+        the relationship begins or ends.</li>
+      <li>The multiplicity of the relationship. </li>
+      <li>Whether cascade delete is </li>
+    </ul>
+  </li>
+  <li>Enter </li>
+  <li>Specify whether to add getter and setter methods for the field to the entity 
+    bean's local interface. </li>
+</ol>
+<ul class="note">
+  <li>When you generate CMP entity beans from a database, the IDE automatically 
+    registers all of the container-managed relationships based on the relationships 
+    in the database.</li>
+</ul>
+<table border="0">
+  <tr> 
+    <th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+  </tr>
+  <tr valign="top"> 
+    <td width="23px" nowrap>&nbsp;</td>
+    <td nowrap> 
+  </tr>
+</table>
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0">
+  <tr> 
+    <td>&nbsp;</td>
+  </tr>
+  <tr> 
+    <td>&nbsp;</td>
+  </tr>
+  <tr> 
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

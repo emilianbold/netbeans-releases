@@ -1,0 +1,80 @@
+ 
+<html>
+
+<!--
+  *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+  *     Use is subject to license terms.
+-->
+<head>
+<title>About Container-Managed Relationships</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>About Container-Managed Relationships</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Like a table in a relational database, an entity bean may be related to other 
+  entity beans. With bean-managed persistence, the code that you write implements 
+  the relationships. But with container-managed persistence, the EJB container 
+  takes care of the relationships for you. </p>
+<p>For instance, consider the <tt>cmpcustomer</tt> example that ships with the 
+  J2EE JDK. The example defines relationships between customers, addresses, and 
+  subscriptions. Each customer may have one or more addresses. A customer may 
+  also have zero or more subscriptions. Similarly, a single subscription may be 
+  associated to many customers. In order for the example to work correctly, the 
+  relationships between the entity beans representing these database tables must 
+  be configured correctly.</p>
+<h3>Direction </h3>
+<p>Relationships between databases can either be unidirectional or multidirections. 
+  For example, in the <tt>cmpcustomer</tt> example, the relationship between customers 
+  and the addresses is unidrectional, because... The relationship between subscriptions 
+  and customers, on the other hand, is multidirectional, since...</p>
+<h3>Multiplicity</h3>
+<p>Multiplicity (also known as cardinality) describes how many instances of each 
+  side of the relationship there can be. Entity beans can have the following multiplicity:</p>
+<ul>
+  <li><b>One-to-one.</b> Each entity bean instance is related to a single instance 
+    of another entity bean. </li>
+  <li><b>One-to-many.</b> An entity bean instance can be related to multiple instances 
+    of the other entity bean. In the <tt>cmpcustomer</tt> application, for example, 
+    customers have a one-to-many relationship to addresses. </li>
+  <li><b>Many-to-one.</b> Multiple instances of an entity bean can be related 
+    to a single instance of the other entity bean. </li>
+  <li><b>Many-to-many.</b> The entity bean instances can be related to multiple 
+    instances of each other. For example, in the <tt>cmpcustomer</tt> application, 
+    subscriptions and customers have a many-to-many relationship.</li>
+</ul>
+<h3>Cascade Delete</h3>
+<p>Often, the existence of one table is often dependent on the existence of the 
+  table that references it. For example, in the <tt>cmpcustomer</tt> example, 
+  you may add and delete individual addresses for a customer. Because an address 
+  instance must be associated to a customer, however, when you delete a customer, 
+  you are also automatically deleting all addresses associated to that customer. 
+</p>
+<p>The application server takes care of this automatically through the cascade 
+  delete setting. When you enable cascade delete in a relationship, all related 
+  bean instances are deleted when the bean referring to them is deleted. </p>
+<table border="0">
+  <tr> 
+    <th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+  </tr>
+  <tr valign="top"> 
+    <td width="23px" nowrap>&nbsp;</td>
+    <td nowrap> 
+  </tr>
+</table>
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0">
+  <tr> 
+    <td>&nbsp;</td>
+  </tr>
+  <tr> 
+    <td>&nbsp;</td>
+  </tr>
+  <tr> 
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
