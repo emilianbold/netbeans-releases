@@ -257,14 +257,14 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
                         changeTableSelection(row, col);
                     }
                 } else if(code == KeyEvent.VK_ESCAPE) { // XXX see above
-                    cancelLast();
+                    cancelSwiching();
                 }
                 ((KeyEvent) ev).consume();
                 break;
             case KeyEvent.KEY_RELEASED:
                 code = ((KeyEvent) ev).getKeyCode();
                 if (code == releaseKey) {
-                    cancelLast();
+                    performSwitching();
                 } else if (code == reverseKey) {
                     fwd = true;
                 }
@@ -282,15 +282,20 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
     }
     
     /**
-     * Cancel the popup if present, causing it to close without the active
-     * TopComponent being changed.
+     * Cancels the popup if present, causing it to close without the active
+     * document being changed.
      */
-    private void cancelLast() {
+    private void cancelSwiching() {
+        hideCurrentPopup();
+        StatusDisplayer.getDefault().setStatusText("");
+    }
+    
+    /** Switch to the currently selected document and close the popup. */
+    private void performSwitching() {
         if (popup != null) {
             pTable.getSelectedItem().activate();
-            hideCurrentPopup();
-            StatusDisplayer.getDefault().setStatusText("");
         }
+        cancelSwiching();
     }
     
     private synchronized void hideCurrentPopup() {
