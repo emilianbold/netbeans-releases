@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
-import org.netbeans.modules.masterfs.filebasedfs.naming.FolderName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileObject;
@@ -22,7 +21,7 @@ import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
+
 
 /**
  * 

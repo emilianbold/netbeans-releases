@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
+import java.util.MissingResourceException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -58,12 +59,15 @@ public final class FSException extends IOException {
         /*This call to getBundle should ensure that currentClassLoader is not used to load resources from. 
          This should prevent from deadlock, that occured: one waits for FileObject and has resource, 
          second one waits for resource and has FileObject*/
-        String format = NbBundle.getBundle("org.openide.filesystems.Bundle", java.util.Locale.getDefault(), FileSystem.class.getClassLoader()).getString(res);//NOI18N
-        
-        if (format == null) {
-            format = NbBundle.getBundle("org.netbeans.modules.masterfs.filebasedfs.Bundle", java.util.Locale.getDefault(), FileBasedFileSystem.class.getClassLoader()).getString(res);//NOI18N    
+        String format = null;
+        try{
+            format = NbBundle.getBundle("org.netbeans.modules.masterfs.filebasedfs.Bundle", java.util.Locale.getDefault(), FileBasedFileSystem.class.getClassLoader()).getString(res);//NOI18N                        
+        } catch (MissingResourceException mex) {
+            if (format == null) {
+                NbBundle.getBundle("org.openide.filesystems.Bundle", java.util.Locale.getDefault(), FileSystem.class.getClassLoader()).getString(res);//NOI18N    
+            }
         }
-
+                
         if (args != null) {
             return java.text.MessageFormat.format(format, args);
         } else {

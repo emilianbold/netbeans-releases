@@ -18,7 +18,6 @@ import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
-import org.netbeans.modules.masterfs.filebasedfs.naming.FolderName;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileLock;
@@ -133,11 +132,11 @@ public final class FolderObj extends BaseFileObj {
         try {
             folder2Create = BaseFileObj.getFile(getFileName().getFile(), name, null);
             if (folder2Create.exists()) {
-                FSException.io("EXC_CannotCreateF", new Object[]{folder2Create.getName(), getFileSystem().getDisplayName(), folder2Create.getAbsolutePath()}); // NOI18N                
+                FSException.io("EXC_CannotCreateFolder", name, getPath());// NOI18N   
             }
 
             if (!BaseFileObj.createRecursiveFolder(folder2Create)) {
-                FSException.io("EXC_CannotCreateF", new Object[]{folder2Create.getName(), getFileSystem().getDisplayName(), folder2Create.getAbsolutePath()}); // NOI18N                                
+                FSException.io("EXC_CannotCreateFolder", getNameExt(), getPath());// NOI18N   
             }
 
             final FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);
@@ -174,7 +173,7 @@ public final class FolderObj extends BaseFileObj {
             isError = isError ? true : !f.exists();
 
             if (isError) {
-                FSException.io("EXC_CannotCreateD", name, ext, getFileName().getFile().getName(), getFileSystem().getDisplayName());// NOI18N
+                FSException.io("EXC_CannotCreateData", f.getName(), getPath());// NOI18N
             }
 
             final FileNaming childName = getChildrenCache().getChild(f.getName(), true);
@@ -205,7 +204,9 @@ public final class FolderObj extends BaseFileObj {
 
         final File file = getFileName().getFile();
         if (!deleteFile(file, all, getLocalFileSystem().getFactory())) {
-            FSException.io("EXC_CannotDelete", file.getName(), getFileSystem().getDisplayName(), file.getAbsolutePath()); // NOI18N                            
+            FileObject parent = getExistingParent();
+            String parentPath = (parent != null) ? parent.getPath() : file.getParentFile().getAbsolutePath();
+            FSException.io("EXC_CannotDelete", file.getName(), parentPath);// NOI18N            
         }
 
         BaseFileObj.attribs.deleteAttributes(file.getAbsolutePath().replace('\\', '/'));//NOI18N

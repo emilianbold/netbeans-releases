@@ -20,7 +20,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 import java.io.File;

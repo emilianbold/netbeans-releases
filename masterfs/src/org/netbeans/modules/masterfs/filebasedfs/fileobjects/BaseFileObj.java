@@ -156,11 +156,15 @@ public abstract class BaseFileObj extends FileObject {
 
         final File file2Rename = BaseFileObj.getFile(parent, name, ext);
         if (parent == null || !parent.exists()) {
-            FSException.io("EXC_CannotRename", file.getName(), getFileSystem().getDisplayName(), file2Rename.getName()); // NOI18N                            
+            FileObject parentFo = getExistingParent();
+            String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
+            FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
         }
 
         if (file2Rename.exists() && !file2Rename.equals(file)) {
-            FSException.io("EXC_CannotRename", file.getName(), getFileSystem().getDisplayName(), file2Rename.getName()); // NOI18N                                        
+            FileObject parentFo = getExistingParent();
+            String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
+            FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
         }        
         
         final String originalName = getName();
@@ -168,7 +172,9 @@ public abstract class BaseFileObj extends FileObject {
         
         //TODO: no lock used
         if (!NamingFactory.rename(getFileName(),file2Rename.getName())) {
-            FSException.io("EXC_CannotRename", file.getName(), getFileSystem().getDisplayName(), file2Rename.getName()); // NOI18N                                        
+            FileObject parentFo = getExistingParent();
+            String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
+            FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
         }
 
         FileBasedFileSystem fs = getLocalFileSystem();
@@ -386,11 +392,13 @@ public abstract class BaseFileObj extends FileObject {
         if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
         try {
             if (!checkLock(lock)) {
-                FSException.io("EXC_InvalidLock", lock, getPath(), getFileSystem().getDisplayName(), f.getAbsolutePath()); // NOI18N                
+                FSException.io("EXC_InvalidLock", lock, getPath()); // NOI18N                
             }
 
             if (!f.delete()) {
-                FSException.io("EXC_CannotDelete", f.getName(), f.getParentFile().getAbsolutePath(), f.getAbsolutePath()); // NOI18N                                
+                FileObject parent = getExistingParent();
+                String parentPath = (parent != null) ? parent.getPath() : f.getParentFile().getAbsolutePath();
+                FSException.io("EXC_CannotDelete", f.getName(), parentPath);// NOI18N            
             } 
             BaseFileObj.attribs.deleteAttributes(f.getAbsolutePath().replace('\\', '/'));//NOI18N
             if (childrenCache != null) childrenCache.getChild(BaseFileObj.getNameExt(f), true);
@@ -502,7 +510,7 @@ public abstract class BaseFileObj extends FileObject {
             final File file = new File(name);
             final boolean isDeleted = (file.isFile()) ? file.delete() : deleteFolder(file);
             if (isDeleted) {
-                FSException.io("EXC_CannotDelete", file.getName(), "", file.getAbsolutePath()); // NOI18N                                
+                FSException.io("EXC_CannotDelete", file.getName(), ""); // NOI18N                                
             }
         }
 

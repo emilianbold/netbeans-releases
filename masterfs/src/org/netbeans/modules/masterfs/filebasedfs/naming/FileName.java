@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,13 +24,10 @@ public class FileName implements FileNaming {
     private final FileNaming parent;
     private Integer id;
     
-    private File toDel = null;
-
     protected FileName(final FileNaming parent, final File file) {
         this.parent = parent;
         this.name = parseName(file);
         id = NamingFactory.createID(file);
-        toDel = file;
     }
 
     private static String parseName(final File file) {

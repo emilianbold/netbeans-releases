@@ -124,7 +124,7 @@ public final class RootObj extends FileObject {
 
     public final FileLock lock() throws IOException {
         //throw new IOException(getPath());
-        FSException.io("EXC_CannotLock", ""); // NOI18N
+        FSException.io("EXC_CannotLockRoot"); // NOI18N
         return null;
     }
 
