@@ -43,6 +43,8 @@ import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.WebContextRoot;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -516,13 +518,14 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return null;
     }
     
-    public void setCMPMappingInfo(String ejbName, OriginalCMPMapping mapping) {
+    public void setCMPMappingInfo(String ejbName, OriginalCMPMapping mappings) {
         ConfigurationStorage cs = getStorage();
         if (cs == null)
             return;
         DeploymentConfiguration config = cs.getDeploymentConfiguration();
         ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
-        serverConfig.setMappingInfo(config, ejbName, mapping);
+        //serverConfig.setMappingInfo(config, mappings);
+        saveConfiguration();
     }
     
     public void ensureResourceDefinedForEjb(String ejbname, String ejbtype) {
@@ -555,5 +558,21 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         DeploymentConfiguration config = cs.getDeploymentConfiguration();
         ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
         serverConfig.ensureResourceDefined(config, ejb, provider.getEnterpriseResourceDirectory());
+    }
+    
+    public void saveConfiguration() {
+        ConfigurationStorage cs = getStorage();
+        if (cs == null || configDO == null) {
+            return;
+        }
+        
+        SaveCookie s = (SaveCookie) configDO.getCookie(SaveCookie.class);
+        try {
+            if (s != null) {
+                s.save();
+            }
+        } catch(IOException ioe) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(ioe.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+        }
     }
 }
