@@ -58,8 +58,8 @@ import org.openide.util.NbBundle;
 /**
  * Top component providing a viewer for images.
  * @author Petr Hamernik, Ian Formanek, Lukas Tadial
+ * @author Marian Petras
  */
-
 public class ImageViewer extends CloneableTopComponent {
 
     /** Serialized version UID. */
@@ -495,7 +495,7 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Gets HelpContext. */
     public HelpCtx getHelpCtx () {
-        return new HelpCtx(ImageViewer.class);
+        return HelpCtx.DEFAULT_HELP;
     }
         
     /** This component should be discarded if the associated environment
