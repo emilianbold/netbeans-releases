@@ -132,6 +132,21 @@ public class NbSummaryPanel extends TextDisplayPanel
             + "$L(org.netbeans.installer.Bundle,SummaryPanel.description5,netbeans,uninstaller)";
         }
         
+        //How to uninstall JDK. We will show this message only when we installed
+        //JDK.
+        if (!Util.isJDKAlreadyInstalled()) {
+            if (Util.isWindowsOS()) {
+                summaryMessage = summaryMessage
+                + "$L(org.netbeans.installer.Bundle,SummaryPanel.description7,"
+                + "$L(org.netbeans.installer.Bundle,JDK.shortName))";
+            } else {
+                summaryMessage = summaryMessage
+                + "$L(org.netbeans.installer.Bundle,SummaryPanel.description6,"
+                + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
+                + j2seInstallDir + ",uninstall.sh)";
+            }
+        }
+        
         return summaryMessage;
     }
     
