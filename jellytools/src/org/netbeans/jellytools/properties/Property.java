@@ -23,6 +23,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
@@ -258,10 +259,12 @@ public class Property {
         PropertyEditor pe = property.getPropertyEditor();
         try {
             if(property.getValue() != pe.getValue()) {
+                // Need to synchronize property and its property editor.
+                // Otherwise it may cause problem when called pe.getAsText().
                 pe.setValue(property.getValue());
             }
         } catch (Exception e) {
-            throw new JemmyException("Exception while getting value from property.", e);
+            throw new JemmyException("Exception while synchronizing value of property and property editor - property.getValue() != pe.getValue()", e);
         }
         return pe.getAsText();
     }
@@ -278,6 +281,16 @@ public class Property {
         }
         PropertyEditor pe = property.getPropertyEditor();
         try {
+            if(property.getValue() != pe.getValue()) {
+                // Need to synchronize property and its property editor.
+                // Otherwise it may cause IAE when called pe.setAsText(textValue).
+                pe.setValue(property.getValue());
+            }
+        } catch (Exception e) {
+            throw new JemmyException("Exception while synchronizing value of property and property editor - property.getValue() != pe.getValue()", e);
+        }
+        try {
+            JemmyProperties.getCurrentOutput().printTrace("Setting property \""+getName()+"\" to value \""+textValue+"\".");
             pe.setAsText(textValue);
             property.setValue(pe.getValue());
         } catch (IllegalAccessException iae) {
