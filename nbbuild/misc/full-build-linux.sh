@@ -29,7 +29,7 @@
 # (default "no").
 #
 # nbjdk=/opt/java/j2se/1.4.2
-# JDK 1.4.2_06 installation directory. (Full JDK, not just JRE.)
+# JDK 1.4.2_07 installation directory. (Full JDK, not just JRE.)
 #
 # nbtestjdk=/opt/java/j2se/1.4
 # JDK installation directory for use when running (but not building!) test suites.
@@ -127,7 +127,7 @@ if [ "$override" != yes ]
 then
     if $nbjdk/bin/java -version 2>&1 | fgrep -q -v 1.4
     then
-        echo "You need to set the variable 'nbjdk' to a JDK 1.4.2_06 installation" 1>&2
+        echo "You need to set the variable 'nbjdk' to a JDK 1.4.2_07 installation" 1>&2
         exit 2
     fi
     if $ant -version 2>&1 | fgrep -q -v 1.6.2
