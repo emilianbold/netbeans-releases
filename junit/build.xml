@@ -28,7 +28,9 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/junit/**"/>
       <classpath>
-	<pathelement location="${binroot}/junit/release/lib/ext/junit.jar"/> 
+        <!-- Since junit.jar is not included in extra binaries, use the one in xtest dir -->
+	<!-- <pathelement location="${binroot}/junit/release/lib/ext/junit.jar"/> -->
+	<pathelement location="../xtest/lib/junit.jar"/>
       </classpath>
     </javac>
   </target>
@@ -140,6 +142,15 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="junit.nbm"/>
     <delete dir="Info"/>
     <delete dir="javadoc"/>
+  </target>
+
+  <target name="clean-junit-ext">
+    <delete file="netbeans/lib/ext/junit-ext.jar"/>
+    <delete>
+      <fileset dir="src">
+        <include name="org/netbeans/junit/**/*.class"/>
+      </fileset>
+    </delete>
   </target>
 
   <target name="test" depends="netbeans">
