@@ -47,7 +47,7 @@ public class XMLGenerateSupportFactory extends CookieFactory {
     /**
      */
     public Node.Cookie createCookie (Class clazz) {
-        if ( GenerateDTDSupport.class.isAssignableFrom (clazz) ) {
+        if ( clazz.isAssignableFrom (GenerateDTDSupport.class) ) {
             return new GenerateDTDSupport (this.dataObject);
         }
 

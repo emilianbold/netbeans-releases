@@ -49,9 +49,9 @@ public class DTDGenerateSupportFactory extends CookieFactory {
      */
     public Node.Cookie createCookie (Class clazz) {
         
-        if ( SAXGeneratorSupport.class.isAssignableFrom (clazz) ) {
+        if ( clazz.isAssignableFrom (SAXGeneratorSupport.class) ) {
             return new SAXGeneratorSupport (this.dataObject);
-        } else if ( GenerateDOMScannerSupport.class.isAssignableFrom (clazz) ) {
+        } else if ( clazz.isAssignableFrom (GenerateDOMScannerSupport.class) ) {
             return new GenerateDOMScannerSupport (this.dataObject);
         }
         
