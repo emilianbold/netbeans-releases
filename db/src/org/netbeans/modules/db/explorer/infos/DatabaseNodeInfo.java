@@ -418,7 +418,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     public DBConnection getDatabaseConnection()
     {
-        DatabaseConnection con = new DatabaseConnection(getDriver(), getDatabase(), getUser(), getPassword());		con.setRememberPassword(((Boolean)get(REMEMBER_PWD)).booleanValue());
+        DatabaseConnection con = new DatabaseConnection(getDriver(), getDatabase(), getUser(), getPassword());
+        con.setRememberPassword(((Boolean)get(REMEMBER_PWD)).booleanValue());
         return con;
     }
 
