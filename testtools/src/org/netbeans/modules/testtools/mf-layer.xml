@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 
 Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -109,15 +109,6 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
     <folder name="Menu">
         <folder name="Tools">
                 <file name="org-netbeans-modules-testtools-generator-NodeGeneratorAction.instance"/>
-        </folder>
-        <folder name="Help">
-           <folder name="HelpShortcuts">
-               <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-testtools-mainpage.xml" boolvalue="true"/>
-               <file name="org-netbeans-modules-testtools-mainpage.xml" url="mainpage.xml">
-                   <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-               </file>
-               <attr name="org-netbeans-modules-testtools-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
-            </folder>
         </folder>
     </folder>
     <folder name="Shortcuts">

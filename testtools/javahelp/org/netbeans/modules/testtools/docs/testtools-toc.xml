@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 <!--
-*     Copyright 2002 Sun Microsystems, Inc. All rights reserved.
+*     Copyright 2004 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN" "http://java.sun.com/products/javahelp/toc_1_0.dtd">
 
 <toc version="1.0">
-
+<tocitem text="Core IDE Help">
   <tocitem text="Test Tools" target="testtools_intro">
     <tocitem text="Actions and Nodes Generator" target="testtools_generator" />
     <tocitem text="XTest Compiler and Excutor" target="testtools_services" />
     <tocitem text="Templates and Wizards" target="testtools_wizards" />
   </tocitem>
-
+</tocitem>
 </toc>
