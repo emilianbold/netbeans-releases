@@ -430,20 +430,15 @@ final public class FormEditor extends Object
 
         /** The Inspector's icon */
         private final static Image inspectorIcon = Toolkit.getDefaultToolkit().getImage(iconURL);
+        
+        SplittedPanel split;
 
         static final long serialVersionUID =4248268998485315927L;
         ComponentInspector() {
             final ExplorerManager manager = getExplorerManager();
             emptyInspectorNode = new EmptyInspectorNode();
             manager.setRootContext(emptyInspectorNode);
-            PropertySheetView sheet;
-            SplittedPanel split = new SplittedPanel();
-            split.add(new BeanTreeView(), SplittedPanel.ADD_FIRST);
-            split.add(sheet = new PropertySheetView(), SplittedPanel.ADD_SECOND);
-            split.setSplitType(SplittedPanel.VERTICAL);
-            split.setSplitPosition(DEFAULT_INSPECTOR_PERCENTS);
-            sheet.setDisplayWritableOnly(getFormSettings().getDisplayWritableOnly());
-
+            split = createSplit();
             add("Center", split); // NOI18N
 
             manager.addPropertyChangeListener(new PropertyChangeListener() {
@@ -459,6 +454,17 @@ final public class FormEditor extends Object
                                               );
             setIcon(inspectorIcon);
             setName(formBundle.getString("CTL_NoSelection"));
+        }
+        
+        private static SplittedPanel createSplit() {
+            PropertySheetView sheet;
+            SplittedPanel split = new SplittedPanel();
+            split.add(new BeanTreeView(), SplittedPanel.ADD_FIRST);
+            split.add(sheet = new PropertySheetView(), SplittedPanel.ADD_SECOND);
+            split.setSplitType(SplittedPanel.VERTICAL);
+            split.setSplitPosition(DEFAULT_INSPECTOR_PERCENTS);
+            sheet.setDisplayWritableOnly(getFormSettings().getDisplayWritableOnly());
+            return split;
         }
 
         public void open(Workspace workspace) {
@@ -488,8 +494,10 @@ final public class FormEditor extends Object
             testModeAction.setFormManager(formManager);
             if (formManager == null ||
                 // XXX this should not happen, but sometimes it does. WHY?
-                null == formManager.getFormEditorSupport().getFormRootNode()
-                ) {
+                null == formManager.getFormEditorSupport().getFormRootNode()) {
+                remove(split);
+                split = createSplit();
+                add("Center", split); // NOI18N
                 getExplorerManager().setRootContext(emptyInspectorNode);
             } else {
                 getExplorerManager().setRootContext(formManager.getFormEditorSupport().getFormRootNode());
