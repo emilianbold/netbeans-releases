@@ -49,6 +49,7 @@ public class HtmlLoader extends UniFileLoader {
     setActions (new SystemAction[] {
       SystemAction.get (ViewAction.class),
       SystemAction.get (OpenAction.class),
+      SystemAction.get (FileSystemAction.class),
       null,
       SystemAction.get (CutAction.class),
       SystemAction.get (CopyAction.class),
@@ -107,6 +108,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  18   Gandalf   1.17        7/8/99   Michal Fadljevic FileSystemAction added  
 *  17   Gandalf   1.16        6/10/99  Jan Jancura     Bug 1772
 *  16   Gandalf   1.15        6/9/99   Ian Formanek    ToolsAction
 *  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
