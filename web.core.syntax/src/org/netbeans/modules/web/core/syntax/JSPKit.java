@@ -172,19 +172,23 @@ public class JSPKit extends NbEditorKit {
         return new JspSyntaxSupport(doc);
     }
 
-    public static Completion getCompletionForLanguage(
+    /** Returns completion for given language (MIME type).
+     * Note that JspJavaCompletion competion is returned instead of 
+     * NbJavaCompletion to add specific stuff related to Java class generated 
+     * from JSP.
+     */
+    private static Completion getCompletionForLanguage(
         ExtEditorUI extEditorUI, String language) {
-        EditorKit kit = JEditorPane.createEditorKitForContentType(language);
-        if (kit instanceof ExtKit)
-            return ((ExtKit)kit).createCompletion(extEditorUI);
-        else       
-            return null;
-/*        if ("text/html".equals(language))
-            return null;
-            //return new HTMLKit().createCompletion(extEditorUI);
-        if ("text/x-java".equals(language))
-            return new JavaKit().createCompletion(extEditorUI);
-        return null;*/
+        Completion compl = null;
+        if (JavaKit.JAVA_MIME_TYPE.equals (language)) {
+            compl = new JspJavaCompletion (extEditorUI);
+        }
+        else {
+            EditorKit kit = JEditorPane.createEditorKitForContentType(language);
+            if (kit instanceof ExtKit)
+                compl = ((ExtKit)kit).createCompletion(extEditorUI);
+        }
+        return compl;
     }
     
     public Completion createCompletion(ExtEditorUI extEditorUI) {
@@ -198,11 +202,6 @@ public class JSPKit extends NbEditorKit {
             null : 
             getCompletionForLanguage(extEditorUI, jspdo.getScriptingLanguage());
             
-        // customized JavaCompletion
-        if ((scriptingCompletion instanceof JavaCompletion) &&
-            jspdo.getScriptingLanguage().equals (JavaKit.JAVA_MIME_TYPE)) {
-            scriptingCompletion = new JspJavaCompletion (extEditorUI);
-        }
         final JspCompletion completion = 
             new JspCompletion(extEditorUI, contentCompletion, scriptingCompletion);
         return completion;
@@ -219,8 +218,3 @@ public class JSPKit extends NbEditorKit {
     }
 
 }
-
-
-
-
-
