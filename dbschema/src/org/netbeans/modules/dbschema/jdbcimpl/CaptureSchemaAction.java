@@ -65,7 +65,15 @@ public class CaptureSchemaAction extends CallableSystemAction {
                             wizard.putProperty("WizardPanel_autoWizardStyle", new Boolean(true)); //NOI18N
                             wizard.putProperty("WizardPanel_contentDisplayed", new Boolean(true)); //NOI18N
                             wizard.putProperty("WizardPanel_contentNumbered", new Boolean(true)); //NOI18N
-                            wizard.putProperty("WizardPanel_contentData", new String[] {wizard.targetChooser().getClass().toString().trim().equalsIgnoreCase("class org.openide.loaders.TemplateWizard2") ? bundle.getString("TargetLocation") : bundle.getString("NewObjectName"), bundle.getString("ConnectionChooser"), bundle.getString("TablesChooser")}); //NOI18N
+                            String[] prop = (String[]) wizard.getProperty("WizardPanel_contentData"); // NOI18N
+                            String[] stepsNames = new String[] {
+                                wizard.targetChooser().getClass().toString().trim().equalsIgnoreCase("class org.openide.loaders.TemplateWizard2") ? bundle.getString("TargetLocation") :
+                                    prop[0],
+                                    bundle.getString("TargetLocation"),
+                                    bundle.getString("ConnectionChooser"),
+                                    bundle.getString("TablesChooser")
+                            };
+                            wizard.putProperty("WizardPanel_contentData", stepsNames); //NOI18N
                             wizard.setTitle(bundle.getString("WizardTitleName"));
                             
                             if(nId >= 0) {

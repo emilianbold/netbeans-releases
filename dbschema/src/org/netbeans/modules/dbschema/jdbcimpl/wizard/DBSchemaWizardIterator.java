@@ -104,11 +104,18 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
 
     public void initialize(TemplateWizard wizard) {
         wizardInstance = wizard;
-        
+        String[] prop = (String[]) wizard.getProperty("WizardPanel_contentData"); // NOI18N
+        String[] stepsNames = new String[] {
+            wizard.targetChooser().getClass().toString().trim().equalsIgnoreCase("class org.openide.loaders.TemplateWizard2") ? bundle.getString("TargetLocation") :
+                prop[0],
+                bundle.getString("TargetLocation"),
+                bundle.getString("ConnectionChooser"),
+                bundle.getString("TablesChooser")
+        };
         wizardInstance.putProperty("WizardPanel_autoWizardStyle", new Boolean(true)); //NOI18N
         wizardInstance.putProperty("WizardPanel_contentDisplayed", new Boolean(true)); //NOI18N
         wizardInstance.putProperty("WizardPanel_contentNumbered", new Boolean(true)); //NOI18N
-        wizardInstance.putProperty("WizardPanel_contentData", new String[] {wizard.targetChooser().getClass().toString().trim().equalsIgnoreCase("class org.openide.loaders.TemplateWizard2") ? bundle.getString("TargetLocation") : bundle.getString("NewObjectName"), bundle.getString("ConnectionChooser"), bundle.getString("TablesChooser")}); //NOI18N
+        wizardInstance.putProperty("WizardPanel_contentData", stepsNames); //NOI18N
         
         if(!guiInitialized) {
             initialize();
@@ -121,7 +128,7 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
 
             java.awt.Component panel = targetPanel.getComponent();
             if (panel instanceof javax.swing.JComponent) {
-                ((javax.swing.JComponent) panel).putClientProperty("WizardPanel_contentData", new String[] {wizard.targetChooser().getClass().toString().trim().equalsIgnoreCase("class org.openide.loaders.TemplateWizard2") ? bundle.getString("TargetLocation") : bundle.getString("NewObjectName"), bundle.getString("ConnectionChooser"), bundle.getString("TablesChooser")}); //NOI18N
+                ((javax.swing.JComponent) panel).putClientProperty("WizardPanel_contentData", stepsNames); //NOI18N
                 ((javax.swing.JComponent) panel).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); //NOI18N
             }
             
