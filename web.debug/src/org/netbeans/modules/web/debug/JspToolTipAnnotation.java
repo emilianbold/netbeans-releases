@@ -17,6 +17,7 @@ import java.io.*;
 import javax.swing.JEditorPane;
 import javax.swing.text.*;
 
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.debugger.*;
 import org.openide.nodes.Node;
@@ -54,6 +55,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
                 RequestProcessor.getDefault().post(this);                    
                 doc.render(this);
             } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
         
