@@ -29,8 +29,10 @@ import javax.swing.plaf.basic.BasicToolBarUI;
 import java.awt.*;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
-import java.awt.geom.Area;
-import java.awt.geom.RoundRectangle2D;
+import java.awt.geom.*;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
 /** A ToolbarUI subclass that gets rid of all borders
  * on buttons and provides a finder-style toolbar look.
@@ -73,10 +75,87 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
         c.removeContainerListener(this);
     }
     
+    /** Cache for images - normally only ever two - one for editor toolbar
+     * height and one for main window toolbar height
+     */
+    private static Map icache = new HashMap();
+    
+    private BufferedImage getCacheImage(JComponent c) {
+        BufferedImage img = (BufferedImage) icache.get(new Integer(c.getHeight()));
+        //Don't make a cache image for very small sizes - we're probably just
+        //initializing, and if not, painting will be cheap enough.  Also
+        //ensure that the mid area width is at least a reasonable width for
+        //multiple blits on wide toolbars
+        if (img == null && c.getWidth() > (arcsize * 2) + 24 && c.getHeight() > 12) {
+            img = new BufferedImage (c.getWidth(), c.getHeight(), 
+                BufferedImage.TYPE_INT_ARGB_PRE); //INT_ARGB_PRE is native raster format on mac os
+            
+            paintInto (img.getGraphics(), c);
+            icache.put (new Integer(c.getHeight()), img);
+        }
+        return img;
+    }
+    
+    public void update (Graphics g, JComponent c) {
+        paint (g, c);
+    }
+    
     public void paint(Graphics g, JComponent c) {
-        if (!c.isOpaque()) {
+        if (!c.isOpaque() || c.getWidth() < 4 || c.getHeight() < 4) {
             return;
         }
+        BufferedImage img = getCacheImage(c);
+        if (img == null) {
+            paintInto (g, c);
+        } else {
+            //Use a cached image for painting - the geometry ops and 
+            //plethora of GradientPaints in aqua toolbars are too expensive
+            //for use on every paint - slows down everything and allocates
+            //an 6 width * height integer rasters for per toolbar per paint
+            paintImage ((Graphics2D) g, img, c);
+        }
+    }
+    
+    /**
+     * Paint a cached image of the toolbar.  Paints the left edge and 
+     * content, if necessary, repeats the interior section until the
+     * width less-the-edges is full, then paints the end cap.
+     */
+    private void paintImage (Graphics2D g2d, BufferedImage img, JComponent c) {
+        int w = c.getWidth();
+        int h = c.getHeight();
+        int imgw = img.getWidth();
+        AffineTransform nullTransform = AffineTransform.getTranslateInstance(0,0);
+        if (w == imgw) {
+            //Perfect fit, we're done
+            g2d.drawRenderedImage (img, nullTransform);
+        } else if (w > imgw) {
+            //Wider than the image - loop and blit the interior, then draw the
+            //end cap
+            g2d.drawRenderedImage (img, nullTransform);
+            int uncovered = w - (imgw - (arcsize * 2));
+            int x = imgw - arcsize;
+            //Get the mid section of the cached image, less the end caps
+            do {
+                BufferedImage mid = img.getSubimage (arcsize, 0, Math.min(uncovered, imgw - (arcsize * 2)), h);
+                //blit it until we've filled all the space we need to
+                g2d.drawRenderedImage (mid, AffineTransform.getTranslateInstance(x, 0));
+                x += mid.getWidth();
+                uncovered -= mid.getWidth();
+            } while (x < w - arcsize);
+            BufferedImage rightEdge = img.getSubimage (imgw - arcsize, 0, arcsize, h);
+            g2d.drawRenderedImage(rightEdge, AffineTransform.getTranslateInstance(w - arcsize, 0));
+        } else if (w < imgw) {
+            //Narrower than the image - draw the width we need, then the end cap
+            BufferedImage left = img.getSubimage (0, 0, imgw - arcsize, h);
+            //Don't blit the full image, or we will get white "ears" on the right side
+            g2d.drawRenderedImage(left, nullTransform);
+            BufferedImage right = img.getSubimage (imgw - arcsize, 0, arcsize, h);
+            g2d.drawRenderedImage(right, AffineTransform.getTranslateInstance(w - arcsize, 0));
+        }
+    }
+    
+    private void paintInto (Graphics g, JComponent c) {
         UIUtils.configureRenderingHints(g);
         Color temp = g.getColor();
         Dimension size = c.getSize();
@@ -185,17 +264,15 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
         return false;
     }
     
-    
+    static int arcsize = 13;
     static class AquaTbBorder implements Border {
 
-        int arcsize = 13;
-        
         public Insets getBorderInsets(Component c) {
             return new Insets (2,4,0,0);
         }
         
         public boolean isBorderOpaque() {
-            return true;
+            return false;
         }
         
         
@@ -227,8 +304,6 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
             if (finderLook) {
                 col = mezi(UIManager.getColor("controlShadow"), 
                     UIManager.getColor("control")); //NOI18N
-            }
-            if (finderLook) {
                 drawLower (g, x, y, w, h, col, finderLook);
             } else {
 //                drawLower (g, x, y, w, h, Color.LIGHT_GRAY, finderLook);
