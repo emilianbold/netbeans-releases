@@ -1,5 +1,3 @@
-<project name="NetBeans Installer" default="build" basedir=".">
-
 <!--
                 Sun Public License Notice
 
@@ -13,8 +11,9 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<project name="NetBeans Installer" default="build" basedir=".">
+
   <property name="ismp.home" location="/usr/local/ismp5"/>
-  
   <property name="nb.dir" location="build/netbeans"/>
   
   <target name="init" depends="set-buildnumber, set-installer.basename, set-nb.zipfile" unless="inited">
@@ -42,16 +41,54 @@ Microsystems, Inc. All Rights Reserved.
     <tstamp>
     	<format property="buildnumber" pattern="yyMMdd"/>
     </tstamp>
-    <property name="buildnumber" value="dev-${buildnumber}"/>
   </target>
   
   <target name="set-installer.basename" unless="unstaller.basename" depends="set-buildnumber">
-    <property name="installer.basename" value="NetBeans-${buildnumber}"/>
+    <property name="installer.basename" value="NetBeans-dev-${buildnumber}"/>
   </target>
-  
-  <target name="build" depends="init, compile, unzip" description="build the installers">
+
+  <target name="xsl-win32" depends="init">
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="coreide.xml" />
+      <arg value="-xsl" />
+      <arg value="win32.xsl"/>
+      <arg value="-saveas"/>
+      <arg value="build/coreide.xml-win32"/>
+      <classpath>
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="xsl-unix" depends="init">
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="coreide.xml" />
+      <arg value="-xsl" />
+      <arg value="unix.xsl"/>
+      <arg value="-saveas"/>
+      <arg value="build/coreide.xml-unix"/>
+      <classpath>
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="xsl-win32" depends="init">
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="coreide.xml" />
+      <arg value="-xsl" />
+      <arg value="unix.xsl"/>
+      <arg value="-saveas"/>
+      <arg value="build/coreide.xml-win32"/>
+      <classpath>
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="build-win32" depends="init, compile, unzip, xsl-win32">
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="build/coreide.xml-win32" />
       <arg value="-build" />
       <arg value="-alias"/>
       <arg value="basedir=${basedir}"/>
@@ -62,12 +99,29 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
-    
-    <move file="dist/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
-    <move file="dist/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
-    <move file="dist/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
-    <move file="dist/disk1/setupsolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
-    <move file="dist/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
+  </target>
+
+  <target name="build-unix" depends="init, compile, unzip, xsl-unix">
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="build/coreide.xml-unix" />
+      <arg value="-build" />
+      <arg value="-alias"/>
+      <arg value="basedir=${basedir}"/>
+      <arg value="-alias"/>
+      <arg value="nb.dir=${nb.dir}"/>      
+      <classpath>
+        <pathelement path="build/classes" />      
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+  </target>
+  
+  <target name="build" depends="init, build-win32, build-unix" description="build the installers">
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
+    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
+    <move file="build/disk1/setupsolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
+    <move file="build/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
 
   <target name="compile" depends="init" description="compile custom beans and panels">

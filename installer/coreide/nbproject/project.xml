@@ -51,7 +51,7 @@
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
-                <package-root>/h/ttran/work/nbsrc/installer/coreide/src</package-root>
+                <package-root>src</package-root>
                 <classpath mode="compile">/usr/local/ismp5/lib/platform.jar:/usr/local/ismp5/lib/product.jar:/usr/local/ismp5/lib/wizard.jar:/usr/local/ismp5/lib/xt.jar:/usr/local/ismp5/ppk/linuxppk.jar:/usr/local/ismp5/ppk/solarisppk.jar:/usr/local/ismp5/ppk/win32ppk.jar</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>

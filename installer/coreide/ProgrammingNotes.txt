@@ -1,0 +1,14 @@
+Prerequisites
+   
+ - InstallShield MultiPlatform 5 (SP3)
+ - Apache Ant
+ - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
+ - external unzip utility on $PATH
+ - Unix
+
+To build from command line run ant as usual with
+
+ -Dismp.home=<home dir of ISMP5>
+ -Dnb.zipfile=../../nbbuild/NetBeans-dev-20040622.zip
+ -Dinstaller.basename=NetBeans-dev-20040622
+
