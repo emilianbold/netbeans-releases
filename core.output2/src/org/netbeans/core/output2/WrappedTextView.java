@@ -308,6 +308,37 @@ public class WrappedTextView extends View {
         return 9;
     }
 
+    private static final Rectangle scratch = new Rectangle();
+    
+    private void highlightCaretRow (Graphics g, Shape allocation) {
+        Rectangle scratch = SwingUtilities.isEventDispatchThread() ? this.scratch : new Rectangle();
+        int dot = comp.getCaret().getDot();
+        int mark = comp.getCaret().getMark();
+        if (dot == mark && dot > 0 && dot <= getDocument().getLength()) {
+            try {
+                Rectangle r = comp.modelToView(dot);
+                r.x = 0;
+                r.width = comp.getWidth();
+                Rectangle clip = allocation instanceof Rectangle ? (Rectangle) allocation : allocation.getBounds();
+                if (clip.y < r.y && clip.y + clip.height > r.y) {
+                    scratch.setBounds (r);
+                    scratch.x = Math.max (r.x, clip.x);
+                    scratch.y = Math.max (r.y, clip.y);
+                    if (scratch.x > 0) {
+                        scratch.width -= scratch.x;
+                    }
+                    if (scratch.y > r.y) {
+                        scratch.height -= (scratch.y - r.y);
+                    }
+                    g.setColor (new Color (245, 245, 237));
+                    g.fillRect (scratch.x, scratch.y, scratch.width, scratch.height);
+                }
+            } catch (BadLocationException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+    }
+
     /**
      * Renders using the given rendering surface and area on that
      * surface.  The view may need to do layout and create child
@@ -319,6 +350,8 @@ public class WrappedTextView extends View {
      */
     public void paint(Graphics g, Shape allocation) {
         updateInfo(g);
+//        highlightCaretRow (g, allocation); //XXX commenting out for now
+        
         OutputDocument d = odoc();
         if (d != null) {
             Rectangle clip = g.getClipBounds();
