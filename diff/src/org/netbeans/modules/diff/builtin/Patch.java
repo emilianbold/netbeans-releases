@@ -81,6 +81,7 @@ public class Patch extends Reader {
         int[] diffType = new int[1];
         String[] fileName = new String[1];
         while (patchReader.hasNextPatch(diffType, fileName)) {
+            //System.out.println("Have a next patch of name '"+fileName[0]+"'");
             Difference[] diffs = null;
             switch (diffType[0]) {
                 case CONTEXT_DIFF:
@@ -91,7 +92,7 @@ public class Patch extends Reader {
                     break;
             }
             if (diffs != null) {
-                fileDifferences.add(new FileDifferences(fileName[0], diffs));
+                fileDifferences.add(new FileDifferences(fileName[0].intern(), diffs));
             }
         }
         return (FileDifferences[]) fileDifferences.toArray(new FileDifferences[fileDifferences.size()]);
@@ -116,7 +117,11 @@ public class Patch extends Reader {
     
     private void doRetrieve(int length) throws IOException {
         for (int size = 0; size < length; line++) {
-            if (currDiff < diffs.length && line == diffs[currDiff].getFirstStart()) {
+            if (currDiff < diffs.length &&
+                ((Difference.ADD == diffs[currDiff].getType() &&
+                  line == (diffs[currDiff].getFirstStart() + 1)) ||
+                 (Difference.ADD != diffs[currDiff].getType() &&
+                  line == diffs[currDiff].getFirstStart()))) {
                 if (compareText(source, diffs[currDiff].getFirstText())) {
                     buff.append(diffs[currDiff].getSecondText());
                     currDiff++;
@@ -132,7 +137,7 @@ public class Patch extends Reader {
     }
     
     private boolean compareText(BufferedReader source, String text) throws IOException {
-        if (text.length() == 0) return true;
+        if (text == null || text.length() == 0) return true;
         char[] chars = new char[text.length()];
         source.read(chars);
         line += numChars('\n', chars);
@@ -364,6 +369,7 @@ public class Patch extends Reader {
         }
         
         public int read(char[] values, int offset, int length) throws java.io.IOException {
+            //System.out.println("SinglePatchReader.read("+offset+", "+length+")");
             int totRead = 0;
             while (length > 0) {
                 int buffCopyLength;
@@ -401,6 +407,7 @@ public class Patch extends Reader {
                 }
             }
             if (totRead == 0) totRead = -1;
+            //System.out.println("  read = '"+((totRead >= 0) ? new String(values, 0, totRead) : "NOTHING")+"', totRead = "+totRead);
             return totRead;
         }
         
@@ -444,7 +451,10 @@ public class Patch extends Reader {
                 int nl = input.indexOf('\n');
                 if (nl >= 0) {
                     input = input.substring(0, nl);
-                    if (nl + 1 < length) patchSource.unread(buff, nl + 1, length);
+                    if (nl + 1 < length) {
+                        patchSource.unread(buff, nl + 1, length - (nl + 1));
+                        length = nl + 1;
+                    }
                 }
                 if (input.equals(DIFFERENCE_DELIMETER)) {
                     diffType[0] = CONTEXT_DIFF;
@@ -463,7 +473,7 @@ public class Patch extends Reader {
                 } else if (input.startsWith(CONTEXT_MARK1B)) {
                     StringBuffer name = new StringBuffer(input.substring(CONTEXT_MARK1B.length()));
                     String sname = name.toString();
-                    int spaceIndex = sname.indexOf(' ');
+                    int spaceIndex = sname.indexOf('\t');
                     if (spaceIndex > 0) {
                         name = name.delete(spaceIndex, name.length());
                     }
@@ -471,7 +481,7 @@ public class Patch extends Reader {
                         int r = 0;
                         char c = 0;
                         if (spaceIndex < 0) {
-                            while ((c = (char) (r = patchSource.read())) != '\n' && c != ' ' && r != -1) {
+                            while ((c = (char) (r = patchSource.read())) != '\n' && c != '\t' && r != -1) {
                                 name.append(c);
                             }
                         }
@@ -485,8 +495,10 @@ public class Patch extends Reader {
                     patchSource.unread(buff, 0, length);
                     return true;
                 } else { // Read the rest of the garbaged line
-                    int r;
-                    while (((char) (r = patchSource.read())) != '\n' && r != -1) ;
+                    if (nl < 0) {
+                        int r;
+                        while (((char) (r = patchSource.read())) != '\n' && r != -1) ;
+                    }
                 }
             }
             return false;
