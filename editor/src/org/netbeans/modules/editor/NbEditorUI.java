@@ -34,6 +34,7 @@ import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.CallbackSystemAction;
@@ -85,9 +86,14 @@ public class NbEditorUI extends ExtEditorUI {
                          if (doc != null) {
                              DataObject dob = NbEditorUtilities.getDataObject(doc);
                              if (dob != null) {
-                                 FileObject fo = dob.getPrimaryFile();
+                                 final FileObject fo = dob.getPrimaryFile();
                                  if (fo != null) {
-                                     fo.refresh();
+                                     // Fixed #48151 - posting the refresh outside of AWT thread
+                                     RequestProcessor.getDefault().post(new Runnable() {
+                                         public void run() {
+                                             fo.refresh();
+                                         }
+                                     });
                                  }
                              }
                          }
