@@ -220,6 +220,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Borders">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+            <attr name="hidden_category" boolvalue="true" />
 
             <file name="EmptyBorder.palette_item" url="palette/EmptyBorder.palette_item" />
             <file name="LineBorder.palette_item" url="palette/LineBorder.palette_item" />
