@@ -1405,6 +1405,10 @@ public final class ReferenceHelper {
                     el = (Element)it.next();
                     String key = el.getAttribute("name");
                     String value = Util.findText(el);
+                    // #53553: NPE
+                    if (value == null) {
+                        value = ""; // NOI18N
+                    }
                     props.setProperty(key, value);
                 }
             }

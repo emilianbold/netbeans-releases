@@ -567,6 +567,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertFalse("project not initially modified", pm.isModified(p));
         AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", sisterh.getStandardPropertyEvaluator(), "dojar", "clean");
         art.getProperties().setProperty("configuration", "debug");
+        art.getProperties().setProperty("empty", "");
         assertFalse("reference exist", r.isReferenced(art, art.getArtifactLocations()[0]));
         assertEquals("added a ref to proj2.dojar", "${reference.proj2.dojar}", r.addReference(art, art.getArtifactLocations()[0]));
         assertTrue("reference exist", r.isReferenced(art, art.getArtifactLocations()[0]));
@@ -580,8 +581,8 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("correct script location", "${project.proj2}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
-        assertEquals("correct property keys", Collections.singleton("configuration"), ref.getProperties().keySet());
-        assertEquals("correct property values", Collections.singleton("debug"), new TreeSet(ref.getProperties().values()));
+        assertEquals("correct property keys", new TreeSet(Arrays.asList(new String[]{"configuration", "empty"})), ref.getProperties().keySet());
+        assertEquals("correct property values", new TreeSet(Arrays.asList(new String[]{"debug", ""})), new TreeSet(ref.getProperties().values()));
     }
 
     /**
