@@ -22,6 +22,7 @@ import javax.swing.event.ChangeListener;
 
 import com.netbeans.ide.loaders.DataLoader;
 import com.netbeans.ide.loaders.DataLoaderPool;
+import com.netbeans.ide.modules.Section;
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.nodes.*;
@@ -56,7 +57,11 @@ public final class LoaderPoolNode extends AbstractNode {
 
   private static LoaderChildren myChildren = new LoaderChildren ();
 
-  private static ArrayList loaders = new ArrayList ();
+  /** Array of sections to create loaders from */
+  private static ArrayList sections = new ArrayList ();
+  
+  /** Array of DataLoader objects */
+  private static List loaders = new ArrayList ();
 
   /** copy of the loaders to prevent copying */
   private static Object[] loadersArray;
@@ -144,12 +149,37 @@ public final class LoaderPoolNode extends AbstractNode {
   * If the loader cannot find the right position it adds it to the latest
   * one that nearly satisfies.
   *
+  * @param s adds loader section
+  * @exception IllegalArgumentException if the loader is already there
+  */
+  public static synchronized void add (Section.LoaderSection s) throws InstantiationException {
+    if (sections == null) {
+      add (s.getLoader (), s.getInstallBefore (), s.getInstallAfter ());
+    } else {
+      sections.add (s);
+    }
+  }
+
+  /** Notification to finish installation of nodes during startup.
+  */
+  public static synchronized void finishInstallation () {
+    loaders = initialize (sections);
+    sections = null;
+    
+    update ();
+  }
+
+  
+  /** Adds new loader when previous and following are specified.
+  * If the loader cannot find the right position it adds it to the latest
+  * one that nearly satisfies.
+  *
   * @param dl data loader to add
   * @param before class to be before (or null)
   * @param after class to be installed after (or null)
   * @exception IllegalArgumentException if the loader is already there
   */
-  public static synchronized void add (DataLoader dl, Class before, Class after) {
+  private static void add (DataLoader dl, Class before, Class after) {
     // insert algorithm
     int first = -1;
     int last = -1;
@@ -237,6 +267,138 @@ public final class LoaderPoolNode extends AbstractNode {
     return loaderPool;
   }
 
+
+  //
+  //
+  // Initialization of loaders
+  //
+  //
+
+  /** Method for initialization of loaders. Initializes the loaders by the
+  * ones provided in the sections and reflects their mutual dependences.
+  *
+  * @param sections collection of Section.LoaderSection objects
+  * @return list of loaders
+  */
+  private static List initialize (Collection sections) {
+    // dependencies between loaders (Class, Dep)
+    HashMap deps = new HashMap (sections.size ());
+
+    Iterator it = sections.iterator ();
+    while (it.hasNext ()) {
+      Section.LoaderSection s = (Section.LoaderSection)it.next ();
+
+      DataLoader l;
+      try {
+        l = s.getLoader ();
+      } catch (InstantiationException e) {
+        // go on with next loader
+        continue;
+      }
+
+      // add a Dep for this loader, if it is not already there
+      Class repr = l.getRepresentationClass ();
+      Dep d = findDep (deps, repr, l);
+
+      // now add dependencies we depend on
+      Class b = s.getInstallBefore ();
+      if (b != null) {
+        Dep depBef = findDep (deps, b, null);
+        depBef.deps.add (d);
+      }
+      
+      Class a = s.getInstallAfter ();
+      if (a != null) {
+        Dep depAft = findDep (deps, a, null);
+        d.deps.add (a);
+      }
+    }
+
+    //
+    // use created dependencies to produce the ordered array
+    //
+
+    LinkedList list = new LinkedList ();
+    
+    while (!deps.isEmpty ()) {
+      // take an member
+      it = deps.values ().iterator ();
+      Dep d = (Dep)it.next ();
+
+      // create the list
+      depthFirst (list, d, deps);
+    }
+
+    return list;
+  }
+
+  /** Getter for dependencies for given class and loader.
+  * @param map (Class, Dep) map
+  * @param c representation class
+  * @param l loader or null
+  * @return Dep object associated with c
+  */
+  private static Dep findDep (Map map, Class c, DataLoader l) {
+    Dep d = (Dep)map.get (c);
+    if (d == null) {
+      d = new Dep (c, l);
+      map.put (c, d);
+    } else {
+      if (l != null) {
+        d.loader = l;
+      }
+    }
+    return d;
+  }
+
+  /** Scans dependencies to the depth.
+  * @param c to add loaders to
+  * @param d depth to start at
+  * @param map map to remove Deps from
+  */
+  private static void depthFirst (Collection c, Dep d, Map m) {
+
+    if (!m.containsKey (d.repr)) {
+      // already processed
+      return;
+    }
+    
+    
+    Collection deps = d.deps;
+
+    if (deps == null) {
+      // cyclic reference
+      throw new IllegalStateException ();
+    }
+    
+    // mark the Dep as being used
+    d.deps = null;
+
+    Iterator it = deps.iterator ();
+    while (it.hasNext ()) {
+      depthFirst (c, (Dep)it.next (), m);
+    }
+    
+    // ok all we reference to has been processed
+    c.add (d.loader);
+    m.remove (d.repr);
+  }
+                              
+  /** Dependencies between loaders */
+  private static class Dep {
+    /** representation class for this dep */
+    Class repr;
+    /** a set of dependencies that has to be before me */
+    Collection deps = new HashSet (2);
+    /** the loader assigned to this class or null */
+    DataLoader loader;
+
+    public Dep (Class c, DataLoader l) {
+      repr = c;
+      loader = l;
+    }
+  }
+                              
 /***** Inner classes **************/
 
   /** Node representing one loader in Loader Pool */
@@ -407,6 +569,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  14   Gandalf   1.13        3/30/99  Jaroslav Tulach Form loader before Java 
+*       loaderem.
 *  13   Gandalf   1.12        3/26/99  Ian Formanek    Fixed use of obsoleted 
 *       NbBundle.getBundle (this)
 *  12   Gandalf   1.11        3/25/99  Jaroslav Tulach Loader pool order fixed.
