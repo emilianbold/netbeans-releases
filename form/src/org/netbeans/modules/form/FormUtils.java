@@ -132,48 +132,6 @@ public class FormUtils extends Object {
     return "  "; // EditorSettingsJava.getIndentString ();
   }
 
-  /** A utility method for formatting method header text for specified
-  * method, its name and parameter names.
-  * @param m The method - its modifiers, return type, parameter types and
-  *                       exceptions are used
-  * @param indent A indent to use for the method header
-  * @param paramNames An array of names of parameters - the length of this
-  *            array MUST be the same as the actual number of method's parameters
-  */
-  public static String getMethodHeaderText (Method m, String indent, String[] paramNames) {
-    StringBuffer buf = new StringBuffer() ;
-    buf.append (indent);
-    buf.append ("public ");
-    buf.append (m.getReturnType().getName());
-    buf.append (" ");
-    buf.append (m.getName());
-    buf.append (" (");
-
-    Class[] params = m.getParameterTypes();
-    for (int i = 0; i < params.length; i++) {
-      buf.append (params[i].getName());
-      buf.append (" ");
-      buf.append (paramNames[i]);
-      if (i != params.length - 1)
-        buf.append (", ");
-    }
-    buf.append (")");
-
-    Class[] exceptions = m.getExceptionTypes();
-    if (exceptions.length != 0) {
-      buf.append ("\n");
-      buf.append (indent);
-      buf.append ("throws ");
-    }
-    for (int i = 0; i < exceptions.length; i++) {
-      buf.append (exceptions[i].getName());
-      if (i != exceptions.length - 1)
-        buf.append (", ");
-    }
-
-    return buf.toString();
-  }
-
 // -----------------------------------------------------------------------------
 // JavaBeans helper mthods
 
@@ -354,6 +312,8 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  14   Gandalf   1.13        6/27/99  Ian Formanek    method 
+ *       getMethodHeaderText moved to JavaCodeGenerator
  *  13   Gandalf   1.12        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  12   Gandalf   1.11        5/16/99  Ian Formanek    
