@@ -126,8 +126,11 @@ public class FormEditorSupport extends JavaEditor
                 }
 
                 // open form designer (if loading successful and workspace active)
-                if (openGui && formLoaded)
-                    openGUI();
+                if (formLoaded)
+                    if (openGui)
+                        openGUI();
+                    else
+                        ComponentInspector.getInstance().focusForm(FormEditorSupport.this);
 
                 // clear status text
                 TopManager.getDefault().setStatusText(""); // NOI18N
@@ -486,7 +489,14 @@ public class FormEditorSupport extends JavaEditor
         super.open();
     }
 
-    private void openForm(final boolean openGui) {
+    private void openForm(boolean dontSwitchWS,
+                          final boolean openGui)
+    {
+        if (!dontSwitchWS)
+            activateWorkspace();
+
+        FormEditorSupport.this.superOpen();
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
@@ -496,12 +506,11 @@ public class FormEditorSupport extends JavaEditor
                     logPersistenceError(ex, 0);
                 }
 
-                if (formLoaded) { // continue only on successful loading
-                    boolean reallyOpenGui = openGui && activateWorkspace();
-                    FormEditorSupport.this.superOpen();
-                    if (reallyOpenGui)
+                if (formLoaded)
+                    if (openGui)
                         openGUI();
-                }
+                    else
+                        ComponentInspector.getInstance().focusForm(FormEditorSupport.this);
 
                 reportErrors(LOADING);
             }
@@ -749,13 +758,16 @@ public class FormEditorSupport extends JavaEditor
 
     protected org.openide.util.Task reloadDocumentTask() {
         boolean reloadForm = formLoaded;
+        boolean guiWasOpened = formDesigner != null
+            && formDesigner.isOpened(WindowManager.getDefault().getCurrentWorkspace());
+
         if (formLoaded)
             closeForm();
 
         org.openide.util.Task docLoadTask = super.reloadDocumentTask();
 
         if (reloadForm)
-            openForm(true);
+            openForm(true, guiWasOpened);
 
         return docLoadTask;
     }
