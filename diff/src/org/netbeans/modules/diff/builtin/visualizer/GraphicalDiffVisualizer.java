@@ -100,7 +100,7 @@ public class GraphicalDiffVisualizer extends DiffVisualizer {
     public Component createDiff(List diffs, String name1, String title1, Reader r1,
                                 String name2, String title2, Reader r2, String MIMEType) {
         DiffComponent diff;
-        diff = new DiffComponent(diffs, null, MIMEType,
+        diff = new DiffComponent(diffs, name1+" <> "+name2, MIMEType,
             name1, name2, title1, title2, r1, r2);
         return diff;
     }
