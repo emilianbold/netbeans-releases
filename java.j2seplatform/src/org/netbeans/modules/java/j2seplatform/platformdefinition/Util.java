@@ -52,7 +52,9 @@ public class Util {
                 url = FileUtil.getArchiveRoot(f.toURI().toURL());
             }
             else {
-                url = f.toURI().toURL();
+                //Hotfix issue 42961
+                return null;
+                //url = f.toURI().toURL();
             }
         } catch (MalformedURLException e) {
             throw new AssertionError(e);            
