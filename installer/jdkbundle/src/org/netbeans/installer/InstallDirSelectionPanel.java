@@ -357,7 +357,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	} else {
 	    nbMsgStart = nbLabel;
 	}
-
+        
 	// If there is a problem with the specified directory, then return false
         if (!checkInstallDir(nbInstallDir, NB_INSTALL_DIR, nbMsgStart)) {
 	    return false;
@@ -375,65 +375,92 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	logEvent(this, Log.DBG, "User specified nbInstallDir: " + nbInstallDir);
 	
  	// Check the j2se directory
-	    String j2seMsgStart = null;
-	    index = j2seLabel.lastIndexOf(':');
-	    if (index > 0) {
-		j2seMsgStart = j2seLabel.substring(0, index);
-	    } else {
-		j2seMsgStart = j2seLabel;
-	    }
-	    String j2seInstallDir = null;
-	    if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
-		try {
-		    ProductService service = (ProductService)getService(ProductService.NAME);
-		    service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "active", Boolean.FALSE);
-		}catch(ServiceException ex) {
-		    ex.printStackTrace();
-		    Util.logStackTrace(this,ex);
-		}
-	    }
-	    else {
-		// There is no jdk already installed so check the j2se directory.
-		j2seInstallDir = j2seInstallDirTF.getText().trim();
-		instDirFile = new File(j2seInstallDir);
-		
-		try { // cleanup any misc chars in path such as "."
-		    j2seInstallDir = instDirFile.getCanonicalPath();
-		    instDirFile = new File(j2seInstallDir);
-		} catch (IOException ioerr) {
-		    System.out.println("IOException: Could not get canonical path: " + ioerr);
-		    j2seInstallDir = instDirFile.getAbsolutePath();
-		}
-		j2seInstallDirTF.setText(j2seInstallDir);
-		
-		// If there is a problem with the specified directory, then return false
-		if (!checkInstallDir(j2seInstallDir, J2SE_INSTALL_DIR, j2seMsgStart)) {
-		    return false;
-		}
-		try {
-		    ProductService service = (ProductService)getService(ProductService.NAME);
-		    service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "installLocation", j2seInstallDir);
-		} catch (ServiceException e) {
-		    logEvent(this, Log.ERROR, e);
-		}
-		System.getProperties().put("jdkHome", j2seInstallDir);
-		System.getProperties().put("j2seInstallDir", j2seInstallDir);
-		logEvent(this, Log.DBG, "User specified j2seInstallDir: " + j2seInstallDir);
-		
-		// Last thing to do is create the J2SE directory unless the
-		// directory exists and is empty.
-		if (!emptyExistingDirJ2SE) {
-		    if (!createDirectory(j2seInstallDir, j2seMsgStart)) return false;
-		}
-	    }
+        String j2seMsgStart = null;
+        index = j2seLabel.lastIndexOf(':');
+        if (index > 0) {
+            j2seMsgStart = j2seLabel.substring(0, index);
+        } else {
+            j2seMsgStart = j2seLabel;
+        }
+        String j2seInstallDir = null;
+        if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
+            try {
+                ProductService service = (ProductService)getService(ProductService.NAME);
+                service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "active", Boolean.FALSE);
+            }catch(ServiceException ex) {
+                ex.printStackTrace();
+                Util.logStackTrace(this,ex);
+            }
+        }
+        else {
+            // There is no jdk already installed so check the j2se directory.
+            j2seInstallDir = j2seInstallDirTF.getText().trim();
+            instDirFile = new File(j2seInstallDir);
+
+            try { // cleanup any misc chars in path such as "."
+                j2seInstallDir = instDirFile.getCanonicalPath();
+                instDirFile = new File(j2seInstallDir);
+            } catch (IOException ioerr) {
+                System.out.println("IOException: Could not get canonical path: " + ioerr);
+                j2seInstallDir = instDirFile.getAbsolutePath();
+            }
+            j2seInstallDirTF.setText(j2seInstallDir);
+
+            // If there is a problem with the specified directory, then return false
+            if (!checkInstallDir(j2seInstallDir, J2SE_INSTALL_DIR, j2seMsgStart)) {
+                return false;
+            }
+            try {
+                ProductService service = (ProductService)getService(ProductService.NAME);
+                service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "installLocation", j2seInstallDir);
+            } catch (ServiceException e) {
+                logEvent(this, Log.ERROR, e);
+            }
+            System.getProperties().put("jdkHome", j2seInstallDir);
+            System.getProperties().put("j2seInstallDir", j2seInstallDir);
+            logEvent(this, Log.DBG, "User specified j2seInstallDir: " + j2seInstallDir);
+
+            // Last thing to do is create the J2SE directory unless the
+            // directory exists and is empty.
+            if (!emptyExistingDirJ2SE) {
+                if (!createDirectory(j2seInstallDir, j2seMsgStart)) return false;
+            }
+        }
+        
+        //#49348: Do not allow the same dir for JDK and NB.
+        if (!checkBothInstallDirs(nbInstallDir,j2seInstallDir)) {
+            return false;
+        }
+        
 	// Last thing to do is create the NB directory unless the
 	// directory exists and is empty. Creating directory as last thing
 	// to do so as not to create  when having problems with checking
 	// the j2se directory.
 	if (!emptyExistingDirNB) {
-	    if (!createDirectory(nbInstallDir, nbMsgStart)) return false;
+	    if (!createDirectory(nbInstallDir, nbMsgStart)) {
+                return false;
+            }
 	}
 	return true;
+    }
+    
+    /* Check if J2SE and NB installation dirs are the same or not.
+     */
+    private boolean checkBothInstallDirs(String nbDir, String j2seDir) {
+        String[] okString  = {resolveString("$L(com.installshield.wizard.i18n.WizardResources, ok)")};
+	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
+        Frame parent = ((AWTWizardUI)getWizard().getUI()).getFrame();
+        String dialogMsg = "";
+        MessageDialog msgDialog = null;
+        
+        //#49348: Do not allow the same dir for JDK and NB.
+        if (nbDir.equals(j2seDir)) {
+            dialogMsg = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNBJDKTheSame)");
+            msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
+            msgDialog.setVisible(true);
+            return false;
+        }
+        return true;
     }
     
     /* Check the installation directory to see if it has illegal chars,
