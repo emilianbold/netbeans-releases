@@ -124,12 +124,41 @@ public class SchemaElement extends DBElement {
         }
     }
     
+    /** Returns the SchemaElement object associated with the schema with 
+     * the given string name and object.  The second argument is meant to 
+     * help define the context for loading of the schema and can be a 
+     * FileObject[] or FileObject for use in the IDE or a ClassLoader for 
+     * use at runtime.  Note that if if FileObject[] is used, the first match 
+     * is returned if it's not already in the cache.  It might be extended 
+     * later to accept a Project as well.  Any other non-null value for the 
+     * second argument will result in an UnsupportedOperationException.
+     * @param name the schema name
+     * @param obj the schema context
+     * @return the SchemaElement object for the given schema name
+     */
+    public static SchemaElement forName(String name, Object obj) {
+        if (IDEUtil.isIDERunning())
+            return SchemaElementUtil.forName(name, obj);
+ 
+        if (obj == null)
+            return forNameInternal(name, SchemaElement.class.getClassLoader());
+        if (obj instanceof ClassLoader)
+            return forNameInternal(name, (ClassLoader)obj);
+
+        // if we got to this point the second object is not null, the 
+        // IDE is not running, and the type of object is not one we can
+        // handle
+        throw new UnsupportedOperationException("Cannot lookup schema " + 
+            name + " in context of type " + obj.getClass() + 
+            " expected ClassLoader or null.");
+    }
+
     /** Returns the SchemaElement object associated with the schema with the given string name, loaded by the given classloader.
      * @param name the schema name
      * @param cl the schema classloader
      * @return the SchemaElement object for the given schema name
      */
-    public static SchemaElement forName(String name, ClassLoader cl) {
+    private static SchemaElement forNameInternal(String name, ClassLoader cl) {
         SchemaElement se = getLastSchema();
   
         if (se != null && se.getName().getFullName().equals(name))
@@ -178,10 +207,7 @@ public class SchemaElement extends DBElement {
      * @return the SchemaElement object for the given schema name
      */
     public static SchemaElement forName(String name) {
-        if (IDEUtil.isIDERunning())
-            return SchemaElementUtil.forName(name);
-        else
-            return forName(name, SchemaElement.class.getClassLoader());
+        return forName(name, null);
     }
 
     /** Gets the parsing status of the element.

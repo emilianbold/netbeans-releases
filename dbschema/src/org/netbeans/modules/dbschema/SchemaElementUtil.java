@@ -18,19 +18,30 @@ import java.io.ObjectInput;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.java.classpath.ClassPath;
+
 import org.netbeans.modules.dbschema.migration.archiver.XMLInputStream;
 
 import org.netbeans.modules.dbschema.util.NameUtil;
 
 public class SchemaElementUtil {
 
-    private static org.openide.filesystems.FileObject schemaFO = null;
+    private static FileObject schemaFO = null;
     
-    /** Returns the SchemaElement object associated with the schema with the given string name.
+    /** Returns the SchemaElement object associated with the schema with 
+     * the given string name and object.  The second argument is meant to 
+     * help define the context for loading of the schema and can be a 
+     * FileObject[] or FileObject.  Note that if if FileObject[] is used, 
+     * the first match is returned if it's not already in the cache.  
+     * It might be extended later to accept a Project as well.  
+     * Any other non-null value for the second argument will result in an 
+     * UnsupportedOperationException.
      * @param name the schema name
+     * @param obj the schema context
      * @return the SchemaElement object for the given schema name
      */
-    public static SchemaElement forName(String name) {
+    public static SchemaElement forName(String name, Object obj) {
         //System.out.println("@@@@LUDOforname="+name);
         SchemaElement se = SchemaElement.getLastSchema();
         
@@ -53,10 +64,23 @@ public class SchemaElementUtil {
                 if (se != null)
                     return se;
 
-                org.openide.filesystems.FileObject fo;
+                FileObject fo = null;
                 if (schemaFO == null) {
-                    org.openide.filesystems.Repository rep = org.openide.filesystems.Repository.getDefault();
-                    fo = rep.findResource(NameUtil.getSchemaResourceName(name));
+                    if (obj instanceof FileObject) {
+                        fo = findResource((FileObject)obj, name);
+                    }
+                    else if (obj instanceof FileObject[]) {
+                        FileObject[] sourceRoots = (FileObject[])obj;
+
+                        for (int i = 0; ((fo == null) && (i < sourceRoots.length)); i++) {
+                            fo = findResource(sourceRoots[i], name);
+                        }
+                    } else if (obj != null) {
+                        throw new UnsupportedOperationException(
+                            "Cannot lookup schema " + name + 
+                            " in context of type " + obj.getClass() + 
+                            " expected FileObject, FileObject[], or null.");
+                    }
                 } else
                     fo = schemaFO;
                     
@@ -114,11 +138,16 @@ public class SchemaElementUtil {
      * @param fo the file object
      * @return the SchemaElement object for the given file object
      */
-    public static SchemaElement forName(org.openide.filesystems.FileObject fo) {
+    public static SchemaElement forName(FileObject fo) {
         schemaFO = fo;
-        SchemaElement se = forName(schemaFO.getPackageName('/'));
+        SchemaElement se = forName(schemaFO.getPackageName('/'), null);
         schemaFO = null;
         
         return se;
+    }
+
+    private static FileObject findResource(FileObject sourceRoot, String name) {
+        ClassPath cp = ClassPath.getClassPath(sourceRoot, ClassPath.SOURCE);
+        return cp.findResource(NameUtil.getSchemaResourceName(name));
     }
 }
