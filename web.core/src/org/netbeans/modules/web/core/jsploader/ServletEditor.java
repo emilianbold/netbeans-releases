@@ -288,7 +288,6 @@ public class ServletEditor extends CloneableEditorSupport
                     setNodes(jspdo, offset);
                 }
                 else{
-                    System.out.println("nutno proplanovat");
                     javax.swing.SwingUtilities.invokeLater(new NodesThread(jspdo, offset));
                 }
             }
