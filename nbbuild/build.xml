@@ -434,6 +434,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module j2eeserver/j2eeapis..."/>
     <ant dir="../j2eeserver/j2eeapis" target="netbeans"/>
   </target>
+  <target name="all-j2eeserver/ant" depends="all-j2eeserver">
+    <echo message="Building module j2eeserver/ant..."/>
+    <ant dir="../j2eeserver/ant" target="netbeans"/>
+  </target>
   <target name="all-junit" depends="all-openide,all-openide/loaders,all-java/srcmodel,all-ant,all-java/api">
     <echo message="Building module junit..."/>
     <ant dir="../junit" target="netbeans"/>
