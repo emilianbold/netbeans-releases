@@ -120,6 +120,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/nodes/*.class"/>
                 <include name="org/openide/options/*Test.class"/>
                 <include name="org/openide/util/*.class"/>
+                <include name="org/openide/util/lookup/*.class"/>
                 <!-- excluded, needs an ide executor -->
                 <exclude name="org/openide/util/UtilProgressCursorTest.class"/>
                 <include name="org/openide/util/actions/*Test.class"/>
