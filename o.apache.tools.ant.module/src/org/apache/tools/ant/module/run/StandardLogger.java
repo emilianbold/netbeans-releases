@@ -209,6 +209,7 @@ public final class StandardLogger extends AntLogger {
         }
         AntSession session = event.getSession();
         String line = event.getMessage();
+        // XXX should perhaps detect messages with embedded newlines and deliverBlockOfTextAsErrors or similar
         if (LOGGABLE) ERR.log("Received message: " + line);
         Matcher m = CARET_SHOWING_COLUMN.matcher(line);
         if (m.matches()) {
