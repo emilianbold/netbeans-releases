@@ -807,7 +807,7 @@ Included in JDK 1.3, else you may need to download it separately."/>
 	 compress="true"/>
   </target>
 
-  <target name="example-minicomposer-test-build" description="Build minicomposer for testing purposes.">
+  <target name="example-minicomposer-reload-build" description="Build minicomposer for testing purposes.">
     <javac srcdir="api/examples" destdir="api/examples">
       <include name="org/netbeans/examples/modules/minicomposer/"/>
       <classpath>
@@ -827,11 +827,11 @@ Included in JDK 1.3, else you may need to download it separately."/>
       <exclude name="**/*.java"/>
     </jar>
   </target>
-  <target name="example-minicomposer-test" depends="example-minicomposer-test-build" description="Try installing minicomposer into running IDE.">
+  <target name="example-minicomposer-reload" depends="example-minicomposer-reload-build" description="Try installing minicomposer into running IDE.">
     <nbinstaller action="reinstall" module="examplemodulereload/minicomposer-test/minicomposer.jar"/>
   </target>
 
-  <target name="example-globalactions-test-build" description="Build globalactions for testing purposes.">
+  <target name="example-globalactions-reload-build" description="Build globalactions for testing purposes.">
     <javac srcdir="api/examples" destdir="api/examples">
       <include name="org/netbeans/examples/modules/globalactions/"/>
       <classpath>
@@ -847,8 +847,27 @@ Included in JDK 1.3, else you may need to download it separately."/>
 	 includes="org/netbeans/examples/modules/globalactions/"
 	 compress="false"/>
   </target>
-  <target name="example-globalactions-test" depends="example-globalactions-test-build" description="Try installing globalactions into running IDE.">
+  <target name="example-globalactions-reload" depends="example-globalactions-reload-build" description="Try installing globalactions into running IDE.">
     <nbinstaller action="reinstall" module="examplemodulereload/globalactions-test/globalactions.jar"/>
+  </target>
+
+  <target name="example-explservlet-reload-build" description="Build explservlet for testing purposes. Requires JDK 1.4.">
+    <javac srcdir="api/examples" destdir="api/examples">
+      <include name="org/netbeans/examples/modules/explservlet/"/>
+      <classpath>
+        <pathelement location="netbeans/lib/openide.jar"/>
+        <pathelement location="../httpserver/external/servlet-2.2.jar"/>
+      </classpath>
+    </javac>
+    <mkdir dir="examplemodulereload/explservlet-test"/>
+    <jar jarfile="examplemodulereload/explservlet-test/explservlet.jar"
+         manifest="api/examples/org/netbeans/examples/modules/explservlet.mf"
+	 basedir="api/examples"
+	 includes="org/netbeans/examples/modules/explservlet/"
+	 compress="false"/>
+  </target>
+  <target name="example-explservlet-reload" depends="example-explservlet-reload-build" description="Try installing explservlet into running IDE.">
+    <nbinstaller action="reinstall" module="examplemodulereload/explservlet-test/explservlet.jar"/>
   </target>
 
   <target name="example-globalactions" depends="jars">
