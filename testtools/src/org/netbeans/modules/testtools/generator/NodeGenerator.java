@@ -150,6 +150,7 @@ public class NodeGenerator {
         }
         
         public void setMenuPath(String menuPath) {
+            if (menuPath.equals("null")) menuPath=null;
             this.menuPath = menuPath;
             fireStateChanged(this);
         }
@@ -159,6 +160,7 @@ public class NodeGenerator {
         }
         
         public void setSystemActionClass(String systemActionClass) {
+            if (systemActionClass.equals("null")) systemActionClass=null;
             this.systemActionClass = systemActionClass;
             fireStateChanged(this);
         }
@@ -463,7 +465,7 @@ public class NodeGenerator {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 }
             }
         }

@@ -78,7 +78,8 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
     }
     
     List records;
-
+    JPopupMenu popup=null;
+    
     static class MyCellRenderer extends DefaultTreeCellRenderer {
         public MyCellRenderer() {
             super();
@@ -119,22 +120,26 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
             rend.setLeafIcon(existIcon);
             tree.setCellRenderer(rend);
         }
-        tree.getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION); 
+        tree.getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION); 
         tree.setModel(new DefaultTreeModel(rootNode));
         tree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
-                nodeChanged(e.getNewLeadSelectionPath());
+                nodeChanged(tree.getSelectionPaths());
             }
         });
     }
     
-    void nodeChanged(TreePath path) {
-        if (path==null) {
+    void nodeChanged(TreePath path[]) {
+        if (path==null || path.length==0) {
             propertySheet.setNodes(new Node[0]);
         } else {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            Node nodes[]=new Node[path.length];
             try {
-                propertySheet.setNodes(new Node[]{new BeanNode(node.getUserObject())});
+                for (int i=0; i<path.length; i++) {
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) path[i].getLastPathComponent();
+                    nodes[i]=new BeanNode(node.getUserObject());
+                }
+                propertySheet.setNodes(nodes);
             } catch (IntrospectionException ex) {
                 propertySheet.setNodes(new Node[0]);
             }
@@ -189,24 +194,30 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
     }//GEN-LAST:event_treeKeyReleased
 
     private void treeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeMouseClicked
-        if ((evt.getModifiers()==evt.BUTTON3_MASK)&&(tree.getSelectionCount()==1)&&(tree.getSelectionRows()[0]>0)) {
-            JPopupMenu menu=new JPopupMenu();
-            menu.add("Delete").addActionListener(new java.awt.event.ActionListener() { // NOI18N
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    DeleteActionPerformed();
-                }
-            });
-            menu.show(tree,evt.getX(),evt.getY());
+        if ((evt.getModifiers()==evt.BUTTON3_MASK)&&(tree.getSelectionCount()>0)&&!tree.isRowSelected(0)) {
+            if (popup==null) {
+                popup=new JPopupMenu();
+                popup.add("Delete").addActionListener(new java.awt.event.ActionListener() { // NOI18N
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        DeleteActionPerformed();
+                    }
+                });
+            }
+            popup.show(tree,evt.getX(),evt.getY());
+        } else if (popup!=null) {
+            popup.setVisible(false);
         }
     }//GEN-LAST:event_treeMouseClicked
     
     void DeleteActionPerformed() {
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getSelectionPath().getLastPathComponent();
-        Enumeration enum=node.postorderEnumeration();
-        while (enum.hasMoreElements()) {
-            records.remove(((DefaultMutableTreeNode)enum.nextElement()).getUserObject());
+        TreePath paths[]=tree.getSelectionPaths();
+        for (int i=0; paths!=null&&i<paths.length; i++) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode)paths[i].getLastPathComponent();
+            if (!node.isRoot()) {
+                records.remove(((DefaultMutableTreeNode)node).getUserObject());
+                ((DefaultTreeModel)tree.getModel()).removeNodeFromParent(node);
+            }
         }
-        ((DefaultTreeModel)tree.getModel()).removeNodeFromParent(node);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -235,7 +246,7 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
         } else {
             model.nodeChanged(((NodeGenerator.ActionRecord)o).getNodeDelegate());
         }            
-        nodeChanged(tree.getSelectionPath());
+        nodeChanged(tree.getSelectionPaths());
     }
     
 }
