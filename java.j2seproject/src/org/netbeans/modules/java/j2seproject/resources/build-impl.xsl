@@ -647,13 +647,13 @@ is divided into following sections:
                             <istrue value="${{javadoc.private}}"/>
                         </condition>
                         <property name="javadoc.private.opt" value=""/>
-                        <condition property="javadoc.classpath.opt" value="-classpath ${{javac.classpath}}">
+                        <condition property="javadoc.classpath.opt" value="${{javac.classpath}}">
                             <!-- -classpath '' cannot be passed safely on Windows; cf. #46901. -->
                             <not>
                                 <equals arg1="${{javac.classpath}}" arg2=""/>
                             </not>
                         </condition>
-                        <property name="javadoc.classpath.opt" value=""/>
+                        <property name="javadoc.classpath.opt" value='""'/>
                         <apply executable="${{platform.javadoc}}" failonerror="true" parallel="true">
                             <arg value="-d"/>
                             <arg file="${{dist.javadoc.dir}}"/>
@@ -663,7 +663,9 @@ is divided into following sections:
                             </xsl:if>
                             <arg value="-windowtitle"/>
                             <arg value="${{javadoc.windowtitle}}"/>
-                            <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}} ${{javadoc.classpath.opt}}"/>
+                            <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}}"/>
+                            <arg value="-classpath"/>
+                            <arg path="${{javadoc.classpath.opt}}"/>
                             <arg value="-sourcepath"/>
                             <arg file="${{src.dir}}"/>
                             <fileset dir="${{src.dir}}" includes="**/*.java"/>
