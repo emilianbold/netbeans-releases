@@ -251,7 +251,7 @@ public class WebProjectProperties {
 
     /** XXX to be deleted when introduced in AntPropertyHeleper API
      */    
-    static String getAntPropertyName( String property ) {
+    public static String getAntPropertyName( String property ) {
         if ( property != null && 
              property.startsWith( "${" ) && // NOI18N
              property.endsWith( "}" ) ) { // NOI18N
@@ -830,7 +830,7 @@ public class WebProjectProperties {
         }
     }
     
-    private static class PathParser extends PropertyParser {
+    public static class PathParser extends PropertyParser {
         private String webLibraryElementName;
         private static final String TAG_PATH_IN_WAR = "path-in-war"; //NOI18N
         private static final String TAG_FILE = "file"; //NOI18N
