@@ -18,7 +18,6 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.AttributeMap;
 import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.ImplicitLocals;
-import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -45,7 +44,7 @@ public class JSPVariablesNodeModelFilter implements NodeModelFilter {
      * @return  display name for given node
      */
     public String getDisplayName (NodeModel original, Object node) 
-    throws ComputingException, UnknownTypeException 
+    throws UnknownTypeException 
     {
         
         String dn = "";
@@ -82,7 +81,7 @@ public class JSPVariablesNodeModelFilter implements NodeModelFilter {
      * @return  icon for given node
      */
     public String getIconBase (NodeModel original, Object node)
-    throws ComputingException, UnknownTypeException 
+    throws UnknownTypeException 
     {
         String ib = "";
         if (node instanceof ImplicitLocals)
@@ -108,7 +107,7 @@ public class JSPVariablesNodeModelFilter implements NodeModelFilter {
      * @return  tooltip for given node
      */
     public String getShortDescription (NodeModel original, Object node)
-    throws ComputingException, UnknownTypeException 
+    throws UnknownTypeException 
     {
         String sd = "";
         if (node instanceof ImplicitLocals)

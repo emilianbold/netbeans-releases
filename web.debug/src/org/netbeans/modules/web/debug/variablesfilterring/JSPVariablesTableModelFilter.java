@@ -14,7 +14,6 @@
 package org.netbeans.modules.web.debug.variablesfilterring;
 
 import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.AttributeMap;
-import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.TableModel;
 
 import org.netbeans.spi.viewmodel.TableModelFilter;
@@ -47,7 +46,7 @@ public class JSPVariablesTableModelFilter implements TableModelFilter {
      * @return value of variable representing given position in tree table.
      */
     public Object getValueAt(TableModel original, Object node, String columnID)
-    throws ComputingException, UnknownTypeException
+    throws UnknownTypeException
     {
         
         Object colValue = "";

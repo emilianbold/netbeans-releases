@@ -22,8 +22,6 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -76,7 +74,7 @@ public class JSPVariablesFilter implements TreeModelFilter {
      * @return  children for given parent on given indexes
      */
     public Object[] getChildren(TreeModel original, Object parent, int from, int to)
-        throws NoInformationException, ComputingException, UnknownTypeException
+        throws UnknownTypeException
     {
         Object[] visibleChildren = null;
         if (parent.equals (original.getRoot())) {
@@ -186,7 +184,7 @@ public class JSPVariablesFilter implements TreeModelFilter {
      * @return  true if node is leaf
      */
     public int getChildrenCount(TreeModel original, Object node) 
-        throws NoInformationException, ComputingException, UnknownTypeException
+        throws UnknownTypeException
     {
         
         int countVisible = 0;
