@@ -104,7 +104,7 @@
       <tocitem text="Tag Files (JSP syntax)" >
           <tocitem text="About Tag Files" target="about_tagfile" />
           <tocitem text="Creating a Tag File" target="tagfile_create" />
-          <tocitem text="Editing a JSP, XML, HTML, or Tag File" target="jsp_edit" />
+          <tocitem text="Editing a JSP, HTML, or Tag File" target="jsp_edit" />
       </tocitem>
       <tocitem text="Tag Handlers (Java programming language)" >
           <tocitem text="Creating a Tag Handler" target="taghandler_create" />
