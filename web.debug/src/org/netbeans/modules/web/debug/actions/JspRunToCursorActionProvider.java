@@ -108,12 +108,14 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
             )).isActionEnabled (
                 ActionProvider.COMMAND_DEBUG, 
                 p.getLookup ()
-            );        
+            );
     }
-    
     
     private class Listener implements PropertyChangeListener, DebuggerManagerListener {
         public void propertyChange (PropertyChangeEvent e) {
+            if ((e == null) || (TopComponent.Registry.PROP_OPENED.equals(e.getPropertyName()))) {
+                return;
+            }
             setEnabled (
                 ActionsManager.ACTION_RUN_TO_CURSOR,
                 shouldBeEnabled ()
