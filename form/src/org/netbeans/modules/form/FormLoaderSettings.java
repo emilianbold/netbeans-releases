@@ -396,14 +396,15 @@ public class FormLoaderSettings extends SystemOption {
         variablesLocal = value;
 
         int varType = variablesLocal ?
-            CodeVariable.LOCAL //| (variablesModifier & CodeVariable.FINAL)
+            CodeVariable.LOCAL | (variablesModifier & CodeVariable.FINAL)
                                | CodeVariable.EXPLICIT_DECLARATION
             :
-            CodeVariable.FIELD | CodeVariable.PRIVATE; //variablesModifier;
+            CodeVariable.FIELD | variablesModifier;
         CodeStructure.setGlobalDefaultVariableType(varType);
 
         int oldModif = variablesModifier;
-        variablesModifier = varType & CodeVariable.ALL_MODIF_MASK;
+        if (variablesLocal)
+            variablesModifier &= CodeVariable.FINAL;
 
         firePropertyChange(PROP_VARIABLES_LOCAL, new Boolean(oldValue), new Boolean(variablesLocal));
         firePropertyChange(PROP_VARIABLES_MODIFIER, new Integer(oldModif), new Integer(variablesModifier));
