@@ -33,7 +33,8 @@ import org.openide.filesystems.FileUtil;
  * @author ms113234
  */
 public class RecurrentSuiteFactory {
-    
+    private static boolean debug = false;
+
     public static Test createSuite(Class clazz, File projectsDir, FileObjectFilter filter) {
         String clazzName = clazz.getName();
         NbTestSuite suite = new NbTestSuite(clazzName);
@@ -45,7 +46,9 @@ public class RecurrentSuiteFactory {
                     return !fileName.equals("CVS");
                 }
             });
-            
+            debug("RecurrentSuiteFactory");
+            debug("Projects dir: " + projectsDir);
+            debug("Pojects: " + projects);
             if (projects != null) {
                 for(int i = 0; i < projects.length; i++) {
                     Project project = (Project) ProjectSupport.openProject(projects[i]);
@@ -72,5 +75,9 @@ public class RecurrentSuiteFactory {
             ex.printStackTrace(System.out);
         }
         return suite;
+    }
+    
+    private static void debug(Object msg) {
+        System.err.println("[debug] " + msg);
     }
 }
