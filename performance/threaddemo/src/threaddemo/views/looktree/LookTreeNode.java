@@ -197,8 +197,7 @@ abstract class LookTreeNode implements LookListener {
     }
     
     public boolean isLeaf() {
-        Boolean b = getLook().isLeaf(representedObject, getLookup());
-        return b != null ? b.booleanValue() : false;
+        return getLook().isLeaf(representedObject, getLookup());
     }
     
     // Implementation of LookListener ------------------------------------------

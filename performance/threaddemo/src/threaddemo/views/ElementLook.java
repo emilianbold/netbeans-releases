@@ -108,14 +108,14 @@ public class ElementLook extends Look implements EventListener {
         return buf.toString();
     }
     
-    public Boolean isLeaf(Object o, Lookup env) {
+    public boolean isLeaf(Object o, Lookup env) {
         NodeList nl = ((Element)o).getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             if (nl.item(i) instanceof Element) {
-                return Boolean.FALSE;
+                return false;
             }
         }
-        return Boolean.TRUE;
+        return true;
     }
     
     public List getChildObjects(Object o, Lookup env) {
@@ -130,12 +130,12 @@ public class ElementLook extends Look implements EventListener {
         return l;
     }
     
-    public Boolean canDestroy(Object o, Lookup env) {
+    public boolean canDestroy(Object o, Lookup env) {
         Element e = (Element)o;
         if (e.getParentNode() instanceof Document) {
-            return Boolean.FALSE;
+            return false;
         } else {
-            return Boolean.TRUE;
+            return true;
         }
     }
     

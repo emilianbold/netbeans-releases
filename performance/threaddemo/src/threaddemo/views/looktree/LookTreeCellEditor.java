@@ -33,8 +33,7 @@ class LookTreeCellEditor extends DefaultTreeCellEditor {
             return false;
         }
         LookTreeNode n = (LookTreeNode)lastPath.getLastPathComponent();
-        Boolean b = n.getLook().canRename(n.getData(), n.getLookup());
-        return b != null ? b.booleanValue() : false;
+        return n.getLook().canRename(n.getData(), n.getLookup());
         // XXX is it better to override JTree.isPathEditable?
     }
     

@@ -74,12 +74,10 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         }
     }
     
-    public Boolean isLeaf(Object o, Lookup e) {
+    public boolean isLeaf(Object o, Lookup e) {
         assert EventQueue.isDispatchThread();
         Phadhail ph = (Phadhail)o;
-        return !ph.hasChildren() &&
-               PhadhailLookups.getLookup(ph).lookup(DomProvider.class) == null ?
-               Boolean.TRUE : Boolean.FALSE;
+        return !ph.hasChildren() && PhadhailLookups.getLookup(ph).lookup(DomProvider.class) == null;
     }
     
     public List getChildObjects(final Object o, Lookup e) {
@@ -128,8 +126,8 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         return ph.getPath();
     }
     
-    public Boolean canRename(Object o, Lookup e) {
-        return Boolean.TRUE;
+    public boolean canRename(Object o, Lookup e) {
+        return true;
     }
     
     public void rename(Object o, String newName, Lookup e) throws IOException {
@@ -137,8 +135,8 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         ph.rename(newName);
     }
     
-    public Boolean canDestroy(Object o, Lookup e) {
-        return Boolean.TRUE;
+    public boolean canDestroy(Object o, Lookup e) {
+        return true;
     }
     
     public void destroy(Object o, Lookup e) throws IOException {
