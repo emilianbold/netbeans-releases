@@ -1,23 +1,47 @@
 package gui;
 
-import org.netbeans.test.oo.gui.jelly.*;
-import org.netbeans.test.oo.gui.jam.*;
-import org.netbeans.test.oo.gui.jello.*;
-import org.netbeans.test.oo.gui.jelly.java.JavaWizard;
-
-import org.netbeans.test.oo.gui.jello.JelloPropertiesPane;
-import org.netbeans.test.oo.gui.jello.JelloPropertiesSheet;
-
-import java.util.Hashtable;
-import java.io.File;
-import java.io.PrintWriter;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-//import java.io.File;
+
+import java.io.File;
+
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.Operator;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.ChooseTemplateStepOperator;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.ExplorerOperator;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewWizardOperator;
+import org.netbeans.jellytools.TargetLocationStepOperator;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.actions.DeleteAction;
+import org.netbeans.jellytools.actions.MountLocalAction;
+import org.netbeans.jellytools.actions.SaveAllAction;
+import org.netbeans.jellytools.actions.NewTemplateAction;
+import org.netbeans.jellytools.modules.form.FormEditorOperator;
+import org.netbeans.jellytools.nodes.FilesystemNode;
+import org.netbeans.jellytools.nodes.FolderNode;
+import org.netbeans.jellytools.nodes.JavaNode;
+import org.netbeans.jellytools.nodes.Node;
+
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.Repository;
+//////
 
 
-public class CreateNewIndexedProperty extends NbTestCase {
+
+public class CreateNewIndexedProperty extends JellyTestCase {
 
     private static final String NAME_TEST_FILE          = "TestFile";
     private static final String NAME_INDEX_PROPERTY = "indexProperty";
@@ -50,14 +74,7 @@ public class CreateNewIndexedProperty extends NbTestCase {
         return suite;
     }
 
-    /** testTest method */
-    public void testTest() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-    }    
-    
-    
+   
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -69,427 +86,512 @@ public class CreateNewIndexedProperty extends NbTestCase {
     /** setUp method  */
     public void setUp() {
         // redirect jemmy trace and error output to a log
-
-        JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getRef(), true));
-        JellyProperties.setJemmyDebugTimeouts();
-        JellyProperties.setDefaults();
-        if (mount) {
-            new JelloRepository().findOrMount(sampleDir);
-            mount = false;
-        }        
-  /***/
-        Explorer explorer = new Explorer();
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.selectNode(sampleDir);
-        MainFrame mf = MainFrame.getMainFrame();
-        mf.pushFileMenu("New...");
-        JamDialog dialog = new JamDialog("New Wizard");
-        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Java Classes");
-        node.expand();
-        node.getChild("Class").select();
-        new JamButton(dialog, "Next >").doClick();
-        dialog = new JamDialog("New Wizard - Class");
-        dialog.getJamTextField(0).setText(NAME_TEST_FILE);
-        new JamButton(dialog, "Finish").doClick();                
-/***/      
-
-//        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),
-//        sampleDir);
-//        jw.setName(NAME_TEST_FILE);        
-//        jw.finish();
-        
+        System.out.println("########  "+getName()+"  #######");
+        mountSampledir();
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
+        Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
+        FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
+        examplesFolderNode.select();
+        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
+        new NewTemplateAction().perform();
+        NewWizardOperator newWizardOper = new NewWizardOperator();
+        ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
+        String template = "Java Classes" + "|" + "Class";
+        ctso.selectTemplate(template);
+        ctso.next();
+        TargetLocationStepOperator tlso = new TargetLocationStepOperator();
+        new EventTool().waitNoEvent(500);
+        tlso.setName(NAME_TEST_FILE);
+        new EventTool().waitNoEvent(500);
+        tlso.tree().setComparator(comparator);
+        tlso.selectLocation(sampleDir);
+        tlso.finish();        
     }
     
     /** tearDown method */
     public void tearDown() {
-
-        Explorer explorer = new Explorer();            
-        explorer = Explorer.find();          
-        explorer.switchToFilesystemsTab();                                
-        String myObject = sampleDir+explorer.delim+NAME_TEST_FILE;
-//        JamUtilities.waitEventQueueEmpty(3000);        
-        explorer.pushPopupMenu("Delete", myObject);
-//        JamUtilities.waitEventQueueEmpty(1500);
-        new JelloYesNoDialog("Confirm Object Deletion").yes();        
-//        JamUtilities.waitEventQueueEmpty(1500);        
-        new JelloSaveCancelDialog("Question").cancel();
-
-        if (!mount) {
-            explorer.pushPopupMenu("Unmount Filesystem", sampleDir);            
-        }
-        JamUtilities.waitEventQueueEmpty(1500);
- 
+        ExplorerOperator explorer = new ExplorerOperator();
+        explorer.selectPageProject();
+        explorer.selectPageRuntime();
+        explorer.selectPageFilesystems();
+        Node repositoryRootNode = explorer.repositoryTab().getRootNode();
+        try {
+            new SaveAllAction().perform();
+        } catch (Exception e) {
+            // OK - not enabled, nothing to save
+        }       
+        new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE).select();
+        JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE); // NOI18N
+        javaNode.delete();
+        String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
+        new NbDialogOperator(confirmTitle).yes();
+        FilesystemNode fsNode = new FilesystemNode(repositoryRootNode, sampleDir);
+        fsNode.unmount();
     }
 
     
     /** testName method */
     public void testName() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );     
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));        
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);
+
+       
+        jTextFieldOperator.typeText(NAME_WRONG);        
         
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_WRONG);        
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("String");
         
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setSelectedItem("String");
+        nbDialogOperator.btOK().pushNoBlock();
+
+        new EventTool().waitNoEvent(3000);
+
+        new NbDialogOperator("Error").ok();
+                              
+        jTextFieldOperator.clearText();
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);
         
-        new JamButton(okCancelHelpDialog, "Ok").doClickNoBlock();
-        
-        new JelloOKOnlyDialog(JelloUtilities.getForteFrame(),"Error").ok();
-        
-        
-        jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);
-        
-        jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setSelectedItem("String");
+        jComboBoxOperator.setSelectedItem("String");
                        
-        okCancelHelpDialog.ok();
-        
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
+        nbDialogOperator.btOK().pushNoBlock();
+
+        new EventTool().waitNoEvent(1000);
+
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
         compareReferenceFiles();               
     }
 
     /** testType method */
     public void testType() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );     
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));        
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);        
         
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);        
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.typeText(TYPE_WRONG);
         
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setEditableText(TYPE_WRONG);
-        
-        new JamButton(okCancelHelpDialog, "Ok").doClickNoBlock();
-        
-        new JelloOKOnlyDialog(JelloUtilities.getForteFrame(),"Error").ok();
-        
-        
-        jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);
-        
-        jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setSelectedItem("double");
+        nbDialogOperator.btOK().pushNoBlock();
+
+        new EventTool().waitNoEvent(3000);
+
+        new NbDialogOperator("Error").ok();
+                              
+        jTextFieldOperator.clearText();
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);
+        jComboBoxOperator.clearText();
+        jComboBoxOperator.setSelectedItem("Double");
                        
-        okCancelHelpDialog.ok();
-        
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
-        compareReferenceFiles();               
+        nbDialogOperator.btOK().pushNoBlock();
+
+        new EventTool().waitNoEvent(1000);
+
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
+        compareReferenceFiles();                       
     }
     
     /** testMode method */
     public void testMode() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );     
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText("first");                
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setSelectedItem("int");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Read Only");                       
-        okCancelHelpDialog.ok();
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );             
-        okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText("second");                
-        jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setSelectedItem("double");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Write Only");                       
-        okCancelHelpDialog.ok();
-
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );             
-        okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText("third");                
-        jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setEditableText("long");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Read / Write");                       
-        okCancelHelpDialog.ok();
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText("first");        
         
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
-        compareReferenceFiles();               
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("int");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Read Only");
+        nbDialogOperator.btOK().pushNoBlock();
+        
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));        
+        nbDialogOperator = new NbDialogOperator(dialogTitle);
+        jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText("second");        
+
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("double");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Write Only");
+        nbDialogOperator.btOK().pushNoBlock();
+
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));        
+        nbDialogOperator = new NbDialogOperator(dialogTitle);
+        jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText("third");        
+
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("long");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Read / Write");
+        nbDialogOperator.btOK().pushNoBlock();
+        
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
+        compareReferenceFiles();                       
     }
     
     /** testBound method */
     public void testBound() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );             
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);                
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setEditableText("MyType");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Read / Write");                       
-        JamCheckBox jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_boundCheckBox"));
-        jCheckBox.setSelected(true);
-        okCancelHelpDialog.ok();
-
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
-        compareReferenceFiles();               
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);        
+        
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("MyType");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Read / Write");
+        JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, 0);
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        nbDialogOperator.btOK().pushNoBlock();
+        
+        
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
+        compareReferenceFiles();                       
     }
 
     /** testConstrained method */
     public void testConstrained() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );             
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);                
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setEditableText("MyType");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Read / Write");                       
-        JamCheckBox jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_constrainedCheckBox"));
-        jCheckBox.setSelected(true);
-        okCancelHelpDialog.ok();
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
-        compareReferenceFiles();               
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);        
+        
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("MyType");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Read / Write");
+        JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_constrainedCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        nbDialogOperator.btOK().pushNoBlock();
+        
+        
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
+        compareReferenceFiles();                       
     }
 
     /** testGenerateField method */
     public void testGenerateField() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );             
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);                
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setEditableText("MyType");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Read / Write");                       
-        JamCheckBox jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
-        jCheckBox.setSelected(true);
-        okCancelHelpDialog.ok();
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
-        compareReferenceFiles();               
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);        
+        
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("MyType");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Read / Write");
+        JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        nbDialogOperator.btOK().pushNoBlock();
+        
+        
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
+        compareReferenceFiles();                       
     }
     
     /** testGenerateReturnStatement method */
     public void testGenerateReturnStatement() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );             
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);                
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setEditableText("MyType");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Read / Write");                       
-        JamCheckBox jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
-        jCheckBox.setSelected(true);
-        jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_returnCheckBox"));
-        jCheckBox.setSelected(true);
-        okCancelHelpDialog.ok();
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
-        compareReferenceFiles();               
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);        
+        
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("MyType");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Read / Write");
+        JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_returnCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        nbDialogOperator.btOK().pushNoBlock();
+        
+        
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
+        compareReferenceFiles();                       
     }
 
     /** testGenerateSetStatement method */
     public void testGenerateSetStatement() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );             
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);                
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setEditableText("MyType");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Read / Write");                       
-        JamCheckBox jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
-        jCheckBox.setSelected(true);
-        jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_setCheckBox"));
-        jCheckBox.setSelected(true);        
+//
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        okCancelHelpDialog.ok();
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);        
         
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
-        compareReferenceFiles();               
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("MyType");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Read / Write");
+        JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_setCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        nbDialogOperator.btOK().pushNoBlock();
+        
+        
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
+        compareReferenceFiles();                               
+//                        
     }
 
      /** testGenerateNonIndexedGetterWithReturnStatement method */
     public void testGenerateNonIndexedGetterWithReturnStatement() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );             
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);                
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setEditableText("MyType");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Read / Write");                       
-        JamCheckBox jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
-        jCheckBox.setSelected(true);
-        jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_niGetterCheckBox"));
-        jCheckBox.setSelected(true);
-        jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_niReturnCheckBox"));
-        jCheckBox.setSelected(true);
-
-        okCancelHelpDialog.ok();
+//
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
-        compareReferenceFiles();               
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);        
+        
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("MyType");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Read / Write");
+        JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_niGetterCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_niReturnCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        nbDialogOperator.btOK().pushNoBlock();
+        
+        
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
+        compareReferenceFiles();                               
+//                        
     }
    
     /** testGenerateIndexedSetter method */
     public void testGenerateIndexedSetter() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );             
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);                
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setEditableText("MyType");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Read / Write");                       
-        JamCheckBox jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
-        jCheckBox.setSelected(true);
-        jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_niSetterCheckBox"));
-        jCheckBox.setSelected(true);
-        jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_niSetCheckBox"));
-        jCheckBox.setSelected(true);
-
-        okCancelHelpDialog.ok();
+//
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
-        compareReferenceFiles();               
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);        
+        
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("MyType");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Read / Write");
+        JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_niSetterCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_niSetCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        nbDialogOperator.btOK().pushNoBlock();
+                
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
+        compareReferenceFiles();                               
+//                        
     }
                 
     /** testGeneratePropertyChangeSupport method */
     public void testGeneratePropertyChangeSupport() {
-        Explorer explorer = new Explorer();        
-        explorer = Explorer.find();
-        explorer.switchToFilesystemsTab();
-        explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"), sampleDir
-        +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
-        +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
-        );             
-        JelloOKCancelHelpDialog okCancelHelpDialog = new JelloOKCancelHelpDialog(JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty"));                
-        JamTextField jField = new JamTextField(okCancelHelpDialog, 0);
-        jField.setText(NAME_INDEX_PROPERTY);                
-        JamComboBox jComboBox = new JamComboBox(okCancelHelpDialog, 0);
-        jComboBox.setEditableText("MyType");
-        jComboBox = new JamComboBox(okCancelHelpDialog, 1);
-        jComboBox.setSelectedItem("Read / Write");                       
-        JamCheckBox jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_fieldCheckBox"));
-        jCheckBox.setSelected(true);
-        jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_setCheckBox"));
-        jCheckBox.setSelected(true);
-        jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_constrainedCheckBox"));
-        jCheckBox.setSelected(true);
-        jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_boundCheckBox"));
-        jCheckBox.setSelected(true);        
-        jCheckBox = new JamCheckBox(okCancelHelpDialog, JelloBundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_supportCheckBox"));
-        jCheckBox.setSelected(true);
-
-        okCancelHelpDialog.ok();
+//
+        ExplorerOperator explorerOperator = new ExplorerOperator();
+        explorerOperator.selectPageFilesystems();
         
-        Editor editor = new Editor(NAME_TEST_FILE);      
-        editor.select(1,10);
-        editor.deleteSelectedText();
-        ref(editor.getText());
-        compareReferenceFiles();               
+        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
+        patternsNode.select();
+        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
+        NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);        
+        
+        JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
+        jComboBoxOperator.setSelectedItem("MyType");
+        jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
+        jComboBoxOperator.setSelectedItem("Read / Write");
+        
+        JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(1000);
+        jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_setCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(1000);
+        jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_constrainedCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(1000);
+        jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_boundCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(1000);
+        jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_supportCheckBox"));
+        jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(3000);
+        nbDialogOperator.btOK().pushNoBlock();
+                
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        eo.select(1,10);
+        new DeleteAction().performAPI(eo);
+        ref(eo.getText());
+        compareReferenceFiles();                               
+//                               
+    }
+
+    /** Mounts <userdir>/sampledir through API
+     * @return absolute path of mounted dir
+     */
+    private boolean mountSampledir() {
+        new EventTool().waitNoEvent(1000);
+        String userdir = System.getProperty("netbeans.user"); // NOI18N
+        String mountPoint = userdir+File.separator+"sampledir"; // NOI18N
+        mountPoint = mountPoint.replace('\\', '/');
+        FileSystem fs = Repository.getDefault().findFileSystem(mountPoint);
+        if (fs == null) {            
+            // invoke "File|Mount Filesystem" from main menu
+            new MountLocalAction().performMenu();
+            // wait for "New Wizard"
+            NewWizardOperator newWizardOper = new NewWizardOperator();
+            // select "Local Directory"
+            JTreeOperator tree = new JTreeOperator(newWizardOper);
+            String localDirLabel = Bundle.getString("org.netbeans.core.Bundle", "Templates/Mount/org-netbeans-core-ExLocalFileSystem.settings"); // NOI18N
+            new Node(tree, localDirLabel).select();
+            newWizardOper.next();
+            // select sampledir in file chooser
+            File file = new File(mountPoint);
+            new JFileChooserOperator().setSelectedFile(file);
+            // finish wizard
+            newWizardOper.finish();
+        }       
+        return true;
     }
     
 }
