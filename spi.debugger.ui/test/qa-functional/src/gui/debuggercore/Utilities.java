@@ -47,7 +47,7 @@ public class Utilities {
     public static String newBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_AddBreakpoint");
     public static String newWatchItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch");
     //public static String runInDebuggerItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Start_action_name");
-    public static String runInDebuggerItem = "Run Main Project in Debugger";
+    public static String runInDebuggerItem = "Debug Main Project";
     //public static String stepIntoItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "???");
     public static String stepIntoItem = "Step Into";
     public static String killSessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_KillAction_name");
