@@ -29,6 +29,7 @@ final class ShareableInputSource extends InputSource {
 
     private final InputSource peer;
     private final int bufferSize;
+    private final static int BUFFER_SIZE = 256 * 1024 + 7;  // #32939 keep big enough to avoid mark invalidation by wrapping BuffererReader
     private IOException resetException;
 
     public static ShareableInputSource create(InputSource peer) {
@@ -36,7 +37,7 @@ final class ShareableInputSource extends InputSource {
         if (peer instanceof ShareableInputSource) {
             return (ShareableInputSource) peer;
         } else {
-            return new ShareableInputSource(peer, 10000);
+            return new ShareableInputSource(peer, BUFFER_SIZE);
         }
     }
 
