@@ -1,4 +1,16 @@
 /*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+/*
  * NbExecutor.java
  *
  * Created on March 28, 2001, 6:57 PM
@@ -20,80 +32,91 @@ import java.util.*;
 public class NbExecutor extends Task {
     
     String targetName   = null;
-    String modules      = null;
-    String prefix       = "xtest.";
-    String keyParam     = null;
-    String valueParam   = null;
-    String defaultValue = null;
+    String targetParamModule     = null;
+    String targetParamTestType   = null;
+    String targetParamIncludes   = null;
+    String targetParamExcludes   = null;
     
     public void setTargetName(String name) {
         this.targetName = name;
     }
     
-    public void setModules(String modules) {
-        this.modules = modules;
+    public void setTargetParamModule(String param) {
+        this.targetParamModule = param;
     }
     
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
+    public void setTargetParamTesttype(String param) {
+        this.targetParamTestType = param;
     }
     
-    public void setKeyParam(String keyParam) {
-        this.keyParam = keyParam;
+    public void setTargetParamIncludes(String param) {
+        this.targetParamIncludes = param;
     }
-    
-    public void setValueParam(String valueParam) {
-        this.valueParam = valueParam;
-    }
-    
-    public void setDefaultValue(String value) {
-        this.defaultValue = value;
+
+    public void setTargetParamExcludes(String param) {
+        this.targetParamExcludes = param;
     }
 
     public void execute () throws BuildException {
         if (null == targetName || 0 == targetName.length())
             throw new BuildException("Attribute 'targetname' has to be set.");
-        if (null == modules || 0 == modules.length())
-            throw new BuildException("Attribute 'modules' has to be set.");
-        if (null == keyParam || 0 == keyParam.length())
-            throw new BuildException("Attribute 'keyparam' has to be set.");
-        if (null == valueParam || 0 == valueParam.length())
-            throw new BuildException("Attribute 'valueparam' has to be set.");
+        if (null == targetParamModule || 0 == targetParamModule.length())
+            throw new BuildException("Attribute 'targetParamModule' has to be set.");
+        if (null == targetParamTestType || 0 == targetParamTestType.length())
+            throw new BuildException("Attribute 'targetParamTestType' has to be set.");
+        if (null == targetParamIncludes || 0 == targetParamIncludes.length())
+            throw new BuildException("Attribute 'targetParamIncludes' has to be set.");
+        if (null == targetParamExcludes || 0 == targetParamExcludes.length())
+            throw new BuildException("Attribute 'targetParamExcludes' has to be set.");
         
+        XConfig cfg = NbTestConfig.getXConfig();
+        if (null == cfg)
+            throw new BuildException("XTest configuration wasn't chosen, use call xtestconfig task first (org.netbeans.xtest.NbTestConfig).", getLocation());
         
-        StringTokenizer t = new StringTokenizer(modules, ",");
-        
-        while(t.hasMoreTokens()) {
-            String          key = t.nextToken();
-            String          value = getProperty(prefix + key.trim());
-            CallTarget      callee = (CallTarget)getProject().createTask("antcall");
-            
-            callee.setTarget(targetName);
-            callee.setOwningTarget(target);
-            callee.init();
-            
-            Property keyPrm = callee.createParam();
-            Property valuePrm = callee.createParam();
-            
-            keyPrm.setName(keyParam);
-            keyPrm.setValue(key);
-            valuePrm.setName(valueParam);
-            valuePrm.setValue(value);
-            
-            callee.execute();
+        Enumeration modules = cfg.getModules();
+        while(modules.hasMoreElements()) {
+            String module = (String)modules.nextElement();
+            Enumeration tests = cfg.getTests(module);
+
+            while(tests.hasMoreElements()) {
+                XConfig.Test test = (XConfig.Test)tests.nextElement();
+                CallTarget   callee = (CallTarget)getProject().createTask("antcall");
+
+                callee.setTarget(targetName);
+                callee.setOwningTarget(target);
+                callee.init();
+
+                Property paramModule = callee.createParam();
+                Property paramTestType = callee.createParam();
+                Property paramIncludes = callee.createParam();
+                Property paramExcludes = callee.createParam();
+
+                paramModule.setName(targetParamModule);
+                paramModule.setValue(module);
+                paramTestType.setName(targetParamTestType);
+                paramTestType.setValue(test.getType());
+                paramIncludes.setName(targetParamIncludes);
+                paramIncludes.setValue(listPatterns(test.getPattern().getIncludePatterns(project)));
+                paramExcludes.setName(targetParamExcludes);
+                paramExcludes.setValue(listPatterns(test.getPattern().getExcludePatterns(project)));
+                
+                callee.execute();
+            }
         }
     }
-
-    private String getProperty(String name) throws BuildException {
-        String value;
+    
+    private String listPatterns(String [] patterns) {
+        if (null == patterns)
+            return "";
         
-        if (null == (value = getProject().getProperty(name))) {
-            if (null == defaultValue)
-                throw new BuildException("Property '" + name + "' not found.");
-            else
-                value = defaultValue;
+        StringBuffer buf = new StringBuffer();
+        for(int i = 0; i < patterns.length; i++) {
+            if (0 != i)
+                buf.append(",");
+                
+            buf.append(patterns[i]);
         }
         
-        return value;
+        return buf.toString();
     }
 }

@@ -61,8 +61,8 @@ public class NbPath extends Task {
             getProject().setProperty(NB_LIBRARY_PATH, list.toString());
         }
         
-        list.setLength(0);
         if (null == getProject().getProperty(NB_CLASS_PATH)) {
+            list.setLength(0);
             listJars(nbhome, "lib/patches", list);
             listJars(nbhome, "lib", list);
             listJars(nbhome, "lib/ext", list);
@@ -70,8 +70,8 @@ public class NbPath extends Task {
             getProject().setProperty(NB_CLASS_PATH, list.toString());
         }
         
-        list.setLength(0);
         if (null == getProject().getProperty(NB_BOOTCLASS_PATH)) {
+            list.setLength(0);
             listJars(System.getProperty("java.home"), "lib", list);
             listJars(System.getProperty("Env-JAVA_HOME"), "lib", list);
             getProject().setProperty(NB_BOOTCLASS_PATH, list.toString());
@@ -106,7 +106,11 @@ public class NbPath extends Task {
         String junit_jar = getProject().getProperty(JUNIT_JAR);
         if (null == junit_jar) {
             String junit_jars [] = new String [] { "junit.jar" };
-            junit_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), junit_jars);
+            File f = new File(xthome, "lib/junit.jar");
+            if (f.exists())
+                junit_jar = f.getAbsolutePath().replace(File.separatorChar, '/');
+            if (null == junit_jar)
+                junit_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), junit_jars);
             if (null == junit_jar)
                 junit_jar = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), junit_jars);
             if (null == junit_jar)
@@ -118,7 +122,11 @@ public class NbPath extends Task {
         String xalan_jar = getProject().getProperty(XALAN_JAR);
         if (null == xalan_jar) {
             String xalan_jars [] = new String [] { "xalan.jar" };
-            xalan_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), xalan_jars);
+            File f = new File(xthome, "lib/xalan.jar");
+            if (f.exists())
+                xalan_jar = f.getAbsolutePath().replace(File.separatorChar, '/');
+            if (null == xalan_jar)
+                xalan_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), xalan_jars);
             if (null == xalan_jar)
                 xalan_jar = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), xalan_jars);
             if (null == xalan_jar)
@@ -130,7 +138,11 @@ public class NbPath extends Task {
         String xerces_jar = getProject().getProperty(XERCES_JAR);
         if (null == xerces_jar) {
             String xerces_jars [] = new String [] { "xerces.jar" };
-            xerces_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), xerces_jars);
+            File f = new File(xthome, "lib/xerces.jar");
+            if (f.exists())
+                xerces_jar = f.getAbsolutePath().replace(File.separatorChar, '/');
+            if (null == xerces_jar)
+                xerces_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), xerces_jars);
             if (null == xerces_jar)
                 xerces_jar = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), xerces_jars);
             if (null == xerces_jar)
@@ -141,22 +153,53 @@ public class NbPath extends Task {
         // prepare junit.path property
         String junit_path = getProject().getProperty(JUNIT_PATH);
         if (null == junit_path) {
-            addPath(list, appendSlash(xthome) + "lib/patches/junit-file-diff.jar");
+            list.setLength(0);
+            addPath(list, appendSlash(xthome) + "lib/patches/junit-extensions.jar");
             addPath(list, junit_jar);
             junit_path = list.toString();
             getProject().setProperty(JUNIT_PATH, junit_path);
         }
-        
+
+        // prepare xerces.path property
+        String xerces_path = getProject().getProperty(XERCES_PATH);
+        if (null == xerces_path) {
+            list.setLength(0);
+            addPath(list, xerces_jar);
+            xerces_path = list.toString();
+            getProject().setProperty(XERCES_PATH, xerces_path);
+        }
+
+        // prepare xalan.path property
+        String xalan_path = getProject().getProperty(XALAN_PATH);
+        if (null == xalan_path) {
+            list.setLength(0);
+            addPath(list, xalan_jar);
+            addPath(list, xerces_jar);
+            xalan_path = list.toString();
+            getProject().setProperty(XALAN_PATH, xalan_path);
+        }
+
         // prepare xtest.path property
         if (null == getProject().getProperty(XTEST_PATH)) {
             list.setLength(0);
             addPath(list, appendSlash(xthome) + "lib/xtest.jar");
+            addPath(list, appendSlash(xthome) + "lib/xtest-ext.jar");
+            getProject().setProperty(XTEST_PATH, list.toString());
+        }
+
+/*        
+        // prepare xtest.path property
+        if (null == getProject().getProperty(XTEST_PATH)) {
+            list.setLength(0);
+            addPath(list, appendSlash(xthome) + "lib/xtest.jar");
+            addPath(list, appendSlash(xthome) + "lib/xtest-ext.jar");
             addPath(list, ant_path);
             addPath(list, junit_path);
             addPath(list, xalan_jar);
             addPath(list, xerces_jar);
             getProject().setProperty(XTEST_PATH, list.toString());
         }
+ */
     }
 
     private void listJars(String root, String folder, StringBuffer list) {
@@ -272,5 +315,7 @@ public class NbPath extends Task {
     private static String JUNIT_JAR           = "junit.jar";
     private static String JUNIT_PATH          = "junit.path";
     private static String XALAN_JAR           = "xalan.jar";
+    private static String XALAN_PATH          = "xalan.path";
     private static String XERCES_JAR          = "xerces.jar";
+    private static String XERCES_PATH         = "xerces.path";
 }
