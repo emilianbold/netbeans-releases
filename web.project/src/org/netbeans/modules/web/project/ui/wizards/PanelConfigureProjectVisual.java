@@ -21,23 +21,23 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 public class PanelConfigureProjectVisual extends JPanel {
-    
+
     private PanelConfigureProject panel;
-        
+
     private PanelProjectLocationVisual projectLocationPanel;
     private PanelOptionsVisual optionsPanel;
-    
+
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual(PanelConfigureProject panel) {
         this.panel = panel;
         initComponents();
-                
+
         projectLocationPanel = new PanelProjectLocationVisual(panel);
         locationContainer.add(projectLocationPanel, java.awt.BorderLayout.NORTH);
-                
+
         optionsPanel = new PanelOptionsVisual(panel);
         optionsContainer.add(optionsPanel, java.awt.BorderLayout.NORTH);
-        
+
         DocumentListener dl = new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 setContextPath(e);
@@ -50,7 +50,7 @@ public class PanelConfigureProjectVisual extends JPanel {
             public void removeUpdate(DocumentEvent e) {
                 setContextPath(e);
             }
-            
+
             private void setContextPath(DocumentEvent e) {
                 if (!optionsPanel.isContextModified())
                     optionsPanel.jTextFieldContextPath.setText("/" + projectLocationPanel.projectNameTextField.getText().trim().replace(' ', '_'));
@@ -58,21 +58,26 @@ public class PanelConfigureProjectVisual extends JPanel {
         };
         projectLocationPanel.projectNameTextField.getDocument().addDocumentListener(dl);
 
-        
+
         // Provide a name in the title bar.
         setName(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName")); //NOI18N
         putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewWebApp")); //NOI18N
     }
-    
-    boolean valid() {
-        return projectLocationPanel.valid() && optionsPanel.valid();
+
+    boolean valid(WizardDescriptor wizardDescriptor) {
+        return projectLocationPanel.valid(wizardDescriptor) && optionsPanel.valid(wizardDescriptor);
     }
-    
+
+    void read (WizardDescriptor d) {
+        projectLocationPanel.read(d);
+        optionsPanel.read(d);
+    }
+
     void store(WizardDescriptor d) {
         projectLocationPanel.store(d);
-        optionsPanel.store(d);        
+        optionsPanel.store(d);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -100,8 +105,8 @@ public class PanelConfigureProjectVisual extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         add(jSeparator1, gridBagConstraints);
 
         optionsContainer.setLayout(new java.awt.BorderLayout());
@@ -116,10 +121,10 @@ public class PanelConfigureProjectVisual extends JPanel {
 
     }//GEN-END:initComponents
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPanel locationContainer;
     private javax.swing.JPanel optionsContainer;
     // End of variables declaration//GEN-END:variables
-    
+
 }

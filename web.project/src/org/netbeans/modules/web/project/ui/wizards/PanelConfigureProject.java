@@ -31,6 +31,7 @@ import org.openide.util.HelpCtx;
  */
 final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
     
+    private WizardDescriptor wizardDescriptor;
     private PanelConfigureProjectVisual component;
     
     /** Create the wizard panel descriptor. */
@@ -54,7 +55,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     
     public boolean isValid() {
         getComponent();
-        return component.valid();
+        return component.valid(wizardDescriptor);
     }
     
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
@@ -80,7 +81,8 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     }
     
     public void readSettings(Object settings) {
-        WizardDescriptor wizardDescriptor = (WizardDescriptor)settings;        
+        wizardDescriptor = (WizardDescriptor) settings;
+        component.read (wizardDescriptor);
         
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewProjectWizard to modify the title

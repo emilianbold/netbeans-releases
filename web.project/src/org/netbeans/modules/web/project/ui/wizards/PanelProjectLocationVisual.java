@@ -14,17 +14,20 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 import java.io.File;
+import java.text.MessageFormat;
 
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-public class PanelProjectLocationVisual extends javax.swing.JPanel implements DocumentListener {
-    
-    private static JFileChooser chooser = createChooser();
+public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
     private PanelConfigureProject panel;
     
@@ -32,11 +35,6 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     public PanelProjectLocationVisual(PanelConfigureProject panel) {
         initComponents();
         this.panel = panel;
-        
-        // Setup the defauld names
-        File last = chooser.getSelectedFile() == null ? chooser.getCurrentDirectory() : chooser.getSelectedFile();
-        projectLocationTextField.setText(last.getPath());
-        createdFolderTextField.setText(getCreatedFolderPath());
         
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
@@ -64,11 +62,10 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         projectNameLabel.setLabelFor(projectNameTextField);
         projectNameLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_ProjectName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(projectNameLabel, gridBagConstraints);
 
-        projectNameTextField.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NPW1_DefaultProjectName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -80,16 +77,16 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         projectLocationLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_ProjectLocation_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(projectLocationLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(projectLocationTextField, gridBagConstraints);
 
         Button.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
@@ -118,10 +115,10 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(createdFolderTextField, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -130,6 +127,7 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         String command = evt.getActionCommand();
         
         if ("BROWSE".equals(command)) { //NOI18N
+            JFileChooser chooser = new JFileChooser ();
             if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
                 File projectDir = chooser.getSelectedFile();
                 projectLocationTextField.setText( projectDir.getAbsolutePath());
@@ -144,7 +142,7 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         projectNameTextField.requestFocus();
     }
     
-    boolean valid() {
+    boolean valid(WizardDescriptor wizardDescriptor) {
         if (projectNameTextField.getText().length() == 0) {
             return false; // Display name not specified
         }
@@ -159,15 +157,41 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         return true;
     }
     
-    void store( WizardDescriptor d ) {        
+    void store(WizardDescriptor d) {        
         String name = projectNameTextField.getText().trim();
         
-        d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText()));
+        d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
         d.putProperty(WizardProperties.DISPLAY_NAME, name);
-        d.putProperty(WizardProperties.CODE_NAME, name.replace(' ', '-')); //NOI18N
+        d.putProperty(WizardProperties.CODE_NAME, PropertyUtils.getUsablePropertyName(name));
+        
+        File projectsDir = new File(this.projectLocationTextField.getText());
+        if (projectsDir.isDirectory()) {
+            ProjectChooser.setProjectsFolder (projectsDir);
+        }
     }
         
-    
+    void read (WizardDescriptor settings) {
+        File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
+        if (projectLocation == null)
+            projectLocation = ProjectChooser.getProjectsFolder();
+        else
+            projectLocation = projectLocation.getParentFile();
+        
+        projectLocationTextField.setText(projectLocation.getAbsolutePath());
+        
+        String projectName = (String) settings.getProperty(WizardProperties.DISPLAY_NAME);
+        if (projectName == null) {
+            int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
+            String formater = NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NPW1_DefaultProjectName");
+            while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null)
+                baseCount++;
+            settings.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+        }
+        
+        projectNameTextField.setText(projectName);                
+        projectNameTextField.selectAll();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Button;
     private javax.swing.JLabel createdFolderLabel;
@@ -184,6 +208,12 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         chooser.setAcceptAllFileFilterUsed(false);
         
         return chooser;
+    }
+
+    private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
+        String name = MessageFormat.format(formater, new Object[] {new Integer (index)});                
+        File file = new File(parentFolder, name);
+        return file.exists() ? null : name;
     }
 
     // Implementation of DocumentListener --------------------------------------

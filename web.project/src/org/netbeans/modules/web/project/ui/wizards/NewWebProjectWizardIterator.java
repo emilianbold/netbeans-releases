@@ -33,6 +33,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.modules.web.project.ui.FoldersListSettings;
+
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 import org.openide.util.NbBundle;
@@ -45,6 +47,8 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
     
     private static final long serialVersionUID = 1L;
     
+    static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
+
     /** Create a new wizard iterator. */
     public NewWebProjectWizardIterator() {}
     
@@ -81,6 +85,10 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         
         FileObject dir = FileUtil.toFileObject(dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
+        
+        Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
+        FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
+        
         resultSet.add(dir);
         
         // Returning set of FileObject of project diretory. 
@@ -116,6 +124,9 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         }
     }
     public void uninitialize(WizardDescriptor wiz) {
+        this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
+        this.wiz.putProperty(WizardProperties.CODE_NAME,null);
+        this.wiz.putProperty(WizardProperties.DISPLAY_NAME,null);
         this.wiz = null;
         panels = null;
     }
