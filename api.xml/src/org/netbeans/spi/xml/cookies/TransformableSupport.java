@@ -80,9 +80,11 @@ public final class TransformableSupport implements TransformableCookie {
      */
     public void transform (Source transformSource, Result outputResult, CookieObserver notifier) throws TransformerException {
         try {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TransformableSupport.transform");
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("   transformSource = " + transformSource.getSystemId());
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("   outputResult = " + outputResult.getSystemId());
+            if ( Util.THIS.isLoggable() ) /* then */ {
+                Util.THIS.debug ("TransformableSupport.transform");
+                Util.THIS.debug ("   transformSource = " + transformSource.getSystemId());
+                Util.THIS.debug ("   outputResult = " + outputResult.getSystemId());
+            }
 
             URL url = dataObject.getPrimaryFile().getURL();
             Source xmlSource = createSource (url.toExternalForm());
@@ -100,6 +102,8 @@ public final class TransformableSupport implements TransformableCookie {
             transformer.transform (xmlSource, outputResult);
             
         } catch (Exception exc) { // TransformerException, ParserConfigurationException, SAXException, FileStateInvalidException
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    EXCEPTION during transformation", exc);
+
             TransformerException transExcept = null;
             CookieObserver.Message message = null;
 
@@ -113,19 +117,19 @@ public final class TransformableSupport implements TransformableCookie {
                 transExcept = (TransformerException)exc;
 
                 if ( message != null ) {
-                    message.addDetail (transExcept);
+                    message.addDetail (new DefaultXMLProcessorDetail (transExcept));
                 }
             } else if ( exc instanceof SAXParseException ) {
                 transExcept = new TransformerException (exc);
 
                 if ( message != null ) {
-                    message.addDetail ((SAXParseException)exc);
+                    message.addDetail (new DefaultXMLProcessorDetail ((SAXParseException)exc));
                 }
             } else {
                 transExcept = new TransformerException (exc);
 
                 if ( message != null ) {
-                    message.addDetail (transExcept);
+                    message.addDetail (new DefaultXMLProcessorDetail (transExcept));
                 }
             }
 
