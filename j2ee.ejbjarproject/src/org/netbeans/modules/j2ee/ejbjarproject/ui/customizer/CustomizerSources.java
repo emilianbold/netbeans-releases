@@ -7,13 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
 import java.io.File;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -22,44 +24,69 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 
 /**
  *
- * @author  tom
+ * @author  Tomas Zezula
  */
-public class CustomizerSources extends javax.swing.JPanel implements EjbJarCustomizer.Panel, HelpCtx.Provider {
+public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
     
-    private EjbJarProjectProperties j2seProperties;
-    private VisualPropertySupport vps;
-    private VisualSourceRootsSupport sources;
-    private VisualSourceRootsSupport tests;
-
-
-    /** Creates new form CustomizerSources */
-    public CustomizerSources (EjbJarProjectProperties ejbJarProperties) {
-        this.j2seProperties = ejbJarProperties;
+    public CustomizerSources( EjbJarProjectProperties uiProperties ) {
         initComponents();
-        this.vps = new VisualPropertySupport( ejbJarProperties );
-        this.sources = new VisualSourceRootsSupport((EjbJarProject)ejbJarProperties.getProject(),this.sourceRoots,this.addSourceRoot,
-                this.removeSourceRoot, this.upSourceRoot, this.downSourceRoot,
-                NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInTests"));
-        this.tests = new VisualSourceRootsSupport((EjbJarProject)ejbJarProperties.getProject(),this.testRoots,this.addTestRoot,
-                this.removeTestRoot, this.upTestRoot, this.downTestRoot,
-                NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInSources"));
-        this.sources.setRelatedVisualSourceRootsSupport(this.tests);
-        this.tests.setRelatedVisualSourceRootsSupport(this.sources);
-    }
-
-    public void initValues() {
-        FileObject projectFolder = j2seProperties.getProject().getProjectDirectory();
+        jScrollPane1.getViewport().setBackground( sourceRoots.getBackground() );
+        jScrollPane2.getViewport().setBackground( testRoots.getBackground() );
+        
+        sourceRoots.setModel( uiProperties.SOURCE_ROOTS_MODEL );
+        testRoots.setModel( uiProperties.TEST_ROOTS_MODEL );
+        
+        FileObject projectFolder = uiProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile( projectFolder );
         this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
-        vps.register(this.sources, EjbJarProjectProperties.SOURCE_ROOTS );
-        vps.register(this.tests, EjbJarProjectProperties.TEST_ROOTS );
+        
+        
+        EjbJarSourceRootsUi.EditMediator emSR = EjbJarSourceRootsUi.registerEditMediator(
+            (EjbJarProject)uiProperties.getProject(),
+            sourceRoots,
+            addSourceRoot,
+            removeSourceRoot, 
+            upSourceRoot, 
+            downSourceRoot,
+            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
+            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInTests") );
+        
+        EjbJarSourceRootsUi.EditMediator emTSR = EjbJarSourceRootsUi.registerEditMediator(
+            (EjbJarProject)uiProperties.getProject(),
+            testRoots,
+            addTestRoot,
+            removeTestRoot, 
+            upTestRoot, 
+            downTestRoot,
+            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
+            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInSources"));
+        
+        emSR.setRelatedEditMediator( emTSR );
+        emTSR.setRelatedEditMediator( emSR );
+        this.sourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);        
+        uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener () {
+            public void intervalAdded(ListDataEvent e) {
+                enableSourceLevel ();
+            }
+
+            public void intervalRemoved(ListDataEvent e) {
+                enableSourceLevel ();
+            }
+
+            public void contentsChanged(ListDataEvent e) {
+                enableSourceLevel ();
+            }                                    
+        });
+        enableSourceLevel ();
     }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx (CustomizerSources.class);
     }
     
-    
+    private void enableSourceLevel () {
+        this.sourceLevel.setEnabled(sourceLevel.getItemCount()>0);
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -87,16 +114,19 @@ public class CustomizerSources extends javax.swing.JPanel implements EjbJarCusto
         removeTestRoot = new javax.swing.JButton();
         upTestRoot = new javax.swing.JButton();
         downTestRoot = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        sourceLevel = new javax.swing.JComboBox();
+        jPanel2 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EtchedBorder());
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("MNE_ProjectFolder").charAt(0));
         jLabel1.setLabelFor(projectLocation);
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("CTL_ProjectFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jLabel1, gridBagConstraints);
 
         projectLocation.setEditable(false);
@@ -105,7 +135,6 @@ public class CustomizerSources extends javax.swing.JPanel implements EjbJarCusto
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(projectLocation, gridBagConstraints);
 
         sourceRootsPanel.setLayout(new java.awt.GridBagLayout());
@@ -209,7 +238,7 @@ public class CustomizerSources extends javax.swing.JPanel implements EjbJarCusto
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.45;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(sourceRootsPanel, gridBagConstraints);
 
         testRootsPanel.setLayout(new java.awt.GridBagLayout());
@@ -311,13 +340,48 @@ public class CustomizerSources extends javax.swing.JPanel implements EjbJarCusto
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.45;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(testRootsPanel, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("MNE_SourceLevel").charAt(0));
+        jLabel4.setLabelFor(sourceLevel);
+        jLabel4.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("TXT_SourceLevel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        jPanel1.add(jLabel4, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.75;
+        jPanel1.add(sourceLevel, gridBagConstraints);
+        sourceLevel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("AN_SourceLevel"));
+        sourceLevel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("AD_SourceLevel"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jPanel2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(jPanel1, gridBagConstraints);
 
     }//GEN-END:initComponents
     
@@ -330,11 +394,15 @@ public class CustomizerSources extends javax.swing.JPanel implements EjbJarCusto
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField projectLocation;
     private javax.swing.JButton removeSourceRoot;
     private javax.swing.JButton removeTestRoot;
+    private javax.swing.JComboBox sourceLevel;
     private javax.swing.JTable sourceRoots;
     private javax.swing.JPanel sourceRootsPanel;
     private javax.swing.JTable testRoots;

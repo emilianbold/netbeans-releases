@@ -69,13 +69,15 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
+import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.AntArtifactChooser;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarClassPathUi;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.LibrariesChooser;
+
 
 
 
@@ -94,7 +96,6 @@ public final class LibrariesNode extends AbstractNode {
     private final String displayName;
     private final Action[] librariesNodeActions;
 
-
     /**
      * Creates new LibrariesNode named displayName displaying classPathProperty classpath
      * and optionaly Java platform.
@@ -111,8 +112,8 @@ public final class LibrariesNode extends AbstractNode {
      */
     public LibrariesNode (String displayName, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty,
-                   Action[] librariesNodeActions) {
-        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, j2eePlatformProperty, platformProperty));
+                   Action[] librariesNodeActions, String includedLibrariesElement) {
+        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, j2eePlatformProperty, platformProperty, includedLibrariesElement));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
         this.setIconBase(ICON);
@@ -135,16 +136,16 @@ public final class LibrariesNode extends AbstractNode {
     }
 
     //Static Action Factory Methods
-    public static Action createAddProjectAction (Project p, String classPathId) {
-        return new AddProjectAction (p, classPathId);
+    public static Action createAddProjectAction (Project p, String classPathId, String includedLibrariesElement) {
+        return new AddProjectAction (p, classPathId, includedLibrariesElement);
     }
 
-    public static Action createAddLibraryAction (Project p, AntProjectHelper helper, String classPathId) {
-        return new AddLibraryAction (p, helper, classPathId);
+    public static Action createAddLibraryAction (Project p, AntProjectHelper helper, String classPathId, String includedLibrariesElement) {
+        return new AddLibraryAction (p, helper, classPathId, includedLibrariesElement);
     }
 
-    public static Action createAddFolderAction (Project p, String classPathId) {
-        return new AddFolderAction (p, classPathId);
+    public static Action createAddFolderAction (Project p, String classPathId, String includedLibrariesElement) {
+        return new AddFolderAction (p, classPathId, includedLibrariesElement);
     }
     
     /**
@@ -198,6 +199,7 @@ public final class LibrariesNode extends AbstractNode {
         private final String platformProperty;
         private final String j2eePlatformProperty;
         private final Set classPathIgnoreRef;
+        private final String includedLibrariesElement;
 
         //XXX: Workaround: classpath is used only to listen on non existent files.
         // This should be removed when there will be API for it
@@ -206,7 +208,8 @@ public final class LibrariesNode extends AbstractNode {
 
 
         LibrariesChildren (PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
-                           String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty) {
+                           String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty, 
+                           String includedLibrariesElement) {
             this.eval = eval;
             this.helper = helper;
             this.refHelper = refHelper;
@@ -214,6 +217,7 @@ public final class LibrariesNode extends AbstractNode {
             this.classPathIgnoreRef = new HashSet(Arrays.asList(classPathIgnoreRef));
             this.platformProperty = platformProperty;
             this.j2eePlatformProperty = j2eePlatformProperty;
+            this.includedLibrariesElement = includedLibrariesElement;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -261,11 +265,11 @@ public final class LibrariesNode extends AbstractNode {
                         break;
                     case Key.TYPE_PROJECT:
                         result = new Node[] {new ProjectNode(key.getProject(), helper, eval, refHelper, key.getClassPathId(),
-                            key.getEntryId())};
+                            key.getEntryId(), includedLibrariesElement)};
                         break;
                     case Key.TYPE_LIBRARY:
                         result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, eval, refHelper, key.getClassPathId(), key.getEntryId())};
+                            helper, eval, refHelper, key.getClassPathId(), key.getEntryId(), includedLibrariesElement)};
                         break;
                 }
             }
@@ -290,7 +294,7 @@ public final class LibrariesNode extends AbstractNode {
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
             // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
-            ClassPath cp = ClassPathSupport.createClassPath ((URL[])rootsList.toArray(new URL[rootsList.size()]));
+            ClassPath cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath ((URL[])rootsList.toArray(new URL[rootsList.size()]));
             cp.addPropertyChangeListener (this);
             cp.getRoots();
             synchronized (this) {
@@ -366,10 +370,13 @@ public final class LibrariesNode extends AbstractNode {
                 else if (prop.startsWith(FILE_REF_PREFIX)) {
                     //File reference
                     String evaluatedRef = eval.getProperty(propName);
-                    File file = helper.getAntProjectHelper().resolveFile(evaluatedRef);
-                    SourceGroup sg = createFileSourceGroup(file,rootsList);
-                    if (sg !=null) {
-                        result.add (new Key(sg,currentClassPath, propName));
+                    // XXX: hotfix for bunch of issues about NPE from resolveFile() method (#53600, #53688, #53659)
+ 	            if (evaluatedRef != null) {                    
+                        File file = helper.getAntProjectHelper().resolveFile(evaluatedRef);
+                        SourceGroup sg = createFileSourceGroup(file,rootsList);
+                        if (sg !=null) {
+                            result.add (new Key(sg,currentClassPath, propName));
+                        }
                     }
                 }
                 else if (prop.startsWith(REF_PREFIX)) {
@@ -513,26 +520,28 @@ public final class LibrariesNode extends AbstractNode {
 
         private final Project project;
         private final String classPathId;
+        private final String includedLibrariesElement;
 
-        public AddProjectAction (Project project, String classPathId) {
+        public AddProjectAction (Project project, String classPathId, String includedLibrariesElement) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddProject_Action" ) );
             this.project = project;
             this.classPathId = classPathId;
+            this.includedLibrariesElement = includedLibrariesElement;
         }
 
         public void actionPerformed(ActionEvent e) {
-            AntArtifact artifacts[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project);
-                if ( artifacts != null ) {
-                    addArtifacts( artifacts );
+            AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project);
+                if ( artifactItems != null ) {
+                    addArtifacts( artifactItems );
                 }
         }
 
-        private void addArtifacts (AntArtifact[] artifacts) {
+        private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
             EjbJarProjectClassPathExtender cpExtender = (EjbJarProjectClassPathExtender) project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
             if (cpExtender != null) {
-                for (int i=0; i<artifacts.length;i++) {
+                for (int i=0; i<artifactItems.length;i++) {
                     try {
-                        cpExtender.addAntArtifact(classPathId, artifacts[i]);
+                        cpExtender.addAntArtifact(classPathId, artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI(), includedLibrariesElement );
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }
@@ -549,35 +558,31 @@ public final class LibrariesNode extends AbstractNode {
         private final Project project;
         private final AntProjectHelper helper;
         private final String classPathId;
+        private final String includedLibrariesElement;
 
-        public AddLibraryAction (Project project, AntProjectHelper helper, String classPathId) {
+        public AddLibraryAction (Project project, AntProjectHelper helper, String classPathId, String includedLibrariesElement) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddLibrary_Action" ) );
             this.project = project;
             this.helper = helper;
             this.classPathId = classPathId;
+            this.includedLibrariesElement = includedLibrariesElement;
         }
 
         public void actionPerformed(ActionEvent e) {
-            final JButton btnAddLibraries = new JButton (NbBundle.getMessage (LibrariesNode.class,"LBL_AddLibrary"));
             Object[] options = new Object[] {
-                btnAddLibraries,
+                new JButton (NbBundle.getMessage (EjbJarClassPathUi.class,"LBL_AddLibrary")),
                 DialogDescriptor.CANCEL_OPTION
             };
-            btnAddLibraries.setEnabled(true);
-            btnAddLibraries.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (LibrariesNode.class,"AD_AddLibrary"));
-            final LibrariesChooser panel = new LibrariesChooser ();
-            DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( LibrariesNode.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
+            ((JButton)options[0]).setEnabled(false);
+            ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (EjbJarClassPathUi.class,"AD_AddLibrary"));
+            // TODO: AB: replace EMPTY_SET with the set of already added libraries
+            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], Collections.EMPTY_SET);
+            DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( EjbJarClassPathUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
+                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-            // TODO: implement addListSelectionListener
-            /*panel.addListSelectionListener(new ListSelectionListener() {
-                public void valueChanged(ListSelectionEvent e) {
-                    btnAddLibraries.setEnabled(panel.isValidSelection());
-                }
-            });*/
             dlg.setVisible(true);
-            if (desc.getValue() == btnAddLibraries) {
-                addLibraries (panel.getSelectedLibraries());
+            if (desc.getValue() == options[0]) {
+                addLibraries(panel.getSelectedLibraries());
             }
             dlg.dispose();
         }
@@ -587,7 +592,7 @@ public final class LibrariesNode extends AbstractNode {
             if (cpExtender != null) {
                 for (int i=0; i<libraries.length;i++) {
                     try {
-                        cpExtender.addLibrary(classPathId, libraries[i]);
+                        cpExtender.addLibrary(classPathId, libraries[i], includedLibrariesElement);
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }
@@ -603,11 +608,13 @@ public final class LibrariesNode extends AbstractNode {
 
         private final Project project;
         private final String classPathId;
+        private final String includedLibrariesElement;
 
-        public AddFolderAction (Project project, String classPathId) {
+        public AddFolderAction (Project project, String classPathId, String includedLibrariesElement) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddFolder_Action" ) );
             this.project = project;
             this.classPathId = classPathId;
+            this.includedLibrariesElement = includedLibrariesElement;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -638,7 +645,7 @@ public final class LibrariesNode extends AbstractNode {
                     try {
                         FileObject fo = FileUtil.toFileObject (files[i]);
                         assert fo != null : files[i];
-                        cpExtender.addArchiveFile(classPathId, fo);
+                        cpExtender.addArchiveFile(classPathId, fo, includedLibrariesElement);
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }
@@ -650,7 +657,7 @@ public final class LibrariesNode extends AbstractNode {
         }
 
     }
-
+    
     private static class SimpleFileFilter extends FileFilter {
 
         private String description;

@@ -161,7 +161,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
 
         protected Node[] createNodes(Object key) {
             SourceGroup sg = (SourceGroup) key;
-            return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null, null, null, null, null)};
+            return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null, null, null, null, null, null)};
         }
 
         private List getKeys () {

@@ -7,43 +7,65 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
+import java.awt.*;
+import javax.swing.ButtonModel;
+import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.text.Document;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 
-public class CustomizerCompile extends javax.swing.JPanel implements EjbJarCustomizer.Panel {
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.HelpCtx;
 
-    private VisualPropertySupport vps;
-    private VisualClasspathSupport vcs;
-    
-    /** Creates new form CustomizerCompile */
-    public CustomizerCompile(EjbJarProjectProperties webProperties) {
-        initComponents();
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerCompile.class, "ACS_CustomizeCompile_A11YDesc")); //NOI18N
+/**
+ *
+ * @author  phrebejk
+ */
+public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
+
         
-        vps = new VisualPropertySupport(webProperties);
-        vcs = new VisualClasspathSupport(
-            webProperties.getProject(),
-            jTableClasspath,
-            jButtonAddJar,
-            jButtonAddLibrary,
-            jButtonAddProject,
-            jButtonEdit,
-            jButtonRemove,
-            jButtonMoveUp,
-            jButtonMoveDown);
+    public CustomizerCompile( EjbJarProjectProperties uiProperties ) {
+        initComponents();
+                
+        jCheckBoxDeprecation.setModel( uiProperties.JAVAC_DEPRECATION_MODEL );
+        jCheckBoxDebugInfo.setModel( uiProperties.JAVAC_DEBUG_MODEL );
+        additionalJavacParamsJTextField.setDocument( uiProperties.JAVAC_COMPILER_ARG_MODEL );                 
+        
     }
 
-    public void initValues() {
-        vps.register(jCheckBoxDebugInfo, EjbJarProjectProperties.JAVAC_DEBUG);
-        vps.register(jCheckBoxDeprecation, EjbJarProjectProperties.JAVAC_DEPRECATION);
-        vps.register(vcs, EjbJarProjectProperties.JAVAC_CLASSPATH);
-        vps.register(compilerOptions, EjbJarProjectProperties.JAVAC_ARGS);
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( CustomizerCompile.class );
     }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -55,205 +77,73 @@ public class CustomizerCompile extends javax.swing.JPanel implements EjbJarCusto
 
         jCheckBoxDebugInfo = new javax.swing.JCheckBox();
         jCheckBoxDeprecation = new javax.swing.JCheckBox();
-        jPanel2 = new javax.swing.JPanel();
-        jLabelClasspath = new javax.swing.JLabel();
-        jScrollClasspath = new javax.swing.JScrollPane();
-        jTableClasspath = new javax.swing.JTable();
-        jButtonAddJar = new javax.swing.JButton();
-        jButtonAddLibrary = new javax.swing.JButton();
-        jButtonAddProject = new javax.swing.JButton();
-        jButtonRemove = new javax.swing.JButton();
-        jButtonMoveUp = new javax.swing.JButton();
-        jButtonMoveDown = new javax.swing.JButton();
-        jButtonEdit = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        compilerOptions = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        additionalJavacParamsJLabel = new javax.swing.JLabel();
+        additionalJavacParamsJTextField = new javax.swing.JTextField();
+        additionalJavacParamsExampleJLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.EtchedBorder(), new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12))));
-        jCheckBoxDebugInfo.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Debugging_LabelMnemonic").charAt(0));
-        jCheckBoxDebugInfo.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDebugInfo, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox"));
         jCheckBoxDebugInfo.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jCheckBoxDebugInfo, gridBagConstraints);
-        jCheckBoxDebugInfo.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("ACS_CustomizeCompile_Debugging__A11YDesc"));
+        jCheckBoxDebugInfo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jCheckBoxDebugInfo"));
 
-        jCheckBoxDeprecation.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Deprecated_LabelMnemonic").charAt(0));
-        jCheckBoxDeprecation.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeprecation, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox"));
         jCheckBoxDeprecation.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jCheckBoxDeprecation, gridBagConstraints);
-        jCheckBoxDeprecation.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("ACS_CustomizeCompile_Deprecated_A11YDesc"));
+        jCheckBoxDeprecation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jCheckBoxDeprecation"));
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
+        additionalJavacParamsJLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"MNE_AdditionalCompilerOptions").charAt(0));
+        additionalJavacParamsJLabel.setLabelFor(additionalJavacParamsJTextField);
+        additionalJavacParamsJLabel.setText(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"LBL_AdditionalCompilerOptions"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
+        add(additionalJavacParamsJLabel, gridBagConstraints);
 
-        jLabelClasspath.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_CompilationClasspath_LabelMnemonic").charAt(0));
-        jLabelClasspath.setLabelFor(jTableClasspath);
-        jLabelClasspath.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel2.add(jLabelClasspath, gridBagConstraints);
+        add(additionalJavacParamsJTextField, gridBagConstraints);
+        additionalJavacParamsJTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"AD_AdditionalCompilerOptions"));
 
-        jTableClasspath.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-
-            }
-        ));
-        jScrollClasspath.setViewportView(jTableClasspath);
-        jTableClasspath.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("ACS_CustomizeCompile_CompilationClasspath_A11YDesc"));
-
+        additionalJavacParamsExampleJLabel.setText(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"LBL_AdditionalCompilerOptionsExample"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        jPanel2.add(jScrollClasspath, gridBagConstraints);
-
-        jButtonAddJar.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_AddJAR_LabelMnemonic").charAt(0));
-        jButtonAddJar.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_AddJar_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        jPanel2.add(jButtonAddJar, gridBagConstraints);
-        jButtonAddJar.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("ACS_CustomizeCompile_AddJAR_A11YDesc"));
-
-        jButtonAddLibrary.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_AddLibrary_LabelMnemonic").charAt(0));
-        jButtonAddLibrary.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_AddLibrary_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel2.add(jButtonAddLibrary, gridBagConstraints);
-        jButtonAddLibrary.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("ACS_CustomizeCompile_AddLibrary_A11YDesc"));
-
-        jButtonAddProject.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_AddProject_LabelMnemonic").charAt(0));
-        jButtonAddProject.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_AddProject_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel2.add(jButtonAddProject, gridBagConstraints);
-        jButtonAddProject.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("ACS_CustomizeCompile_AddProject_A11YDesc"));
-
-        jButtonRemove.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Remove_LabelMnemonic").charAt(0));
-        jButtonRemove.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_Remove_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        jPanel2.add(jButtonRemove, gridBagConstraints);
-        jButtonRemove.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("ACS_CustomizeCompile_Remove_A11YDesc"));
-
-        jButtonMoveUp.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Up_LabelMnemonic").charAt(0));
-        jButtonMoveUp.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_MoveUp_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel2.add(jButtonMoveUp, gridBagConstraints);
-        jButtonMoveUp.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("ACS_CustomizeCompile_Up_A11YDesc"));
-
-        jButtonMoveDown.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Down_LabelMnemonic").charAt(0));
-        jButtonMoveDown.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_MoveDown_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        jPanel2.add(jButtonMoveDown, gridBagConstraints);
-        jButtonMoveDown.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("ACS_CustomizeCompile_Down_A11YDesc"));
-
-        jButtonEdit.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_EditLibrary_LabelMnemonic").charAt(0));
-        jButtonEdit.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_Edit_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        jPanel2.add(jButtonEdit, gridBagConstraints);
-        jButtonEdit.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("ACS_CustomizeCompile_EditLibrary_A11YDesc"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel2, gridBagConstraints);
-
-        jLabel1.setLabelFor(compilerOptions);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CompilerOptions"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        add(compilerOptions, gridBagConstraints);
-
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("LBL_CompilerOptionExample"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel2, gridBagConstraints);
+        add(additionalJavacParamsExampleJLabel, gridBagConstraints);
 
     }//GEN-END:initComponents
 
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField compilerOptions;
-    private javax.swing.JButton jButtonAddJar;
-    private javax.swing.JButton jButtonAddLibrary;
-    private javax.swing.JButton jButtonAddProject;
-    private javax.swing.JButton jButtonEdit;
-    private javax.swing.JButton jButtonMoveDown;
-    private javax.swing.JButton jButtonMoveUp;
-    private javax.swing.JButton jButtonRemove;
+    private javax.swing.JLabel additionalJavacParamsExampleJLabel;
+    private javax.swing.JLabel additionalJavacParamsJLabel;
+    private javax.swing.JTextField additionalJavacParamsJTextField;
     private javax.swing.JCheckBox jCheckBoxDebugInfo;
     private javax.swing.JCheckBox jCheckBoxDeprecation;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabelClasspath;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollClasspath;
-    private javax.swing.JTable jTableClasspath;
     // End of variables declaration//GEN-END:variables
+
+
 
 }

@@ -15,36 +15,31 @@ package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.openide.util.HelpCtx;
 
 /** Customizer for general project attributes.
  *
  * @author  phrebejk
  */
-public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel {
+public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
     
-    private VisualPropertySupport vps;    
+    private EjbJarProjectProperties j2seProperties = null;
     
-    /** Creates new form CustomizerCompile */
-    public CustomizerJavadoc(EjbJarProjectProperties webProperties) {
-        initComponents();        
+    public CustomizerJavadoc( EjbJarProjectProperties uiProperties ) {
+        initComponents();
+        
+        jCheckBoxPrivate.setModel( uiProperties.JAVADOC_PRIVATE_MODEL );
+        jCheckBoxTree.setModel( uiProperties.JAVADOC_NO_TREE_MODEL );
+        jCheckBoxUsages.setModel( uiProperties.JAVADOC_USE_MODEL );
+        jCheckBoxNavigation.setModel( uiProperties.JAVADOC_NO_NAVBAR_MODEL ); 
+        jCheckBoxIndex.setModel( uiProperties.JAVADOC_NO_INDEX_MODEL ); 
+        jCheckBoxSplitIndex.setModel( uiProperties.JAVADOC_SPLIT_INDEX_MODEL ); 
+        jCheckBoxAuthor.setModel( uiProperties.JAVADOC_AUTHOR_MODEL ); 
+        jCheckBoxVersion.setModel( uiProperties.JAVADOC_VERSION_MODEL );
+        jTextFieldWinTitle.setDocument( uiProperties.JAVADOC_WINDOW_TITLE_MODEL );
+        jCheckBoxPreview.setModel( uiProperties.JAVADOC_PREVIEW_MODEL ); 
+        jTextFieldAddOptions.setDocument( uiProperties.JAVADOC_ADDITIONALPARAM_MODEL );
 
-        vps = new VisualPropertySupport(webProperties);
-    }
-    
-    
-    public void initValues() {
-        vps.register( jCheckBoxPrivate, EjbJarProjectProperties.JAVADOC_PRIVATE );
-        vps.register( jCheckBoxTree, EjbJarProjectProperties.JAVADOC_NO_TREE );
-        vps.register( jCheckBoxUsages, EjbJarProjectProperties.JAVADOC_USE );
-        vps.register( jCheckBoxNavigation, EjbJarProjectProperties.JAVADOC_NO_NAVBAR ); 
-        vps.register( jCheckBoxIndex, EjbJarProjectProperties.JAVADOC_NO_INDEX ); 
-        vps.register( jCheckBoxSplitIndex, EjbJarProjectProperties.JAVADOC_SPLIT_INDEX ); 
-        vps.register( jCheckBoxAuthor, EjbJarProjectProperties.JAVADOC_AUTHOR ); 
-        vps.register( jCheckBoxVersion, EjbJarProjectProperties.JAVADOC_VERSION );
-        vps.register( jTextFieldWinTitle, EjbJarProjectProperties.JAVADOC_WINDOW_TITLE );
-        // vps.register( jTextFieldEncoding, WebProjectProperties.JAVADOC_ENCODING ); 
-        vps.register( jCheckBoxPreview, EjbJarProjectProperties.JAVADOC_PREVIEW ); 
-                
         reenableSplitIndex( null );
         
         // XXX Temporarily removing some controls
@@ -55,9 +50,11 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
         jPanel1.remove( jLabelEncoding );
         jPanel1.remove( jTextFieldEncoding );
         
-        
-    } 
-        
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( CustomizerJavadoc.class );
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -86,11 +83,15 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
         jTextFieldWinTitle = new javax.swing.JTextField();
         jLabelEncoding = new javax.swing.JLabel();
         jTextFieldEncoding = new javax.swing.JTextField();
+        jPanel2 = new javax.swing.JPanel();
+        jLabelAddOptions = new javax.swing.JLabel();
+        jTextFieldAddOptions = new javax.swing.JTextField();
+        jLabelAddOptionsInfo = new javax.swing.JLabel();
         jCheckBoxPreview = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.EtchedBorder(), new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12))));
+        jLabelPackage.setLabelFor(jTextFieldPackage);
         jLabelPackage.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Package_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -102,12 +103,14 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         add(jTextFieldPackage, gridBagConstraints);
+        jTextFieldPackage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jTextFieldPackage"));
 
         jButtonPackage.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Package_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jButtonPackage, gridBagConstraints);
+        jButtonPackage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jButtonPackage"));
 
         jCheckBoxSubpackages.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Subpackages_JCheckBox"));
         jCheckBoxSubpackages.setMargin(new java.awt.Insets(0, 0, 0, 2));
@@ -116,14 +119,16 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jCheckBoxSubpackages, gridBagConstraints);
+        jCheckBoxSubpackages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxSubpackages"));
 
-        jCheckBoxPrivate.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Private_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxPrivate, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Private_JCheckBox"));
         jCheckBoxPrivate.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jCheckBoxPrivate, gridBagConstraints);
+        jCheckBoxPrivate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxPrivate"));
 
         jLabelGenerate.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Generate_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -131,32 +136,36 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jLabelGenerate, gridBagConstraints);
+        jLabelGenerate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jLabelGenerate"));
 
-        jCheckBoxTree.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Tree_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxTree, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Tree_JCheckBox"));
         jCheckBoxTree.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
         add(jCheckBoxTree, gridBagConstraints);
+        jCheckBoxTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxTree"));
 
-        jCheckBoxUsages.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Usages_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxUsages, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Usages_JCheckBox"));
         jCheckBoxUsages.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
         add(jCheckBoxUsages, gridBagConstraints);
+        jCheckBoxUsages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxUsages"));
 
-        jCheckBoxNavigation.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Navigation_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxNavigation, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Navigation_JCheckBox"));
         jCheckBoxNavigation.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
         add(jCheckBoxNavigation, gridBagConstraints);
+        jCheckBoxNavigation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxNavigation"));
 
-        jCheckBoxIndex.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Index_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxIndex, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Index_JCheckBox"));
         jCheckBoxIndex.setMargin(new java.awt.Insets(0, 0, 0, 2));
         jCheckBoxIndex.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -169,14 +178,16 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
         add(jCheckBoxIndex, gridBagConstraints);
+        jCheckBoxIndex.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxIndex"));
 
-        jCheckBoxSplitIndex.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_SplitIndex_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxSplitIndex, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_SplitIndex_JCheckBox"));
         jCheckBoxSplitIndex.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 40, 12, 0);
         add(jCheckBoxSplitIndex, gridBagConstraints);
+        jCheckBoxSplitIndex.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxSplitIndex"));
 
         jLabelTags.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Tags_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -184,26 +195,30 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jLabelTags, gridBagConstraints);
+        jLabelTags.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jLabelTags"));
 
-        jCheckBoxAuthor.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Author_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxAuthor, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Author_JCheckBox"));
         jCheckBoxAuthor.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
         add(jCheckBoxAuthor, gridBagConstraints);
+        jCheckBoxAuthor.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxAuthor"));
 
-        jCheckBoxVersion.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Version_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxVersion, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Version_JCheckBox"));
         jCheckBoxVersion.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 12, 0);
         add(jCheckBoxVersion, gridBagConstraints);
+        jCheckBoxVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxVersion"));
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabelWinTitle.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_WinTitle_JLabel"));
+        jLabelWinTitle.setLabelFor(jTextFieldWinTitle);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelWinTitle, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_WinTitle_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
@@ -215,8 +230,10 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanel1.add(jTextFieldWinTitle, gridBagConstraints);
+        jTextFieldWinTitle.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jTextFieldWinTitle"));
 
         jLabelEncoding.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Encoding_JLabel"));
+        jLabelEncoding.setLabelFor(jTextFieldEncoding);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
@@ -229,14 +246,45 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jTextFieldEncoding, gridBagConstraints);
+        jTextFieldEncoding.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jTextFieldEncoding"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jPanel1, gridBagConstraints);
 
-        jCheckBoxPreview.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Preview_JCheckBox"));
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddOptions, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_AddOptions_JLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel2.add(jLabelAddOptions, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        jPanel2.add(jTextFieldAddOptions, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddOptionsInfo, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_AddOptionsInfo_JLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        jPanel2.add(jLabelAddOptionsInfo, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(jPanel2, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxPreview, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Preview_JCheckBox"));
         jCheckBoxPreview.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -244,6 +292,7 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         add(jCheckBoxPreview, gridBagConstraints);
+        jCheckBoxPreview.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxPreview"));
 
     }//GEN-END:initComponents
 
@@ -264,12 +313,16 @@ public class CustomizerJavadoc extends JPanel implements EjbJarCustomizer.Panel 
     private javax.swing.JCheckBox jCheckBoxTree;
     private javax.swing.JCheckBox jCheckBoxUsages;
     private javax.swing.JCheckBox jCheckBoxVersion;
+    private javax.swing.JLabel jLabelAddOptions;
+    private javax.swing.JLabel jLabelAddOptionsInfo;
     private javax.swing.JLabel jLabelEncoding;
     private javax.swing.JLabel jLabelGenerate;
     private javax.swing.JLabel jLabelPackage;
     private javax.swing.JLabel jLabelTags;
     private javax.swing.JLabel jLabelWinTitle;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JTextField jTextFieldAddOptions;
     private javax.swing.JTextField jTextFieldEncoding;
     private javax.swing.JTextField jTextFieldPackage;
     private javax.swing.JTextField jTextFieldWinTitle;

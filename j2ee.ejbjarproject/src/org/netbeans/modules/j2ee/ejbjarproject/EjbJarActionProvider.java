@@ -30,10 +30,13 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.*;
+import org.openide.util.Mutex;
 import org.netbeans.api.project.ProjectInformation;
 
 import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
@@ -386,10 +389,8 @@ class EjbJarActionProvider implements ActionProvider {
         return false;
     }
     
-    private void setServerInstance(String serverInstanceId) {
-        EjbJarProjectProperties wpp = new EjbJarProjectProperties(project, antProjectHelper, refHelper);
-        wpp.put(EjbJarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceId);
-        wpp.store ();
+    private void setServerInstance(final String serverInstanceId) {
+        EjbJarProjectProperties.setServerInstance(project, antProjectHelper, serverInstanceId);
     }
     
     private FileObject[] findSources(Lookup context) {

@@ -43,8 +43,8 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
+import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.VisualClassPathItem;
 
 
 /**
@@ -75,13 +75,14 @@ class ActionFilterNode extends FilterNode {
      * the node should not have the {@link RemoveClassPathRootAction}
      * @return ActionFilterNode
      */
-    static ActionFilterNode create (Node original, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
+    static ActionFilterNode create (Node original, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, 
+                                    String classPathId, String entryId, String includedLibrariesElement) {
         DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
             Lookups.singleton (new JavadocProvider(root,root)) :
-            Lookups.fixed (new Object[] {new Removable (helper, eval, refHelper, classPathId, entryId),
+            Lookups.fixed (new Object[] {new Removable (helper, eval, refHelper, classPathId, entryId, includedLibrariesElement),
             new JavadocProvider(root,root)})});
         return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
     }
@@ -236,13 +237,22 @@ class ActionFilterNode extends FilterNode {
        private final ReferenceHelper refHelper;
        private final String classPathId;
        private final String entryId;
+       private final String includedLibrariesElement;
+       private final ClassPathSupport cs;
 
-       Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
+       Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String includedLibrariesElement) {
            this.helper = helper;
            this.eval = eval;
            this.refHelper = refHelper;
            this.classPathId = classPathId;
+           this.includedLibrariesElement = includedLibrariesElement;
            this.entryId = entryId;
+           
+            this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
+                                            EjbJarProjectProperties.WELL_KNOWN_PATHS, 
+                                            EjbJarProjectProperties.LIBRARY_PREFIX, 
+                                            EjbJarProjectProperties.LIBRARY_SUFFIX, 
+                                            EjbJarProjectProperties.ANT_ARTIFACT_PREFIX );        
        }
 
 
@@ -264,19 +274,18 @@ class ActionFilterNode extends FilterNode {
                         boolean removed = false;
                         EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         String raw = props.getProperty (classPathId);
-                        EjbJarProjectProperties.PathParser parser = new EjbJarProjectProperties.PathParser ();
-                        List/*VisualClassPathItem*/ resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
+                        List resources = cs.itemsList( raw, includedLibrariesElement );
                         for (Iterator i = resources.iterator(); i.hasNext();) {
-                            VisualClassPathItem item = (VisualClassPathItem)i.next();
-                            if (entryId.equals(EjbJarProjectProperties.getAntPropertyName(item.getRaw()))) {
+                            ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
+                            if (entryId.equals(EjbJarProjectProperties.getAntPropertyName(item.getReference()))) {
                                 i.remove();
                                 removed = true;
                             }
                         }
                         if (removed) {
-                            raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
+                            String[] itemRefs = cs.encodeToStrings(resources.iterator(), includedLibrariesElement);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                            props.put (classPathId, raw);
+                            props.setProperty(classPathId, itemRefs);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                             ProjectManager.getDefault().saveProject(project);
                         }

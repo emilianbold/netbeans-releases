@@ -264,7 +264,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             }
 
             public void actionPerformed(ActionEvent e) {
-                BrokenServerSupport.showCustomizer(project.getEjbJarProjectProperties());
+                BrokenServerSupport.showCustomizer(project, helper);
                 checkMissingServer();
             }
 
@@ -287,7 +287,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
 
             private void checkMissingServer() {
                 boolean old = brokenServer;
-                String servInstID = (String)project.getEjbJarProjectProperties().get(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+                String servInstID = EjbJarProjectProperties.getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE, helper, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                 brokenServer = BrokenServerSupport.isBroken(servInstID);
                 if (old != brokenServer) {
                     fireIconChange();

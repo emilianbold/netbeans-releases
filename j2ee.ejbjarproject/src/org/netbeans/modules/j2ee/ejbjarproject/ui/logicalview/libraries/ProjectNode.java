@@ -52,8 +52,8 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 
 
@@ -72,11 +72,11 @@ class ProjectNode extends AbstractNode {
     private final Project project;
     private Image cachedIcon;
 
-    ProjectNode (Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
+    ProjectNode (Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String includedLibrariesElement) {
         super (Children.LEAF, Lookups.fixed(new Object[] {
             project,
             new JavadocProvider(project),
-            new Removable(helper, eval, refHelper, classPathId, entryId)}));
+            new Removable(helper, eval, refHelper, classPathId, entryId, includedLibrariesElement)}));
         this.project = project;
     }
 
@@ -236,13 +236,22 @@ class ProjectNode extends AbstractNode {
         private final ReferenceHelper refHelper;
         private final String classPathId;
         private final String entryId;
+        private final String includedLibrariesElement;
+        private final ClassPathSupport cs;
 
-        Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
+        Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String includedLibrariesElement) {
             this.helper = helper;
             this.eval = eval;
             this.refHelper = refHelper;
             this.classPathId = classPathId;
             this.entryId = entryId;
+            this.includedLibrariesElement = includedLibrariesElement;
+            
+            this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
+                                            EjbJarProjectProperties.WELL_KNOWN_PATHS, 
+                                            EjbJarProjectProperties.LIBRARY_PREFIX, 
+                                            EjbJarProjectProperties.LIBRARY_SUFFIX, 
+                                            EjbJarProjectProperties.ANT_ARTIFACT_PREFIX );        
         }
 
         public boolean canRemove () {
@@ -265,19 +274,18 @@ class ProjectNode extends AbstractNode {
                                 boolean removed = false;
                                 EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 String raw = props.getProperty (classPathId);
-                                EjbJarProjectProperties.PathParser parser = new EjbJarProjectProperties.PathParser ();
-                                List/*VisualClassPathItem*/ resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
+                                List resources = cs.itemsList(raw, includedLibrariesElement);
                                 for (Iterator i = resources.iterator(); i.hasNext();) {
-                                    VisualClassPathItem item = (VisualClassPathItem)i.next();
-                                    if (entryId.equals(EjbJarProjectProperties.getAntPropertyName(item.getRaw()))) {
+                                    ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
+                                    if (entryId.equals(EjbJarProjectProperties.getAntPropertyName(item.getReference()))) {
                                         i.remove();
                                         removed = true;
                                     }
                                 }
                                 if (removed) {
-                                    raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
+                                    String[] itemRefs = cs.encodeToStrings(resources.iterator(), includedLibrariesElement);
                                     props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                                    props.put (classPathId, raw);
+                                    props.setProperty(classPathId, itemRefs);
                                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                     
                                     String ref = "${" + entryId + "}"; //NOI18N

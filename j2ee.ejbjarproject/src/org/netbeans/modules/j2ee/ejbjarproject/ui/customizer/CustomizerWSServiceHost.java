@@ -46,7 +46,7 @@ import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
  *
  * @author Peter Williams
  */
-public class CustomizerWSServiceHost extends javax.swing.JPanel implements EjbJarCustomizer.Panel, EjbJarCustomizer.ValidatingPanel, PropertyChangeListener {
+public class CustomizerWSServiceHost extends javax.swing.JPanel implements PropertyChangeListener {
     
     private EjbJarProjectProperties ejbJarProperties;
     private WsCompileEditorSupport.Panel wsCompileEditor;
@@ -54,11 +54,15 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements EjbJa
     private List serviceSettings;
     
     public CustomizerWSServiceHost(EjbJarProjectProperties ejbJarProperties, List serviceSettings) {
+        assert serviceSettings != null;
         initComponents();
 
         this.ejbJarProperties = ejbJarProperties;
         this.wsCompileEditor = null;
         this.serviceSettings = serviceSettings;
+        
+        if (serviceSettings.size() > 0)
+            initValues();
     }
     
     /** This method is called from within the constructor to
@@ -103,26 +107,16 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements EjbJa
         wsCompileEditor.initValues(serviceSettings, WsCompileEditorSupport.TYPE_SERVICE);
     }   
     
-    public void validatePanel() throws WizardValidationException {
+    /*public void validatePanel() throws WizardValidationException {
         if(wsCompileEditor != null) {
             wsCompileEditor.validatePanel();
         }
-    }
+    }*/
     
     public void propertyChange(PropertyChangeEvent evt) {
+        System.out.println("Prop change");
         WsCompileEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileEditorSupport.FeatureDescriptor) evt.getNewValue();
         String propertyName = "wscompile.service." + newFeatureDesc.getServiceName() + ".features";
-        ensurePropertyExists(propertyName, newFeatureDesc.getFeatures());
-        ejbJarProperties.put(propertyName, newFeatureDesc.getFeatures());
-    }
-    
-    private void ensurePropertyExists(String propertyName, String features) {
-        if(ejbJarProperties.get(propertyName) == null) {
-            EjbJarProjectProperties.PropertyDescriptor propertyDescriptor = new EjbJarProjectProperties.PropertyDescriptor(
-                propertyName, AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.STRING_PARSER);
-            EjbJarProjectProperties.PropertyInfo propertyInfo = 
-                ejbJarProperties.new PropertyInfo(propertyDescriptor, features, features);
-            ejbJarProperties.initProperty(propertyName, propertyInfo);
-        }
+        ejbJarProperties.putAdditionalProperty(propertyName, newFeatureDesc.getFeatures());
     }
 }
