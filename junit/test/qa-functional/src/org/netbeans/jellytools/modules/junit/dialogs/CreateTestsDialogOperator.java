@@ -14,9 +14,9 @@
 package org.netbeans.jellytools.modules.junit.dialogs;
 
 import java.io.PrintStream;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
 
 /** Class implementing all necessary methods for handling "Create Tests" NbDialog.
  *
@@ -28,17 +28,15 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
     /** Creates new CreateTestsDialogOperator that can handle it.
      */
     public CreateTestsDialogOperator() {
-        super("Create Tests");
+        super(Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.Title"));
     }
 
     private JLabelOperator _lblFileSystem;
     private JComboBoxOperator _cboFileSystem;
-    public static final String ITEM_NOFILESYSTEMSELECTED = "(no file system selected)";
-    private JLabelOperator _lblSuiteClass;
+    private JLabelOperator _lblSuiteClassTemplate;
     private JLabelOperator _lblTestClass;
-    private JComboBoxOperator _cboSuiteClass;
+    private JComboBoxOperator _cboSuiteClassTemplate;
     public static final String ITEM_SIMPLEJUNITTEST = "SimpleJUnitTest";
-    public static final String ITEM_SIMPLENBJUNITTEST = "SimpleNbJUnitTest";
     private JComboBoxOperator _cboTestClass;
     private JCheckBoxOperator _cbPublicMethods;
     private JCheckBoxOperator _cbProtectedMethods;
@@ -48,7 +46,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
     private JCheckBoxOperator _cbJavaDoc;
     private JCheckBoxOperator _cbIncludeExceptionClasses;
     private JCheckBoxOperator _cbIncludeAbstractClasses;
-    private JCheckBoxOperator _cbRegenerateSuiteMethod;
+    private JCheckBoxOperator _cbGenerateSuites;
     private JCheckBoxOperator _cbIncludePackagePrivateClasses;
     private JCheckBoxOperator _cbShowCreateTestsConfigurationDialog;
 
@@ -62,7 +60,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JLabelOperator lblFileSystem() {
         if (_lblFileSystem==null) {
-            _lblFileSystem = new JLabelOperator(this, "File System:");
+            _lblFileSystem = new JLabelOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.lblFileSystem.text"));
         }
         return _lblFileSystem;
     }
@@ -77,14 +75,14 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
         return _cboFileSystem;
     }
 
-    /** Tries to find "Suite Class:" JLabel in this dialog.
+    /** Tries to find "Suite Class Template:" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblSuiteClass() {
-        if (_lblSuiteClass==null) {
-            _lblSuiteClass = new JLabelOperator(this, "Suite Class:");
+        if (_lblSuiteClassTemplate==null) {
+            _lblSuiteClassTemplate = new JLabelOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.lblSuiteClass.text"));
         }
-        return _lblSuiteClass;
+        return _lblSuiteClassTemplate;
     }
 
     /** Tries to find "Test Class:" JLabel in this dialog.
@@ -92,7 +90,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JLabelOperator lblTestClass() {
         if (_lblTestClass==null) {
-            _lblTestClass = new JLabelOperator(this, "Test Class:");
+            _lblTestClass = new JLabelOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.lblTestClass.text"));
         }
         return _lblTestClass;
     }
@@ -101,10 +99,10 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboSuiteClass() {
-        if (_cboSuiteClass==null) {
-            _cboSuiteClass = new JComboBoxOperator(this, 1);
+        if (_cboSuiteClassTemplate==null) {
+            _cboSuiteClassTemplate = new JComboBoxOperator(this, 1);
         }
-        return _cboSuiteClass;
+        return _cboSuiteClassTemplate;
     }
 
     /** Tries to find null JComboBox in this dialog.
@@ -122,7 +120,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JCheckBoxOperator cbPublicMethods() {
         if (_cbPublicMethods==null) {
-            _cbPublicMethods = new JCheckBoxOperator(this, " Public Methods");
+            _cbPublicMethods = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkPublic.text"));
         }
         return _cbPublicMethods;
     }
@@ -132,7 +130,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JCheckBoxOperator cbProtectedMethods() {
         if (_cbProtectedMethods==null) {
-            _cbProtectedMethods = new JCheckBoxOperator(this, " Protected Methods");
+            _cbProtectedMethods = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkProtected.text"));
         }
         return _cbProtectedMethods;
     }
@@ -142,7 +140,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JCheckBoxOperator cbPackageMethods() {
         if (_cbPackageMethods==null) {
-            _cbPackageMethods = new JCheckBoxOperator(this, " Package Methods");
+            _cbPackageMethods = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkPackage.text"));
         }
         return _cbPackageMethods;
     }
@@ -152,7 +150,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JCheckBoxOperator cbComments() {
         if (_cbComments==null) {
-            _cbComments = new JCheckBoxOperator(this, " Comments");
+            _cbComments = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkComments.text"));
         }
         return _cbComments;
     }
@@ -162,7 +160,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JCheckBoxOperator cbDefaultBodies() {
         if (_cbDefaultBodies==null) {
-            _cbDefaultBodies = new JCheckBoxOperator(this, " Default Bodies");
+            _cbDefaultBodies = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkContent.text"));
         }
         return _cbDefaultBodies;
     }
@@ -172,7 +170,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JCheckBoxOperator cbJavaDoc() {
         if (_cbJavaDoc==null) {
-            _cbJavaDoc = new JCheckBoxOperator(this, " JavaDoc");
+            _cbJavaDoc = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkJavaDoc.text"));
         }
         return _cbJavaDoc;
     }
@@ -182,7 +180,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JCheckBoxOperator cbIncludeExceptionClasses() {
         if (_cbIncludeExceptionClasses==null) {
-            _cbIncludeExceptionClasses = new JCheckBoxOperator(this, " Include Exception Classes");
+            _cbIncludeExceptionClasses = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkExceptions.text"));
         }
         return _cbIncludeExceptionClasses;
     }
@@ -192,19 +190,19 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JCheckBoxOperator cbIncludeAbstractClasses() {
         if (_cbIncludeAbstractClasses==null) {
-            _cbIncludeAbstractClasses = new JCheckBoxOperator(this, " Include Abstract Classes");
+            _cbIncludeAbstractClasses = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkAbstractImpl.text"));
         }
         return _cbIncludeAbstractClasses;
     }
 
-    /** Tries to find " Regenerate Suite Method" JCheckBox in this dialog.
+    /** Tries to find " Generate Suites" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
-    public JCheckBoxOperator cbRegenerateSuiteMethod() {
-        if (_cbRegenerateSuiteMethod==null) {
-            _cbRegenerateSuiteMethod = new JCheckBoxOperator(this, " Regenerate Suite Method");
+    public JCheckBoxOperator cbGenerateSuites() {
+        if (_cbGenerateSuites==null) {
+            _cbGenerateSuites = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkGenerateSuites.text"));
         }
-        return _cbRegenerateSuiteMethod;
+        return _cbGenerateSuites;
     }
 
     /** Tries to find " Include Package Private Classes" JCheckBox in this dialog.
@@ -212,7 +210,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JCheckBoxOperator cbIncludePackagePrivateClasses() {
         if (_cbIncludePackagePrivateClasses==null) {
-            _cbIncludePackagePrivateClasses = new JCheckBoxOperator(this, " Include Package Private Classes");
+            _cbIncludePackagePrivateClasses = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkPackagePrivateClasses.text"));
         }
         return _cbIncludePackagePrivateClasses;
     }
@@ -222,7 +220,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
      */
     public JCheckBoxOperator cbShowCreateTestsConfigurationDialog() {
         if (_cbShowCreateTestsConfigurationDialog==null) {
-            _cbShowCreateTestsConfigurationDialog = new JCheckBoxOperator(this, " Show Create Tests Configuration Dialog");
+            _cbShowCreateTestsConfigurationDialog = new JCheckBoxOperator(this, Bundle.getString("org/netbeans/modules/junit/Bundle", "JUnitCfgOfCreate.chkEnabled.text"));
         }
         return _cbShowCreateTestsConfigurationDialog;
     }
@@ -253,21 +251,21 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
         cboFileSystem().typeText(text);
     }
 
-    /** returns selected item for cboSuiteClass
+    /** returns selected item for cboSuiteClassTemplate
      * @return String item
      */
     public String getSelectedSuiteClass() {
         return cboSuiteClass().getSelectedItem().toString();
     }
 
-    /** selects item for cboSuiteClass
+    /** selects item for cboSuiteClassTemplate
      * @param item String item
      */
     public void selectSuiteClass(String item) {
         cboSuiteClass().selectItem(item);
     }
 
-    /** types text for cboSuiteClass
+    /** types text for cboSuiteClassTemplate
      * @param text String text
      */
     public void typeSuiteClass(String text) {
@@ -370,9 +368,9 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
-    public void checkRegenerateSuiteMethod(boolean state) {
-        if (cbRegenerateSuiteMethod().isSelected()!=state) {
-            cbRegenerateSuiteMethod().push();
+    public void checkGenerateSuites(boolean state) {
+        if (cbGenerateSuites().isSelected()!=state) {
+            cbGenerateSuites().push();
         }
     }
 
@@ -416,7 +414,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
         cbJavaDoc();
         cbIncludeExceptionClasses();
         cbIncludeAbstractClasses();
-        cbRegenerateSuiteMethod();
+        cbGenerateSuites();
         cbIncludePackagePrivateClasses();
         cbShowCreateTestsConfigurationDialog();
     }
@@ -428,7 +426,7 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
         new CreateTestsDialogOperator().verify();
         System.out.println("CreateTestsDialogOperator verification finished.");
     }
-    
+
     public void dumpAll (PrintStream out, String fs) {
         Object o = cboFileSystem().getSelectedItem();
         String str = (o != null) ? o.toString () : "<NULL_VALUE>";
@@ -446,8 +444,8 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
         out.println ("Comments: " + cbComments().isSelected());
         out.println ("JavaDoc: " + cbJavaDoc().isSelected());
         out.println ("DefaultBodies: " + cbDefaultBodies().isSelected());
-        out.println ("RegenerateSuite: " + cbRegenerateSuiteMethod().isSelected());
+        out.println ("GenerateSuites: " + cbGenerateSuites().isSelected());
         out.println ("ShowDialog: " + cbShowCreateTestsConfigurationDialog().isSelected());
     }
-}
 
+}
