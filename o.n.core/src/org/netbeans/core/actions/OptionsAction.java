@@ -73,9 +73,20 @@ public class OptionsAction extends CallableSystemAction {
             m = w.createMode(OptionsPanel.MODE_NAME, singleton.getName(), null);
         }
         m.dockInto(singleton);
-        
-        singleton.open();
-        singleton.requestFocus();
+
+        if (EventQueue.isDispatchThread()) {
+            singleton.open();
+            singleton.requestDefaultFocus();
+        }
+        else {
+            final OptionsPanel optionPanel = singleton;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    optionPanel.open();
+                    optionPanel.requestDefaultFocus();
+                }
+            });
+        }
     }
 
     /** URL to this action.
@@ -103,7 +114,6 @@ public class OptionsAction extends CallableSystemAction {
         private static MessageFormat formatTitle;
 
         public OptionsPanel () {
-            super();
             setRootContext (initRC ());
             // show only name of top component is typical case
             putClientProperty(ModeImpl.NAMING_TYPE, ModeImpl.BOTH_ONLY_COMP_NAME);
@@ -329,12 +339,3 @@ public class OptionsAction extends CallableSystemAction {
 
     } // end of inner class OptionsPanel
 }
-
-/*
-* Log
-*  3    Gandalf   1.2         1/12/00  Ales Novak      i18n
-*  2    Gandalf   1.1         12/7/99  David Simonek   top component inner class
-*       made public
-*  1    Gandalf   1.0         12/3/99  David Simonek   
-* $ 
-*/ 
