@@ -181,7 +181,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
         
-        chooser.setPreferredSize( new Dimension( 650, 380 ) );
+        chooser.setPreferredSize( new Dimension( 650, 360 ) );
         
         int option = chooser.showOpenDialog( null ); // Show the chooser
               
