@@ -744,11 +744,6 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
         public void writeExternal (ObjectOutput out) throws IOException {
             super.writeExternal(out);
             out.writeObject(propDataObject);
-
-            // PATCH serialize secondaries this way due to bug (probably jdk1.2 only)
-            // HashSet s contains elements which are referencies to secondary entries
-            HashSet s = (HashSet)propDataObject.secondaryEntries();
-            out.writeObject(s);
         }
 
         /** 
@@ -760,14 +755,6 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             super.readExternal(in);
 
             propDataObject = (PropertiesDataObject)in.readObject();
-            
-            // deserialize secondaries this way see writeExternal
-            try {
-                HashSet s = (HashSet)in.readObject();
-            } catch(OptionalDataException ode) {
-                if(!ode.eof && Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ode.printStackTrace();
-            }
             
             initialize();
         }
