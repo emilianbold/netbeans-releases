@@ -50,6 +50,19 @@ public class DefaultTablePanel extends javax.swing.JPanel {
         this.reordable=reordable;
         initComponents();
 
+        /* accomodate row height so that characters can fit: */
+        java.awt.Component cellSample
+                = jTable1.getDefaultRenderer(String.class)
+                  .getTableCellRendererComponent(
+                          jTable1,          //table
+                          "N/A",            //value                     //NOI18N
+                          false,            //isSelected
+                          false,            //hasFocus
+                          0, 0);            //row, column
+        int cellHeight = cellSample.getPreferredSize().height;
+        int rowHeight = cellHeight + jTable1.getRowMargin();
+        jTable1.setRowHeight(Math.max(16, rowHeight));
+
         jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jTable1.setModel(model);
         javax.swing.table.JTableHeader header = jTable1.getTableHeader();
