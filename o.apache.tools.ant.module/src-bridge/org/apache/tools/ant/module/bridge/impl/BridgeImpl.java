@@ -151,6 +151,9 @@ public class BridgeImpl implements BridgeInterface {
             } else {
                 err.println(be);
             }
+            if (useStatusLine) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_target_failed_status"));
+            }
             return false;
         }
         
