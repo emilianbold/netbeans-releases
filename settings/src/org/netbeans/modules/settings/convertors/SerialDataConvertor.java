@@ -62,7 +62,6 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     private SerialDataConvertor.SettingsInstance instance;
     private SaveSupport saver;
     private ErrorManager err;
-    private PropertyChangeListener moduleInfoListener;
     
     /** Creates a new instance of SDConvertor */
     public SerialDataConvertor(DataObject dobj, FileObject provider) {
@@ -192,9 +191,10 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         // .settings file was changed
         else if (name == SaveSupport.PROP_FILE_CHANGED) {
             miUnInitialized = true;
-            if (mi != null) {
+            if (moduleCodeBase != null) {
+                ModuleInfo mi = ModuleInfoManager.getDefault().getModule(moduleCodeBase);
                 ModuleInfoManager.getDefault().
-                    unregisterPropertyChangeListener(moduleInfoListener, mi);
+                    unregisterPropertyChangeListener(this, mi);
             }
             instanceCookieChanged(null);
         } else if(ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
@@ -208,26 +208,37 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         propertyChange(new PropertyChangeEvent(this, SaveSupport.PROP_FILE_CHANGED, null, null));
     }
     
-    private ModuleInfo mi;
+    private String moduleCodeBase = null;
     private boolean miUnInitialized = true;
     
     private boolean isModuleEnabled(SerialDataConvertor.SettingsInstance si) {
+        ModuleInfo mi = null;
         if (miUnInitialized) {
-            mi = getModuleInfo(si);
+            moduleCodeBase = getModuleCodeNameBase(si);
             miUnInitialized = false;
-            if (mi != null) {
-                moduleInfoListener = WeakListener.propertyChange(this, mi);
-                ModuleInfoManager.getDefault().
-                    registerPropertyChangeListener(moduleInfoListener, mi);
+            if (moduleCodeBase != null) {
+                mi = ModuleInfoManager.getDefault().getModule(moduleCodeBase);
+                if (mi != null) {
+                    ModuleInfoManager.getDefault().
+                        registerPropertyChangeListener(this, mi);
+                } else {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                        "Warning: unknown module code base: " + // NOI18N
+                        moduleCodeBase + " in " +  // NOI18N
+                        getDataObject().getPrimaryFile());
+                }
             }
+        } else {
+            mi = ModuleInfoManager.getDefault().getModule(moduleCodeBase);
         }
+        
         return mi == null || mi.isEnabled();
     }
     
-    private ModuleInfo getModuleInfo(SerialDataConvertor.SettingsInstance si) {
+    private String getModuleCodeNameBase(SerialDataConvertor.SettingsInstance si) {
         try {
             String module = si.getSettings(true).getCodeNameBase();
-            return module == null? null: ModuleInfoManager.getDefault().getModule(module);
+            return module;
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
@@ -338,7 +349,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         
         public boolean instanceOf(Class type) {
             try {
-                if (mi != null && ModuleInfoManager.getDefault().isReloaded(mi) &&
+                if (moduleCodeBase != null && ModuleInfoManager.getDefault().isReloaded(moduleCodeBase) &&
                     type.getClassLoader () != ClassLoader.getSystemClassLoader ()) {
                     // special treatment for classes that could be reloaded
                     Class instanceType = instanceClass ();
