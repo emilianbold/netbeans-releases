@@ -368,7 +368,10 @@ public class TopComponentOperator extends JComponentOperator {
         TopComponent c;
         for (int i=0; i<tc.length; i++) {
             c=(TopComponent)tc[i];
-            if (c.isShowing() && comparator.equals(c.getName(), name) && isUnder(cont, c) && (subchooser==null || subchooser.checkComponent(c))) {
+            if (c.isShowing() && 
+                    (comparator.equals(c.getName(), name) || comparator.equals(c.getDisplayName(), name)) &&
+                    isUnder(cont, c) && 
+                    (subchooser==null || subchooser.checkComponent(c))) {
                 index--;
                 if (index<0)
                     return c;
@@ -376,7 +379,9 @@ public class TopComponentOperator extends JComponentOperator {
         }
         for (int i=0; i<tc.length; i++) {
             c=(TopComponent)tc[i];
-            if ((!c.isShowing()) && isParentShowing(c) && comparator.equals(c.getName(), name) && isUnder(cont, c) && (subchooser==null || subchooser.checkComponent(c))) {
+            if ((!c.isShowing()) && isParentShowing(c) && 
+                    (comparator.equals(c.getName(), name) || comparator.equals(c.getDisplayName(), name)) &&
+                    isUnder(cont, c) && (subchooser==null || subchooser.checkComponent(c))) {
                 index--;
                 if (index<0)
                     return c;
