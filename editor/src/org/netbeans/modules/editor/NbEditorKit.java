@@ -16,6 +16,7 @@ package org.netbeans.modules.editor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,12 +58,16 @@ import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.LocaleSupport;
+import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
+import org.netbeans.modules.editor.options.MacrosEditorPanel;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
 * Java editor kit with appropriate document
@@ -304,21 +309,46 @@ public class NbEditorKit extends ExtKit {
             return ret;
         }
         
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
-            Map oldMacroMap = null;
-            Map oldKBMap = null;
-            if (bo != null){
-                oldMacroMap = bo.getMacroMap();
-                oldKBMap = getKBMap();
+        protected MacroDialogSupport getMacroDialogSupport(Class kitClass){
+            return new NbMacroDialogSupport(kitClass);
+        }
+        
+        
+        private class NbMacroDialogSupport extends MacroDialogSupport{
+            
+            public NbMacroDialogSupport( Class kitClass ) {
+                super(kitClass);
             }
             
-            super.actionPerformed(evt, target);
-            
-            if (bo != null){
-                bo.setMacroDiffMap(OptionUtilities.getMapDiff(oldMacroMap, bo.getMacroMap(), true));
-                bo.setKeyBindingsDiffMap(OptionUtilities.getMapDiff(oldKBMap, getKBMap(), true));
+            public void actionPerformed(ActionEvent evt) {
+                bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
+                Map oldMacroMap = null;
+                Map oldKBMap = null;
+                if (bo != null){
+                    oldMacroMap = bo.getMacroMap();
+                    oldKBMap = getKBMap();
+                }
+
+                super.actionPerformed(evt);
+
+                if (bo != null){
+                    bo.setMacroDiffMap(OptionUtilities.getMapDiff(oldMacroMap, bo.getMacroMap(), true));
+                    bo.setKeyBindingsDiffMap(OptionUtilities.getMapDiff(oldKBMap, getKBMap(), true));
+                }
             }
+            
+            protected int showConfirmDialog(String macroName){
+                NotifyDescriptor confirm = new NotifyDescriptor.Confirmation(
+                MessageFormat.format(
+                NbBundle.getMessage(MacrosEditorPanel.class,"MEP_Overwrite"), //NOI18N
+                new Object[] {macroName}),
+                NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE
+                );
+                org.openide.DialogDisplayer.getDefault().notify(confirm);
+                return ((Integer)confirm.getValue()).intValue();
+            }
+            
         }
         
     }

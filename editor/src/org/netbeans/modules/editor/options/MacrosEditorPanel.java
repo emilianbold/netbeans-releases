@@ -16,6 +16,7 @@ package org.netbeans.modules.editor.options;
 import java.awt.Dialog;
 import java.awt.Window;
 import java.awt.event.*;
+import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -254,7 +255,29 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
 
         if( dd.getValue() == DialogDescriptor.OK_OPTION ) {
             String[] retVal = input.getMacro();
-            if( ! "".equals( retVal[0] )  ) return retVal;  // NOI18N don't allow empty macro
+            if( ! "".equals( retVal[0] )  ) {// NOI18N don't allow empty macro
+                int existingKeyPosition = model.containsKey(retVal[0]);
+                
+                if (existingKeyPosition >= 0){
+                    // ignore if user edits value and doesn't change the key
+                    if ( macro!=null && macro[0].equals(retVal[0]) ) return retVal;
+                    
+                    String[] existingPair = model.getPair(existingKeyPosition);
+                    NotifyDescriptor NDConfirm = new NotifyDescriptor.Confirmation(
+                    MessageFormat.format(
+                    getBundleString("MEP_Overwrite"), //NOI18N
+                    new Object[] {retVal[0]}),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE
+                    );
+                    
+                    org.openide.DialogDisplayer.getDefault().notify(NDConfirm);
+                    if (NDConfirm.getValue()!=NDConfirm.YES_OPTION){
+                        return null;
+                    }
+                }
+                return retVal;
+            }
         }
         return null; // cancel or empty
     }
@@ -333,6 +356,11 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
             String[] retVal = { key, (String)data.get( key ) };
             return retVal;
         }
+        
+        public int containsKey( String key ){
+            return Arrays.binarySearch( keys, key );
+        }
+        
     }
     
 }

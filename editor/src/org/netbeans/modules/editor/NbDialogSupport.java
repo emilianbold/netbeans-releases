@@ -97,7 +97,8 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
                     }
                 },
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
-                JComponent.WHEN_IN_FOCUSED_WINDOW
+                //JComponent.WHEN_IN_FOCUSED_WINDOW
+                JComponent.WHEN_FOCUSED
             );
 
             d.addWindowListener(
