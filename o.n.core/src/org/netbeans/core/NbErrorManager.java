@@ -297,7 +297,7 @@ final class NbErrorManager extends ErrorManager {
     /** Another final class that is used to communicate with
     * NotifyException and provides enough information to the dialog.
     */
-    static final class Exc extends Object {
+    final class Exc extends Object {
         /** the original throwable */
         private Throwable t;
 
@@ -367,24 +367,30 @@ final class NbErrorManager extends ErrorManager {
         * there is no annotation trace then of the exception
         */
         public void printStackTrace (PrintWriter pw) {
+            /*Heaeder */
             pw.print (getDate ());
             pw.print (getClassName ());
             pw.print (": "); // NOI18N
             pw.print (getMessage ());
             pw.println ();
-
-            int cnt = 0;
-
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i].getLocalizedMessage() != null)
-                    pw.println(arr[i].getLocalizedMessage());
-                else if (arr[i].getMessage() != null) pw.println(arr[i].getMessage());
+            
+            /*Annotations */
+          for (int i = 0; i < arr.length; i++) {
+                if (arr[i] == null) continue;
                 
-                if (arr[i].getStackTrace() != null) {
-                    cnt++;                    
-                    arr[i].getStackTrace ().printStackTrace(pw);
-                }
-            }
+                Throwable thr = arr[i].getStackTrace();                
+                String annotation = arr[i].getLocalizedMessage();
+                
+                if (annotation == null) annotation = arr[i].getMessage();
+                if (annotation == null && thr != null) annotation = thr.getLocalizedMessage();
+                if (annotation == null && thr != null) annotation = thr.getMessage();
+                
+                if (annotation != null) {
+                    if (thr != null) pw.println ("Nested annotation: "+annotation);// NOI18N
+                    else pw.println ("Annotation: "+annotation);// NOI18N
+                }                
+            }            
+            
             // ok, print trace of the original exception too
             //t.printStackTrace(pw);
             // Attempt to show an annotation indicating where the exception
@@ -410,10 +416,22 @@ final class NbErrorManager extends ErrorManager {
                 }
                 pw.println (tLines[i]);
             }
+            /*Nested annotations */            
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i] == null) continue;
+                
+                Throwable thr = arr[i].getStackTrace();
+                if (thr != null) {
+                    Annotation[] ans = findAnnotations (thr);
+                    Exc ex = new Exc (thr, 0, ans);
+                    pw.println();
+                    ex.printStackTrace (pw);    
+                }
+            }
         }
 
         /** Get a throwable's stack trace, decomposed into individual lines. */
-        private static String[] decompose (Throwable t) {
+        private  String[] decompose (Throwable t) {
             StringWriter sw = new StringWriter ();
             t.printStackTrace (new PrintWriter (sw));
             StringTokenizer tok = new StringTokenizer (sw.toString (), "\n\r"); // NOI18N
