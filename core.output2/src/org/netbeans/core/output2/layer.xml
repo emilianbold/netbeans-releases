@@ -15,22 +15,11 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="Actions">
-        <folder name="Build">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.output2.Bundle" />        
-            <file name="org-netbeans-core-output2-NextOutJumpAction.instance"/>
-            <file name="org-netbeans-core-output2-PreviousOutJumpAction.instance"/>
-        </folder>
         <folder name="Window">
             <file name="org-netbeans-core-output2-OutputWindowAction.instance"/>
         </folder>
     </folder>
     <folder name="Menu">
-        <folder name="BuildProject">
-            <attr name="Separator4.instance/org-netbeans-core-output2-NextOutJumpAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-output2-NextOutJumpAction.instance"/>
-            <attr name="org-netbeans-core-output2-NextOutJumpAction.instance/org-netbeans-core-output2-PreviousOutJumpAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-output2-PreviousOutJumpAction.instance"/>
-        </folder>
         <folder name="Window">
             <attr name="ViewFavoritesTabAction.shadow/org-netbeans-core-output2-OutputWindowAction.instance" boolvalue="true"/>
             <attr name="org-netbeans-core-output2-OutputWindowAction.instance/ViewRuntimeTabAction.shadow" boolvalue="true"/>
@@ -39,12 +28,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     <folder name="Shortcuts">
-        <file name="F12.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.output2.NextOutJumpAction"/>
-	</file>
-        <file name="S-F12.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.output2.PreviousOutJumpAction"/>
-	</file>
         <file name="D-4.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.core.output2.OutputWindowAction"/>
 	</file>

@@ -67,6 +67,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-NewTemplateAction.instance"/>
             <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
             <file name="org-netbeans-core-actions-RefreshAllFilesystemsAction.instance"/>
+            <file name="org-netbeans-core-actions-JumpNextAction.instance">
+            </file>
+            <file name="org-netbeans-core-actions-JumpPrevAction.instance">
+            </file>
+            
         </folder>
         
         <folder name="View">
@@ -153,6 +158,18 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ReplaceAction.instance"/>
             <attr name="org-openide-actions-ReplaceAction.instance/org-openide-actions-GotoAction.instance" boolvalue="true" />
             <file name="org-openide-actions-GotoAction.instance"/>
+            <attr name="org-openide-actions-GotoAction.instance/Separator3.instance" boolvalue="true" />
+            <file name="Separator3.instance">
+		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	    </file>
+            <attr name="Separator3.instance/org-netbeans-core-actions-JumpNextAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-core-actions-JumpNextAction.shadow" >
+                <attr name="originalFile" stringvalue="/Actions/System/org-netbeans-core-actions-JumpNextAction.instance" />
+            </file>
+            <attr name="org-netbeans-core-actions-JumpNextAction.shadow/org-netbeans-core-actions-JumpPrevAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-core-actions-JumpPrevAction.shadow" >
+                <attr name="originalFile" stringvalue="/Actions/System/org-netbeans-core-actions-JumpPrevAction.instance" />
+            </file>
         </folder>
         
         <attr name="Edit/View" boolvalue="true" />
@@ -337,6 +354,12 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
         <file name="DS-7.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.GlobalPropertiesAction"/>
+	</file>
+        <file name="F12.shadow">
+            <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance" />
+	</file>
+        <file name="S-F12.shadow">
+            <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance" />
 	</file>
     </folder>
     

@@ -100,7 +100,7 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
      * XXX may not be supported - dispose of the default output window instance
      */
     static final int CMD_DETACH = 11;
-
+    
     /**
      * Array of IDs for checking legal values and generating a string representing the event.
      */
@@ -116,7 +116,7 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
         CMD_STREAM_CLOSED,
         CMD_RESET,
         CMD_SET_TOOLBAR_ACTIONS,
-        CMD_DETACH
+        CMD_DETACH,
     };
 
     /**

@@ -16,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.text.DefaultEditorKit;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
 import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
@@ -82,7 +83,7 @@ public class Controller { //XXX public only for debug access to logging code
 
     //Package private for unit tests
     Action copyAction = new ControllerAction (ACTION_COPY,
-            "ACTION_COPY", CopyAction.class); //NOI18N
+            "ACTION_COPY"); //NOI18N
     Action wrapAction = new ControllerAction (ACTION_WRAP,
             "ACTION_WRAP"); //NOI18N
     Action saveAsAction = new ControllerAction (ACTION_SAVEAS,
@@ -90,13 +91,13 @@ public class Controller { //XXX public only for debug access to logging code
     Action closeAction = new ControllerAction (ACTION_CLOSE,
             "ACTION_CLOSE"); //NOI18N
     Action nextErrorAction = new ControllerAction (ACTION_NEXTERROR,
-            "ACTION_NEXT_ERROR", NextOutJumpAction.class); //NOI18N
+            "ACTION_NEXT_ERROR" ); //NOI18N
     Action prevErrorAction = new ControllerAction (ACTION_PREVERROR,
-            "ACTION_PREV_ERROR", PreviousOutJumpAction.class); //NOI18N
+            "ACTION_PREV_ERROR" ); //NOI18N
     Action selectAllAction = new ControllerAction (ACTION_SELECTALL,
             "ACTION_SELECT_ALL"); //NOI18N
     Action findAction = new ControllerAction (ACTION_FIND,
-            "ACTION_FIND", FindAction.class); //NOI18N
+            "ACTION_FIND"); //NOI18N
     Action findNextAction = new ControllerAction (ACTION_FINDNEXT,
             "ACTION_FIND_NEXT"); //NOI18N
     Action findPreviousAction = new ControllerAction (ACTION_FINDPREVIOUS,
@@ -164,6 +165,14 @@ public class Controller { //XXX public only for debug access to logging code
             result = createAndInstallView (win, io);
         }
         if (result != null) {
+            // install handlers to prev/next actions
+            result.getActionMap ().put ("jumpPrev", this.prevErrorAction); // NOI18N
+            result.getActionMap ().put ("jumpNext", this.nextErrorAction); // NOI18N
+            result.getActionMap ().put (FindAction.class.getName (), this.findAction);
+            result.getActionMap ().put (javax.swing.text.DefaultEditorKit.copyAction, this.copyAction);
+        }
+
+        if (result != null) {
             win.setSelectedTab(result);
         }
         if (!activateContainer) {
@@ -171,6 +180,7 @@ public class Controller { //XXX public only for debug access to logging code
         } else {
             win.requestActiveForNewTab();
         }
+        
         return result;
     }
 
@@ -718,18 +728,6 @@ public class Controller { //XXX public only for debug access to logging code
         }
     }
 
-    /**
-     * Messaged when the container is deactivated in the netbeans window system
-     */
-    public void notifyDeactivated() {
-        for (int i=0; i < popupItems.length; i++) {
-            if (popupItems[i] instanceof Action && popupItems[i] != nextErrorAction && popupItems[i] != prevErrorAction) {
-                ((ControllerAction) popupItems[i]).detachPerformer();
-            }
-        }
-    }
-
-    
     private boolean firstF12 = true;
     /**
      * Sends the caret in a tab to the nearest error line to its current position, selecting
@@ -1020,7 +1018,6 @@ public class Controller { //XXX public only for debug access to logging code
                 }
                 break;
             case IOEvent.CMD_SELECT :
-
                 if (tab == null) {
                     tab = createOutputTab(win, io, io.isFocusTaken(), value);
                 }
@@ -1034,7 +1031,6 @@ public class Controller { //XXX public only for debug access to logging code
                         win.add(tab);
                     }
                     win.setSelectedTab(tab);
-                    win.requestVisible();
                     updateName(win,tab);
                 }
                 break;
@@ -1155,7 +1151,6 @@ public class Controller { //XXX public only for debug access to logging code
      */
     private static class ControllerAction extends AbstractAction implements ActionPerformer {
         private int id;
-        private Class callbackActionClass = null;
         /**
          * Create a ControllerAction with the specified action ID (constants defined in Controller),
          * using the specified bundle key.  Expects the following contents in the bundle:
@@ -1213,19 +1208,6 @@ public class Controller { //XXX public only for debug access to logging code
             return Utilities.stringToKey(NbBundle.getMessage(Controller.class, key));
         }
 
-        /**
-         * Create a controller which will also act as the action performer for a
-         * CallbackSystemAction.
-         *
-         * @param id The action ID
-         * @param name The bundle key for the action
-         * @param callbackActionClass
-         */
-        ControllerAction (int id, String name, Class callbackActionClass) {
-            this (id, name);
-            this.callbackActionClass = callbackActionClass;
-        }
-
         public int getID() {
             return id;
         }
@@ -1271,25 +1253,6 @@ public class Controller { //XXX public only for debug access to logging code
          */
         public void setEnabled (boolean val) {
             super.setEnabled(val);
-            if (callbackActionClass != null) {
-                updateActionPerformer();
-            }
-        }
-
-        /**
-         * Update the state of the CallbackAction which is proxying this action.
-         */
-        private void updateActionPerformer() {
-            CallbackSystemAction action = (CallbackSystemAction) SystemAction.get(callbackActionClass);
-            boolean val = isEnabled();
-            if (!val && action.getActionPerformer() == this) {
-                if (log)
-                    log ("Clearing action performer for " + getValue(NAME));
-                action.setActionPerformer(null);
-            } else if( val ) {
-                if (log) log ("Setting action performer for " + getValue(NAME));
-                action.setActionPerformer(this);
-            }
         }
 
         /**
@@ -1304,18 +1267,6 @@ public class Controller { //XXX public only for debug access to logging code
             actionPerformed(ae);
         }
 
-        /**
-         * Resign this action from being the performer for its associated CallbackSystemAction.
-         */
-        public void detachPerformer() {
-            if (callbackActionClass != null) {
-                CallbackSystemAction action = (CallbackSystemAction) SystemAction.get(callbackActionClass);
-                if (action.getActionPerformer() == this) {
-                    if (log) log ("Detaching action performer for " + getValue(NAME));
-                    action.setActionPerformer(null);
-                }
-            }
-        }
     }
 
     /**

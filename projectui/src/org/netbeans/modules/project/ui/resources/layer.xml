@@ -354,7 +354,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
             
-            <attr name="SeparatorCompileSingle.instance/org-netbeans-core-output2-NextOutJumpAction.instance" boolvalue="true" />
+            <attr name="SeparatorCompileSingle.instance/org-netbeans-core-actions-JumpNextAction.shadow" boolvalue="true" />
         </folder>
         
         <attr name="BuildProject/RunProject" boolvalue="true" />        

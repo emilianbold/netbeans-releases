@@ -192,6 +192,8 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         if (pane.getParent() == this && op != pane.getSelectedComponent()) {
             pane.setSelectedComponent(op);
         }
+        
+        getActionMap().setParent (op.getActionMap ());
     }
 
     public void setTabTitle (AbstractOutputTab tab, String name) {

@@ -40,6 +40,24 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
+    <folder name="Menu" >
+        <folder name="Edit" >
+            <file name="Separator3.instance_hidden"  />
+            <file name="org-netbeans-core-actions-JumpNextAction.shadow_hidden" />
+            <file name="org-netbeans-core-actions-JumpPrevAction.shadow_hidden" />
+        </folder>
+        
+        <folder name="BuildProject" >
+            <file name="org-netbeans-core-actions-JumpNextAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance" />
+            </file>
+            <attr name="org-netbeans-core-actions-JumpNextAction.shadow/org-netbeans-core-actions-JumpPrevAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-core-actions-JumpPrevAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance" />
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="UI">
     <!-- settings categories UI presentation -->
         <folder name="Services">

@@ -194,7 +194,6 @@ public class OutputWindow extends AbstractOutputWindow {
         if (Controller.log) Controller.log("ComponentDeactivated");
         super.componentDeactivated();
         activated = false;
-        controller.notifyDeactivated ();
     }
     
     protected void removed(AbstractOutputTab view) {

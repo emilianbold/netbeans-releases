@@ -10,11 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * AbstractOutputTab.java
- *
- * Created on May 14, 2004, 7:58 PM
- */
 
 package org.netbeans.core.output2.ui;
 
