@@ -14,12 +14,15 @@
 package org.netbeans.modules.favorites;
 
 import java.io.File;
+import java.io.IOException;
+
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataShadow;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
@@ -134,12 +137,16 @@ final class Favorites extends FilterNode {
         }
         
         protected Node[] createNodes(Object key) {
-            // strange equals statement due to
-            // bug #28198
-            boolean e = Favorites.getRoot ().equals (key)
-                || key.equals (Favorites.getRoot ());
-            
-            if (e) {
+            InstanceCookie cookie = (InstanceCookie) ((Node) key).getCookie(InstanceCookie.class);
+            Object o = null;
+            if (cookie != null) {
+                try {
+                    o = cookie.instanceCreate();
+                } catch (IOException exc) {
+                } catch (ClassNotFoundException exc) {
+                }
+            }
+            if (o instanceof Repository) {
                 // list all roots
                 File[] roots = File.listRoots();
                 java.util.ArrayList list = new java.util.ArrayList ();
@@ -189,7 +196,7 @@ final class Favorites extends FilterNode {
                 s = s.substring(0, indx) + s.substring (indx + 4);
             }
         }
-
+        
         public boolean canDestroy () {
             boolean canDestroy = super.canDestroy ();
             DataShadow link = (DataShadow) getCookie (DataShadow.class);
