@@ -934,7 +934,7 @@ final class BeanPatternGenerator extends Object {
         if (type instanceof ClassDefinition)
             return type.getName();
         if (!(type instanceof PrimitiveType)) 
-            throw new IllegalStateException("Unknonw type: " + type);
+            throw new IllegalStateException("Unknonw type: " + type); // NOI18N
         
         String typeName = type.getName();
         char[] ctype = typeName.toCharArray();

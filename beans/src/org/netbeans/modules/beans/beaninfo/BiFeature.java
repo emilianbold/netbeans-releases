@@ -862,11 +862,11 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
                     try {
                         sb.append(param.getType().getName());
                     } catch (NullPointerException e) {
-                        ErrorManager.getDefault().annotate(e, "method: " + element);
-                        ErrorManager.getDefault().annotate(e, "i: " + i);
-                        ErrorManager.getDefault().annotate(e, "param: " + param);
+                        ErrorManager.getDefault().annotate(e, "method: " + element); // NOI18N
+                        ErrorManager.getDefault().annotate(e, "i: " + i); // NOI18N
+                        ErrorManager.getDefault().annotate(e, "param: " + param); // NOI18N
                         if (param != null)
-                            ErrorManager.getDefault().annotate(e, "type: " + param.getType());
+                            ErrorManager.getDefault().annotate(e, "type: " + param.getType()); // NOI18N
                         throw e;
                     }
                 }

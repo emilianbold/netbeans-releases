@@ -855,7 +855,7 @@ public class PropertyPattern extends Pattern {
         }
         if ( declaringClass == null ) {
             //System.out.println ("nodecl - gen setter"); // NOI18N
-            throw new IllegalStateException("Missing declaring class");
+            throw new IllegalStateException("Missing declaring class"); // NOI18N
         } else {
             String newFieldName = newField.getName();
             Field f = declaringClass.getField(newFieldName, false);

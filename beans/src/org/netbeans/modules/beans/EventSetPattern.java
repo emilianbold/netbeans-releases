@@ -452,7 +452,7 @@ public final class EventSetPattern extends Pattern {
         assert JMIUtils.isInsideTrans();
         JavaClass declaringClass = getDeclaringClass();
         if ( declaringClass == null )
-            throw new IllegalStateException("Missing declaring class");
+            throw new IllegalStateException("Missing declaring class"); // NOI18N
         
         JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(declaringClass);
         Method newMethod = jmodel.getMethod().createMethod();
@@ -490,7 +490,7 @@ public final class EventSetPattern extends Pattern {
         assert JMIUtils.isInsideTrans();
         JavaClass declaringClass = getDeclaringClass();
         if ( declaringClass == null )
-            throw new IllegalStateException("Missing declaring class");
+            throw new IllegalStateException("Missing declaring class"); // NOI18N
         
         JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(declaringClass);
         Method newMethod = jmodel.getMethod().createMethod();

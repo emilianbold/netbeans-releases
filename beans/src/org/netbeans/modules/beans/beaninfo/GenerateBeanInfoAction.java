@@ -176,7 +176,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
                     try {
                         final JavaClass syntheticClass = biaReference.syntheticClass;
                         if (syntheticClass != null && syntheticClass.isValid()) {
-                            System.out.println("##GBIAction.delete");
+                            System.out.println("##GBIAction.delete"); // NOI18N
                             syntheticClass.refDelete();
                         }
                         rollback = false;
