@@ -30,6 +30,7 @@ import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -38,7 +39,8 @@ import org.netbeans.spi.viewmodel.TreeModel;
 public class ThreadsActionsProvider implements NodeActionsProvider {
 
     private Action MAKE_CURRENT_ACTION = Models.createAction (
-        "Make Current", new Models.ActionPerformer () {
+        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_MakeCurrent_Label"),
+        new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return debugger.getCurrentThread () != node;
             }
@@ -51,7 +53,8 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
     );
 
     private static Action GO_TO_SOURCE_ACTION = Models.createAction (
-        "Go To Source", new Models.ActionPerformer () {
+        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
+        new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return isGoToSourceSupported ((JPDAThread) node);
             }
@@ -70,7 +73,8 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
     );
 
     private Action SUSPEND_ACTION = Models.createAction (
-        "Suspend", new Models.ActionPerformer () {
+        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_Suspend_Label"),
+        new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 if (node instanceof JPDAThread)
                     return !((JPDAThread) node).isSuspended ();
@@ -91,7 +95,8 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
     );
 
     private Action RESUME_ACTION = Models.createAction (
-        "Resume", new Models.ActionPerformer () {
+        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_Resume_Label"),
+        new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 if (node instanceof JPDAThread)
                     return ((JPDAThread) node).isSuspended ();

@@ -34,6 +34,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -42,7 +43,7 @@ import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 public class CallStackActionsProvider implements NodeActionsProvider {
     
     private final Action MAKE_CURRENT_ACTION = Models.createAction (
-        "Make Current", 
+        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_MakeCurrent_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -54,7 +55,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
     private static final Action POP_TO_HERE_ACTION = Models.createAction (
-        "Pop To Here", 
+        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_PopToHere_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;

@@ -24,6 +24,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -32,7 +33,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 public class SessionsActionsProvider implements NodeActionsProvider {
     
     private static final Action FINISH_ALL_ACTION = new AbstractAction 
-        ("Finish All") {
+        (NbBundle.getBundle(SessionsActionsProvider.class).getString("CTL_SessionAction_FinishAll_Label")) {
             public void actionPerformed (ActionEvent e) {
                 Session[] ss = DebuggerManager.getDebuggerManager ().
                     getSessions ();
@@ -42,7 +43,7 @@ public class SessionsActionsProvider implements NodeActionsProvider {
             }
     };
     private Action MAKE_CURRENT_ACTION = Models.createAction (
-        "Make Current", new Models.ActionPerformer () {
+        NbBundle.getBundle(SessionsActionsProvider.class).getString("CTL_SessionAction_MakeCurrent_Label"), new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return DebuggerManager.getDebuggerManager ().
                     getCurrentSession () != node;
@@ -57,7 +58,7 @@ public class SessionsActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
     private static final Action FINISH_ACTION = Models.createAction (
-        "Finish", 
+        NbBundle.getBundle(SessionsActionsProvider.class).getString("CTL_SessionAction_Finish_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
