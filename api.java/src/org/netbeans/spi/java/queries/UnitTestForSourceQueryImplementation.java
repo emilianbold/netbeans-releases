@@ -35,7 +35,7 @@ import org.openide.filesystems.FileObject;
  *
  * @see <a href="@PROJECTS/PROJECTAPI/org/netbeans/api/project/Project.html#getLookup"><code>Project.getLookup()</code></a>
  * @see org.netbeans.api.java.queries.UnitTestForSourceQuery
- * @deprecated Use {@link org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation} class.
+ * @deprecated Use {@link org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation} instead.
  * @author David Konecny
  * @since org.netbeans.api.java/1 1.4
  */
