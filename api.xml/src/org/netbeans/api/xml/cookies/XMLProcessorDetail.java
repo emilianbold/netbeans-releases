@@ -22,7 +22,7 @@ import org.xml.sax.*;
  * explicitly overwriten here.
  *
  * @author  Petr Kuzel
- * @since   0.3
+ * @since   0.5
  */
 public abstract class XMLProcessorDetail {
 

@@ -33,7 +33,7 @@ import org.openide.xml.EntityCatalog;
  *
  * @author  Libor Kramolis
  * @author  Petr Kuzel
- * @since   0.2
+ * @since   0.5
  * @deprecated XML tools API candidate
  */
 public abstract class UserCatalog {

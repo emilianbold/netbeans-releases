@@ -28,7 +28,7 @@ import org.netbeans.api.xml.cookies.XMLProcessorDetail;
  *
  * @author      Petr Kuzel
  * @deprecated  XML Tools API candidate
- * @since       0.3
+ * @since       0.5
  */
 public class DefaultXMLProcessorDetail extends XMLProcessorDetail {
         
