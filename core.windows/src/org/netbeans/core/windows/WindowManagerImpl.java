@@ -623,6 +623,41 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return false;
     }
     
+    // XXX
+    public ModeImpl findModeForOpenedID(String tcID) {
+        if(tcID == null) {
+            return null;
+        }
+        
+        for(Iterator it = getModes().iterator(); it.hasNext(); ) {
+            ModeImpl mode = (ModeImpl)it.next();
+            
+            if(mode.getOpenedTopComponentsIDs().contains(tcID)) {
+                return mode;
+            }
+        }
+        
+        return null;
+    }
+    
+    // XXX
+    public ModeImpl findModeForClosedID(String tcID) {
+        if(tcID == null) {
+            return null;
+        }
+        
+        for(Iterator it = getModes().iterator(); it.hasNext(); ) {
+            ModeImpl mode = (ModeImpl)it.next();
+            
+            if(mode.getClosedTopComponentsIDs().contains(tcID)) {
+                return mode;
+            }
+        }
+        
+        return null;
+    }
+
+    
     /** Helper method to retrieve the display name of TopComponent. */
     public String getTopComponentDisplayName(TopComponent tc) {
         if(tc == null) {

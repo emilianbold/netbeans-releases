@@ -598,7 +598,11 @@ final class Central implements ControllerHandler {
     public void setUnloadedSelectedTopComponent(ModeImpl mode, String tcID) {
         model.setModeUnloadedSelectedTopComponent(mode, tcID);
     }
-    
+
+    // XXX
+    public List getModeOpenedTopComponentsIDs(ModeImpl mode) {
+        return model.getModeOpenedTopComponentsIDs(mode);
+    }
     // XXX
     public List getModeClosedTopComponentsIDs(ModeImpl mode) {
         return model.getModeClosedTopComponentsIDs(mode);
@@ -694,6 +698,12 @@ final class Central implements ControllerHandler {
             WindowManagerImpl.notifyRegistryTopComponentActivated(
                 newActive.getSelectedTopComponent());
         }
+    }
+    
+    // XXX
+    public void removeModeClosedTopComponentID(ModeImpl mode, String tcID) {
+        // It is silent now, has to be used only for closed yet unloaded components!
+        model.removeModeClosedTopComponentID(mode, tcID);
     }
     /// << Mode specific    
     //////////////////////////////

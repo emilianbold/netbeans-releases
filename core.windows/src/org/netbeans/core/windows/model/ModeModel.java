@@ -54,6 +54,8 @@ interface ModeModel {
     public void setUnloadedSelectedTopComponent(String tcID);
     /** Removes TopComponent from mode. */
     public void removeTopComponent(TopComponent tc);
+    // XXX
+    public void removeClosedTopComponentID(String tcID);
 
 
 
@@ -83,6 +85,7 @@ interface ModeModel {
     /** Gets list of top components in mode. */
     public List getOpenedTopComponents();
     // XXX
+    public List getOpenedTopComponentsIDs();
     public List getClosedTopComponentsIDs();
     
     

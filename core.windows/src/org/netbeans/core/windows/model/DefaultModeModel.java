@@ -98,6 +98,13 @@ final class DefaultModeModel implements ModeModel {
         }
     }
     
+    // XXX
+    public void removeClosedTopComponentID(String tcID) {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            topComponentSubModel.removeClosedTopComponentID(tcID);
+        }
+    }
+    
     /** Adds opened TopComponent. */
     public void addOpenedTopComponent(TopComponent tc) {
         synchronized(LOCK_TOPCOMPONENTS) {
@@ -242,6 +249,12 @@ final class DefaultModeModel implements ModeModel {
     }
     
     // XXX
+    public List getOpenedTopComponentsIDs() {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            return topComponentSubModel.getOpenedTopComponentsIDs();
+        }
+    }
+    
     public List getClosedTopComponentsIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getClosedTopComponentsIDs();

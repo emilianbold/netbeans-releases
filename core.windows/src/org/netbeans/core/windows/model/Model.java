@@ -157,6 +157,8 @@ public interface Model {
     public void setModeUnloadedSelectedTopComponent(ModeImpl mode, String tcID);
     /** */
     public void removeModeTopComponent(ModeImpl mode, TopComponent tc);
+    // XXX
+    public void removeModeClosedTopComponentID(ModeImpl mode, String tcID);
     // Mutators (mode level) <<
     ///////////////////////////
 
@@ -187,6 +189,7 @@ public interface Model {
     /** Gets list of top components in this workspace. */
     public List getModeOpenedTopComponents(ModeImpl mode);
     // XXX
+    public List getModeOpenedTopComponentsIDs(ModeImpl mode);
     public List getModeClosedTopComponentsIDs(ModeImpl mode);
     // Accessors (mode level) <<
     ////////////////////////////

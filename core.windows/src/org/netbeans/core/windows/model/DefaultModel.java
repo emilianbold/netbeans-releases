@@ -504,6 +504,15 @@ final class DefaultModel implements Model {
         }
     }
     
+    // XXX
+    public void removeModeClosedTopComponentID(ModeImpl mode, String tcID) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.removeClosedTopComponentID(tcID);
+        }
+    }
+    
+    
     // Accessors
     /** Gets programatic name of mode. */
     public String getModeName(ModeImpl mode) {
@@ -625,6 +634,15 @@ final class DefaultModel implements Model {
     }
     
     // XXX
+    public List getModeOpenedTopComponentsIDs(ModeImpl mode) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getOpenedTopComponentsIDs();
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
     public List getModeClosedTopComponentsIDs(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {

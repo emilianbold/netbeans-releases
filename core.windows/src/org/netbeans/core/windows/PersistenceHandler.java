@@ -597,11 +597,17 @@ final class PersistenceHandler implements PersistenceObserver {
     public synchronized void topComponentRefConfigRemoved(String tc_id) {
         debugLog("WMI.topComponentRefConfigRemoved tcRef:" + tc_id); // NOI18N
         
-        TopComponent tc = getTopComponentForID(tc_id);
-        if(tc != null) {
-            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
-            if(mode != null) {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        ModeImpl mode = wm.findModeForOpenedID(tc_id);
+        if(mode != null) {
+            TopComponent tc = getTopComponentForID(tc_id);
+            if(tc != null) {
                 mode.removeTopComponent(tc);
+            }
+        } else {
+            mode = wm.findModeForClosedID(tc_id);
+            if(mode != null) {
+                mode.removeClosedTopComponentID(tc_id);
             }
         }
     }

@@ -220,26 +220,31 @@ final class TopComponentSubModel {
     }
     
     public void setUnloadedSelectedTopComponent(String tcID) {
-        if(tcID != null && !getOpenedIDs().contains(tcID)) {
+        if(tcID != null && !getOpenedTopComponentsIDs().contains(tcID)) {
             return;
         }
         
         selectedTopComponentID = tcID;
     }
     
-    private Set getOpenedIDs() {
-        Set s = new HashSet(openedTopComponents.size());
+    public List getOpenedTopComponentsIDs() {
+        List l = new ArrayList(openedTopComponents.size());
         for(Iterator it = openedTopComponents.iterator(); it.hasNext(); ) {
-            s.add(getID((TopComponent)it.next()));
+            l.add(getID((TopComponent)it.next()));
         }
-        return s;
+        return l;
     }
     
     // XXX
     public List getClosedTopComponentsIDs() {
         List closedIDs = new ArrayList(tcID2index.keySet());
-        closedIDs.removeAll(getOpenedIDs());
+        closedIDs.removeAll(getOpenedTopComponentsIDs());
         return closedIDs;
+    }
+    
+    // XXX
+    public void removeClosedTopComponentID(String tcID) {
+        tcID2index.remove(tcID);
     }
     
     public TopComponent getSelectedTopComponent() {

@@ -257,6 +257,11 @@ public final class ModeImpl implements Mode {
         getCentral().setUnloadedSelectedTopComponent(this, tcID);
     }
     
+    // XXX
+    public List getOpenedTopComponentsIDs() {
+        return getCentral().getModeOpenedTopComponentsIDs(this);
+    }
+    // XXX
     public List getClosedTopComponentsIDs() {
         return getCentral().getModeClosedTopComponentsIDs(this);
     }
@@ -324,6 +329,11 @@ public final class ModeImpl implements Mode {
             TopComponent tc = (TopComponent)it.next();
             removeTopComponent(tc);
         }
+    }
+    
+    // XXX Only use for yet unloaded components, for PersistenceHandler only.
+    public void removeClosedTopComponentID(String tcID) {
+        getCentral().removeModeClosedTopComponentID(this, tcID);
     }
     
     // XXX It is used for user actions only, to prohibit mixing
