@@ -365,13 +365,22 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
          * @see org.openide.nodes.Children.Keys#setKeys(java.util.Collection) */
         private void mySetKeys() {
             // Use TreeSet because its iterator iterates in ascending order.
-            TreeSet keys = new TreeSet(new KeyComparator());
+            TreeSet keys = new TreeSet(new java.util.Comparator() {
+                public int compare(Object o1, Object o2) {
+                    String s1 = ((Element.ItemElem) o1).getKeyElem().getValue();
+                    String s2 = ((Element.ItemElem) o2).getKeyElem().getValue();
+                    int res = String.CASE_INSENSITIVE_ORDER.compare(s1, s2);
+                    if (res != 0)
+                        return res;
+                    return s1.compareTo(s2);
+                }
+            });
             PropertiesStructure propStructure = getHandler().getStructure();
             if(propStructure != null) {
                 for(Iterator iterator = propStructure.allItems(); iterator.hasNext(); ) {
                     Element.ItemElem item = (Element.ItemElem)iterator.next();
                     if(item != null && item.getKey() != null)
-                        keys.add(item.getKey());
+                        keys.add(item);
                 }
             }
             
@@ -399,7 +408,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
                     } else if(changeType == PropertyBundleEvent.CHANGE_ITEM 
                         && evt.getItemName() != null
                         && evt.getEntryName().equals(getFile().getName()))
-                        
+
                         refreshKey(evt.getItemName());
                 }
             }; // End of annonymous class.
@@ -417,8 +426,11 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
 
         /** Create nodes. Implements superclass abstract method. */
         protected Node[] createNodes (Object key) {
-            String itemKey = (String)key;
-            return new Node[] { new KeyNode(getHandler().getStructure(), itemKey) };
+            Element.ItemElem item = (Element.ItemElem) key;
+            Node node = item.getItemNode();
+            if (node == null)
+                node = new KeyNode(getHandler().getStructure(), item);
+            return new Node[] { node };
         }
 
     } // End of inner class PropKeysChildren.
