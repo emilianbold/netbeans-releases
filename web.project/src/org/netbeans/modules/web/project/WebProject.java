@@ -180,7 +180,14 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             new SourceLevelQueryImpl(helper, evaluator()),
             fileBuilt,
             new RecommendedTemplatesImpl(),
-            sourcesHelper.createSources()
+            sourcesHelper.createSources(),
+            helper.createSharabilityQuery(evaluator(), new String[] {
+                "${src.dir}", // NOI18N
+                "${web.docbase.dir}", // NOI18N
+            }, new String[] {
+                "${dist.dir}", // NOI18N
+                "${build.dir}", // NOI18N
+            }),
         });
     }
 
