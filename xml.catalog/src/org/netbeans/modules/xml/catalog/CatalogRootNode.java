@@ -184,7 +184,7 @@ public class CatalogRootNode extends AbstractNode {
                     mounted.removePropertyChangeListener(this);
                 }
                 mounted = (CatalogSettings) e.getNewValue();
-                mounted.addPropertyChangeListener(this);
+                if (mounted != null) mounted.addPropertyChangeListener(this);
                 createKeys(mounted);
             }
         }
@@ -194,10 +194,12 @@ public class CatalogRootNode extends AbstractNode {
           */
         private void createKeys(CatalogSettings mounted) {
             keys.clear();
-            Iterator it = mounted.getCatalogs(new Class[] {CatalogReader.class});
-            while (it.hasNext()) {
-                keys.add(it.next());
-            }                
+            if (mounted != null) {
+                Iterator it = mounted.getCatalogs(new Class[] {CatalogReader.class});
+                while (it.hasNext()) {
+                    keys.add(it.next());
+                }                
+            }
             setKeys(keys);
         }
         
