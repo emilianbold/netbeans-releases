@@ -18,6 +18,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="projectized.init">
         <path id="libcp">
             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+            <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
+            <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
         </path>
     </target>
     

@@ -252,10 +252,10 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
                 </folder>
                 
-                <folder name="FoldMaintainer">
-                    <file name="org-netbeans-lib-editor-fold-CustomFoldMaintainer$Factory.instance"/>
-                    <attr name="org-netbeans-lib-editor-fold-CustomFoldMaintainer$Factory.instance/org-netbeans-modules-editor-java-NbJavaFoldMaintainer$Factory.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-editor-java-NbJavaFoldMaintainer$Factory.instance"/>
+                <folder name="FoldManager">
+                    <file name="org-netbeans-lib-editor-fold-CustomFoldManager$Factory.instance"/>
+                    <attr name="org-netbeans-lib-editor-fold-CustomFoldManager$Factory.instance/org-netbeans-modules-editor-java-NbJavaFoldManager$Factory.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-editor-java-NbJavaFoldManager$Factory.instance"/>
                 </folder>
                 
                 <file name="Settings.settings" url="JavaOptions.settings"/>
