@@ -18,10 +18,13 @@ package org.netbeans.modules.properties;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
+import org.openide.ErrorManager;
 
 import org.openide.TopManager;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -32,6 +35,15 @@ import org.openide.util.Utilities;
  */
 public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
 
+    public BeanInfo[] getAdditionalBeanInfo () {
+        try {
+            return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
+        } catch (IntrospectionException ie) {
+            ErrorManager.getDefault().notify(ie);
+            return null;
+        }
+    }
+    
     /**
      * @return Returns an array of PropertyDescriptors
      * describing the editable properties supported by this bean. */
