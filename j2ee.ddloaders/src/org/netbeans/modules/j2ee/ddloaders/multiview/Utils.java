@@ -151,31 +151,6 @@ public class Utils {
     }
 
     /**
-     * Removes ampersand marking a mnemonic character from the given text.
-     * This method uses {@link Mnemonics#findMnemonicAmpersand} to find
-     * position of the marker.
-     *
-     * @param  text  text to remove the marker from
-     * @return  given text with the marker removed;
-     *          or the original <code>String</code> instance
-     *          if the given text contains no marker
-     */
-    public static String removeMnemonicMarker(String text) {
-        final int pos = org.openide.awt.Mnemonics.findMnemonicAmpersand(text);
-        
-        switch (pos) {
-            case -1:
-                return text;
-            case 0:
-                return text.substring(1);
-            default:
-                return (pos == text.length() - 1)
-                       ? text.substring(0, pos)
-                       : text.substring(0, pos) + text.substring(pos + 1);
-        }
-    }
-
-    /**
      * Returns true, if the passed string can be used as a qualified identifier.
      * it does not check for semantic, only for syntax.
      * The function returns true for any sequence of identifiers separated by
