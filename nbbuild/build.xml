@@ -125,6 +125,9 @@ ToDo:
       <!-- You are on your own for getting the binaries for some of these: -->
 
       <config name="bloated-plus-extrabins" modules="${config.bloated-plus-extrabins}"/>
+
+      <!-- config for making NBMs for Daily Alpha Update Centre -->
+      <config name="daily-alpha-nbms" modules="${config.daily-alpha-nbms}"/>
     </configmods>
 
   </target>
@@ -344,6 +347,10 @@ ToDo:
     <echo message="Building module makefile..."/>
     <ant dir="../makefile" target="netbeans"/>
   </target>
+  <target name="all-metrics" depends="all-openide,all-classfile,all-clazz,all-java">
+    <echo message="Building module metrics..."/>
+    <ant dir="../metrics" target="netbeans"/>
+  </target>
   <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans,all-html,all-httpserver">
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
@@ -397,6 +404,10 @@ ToDo:
     <echo message="Building module sysprops..."/>
     <ant dir="../sysprops" target="netbeans"/>
   </target>
+  <target name="all-tasklist" depends="all-openide">
+    <echo message="Building module tasklist..."/>
+    <ant dir="../tasklist" target="netbeans"/>
+  </target>
   <target name="all-text" depends="all-openide">
     <echo message="Building module text..."/>
     <ant dir="../text" target="netbeans"/>
@@ -412,6 +423,10 @@ ToDo:
   <target name="all-tomcatint/bundledtomcat" depends="all-tomcatint/tomcat40">
     <echo message="Building module tomcatint/bundledtomcat..."/>
     <ant dir="../tomcatint/bundledtomcat" target="netbeans"/>
+  </target>
+  <target name="all-translatedfiles">
+    <echo message="Building module translatedfiles..."/>
+    <ant dir="../translatedfiles" target="netbeans"/>
   </target>
   <target name="all-usersguide" depends="all-openide">
     <echo message="Building module usersguide..."/>
@@ -474,6 +489,10 @@ ToDo:
   <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-xml/catalog,all-j2eeserver,all-html,all-openidex">
     <echo message="Building module web/advanced..."/>
     <ant dir="../web/advanced" target="netbeans"/>
+  </target>
+  <target name="all-webl" depends="all-openide,all-java">
+    <echo message="Building module webl..."/>
+    <ant dir="../webl" target="netbeans"/>
   </target>
   <target name="all-cpplite" depends="all-openide,all-editor,all-java">
     <echo message="Building module cpplite..."/>
@@ -581,6 +600,11 @@ ToDo:
       <for-each startdir=".." target="nbm" locations="${fixedmodules},${modules}"/>
   </target>
   <target name="nbm" description="Dummy target."/>
+
+  <!-- build javadoc for selected modules -->
+  <target name="build-javadoc" depends="init">
+      <for-each startdir=".." target="javadoc" locations="${fixedmodules},${modules}"/>
+  </target>
 
   <target name="build-messaging" depends="init">
     <echo message="Starting a build for NetBeans (build ${buildnum}, config '${moduleconfig}') ..."/>
