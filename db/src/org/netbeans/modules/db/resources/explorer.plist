@@ -97,13 +97,11 @@
 				name = "Oracle";
 				driver = "oracle.jdbc.driver.OracleDriver";
 				prefix = "jdbc:oracle:@<SID>";
-				adaptor = "com.netbeans.enterprise.modules.db.adaptors.OracleAdaptor";
 			},
 			{
 				name = "Oracle thin";
 				driver = "oracle.jdbc.driver.OracleDriver";
 				prefix = "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>";
-				adaptor = "com.netbeans.enterprise.modules.db.adaptors.OracleAdaptor";
 			},
 			{
 				name = "Pointbase";
