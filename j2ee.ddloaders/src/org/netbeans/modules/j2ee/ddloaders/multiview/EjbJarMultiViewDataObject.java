@@ -104,7 +104,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             Sources sources = ProjectUtils.getSources(project);
             sources.addChangeListener(this);
         }
-        ejbJar = (EjbJarProxy) DDProvider.getDefault().getDDRoot(this);
         refreshSourceFolders();
     }
 

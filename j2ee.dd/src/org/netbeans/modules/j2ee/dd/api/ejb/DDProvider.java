@@ -19,6 +19,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.EntityResolver;
@@ -42,7 +43,6 @@ public final class DDProvider {
     private static final String EJB_11_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN"; //NOI18N
     private static final DDProvider ddProvider = new DDProvider();
     private Map ddMap;
-    private Map dataObjectMap;
 
     static java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/dd/Bundle");
 
@@ -50,7 +50,6 @@ public final class DDProvider {
     private DDProvider() {
         //ddMap=new java.util.WeakHashMap(5);
         ddMap = new HashMap(5);
-        dataObjectMap = new HashMap(5);
     }
     
     /**
@@ -59,20 +58,6 @@ public final class DDProvider {
     */
     public static DDProvider getDefault() {
         return ddProvider;
-    }
-
-    private DataObject getDataObject(FileObject fileObject) {
-        return (DataObject) dataObjectMap.get(fileObject);
-    }
-
-    public synchronized EjbJar getDDRoot(DataObject dataObject) {
-        final FileObject primaryFile = dataObject.getPrimaryFile();
-        EjbJarProxy ejbJarProxy = getFromCache(primaryFile);
-        if (ejbJarProxy == null) {
-            ejbJarProxy = new EjbJarProxy(null, null);
-        }
-        dataObjectMap.put(primaryFile, dataObject);
-        return ejbJarProxy;
     }
 
     /**
@@ -91,8 +76,11 @@ public final class DDProvider {
         fo.addFileChangeListener(new FileChangeAdapter() {
             public void fileChanged(FileEvent evt) {
                 FileObject fo=evt.getFile();
-                if (getDataObject(fo) != null) {
-                    return;
+                try {
+                    if (DataObject.find(fo) != null) {
+                        return;
+                    }
+                } catch (DataObjectNotFoundException e) {
                 }
                 try {
                     EjbJarProxy ejbJarProxy = getFromCache (fo);
@@ -362,5 +350,4 @@ public final class DDProvider {
             return saxException;
         }
     }
-    
 }
