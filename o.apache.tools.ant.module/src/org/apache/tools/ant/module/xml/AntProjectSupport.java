@@ -70,11 +70,21 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     private static final long serialVersionUID = 7366509989041657663L;
     
     public AntProjectSupport (FileObject fo) {
-        this (fo, FileUtil.toFile (fo));
+        this (fo, null);
     }
   
     public AntProjectSupport (File f) {
-        this (null, f);
+        this (findFileObject(f), f);
+    }
+    
+    /** try to find a matching FileObject, else null */
+    private static FileObject findFileObject(File f) {
+        FileObject[] fos = FileUtil.fromFile(f);
+        if (fos.length > 0) {
+            return fos[0];
+        } else {
+            return null;
+        }
     }
   
     private AntProjectSupport (FileObject fo, File f) {
@@ -110,7 +120,16 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     }
     
     public File getFile () {
-        return file;
+        if (file != null) {
+            return file;
+        } else {
+            FileObject fo = getFileObject();
+            if (fo != null) {
+                return FileUtil.toFile(fo);
+            } else {
+                return null;
+            }
+        }
     }
     
     public FileObject getFileObject () {
@@ -123,13 +142,13 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     
     public void setFile (File f) { // #11979
         file = f;
-        fo = null;
+        fo = findFileObject(f);
         invalidate ();
     }
     
     public void setFileObject (FileObject fo) { // #11979
         this.fo = fo;
-        file = FileUtil.toFile (fo);
+        file = null; // compute on demand - note that parent folders may change etc.
         invalidate ();
     }
     
