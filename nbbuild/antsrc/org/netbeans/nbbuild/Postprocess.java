@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -83,10 +83,11 @@ public class Postprocess extends Task {
         }
         
         try {
-            byte[] b = new byte[(int)file.length()];
+            int len = (int)file.length();
+            byte[] b = new byte[len];
             FileInputStream is = new FileInputStream (file);
             try {
-                is.read (b);
+                if (is.read(b) != len) throw new BuildException("Failed to read whole file", location);
             } finally {
                 is.close ();
             }
@@ -118,19 +119,27 @@ public class Postprocess extends Task {
      * @return the number of replaces
      */
     private int replaceString (byte[] b) {
-        String arr = new String (b);
-
-        for (int cnt = 0; /*notest*/; cnt++) {
-            int i = arr.indexOf (oldString);
+        
+        try {
             
-            if (i == -1) {
-                return cnt;
+            // This encoding is unadorned 8-bit.
+            String arr = new String (b, "ISO8859_1");
+            int cnt = 0;
+            int pos = -1;
+            
+            byte[] newbytes = newString.getBytes("ISO8859_1");
+            if (newbytes.length != oldString.getBytes("ISO8859_1").length) {
+                throw new BuildException("Strings to replace must be equal in length", location);
+            }
+            while ((pos = arr.indexOf(oldString, pos + 1)) != -1) {
+                System.arraycopy(newbytes, 0, b, pos, newbytes.length);
+                cnt++;
             }
             
-            System.arraycopy(newString.getBytes(), 0, b, i, oldString.length());
+            return cnt;
             
-            // update also the array
-            arr = new String (b);
+        } catch (UnsupportedEncodingException e) {
+            throw new BuildException("Error replacing text", e, location);
         }
     }
         
