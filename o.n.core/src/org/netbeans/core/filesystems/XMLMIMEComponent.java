@@ -298,15 +298,20 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         public void comment(char[] ch, int start, int length) {}
         
         public void error(SAXParseException exception) throws SAXException {            
+            // we are not validating should not occure
+            ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);           
+            emgr.notify(emgr.WARNING, exception);  
             this.state = ERROR;
             throw STOP;
         }
 
         public void fatalError(SAXParseException exception) throws SAXException {
-            //!!! should be commented out
-            System.err.println("While parsing:" + fo  + " at " + exception.getLineNumber());
-            System.err.println("See #16484 for possible reason description if input file does not contain mentioned error:");
-            exception.printStackTrace();  
+
+            // it may be caused by wrong user XML document
+            ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);           
+            emgr.log(NbBundle.getMessage(getClass(), "W-001", fo, new Integer(exception.getLineNumber())));
+            emgr.log(NbBundle.getMessage(getClass(), "W-002"));
+            emgr.notify(emgr.INFORMATIONAL, exception);  
             
             this.state = ERROR;
             throw STOP;
