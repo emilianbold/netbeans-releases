@@ -242,10 +242,14 @@ public class BundleStructure extends PropertyChangeSupport {
     // find out whether global key table has changed and fire a change according to that
     SortedArrayList oldKeyList = keyList;
     buildKeySet();                       
-    if (keyList.equals(oldKeyList))
+    if (keyList.equals(oldKeyList)) {
+//System.out.println("firing bundle change 1");
       support.fireBundleDataChanged();
-    else   
+    }  
+    else {
+//System.out.println("firing file change " + handler.getEntry().getFile().getName());
       support.fireFileChanged(handler.getEntry().getFile().getName());
+    }  
   }
   
   /** One file in the bundle has changed, carries information about what particular items have changed. 
@@ -258,6 +262,7 @@ public class BundleStructure extends PropertyChangeSupport {
     // find out whether global key table has changed
     // should use a faster algorithm of building the keyset
     buildKeySet();  
+//System.out.println("firing bundle change 2");
     support.fireBundleDataChanged();
   }
 

@@ -43,8 +43,9 @@ public class UtilConvert {
     public  static final String keyValueSeparators = "=: \t\r\n\f";
 
     public  static final String strictKeyValueSeparators = "=:";
-
-    private static final String specialSaveChars = "=: \t\r\n\f#!";
+                                                      
+    /** Differs from Sun's implementation in that it does not save ' ' as '\ '. */
+    private static final String specialSaveChars = "=:\t\r\n\f#!";
 
     public  static final String whiteSpaceChars = " \t\r\n\f";
 
@@ -271,7 +272,8 @@ public class UtilConvert {
     /*
      * Converts unicodes to encoded \\uxxxx
      * and writes out any of the characters in specialSaveChars
-     * with a preceding slash
+     * with a preceding slash.
+     * Differs from Sun's implementation in that it does not save ' ' as '\ '. 
      */
     public static String saveConvert(String theString) {
         char aChar;

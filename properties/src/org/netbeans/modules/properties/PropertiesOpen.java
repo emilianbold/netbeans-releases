@@ -14,9 +14,12 @@
 package com.netbeans.developer.modules.loaders.properties;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import javax.swing.JTable;
+import javax.swing.JButton;
 import javax.swing.JScrollPane;
+//import javax.swing.DefaultCellEditor;
  
 import com.netbeans.ide.cookies.OpenCookie;
 import com.netbeans.ide.loaders.MultiDataObject;
@@ -25,6 +28,10 @@ import com.netbeans.ide.loaders.OpenSupport;
 import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.windows.CloneableTopComponent;
 import com.netbeans.ide.windows.TopComponent;
+import com.netbeans.ide.explorer.propertysheet.PropertyDisplayer;
+import com.netbeans.ide.util.NbBundle;
+import com.netbeans.ide.NotifyDescriptor;
+import com.netbeans.ide.TopManager;
 
  
 /** Support for opening properties files (OpenCookie) in visual editor */
@@ -56,7 +63,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     /** Constructor
     * @param obj data object we belong to
     */
-    public PropertiesCloneableTopComponent (DataObject obj, PropertiesTableModel ptm/*, PropertiesTableColumnModel ptcm*/) {
+    public PropertiesCloneableTopComponent (final DataObject obj, PropertiesTableModel ptm/*, PropertiesTableColumnModel ptcm*/) {
       super (obj);
       this.obj  = obj;               
       this.ptm  = ptm;
@@ -65,9 +72,38 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       setLayout (new BorderLayout ());
       
       JTable table = new JTable(ptm/*, ptcm*/);
+      // PENDING      
+//      PropertiesCellEditor ed = new PropertiesCellEditor(new PropertyDisplayer());
+//      table.setDefaultEditor(PropertiesTableModel.CommentValuePair.class, ed);
+//      table.setDefaultEditor(String.class, DefaultCellEditor.class);
       JScrollPane scrollPane = new JScrollPane(table);
       table.setPreferredScrollableViewportSize(new Dimension(500, 70));
       add (scrollPane, BorderLayout.CENTER);
+      JButton addButton = new JButton(PropertiesSettings.getString("LBL_AddPropertyButton"));
+      add (addButton, BorderLayout.SOUTH);
+      addButton.addActionListener(
+        new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+            NewPropertyDialog dia = new NewPropertyDialog();
+            Dialog d = dia.getDialog();
+            d.setVisible(true);
+            if (dia.getOKPressed ()) {                            
+              if (((PropertiesFileEntry)((MultiDataObject)obj).getPrimaryEntry()).
+                    getHandler().getStructure().addItem(
+                    dia.getKeyText(), dia.getValueText(), dia.getCommentText()))
+                ;
+              else {
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                  java.text.MessageFormat.format(
+                    NbBundle.getBundle(PropertiesLocaleNode.class).getString("MSG_KeyExists"),
+                    new Object[] {dia.getKeyText()}),
+                  NotifyDescriptor.ERROR_MESSAGE);
+                TopManager.getDefault().notify(msg);
+              }  
+            }
+          }
+        }
+      );  
     }
 
     /** Is called from the clone method to create new component from this one.

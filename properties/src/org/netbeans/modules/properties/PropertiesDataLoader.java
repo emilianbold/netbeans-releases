@@ -56,6 +56,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     setActions(new SystemAction[] {
       SystemAction.get(OpenAction.class),
       SystemAction.get(ViewAction.class),
+      SystemAction.get(FileSystemAction.class),
       null,
       SystemAction.get(CutAction.class),
       SystemAction.get(CopyAction.class),
@@ -67,6 +68,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
       SystemAction.get(NewAction.class),
       SystemAction.get(SaveAsTemplateAction.class),
       null,
+      SystemAction.get(ToolsAction.class),
       SystemAction.get(PropertiesAction.class)
     });
   }
@@ -130,6 +132,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
 
 /*
 * <<Log>>
+*  7    Gandalf   1.6         6/6/99   Petr Jiricka    
 *  6    Gandalf   1.5         5/12/99  Petr Jiricka    
 *  5    Gandalf   1.4         5/11/99  Ian Formanek    Undone last change to 
 *       compile

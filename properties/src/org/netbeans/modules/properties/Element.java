@@ -32,11 +32,15 @@ implements Serializable {
   private transient PropertyChangeSupport support;
 
   /** Position of the begin and the end of the element. */
-  PositionBounds bounds;
+  protected PositionBounds bounds;
 
   /** Create a new element. */
   protected Element(PositionBounds bounds) {
     this.bounds = bounds;
+  }
+  
+  public PositionBounds getBounds() {
+    return bounds;
   }
 
   /** Updates the element fields. This method is called after reparsing.
@@ -198,27 +202,27 @@ implements Serializable {
     * @return the string
     */
     public String printString() {
-      if (value == null)
+      if (value == null || value.length() == 0)
         return "";
       else {                   
         // insert #s at the beginning of the lines which contain non-blank characters
         // holds the last position where we might have to insert a # if this line contains non-blanks
-        int candidate = -1;
+        int candidate = 0;
         StringBuffer sb = new StringBuffer(value);
         for (int i=0; i<sb.length(); ) {
           char aChar = sb.charAt(i++);
           // new line
           if (aChar == '\n') {
-            candidate = -1;
-            if ((sb.charAt(i) != '#') && (sb.charAt(i) != '!')) {
-              candidate = i;
-            }                 
+            candidate = i;
           }  
           else {    
             if ((candidate != -1) && (UtilConvert.whiteSpaceChars.indexOf(aChar) == -1)) {
-              // insert a #
-              sb.insert(candidate, '#');
-              i++;
+              // nonempty symbol
+              if ((aChar != '#') && (aChar != '!')) {
+                // insert a #
+                sb.insert(candidate, '#');
+                i++;
+              }  
               candidate = -1;
             }
           }
@@ -381,6 +385,7 @@ implements Serializable {
 
 /*
  * <<Log>>
+ *  4    Gandalf   1.3         6/6/99   Petr Jiricka    
  *  3    Gandalf   1.2         5/14/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/13/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    

@@ -70,19 +70,27 @@ class StructHandler extends Element /*implements TaskListener*/ {
   public boolean getStatus() {
     return getReferenceData() != null;
   }
+                                
+  /** runs something under Children.MUTEX.writeAccess and then reparses the structure. */
+/*  public Object doUpdate(Mutex.Action action) {
+  }*/
          
   /** If necessary parses the file, blocks until the thing is finished */       
   private synchronized void getParsedDataBlocking() {
     if (isDirty() || (getReferenceData() == null)) {
-      try {
-        PropertiesParser parser = new PropertiesParser(pfe);
-        parser.parseFile();   
-      }
-      catch (IOException e) {
-        setPropertiesStructure(null);
-      }
-      setDirty(false);
+      reparseNowBlocking();
     }
+  }
+  
+  synchronized void reparseNowBlocking() {
+    try {
+      PropertiesParser parser = new PropertiesParser(pfe);
+      parser.parseFile();   
+    }
+    catch (IOException e) {
+      setPropertiesStructure(null);
+    }
+    setDirty(false);
   }
                
   /** Entry for use in this package */             
@@ -155,7 +163,7 @@ debug("...SET (SOMETHING)");
   * and parsing is not running yet.
   */
   void autoParse() {   
-//debug("Starting autoparse");
+debug("Starting autoparse");
     if (dirty && getStatus()) 
       getParsedDataBlocking();
 /*    Children.MUTEX.writeAccess(new Runnable() {
@@ -278,11 +286,11 @@ debug("...SET (null)");
     if (d != null)
       return d;
 
-//debug("CALL PREPARE IN THREAD " + Thread.currentThread().toString());
+debug("CALL PREPARE IN THREAD " + Thread.currentThread().toString());
 /*    Task t = prepare();
     t.waitFinished();*/
     getParsedDataBlocking();
-//debug("PARSING TASK CHECK : " + (parsingTask == null ? "NULL":"NOT NULL"));    
+debug("PARSING TASK CHECK : " + (parsingTask == null ? "NULL":"NOT NULL"));    
 //debug("FINISH CALLING PREPARE IN THREAD " + Thread.currentThread().toString());
     
     d = getReferenceData();
@@ -339,7 +347,7 @@ debug("...SET (null)");
     * of this class from the memory.
     */
     public void finalize() {     
-System.out.println("Garbage collecting DataRef");
+//System.out.println("Garbage collecting DataRef");
       if (pfe != null) {
         pfe.getHandler().dataRefReleased(this);
       }

@@ -20,6 +20,10 @@ import java.util.Comparator;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.Dialog;
+import javax.swing.JPanel;
 
 import com.netbeans.ide.*;
 import com.netbeans.ide.filesystems.*;
@@ -33,6 +37,7 @@ import com.netbeans.ide.nodes.Node;
 import com.netbeans.ide.nodes.Children;
 import com.netbeans.ide.nodes.AbstractNode;
 import com.netbeans.ide.nodes.NodeListener;
+import com.netbeans.ide.util.datatransfer.NewType;
 
 /** Object that provides main functionality for properties data loader.
 * This class is final only for performance reasons,
@@ -67,6 +72,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
     return new SystemAction[] {
       SystemAction.get(OpenAction.class),
       SystemAction.get(ViewAction.class),
+      SystemAction.get(FileSystemAction.class),
       null,
       SystemAction.get(CutAction.class),
       SystemAction.get(CopyAction.class),
@@ -75,8 +81,10 @@ public class PropertiesLocaleNode extends FileEntryNode {
       SystemAction.get(DeleteAction.class),
       SystemAction.get(LangRenameAction.class),
       null,
+      SystemAction.get(NewAction.class),
       SystemAction.get(SaveAsTemplateAction.class),
       null,
+      SystemAction.get(ToolsAction.class),
       SystemAction.get(PropertiesAction.class)
     };
   }
@@ -94,7 +102,58 @@ public class PropertiesLocaleNode extends FileEntryNode {
   /** Clones this node */
   public Node cloneNode() {
     return new PropertiesLocaleNode((PropertiesFileEntry)getFileEntry());
-  }          
+  }                                                               
+                                      
+  /** Returns a string from my bundle. */                                    
+  private String getString(String what) {
+    return NbBundle.getBundle(PropertiesLocaleNode.class).getString(what);
+  }
   
+  /* List new types that can be created in this node.
+  * @return new types
+  */
+  public NewType[] getNewTypes () {
+    return new NewType[] {
+      new NewType() {
+      
+        public String getName() {
+          return NbBundle.getBundle(PropertiesDataNode.class).getString("LAB_NewPropertyAction");
+        }
+        
+        public HelpCtx getHelpCtx() {
+          return HelpCtx.DEFAULT_HELP;
+        }                             
+         
+        public void create() throws IOException {
+          NewPropertyDialog dia = new NewPropertyDialog();
+          Dialog d = dia.getDialog();
+          dia.focusKey();
+          d.setVisible(true);
+          dia.focusKey();
+          if (dia.getOKPressed ()) {                            
+            if (((PropertiesFileEntry)getFileEntry()).getHandler().getStructure().addItem(
+                  dia.getKeyText(), dia.getValueText(), dia.getCommentText()))
+              ;
+            else {
+              NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                java.text.MessageFormat.format(
+                  NbBundle.getBundle(PropertiesLocaleNode.class).getString("MSG_KeyExists"),
+                  new Object[] {dia.getKeyText()}),
+                NotifyDescriptor.ERROR_MESSAGE);
+              TopManager.getDefault().notify(msg);
+            }  
+          }
+        }
+         
+      } // end of inner class
+    };
+  }
 }                                                
 
+/*
+ * <<Log>>
+ *  3    Gandalf   1.2         6/6/99   Petr Jiricka    
+ *  2    Gandalf   1.1         5/13/99  Petr Jiricka    
+ *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
+ * $
+ */

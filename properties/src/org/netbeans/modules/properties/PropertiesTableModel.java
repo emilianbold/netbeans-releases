@@ -153,7 +153,33 @@ public class PropertiesTableModel extends AbstractTableModel {
   public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
     if (columnIndex == 0) {
       // property key
-      // PENDING
+      BundleStructure bs = obj.getBundleStructure();
+      String oldValue = (String)bs.getNthKey(rowIndex);
+      String newValue = (String)aValue;
+      if ((newValue == null) || (newValue.length() == 0)) {
+        // remove from all files
+        for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
+          PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
+          if (entry != null) {
+            PropertiesStructure ps = entry.getHandler().getStructure();
+            if (ps != null) {
+              ps.deleteItem(oldValue);
+            }
+          }  
+        }  
+      }
+      else {                                                 
+        // set in all files
+        for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
+          PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
+          if (entry != null) {
+            PropertiesStructure ps = entry.getHandler().getStructure();
+            if (ps != null) {    
+              boolean success = ps.renameItem(oldValue, newValue);
+            }
+          }  
+        }  
+      }  
     }           
     else { 
       // property value
@@ -167,7 +193,7 @@ public class PropertiesTableModel extends AbstractTableModel {
             item.setValue((String)aValue);
           }
           else {
-            // PENDING add
+            ps.addItem(key, (String)aValue, "");
           }
         }
       }

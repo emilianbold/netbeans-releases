@@ -30,6 +30,8 @@ import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.nodes.*;
+import com.netbeans.ide.TopManager;
+import com.netbeans.ide.NotifyDescriptor;
 
 /** Standard node representing a key-value-comment item in the properties file.
 *
@@ -43,24 +45,28 @@ public class KeyNode extends AbstractNode {
   /** Icon base for the KeyNode node */
   static final String ITEMS_ICON_BASE =
     "com/netbeans/developer/modules/loaders/properties/propertiesKey";
-
-  /** Element of this node. */
-  private Element.ItemElem item;
+                              
+  /** Structure on top of which this element lives */
+  private PropertiesStructure struct;                
+  /** Key for the element */
+  private String itemKey;
 
   /** Create a data node for a given key.
   * The provided children object will be used to hold all child nodes.
   * @param entry entry to work with
   * @param ch children container for the node
   */
-  public KeyNode (Element.ItemElem item) {
+  public KeyNode (PropertiesStructure struct, String itemKey) {
     super (Children.LEAF);
-    this.item = item;
-    super.setName (item.getKey ());
+    this.struct = struct;
+    this.itemKey = itemKey;
+    super.setName (itemKey);
     setDefaultAction(SystemAction.get(OpenAction.class));
     setActions(
       new SystemAction[] {
         SystemAction.get(OpenAction.class),
         SystemAction.get(ViewAction.class),
+        SystemAction.get(FileSystemAction.class),
         null,
         SystemAction.get(CutAction.class),
         SystemAction.get(CopyAction.class),
@@ -68,6 +74,7 @@ public class KeyNode extends AbstractNode {
         SystemAction.get(DeleteAction.class),
         SystemAction.get(RenameAction.class),
         null,
+        SystemAction.get(ToolsAction.class),
         SystemAction.get(PropertiesAction.class)
       }
     );
@@ -78,6 +85,9 @@ public class KeyNode extends AbstractNode {
    * @return the item
   */
   public Element.ItemElem getItem() {
+    Element.ItemElem item = struct.getItem(itemKey);
+    if (item == null)
+      System.out.println("Warning - item not found for KeyNode : " + itemKey);
     return item;
   }
 
@@ -118,17 +128,26 @@ public class KeyNode extends AbstractNode {
     return true;
   }
 
-  /* Rename the data object.
+  /* Rename the node.
   * @param name new name for the object
   * @exception IllegalArgumentException if the rename failed
   */
   public void setName (String name) {
+    String oldKey = itemKey;
+    itemKey = name;
 //System.out.println("Setting name = " + name);
-    item.getParent().renameItem(item.getKey(), name);
+    if (!struct.renameItem(oldKey, name)) {
+      itemKey = oldKey;
+      NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+        NbBundle.getBundle(KeyNode.class).getString("MSG_CannotRenameKey"),
+        NotifyDescriptor.ERROR_MESSAGE);
+      TopManager.getDefault().notify(msg);
+      return;
+    }
     // regenerate all children
-    Node par = getParentNode();
+/*    Node par = getParentNode();
     PropertiesFileEntry.PropKeysChildren ch = (PropertiesFileEntry.PropKeysChildren)par.getChildren();
-    ch.mySetKeys();
+    ch.mySetKeys();*/
   }
 
   /** Set all actions for this node.
@@ -148,6 +167,7 @@ public class KeyNode extends AbstractNode {
 
     Node.Property p;
 
+    // Key property
     p = new PropertySupport.ReadWrite (
       PROP_NAME,
       String.class,
@@ -155,24 +175,70 @@ public class KeyNode extends AbstractNode {
       NbBundle.getBundle(KeyNode.class).getString("HINT_item_key")
     ) {
       public Object getValue () {
-        return item.getKey();
+        return itemKey;
       }
 
       public void setValue (Object val) throws IllegalAccessException,
       IllegalArgumentException, InvocationTargetException {
-//System.out.println("Set property key to " + val);      
+      try {
         if (!(val instanceof String))
           throw new IllegalArgumentException();
 
         KeyNode.this.setName ((String)val);
+      } catch (Exception e) {e.printStackTrace();}
       }
     };
     p.setName (Element.ItemElem.PROP_ITEM_KEY);
     ss.put (p);
 
+    // Value property
+    p = new PropertySupport.ReadWrite (
+      Element.ItemElem.PROP_ITEM_VALUE,
+      String.class,
+      NbBundle.getBundle(KeyNode.class).getString("PROP_item_value"),
+      NbBundle.getBundle(KeyNode.class).getString("HINT_item_value")
+    ) {
+      public Object getValue () {
+        return getItem().getValue();
+      }
+
+      public void setValue (Object val) throws IllegalAccessException,
+      IllegalArgumentException, InvocationTargetException {
+        if (!(val instanceof String))
+          throw new IllegalArgumentException();
+
+        getItem().setValue((String)val);
+      }
+    };
+    p.setName (Element.ItemElem.PROP_ITEM_VALUE);
+    ss.put (p);
+
+    // Comment property
+    p = new PropertySupport.ReadWrite (
+      Element.ItemElem.PROP_ITEM_COMMENT,
+      String.class,
+      NbBundle.getBundle(KeyNode.class).getString("PROP_item_comment"),
+      NbBundle.getBundle(KeyNode.class).getString("HINT_item_comment")
+    ) {
+      public Object getValue () {
+        return getItem().getComment();
+      }
+
+      public void setValue (Object val) throws IllegalAccessException,
+      IllegalArgumentException, InvocationTargetException {
+        if (!(val instanceof String))
+          throw new IllegalArgumentException();
+
+        getItem().setComment((String)val);
+      }
+    };
+    p.setName (Element.ItemElem.PROP_ITEM_COMMENT);
+    ss.put (p);
+
+/*
     try {
       p = new PropertySupport.Reflection (
-        item, String.class, "getValue", "setValue"
+        getItem(), String.class, "getValue", "setValue"
       );
       p.setName (Element.ItemElem.PROP_ITEM_VALUE);
       p.setDisplayName (NbBundle.getBundle(KeyNode.class).getString("PROP_item_value"));
@@ -190,6 +256,7 @@ public class KeyNode extends AbstractNode {
     } catch (Exception ex) {
       throw new InternalError ();
     }
+   */ 
     return s;
   }
 
@@ -200,7 +267,7 @@ public class KeyNode extends AbstractNode {
   void fireChange (PropertyChangeEvent ev) {
     firePropertyChange (ev.getPropertyName (), ev.getOldValue (), ev.getNewValue ());
     if (ev.getPropertyName ().equals (PresentableFileEntry.PROP_NAME)) {
-      super.setName (item.getKey());
+      super.setName (itemKey);
       return;
     }
   }
@@ -209,6 +276,7 @@ public class KeyNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  4    Gandalf   1.3         6/6/99   Petr Jiricka    
  *  3    Gandalf   1.2         5/16/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/14/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    

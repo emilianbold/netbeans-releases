@@ -92,7 +92,7 @@ class PropertiesParser {
     }
     else {
       // loading from the file
-      InputStream is = pfe.getFile().getInputStream();
+      InputStream is = new PropertiesEditorSupport.NewLineInputStream(pfe.getFile().getInputStream());
       return new PropertiesRead(is);
     }
   }
@@ -103,9 +103,9 @@ class PropertiesParser {
   */
   public void parseFile() {
     try {
-//System.out.println("parsing-begin  //" + Thread.currentThread().toString());  
+System.out.println("parsing-begin  //" + Thread.currentThread().toString());  
       PropertiesStructure ps = parseFileMain(input);
-//System.out.println("parsing-end  //" + Thread.currentThread().toString());  
+System.out.println("parsing-end  //" + Thread.currentThread().toString());  
       input.close();
       pfe.getHandler().setPropertiesStructure(ps);
     }
@@ -164,8 +164,14 @@ class PropertiesParser {
     // exit completely if null is returned the very first time              
     if (firstNull)                                            
       return null;
+      
+    String comHelp;
+    comHelp = comment.toString();
+    if (comment.length() > 0)
+      if (comment.charAt(comment.length() - 1) == '\n')
+        comHelp = comment.substring(0, comment.length() - 1);
     
-    commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), comment.toString());
+    commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), comHelp);
     // fl now contains the line after the comment or  null if none exists
    
 
@@ -341,7 +347,8 @@ class PropertiesParser {
   */
   private static class PropertiesRead {
          
-//    private OutputStream debugOutput;
+    // PENDING - remove debug
+    private OutputStream debugOutput;
     
     /** The underlaying reader. */
     private Reader reader;
@@ -356,10 +363,11 @@ class PropertiesParser {
     private PropertiesRead() {    
       peekChar = -1;
       position = 0;                                              
-/*      try {
+      // PENDING - remove debug
+      try {
         debugOutput = new FileOutputStream("c:\\debug.properties");
       }
-      catch (Exception e) {}*/
+      catch (Exception e) {}
     }
     
     /** Creates the reader from the text. */
@@ -388,8 +396,10 @@ class PropertiesParser {
       if (character != -1)
         position++;       
 
-//      if (character >= 0)  
-//        debugOutput.write(character);  
+      // PENDING - remove debug
+      if (character >= 0)  
+        debugOutput.write(character);  
+
       return character;  
     }     
               
@@ -482,12 +492,14 @@ class PropertiesParser {
     /** Closes the stream */
     public void close() throws IOException {
       reader.close();
-//      debugOutput.close();
+      // PENDING - remove debug
+      debugOutput.close();
     }            
     
     
   }
                                                     
+  
   /** Helper class */                                                  
   private static class FlaggedLine {
   

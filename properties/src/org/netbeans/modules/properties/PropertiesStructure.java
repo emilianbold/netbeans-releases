@@ -15,6 +15,7 @@ package com.netbeans.developer.modules.loaders.properties;
 
 import java.io.*;
 import java.util.Iterator;
+import javax.swing.text.BadLocationException;
 
 import com.netbeans.ide.text.PositionBounds;
 
@@ -45,11 +46,11 @@ public class PropertiesStructure extends Element {
   * Looks for changes between the structures and according to them calls update methods.
   */
   public synchronized void update(PropertiesStructure struct) {       
-//System.out.println(" ------- OLD -------- ");
-//System.out.println(toString());
-//System.out.println(" ------- NEW -------- ");
-//System.out.println(struct.toString());
-//System.out.println(" -------------------- ");
+System.out.println(" ------- OLD -------- ");
+System.out.println(toString());
+System.out.println(" ------- NEW -------- ");
+System.out.println(struct.toString());
+System.out.println(" -------------------- ");
     boolean structChanged = false;
     Element.ItemElem curItem;
     Element.ItemElem oldItem;
@@ -184,7 +185,36 @@ for (int i=0; i<deleted.size(); i++) {
     else
       return false;
   }
-  
+                                     
+  /** Deletes an item from the structure, if exists. 
+  * @return true if the item has been deleted successfully, false if it didn't exist.
+  */                         
+  public boolean deleteItem(String key) {
+    if (key == null)
+      key = "";
+    if (key.length() == 0)
+      return false; 
+    Element.ItemElem item = getItem(key);
+    if (item == null)
+      return false;
+    try {  
+      item.getBounds().setText("");
+      items.remove(key);
+      ArrayMapList deleted = new ArrayMapList();
+      deleted.add(key, item);
+      structureChanged(new ArrayMapList(), new ArrayMapList(), deleted);
+      return true;
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+      return false;
+    }
+    catch (BadLocationException e) {
+      e.printStackTrace();
+      return false;
+    }
+  }              
+                       
   /** Adds an item to the end of the file, or before the terminating comment, if exists. 
   * @return true if the item has been added successfully, false if another item with the same name exists.
   */                         
@@ -195,9 +225,49 @@ for (int i=0; i<deleted.size(); i++) {
       value = "";
     if (comment == null)
       comment = "";
-     // PENDING 
-    return false; 
-  }
+    if (key.length() == 0 /*&& value.length() == 0 && comment.length() == 0*/)
+      return false;
+      
+    Element.ItemElem item = getItem(key);
+    if (item != null)
+      return false;
+    
+    // construct the new element
+    item = new Element.ItemElem(null, 
+      new Element.KeyElem    (null, key), 
+      new Element.ValueElem  (null, value), 
+      new Element.CommentElem(null, comment));
+    // find the position where to add it  
+    try {
+      synchronized (getParent()) {            
+        PositionBounds pos = getSuitablePositionBoundsForInsert();
+        pos.insertAfter(item.printString());
+        getParent().reparseNowBlocking();
+        return true;
+      }  
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+      return false;
+    }
+    catch (BadLocationException e) {
+      e.printStackTrace();
+      return false;
+    }
+  }                     
+                      
+  /** Returns PositionBounds after which a new item may be inserted by insertAfter(String) */
+  private PositionBounds getSuitablePositionBoundsForInsert() {
+    Element.ItemElem e = null;
+    for (Iterator nonEmpty = nonEmptyItems(); nonEmpty.hasNext();)
+      e = (Element.ItemElem)nonEmpty.next();
+    if (e == null)
+      return getBounds();
+    else {
+      e.print();
+      return e.getBounds();
+    }  
+  }                                         
   
   /** Returns an iterator iterating through items which have non-empty key */
   public Iterator nonEmptyItems() {

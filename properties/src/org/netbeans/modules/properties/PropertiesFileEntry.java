@@ -200,8 +200,8 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     /** Sets all keys in the correct order */      
     protected void mySetKeys() {
       // use TreeSet because its iterator iterates in ascending order          
-      TreeSet ts = new TreeSet(
-        new Comparator() {
+      TreeSet ts = new TreeSet();
+/*        new Comparator() {
           public int compare(Object o1, Object o2) {
             if (o1 == o2)
               return 0;
@@ -212,12 +212,12 @@ public class PropertiesFileEntry extends PresentableFileEntry {
               return 0;
           }
         }
-      );
+      );*/
       PropertiesStructure ps = getHandler().getStructure();
       if (ps != null) {
         for (Iterator it = ps.nonEmptyItems();it.hasNext();) {
           Element.ItemElem el = (Element.ItemElem)it.next();
-          ts.add(el);
+          ts.add(el.getKey());
         }  
       }  
       setKeys(ts);
@@ -244,15 +244,35 @@ public class PropertiesFileEntry extends PresentableFileEntry {
           switch (evt.getChangeType()) {
             case PropertyBundleEvent.CHANGE_STRUCT:
             case PropertyBundleEvent.CHANGE_ALL:
+System.out.println("got CHANGE_ALL - " + getFile().getName());
               mySetKeys();
               break;
             case PropertyBundleEvent.CHANGE_FILE:
               if (evt.getEntryName().equals(getFile().getName()))
                 // if it's me
+System.out.println("got CHANGE_FILE - " + getFile().getName());
                 mySetKeys();
               break;
             case PropertyBundleEvent.CHANGE_ITEM:
               if (evt.getEntryName().equals(getFile().getName())) {
+                // the node should fire the change (to its property sheet, for example
+                KeyNode kn = (KeyNode)findChild(evt.getItemName());
+                if (kn != null) {                       
+                  PropertiesStructure ps = getHandler().getStructure();
+                  if (ps != null) {
+                    Element.ItemElem it = ps.getItem(evt.getItemName());
+                 System.out.println("firing -all fine " + evt.getItemName() + " , " + it.getKey());
+                    kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_VALUE, null, it.getValue()));
+                 System.out.println("fired " + evt.getItemName() + " , " + it.getValue());
+                    kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_COMMENT, null, it.getComment()));
+                 System.out.println("fired " + evt.getItemName() + " , " + it.getComment());
+                 System.out.println("firing -all fine - done ");
+                  }                                                                                      
+                  else
+                    System.out.println("listening to CHANGE_ITEM - propstruct is null " + evt.getItemName());
+                }                   
+                else
+                  System.out.println("listening to CHANGE_ITEM - kyNode is null : " + evt.getItemName());
                 // if it's me
                 // in theory do nothing
                 //PropKeysChildren.this.refreshKey(evt.getItemName());
@@ -274,8 +294,9 @@ public class PropertiesFileEntry extends PresentableFileEntry {
       setKeys(new ArrayList());
     }
 
-    protected Node[] createNodes (Object key) {        
-      return new Node[] { new KeyNode((Element.ItemElem)key) };
+    protected Node[] createNodes (Object key) {            
+      String itemKey = (String)key;
+      return new Node[] { new KeyNode(getHandler().getStructure(), itemKey) };
     }
 
   } // end of class PropKeysChildren
