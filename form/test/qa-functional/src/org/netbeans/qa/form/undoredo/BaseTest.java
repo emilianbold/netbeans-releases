@@ -32,6 +32,7 @@ import java.awt.Container;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.Operator;
 
 public class BaseTest extends JellyTestCase {
     EditorOperator editor;
@@ -59,14 +60,19 @@ public class BaseTest extends JellyTestCase {
     */
     
     //select tab in PropertySheet
-    public void selectTab(PropertySheetOperator pso, int tabIndex){
+    public void selectTab(PropertySheetOperator pso, String name){
         ComponentSearcher searcher = new ComponentSearcher((Container)pso.getSource());
         javax.swing.JTabbedPane tPane= JTabbedPaneOperator.findJTabbedPane((Container)pso.getSource(), searcher.getTrueChooser(""));
         JTabbedPaneOperator tPaneOperator = new JTabbedPaneOperator(tPane);
-        //tPaneOperator.selectPage(tabIndex);//doesn't work
-        tPane.setSelectedIndex(tabIndex);
+        if(tPaneOperator.getTabCount() == -1)return;
+        for(int i = 0 ; i<tPaneOperator.getTabCount(); i++){
+            if(tPaneOperator.getTitleAt(i).equals(name)) {
+                tPaneOperator.setSelectedIndex(i);
+                return;
+            }
+        }
     }
-    
+      
     public void testScenario() {
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
         
@@ -85,15 +91,16 @@ public class BaseTest extends JellyTestCase {
         //MainFrame mf = MainFrame.getMainFrame();
         // add Jpanel1, JPanel2
         inspector = formWindow.inspector();
+        PropertySheetOperator pso = inspector.properties();
         
         new Action(null,"Add From Palette|Swing|JPanel").performPopup(new Node(inspector.treeComponents(),"[JFrame]"));
         new Action(null,"Add From Palette|Swing|JPanel").performPopup(new Node(inspector.treeComponents(),"[JFrame]"));
         
         //change properties (color)
         inspector.selectComponent("[JFrame]|JPanel1 [JPanel]");
-        new ColorProperty(inspector.properties().getPropertySheetTabOperator("Properties"), "background").setRGBValue(202,234,223);
+        new ColorProperty(pso, "background").setRGBValue(202,234,223);
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]");
-        new ColorProperty(inspector.properties().getPropertySheetTabOperator("Properties"), "background").setRGBValue(252,34,3);
+        new ColorProperty(pso, "background").setRGBValue(252,34,3);
         
         // add JButton1 to JPanel1
         new Action(null,"Add From Palette|Swing|JButton").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel1 [JPanel]"));
@@ -107,7 +114,9 @@ public class BaseTest extends JellyTestCase {
         
         // change properties
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]|jButton1 [JButton]");
-        new TextFieldProperty(inspector.properties().getPropertySheetTabOperator("Properties"), "text").setValue("<html><font color='red' size='+3'>QA</font> test");
+  
+        selectTab(pso, "Properties");
+        new Property(pso, "text").setValue("<html><font color='red' size='+3'>QA</font> test");
         
         // change order
         new ActionNoBlock(null,"Change Order...").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel2 [JPanel]"));
@@ -118,7 +127,8 @@ public class BaseTest extends JellyTestCase {
         
         // change generated code
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]|jButton1 [JButton]");
-        new TextFieldProperty(inspector.properties().getPropertySheetTabOperator("Properties"), "text").openEditor();
+        
+        new Property(pso, "text").openEditor();
         //inspector.selectNode("[JFrame]" + inspector.delim + "JPanel2 [JPanel]" + inspector.delim + "jButton1 [JButton]");
         //inspector.switchToTab("Properties");
         //inspector.openEditDialog("text");
@@ -131,13 +141,12 @@ public class BaseTest extends JellyTestCase {
         fceao.setPostInitializationCode("bbb");
         fceao.ok();
         fceo.ok();
-
+        
         // event
-        PropertySheetOperator pso = inspector.properties();
-        selectTab(pso, 2);
+        selectTab(pso, "Events");
         Property prop = new Property(pso, "actionPerformed");
         prop.setValue("myAction");
-        selectTab(pso, 0);
+        selectTab(pso, "Properties");
         
         
         //2x
