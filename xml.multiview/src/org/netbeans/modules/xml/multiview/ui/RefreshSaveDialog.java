@@ -39,7 +39,7 @@ public class RefreshSaveDialog extends org.openide.DialogDescriptor {
     /** Creates a new instance of RefreshSaveDialog */
     public RefreshSaveDialog(ErrorPanel errorPanel, String errorMessage ) {
         super (
-            errorMessage,
+            NbBundle.getMessage(RefreshSaveDialog.class,"TTL_warning_message",errorMessage),
             NbBundle.getMessage(RefreshSaveDialog.class,"TTL_warning"),
             true,
             OPTIONS,
