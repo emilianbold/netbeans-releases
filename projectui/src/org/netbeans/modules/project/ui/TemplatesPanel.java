@@ -19,8 +19,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -28,7 +36,7 @@ import org.openide.util.NbBundle;
  *
  * @author  tom
  */
-public class TemplatesPanel implements WizardDescriptor.Panel {
+public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI.Builder {
     
     private ArrayList listeners;
     private TemplatesPanelGUI panel;
@@ -80,7 +88,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         return this.panel;
     }
     
-    void fireChange () {
+    public void fireChange() {
         Iterator  it = null;
         synchronized (this) {
             if (this.listeners == null) {
@@ -92,6 +100,97 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         while (it.hasNext ()) {
             ((ChangeListener)it.next()).stateChanged(event);
         }
+    }
+    
+    public org.openide.nodes.Children createCategoriesChildren(org.openide.filesystems.FileObject fo) {
+        assert fo != null && fo.isFolder() : "Root must be a folder";  //NOI18N
+        DataFolder folder = DataFolder.findFolder(fo);
+        return new CategoriesChildren (folder);
+    }
+    
+    public org.openide.nodes.Children createTemplatesChildren(org.openide.filesystems.FileObject fo) {
+        return new TemplateChildren (fo);
+    }
+    
+    public char getCategoriesMnemonic() {
+        return NbBundle.getMessage(TemplatesPanel.class,"MNE_Categories").charAt(0);
+    }
+    
+    public String getCategoriesName() {
+        return NbBundle.getMessage(TemplatesPanel.class,"CTL_Categories");
+    }
+    
+    public char getTemplatesMnemonic() {
+        return NbBundle.getMessage(TemplatesPanel.class,"MNE_Projects").charAt (0);
+    }
+    
+    public String getTemplatesName() {
+        return NbBundle.getMessage(TemplatesPanel.class,"CTL_Projects");
+    }
+    
+    private static class CategoriesChildren extends Children.Keys {
+        
+        private DataFolder root;
+                
+        public CategoriesChildren (DataFolder folder) {
+            this.root = folder;
+        }
+        
+        protected void addNotify () {
+            this.setKeys (this.root.getChildren());
+        }
+        
+        protected void removeNotify () {
+            this.setKeys (new Object[0]);
+        }
+        
+        protected Node[] createNodes(Object key) {
+            if (key instanceof DataObject) {
+                DataObject dobj = (DataObject) key;
+                if (dobj instanceof DataFolder) {
+                    return new Node[] {
+                        new FilterNode (dobj.getNodeDelegate(), new CategoriesChildren ((DataFolder)dobj))
+                    };
+                }
+            }
+            return new Node[0];
+        }                
+    }
+    
+    private static class TemplateChildren extends Children.Keys {
+        
+        private FileObject root;
+                
+        public TemplateChildren (FileObject folder) {
+            this.root = folder;
+            assert this.root != null : "Root can not be null";  //NOI18N
+        }
+        
+        protected void addNotify () {
+            this.setKeys (this.root.getChildren());
+        }
+        
+        protected void removeNotify () {
+            this.setKeys (new Object[0]);
+        }
+        
+        protected Node[] createNodes(Object key) {
+            if (key instanceof FileObject) {
+                FileObject fo = (FileObject) key;
+                if (fo.isData()) {
+                    try {
+                        DataObject dobj = DataObject.find (fo);
+                        return new Node[] {
+                            new FilterNode (dobj.getNodeDelegate(),Children.LEAF)
+                        };
+                    } catch (DataObjectNotFoundException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                }
+            }
+            return new Node[0];
+        }        
+        
     }
     
 }
