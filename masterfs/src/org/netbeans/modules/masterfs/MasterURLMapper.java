@@ -61,7 +61,7 @@ public final class MasterURLMapper extends URLMapper {
         File f = (hfo != null) ? hfo.getResource().getFile() : null;
 
         try {
-            return (f != null) ? fileToURL(f) : null;
+            return (f != null) ? fileToURL(f, fo) : null;
         } catch (MalformedURLException mfx) {
             return null;
         }
@@ -71,14 +71,21 @@ public final class MasterURLMapper extends URLMapper {
         return Utilities.isWindows() && file.getParent() == null;
     }
     
-    static URL fileToURL(File file) throws MalformedURLException {        
+    static URL fileToURL(File file, FileObject fo) throws MalformedURLException {        
         URL retVal = null;
         if (isWindowsDriveRoot(file)) {
             retVal = new URL ("file:/"+file.getAbsolutePath ());//NOI18N            
         } else {
-            retVal = file.toURI().toURL();                        
+            if (fo.isFolder() && !fo.isValid()) {                
+                String urlDef = file.toURI().toURL().toExternalForm();
+                String pathSeparator = String.valueOf(File.separatorChar);
+                if (!urlDef.endsWith(pathSeparator)) {
+                    retVal = new URL (urlDef + pathSeparator);     
+                }                  
+            }
+            retVal = (retVal == null) ? file.toURI().toURL() : retVal;                        
         }        
         return retVal;
     }
-    
+
 }
