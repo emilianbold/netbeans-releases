@@ -59,7 +59,7 @@ public class WebProjectGenerator {
             for (int i = 0; i < l.size(); i++) {
                 Element e = (Element) l.get(i);
                 Element te = Util.findElement(e, "type", NS_GENERAL);
-                if (Util.findText(te).equals("doc_root")) {
+                if (te != null && Util.findText(te).equals("doc_root")) {
                     foldersEl.removeChild(e);
                     break;
                 }
