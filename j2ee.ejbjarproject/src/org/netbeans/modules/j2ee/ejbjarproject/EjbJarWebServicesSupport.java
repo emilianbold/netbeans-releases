@@ -62,7 +62,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         return sessionGenerator.generateWebServiceImplBean(wsName, pkg, project, delegateData);
     }
     
-    public void addServiceImpl(String serviceName, String serviceEndpointInterface, String servantClassName, FileObject configFile) {
+    public void addServiceImpl(String serviceName, FileObject configFile) {
         
         //Add properties to project.properties file
         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -99,12 +99,10 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
             ProjectManager.getDefault().saveProject(project);
         }catch(java.io.IOException ioe){
             throw new RuntimeException(ioe.getMessage());
-        }
-        
-        addServiceImplEntry(serviceName, serviceEndpointInterface, servantClassName);
+        }       
     }
     
-    private void addServiceImplEntry(String serviceName, String serviceEndpointInterface, String servantClassName) {
+    public  void addServiceEntriesToDD(String serviceName, String serviceEndpointInterface, String servantClassName) {
         //add service endpoint entry to ejb-jar.xml
         DDProvider provider = DDProvider.getDefault();
         EjbJarImplementation ejbJarImpl = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);

@@ -67,8 +67,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     
     //implementation of WebServicesSupportImpl
     
-    public void addServiceImpl(String serviceName, String serviceEndpointInterface, String servantClassName, FileObject configFile) {
-        
+    public void addServiceImpl(String serviceName, FileObject configFile) {
         //Add properties to project.properties file
         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String packageName = getPackageName(configFile);
@@ -76,7 +75,6 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         (packageName.equals("") ? "" : "/") + configFile.getNameExt()); //NOI18N
         ep.put(serviceName + MAPPING_PROP_SUFFIX, serviceName + MAPPING_FILE_SUFFIX); //NOI18N
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        
         //Add web-services information in project.xml
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -95,18 +93,14 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         webservice.appendChild(webserviceName);
         webserviceName.appendChild(doc.createTextNode(serviceName));
         helper.putPrimaryConfigurationData(data, true);
-        
         // Update wscompile related properties.  boolean return indicates whether
         // any changes were made.
         updateWsCompileProperties(serviceName);
-
         try {
             ProjectManager.getDefault().saveProject(project);
         }catch(java.io.IOException ioe){
             throw new RuntimeException(ioe.getMessage());
         }
-
-        addServiceImplEntry(serviceName, servantClassName);
     }
     
     private WebApp getWebApp() {
@@ -121,7 +115,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         return null;
     }
     
-    private void addServiceImplEntry(String serviceName, String servantClassName) {
+    public  void addServiceEntriesToDD(String serviceName, String serviceEndpointInterface, String servantClassName) {
         //add servlet entry to web.xml
         String servletName = WebServiceServlet_PREFIX + serviceName;
         WebApp webApp = getWebApp();
@@ -139,7 +133,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 //Hack to save any defaults put in vendor-specific DD
                 //Need a better way to save selectively from server plugins(an api that allows
                 //server plugins to save server configuration in selective manner)
-				org.openide.LifecycleManager.getDefault().saveAll();
+                org.openide.LifecycleManager.getDefault().saveAll();
             }catch(Exception e){
                 e.printStackTrace();
                 throw new RuntimeException(e.getMessage());
