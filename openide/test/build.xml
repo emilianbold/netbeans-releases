@@ -25,11 +25,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <property name="xtest.home" location="../../xtest"/>
     <property name="xtest.extra.home" location="../../../nbextra/xtest"/>
-
-    <property name="xtest.build" location="."/>    
-    <property name="xtest.file.name" value="test.jar"/>
-    <property name="xtest.file.location" value="lib"/>
+    <property name="xtest.general.antfile" location="${xtest.home}/general.xml"/>
     
+    <property name="xtest.results" location="results"/>
+   
     <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
@@ -46,16 +45,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.includes" value=""/>
     <property name="xtest.excludes" value=""/>   
     
-    <property name="xtest.general.antfile" location="${xtest.home}/general.xml"/>
-    
-    <!-- =========== -->
-    <!-- Init target -->
-    <!-- =========== -->
-    
-    <target name="init">
-        <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar"/>
-        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.extra.home}"/>
-    </target>
     
     <!-- ============ -->
     <!-- Main targets -->
@@ -66,10 +55,15 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target builds tests -->
     <target name="buildtests" depends="prepare-compile-classpath">
        <!-- This calls common build process. -->
-       <!-- You can write your own is you need something special -->
+       <!-- You can write your own if you need something special -->
+       
+       <!-- This property contains classpath used for compilation -->
+       <!-- WRITE CORRECT VALUE TO THIS PROPERTY -->
        <property name="compiletest.classpath" refid="compiletest.classpath"/>
        <ant dir="." antfile="${xtest.general.antfile}"
              target="buildtests">
+           <!-- This property contains directories which should be compiled -->
+           <!-- WRITE CORRECT VALUE TO THIS PROPERTY -->
            <property name="compile.srcdir" value="unit/src;regr/src"/>
        </ant>
     </target>
@@ -77,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target cleans tests -->
     <target name="cleantests">
        <!-- This calls common clean process. -->
-       <!-- You can write your own is you need something special -->
+       <!-- You can write your own if you need something special -->
        <ant dir="." antfile="${xtest.general.antfile}"
              target="cleantests">
        </ant>
@@ -96,11 +90,15 @@ Microsystems, Inc. All Rights Reserved.
     <target name="runidetest">
         <path id="idetest.classpath">
           <pathelement path="${tbag.classpath}"/>
+          <!-- ADD SOME OTHER PATH IF YOU NEED IT-->
         </path>
+        <!-- This property contains classpath for execution. 
+             All items in this classpath will be mounted to repository -->
         <property name="idetest.classpath" refid="idetest.classpath"/>
         <ant dir="." antfile="${xtest.general.antfile}"
              target="test">
            <property name="xtest.exectype" value="ide"/>
+           <!-- YOU CAN ADD SOME ARGS INTO IDE COMMANDLINE -->
            <!-- <property name="xtest.ide.commandline.suffix" value=""/> -->
         </ant>
     </target>
@@ -112,7 +110,9 @@ Microsystems, Inc. All Rights Reserved.
         <path id="codetest.complete.classpath">
           <path refid="codetest.classpath"/>
           <pathelement path="${tbag.classpath}"/>
+          <!-- ADD SOME OTHER PATH IF YOU NEED IT-->
         </path>
+        <!-- This property contains classpath for execution. -->
         <property name="codetest.classpath" refid="codetest.complete.classpath"/>
         <ant dir="." antfile="${xtest.general.antfile}"
              target="test">
@@ -144,8 +144,8 @@ Microsystems, Inc. All Rights Reserved.
    <!-- ========================================================== -->
    <!-- ========================================================== -->
 
+    <!-- this "switch" will decide how to create classpath for code tests -->
     <target name="which-classpath">
-        <!-- this "switch" will decide how to create classpath for code tests -->
         <condition property="jarcode.classpath">
             <equals arg1="${xtest.code.classpath}" arg2="jar"/>
         </condition>
@@ -164,36 +164,30 @@ Microsystems, Inc. All Rights Reserved.
     <target name="prepare-compile-classpath"
          depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath"/>
     
-    <target name="jarcompile-classpath" depends="init,which-classpath" if="jarcode.classpath">
+    <target name="jarcompile-classpath" depends="which-classpath" if="jarcode.classpath">
         <echo message="Using jars classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against jars -->
 	<path id="compiletest.classpath">        
 	    <pathelement location="../openide-13javac-workaround.jar"/>
 	    <pathelement location="../netbeans/lib/openide.jar"/>
-	    <pathelement path="${junit.path}"/>
-	    <pathelement path="${xerces.path}"/>
 	</path>
     </target>
         
-    <target name="srccompile-classpath" depends="init,which-classpath" if="srccode.classpath">
+    <target name="srccompile-classpath" depends="which-classpath" if="srccode.classpath">
         <echo message="Using srcs classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against sources -->
     	<path id="compiletest.classpath">        
 	        <pathelement location="../openide-13javac-workaround.jar"/>
 	        <pathelement location="../src"/>
-	        <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
 	</path>
     </target>
     
-    <target name="idecompile-classpath" depends="init,which-classpath" if="idecode.classpath">
+    <target name="idecompile-classpath" depends="which-classpath" if="idecode.classpath">
         <echo message="Using IDE classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against installed IDE -->
     	<path id="compiletest.classpath">        
     		<pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
 	        <pathelement location="${netbeans.home}/lib/openide.jar"/>
-	        <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
    	</path>
     </target>
     
