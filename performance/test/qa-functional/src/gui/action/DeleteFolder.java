@@ -95,6 +95,7 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
         projectTab.maximize();
         
         projectTab.getProjectRootNode("PerformanceTestData").collapse();
+        projectTab.getProjectRootNode("jEdit").collapse();
         
         addClassNameToLookFor("explorer.view");
         setPrintClassNames(true);

@@ -124,6 +124,10 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
         org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
         projectTab = new ProjectsTabOperator();
         projectTab.maximize();
+        
+        projectTab.getProjectRootNode("jEdit").collapse();
+        projectTab.getProjectRootNode("PerformanceTestFoldersData").collapse();
+        
         turnOff();
         addClassNameToLookFor("explorer.view");
         setPrintClassNames(true);
