@@ -64,7 +64,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     private boolean isUISettingCategoryNode() {
         DataFolder df = (DataFolder) super.getCookie (DataFolder.class);
         if (df != null) {
-            String name = df.getPrimaryFile ().getPackageNameExt ('/', '.');
+            String name = df.getPrimaryFile ().getPath();
             return name.startsWith(PREFIX_SETTING_CATEGORIES);
         } else return false;
     }
@@ -181,7 +181,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
      */
     private String findName () {
         DataFolder df = (DataFolder)getCookie (DataFolder.class);
-        String name = df.getPrimaryFile ().getPackageNameExt ('/', '.');
+        String name = df.getPrimaryFile ().getPath();
         if (name.startsWith (prefObjects (root ()))) {
             name = name.substring (prefObjects (root ()).length ());
         }

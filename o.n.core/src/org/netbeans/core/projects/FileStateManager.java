@@ -90,7 +90,7 @@ final class FileStateManager {
             throw new IllegalArgumentException ("Invalid layer " + layer); //NOI18N
 
         // find file on specified layer
-        FileObject fo = fsLayer.findResource (mfo.getPackageNameExt ('/', '.'));
+        FileObject fo = fsLayer.findResource (mfo.getPath());
         
         // remove the file if it exists and current definition should be preserved
         if (fo != null && !revert) {
@@ -100,7 +100,7 @@ final class FileStateManager {
 
         // create file on specified layer if it doesn't exist
         if (fo == null) {
-            String parent = mfo.getParent ().getPackageNameExt ('/', '.');
+            String parent = mfo.getParent ().getPath();
             final FileObject fparent = FileUtil.createFolder (fsLayer.getRoot (), parent);
             fparent.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run () throws IOException {
@@ -196,7 +196,7 @@ final class FileStateManager {
     }
 
     private void deleteImpl (FileObject mfo, FileSystem fsLayer) throws IOException {
-        FileObject fo = fsLayer.findResource (mfo.getPackageNameExt ('/', '.'));
+        FileObject fo = fsLayer.findResource (mfo.getPath());
         if (fo != null) {
             FileLock lock = null;
             try {
@@ -341,7 +341,7 @@ final class FileStateManager {
         
         private boolean isOnLayer (FileObject mfo, int layer) {
             FileSystem fsLayer = getLayer (layer);
-            return fsLayer == null ? false : null != fsLayer.findResource (mfo.getPackageNameExt ('/', '.'));
+            return fsLayer == null ? false : null != fsLayer.findResource (mfo.getPath());
         }
         
         /**
@@ -351,7 +351,7 @@ final class FileStateManager {
          */
         private synchronized boolean attachNotifier (FileObject mfo, int layer) {
             FileSystem fsLayer = getLayer (layer);
-            String fn = mfo.getPackageNameExt ('/', '.');
+            String fn = mfo.getPath();
             FileObject fo = null;
             boolean isDelegate = true;
 
@@ -430,8 +430,8 @@ final class FileStateManager {
         public void fileDataCreated (FileEvent fe) {
             FileObject mfo = (FileObject) file.get ();
             if (mfo != null && mfo.isValid ()) {
-                String created = fe.getFile ().getPackageNameExt ('/', '.');
-                String mfoname = mfo.getPackageNameExt ('/', '.');
+                String created = fe.getFile ().getPath();
+                String mfoname = mfo.getPath();
 
                 if (created.equals (mfoname)) {
                     int layer;
@@ -448,8 +448,8 @@ final class FileStateManager {
         public void fileFolderCreated (FileEvent fe) {
             FileObject mfo = (FileObject) file.get ();
             if (mfo != null && mfo.isValid ()) {
-                String created = fe.getFile ().getPackageNameExt ('/', '.');
-                String mfoname = mfo.getPackageNameExt ('/', '.');
+                String created = fe.getFile ().getPath();
+                String mfoname = mfo.getPath();
 
                 if (mfoname.startsWith (created)) {
                     int layer;
@@ -467,8 +467,8 @@ final class FileStateManager {
         public void fileDeleted (FileEvent fe) {
             FileObject mfo = (FileObject) file.get ();
             if (mfo != null && mfo.isValid ()) {
-                String deleted = fe.getFile ().getPackageNameExt ('/', '.');
-                String mfoname = mfo.getPackageNameExt ('/', '.');
+                String deleted = fe.getFile ().getPath();
+                String mfoname = mfo.getPath();
 
                 if (deleted.equals (mfoname)) {
                     int layer;

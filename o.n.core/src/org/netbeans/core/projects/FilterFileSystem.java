@@ -34,7 +34,7 @@ public final class FilterFileSystem extends MultiFileSystem {
         this.del = root.getFileSystem ();
         
         try {
-            setSystemName (del.getSystemName () + " : " + root.getPackageNameExt ('/', '.')); //NOI18N
+            setSystemName (del.getSystemName () + " : " + root.getPath()); //NOI18N
         } catch (PropertyVetoException e) {
             // ther shouldn't be any listener vetoing setSystemName
             ErrorManager.getDefault ().notify (e);
@@ -48,11 +48,11 @@ public final class FilterFileSystem extends MultiFileSystem {
     }
 
     protected FileObject findResourceOn (FileSystem fs, String res) {
-        return fs.findResource (root.getPackageNameExt ('/', '.') + "/" + res); //NOI18N
+        return fs.findResource (root.getPath() + "/" + res); //NOI18N
     }
 
     protected java.util.Set createLocksOn (String name) throws IOException {
-        String nn = root.getPackageNameExt ('/', '.') + "/" + name;
+        String nn = root.getPath() + "/" + name;
         LocalFileSystemEx.potentialLock (name, nn);
         return super.createLocksOn (name);
     }
