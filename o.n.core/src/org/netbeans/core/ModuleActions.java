@@ -20,6 +20,7 @@ import javax.swing.Action;
 import org.openide.actions.ActionManager;
 import org.openide.util.actions.SystemAction;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 
 import org.netbeans.core.modules.ManifestSection;
 
@@ -41,7 +42,9 @@ public class ModuleActions extends ActionManager
     private Map runningActions = new HashMap();
 
     public static ModuleActions getDefaultInstance() {
-        return (ModuleActions)ActionManager.getDefault();
+        ActionManager mgr = ActionManager.getDefault();
+        assert mgr instanceof ModuleActions : "Got wrong ActionManager instance: " + mgr + " from " + Lookup.getDefault();
+        return (ModuleActions)mgr;
     }
 
     /** Array with all activated actions.
