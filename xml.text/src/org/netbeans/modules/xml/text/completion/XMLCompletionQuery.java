@@ -123,7 +123,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
             
             // determine last typed text, prefix text
             
-            if ( boundary == false ) {
+           if ( boundary == false ) {
                 
                 preText = token.getImage().substring( 0, offset - token.getOffset() );
                 if ("".equals(preText)) throw new IllegalStateException("Cannot get token prefix at " + offset);
@@ -144,7 +144,8 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         break;
                 }
             } else {
-                switch (id) {
+               switch (id) {
+                    case XMLDefaultTokenContext.TEXT_ID:
                     case XMLDefaultTokenContext.TAG_ID:
                     case XMLDefaultTokenContext.ARGUMENT_ID:
                     case XMLDefaultTokenContext.CHARACTER_ID:
