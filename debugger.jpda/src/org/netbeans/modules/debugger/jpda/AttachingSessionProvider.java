@@ -13,12 +13,14 @@
 
 package org.netbeans.modules.debugger.jpda;
 
+import java.util.Map;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -37,10 +39,13 @@ public class AttachingSessionProvider extends SessionProvider {
     };
     
     public String getSessionName () {
-        String processName = (String) contextProvider.lookupFirst 
-            (null, String.class);
-        if (processName != null)
-            return processName;
+        Map arguments = (Map) contextProvider.lookupFirst 
+            (null, Map.class);
+        if (arguments != null) {
+            String processName = (String) arguments.get ("name");
+            if (processName != null)
+                return LaunchingSessionProvider.findUnique (processName);
+        }
         if (sadic.getHostName () != null)
             return sadic.getHostName () + ":" + sadic.getPortNumber ();
         return LaunchingSessionProvider.findUnique 
@@ -50,7 +55,8 @@ public class AttachingSessionProvider extends SessionProvider {
     public String getLocationName () {
         if (sadic.getHostName () != null)
             return sadic.getHostName ();
-        return "localhost";
+        return NbBundle.getMessage 
+            (AttachingSessionProvider.class, "CTL_Localhost");
     }
     
     public String getTypeID () {

@@ -15,6 +15,7 @@ package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.connect.ListeningConnector;
+import java.util.Map;
 
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.Session;
@@ -22,6 +23,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -39,17 +41,25 @@ public class ListeningSessionProvider extends SessionProvider {
     };
     
     public String getSessionName () {
-        String processName = (String) contextProvider.lookupFirst 
-            (null, String.class);
-        if (processName != null)
-            return processName;
+        Map arguments = (Map) contextProvider.lookupFirst 
+            (null, Map.class);
+        if (arguments != null) {
+            String processName = (String) arguments.get ("name");
+            if (processName != null)
+                return LaunchingSessionProvider.findUnique (processName);
+        }
         if (smadic.getSharedMemoryName () != null)
-            return "listenning:" + smadic.getSharedMemoryName ();
-        return "listenning:" + smadic.getPortNumber ();
+            return NbBundle.getMessage 
+                (ListeningSessionProvider.class, "CTL_Listening") + 
+                ":" + smadic.getSharedMemoryName ();
+        return NbBundle.getMessage 
+            (ListeningSessionProvider.class, "CTL_Listening") + 
+            ":" + smadic.getPortNumber ();
     }
     
     public String getLocationName () {
-        return "localhost";
+        return NbBundle.getMessage 
+            (ListeningSessionProvider.class, "CTL_Localhost");
     }
     
     public String getTypeID () {

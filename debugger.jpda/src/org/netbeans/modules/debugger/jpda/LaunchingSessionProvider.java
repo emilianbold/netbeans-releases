@@ -14,6 +14,7 @@
 package org.netbeans.modules.debugger.jpda;
 
 import java.util.HashSet;
+import java.util.Map;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
@@ -21,6 +22,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LaunchingDICookie;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -39,10 +41,13 @@ public class LaunchingSessionProvider extends SessionProvider {
     };
     
     public String getSessionName () {
-        String processName = (String) contextProvider.lookupFirst 
-            (null, String.class);
-        if (processName != null)
-            return processName;
+        Map arguments = (Map) contextProvider.lookupFirst 
+            (null, Map.class);
+        if (arguments != null) {
+            String processName = (String) arguments.get ("name");
+            if (processName != null)
+                return findUnique (processName);
+        }
         String sessionName = launchingCookie.getClassName ();
         int i = sessionName.lastIndexOf ('.');
         if (i >= 0) 
@@ -51,7 +56,8 @@ public class LaunchingSessionProvider extends SessionProvider {
     };
     
     public String getLocationName () {
-        return "localhost";
+        return NbBundle.getMessage 
+            (LaunchingSessionProvider.class, "CTL_Localhost");
     }
     
     public String getTypeID () {
