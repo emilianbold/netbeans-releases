@@ -228,7 +228,10 @@ public class XMLUtil {
             if (node instanceof Element) {
                 out.write("<"+node.getNodeName());
                 write(node.getAttributes());
-                if (children.getLength() == 0) {
+                if (children.getLength() == 0 ||
+                    (children.getLength() == 1 &&
+                     children.item(0) instanceof Text &&
+                     "".equals(children.item(0).getNodeValue()) )) {
                     out.write("/>");
                     return;
                 }
@@ -246,10 +249,10 @@ public class XMLUtil {
             } else if (node instanceof ProcessingInstruction) {
                 write((ProcessingInstruction) node);
             } else {
-                System.out.println("! schema2beans found unknown node type in DOM graph:");
-                System.out.println("write: node.getClass="+node.getClass()+" node="+node);
-                System.out.println("write: nodename="+node.getNodeName()+" nodevalue="+node.getNodeValue());
-                System.out.println("write: getAttributes="+node.getAttributes());
+                System.err.println("! schema2beans found unknown node type in DOM graph:");
+                System.err.println("write: node.getClass="+node.getClass()+" node="+node);
+                System.err.println("write: nodename="+node.getNodeName()+" nodevalue="+node.getNodeValue());
+                System.err.println("write: getAttributes="+node.getAttributes());
             }
         
             int length = children.getLength();

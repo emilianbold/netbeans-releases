@@ -1542,94 +1542,93 @@ public abstract class BaseBean implements Cloneable {
 		    
 		    //	For each of our current property elts ...
 		    for (i=0; i<size1; i++) {
-			o1 = prop.getValue(i);
+                o1 = prop.getValue(i);
 			
-			if (o1 == null)
-			    continue;	// Nothing to compare
+                if (o1 == null)
+                    continue;	// Nothing to compare
 			
-			boolean found = false;
+                boolean found = false;
 			
-			// ... try each comparator ...
-			for (int c=0; c<this.comparators.size() && !found; c++){
-			    BeanComparator cmp =
-				(BeanComparator)this.comparators.get(c);
+                // ... try each comparator ...
+                for (int c=0; c<this.comparators.size() && !found; c++){
+                    BeanComparator cmp =
+                        (BeanComparator)this.comparators.get(c);
 			    
-			    //	... with every new property elts
-			    for (j=0; j<size2; j++) {
-				if (!compared[j]) {
-				    o2 = bean.getValue(name, j);
+                    //	... with every new property elts
+                    for (j=0; j<size2; j++) {
+                        if (!compared[j]) {
+                            o2 = bean.getValue(name, j);
 				    
-				    if (o2 == null) {
-					// Ignore null elt
-					compared[j] = true;
-					toAdd[j] = false;
-					continue;
-				    }
+                            if (o2 == null) {
+                                // Ignore null elt
+                                compared[j] = true;
+                                toAdd[j] = false;
+                                continue;
+                            }
 				    
-				    if (isBean) {
-					o3 = cmp.compareBean(name,
-							     (BaseBean)o1,
-							     (BaseBean)o2);
+                            if (isBean) {
+                                o3 = cmp.compareBean(name,
+                                                     (BaseBean)o1,
+                                                     (BaseBean)o2);
 					
-					if (!hasKey) {
-					    hasKey = cmp.hasKey();
-					    hasKeyDefined = true;
-					}
+                                if (!hasKey) {
+                                    hasKey = cmp.hasKey();
+                                    hasKeyDefined = true;
+                                }
 					
-					if (o3 == o1) {
-					    //	Beans identicals - recurse
-					    boolean ret = ((BaseBean)o1).
-						mergeTree((BaseBean)o2, mode);
+                                if (o3 == o1) {
+                                    //	Beans identicals - recurse
+                                    boolean ret = ((BaseBean)o1).
+                                        mergeTree((BaseBean)o2, mode);
 					    
-					    if (!ret) return ret;
-					    compared[j] = true;
-					    found = true;
-					    break;
-					}
-				    }
-				    else {
-					o3 = cmp.compareProperty(name,
-								 this, o1, i,
-								 bean, o2, j);
-					if (!hasKey) {
-					    hasKey = cmp.hasKey();
-					    hasKeyDefined = true;
-					}
+                                    if (!ret) return ret;
+                                    compared[j] = true;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            else {
+                                o3 = cmp.compareProperty(name,
+                                                         this, o1, i,
+                                                         bean, o2, j);
+                                if (!hasKey) {
+                                    hasKey = cmp.hasKey();
+                                    hasKeyDefined = true;
+                                }
 					
-					if (o3 == o1) {
-					    compared[j] = true;
-					    found = true;
-					    break;
-					}
-				    }
-				}
-			    }
-			}
+                                if (o3 == o1) {
+                                    compared[j] = true;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
 			
-			if (found) {
-			    toAdd[j] = false;	// already have it
+                if (found) {
+                    toAdd[j] = false;	// already have it
 			    
-			    if (DDLogFlags.debug) {
-				TraceLogger.put(TraceLogger.DEBUG,
-						TraceLogger.SVC_DD,
-						DDLogFlags.DBG_UBN, 5,
-						DDLogFlags.MERGEFOUND,
-						name + "[" + i + "] <=> " +
-						name + "[" + j + "]");
-			    }
-			}
-			else {
-			    toRemove[i] = true;	//	no more exists
+                    if (DDLogFlags.debug) {
+                        TraceLogger.put(TraceLogger.DEBUG,
+                                        TraceLogger.SVC_DD,
+                                        DDLogFlags.DBG_UBN, 5,
+                                        DDLogFlags.MERGEFOUND,
+                                        name + "[" + i + "] <=> " +
+                                        name + "[" + j + "]");
+                    }
+                } else {
+                    toRemove[i] = true;	//	no more exists
 			    
-			    if (DDLogFlags.debug) {
-				TraceLogger.put(TraceLogger.DEBUG,
-						TraceLogger.SVC_DD,
-						DDLogFlags.DBG_UBN, 5,
-						DDLogFlags.MERGENTFND,
-						name + "[" + i +
-						"] to be removed");
-			    }
-			}
+                    if (DDLogFlags.debug) {
+                        TraceLogger.put(TraceLogger.DEBUG,
+                                        TraceLogger.SVC_DD,
+                                        DDLogFlags.DBG_UBN, 5,
+                                        DDLogFlags.MERGENTFND,
+                                        name + "[" + i +
+                                        "] to be removed");
+                    }
+                }
 		    }
 		    
 		    //
@@ -1638,33 +1637,33 @@ public abstract class BaseBean implements Cloneable {
 		    //	(either null or containing null elements)
 		    //
 		    if (!hasKeyDefined)
-			hasKey = this.setHasKeyDefaultValue(prop);
+                hasKey = this.setHasKeyDefaultValue(prop);
 		    
 		    if ((mode & MERGE_COMPARE) == MERGE_COMPARE) {
-			//	Any diff returns false
-			for (i=0; i<size1; i++)
-			    if (toRemove[i] && hasKey)
-				return false;
+                //	Any diff returns false
+                for (i=0; i<size1; i++)
+                    if (toRemove[i] && hasKey)
+                        return false;
 			
-			for (j=0; j<size2; j++)
-			    if (toAdd[j] && hasKey)
-				return false;
+                for (j=0; j<size2; j++)
+                    if (toAdd[j] && hasKey)
+                        return false;
 		    }
 		    
 		    //	Remove, taking care of the index shifting
-		    if ((mode & MERGE_INTERSECT) == MERGE_INTERSECT)
-			for (i=0, j=0; i<size1; i++) {
-			    if (toRemove[i] && hasKey) {
-				prop.removeValue(i-j);
-				j++;
-			    }
-			}
+		    if ((mode & MERGE_INTERSECT) == MERGE_INTERSECT) {
+                for (i=0, j=0; i<size1; i++) {
+                    if (toRemove[i] && hasKey) {
+                        prop.removeValue(i-j);
+                        j++;
+                    }
+                }
+            }
 		    
 		    //	Add all the new elements
 		    if ((mode & MERGE_UNION) == MERGE_UNION) {
                 for (j=0; j < size2; j++) {
                     if (toAdd[j] && hasKey) {
-
                         if (isBean) {
                             //	Attrs are within the BaseBean
                             BaseBean srcBean = (BaseBean) bean.getValue(name, j);
@@ -1679,8 +1678,7 @@ public abstract class BaseBean implements Cloneable {
                     }
                 }
 			}
-		}
-		else {
+		} else {
 		    Object  newValue = null;
 		    boolean found = false;
 		    

@@ -14,9 +14,9 @@
 package org.netbeans.modules.schema2beans;
 
 public class Version implements java.io.Serializable {
-    public final static int MAJVER = 1;
-    public final static int MINVER = 3;
-    public final static int PTCVER = 1;
+    public final static int MAJVER = 4;
+    public final static int MINVER = 0;
+    public final static int PTCVER = 0;
 
 	private int major;
 	private int minor;
