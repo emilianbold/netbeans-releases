@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -306,7 +306,6 @@ public final class SettingChildren extends FilterNode.Children {
 
     /** Filter node used for adding special status related properties to setting nodes. */
     private static final class SettingFilterNode extends FilterNode {
-        private Sheet sheet = null;
         private FSL weakL = null;
         
         public SettingFilterNode (Node original) {
@@ -336,10 +335,6 @@ public final class SettingChildren extends FilterNode.Children {
             return getOriginal().hashCode();
         }
 
-        protected NodeListener createNodeListener () {
-            return new NA (this);
-        }
-
         // #24766 Exclude Customize Bean action.
         /** Overrides superclass method, excludes the CustomizeBeanAction from the node. */
         public SystemAction[] getActions() {
@@ -355,19 +350,6 @@ public final class SettingChildren extends FilterNode.Children {
             }
         }
 
-        private static class NA extends NodeAdapter {
-            public NA (SettingFilterNode sfn) {
-                super (sfn);
-            }
-            
-            protected void propertyChange (FilterNode fn, PropertyChangeEvent ev) {
-                if (Node.PROP_PROPERTY_SETS.equals (ev.getPropertyName ())) {
-                    ((SettingFilterNode)fn).sheet = null;
-                }
-                super.propertyChange (fn, ev);
-            }
-        }
-        
         private static class FSL implements FileStateManager.FileStatusListener {
             WeakReference node = null;
             public FSL (SettingFilterNode sfn) {
