@@ -177,6 +177,9 @@ public class Main extends Object {
                 }
             }
         });
+        // Wait a little because of issue 42414 (addAWTEventListener has to be
+        // called after IDE adds its own listener)
+        Thread.sleep(2000);
         // start the init thread
         initThread.start();
         try {
