@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.ant.grammar;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,9 +71,61 @@ public class AntGrammarTest extends NbTestCase {
     public void testTaskCompletion() throws Exception {
         String p = "<project default='x'><target name='x'><ecHERE/></target></project>";
         HintContext c = TestUtil.createCompletion(p);
-        List l = TestUtil.elementNames(g.queryElements(c));
+        List l = TestUtil.grammarResultValues(g.queryElements(c));
         assertTrue("matched <echo>", l.contains("echo"));
         // XXX more...
     }
+    
+    public void testTypeCompletion() throws Exception {
+        String p = "<project default='x'><target name='x'><paHERE/></target></project>";
+        HintContext c = TestUtil.createCompletion(p);
+        List l = TestUtil.grammarResultValues(g.queryElements(c));
+        assertTrue("matched <path>", l.contains("path"));
+        p = "<project default='x'><filHERE/><target name='x'/></project>";
+        c = TestUtil.createCompletion(p);
+        l = TestUtil.grammarResultValues(g.queryElements(c));
+        assertTrue("matched <fileset>", l.contains("fileset"));
+        // XXX more...
+    }
+    
+    public void testRegularAttrCompletion() throws Exception {
+        String p = "<project default='x'><target name='x'><javac srcdHERE=''/></target></project>";
+        HintContext c = TestUtil.createCompletion(p);
+        List l = TestUtil.grammarResultValues(g.queryAttributes(c));
+        assertTrue("matched srcdir on <javac>: " + l, l.contains("srcdir"));
+        // XXX more...
+    }
+    
+    public void testSpecialAttrCompletion() throws Exception {
+        String p = "<project default='x'><target nHERE=''/></project>";
+        HintContext c = TestUtil.createCompletion(p);
+        List l = TestUtil.grammarResultValues(g.queryAttributes(c));
+        assertEquals("matched name on <target>", l, Collections.singletonList("name"));
+        p = "<project default='x'><target dHERE=''/></project>";
+        c = TestUtil.createCompletion(p);
+        l = TestUtil.grammarResultValues(g.queryAttributes(c));
+        Collections.sort(l);
+        assertEquals("matched depends and description on <target>", l,
+            Arrays.asList(new String[] {"depends", "description"}));
+        // XXX more...
+    }
+    
+    public void testEnumeratedValueCompletion() throws Exception {
+        String p = "<project default='x'><target><echo level='vHERE'/></target></project>";
+        HintContext c = TestUtil.createCompletion(p);
+        List l = TestUtil.grammarResultValues(g.queryValues(c));
+        assertEquals("matched level='verbose' on <echo>", l, Collections.singletonList("verbose"));
+    }
+    
+    public void testBooleanValueCompletion() throws Exception {
+        String p = "<project default='x'><target><echo append='HERE'/></target></project>";
+        HintContext c = TestUtil.createCompletion(p);
+        List l = TestUtil.grammarResultValues(g.queryValues(c));
+        Collections.sort(l);
+        assertEquals("true or false for append on <echo>", l,
+            Arrays.asList(new String[] {"false", "true"}));
+    }
+    
+    // XXX need tests for property completion... fairly complex
     
 }

@@ -211,14 +211,24 @@ final class TestUtil {
     }
     
     /**
-     * Given a list of XML elements, return a list of their names.
+     * Given a list of XML nodes returned in GrammarResult's, return a list of their names.
+     * For elements, you get the name; for attributes, the name;
+     * for text nodes, the value.
      * (No namespaces returned.)
      */
-    public static List/*<String>*/ elementNames(Enumeration/*<Element>*/ enum) {
+    public static List/*<String>*/ grammarResultValues(Enumeration/*<Node>*/ enum) {
         List l = new ArrayList();
         while (enum.hasMoreElements()) {
-            Element el = (Element)enum.nextElement();
-            l.add(el.getNodeName());
+            Object o = enum.nextElement();
+            String s;
+            if (o instanceof Element) {
+                s = ((Element)o).getNodeName();
+            } else if (o instanceof Attr) {
+                s = ((Attr)o).getName();
+            } else {
+                s = ((Text)o).getData();
+            }
+            l.add(s);
         }
         return l;
     }
