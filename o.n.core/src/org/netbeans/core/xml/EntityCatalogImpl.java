@@ -104,6 +104,8 @@ public class EntityCatalogImpl extends EntityCatalog {
 
                 if (key != null && val != null) {
                     map.put(key, val);
+                } else {
+                    throw new SAXException ("invalid <public> element: missing publicId or uri"); // NOI18N
                 }
             }
         }
