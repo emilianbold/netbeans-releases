@@ -151,10 +151,6 @@ workspaceswitcher
     <echo message="Building module clazz..."/>
     <ant dir="../clazz" target="netbeans"/>
   </target>
-  <target name="all-crosscompile" depends="all-openide">
-    <echo message="Building module crosscompile..."/>
-    <ant dir="../crosscompile" target="netbeans"/>
-  </target>
   <target name="all-debuggercore" depends="all-openide">
     <echo message="Building module debuggercore..."/>
     <ant dir="../debuggercore" target="netbeans"/>
@@ -497,8 +493,6 @@ the ${netbeans.dest}/bin/ directory.
     <ant dir="../beans" target="nbm"/>
     <echo message="Making NBM for module clazz..."/>
     <ant dir="../clazz" target="nbm"/>
-    <echo message="Making NBM for module crosscompile..."/>
-    <ant dir="../crosscompile" target="nbm"/>
     <echo message="Making NBM for module debuggerjpda..."/>
     <ant dir="../debuggerjpda" target="nbm"/>
     <echo message="Making NBM for module debuggertools..."/>
@@ -605,7 +599,6 @@ the ${netbeans.dest}/bin/ directory.
       -->
       <group name="Extensions">
         <nbm file="../apisupport/apisupport.nbm"/>
-        <nbm file="../crosscompile/crosscompile.nbm"/>
         <nbm file="../innertesters/innertesters.nbm"/>
         <nbm file="../makefile/makefile.nbm"/>
       </group>
