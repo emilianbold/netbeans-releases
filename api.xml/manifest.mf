@@ -3,4 +3,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/api/xml/Bundle.properties
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.6
 OpenIDE-Module-Specification-Version: @API_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Dependencies: org.netbeans.modules.jaxp/1
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.jaxp/1

@@ -10,3 +10,4 @@ Class-Path: docs/xml-tools.jar
 
 Name: org/netbeans/modules/xsl/XSLDataLoader.class
 OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.xml.core.XMLDataObject
