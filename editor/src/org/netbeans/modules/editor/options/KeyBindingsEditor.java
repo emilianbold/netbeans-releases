@@ -53,8 +53,8 @@ public class KeyBindingsEditor extends PropertyEditorSupport {
         if( editorPanel == null ) {
             editorPanel = new KeyBindingsEditorPanel( this );
             HelpCtx.setHelpIDString( editorPanel, getHelpCtx().getHelpID() );
-            refreshEditor();
         }
+        refreshEditor();
         return editorPanel;
     }
 
@@ -76,6 +76,7 @@ public class KeyBindingsEditor extends PropertyEditorSupport {
             }
         }
     }
+
 
     /**
      * The way our customEditor notifies us when user changes something.
