@@ -152,6 +152,10 @@ public class AntBasedTestUtil {
             return l;
         }
         
+        public String toString() {
+            return "TestAntBasedProject[" + helper.getName() + ":" + getProjectDirectory() + "]";
+        }
+        
         private final class TestInfo implements ProjectInformation {
             
             TestInfo() {}
