@@ -4,6 +4,7 @@ OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.prope
 OpenIDE-Module-Specification-Version: 0.9.3
 OpenIDE-Module-Implementation-Version: 0.9.3
 OpenIDE-Module-Install: com/netbeans/developer/modules/i18n/PropertiesFormModule.class
+OpenIDE-Module-Description: com.netbeans.developer.modules.i18n.docs.HelpSet
 
 Name: com/netbeans/developer/modules/i18n/LocalizeAction.class
 OpenIDE-Module-Class: Action
