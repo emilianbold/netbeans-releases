@@ -16,6 +16,7 @@ package org.netbeans.modules.javahelp;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
+import java.io.ObjectStreamException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
@@ -31,10 +32,11 @@ import javax.help.JHelp;
 import org.openide.ErrorManager;
 import org.openide.TopManager;
 import org.openide.util.*;
+import org.openide.windows.CloneableTopComponent;
 
 // [PENDING] should event dispatch thread be used thruout?
 
-/** Help implementation using the JavaHelp 1.0 system.
+/** Help implementation using the JavaHelp 1.x system.
 * @author Jesse Glick, Richard Gregor
 */
 public final class JavaHelp extends AbstractHelp implements AWTEventListener {
@@ -727,6 +729,22 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             Installer.err.notify(ErrorManager.INFORMATIONAL, e);
         }
         return jh;
+    }
+
+    /** Obsolete component, only here for deserialization safety.
+     * @deprecated do not use
+     */
+    public static class HelpComponent extends CloneableTopComponent {
+
+        private static final long serialVersionUID = 882544693090803112L;
+
+        public HelpComponent() {
+        }
+
+        public Object readResolve() throws ObjectStreamException {
+            return null;
+        }
+
     }
 
 }
