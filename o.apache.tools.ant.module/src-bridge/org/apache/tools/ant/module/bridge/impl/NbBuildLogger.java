@@ -62,14 +62,8 @@ final class NbBuildLogger implements BuildLogger {
     
     public void messageLogged(BuildEvent ev) {
         if (ev.getPriority() <= level) {
+            // XXX should translate tabs to spaces here as a safety measure
             if (ev.getPriority() <= Project.MSG_WARN) {
-                /* No good! Overlinks e.g. compile messages. How to solve??
-                Task t = ev.getTask ();
-                if (t != null) {
-                    // This hyperlinks it:
-                    err.print (t.getLocation ());
-                }
-                 */
                 err.println(ev.getMessage());
             } else {
                 out.println(ev.getMessage());
@@ -102,7 +96,7 @@ final class NbBuildLogger implements BuildLogger {
         long time = System.currentTimeMillis() - startTime; // #10305
         if (t == null) {
             // [PENDING] should check for target member (and TargetExecutor should set it...)
-            err.println(formatMessageWithTime("FMT_finished_target_printed", time));
+            out.println(formatMessageWithTime("FMT_finished_target_printed", time));
             if (updateStatusLine) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "MSG_finished_target_status"));
             }
@@ -121,6 +115,7 @@ final class NbBuildLogger implements BuildLogger {
     }
     
     public void targetStarted(BuildEvent ev) {
+        // XXX this could start indenting messages, perhaps
         out.println(NbBundle.getMessage(NbBuildLogger.class, "MSG_target_started_printed", ev.getTarget().getName()));
     }
     
