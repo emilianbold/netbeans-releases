@@ -57,13 +57,14 @@ import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Children.SortedArray;
 import org.openide.options.SystemOption;
-import org.openide.util.HttpServer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -682,8 +683,10 @@ class Controller  {
 
 	    String portS = null; 
 	    try { 
+	    FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
+	    URL u = getSampleHTTPServerURL();
 		portS = 
-		    String.valueOf(HttpServer.getRepositoryRoot().getPort());
+		    String.valueOf(u.getPort()/*HttpServer.getRepositoryRoot().getPort()*/);
 	    }
 	    catch(Exception ex) {
 		// No internal HTTP server, do nothing
@@ -1477,12 +1480,26 @@ class Controller  {
     }
 
 
+    private static URL getSampleHTTPServerURL() {
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+	    FileObject fo = fs.findResource("HTTPServer_DUMMY");
+	    if (fo == null) {
+	        return null;
+	    }
+	    URL u = URLMapper.findURL(fo, URLMapper.NETWORK);
+	    return u;
+    }
+
     boolean checkServer(boolean replay) { 
 
 	try { 
-	    HttpServer.getRepositoryRoot();
-	    if(debug) log("Got the HTTP server");
-	    return true;
+	    URL u = getSampleHTTPServerURL();
+	    if(debug) log("Getting HTTP server - url " + u);
+	    if (u.getProtocol().equals("http")) {
+    	    //HttpServer.getRepositoryRoot();
+	        if(debug) log("Got the HTTP server");
+	        return true;
+	    }
 	}
 	catch(Throwable t) { 
 

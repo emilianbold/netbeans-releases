@@ -37,7 +37,9 @@ import org.netbeans.modules.tomcat5.TomcatManager;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.*;
+import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
+import org.openide.util.LookupEvent;
 
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
@@ -345,17 +347,23 @@ public class MonitorSupport {
         */
     }
     
+    private static URL getSampleHTTPServerURL() {
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+	    FileObject fo = fs.findResource("HTTPServer_DUMMY");
+	    if (fo == null) {
+	        return null;
+	    }
+	    URL u = URLMapper.findURL(fo, URLMapper.NETWORK);
+	    return u;
+    }
+
     private static String getInternalServerPort() {
-        try {
-            URL u = HttpServer.getRepositoryRoot();
-            return "" + u.getPort();
+        //URL u = HttpServer.getRepositoryRoot();
+        URL u = getSampleHTTPServerURL();
+        if (u != null) {
+            return "" + u.getPort(); // NOI18N
         }
-        catch (MalformedURLException e) {
-            // no need to report the exception, as it will be reported by Tomcat40Installation
-            return "8082"; // NOI18N
-        }
-        catch (UnknownHostException e) {
-            // no need to report the exception, as it will be reported by Tomcat40Installation
+        else {
             return "8082"; // NOI18N
         }
     }
