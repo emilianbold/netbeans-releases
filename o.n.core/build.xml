@@ -165,6 +165,9 @@ included with the NetBeans core:</text>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="bootstrap/src">
+        <include name="**/*.class"/>
+      </fileset>
       <fileset dir=".">
         <include name="*-subst.mf"/>
       </fileset>
