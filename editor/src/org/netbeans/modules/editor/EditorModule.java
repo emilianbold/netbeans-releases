@@ -85,9 +85,14 @@ public class EditorModule extends ModuleInstall {
             );
         }
 
+        org.netbeans.modules.editor.options.ProjectHack.restored();
+
     }
 
     public void uninstalled() {
+
+        org.netbeans.modules.editor.options.ProjectHack.uninstalled();
+
         try {
             Utilities2.removeAction (JCUpdateAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
         } catch (IOException ioe) {
