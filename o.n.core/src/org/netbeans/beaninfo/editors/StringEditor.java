@@ -88,7 +88,7 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
         FeatureDescriptor desc = env.getFeatureDescriptor();
         if (desc instanceof Node.Property){
             Node.Property prop = (Node.Property)desc;
-            editable = prop.canWrite() ? true : false;
+            editable = prop.canWrite();
         }
     }
 
