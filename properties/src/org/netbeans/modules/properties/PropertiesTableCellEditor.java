@@ -11,7 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
+
 
 import java.awt.Component;
 import java.util.EventObject;
@@ -19,14 +21,21 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JComponent;
+import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 
+
+/**
+ * @author Petr Jiricka 
+ */
 public class PropertiesTableCellEditor extends DefaultCellEditor {
+    
     /** Value holding info if the editing cell is a key or value.
     */
     private boolean isKeyCell;
 
     static final long serialVersionUID =-5292598860635851664L;
+    
     /** Constructs a PropertiesTableCellEditor that uses a text field.
     * @param x  a JTextField object ...
     */
@@ -44,15 +53,30 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         return editorComponent;
     }
 
-
-    /** Overriding super class method. This is a hack with only reason to figure out 
-    * which cell is going to be edited, if a key or a value.
+    /** Overriding super class method. 
+    * It set the cursot at the beginnig of edited cell, in case of search it highlights the found text.
+    * This is also a hack with reason to figure out which cell is going to be edited, if a key or a value.
     */
     public Component getTableCellEditorComponent(JTable table,
         Object value, boolean isSelected, int row, int column) {
-        // only in the first column are keys
+        // Key or value? Only in the first column are keys.
         isKeyCell = (column == 0) ? true : false;
-        return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        
+        JTextField c = (JTextField)super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        Caret caret = c.getCaret();
+        caret.setVisible(true);
+        caret.setDot(0);
+        
+        // Check for search results.
+        // If search was performed, highlight the found string.
+        int[] result = (int[])table.getClientProperty(FindPerformer.TABLE_SEARCH_RESULT);
+        if(result != null && row == result[0] && column == result[1]) {
+            table.putClientProperty(FindPerformer.TABLE_SEARCH_RESULT, null); // removes property
+            caret.setDot(result[2]);
+            caret.moveDot(result[3]);
+        }
+        
+        return c;
     }
 
 
@@ -99,43 +123,5 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
                 getEditorComponent().requestFocus();
             return true;
         }
-
-        /*
-        public boolean startCellEditing(EventObject anEvent) {
-          if(anEvent == null)
-            getEditorComponent().requestFocus();
-            
-          // set the values for other fields
-          PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;
-          
-          // set editable as they deserve
-          commentComponent.setEditable(sp.isCommentEditable());
-          valueComponent.setEditable(true);
-          
-          // set values as they deserve
-          if (sp != null) {               
-            ((JTextField)getEditorComponent()).setText(sp.getValue());
-            commentComponent.setText(sp.getComment());
-          }  
-          else {
-            ((JTextField)getEditorComponent()).setText("");
-            commentComponent.setText("");
-          }  
-            
-          return true;
-    } */
-
-// if overriding this methods remember to call fireEditingStopped & fireEditingCancelled
-// since from jdk1.3 the delegates do that work
-/*        public boolean stopCellEditing() {
-            return true;
-        }
-
-        public void cancelCellEditing() {
-        }*/
-    } // end of class block
+    } // End of inner PropertiesEditorDelegate class.
 }
-
-/*
- * <<Log>>
- */
