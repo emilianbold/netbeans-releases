@@ -79,7 +79,7 @@ public class JarFinder extends Task {
                 String dir = dirtokens.nextToken();
                 File fdir = project.resolveFile(dir);
                 if (!fdir.exists() || !fdir.isDirectory()) 
-                    throw new BuildException("Directory " + fdir.getAbsolutePath() + " not found.");
+                    throw new BuildException("Directory " + fdir.getAbsolutePath() + " not found (from '" + dirlist + "').");
                 ffile = new File(fdir,file);
                 if (ffile.exists()) {
                     found = true;
