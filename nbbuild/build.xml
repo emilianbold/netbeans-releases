@@ -14,7 +14,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--
 ToDo:
-- test on Ant 1.1
 - use nested classpath tags in javac
 - handle Japanese sanely
 - substitute @BUILDNUMBER@ in manifests, Versioning.properties
@@ -213,6 +212,12 @@ treefs
     <echo message="Build created; see NetBeans-${buildnumber}.zip (in nbbuild/)."/>
     <echo message="If you like, you may run the IDE straight from"/>
     <echo message="the nbbuild/firststart/bin/ directory."/>
+  </target>
+
+  <target name="ant-extensions">
+    <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
+    <javac srcdir="antsrc" destdir="antsrc"/>
+    <jar jarfile="nbantext.jar" basedir="antsrc"/>
   </target>
 
 </project>
