@@ -1884,6 +1884,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
       <ant dir="../xml/api" target="netbeans"/>
   </target>
+  
+  <target name="all-xml/multiview" depends="init, all-core/multiview">
+      <echo message="Building module xml/multiview..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+      <ant dir="../xml/multiview" target="netbeans"/>
+  </target>
 
   <target name="all-xml/core" depends="init,all-xml/api">
       <echo message="Building module xml/core..."/>
