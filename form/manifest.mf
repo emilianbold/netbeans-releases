@@ -3,7 +3,7 @@ OpenIDE-Module-Name: Form Editor
 OpenIDE-Module-Specification-Version: 0.9.5
 OpenIDE-Module-Implementation-Version: 0.9.5
 OpenIDE-Module-Install: com/netbeans/developer/modules/loaders/form/FormEditorModule.class
-OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.java/1, org.openidex.util/1
+OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.java/1, com.netbeans.developer.modules.loaders.clazz/1, org.openidex.util/1
 
 Name: com/netbeans/developer/modules/loaders/form/FormDataLoader.class
 OpenIDE-Module-Class: Loader
