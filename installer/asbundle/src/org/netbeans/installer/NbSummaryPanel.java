@@ -70,7 +70,7 @@ public class NbSummaryPanel extends TextDisplayPanel
                 if (getWizard().getExitCode() != -1) {
                     //Installation failed or cancelled.
                     String summaryMessage;
-                    if (getWizard().getExitCode() == InstallJ2sdkAction.J2SDK_UNHANDLED_ERROR) {
+                    if (getWizard().getExitCode() == InstallApplicationServerAction.AS_UNHANDLED_ERROR) {
                         summaryMessage = "$L(org.netbeans.installer.Bundle,SummaryPanel.description1)";
                         summaryMessage += " " + "$L(org.netbeans.installer.Bundle,Product.displayName)";
                         summaryMessage += " " + "$L(org.netbeans.installer.Bundle,SummaryPanel.description3)";
@@ -210,19 +210,10 @@ public class NbSummaryPanel extends TextDisplayPanel
     }
     
     private String getPreInstallSummaryMessage() {
-        String summaryMessage = "$L(org.netbeans.installer.Bundle,Product.displayName)"
-        + " "
-        + "$L(org.netbeans.installer.Bundle,PreviewPanel.previewInstallMessage)"
+        String summaryMessage = resolveString("$L(org.netbeans.installer.Bundle,PreviewPanel.previewInstallMessage,"
+        + "$L(org.netbeans.installer.Bundle,Product.displayName),"
+        + "$L(org.netbeans.installer.Bundle,AS.name))")
         + "<br>" + nbInstallDir;
-        
-        // only show j2se install if no prior installation was found
-        if (!Util.isJDKAlreadyInstalled()) {
-            summaryMessage += "<br><br>"
-            + "$L(org.netbeans.installer.Bundle,JDK.shortName)"
-            + " "
-            + "$L(org.netbeans.installer.Bundle,PreviewPanel.previewInstallMessage)" + "<br>"
-            + j2seInstallDir + "<br>";
-        }
         
         summaryMessage += "<br>" + "$L(org.netbeans.installer.Bundle,PreviewPanel.previewSize)" + "<br>"
         + getTotalSize();
