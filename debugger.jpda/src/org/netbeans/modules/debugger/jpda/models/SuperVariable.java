@@ -15,7 +15,8 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ClassType;
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.Value;
+import com.sun.jdi.Type;
+
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.Super;
 
@@ -25,16 +26,14 @@ import org.netbeans.api.debugger.jpda.Super;
  */
 public class SuperVariable extends AbstractVariable implements Super {
 
-    private ClassType superClass;
-    private LocalsTreeModel model;
-
-    
     // init ....................................................................
+    private ClassType classType;
+    
     
     SuperVariable (
         LocalsTreeModel model,
-        Value value, 
-        ClassType superClass,
+        ObjectReference value, 
+        ClassType classType,
         String parentID
     ) {
         super (
@@ -42,48 +41,48 @@ public class SuperVariable extends AbstractVariable implements Super {
             value, 
             parentID + ".super^"
         );
-        this.superClass = superClass;
+        this.classType = classType;
     }
 
     
     // Super impl ..............................................................
     
     public Field[] getFields (int from, int to) {
-        AbstractVariable[] vs = getModel ().getSuperFields (
-            this,
-            false, from, to
-        );
-        Field[] fs = new Field [vs.length];
-        System.arraycopy (vs, 0, fs, 0, vs.length);
-        return fs;
+        if (classType == null)
+            this.initFields();
+        return getFields(from, to);
+    }
+    
+    protected void initFields() {
+        super.initFields(classType);
     }
     
     public int getFieldsCount () {
-        return superClass.fields ().size ();
+        return fields.length;
     }
     
     public Super getSuper () {
-        ClassType s = superClass.superclass ();
-        if (s == null) return null;
-        return getModel ().getSuper (
-            s, 
-            (ObjectReference) getInnerValue (),
-            getID ()
-        );
+        if (getInnerValue () == null) 
+            return null;
+        ClassType superType = this.classType.superclass ();
+        if (superType == null) 
+            return null;
+        return new SuperVariable(
+                this.getModel(), 
+                (ObjectReference) this.getInnerValue(),
+                superType,
+                this.getID()
+                );
     }
     
-    public String getType () {
-        return superClass.name ();
-    }
-
-    
+        
     // other methods ...........................................................
         
     public String toString () {
-        return "SuperVariable " + superClass.name ();
+        return "SuperVariable " + getType();
     }
     
-    ClassType getSuperClass () {
-        return superClass;
+    public String getType () {
+        return this.classType.name ();
     }
 }

@@ -15,35 +15,19 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
-import com.sun.jdi.ArrayType;
-import com.sun.jdi.ClassNotLoadedException;
-import com.sun.jdi.ClassType;
-import com.sun.jdi.Field;
-import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.PrimitiveType;
-import com.sun.jdi.PrimitiveValue;
-import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
-import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
-import java.util.WeakHashMap;
-
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -84,27 +68,29 @@ public class LocalsTreeModel implements TreeModel {
     
     public Object[] getChildren (Object o, int from, int to) 
     throws NoInformationException, UnknownTypeException {
+        System.out.println("getChildren for " + o + " from = " + from + " to " + to);
         try {
             if (o.equals (ROOT)) {
                 Object[] os = getLocalVariables (true, from, to);
+                System.out.println("\treturning local variables");
                 return os;
             } else
-            if (o instanceof SuperVariable) {
-                SuperVariable mv = (SuperVariable) o;
-                return getSuperFields (mv, true, from, to);
-            } else
+//            if (o instanceof SuperVariable) {
+//                SuperVariable mv = (SuperVariable) o;
+//                return getSuperFields (mv, true, from, to);
+//            } else
             if (o instanceof AbstractVariable) { // ThisVariable & FieldVariable
                 AbstractVariable mv = (AbstractVariable) o;
-                Object[] avs = getFields (mv, true, from, to);
-                if (mv.getInnerValue () instanceof ArrayReference) {
-                    ArrayReference ar = (ArrayReference) mv.getInnerValue ();
-                    if (ar.length () > 50) {
-                        Object[] a2 = new Object [avs.length + 1];
-                        System.arraycopy (avs, 0, a2, 0, avs.length);
-                        a2 [avs.length] = "More";
-                        avs = a2;
-                    }
-                }
+                Object[] avs = mv.getFields (from, to);
+//                if (mv.getInnerValue () instanceof ArrayReference) {
+//                    ArrayReference ar = (ArrayReference) mv.getInnerValue ();
+//                    if (ar.length () > 50) {
+//                        Object[] a2 = new Object [avs.length + 1];
+//                        System.arraycopy (avs, 0, a2, 0, avs.length);
+//                        a2 [avs.length] = "More";
+//                        avs = a2;
+//                    }
+//                }
                 return avs;
             } else
             throw new UnknownTypeException (o);
@@ -147,19 +133,19 @@ public class LocalsTreeModel implements TreeModel {
                 }
                 return 0;
             } else
-            if (node instanceof SuperVariable) {
-                SuperVariable mv = (SuperVariable) node;
-                return getSuperFields (mv, true, 0, 0).length;
-            } else
+//            if (node instanceof SuperVariable) {
+//                SuperVariable mv = (SuperVariable) node;
+//                return getSuperFields (mv, true, 0, 0).length;
+//            } else
             if (node instanceof AbstractVariable) { // ThisVariable & FieldVariable
                 AbstractVariable mv = (AbstractVariable) node;
-                int i = 0;
-                if (mv.getInnerValue () instanceof ArrayReference) {
-                    ArrayReference ar = (ArrayReference) mv.getInnerValue ();
-                    if (ar.length () > 50) 
-                        i++;
-                }
-                return getFields (mv, true, 0, 0).length + i;
+//                int i = 0;
+//                if (mv.getInnerValue () instanceof ArrayReference) {
+//                    ArrayReference ar = (ArrayReference) mv.getInnerValue ();
+//                    if (ar.length () > 50) 
+//                        i++;
+//                }
+                return mv.getFields (0, 0).length;
             } else
             throw new UnknownTypeException (node);
         } catch (VMDisconnectedException ex) {
@@ -263,145 +249,6 @@ public class LocalsTreeModel implements TreeModel {
         }
     }
     
-    AbstractVariable[] getSuperFields (
-        SuperVariable mv,
-        boolean includeSuper,
-        int from, int to
-    ) {
-        ObjectReference or = (ObjectReference) mv.getInnerValue ();
-        ReferenceType rt = mv.getSuperClass ();
-        return getFields (
-            or, 
-            rt, 
-            true,
-            ((AbstractVariable) mv).getID (),
-            from,
-            to
-        );
-    }
-    
-    AbstractVariable[] getFields (
-        AbstractVariable mv,
-        boolean includeSuper,
-        int from, int to
-    ) {// ThisVariable & FieldVariable
-        if (!(mv.getInnerValue () instanceof ObjectReference)) 
-            return new AbstractVariable [0];
-        ObjectReference or = (ObjectReference) mv.getInnerValue ();
-        ReferenceType rt = or.referenceType ();
-        if (or instanceof ArrayReference) 
-            return getFieldsOfArray (
-                (ArrayReference) or, 
-                ((ArrayType) rt).componentTypeName (),
-                mv.getID (),
-                from, to
-            );
-        else 
-            return getFields (or, rt, includeSuper, mv.getID (), from, to);
-    }
-    
-    private AbstractVariable[] getFields (
-        ObjectReference or, 
-        ReferenceType rt,
-        boolean includeSuper,
-        String parentID,
-        int from, int to
-    ) {
-        List l = rt.fields ();
-        List ch = new ArrayList ();
-        ClassType superRt = null;
-        int i, k = l.size ();
-        for (i = 0; i < k; i++) {
-            Field f = (Field) l.get (i);
-            if ( f.isStatic () || f.isSynthetic ())
-                continue;
-            ch.add (getField (f, or, parentID));
-        }
-        if (to != 0)
-            ch = ch.subList (from, to);
-        return (AbstractVariable[]) ch.toArray (new AbstractVariable [ch.size ()]);
-    }
-    
-    FieldVariable[] getAllStaticFields (
-        AbstractVariable av,
-        int from,
-        int to
-    ) {
-        Value v = av.getInnerValue ();
-        if ( (v == null) || !(v instanceof ObjectReference)) return new FieldVariable [0];
-        ObjectReference or = (ObjectReference) v;
-        ReferenceType rt = or.referenceType ();
-        if (rt instanceof ArrayType) return new FieldVariable [0];
-        List l = rt.allFields ();
-        List ch = new ArrayList ();
-        //String className = rt.name ();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++) {
-            Field f = (Field) l.get (i);
-            if (f.isStatic ())
-                ch.add (getField (f, or, av.getID ()));
-        }
-        if (to != 0) 
-            ch = ch.subList (from, to);
-        return (FieldVariable[]) ch.toArray (new FieldVariable [ch.size ()]);
-    }
-    
-    FieldVariable[] getInheritedFields (
-        AbstractVariable av,
-        int from, 
-        int to
-    ) {
-        Value v = av.getInnerValue ();
-        if ( (v == null) || !(v instanceof ObjectReference)) return new FieldVariable [0];
-        ObjectReference or = (ObjectReference) v;
-        ReferenceType rt = or.referenceType ();
-        List l = rt.allFields ();
-        Set s = new HashSet (rt.fields ());
-        List ch = new ArrayList ();
-       // String className = rt.name ();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++) {
-            Field f = (Field) l.get (i);
-            if (f.isStatic ())
-                continue;
-            if (s.contains (f))
-                continue;
-            ch.add (getField (f, or, av.getID ()));
-        }
-        if (to != 0) 
-            ch = ch.subList (from, to);
-        return (FieldVariable[]) ch.toArray (new FieldVariable [ch.size ()]);
-    }
-    
-    AbstractVariable[] getFieldsOfArray (
-        ArrayReference ar, 
-        String componentType,
-        String parentID,
-        int from, 
-        int to
-    ) {
-    // ThisVariable & FieldVariable & SuperVariable
-        List l = null;
-        int s = Math.min (50, ar.length ());
-        if (to == 0) 
-            l = ar.getValues (0, s);
-        else
-            l = ar.getValues (from, to - from); // length!!!
-        int i, k = l.size ();
-        AbstractVariable[] ch = new AbstractVariable [k];
-        String className = ar.referenceType ().name ();
-        for (i = 0; i < k; i++) {
-            Value v = (Value) l.get (i);
-            ch [i] = (v instanceof ObjectReference) ?
-                new ObjectArrayFieldVariable (
-                    this, (ObjectReference) v, className, componentType, i, parentID
-                ) :
-                new ArrayFieldVariable (
-                    this, v, className, componentType, i, parentID
-                );
-        }
-        return ch;
-    }
     
     ThisVariable getThis (ObjectReference thisR, String parentID) {
         return new ThisVariable (this, thisR, parentID);
@@ -412,14 +259,13 @@ public class LocalsTreeModel implements TreeModel {
         if (v instanceof ObjectReference)
             return new ObjectLocalVariable (
                 this, 
-                (ObjectReference) v, 
+                v, 
                 className, 
                 lv, 
-                debugger.getGenericSignature (lv), 
+                JPDADebuggerImpl.getGenericSignature (lv), 
                 frame
             );
-        else
-            return new Local (this, v, className, lv, frame);
+        return new Local (this, v, className, lv, frame);
     }
     
     public Variable getVariable (Value v) {
@@ -429,47 +275,9 @@ public class LocalsTreeModel implements TreeModel {
                 (ObjectReference) v,
                 null
             );
-        else
-            return new AbstractVariable (
-                this,
-                v,
-                null
-            );
+        return new AbstractVariable (this, v, null);
     }
     
-    SuperVariable getSuper (
-        ClassType superRt, 
-        ObjectReference or,
-        String parentID
-    ) {
-        return new SuperVariable (this, or, superRt, parentID);
-    }
-
-    FieldVariable getField (
-        Field f, 
-        ObjectReference or, 
-        String parentID//,
-        //String className
-    ) {
-        Value v = or.getValue (f);
-        if ( (v == null) || (v instanceof ObjectReference))
-            return new ObjectFieldVariable (
-                this,
-                (ObjectReference) v,
-                //f.declaringType (), //className,
-                f,
-                parentID,
-                debugger.getGenericSignature(f),
-                or
-            );
-        else
-            return new FieldVariable (this, v, f, parentID, or);
-    }
-    
-    private boolean isLeafChanged (Value v1, Value v2) {
-        return (v1 instanceof ObjectReference) != 
-               (v2 instanceof ObjectReference);
-    }
     
     JPDADebuggerImpl getDebugger () {
         return debugger;
@@ -517,10 +325,10 @@ public class LocalsTreeModel implements TreeModel {
         
         public void propertyChange (PropertyChangeEvent e) {
             if ( ( (e.getPropertyName () == 
-                     debugger.PROP_CURRENT_CALL_STACK_FRAME) ||
+                     JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
                    //(e.getPropertyName () == debugger.PROP_CURRENT_THREAD) ||
-                   (e.getPropertyName () == debugger.PROP_STATE)
-                 ) && (debugger.getState () == debugger.STATE_STOPPED)
+                   (e.getPropertyName () == JPDADebugger.PROP_STATE)
+                 ) && (debugger.getState () == JPDADebugger.STATE_STOPPED)
             ) {
                 // IF state has been changed to STOPPED or
                 // IF current call stack frame has been changed & state is stoped
@@ -535,7 +343,7 @@ public class LocalsTreeModel implements TreeModel {
                 }
                 task = RequestProcessor.getDefault ().post (new Runnable () {
                     public void run () {
-                        if (debugger.getState () != debugger.STATE_STOPPED) {
+                        if (debugger.getState () != JPDADebugger.STATE_STOPPED) {
                             if (verbose)
                                 System.out.println("LTM cancel started task " + task);
                             return;
@@ -548,8 +356,8 @@ public class LocalsTreeModel implements TreeModel {
                 if (verbose)
                     System.out.println("LTM  create task " + task);
             } else
-            if ( (e.getPropertyName () == debugger.PROP_STATE) &&
-                 (debugger.getState () != debugger.STATE_STOPPED) &&
+            if ( (e.getPropertyName () == JPDADebugger.PROP_STATE) &&
+                 (debugger.getState () != JPDADebugger.STATE_STOPPED) &&
                  (task != null)
             ) {
                 // debugger has been resumed

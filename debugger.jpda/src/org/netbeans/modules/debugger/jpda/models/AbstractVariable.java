@@ -15,27 +15,37 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.*;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.io.PushbackReader;
 import java.io.StringReader;
 import java.io.IOException;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
  * @author   Jan Jancura
  */
-public class AbstractVariable implements Variable {
+public class AbstractVariable implements ObjectVariable {
 
     private Value value;
+    //private Type type;
     private LocalsTreeModel model;
     private String id;
     private String genericType;
-
+    
+    
+    Field[] fields;
+    Field[] staticFields;
+    Field[] inheritedFields;
 
     AbstractVariable (
         LocalsTreeModel model,
@@ -46,7 +56,7 @@ public class AbstractVariable implements Variable {
         this.value = value;
         this.id = id;
         if (this.id == null)
-            this.id = "" + super.hashCode ();
+            this.id = Integer.toString(super.hashCode());
     }
 
     AbstractVariable (LocalsTreeModel model, Value value, String genericSignature, String id) {
@@ -61,7 +71,7 @@ public class AbstractVariable implements Variable {
         }
         this.id = id;
         if (this.id == null)
-            this.id = "" + super.hashCode ();
+            this.id = Integer.toString(super.hashCode());
     }
 
     private static String getTypeDescription(PushbackReader signature) throws IOException {
@@ -167,19 +177,20 @@ public class AbstractVariable implements Variable {
     */
     public void setValue (String expression) throws InvalidExpressionException {
         // evaluate expression to Value
-        Value value = model.getDebugger ().evaluateIn (expression);
+        Value value = getModel().getDebugger ().evaluateIn (expression);
         // set new value to remote veriable
         setValue (value);
         // set new value to this model
         setInnerValue (value);
         // refresh tree
-        model.fireNodeChanged (this);
+        getModel().fireNodeChanged (this);
     }
     
     protected void setValue (Value value) throws InvalidExpressionException {
         throw new InternalError ();
     }
-    
+
+//    //TODO : move to ObjectVariable
     /**
     * Returns string representation of type of this variable.
     *
@@ -190,9 +201,10 @@ public class AbstractVariable implements Variable {
         if (v == null) return 0;
         if (v instanceof ArrayReference)
             return ((ArrayReference) v).length ();
-        return ((ReferenceType) v.type ()).fields ().size ();
+        return ((ReferenceType) v.type()).fields ().size ();
     }
 
+//    //TODO : move to ObjectVariable
     /**
      * Returns field defined in this object.
      *
@@ -201,65 +213,36 @@ public class AbstractVariable implements Variable {
      * @return field defined in this object
      */
     public Field getField (String name) {
-        if (getInnerValue () == null) return null;
-        com.sun.jdi.Field f = ((ReferenceType) getInnerValue ().type ()).
-            fieldByName (name);
+        if (getInnerValue() == null) return null;
+        com.sun.jdi.Field f = 
+            ((ReferenceType) this.getInnerValue().type()).fieldByName (name);
         if (f == null) return null;
-        return getModel ().getField (
+        return this.getField (
             f, 
             (ObjectReference) getInnerValue (),
-            //((ReferenceType) getInnerValue ().type ()).name (),
-            id
+            getID()
         );
     }
 
-    /**
-     * Return field of given name.
-     *
-     * @param fieldName name of field
-     * @return field of given name
-     */
-    public Field[] getFields (int from, int to) {
-        if (getInnerValue () == null) return new Field [0];
-        AbstractVariable[] vs = getModel ().getFields (
-            this, false, from, to
-        );
-        Field[] fs = new Field [vs.length];
-        System.arraycopy (vs, 0, fs, 0, vs.length);
-        return fs;
-    }
-
-    /**
-     * Return all static fields.
-     *
-     * @return all static fields
-     */
-    public Field[] getAllStaticFields (int from, int to) {
-        return getModel ().getAllStaticFields (this, from, to);
-    }
-
-    /**
-     * Return all inherited fields.
-     *
-     * @return all inherited fields
-     */
-    public Field[] getInheritedFields (int from, int to) {
-        return getModel ().getInheritedFields (this, from, to);
-    }
-    
+//    //TODO : move to ObjectVariable
     public Super getSuper () {
-        if (getInnerValue () == null) return null;
-        Type t = getInnerValue ().type ();
-        if (!(t instanceof ClassType)) return null;
-        ClassType s = ((ClassType) getInnerValue ().type ()).superclass ();
-        if (s == null) return null;
-        return getModel ().getSuper (
-            s, 
-            (ObjectReference) getInnerValue (),
-            id
-        );
+        if (getInnerValue () == null) 
+            return null;
+        Type t = this.getInnerValue().type();
+        if (!(t instanceof ClassType)) 
+            return null;
+        ClassType superType = ((ClassType) t).superclass ();
+        if (superType == null) 
+            return null;
+        return new SuperVariable(
+                this.getModel(), 
+                (ObjectReference) this.getInnerValue(),
+                superType,
+                this.id
+                );
     }
     
+//    //TODO : move to ObjectVariable
     /**
      * Calls {@link java.lang.Object#toString} in debugged JVM and returns
      * its value.
@@ -267,19 +250,20 @@ public class AbstractVariable implements Variable {
      * @return toString () value of this instance
      */
     public String getToStringValue () throws InvalidExpressionException {
-        if (value == null) return null;
-        if (!(value.type () instanceof ClassType)) return getValue ();
-        if (value instanceof StringReference)
-            return "\"" + ((StringReference) value).value () + "\"";
-        Method toStringMethod = ((ClassType) value.type ()).
+        if (this.getInnerValue() == null) return null;
+        if (!(this.getInnerValue().type() instanceof ClassType)) return getValue ();
+        if (this.getInnerValue() instanceof StringReference)
+            return "\"" + ((StringReference) this.getInnerValue()).value () + "\"";
+        Method toStringMethod = ((ClassType) this.getInnerValue().type()).
             concreteMethodByName ("toString", "()Ljava/lang/String;");
-        return ((StringReference) model.getDebugger ().invokeMethod (
-            (ObjectReference) value,
+        return ((StringReference) getModel().getDebugger ().invokeMethod (
+            (ObjectReference) this.getInnerValue(),
             toStringMethod,
             new Value [0]
         )).value ();
     }
     
+//    //TODO : move to ObjectVariable
     /**
      * Calls given method in debugged JVM on this instance and returns
      * its value.
@@ -295,40 +279,35 @@ public class AbstractVariable implements Variable {
         String signature,
         Variable[] arguments
     ) throws NoSuchMethodException, InvalidExpressionException {
-        if (value == null) return null;
-        Method method = ((ClassType) value.type ()).
+        if (this.getInnerValue() == null) return null;
+        Method method = ((ClassType) this.getInnerValue().type()).
             concreteMethodByName (methodName, signature);
         if (method == null) {
-            List l = ((ClassType) value.type ()).
+            List l = ((ClassType) this.getInnerValue().type()).
                 methodsByName (methodName);
             int j, jj = l.size ();
             for (j = 0; j < jj; j++)
                 System.out.println( ((Method) l.get (j)).signature ());
             throw new NoSuchMethodException (
-                value.type ().name () + "." + methodName + " : " + signature
+                this.getInnerValue().type().name () + "." + methodName + " : " + signature
             );
         }
         Value[] vs = new Value [arguments.length];
         int i, k = arguments.length;
         for (i = 0; i < k; i++)
             vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
-        Value v = model.getDebugger ().invokeMethod (
-            (ObjectReference) value,
+        Value v = getModel().getDebugger ().invokeMethod (
+            (ObjectReference) this.getInnerValue(),
             method,
             vs
         );
         if (v instanceof ObjectReference)
-            return new ObjectVariable (
-                model,
+            return new org.netbeans.modules.debugger.jpda.models.ObjectVariable (
+                getModel(),
                 (ObjectReference) v,
                 id + method + "^"
             );
-        else
-            return new AbstractVariable (
-                model,
-                v,
-                id + method
-            );
+        return new AbstractVariable (getModel(), v, id + method);
     }
     
     /**
@@ -339,7 +318,7 @@ public class AbstractVariable implements Variable {
     public String getType () {
         if (genericType != null) return genericType;
         if (getInnerValue () == null) return "";
-        return getInnerValue ().type ().name ();
+        return this.getInnerValue().type().name ();
     }
 
     
@@ -369,5 +348,163 @@ public class AbstractVariable implements Variable {
     public int hashCode () {
         return id.hashCode ();
     }
+
+    
+    
+//--- refactored from LocalsTreeModel
+    
+    /**
+     * Returns all fields declared in this type. Or max 50 fields 
+     * of an array.
+     */
+    public Field[] getFields (int from, int to) {
+            //either the fields are cached or we have to init them
+            if (this.fields == null)
+                this.initFields(this.getInnerValue().type());
+            
+            
+            //TODO : this was here for arrays - but didn't work 
+//            int s = Math.min (50, ar.length ());
+//            if (to == 0) 
+//                l = ar.getValues (0, s);
+//            else
+//                l = ar.getValues (from, to - from); // length!!!
+
+            
+            if (to != 0) {
+                Field[] fv = new Field[to - from];
+                System.arraycopy(this.fields, from, fv, 0, to - from);
+                return fv;
+            }
+            return this.fields;
+        }
+
+    private void initFieldsOfArray (
+            ArrayReference ar, 
+            String componentType,
+            String parentID
+        ) {
+            List l = ar.getValues();
+            int i, k = l.size ();
+            Field[] ch = new Field [k];
+            String className = ar.referenceType ().name ();
+            for (i = 0; i < k; i++) {
+                Value v = (Value) l.get (i);
+                ch [i] = (v instanceof ObjectReference) ?
+                    new ObjectArrayFieldVariable (
+                        this.getModel(), (ObjectReference) v, className, componentType, i, parentID
+                    ) :
+                    new ArrayFieldVariable (
+                        this.getModel(), v, className, componentType, i, parentID
+                    );
+            }
+            this.fields = ch;
+            this.staticFields = new Field[0];
+            this.inheritedFields = new Field[0];
+        }
+
+    private void initFieldsOfClass (
+            ObjectReference or, 
+            ReferenceType rt,
+            String parentID)
+    {
+        List fields = new ArrayList();
+        List staticFields = new ArrayList();
+        List allInheretedFields = new ArrayList();
+        
+        List l = rt.allFields ();
+        Set s = new HashSet (rt.fields ());
+
+        int i, k = l.size();
+        for (i = 0; i < k; i++) {
+            com.sun.jdi.Field f = (com.sun.jdi.Field) l.get (i);
+            Field field = this.getField (f, or, this.getID());
+            if (f.isStatic ())
+                staticFields.add(field);
+            else {
+                if (s.contains (f))
+                    fields.add(field);
+                else
+                    allInheretedFields.add(field);
+            }
+        }
+        this.fields = (Field[]) fields.toArray(new Field[fields.size()]);
+        this.inheritedFields = (Field[]) allInheretedFields.toArray(new Field[allInheretedFields.size()]);
+        this.staticFields = (Field[]) staticFields.toArray(new Field[staticFields.size()]);
+    }
+
+    protected void initFields(Type type) {
+        if (!(this.getInnerValue() instanceof ObjectReference) || !(type instanceof ReferenceType)) {
+            this.fields = new Field [0];
+            this.staticFields = new Field [0];
+            this.inheritedFields = new Field [0];
+        }
+        else {
+            ObjectReference or = (ObjectReference) this.getInnerValue();
+            ReferenceType rt = (ReferenceType) type;
+            if (or instanceof ArrayReference) {
+                this.initFieldsOfArray (
+                    (ArrayReference) or, 
+                    ((ArrayType) rt).componentTypeName (),
+                    this.getID ());
+            }
+            else {
+                this.initFieldsOfClass(or, rt, this.getID ());
+            }
+        }
+    }
+    
+    FieldVariable getField (
+            com.sun.jdi.Field f, 
+            ObjectReference or, 
+            String parentID
+        ) {
+            Value v = or.getValue (f);
+            if ( (v == null) || (v instanceof ObjectReference))
+                return new ObjectFieldVariable (
+                    this.getModel(),
+                    (ObjectReference) v,
+                    f,
+                    parentID,
+                    JPDADebuggerImpl.getGenericSignature(f),
+                    or
+                );
+            return new FieldVariable (this.getModel(), v, f, parentID, or);
+        }
+        
+    /**
+     * Return all static fields.
+     *
+     * @return all static fields
+     */
+    public Field[] getAllStaticFields(int from, int to) {
+        if (this.staticFields == null)
+            this.initFields(this.getInnerValue().type());
+        if (to != 0) {
+            FieldVariable[] fv = new FieldVariable[to - from];
+            System.arraycopy(this.staticFields, from, fv, 0, to - from);
+            return fv;
+        }
+        return this.staticFields;
+    }
+
+    /**
+     * Return all inherited fields.
+     * 
+     * @return all inherited fields
+     */
+    public Field[] getInheritedFields (int from, int to) {
+        if (this.inheritedFields == null)
+            this.initFields(this.getInnerValue().type());
+        if (to != 0) {
+            FieldVariable[] fv = new FieldVariable[to - from];
+            System.arraycopy(this.inheritedFields, from, fv, 0, to - from);
+            return fv;
+        }
+        return this.inheritedFields;
+    }
+    
+    
+    
 }
 
