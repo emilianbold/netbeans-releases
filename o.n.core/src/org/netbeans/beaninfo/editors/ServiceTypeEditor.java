@@ -109,20 +109,6 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
         names.toArray(tags = new String[names.size()]);
     }
 
-    /** This method is intended for use when generating Java code to set
-     * the value of the property.  It should return a fragment of Java code
-     * that can be used to initialize a variable with the current property
-     * value.
-     * <p>
-     *
-     * @return A fragment of Java code representing an initializer for the
-     *    current value.
-     */
-    public String getJavaInitializationString() {
-        return "???"; // NOI18N
-    }
-
-
     //----------------------------------------------------------------------
 
     /**
