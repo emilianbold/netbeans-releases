@@ -457,16 +457,28 @@ public class NonGui extends NbTopManager implements Runnable {
 
         startFolder (getDefault ().getPlaces ().folders ().startup ());
 
-
-        initializeMainWindow ();
-
-
         // -----------------------------------------------------------------------------------------------------
         // 15. Install new modules
 
         ModuleInstaller.autoLoadModules ();
 
-
+        //-------------------------------------------------------------------------------------------------------
+        // setup wizard
+        try {
+            if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        org.netbeans.core.ui.SetupWizard.showSetupWizard(false);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            TopManager.getDefault().getErrorManager().notify(e);
+        }
+        
+        //---------------------------------------------------------------------------------------------------------
+        // initialize main window AFTER the setup wizard is finished
+        initializeMainWindow ();
     }
 
 
