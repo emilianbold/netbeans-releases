@@ -25,6 +25,11 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
+                <file name="TomcatDeploymentManagementWrapper.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.StartTomcat.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.StartTomcat"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManagerWrapper,org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer,org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment,org.netbeans.modules.j2ee.deployment.plugins.spi.FindServer,org.netbeans.modules.j2ee.deployment.plugins.spi.FileDeploymentLayout,org.netbeans.modules.j2ee.deployment.plugins.spi.ModuleUrlResolver"/>
+                </file>
             </folder>
         </folder>
     </folder>

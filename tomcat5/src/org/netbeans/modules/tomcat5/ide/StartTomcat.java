@@ -66,6 +66,15 @@ import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
  */
 public final class StartTomcat implements StartServer, Runnable, ProgressObject, IncrementalDeployment, FileDeploymentLayout, ModuleUrlResolver, DeploymentPlanSplitter
 {
+    private static StartTomcat instance;
+    
+    public static synchronized StartTomcat create() {
+        if (instance == null) {
+            instance = new StartTomcat ();
+        }
+        return instance;
+    }
+    
     public static final String TAG_CATALINA_HOME = "catalina_home"; // NOI18N
     public static final String TAG_CATALINA_BASE = "catalina_base"; // NOI18N
     
