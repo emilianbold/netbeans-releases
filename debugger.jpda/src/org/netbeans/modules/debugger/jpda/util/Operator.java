@@ -102,6 +102,12 @@ public class Operator {
                          if (exec != null)
                              try {
                                  exec.exec (e);
+                             } catch (VMDisconnectedException exc) {   
+                                 disconnected = true;
+                                 if (finalizer != null) finalizer.run ();
+                                 //S ystem.out.println ("EVENT: " + e); // NOI18N
+                                 //S ystem.out.println ("Operator end"); // NOI18N
+                                 return;
                              } catch (Exception ex) {
                                  ex.printStackTrace ();
                              }
