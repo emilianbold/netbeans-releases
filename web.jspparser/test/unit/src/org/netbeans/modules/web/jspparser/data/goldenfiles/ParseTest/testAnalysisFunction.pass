@@ -201,7 +201,7 @@
 <![CDATA[
 <input type="text" name="foo" value="]]>
 </jsp:text>
-<jsp:text jsp:id="19">${param['foo']}</jsp:text>
+<jsp:text jsp:id="19">${param[&apos;foo&apos;]}</jsp:text>
 <jsp:text
   jsp:id="20"
 >
@@ -334,7 +334,7 @@
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="40">${param["foo"]}</jsp:text>
+<jsp:text jsp:id="40">${param[&quot;foo&quot;]}</jsp:text>
 <jsp:text
   jsp:id="41"
 >
@@ -381,7 +381,7 @@
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="48">${my:reverse(param["foo"])}</jsp:text>
+<jsp:text jsp:id="48">${my:reverse(param[&quot;foo&quot;])}</jsp:text>
 <jsp:text
   jsp:id="49"
 >
@@ -428,7 +428,7 @@
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="56">${my:reverse(my:reverse(param["foo"]))}</jsp:text>
+<jsp:text jsp:id="56">${my:reverse(my:reverse(param[&quot;foo&quot;]))}</jsp:text>
 <jsp:text
   jsp:id="57"
 >
@@ -475,7 +475,7 @@
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="64">${my:countVowels(param["foo"])}</jsp:text>
+<jsp:text jsp:id="64">${my:countVowels(param[&quot;foo&quot;])}</jsp:text>
 <jsp:text
   jsp:id="65"
 >
@@ -657,10 +657,10 @@ Node [/jsp2/el/functions.jsp(47,2), TemplateText] </body>
 Node [/jsp2/el/functions.jsp(48,0), TemplateText] </html>
 
 
-Node [/jsp2/el/functions.jsp(1,1), Declaration] <%!static private org.apache.jasper.runtime.ProtectedFunctionMapper _jspx_fnmap_0;
+Node [null, Declaration] <%!static private org.apache.jasper.runtime.ProtectedFunctionMapper _jspx_fnmap_0;
 static private org.apache.jasper.runtime.ProtectedFunctionMapper _jspx_fnmap_1;
 %>
-Node [/jsp2/el/functions.jsp(1,1), Declaration] <%!static {
+Node [null, Declaration] <%!static {
   _jspx_fnmap_0= org.apache.jasper.runtime.ProtectedFunctionMapper.getMapForFunction("my:reverse", jsp2.examples.el.Functions.class, "reverse", new Class[] {java.lang.String.class});
   _jspx_fnmap_1= org.apache.jasper.runtime.ProtectedFunctionMapper.getMapForFunction("my:countVowels", jsp2.examples.el.Functions.class, "numVowels", new Class[] {java.lang.String.class});
 }
