@@ -24,6 +24,7 @@ import org.netbeans.xtest.harness.Testbag.InExclude;
 import org.netbeans.xtest.harness.Testbag.Patternset;
 import org.netbeans.xtest.harness.Testbag.Testset;
 import org.netbeans.xtest.xmlserializer.XMLSerializer;
+import org.netbeans.xtest.util.SerializeDOM;
 
 /** Generate config with excluded tests from given config file. New config
  * is written to output directory and named cfg-testtype-excluded.xml. If only

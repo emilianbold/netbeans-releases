@@ -23,8 +23,7 @@ import java.io.*;
 import java.util.*;
 
 import org.netbeans.xtest.xmlserializer.*;
-import org.netbeans.xtest.pe.server.*;
-import org.netbeans.xtest.pe.*;
+import org.netbeans.xtest.util.SerializeDOM;
 import org.netbeans.xtest.XTestEntityResolver;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;

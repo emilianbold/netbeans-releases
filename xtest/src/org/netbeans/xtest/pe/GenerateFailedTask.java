@@ -24,6 +24,7 @@ import org.netbeans.xtest.harness.Testbag.Testset;
 import org.netbeans.xtest.pe.xmlbeans.*;
 import org.netbeans.xtest.util.FileUtils;
 import org.netbeans.xtest.xmlserializer.XMLSerializer;
+import org.netbeans.xtest.util.SerializeDOM;
 
 /** Generate config with failed tests from the last test run. New config
  * is written to output directory and named cfg-testtype-failed.xml.

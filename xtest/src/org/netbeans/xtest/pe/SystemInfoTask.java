@@ -22,6 +22,7 @@ package org.netbeans.xtest.pe;
 import org.apache.tools.ant.*;
 import org.netbeans.xtest.pe.xmlbeans.*;
 import java.io.*;
+import org.netbeans.xtest.util.SerializeDOM;
 
 // for getting hostname 
 import java.net.InetAddress;

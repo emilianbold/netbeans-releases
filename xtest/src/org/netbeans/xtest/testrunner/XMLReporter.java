@@ -24,6 +24,7 @@ import org.netbeans.xtest.ide.XTestErrorManager;
 import org.netbeans.xtest.testrunner.*;
 import org.netbeans.xtest.pe.xmlbeans.*;
 import org.netbeans.xtest.pe.*;
+import org.netbeans.xtest.util.SerializeDOM;
 
 import java.util.*;
 import junit.framework.*;

@@ -25,6 +25,7 @@ import org.netbeans.xtest.pe.xmlbeans.*;
 import org.netbeans.xtest.util.FileUtils;
 import java.util.*;
 import org.w3c.dom.*;
+import org.netbeans.xtest.util.SerializeDOM;
 
 // move ant task - i'm lazy to write my own :-)))
 import org.apache.tools.ant.taskdefs.Move;

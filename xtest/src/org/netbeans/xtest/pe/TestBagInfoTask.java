@@ -23,6 +23,7 @@ package org.netbeans.xtest.pe;
 import org.apache.tools.ant.*;
 import org.netbeans.xtest.pe.xmlbeans.TestBag;
 import java.io.*;
+import org.netbeans.xtest.util.SerializeDOM;
 
 /**
  *

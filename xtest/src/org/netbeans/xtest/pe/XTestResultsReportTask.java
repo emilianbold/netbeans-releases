@@ -24,6 +24,7 @@ import org.netbeans.xtest.pe.xmlbeans.*;
 import java.io.*;
 import org.w3c.dom.*;
 import java.util.*;
+import org.netbeans.xtest.util.SerializeDOM;
 
 /**
  *
