@@ -516,7 +516,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         implements DeferredPerformer.DeferredCommand {
         static final long serialVersionUID =-8202452314155464024L;
         /** composited view */
-        private TreeView view;
+        protected TreeView view;
         /** mini status bar */
         private MiniStatusBar miniStatusBar;
         //private MouseListener statusBarPopupInvoker;

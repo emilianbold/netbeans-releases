@@ -22,6 +22,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import javax.swing.tree.TreePath;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -30,8 +37,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.TopManager;
-import org.openide.nodes.Node;
-import org.openide.nodes.FilterNode;
+import org.openide.nodes.*;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheetView;
@@ -41,16 +47,20 @@ import org.openide.explorer.view.TreeTableView;
 import org.openide.awt.SplittedPanel;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.windows.WindowManager;
+import org.openide.explorer.view.NodeTableModel;
+import org.openide.explorer.view.Visualizer;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
+import org.openide.windows.WindowManager;
+import org.openide.windows.Workspace;
+import org.openide.windows.Mode;
+import org.openide.cookies.InstanceCookie;
 
 import org.netbeans.core.projects.SettingChildren;
 import org.netbeans.core.projects.SessionManager;
 import org.netbeans.core.NbMainExplorer;
-import org.openide.windows.Workspace;
-import org.openide.windows.Mode;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.PersistenceManager;
-import org.openide.explorer.view.NodeTableModel;
-import org.openide.windows.WindowManager;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -67,7 +77,11 @@ public class OptionsAction extends CallableSystemAction {
 
     /** Shows options panel. */
     public void performAction () {
+        TopManager.getDefault().setStatusText(NbBundle.getBundle(OptionsAction.class).getString("MSG_Preparing_options"));
         OptionsPanel singleton = OptionsPanel.singleton();
+        singleton.prepareNodes ();
+        TopManager.getDefault ().setStatusText (""); // NOI18N
+        
         
         // dock Options into its mode if needed
         Workspace w = WindowManager.getDefault().getCurrentWorkspace();
@@ -114,13 +128,17 @@ public class OptionsAction extends CallableSystemAction {
     }
 
     /** Options panel. Uses singleton pattern. */
-    public static final class OptionsPanel extends NbMainExplorer.SettingsTab {
+    public static final class OptionsPanel extends NbMainExplorer.SettingsTab 
+    implements Runnable {
         /** Name of mode in which options panel is docked by default */
         public static final String MODE_NAME = "options";
         /** Singleton instance of options panel */
         private static OptionsPanel singleton;
         /** Formatted title of this view */
         private static MessageFormat formatTitle;
+
+        /** list of String[] that should be expanded when the tree is shown */
+        private Collection toExpand;
 
         private OptionsPanel () {
             setRootContext (initRC ());
@@ -144,13 +162,7 @@ public class OptionsAction extends CallableSystemAction {
         }
 
         protected TreeView initGui () {
-            TreeView view;
-
-            if (!Boolean.getBoolean ("netbeans.options.old")) {
-                view = new TTW ();
-            } else {
-                view = new BeanTreeView();
-            }
+            TTW view = new TTW ();
 
             SplittedPanel split = new SplittedPanel();
             PropertySheetView propertyView = new PropertySheetView();
@@ -214,9 +226,53 @@ public class OptionsAction extends CallableSystemAction {
             
             close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_close_button"));
             help.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_help_button"));
+            
 
             return view;
         }
+
+        public void addNotify () {
+            super.addNotify ();
+            
+            javax.swing.SwingUtilities.invokeLater(this);
+        }
+        
+        public synchronized void prepareNodes () {
+            if (toExpand != null) {
+                return;
+            }
+            
+            Node root = getExplorerManager ().getRootContext ();
+            
+            ArrayList arr = new ArrayList (101);
+            
+            expandNodes (root, 3, arr);
+            
+            toExpand = new ArrayList (arr.size ());
+            
+            Iterator it = arr.iterator();
+            while (it.hasNext()) {
+                Node n = (Node)it.next();
+                toExpand.add (NodeOp.createPath (n, root));
+            }
+        }
+            
+        
+        public synchronized void run () {
+            if (!javax.swing.SwingUtilities.isEventDispatchThread ()) {
+                javax.swing.SwingUtilities.invokeLater(this);
+            }
+            
+            if (toExpand == null) {
+                return;
+            }
+            
+            TTW ttw = (TTW)view;
+            ttw.expandTheseNodes (toExpand, getExplorerManager ().getRootContext ());
+            
+            toExpand = null;
+        }
+        
 
         protected void validateRootContext () {
             Node n = initRC ();
@@ -243,6 +299,44 @@ public class OptionsAction extends CallableSystemAction {
             return rc;
         }
 
+        /** Expands the node in explorer.
+         */
+        private static void expandNodes (Node n, int depth, java.util.Collection list) {
+            if (depth == 0) {
+                return;
+            }
+            
+            DataObject obj = (DataObject)n.getCookie(DataObject.class);
+            if (obj instanceof DataShadow) {
+                obj = ((DataShadow)obj).getOriginal();
+            }
+            
+            if (obj != null) {
+                if (!obj.getPrimaryFile().getPackageName('/').startsWith ("UI/Services")) { // NOI18N
+                    return;
+                }
+
+                InstanceCookie ic = (InstanceCookie)obj.getCookie (InstanceCookie.class);
+                if (ic != null) {
+
+                    if (ic instanceof InstanceCookie.Of) {
+                        if (((InstanceCookie.Of)ic).instanceOf (Node.class)) {
+                            return;
+                        }
+                    } 
+                }
+            }
+            
+            // ok, expand this node
+            if (!list.contains (n)) {
+                list.add (n);
+            }
+         
+            Node[] arr = n.getChildren().getNodes(true);
+            for (int i = 0; i < arr.length; i++) {
+                expandNodes (arr[i], depth - 1, list);
+            }
+        }
         
         //
         // Model to implement the special handling of SettingChildren.* properties
@@ -371,6 +465,31 @@ public class OptionsAction extends CallableSystemAction {
             
             public void actionPerformed(ActionEvent e) {
                 refreshColumns(true);
+            }
+            
+            public void expandTheseNodes (Collection paths, Node root) {
+                Iterator it = paths.iterator();
+                
+                Node first = null;
+                while (it.hasNext()) {
+                    String[] path = (String[])it.next();
+
+                    try {
+                        Node n = NodeOp.findPath (root, path);
+                        if (first == null) {
+                            first = n;
+                        } else {
+                            this.expandNode(n);
+                        }
+                    } catch (NodeNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                
+                if (first != null) {
+                    collapseNode (first);
+                    expandNode (first);
+                }
             }
             
         }
