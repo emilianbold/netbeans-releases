@@ -147,6 +147,7 @@
         
         <target name="printconfig">
         	<echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}." />
+		<echo message="xtetest.userdata.propertyfile = ${xtest.userdata.propertyfile}"/>
         </target>
         
         
