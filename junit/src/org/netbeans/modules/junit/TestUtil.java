@@ -422,7 +422,7 @@ public class TestUtil {
     public static List collectFeatures(JavaClass c, Class cls, 
                                    int modifiers, boolean recursive) {
 
-        return collectFeatures(c, cls, modifiers, recursive, new LinkedList());
+        return collectFeatures(c, cls, modifiers, recursive, new LinkedList(), new HashSet());
     }
         
 
@@ -430,9 +430,10 @@ public class TestUtil {
 
     private static List collectFeatures(JavaClass c, Class cls, 
                                    int modifiers, boolean recursive, 
-                                   List list ) 
+                                   List list, Set visited ) 
     {
 
+	if (!visited.add(c)) return list;
         // this class
         
         int mo = (c.isInterface()) ? Modifier.ABSTRACT : 0;
@@ -447,12 +448,12 @@ public class TestUtil {
         if (recursive) {
             // super
             JavaClass sup = c.getSuperClass();
-            if (sup != null) collectFeatures(sup, cls, modifiers, recursive, list);
+            if (sup != null) collectFeatures(sup, cls, modifiers, recursive, list, visited);
 
             // interfaces
             Iterator ifaces = c.getInterfaces().iterator();
             while (ifaces.hasNext()) collectFeatures((JavaClass)ifaces.next(), cls,
-                                                     modifiers, recursive, list);
+                                                     modifiers, recursive, list, visited);
         }
 
         return list;
