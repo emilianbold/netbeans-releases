@@ -13,7 +13,14 @@
 
 package org.netbeans.modules.tomcat5.ide;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.StringTokenizer;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
@@ -41,8 +48,9 @@ public final class StartTomcat implements StartServer
         return new NbProcessDescriptor (
                 "{" + StartTomcat.TAG_CATALINA_HOME + "}{" +     // NOI18N
                 ProcessExecutor.Format.TAG_SEPARATOR + "}bin{" + // NOI18N
-                ProcessExecutor.Format.TAG_SEPARATOR + "}" +     // NOI18N
-                StartTomcat.TAG_STARTUP_CMD,
+                ProcessExecutor.Format.TAG_SEPARATOR + "}{" +     // NOI18N
+                StartTomcat.TAG_STARTUP_CMD + "}",  // NOI18N
+                "", 
                 org.openide.util.NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
             );     
     }
@@ -90,12 +98,15 @@ public final class StartTomcat implements StartServer
         
         NbProcessDescriptor pd  = defaultExecDesc ();
         try { 
-            pd.exec (
-                new TomcatFormat (), 
+            Process p = pd.exec (
+                new TomcatFormat (homeDir.getAbsolutePath ()), 
                 new String[] { 
+                    "JAVA_HOME="+System.getProperty ("jdk.home"),  // NOI18N 
                     "CATALINA_HOME="+homeDir.getAbsolutePath (), 
-                    "CATALINA_BASE="+baseDir.getAbsolutePath () 
-                }
+                    "CATALINA_BASE="+baseDir.getAbsolutePath ()
+                },
+                true,
+                new File (homeDir, "bin")
             );
         } catch (java.io.IOException ioe) {
             org.openide.ErrorManager.getDefault ().notify (ioe);
@@ -124,7 +135,6 @@ public final class StartTomcat implements StartServer
      *  @return File with absolute path for created dir.
      */
     private File createBaseDir (File baseDir, File homeDir) {
-        System.out.println("createBaseDir "+baseDir+", "+homeDir);
         if (!baseDir.isAbsolute ()) {
             baseDir = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator")+baseDir);
         }
@@ -147,7 +157,8 @@ public final class StartTomcat implements StartServer
                 "properties", 
                 "xml", 
             };
-            FileObject [] homeFO = FileUtil.fromFile (new File (homeDir, "conf"));
+            File homeConfDir = new File (homeDir, "conf");
+            FileObject [] homeFO = FileUtil.fromFile (homeConfDir);
             FileObject [] baseFO = FileUtil.fromFile (confDir);
             if (homeFO.length == 0 || baseFO.length == 0) {
                 throw new IllegalStateException ("Cannot create base dir");
@@ -156,13 +167,56 @@ public final class StartTomcat implements StartServer
                 FileUtil.copyFile (homeFO[0].getFileObject (files[i], exts[i]), baseFO[0], files[i], exts[i]);
             }
             // modify server.xml
+            copyAndPatch (
+                new File (homeConfDir, "server.xml"), 
+                new File (confDir, "server.xml"), 
+                "appBase=\"webapps\"",
+                "appBase=\""+new File (homeDir, "webapps").getAbsolutePath ()+"\""
+            );
             // modify tomcat-users.xml
-            throw new RuntimeException("todo");
+            copyAndPatch (
+                new File (homeConfDir, "tomcat-users.xml"), 
+                new File (confDir, "tomcat-users.xml"), 
+                "</tomcat-users>",
+                "<user username=\"ide\" password=\"ide_manager\" roles=\"admin,manager\"/>\n</tomcat-users>"
+            );
         }
         catch (java.io.IOException ioe) {
             System.err.println("!!! createBaseDir failed");
             ioe.printStackTrace ();
             throw new IllegalStateException ("Cannot create base dir");
+        }
+        return baseDir;
+    }
+    
+    /** Copies server.xml file and patches appBase="webapps" to
+     * appBase="$CATALINA_HOME/webapps" during the copy.
+     */
+    private void copyAndPatch (File src, File dst, String from, String to) {
+        java.io.Reader r = null;
+        java.io.Writer out = null;
+        try {
+            r = new BufferedReader (new InputStreamReader (new FileInputStream (src), "utf-8"));
+            StringBuffer sb = new StringBuffer ();
+            final char[] BUFFER = new char[4096];
+            int len;
+
+            for (;;) {
+                len = r.read (BUFFER);
+                if (len == -1) break;
+                sb.append (BUFFER, 0, len);
+            }
+            int idx = sb.toString ().indexOf (from);
+            if (idx >= 0) {
+                sb.replace (idx, idx+from.length (), to);  // NOI18N
+            }
+            out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream (dst), "utf-8"));
+            out.write (sb.toString ());
+            
+        } catch (java.io.IOException ioe) {
+        } finally {
+            try { if (out != null) out.close (); } catch (java.io.IOException ioe) {}
+            try { if (r != null) r.close (); } catch (java.io.IOException ioe) {}
         }
     }
     
@@ -173,11 +227,12 @@ public final class StartTomcat implements StartServer
         
         private static final long serialVersionUID = 992972967554321415L;
 
-        public TomcatFormat (
-        ) {
+        public TomcatFormat (String home) {
             super(new java.util.HashMap ());
             java.util.Map map = getMap ();
             map.put (TAG_STARTUP_CMD, org.openide.util.Utilities.isWindows ()? "startup.bat": "startup.sh"); // NOI18N
+            map.put (StartTomcat.TAG_CATALINA_HOME, home); // NOI18N
+            map.put (ProcessExecutor.Format.TAG_SEPARATOR, File.separator);
         }
     }
     
