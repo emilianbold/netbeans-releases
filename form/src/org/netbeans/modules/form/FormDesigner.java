@@ -303,7 +303,7 @@ public class FormDesigner extends TopComponent
         clearSelectionImpl();
         addComponentToSelectionImpl(metacomp);
         repaintSelection();
-        updateActivatedNodes();
+        updateComponentInspector();
     }
 
     void setSelectedComponents(RADComponent[] metacomps) {
@@ -313,7 +313,7 @@ public class FormDesigner extends TopComponent
             addComponentToSelectionImpl(metacomps[i]);
 
         repaintSelection();
-        updateActivatedNodes();
+        updateComponentInspector();
     }
 
     void setSelectedNode(FormNode node) {
@@ -330,19 +330,19 @@ public class FormDesigner extends TopComponent
             Node[] selectedNodes = new Node[] { node };
             try {
                 ci.setSelectedNodes(selectedNodes, formEditorSupport);
+                // sets also the activated nodes (both for ComponentInspector
+                // and FormDesigner)
             }
             catch (java.beans.PropertyVetoException ex) {
                 ex.printStackTrace();
             }
-
-            setActivatedNodes(selectedNodes);
         }
     }
 
     void addComponentToSelection(RADComponent metacomp) {
         addComponentToSelectionImpl(metacomp);
         repaintSelection();
-        updateActivatedNodes();
+        updateComponentInspector();
     }
 
     void addComponentsToSelection(RADComponent[] metacomps) {
@@ -350,19 +350,19 @@ public class FormDesigner extends TopComponent
             addComponentToSelectionImpl(metacomps[i]);
 
         repaintSelection();
-        updateActivatedNodes();
+        updateComponentInspector();
     }
 
     void removeComponentFromSelection(RADComponent metacomp) {
         removeComponentFromSelectionImpl(metacomp);
         repaintSelection();
-        updateActivatedNodes();
+        updateComponentInspector();
     }
 
     public void clearSelection() {
         clearSelectionImpl();
         repaintSelection();
-        updateActivatedNodes();
+        updateComponentInspector();
     }
 
     void addComponentToSelectionImpl(RADComponent metacomp) {
@@ -486,7 +486,8 @@ public class FormDesigner extends TopComponent
     // visibility update
 
     // synchronizes ComponentInspector with selection in FormDesigner
-    void updateActivatedNodes() {
+    // [there is a hardcoded relationship between these two views]
+    void updateComponentInspector() {
         ComponentInspector ci = ComponentInspector.getInstance();
         if (ci.getFocusedForm() != formEditorSupport)
             return;
@@ -500,12 +501,12 @@ public class FormDesigner extends TopComponent
         }
         try {
             ci.setSelectedNodes(selectedNodes, formEditorSupport);
+            // sets also the activated nodes (both for ComponentInspector
+            // and FormDesigner)
         }
         catch (java.beans.PropertyVetoException ex) {
             ex.printStackTrace();
         }
-
-        setActivatedNodes(selectedNodes);
     }
 
     void updateName(String name) {
@@ -778,7 +779,7 @@ public class FormDesigner extends TopComponent
             if (getDesignerMode() == MODE_CONNECT)
                 clearSelection();
             else
-                updateActivatedNodes();
+                updateComponentInspector();
         }
 
         ci.attachActions();

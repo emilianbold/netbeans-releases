@@ -167,7 +167,6 @@ public class ComponentInspector extends TopComponent
     }
 
     protected void componentActivated() {
-        setActivatedNodes(getExplorerManager().getSelectedNodes());
         attachActions();
     }
 
@@ -446,8 +445,13 @@ public class ComponentInspector extends TopComponent
          * (relatively time expensive update) is done only at the end.
          */
         public void run() {
-            if (TopComponent.getRegistry().getActivated() == ComponentInspector.this)
-                setActivatedNodes(getExplorerManager().getSelectedNodes());
+            Node[] selectedNodes = getExplorerManager().getSelectedNodes();
+            setActivatedNodes(selectedNodes);
+            // set activated nodes also on FormDesigner - to keep it in sync
+            FormDesigner designer = focusedForm != null ?
+                                    focusedForm.getFormDesigner() : null;
+            if (designer != null)
+                designer.setActivatedNodes(selectedNodes);
 
             updatePasteAction();
 
