@@ -16,6 +16,7 @@ package org.netbeans.modules.editor;
 import java.awt.Toolkit;
 import java.io.*;
 import javax.swing.text.Document;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.Settings;
@@ -114,11 +115,15 @@ public abstract class FormatterIndentEngine extends IndentEngine {
         // Must call setter because of turning into custom property
         getFormatter().setExpandTabs(expandTabs);
         if (old != expandTabs) {
+            setValue(SettingsNames.EXPAND_TABS,
+                Boolean.valueOf(expandTabs), EXPAND_TABS_PROP);
+            
             firePropertyChange(EXPAND_TABS_PROP,
                 old ? Boolean.TRUE : Boolean.FALSE,
                 expandTabs ? Boolean.TRUE : Boolean.FALSE
             );
         }
+        
     }
 
     public int getSpacesPerTab() {
@@ -134,6 +139,9 @@ public abstract class FormatterIndentEngine extends IndentEngine {
         int old = getFormatter().getSpacesPerTab();
         getFormatter().setSpacesPerTab(spacesPerTab);
         if (old != spacesPerTab) {
+            setValue(SettingsNames.SPACES_PER_TAB,
+                new Integer(spacesPerTab), SPACES_PER_TAB_PROP);
+            
             firePropertyChange(SPACES_PER_TAB_PROP,
                 new Integer(old),
                 new Integer(spacesPerTab)
