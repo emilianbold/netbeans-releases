@@ -122,6 +122,7 @@ public class JarClassLoader extends ProxyClassLoader {
             
             int j = name.lastIndexOf('.');
             String pkgName = name.substring(0, j);
+            // XXX could pass path substring up to last slash to PCL.getPackage
             Package pkg = getPackage(pkgName);
             
             if (pkg != null) {
