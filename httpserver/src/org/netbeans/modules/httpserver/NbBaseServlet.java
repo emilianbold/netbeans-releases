@@ -126,23 +126,32 @@ public abstract class NbBaseServlet extends HttpServlet {
         if (pathI.length() == 0) return false;
         InputStream is = TopManager.getDefault().systemClassLoader().getResourceAsStream(pathI);
         if (is == null) return false;
-
-        String encoding = null;
-        int ind = pathI.lastIndexOf("."); // NOI18N
-        if (ind != -1) {
-            String ext = pathI.substring(ind + 1);
-            encoding = FileUtil.getMIMEType(ext);
+        
+        try {
+            String encoding = null;
+            int ind = pathI.lastIndexOf("."); // NOI18N
+            if (ind != -1) {
+                String ext = pathI.substring(ind + 1);
+                encoding = FileUtil.getMIMEType(ext);
+            }
+            // PENDING - URL com/ behaves incorrectly
+            if (encoding == null) {
+                // encoding = "thisisabug/inclassloader"; // NOI18N
+                return false;
+            }
+            response.setContentType(encoding);
+            // don't know content length
+            ServletOutputStream os = response.getOutputStream();
+            try {
+                copyStream(is, os);
+    	    }
+    	    finally {
+    	        os.close();
+    	    }
+    	}
+        finally {
+            is.close();
         }
-        // PENDING - URL com/ behaves incorrectly
-        if (encoding == null) {
-            // encoding = "thisisabug/inclassloader"; // NOI18N
-            return false;
-        }
-        response.setContentType(encoding);
-        // don't know content length
-        ServletOutputStream os = response.getOutputStream();
-        copyStream(is, os);
-        os.close();
         return true;
     }
 
@@ -180,9 +189,18 @@ public abstract class NbBaseServlet extends HttpServlet {
         response.setContentLength(len);
         response.setDateHeader("Last-Modified", file.lastModified().getTime()); // NOI18N
         InputStream in = file.getInputStream();
-        ServletOutputStream os = response.getOutputStream();
-        copyStream(in, os);
-        os.close();
+        try {
+            ServletOutputStream os = response.getOutputStream();
+            try {
+                copyStream(in, os);
+            }
+            finally {
+                os.close();
+            }
+        }
+        finally {
+            in.close();
+        }
     }
 
     private void sendDirectory(HttpServletRequest request, HttpServletResponse response, FileObject file)
