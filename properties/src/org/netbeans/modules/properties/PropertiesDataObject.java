@@ -116,6 +116,22 @@ public final class PropertiesDataObject extends MultiDataObject {
         super.getCookieSet().add(((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor());
     }
     
+    // PEDING very ugly, has to be revised.
+    /** Hack to removeSecondaryEntry(MultiDataObject.Entry) method. */
+    void removeSecondaryEntryHack(MultiDataObject.Entry entry) {
+        super.removeSecondaryEntry(entry);
+    }
+
+    /** Deletes all secondary entries and then deletes the primary entry. Overrides superclass method. */
+    protected void handleDelete() throws IOException {
+        Iterator it = secondaryEntries().iterator();
+        while(it.hasNext()) {
+            ((PropertiesFileEntry)it.next()).delete();
+        }
+
+        getPrimaryEntry().delete();
+    }
+
     /** Returns the support object for JTable-editing. Should be used by all subentries as well */
     public PropertiesOpen getOpenSupport () {
         return (PropertiesOpen)getCookie(OpenCookie.class);
@@ -196,7 +212,6 @@ public final class PropertiesDataObject extends MultiDataObject {
         
         /** Sets all keys in the correct order */
         protected void mySetKeys() {
-
             TreeSet ts = new TreeSet(new Comparator() {
                 public int compare(Object o1, Object o2) {
                     if (o1 == o2)
@@ -229,9 +244,7 @@ public final class PropertiesDataObject extends MultiDataObject {
             if(pcl == null) {
                 pcl = new PropertyChangeListener () {
                     public void propertyChange(PropertyChangeEvent evt) {
-                        if (evt.getPropertyName().equals(PROP_FILES)) {
-                            Iterator it = PropertiesDataObject.this.secondaryEntries().iterator();
-
+                        if(PROP_FILES.equals(evt.getPropertyName())) {
                             mySetKeys();
                         }
                     }

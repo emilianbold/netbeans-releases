@@ -104,6 +104,12 @@ implements EditCookie, PrintCookie, Serializable {
         myEntry.getHandler().reparseNowBlocking();
         return true;
     }
+
+    // PENDING very ugly, has to revised.
+    /** Hack to close(boolean) method. */
+    boolean closeHack(boolean ask) {
+        return close(ask);
+    }
     
     /** 
      * Overrides superclass method.
@@ -417,7 +423,8 @@ implements EditCookie, PrintCookie, Serializable {
    
     
     /** Nested class. Implementation of <code>ClonableEditorSupport.Env</code> interface. */
-    private static final class Environment implements CloneableEditorSupport.Env, SaveCookie {
+    private static final class Environment implements CloneableEditorSupport.Env,
+    PropertyChangeListener, SaveCookie {
         
         /** generated Serialized Version UID */
         static final long serialVersionUID = 354528097109874355L;
@@ -441,13 +448,41 @@ implements EditCookie, PrintCookie, Serializable {
         public Environment (PropertiesFileEntry entry) {
             this.entry = entry;
             entry.getFile().addFileChangeListener(new EnvironmentListener(this));
+            entry.addPropertyChangeListener(this);
         }
 
         /** Implements <code>CloneableEditorSupport.Env</code> inetrface. Adds property listener. */
         public void addPropertyChangeListener(PropertyChangeListener l) {
             prop().addPropertyChangeListener (l);
         }
-            
+
+        
+        /** Accepts property changes from entry and fires them to own listeners. */
+        public void propertyChange(PropertyChangeEvent evt) {
+            // We will handle the object invalidation here.
+            if(DataObject.PROP_VALID.equals(evt.getPropertyName ())) { 
+                // do not check it if old value is not true
+                if(Boolean.FALSE.equals(evt.getOldValue())) return;
+
+                // loosing validity
+                PropertiesEditorSupport support = (PropertiesEditorSupport)findCloneableOpenSupport();
+                if(support != null) {
+                    
+                    // mark the object as not being modified, so nobody
+                    // will ask for save
+                    unmarkModified();
+
+                    support.closeHack(false);
+                }
+            } else {
+                firePropertyChange (
+                    evt.getPropertyName(),
+                    evt.getOldValue(),
+                    evt.getNewValue()
+                );
+            }
+        }
+        
         /** Implements <code>CloneableEditorSupport.Env</code> inetrface. Removes property listener. */
         public void removePropertyChangeListener(PropertyChangeListener l) {
             prop().removePropertyChangeListener (l);

@@ -71,6 +71,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
     /** Constructor */
     public PropertiesOpen(PropertiesDataObject propDataObject) {
         super(new Environment(propDataObject));
+        
         this.propDataObject = propDataObject;
         
         this.propDataObject.addPropertyChangeListener(WeakListener.propertyChange(modifL = 
@@ -112,6 +113,12 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
             
         }
         return true;
+    }
+    
+    // PENDING very ugly, has to revised.
+    /** Hack to close(boolean) method. */
+    boolean closeHack(boolean ask) {
+        return close(ask);
     }
     
     /** 
@@ -229,9 +236,10 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
          * are also rethrown to own listeners.
          * @param dataObject data object to be attached to
          */
-        public Environment (DataObject dataObject) {
+        public Environment(PropertiesDataObject dataObject) {
             this.dataObject = dataObject;
             dataObject.addPropertyChangeListener(WeakListener.propertyChange(this, dataObject));
+            dataObject.addVetoableChangeListener(WeakListener.vetoableChange(this, dataObject));
         }
 
         
@@ -263,7 +271,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
          * data object
          */
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return (CloneableOpenSupport)dataObject.getCookie(CloneableOpenSupport.class);
+            return (CloneableOpenSupport)dataObject.getCookie(OpenCookie.class);
         }
         
         /** 
@@ -310,19 +318,34 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
          * Accepts property changes from <code>DataObject</code> and fires them to own listeners.
          */
         public void propertyChange(PropertyChangeEvent evt) {
-            if (DataObject.PROP_MODIFIED.equals (evt.getPropertyName())) {
-                if (dataObject.isModified ()) {
+            if(DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) {
+                if(dataObject.isModified()) {
                     dataObject.addVetoableChangeListener(this);
                 } else {
                     dataObject.removeVetoableChangeListener(this);
                 }
+            } else if(DataObject.PROP_VALID.equals(evt.getPropertyName ())) { 
+                // We will handle the object invalidation here.
+                // Do not check it if old value is not true.
+                if(Boolean.FALSE.equals(evt.getOldValue())) return;
+
+                // Loosing validity.
+                PropertiesOpen support = (PropertiesOpen)findCloneableOpenSupport();
+                if(support != null) {
+                    
+                    // Mark the object as not being modified, so nobody
+                    // will ask for save.
+                    unmarkModified();
+                    
+                    support.closeHack(false);
+                }
+            } else {
+                firePropertyChange (
+                    evt.getPropertyName(),
+                    evt.getOldValue(),
+                    evt.getNewValue()
+                );
             }
-            
-            firePropertyChange (
-                evt.getPropertyName(),
-                evt.getOldValue(),
-                evt.getNewValue()
-            );
         }
         
         /**

@@ -162,7 +162,7 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
         return ret;
     }
     
-    /* Renames underlying fileobject. This implementation return the
+    /** Renames underlying fileobject. This implementation return the
      * same file. Fires property change. Called when the DO is renamed, not the entry
      *
      * @param name new name
@@ -175,21 +175,22 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
         return fo;
     }
     
-    /* Renames underlying fileobject. This implementation return the
+    /** Renames underlying fileobject. This implementation return the
      * same file. Fires property change. Called when the file entry is renamed, not the DO
      *
      * @param name new name
      * @return file object with renamed file
      */
     public FileObject renameEntry (String name) throws IOException {
-        return PresentableFileEntry.this.rename(name);
+        return rename(name);
     }
     
-    /* Deletes file object
-     */
+    /** Deletes file object and fires property change. */
     public void delete () throws IOException {
         super.delete();
-        firePropertyChange(DataObject.PROP_VALID, Boolean.FALSE, Boolean.TRUE);
+        ((PropertiesDataObject)getDataObject()).removeSecondaryEntryHack(this);
+        
+        firePropertyChange(DataObject.PROP_VALID, Boolean.TRUE, Boolean.FALSE);
     }
     
     
@@ -344,8 +345,7 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
         }
     }
     
-    /** Look for a cookie in the current cookie set matching the requested class.
-     *
+    /** Looks for a cookie in the current cookie set matching the requested class.
      * @param type the class to look for
      * @return an instance of that class, or <code>null</code> if this class of cookie
      *    is not supported
