@@ -18,6 +18,8 @@ if not exist %JDK_INSTALLER_NAME% goto nosetup
 
 start /w %JDK_INSTALLER_NAME% /s /v"/qn INSTALLDIR=\%JDK_INSTALL_DIR%"
 
+set EXITCODE=%ERRORLEVEL%
+
 del %JDK_INSTALLER_NAME%
 
 echo Finished Installing JDK... >> %LOGFILE%
@@ -25,7 +27,7 @@ echo Finished Installing JDK... >> %LOGFILE%
 goto end
 
 :nosetup
-      	echo ERROR: jdk installer not found >> %LOGFILE%
-      	goto end
-
+	echo ERROR: jdk installer not found >> %LOGFILE%
+	exit 1
 :end
+	exit %EXITCODE%

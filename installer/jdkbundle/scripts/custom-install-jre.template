@@ -17,12 +17,14 @@ if not exist %JRE_MSI_PROJECT% goto nosetup
 
 start /w msiexec.exe /qn /i %JRE_MSI_PROJECT% IEXPLORER=1 MOZILLA=1
 
+set EXITCODE=%ERRORLEVEL%
+
 echo Finished Installing JRE... >> %LOGFILE%
 
 goto end
 
 :nosetup
-      	echo ERROR: jre installer not found >> %LOGFILE%
-      	goto end
-
+	echo ERROR: jre installer not found >> %LOGFILE%
+	exit 1
 :end
+	exit %EXITCODE%
