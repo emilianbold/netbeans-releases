@@ -452,8 +452,8 @@ class TCRefParser {
             // header
             buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"); // NOI18N
             /*buff.append("<!DOCTYPE tc-ref PUBLIC\n"); // NOI18N
-            buff.append("          \"-//NetBeans//DTD Top Component in Mode Properties 2.0//EN\"\n"); // NOI18N
-            buff.append("          \"http://www.netbeans.org/dtds/tc-ref2_0.dtd\">\n\n"); // NOI18N*/
+            buff.append("          \"-//NetBeans//DTD Top Component in Mode Properties 2.1//EN\"\n"); // NOI18N
+            buff.append("          \"http://www.netbeans.org/dtds/tc-ref2_1.dtd\">\n\n"); // NOI18N*/
             buff.append("<tc-ref version=\"2.1\">\n"); // NOI18N
             
             appendModule(ic, buff);

@@ -1478,8 +1478,8 @@ class ModeParser {
             // header
             buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"). // NOI18N
             /*buff.append("<!DOCTYPE mode PUBLIC\n"); // NOI18N
-            buff.append("          \"-//NetBeans//DTD Mode Properties 2.0//EN\"\n"); // NOI18N
-            buff.append("          \"http://www.netbeans.org/dtds/mode-properties2_0.dtd\">\n\n"); // NOI18N*/
+            buff.append("          \"-//NetBeans//DTD Mode Properties 2.1//EN\"\n"); // NOI18N
+            buff.append("          \"http://www.netbeans.org/dtds/mode-properties2_1.dtd\">\n\n"); // NOI18N*/
                 append("<mode version=\"2.1\">\n"); // NOI18N
             
             appendModule(ic, buff);
