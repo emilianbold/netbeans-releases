@@ -100,7 +100,7 @@ public class PropertyPanel extends JPanel {
     }
     
     /** Updates <code>replaceFormatTextField</code>. */
-    void updateReplaceText() {
+    protected void updateReplaceText() {
         replaceFormatTextField.setText(i18nString.getReplaceString());
     }
     
