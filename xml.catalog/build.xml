@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="homepage.base" value="xml.netbeans.org"/>
     <property name="dist.base" value="http://www.netbeans.org/download/nbms/40/xml"/>
     <property name="storepass" value="?"/>
+    <property name="nbm_alias" value="nb_ide"/>
     <property name="release" value="dev"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
