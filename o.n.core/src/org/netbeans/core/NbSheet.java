@@ -187,7 +187,13 @@ public final class NbSheet extends TopComponent {
         }
         return sharedSheet;
     }
-
+    
+    /** Overriden to explicitely set persistence type of NbSheet
+     * to PERSISTENCE_ALWAYS */
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_ALWAYS;
+    }
+    
     public HelpCtx getHelpCtx () {
         return ExplorerPanel.getHelpCtx (nodes, new HelpCtx (NbSheet.class));
     }
