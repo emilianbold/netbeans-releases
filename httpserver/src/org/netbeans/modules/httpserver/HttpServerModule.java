@@ -39,6 +39,7 @@ import org.apache.tomcat.core.FacadeManager;
 import org.apache.tomcat.core.Context;
 import org.apache.tomcat.logging.TomcatLogger;
 import org.apache.tomcat.context.*;
+import org.apache.tomcat.service.PoolTcpConnector;
 
 /**
 * Module installation class for Http Server
@@ -226,6 +227,19 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         tc.addEndpoint( op.getPort(), null, null);
         
         ContextManager cm = getContextManager(tc);
+        
+        // reduce number of threads
+        Enumeration e = cm.getConnectors ();
+        while (e.hasMoreElements ()) {
+            Object o = e.nextElement ();
+            if (o instanceof PoolTcpConnector) {
+                org.apache.tomcat.core.ServerConnector conn = (PoolTcpConnector)o;
+                conn.setAttribute (PoolTcpConnector.MIN_SPARE_THREADS, "0");
+                conn.setAttribute (PoolTcpConnector.MAX_SPARE_THREADS, "0");
+                conn.setAttribute (PoolTcpConnector.MAX_THREADS, "2");
+            }
+        }
+        
         return cm;
         
     }
