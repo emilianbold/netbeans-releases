@@ -52,8 +52,6 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
     private BaseDocument doc;
     private JTextComponent  pane;
     
-    private static final Color[] DEFAULT_STATUS_COLORS = new Color[] {Color.GREEN, Color.YELLOW, Color.RED};
-    
     private static final Color STATUS_UP_PART_COLOR = Color.WHITE;
     private static final Color STATUS_DOWN_PART_COLOR = new Color(180, 180, 180);
     
@@ -142,11 +140,9 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
     
     private void drawGlobalStatus(Graphics g) {
         Status totalStatus = computeTotalStatus();
-        Color  totalColor  = totalStatus.getEnhancedColor();
+        Color  totalColor  = totalStatus.getColor();
         
-        if (totalColor == null) {
-            totalColor = DEFAULT_STATUS_COLORS[totalStatus.getStatus()];
-        }
+        assert totalColor != null;
         
         g.setColor(totalColor);
         
@@ -195,11 +191,9 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
                 int start = modelToView(annotatedLine);
                 
                 if (s != null) {
-                    Color color = s.getEnhancedColor();
+                    Color color = s.getColor();
                     
-                    if (color == null) {
-                        color = DEFAULT_STATUS_COLORS[s.getStatus()];
-                    }
+                    assert color != null;
                     
                     g.setColor(color);
                     g.fillRect(0, start, THICKNESS - 1, PIXELS_FOR_LINE);
@@ -286,10 +280,7 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
     private int computeLinesForBlock() {
         int lines = Utilities.getRowCount(doc);
         double lineSeparatorSize = computeLineSeparatorSize();
-        int result = (int) (lines / ((getHeight() - HEIGHT_OFFSET) / (PIXELS_FOR_LINE + lineSeparatorSize)));
-        
-        if (result == 0)
-            result++;
+        int result = (int) (lines / ((getHeight() - HEIGHT_OFFSET) / (PIXELS_FOR_LINE + lineSeparatorSize))) + 1;
         
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
             ERR.log(ErrorManager.INFORMATIONAL, "computeLinesForBlock: result=" + result);
