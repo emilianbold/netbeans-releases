@@ -386,40 +386,61 @@ public class ServerInstance implements Node.Cookie {
     //------------------------------------------------------------
     // multiplexor state-machine core
     private boolean startTarget(Target target, DeployProgressUI ui, boolean debugMode) {
-        if (!debugMode && isReallyRunning())
-            return true;
+        StartServer ss = getStartServer();
         
-        StartServer ss = checkForSupportStartDM(ui);
+        // No StartServer, have to assume manually started
         if (ss == null) {
-            return false;
+            ui.addMessage(NbBundle.getMessage(ServerInstance.class, "MSG_PluginHasNoStartServerClass", getServer()));
+            return true;
         }
         
+        boolean canControlAdmin = ss.supportsStartDeploymentManager();
+
         if (ss.isAlsoTargetServer(target)) {
-            if (debugMode) {
-                if (ss.isDebuggable(target)) { // imply ss.isRunning() true in
+            if (debugMode) { 
+                if (ss.isDebuggable(target)) { // implies ss.isRunning() true
                     return true;
-                } else {
-                    if (! _stop(ui)) {
-                        return false;
+                } else if (isReallyRunning()) { // running but not debuggable
+                    if (canControlAdmin) {
+                        if (! _stop(ui))
+                            return false;
+                    } else {
+                        return errorCannotControlAdmin(ui);
                     }
                 }
-                
-                return _startDebug(target, ui);
+                if (canControlAdmin) {
+                    return _startDebug(target, ui);
+                } else {
+                    return errorCannotControlAdmin(ui);
+                }
+            } else {
+                if (isReallyRunning()) {
+                    return true;
+                } else if (canControlAdmin) {
+                    return _start(ui);
+                } else {
+                    return errorCannotControlAdmin(ui);
+                }
             }
-
-            return _start(ui);
-
         } else { // not also target server
-            // make sure admin is running
-            if (! _start(ui)) {
-                return false;
+            // using JSR-77 Management so need to make sure admin is running
+            if (! isReallyRunning()) {
+                if (canControlAdmin) {
+                    if (! _start(ui)) {
+                        return false;
+                    }
+                } else {
+                    return errorCannotControlAdmin(ui);
+                }
             }
             if (debugMode) {
                 if (ss.isDebuggable(target)) {
                     return true;
-                } else {
-                    return _startDebug(target, ui);
                 }
+                if (! _stop(target, ui)) {
+                    return false;
+                }
+                return _startDebug(target, ui);
             } else {
                 return _start(target, ui);
             }
@@ -643,22 +664,9 @@ public class ServerInstance implements Node.Cookie {
             return NbBundle.getMessage(ServerInstance.class, "MSG_PluginHasNoStartServerClass", getServer());
         return null;
     }
-    
-    private StartServer checkForSupportStartDM(DeployProgressUI ui) {
-        StartServer ss = getStartServer();
-        String errorMessage = checkStartDM(ss);
-        if (errorMessage != null) {
-            outputError(ui, errorMessage);
-            return null;
-        } 
-        return ss;
-    }
-    
-    private String checkStartDM(StartServer ss) {
-        if (ss != null && ! ss.supportsStartDeploymentManager()) {
-            return NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getDisplayName());
-        }
-        return null;
+    private boolean errorCannotControlAdmin(DeployProgressUI ui) {
+        outputError(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getDisplayName()));
+        return false;
     }
     
     public boolean canStartServer() {
@@ -666,23 +674,26 @@ public class ServerInstance implements Node.Cookie {
     }
     
     private class StartProgressHandler implements ProgressListener {
-        boolean completed = false;
+        Boolean completed = null;
         public StartProgressHandler() {
         }
         public void handleProgressEvent(ProgressEvent progressEvent) {
+            if (completed != null)
+                return;
             DeploymentStatus status = progressEvent.getDeploymentStatus();
-            StateType state = status.getState();
             if (status.isCompleted()) {
-                completed = true;
+                completed = Boolean.TRUE;
                 ServerInstance.this.setCommandSucceeded(true);
                 ServerInstance.this.wakeUp();
             } else if (status.isFailed()) {
-                completed = false;
+                completed = Boolean.FALSE;
                 ServerInstance.this.wakeUp();
             }
         }
         public boolean isCompleted() {
-            return completed;
+            if (completed == null)
+                return false;
+            return completed.booleanValue();
         }
     }
     private DeployProgressUI.CancelHandler getCancelHandler() {
