@@ -258,6 +258,10 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
     }
     
+    public void setServerInstanceID(String severInstanceID) {
+        project.getWebProjectProperties().setServerInstance(severInstanceID);
+    }
+    
     public Iterator getArchiveContents () throws java.io.IOException {
         return new IT (getContentDirectory ());
     }
