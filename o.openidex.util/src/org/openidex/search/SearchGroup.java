@@ -23,7 +23,7 @@ import java.util.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -161,7 +161,7 @@ public abstract class SearchGroup extends Object {
     protected void prepareSearch() {
         for (int i = 0; i < searchTypes.length; i++) {
             searchTypes[i].addPropertyChangeListener(
-                WeakListener.propertyChange(getSearchTypeListener(), searchTypes[i])
+                WeakListeners.propertyChange(getSearchTypeListener(), searchTypes[i])
             );
         }
     }
