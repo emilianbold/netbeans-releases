@@ -14,18 +14,22 @@
 package org.netbeans.spi.project.support.ant;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -35,12 +39,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import org.openide.filesystems.FileLock;
-
-import java.io.OutputStream;
-
-import java.util.HashSet;
 
 /* XXX tests needed:
  * - testProjectXmlSavedException
@@ -398,11 +396,18 @@ public class AntProjectHelperTest extends NbTestCase {
         props = AntBasedTestUtil.slurpProperties(h, AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertNotNull("project.properties still exists", props);
         assertEquals("project.properties now contains testprop", "testval", props.getProperty("testprop"));
+        // #42147: changes made on disk should fire changes to AntProjectListener, not just to the PropertyEvaluator
+        TestUtil.createFileFromContent(null, h.getProjectDirectory(), AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        evs = l.events();
+        assertEquals("touching project.properties fires on event", 1, evs.length);
+        assertEquals("correct helper", h, evs[0].getHelper());
+        assertEquals("correct path", AntProjectHelper.PROJECT_PROPERTIES_PATH, evs[0].getPath());
+        assertFalse("unexpected change", evs[0].isExpected());
+        assertEquals("empty file now", Collections.EMPTY_MAP, h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         // XXX try creating and deleting property files
         // XXX try modifying several property files and saving in a batch
         // XXX try storing unmodified properties and see what happens
         // XXX try storing a fresh EditableProperties object not returned from getProperties
-        // XXX #42147: changes made on disk should fire changes to AntProjectListener, not just to the PropertyEvaluator
     }
     
     /**
@@ -451,11 +456,26 @@ public class AntProjectHelperTest extends NbTestCase {
         assertNotNull("still has <data> on disk", data);
         nue = Util.findElement(data, "misc", "urn:test:shared");
         assertNotNull("<misc/> now on disk", nue);
+        // #42147: changes made on disk should result in firing of an AntProjectEvent
+        TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project-modified.xml"), projdir, AntProjectHelper.PROJECT_XML_PATH);
+        evs = l.events();
+        assertEquals("writing project.xml on disk fires one event", 1, evs.length);
+        assertEquals("correct helper", h, evs[0].getHelper());
+        assertEquals("correct path", AntProjectHelper.PROJECT_XML_PATH, evs[0].getPath());
+        assertFalse("unexpected change", evs[0].isExpected());
+        assertEquals("correct new display name", "Some New Name", ProjectUtils.getInformation(p).getDisplayName());
+        data = h.getPrimaryConfigurationData(true);
+        Element stuff = Util.findElement(data, "other-shared-stuff", "urn:test:shared");
+        assertNotNull("have <other-shared-stuff/> now", stuff);
+        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) p.getLookup().lookup(AuxiliaryConfiguration.class);
+        data = aux.getConfigurationFragment("data", "urn:test:shared-aux", true);
+        assertNotNull("have aux <data>", data);
+        stuff = Util.findElement(data, "other-aux-shared-stuff", "urn:test:shared-aux");
+        assertNotNull("have <other-aux-shared-stuff/> now", stuff);
         // XXX try private.xml too
         // XXX try modifying both XML files, or different parts of the same, and saving in a batch
         // XXX try storing unmodified XML fragments and see what happens
         // XXX try storing a fresh Element not returned from getPrimaryConfigurationData
-        // XXX #42147: changes made on disk should result in firing of an AntProjectEvent
     }
     
     /**

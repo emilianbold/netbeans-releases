@@ -44,8 +44,8 @@ import org.openide.modules.InstalledFileLocator;
  */
 final class ProjectProperties {
     
-    /** Project directory. */
-    private final FileObject dir;
+    /** Associated helper. */
+    private final AntProjectHelper helper;
     
     /**
      * Properties loaded from metadata files on disk.
@@ -62,12 +62,12 @@ final class ProjectProperties {
     
     /**
      * Create a project properties helper object.
-     * @param dir the project directory
+     * @param helper the associated helper
      */
-    public ProjectProperties(FileObject dir) {
-        this.dir = dir;
+    public ProjectProperties(AntProjectHelper helper) {
+        this.helper = helper;
     }
-
+    
     /**
      * Get properties from a given path.
      * @param path the project-relative path
@@ -108,7 +108,7 @@ final class ProjectProperties {
     private PP getPP(String path) {
         PP pp = (PP)properties.get(path);
         if (pp == null) {
-            pp = new PP(path, dir);
+            pp = new PP(path, helper);
             properties.put(path, pp);
         }
         return pp;
@@ -120,21 +120,26 @@ final class ProjectProperties {
         // and reload any modified files if the project is unmodified
 
         private final String path;
-        private final FileObject dir;
+        private final AntProjectHelper helper;
         private EditableProperties properties = null;
         private boolean loaded = false;
         private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private boolean writing = false;
         
-        public PP(String path, FileObject dir) {
+        public PP(String path, AntProjectHelper helper) {
             this.path = path;
-            this.dir = dir;
-            FileChangeSupport.DEFAULT.addListener(this, new File(FileUtil.toFile(dir), path.replace('/', File.separatorChar)));
+            this.helper = helper;
+            FileChangeSupport.DEFAULT.addListener(this, new File(FileUtil.toFile(dir()), path.replace('/', File.separatorChar)));
+        }
+        
+        private FileObject dir() {
+            return helper.getProjectDirectory();
         }
         
         public EditableProperties getEditableProperties() {
             if (!loaded) {
                 properties = null;
-                FileObject fo = dir.getFileObject(path);
+                FileObject fo = dir().getFileObject(path);
                 if (fo != null) {
                     try {
                         EditableProperties p;
@@ -175,38 +180,44 @@ final class ProjectProperties {
         
         public void write() throws IOException {
             assert loaded;
-            final FileObject f = dir.getFileObject(path);
-            if (properties != null) {
-                // Supposed to create/modify the file.
-                // Need to use an atomic action - otherwise listeners will first
-                // receive an event that the file has been written to zero length
-                // (which for *.properties means no keys), which is wrong.
-                dir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                    public void run() throws IOException {
-                        FileObject _f;
-                        if (f == null) {
-                            _f = FileUtil.createData(dir, path);
-                        } else {
-                            _f = f;
-                        }
-                        FileLock lock = _f.lock();
-                        try {
-                            OutputStream os = _f.getOutputStream(lock);
-                            try {
-                                properties.store(os);
-                            } finally {
-                                os.close();
+            final FileObject f = dir().getFileObject(path);
+            assert !writing;
+            writing = true;
+            try {
+                if (properties != null) {
+                    // Supposed to create/modify the file.
+                    // Need to use an atomic action - otherwise listeners will first
+                    // receive an event that the file has been written to zero length
+                    // (which for *.properties means no keys), which is wrong.
+                    dir().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                        public void run() throws IOException {
+                            FileObject _f;
+                            if (f == null) {
+                                _f = FileUtil.createData(dir(), path);
+                            } else {
+                                _f = f;
                             }
-                        } finally {
-                            lock.releaseLock();
+                            FileLock lock = _f.lock();
+                            try {
+                                OutputStream os = _f.getOutputStream(lock);
+                                try {
+                                    properties.store(os);
+                                } finally {
+                                    os.close();
+                                }
+                            } finally {
+                                lock.releaseLock();
+                            }
                         }
+                    });
+                } else {
+                    // We are supposed to remove any existing file.
+                    if (f != null) {
+                        f.delete();
                     }
-                });
-            } else {
-                // We are supposed to remove any existing file.
-                if (f != null) {
-                    f.delete();
                 }
+            } finally {
+                writing = false;
             }
         }
         
@@ -240,6 +251,9 @@ final class ProjectProperties {
             // XXX should check for a possible clobber from in-memory data
             loaded = false;
             fireChange();
+            if (!writing) {
+                helper.fireExternalChange(path);
+            }
         }
 
         public void fileCreated(FileChangeSupportEvent event) {
@@ -266,7 +280,7 @@ final class ProjectProperties {
             synchronized (p) {
                 m.putAll(p);
             }
-            m.put("basedir", FileUtil.toFile(dir).getAbsolutePath()); // NOI18N
+            m.put("basedir", FileUtil.toFile(helper.getProjectDirectory()).getAbsolutePath()); // NOI18N
             File antHome = InstalledFileLocator.getDefault().locate("ant", "org.apache.tools.ant.module", false); // NOI18N
             if (antHome != null) {
                 m.put("ant.home", antHome.getAbsolutePath()); // NOI18N
@@ -303,7 +317,7 @@ final class ProjectProperties {
         String userPropertiesFile = findUserPropertiesFile.getProperty("user.properties.file"); // NOI18N
         if (userPropertiesFile != null) {
             // Have some defined global properties file, so read it and listen to changes in it.
-            File f = PropertyUtils.resolveFile(FileUtil.toFile(dir), userPropertiesFile);
+            File f = helper.resolveFile(userPropertiesFile);
             if (f.equals(PropertyUtils.USER_BUILD_PROPERTIES)) {
                 // Just to share the cache.
                 return PropertyUtils.globalPropertyProvider();

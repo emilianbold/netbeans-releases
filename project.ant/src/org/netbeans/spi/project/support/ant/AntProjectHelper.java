@@ -25,6 +25,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
+import org.netbeans.modules.project.ant.FileChangeSupport;
+import org.netbeans.modules.project.ant.FileChangeSupportEvent;
+import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
@@ -34,6 +37,7 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.xml.XMLUtil;
@@ -135,6 +139,12 @@ public final class AntProjectHelper {
      */
     private final ProjectProperties properties;
     
+    /** Listener to XML files; needs to be held as an instance field so it is not GC'd */
+    private final FileChangeSupportListener fileListener;
+    
+    /** True if currently saving XML files. */
+    private boolean writingXML = false;
+    
     // XXX lock any loaded XML files while the project is modified, to prevent manual editing,
     // and reload any modified files if the project is unmodified
     
@@ -147,7 +157,10 @@ public final class AntProjectHelper {
         assert type != null;
         this.projectXml = projectXml;
         assert projectXml != null;
-        properties = new ProjectProperties(dir);
+        properties = new ProjectProperties(this);
+        fileListener = new FileListener();
+        FileChangeSupport.DEFAULT.addListener(fileListener, resolveFile(PROJECT_XML_PATH));
+        FileChangeSupport.DEFAULT.addListener(fileListener, resolveFile(PRIVATE_XML_PATH));
     }
     
     /**
@@ -207,18 +220,28 @@ public final class AntProjectHelper {
      * Save an XML config file to a named path.
      * If the file does not yet exist, it is created.
      */
-    private void saveXml(Document doc, String path) throws IOException {
-        FileObject xml = FileUtil.createData(dir, path);
-        FileLock lock = xml.lock();
+    private void saveXml(final Document doc, final String path) throws IOException {
+        assert !writingXML;
+        writingXML = true;
         try {
-            OutputStream os = xml.getOutputStream(lock);
-            try {
-                XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-            } finally {
-                os.close();
-            }
+            dir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    FileObject xml = FileUtil.createData(dir, path);
+                    FileLock lock = xml.lock();
+                    try {
+                        OutputStream os = xml.getOutputStream(lock);
+                        try {
+                            XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+                        } finally {
+                            os.close();
+                        }
+                    } finally {
+                        lock.releaseLock();
+                    }
+                }
+            });
         } finally {
-            lock.releaseLock();
+            writingXML = false;
         }
     }
     
@@ -261,6 +284,19 @@ public final class AntProjectHelper {
         synchronized (listeners) {
             listeners.remove(listener);
         }
+    }
+    
+    /**
+     * Fire a change of external provenance to all listeners.
+     * Acquires write access.
+     * @param path path to the changed file (XML or properties)
+     */
+    void fireExternalChange(final String path) {
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                fireChange(path, false);
+            }
+        });
     }
 
     /**
@@ -475,6 +511,41 @@ public final class AntProjectHelper {
             throw new IllegalArgumentException();
         }
         putConfigurationFragment(data, shared);
+    }
+    
+    private final class FileListener implements FileChangeSupportListener {
+        
+        public FileListener() {}
+        
+        private void change(File f) {
+            if (writingXML) {
+                return;
+            }
+            String path;
+            if (f.equals(resolveFile(PROJECT_XML_PATH))) {
+                path = PROJECT_XML_PATH;
+                projectXml = null;
+            } else if (f.equals(resolveFile(PRIVATE_XML_PATH))) {
+                path = PRIVATE_XML_PATH;
+                privateXml = null;
+            } else {
+                throw new AssertionError("Unexpected file change in " + f); // NOI18N
+            }
+            fireExternalChange(path);
+        }
+        
+        public void fileCreated(FileChangeSupportEvent event) {
+            change(event.getPath());
+        }
+        
+        public void fileDeleted(FileChangeSupportEvent event) {
+            change(event.getPath());
+        }
+        
+        public void fileModified(FileChangeSupportEvent event) {
+            change(event.getPath());
+        }
+        
     }
     
     /**
