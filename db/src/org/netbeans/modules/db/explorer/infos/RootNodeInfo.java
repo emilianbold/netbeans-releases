@@ -93,4 +93,22 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
             throw new DatabaseException(e.getMessage());
         }
     }
+
+    public void addOrConnectConnection(DBConnection conn)
+    throws DatabaseException
+    {
+        getChildren(); // force restore
+        Vector cons = RootNode.getOption().getConnections();
+
+        if (cons.contains(conn)) {
+            ConnectionNode connNode = (ConnectionNode)getNode().getChildren().findChild( conn.getDatabase() ); //NOI18N
+            if(connNode!=null)
+                if(((ConnectionNodeInfo)connNode.getInfo()).getConnection()==null) {
+                    ((ConnectionNodeInfo)connNode.getInfo()).setDatabaseConnection(conn);
+                    ((ConnectionNodeInfo)connNode.getInfo()).connect();
+                }
+                    
+        } else
+            addConnection(conn);
+    }
 }
