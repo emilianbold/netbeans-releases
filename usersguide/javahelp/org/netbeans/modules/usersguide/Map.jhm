@@ -189,6 +189,10 @@
 <mapID target="java.import.remove-unused" url="java/imt/remove-unused.html" />
 <mapID target="java.import.configuring" url="java/imt/configuring.html" />
 <mapID target="java.java_sources" url="java/java_sources.html" />
+<!--csh page for Options|IDE Configuration|System|Filesystems Settings|Java Libraries-->
+<mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_mounting.html" />
+<!--csh page for Options|IDE Configuration|System|Filesystems Settings|Javadoc Documentation-->
+<mapID target="org.netbeans.modules.javadoc.FileSystem.docRoots" url="javadoc/search_path.html" />
 <!--csh page for projects|settings|Java Sources-->
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
 <!--csh page for projects|settings|Java Source|Import Management Tool Settings-->
@@ -1000,6 +1004,7 @@
    <mapID target="org.netbeans.modules.autoupdate.Wizard" url="modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.CertDialog" url="pending.html" />
 
+   <mapID target="org.netbeans.modules.search.ResultViewTopComponent" url="objects/search/search_results-window.html" />
    <mapID target="org.netbeans.modules.search.RepositorySearchAction" url="objects/search/search.html" />
    <mapID target="org.openidex.search.SearchType" url="objects/search/search_predefining.html" />
    <mapID target="org.netbeans.modules.search.types.ModificationDateType" url="objects/search/search_date.html" />
