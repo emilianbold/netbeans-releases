@@ -381,7 +381,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             
             SourceGroup group = (SourceGroup)locationComboBox.getSelectedItem();
             
-            fo = BrowseFolders.showDialog( new SourceGroup[] { group }, project );
+            fo = BrowseFolders.showDialog( new SourceGroup[] { group }, 
+                                           project, 
+                                           folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
                         
             if ( fo != null && fo.isFolder() ) {
                 String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );

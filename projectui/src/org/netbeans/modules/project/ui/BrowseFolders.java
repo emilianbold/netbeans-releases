@@ -16,11 +16,13 @@ package org.netbeans.modules.project.ui;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.StringTokenizer;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import org.netbeans.api.project.Project;
@@ -39,6 +41,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
+import org.openide.nodes.NodeNotFoundException;
+import org.openide.nodes.NodeOp;
 import org.openide.util.NbBundle;
 
 // XXX I18N
@@ -57,7 +61,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     private static JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
     
     /** Creates new form BrowseFolders */
-    public BrowseFolders( SourceGroup[] folders, Project project ) {
+    public BrowseFolders( SourceGroup[] folders, Project project, String preselectedFileName ) {
         initComponents();
         this.folders = folders;
         this.project = project;
@@ -72,7 +76,8 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         btv.setSelectionMode( javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION );
         btv.setBorder( SAMPLE_SCROLL_PANE.getBorder() );        
         btv.setPopupAllowed( false );
-        expandAllNodes( btv, manager.getRootContext() );
+        expandSelection( preselectedFileName );
+        //expandAllNodes( btv, manager.getRootContext() );
         folderPanel.add( btv, java.awt.BorderLayout.CENTER );        
     }
         
@@ -122,9 +127,9 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
         
-    public static FileObject showDialog( SourceGroup[] folders, Project project ) {
+    public static FileObject showDialog( SourceGroup[] folders, Project project, String preselectedFileName ) {
         
-        BrowseFolders bf = new BrowseFolders( folders, project );
+        BrowseFolders bf = new BrowseFolders( folders, project, preselectedFileName );
         
         JButton options[] = new JButton[] { 
             //new JButton( NbBundle.getMessage( BrowseFolders.class, "LBL_BrowseFolders_Select_Option") ), // NOI18N
@@ -159,6 +164,57 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 
     }
     
+    private void expandSelection( String preselectedFileName ) {
+        
+        Node root = manager.getRootContext();
+        Children ch = root.getChildren();
+        if ( ch == Children.LEAF ) {
+            return;
+        }
+        Node nodes[] = ch.getNodes( true );
+        
+        Node sel = null;        
+        
+        if ( preselectedFileName != null && preselectedFileName.length() > 0 ) {
+             // Try to find the node
+             for ( int i = 0; i < nodes.length; i++ ) {            
+                try { 
+                    sel = NodeOp.findPath( nodes[i], new StringTokenizer( preselectedFileName, "/" ) );
+                    break;
+                }
+                catch ( NodeNotFoundException e ) {            
+                    System.out.println( e.getMissingChildName() );
+                    // Will select the first node
+                }
+             }
+        }
+                        
+        if ( sel == null ) {
+            // Node not found => expand first level
+            btv.expandNode( root );
+            for ( int i = 0; i < nodes.length; i++ ) {            
+                btv.expandNode( nodes[i] );
+                if ( i == 0 ) {
+                    sel = nodes[i];
+                }
+            }
+        }
+        
+        
+        if ( sel != null ) {
+            // Select the node
+            try {
+                manager.setSelectedNodes( new Node[] { sel } );
+            }
+            catch ( PropertyVetoException e ) {
+                // No selection for some reason
+            }
+        }
+                
+    }
+    
+    
+    /*
     private static void expandAllNodes( BeanTreeView btv, Node node ) {
         
         btv.expandNode( node );
@@ -174,6 +230,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         }
         
     }
+    */
     
     // Innerclasses ------------------------------------------------------------
     
