@@ -124,14 +124,16 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="UI">
         <folder name="Services">
-            <folder name="XML">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
-                <file name="org-netbeans-modules-xml-core-settings-CoreSettings.shadow">
+            <folder name="Editing">
+                <folder name="XML">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
+                    <file name="org-netbeans-modules-xml-core-settings-CoreSettings.shadow">
 <![CDATA[Services/org-netbeans-modules-xml-core-settings-CoreSettings.settings
 SystemFileSystem
 ]]>
-                </file>
-            </folder> <!-- XML -->
+                    </file>
+                </folder> <!-- XML -->
+            </folder> <!-- Editing -->
         </folder> <!-- Settings -->
     </folder> <!-- UI -->
 
