@@ -40,6 +40,21 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.instance" />
             <file name="org-netbeans-modules-editor-java-PDCustomizerAction.instance" />
         </folder>
+        
+        <folder name="View">
+        <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/CodeFolds" boolvalue="true"/>            
+            <folder name="CodeFolds">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/Folder.gif" />
+                <file name="org-netbeans-modules-editor-NbCodeFoldingAction$CollapseFold.instance"/>                
+                <attr name="org-netbeans-modules-editor-NbCodeFoldingAction$CollapseFold.instance/org-netbeans-modules-editor-NbCodeFoldingAction$ExpandFold.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-editor-NbCodeFoldingAction$ExpandFold.instance"/>
+                <attr name="org-netbeans-modules-editor-NbCodeFoldingAction$ExpandFold.instance/org-netbeans-modules-editor-NbCodeFoldingAction$CollapseAll.instance" boolvalue="true"/>                
+                <file name="org-netbeans-modules-editor-NbCodeFoldingAction$CollapseAll.instance"/>
+                <attr name="org-netbeans-modules-editor-NbCodeFoldingAction$CollapseAll.instance/org-netbeans-modules-editor-NbCodeFoldingAction$ExpandAll.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-editor-NbCodeFoldingAction$ExpandAll.instance"/>
+            </folder>
+        </folder>
     </folder>
 
     <folder name="DTDs">
