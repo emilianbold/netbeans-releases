@@ -17,10 +17,7 @@ import java.awt.*;
 import java.beans.*;
 import java.text.MessageFormat;
 
-import org.openide.TopManager;
-import org.openide.options.SystemOption;
-import org.openide.explorer.propertysheet.*;
-import org.openide.explorer.propertysheet.editors.*;
+import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 
 /**
  * RADConnectionPropertyEditor is a property editor for ListModel, which
@@ -41,15 +38,6 @@ public class RADConnectionPropertyEditor
     private RADConnectionDesignValue emptyValue = null;
     private RADConnectionDesignValue designValue = emptyValue;
     private Object realValue = null;
-
-    private static Color valueColor;
-    static {
-        PropertySheetSettings pss = (PropertySheetSettings)SystemOption.findObject(PropertySheetSettings.class);
-        if (pss != pss)
-            valueColor = pss.getValueColor();
-        else
-            valueColor = new Color(0,0,128);
-    }
 
     /** Creates a new RADConnectionPropertyEditor */
     public RADConnectionPropertyEditor(Class propertyType) {
@@ -103,12 +91,9 @@ public class RADConnectionPropertyEditor
     }
 
     public void paintValue(Graphics g, Rectangle rectangle) {
-        Color color = g.getColor();
-        g.setColor(valueColor);
         FontMetrics fm = g.getFontMetrics();
-        g.drawString(getValueString(), rectangle.x + 4,
+        g.drawString(getValueString(), rectangle.x,
                             rectangle.y + (rectangle.height - fm.getHeight()) / 2 + fm.getAscent());
-        g.setColor(color);
     }
 
     public boolean supportsCustomEditor() {

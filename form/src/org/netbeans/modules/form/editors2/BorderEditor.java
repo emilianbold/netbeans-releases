@@ -28,9 +28,8 @@ import javax.swing.event.*;
 
 import org.openide.awt.SplittedPanel;
 import org.openide.nodes.*;
-import org.openide.options.SystemOption;
-import org.openide.explorer.propertysheet.*;
 import org.openide.explorer.view.ListView;
+import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.*;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
@@ -67,15 +66,6 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
     private BorderPanel bPanel;
 
     private Border current;
-
-    private static Color valueColor;
-    static {
-        PropertySheetSettings pss = (PropertySheetSettings)SystemOption.findObject(PropertySheetSettings.class);
-        if (pss != pss)
-            valueColor = pss.getValueColor();
-        else
-            valueColor = new Color(0,0,128);
-    }
 
     // init .......................................................................................
 
@@ -125,12 +115,9 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
             label = "["+org.openide.util.Utilities.getShortClassName(current.getClass())+"]";
         }
 
-        Color color = g.getColor();
-        g.setColor(valueColor);
         FontMetrics fm = g.getFontMetrics();
-        g.drawString(label, rectangle.x + 4,
+        g.drawString(label, rectangle.x,
                             rectangle.y + (rectangle.height - fm.getHeight()) / 2 + fm.getAscent());
-        g.setColor(color);
     }
     
     public String getJavaInitializationString() {
