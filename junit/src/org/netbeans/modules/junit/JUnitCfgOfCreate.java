@@ -85,9 +85,17 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
                         break;
                     }
                 }
-                
+
                 if (i == iCnt) {
-                    // selected FS was not found (new mounted one)
+                    // selected FS was not found - check if it is accaptable for tests
+                    if (!TestUtil.isSupportedFileSystem(selectedFS)) {
+                        String msg = NbBundle.getMessage(JUnitCfgOfCreate.class, "MSG_fs_not_acceptable");
+                        NotifyDescriptor descr = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                        TopManager.getDefault().notify(descr);
+                        return;
+                    }
+                    
+                    // new mounted one - add it
                     item = new Pair(selectedFS.getDisplayName(), selectedFS);
                     cboFileSystem.addItem(item);
                     cboFileSystem.setSelectedItem(item);
@@ -101,7 +109,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         initComponents();
         cmdMount.addActionListener(new JUnitCfgOfCreate.CmdMountListener());
     }
-
+    
     public static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.junit.Bundle");
     private FileSystem fileSystem;
     
@@ -117,7 +125,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         fss = TopManager.getDefault().getRepository().getFileSystems();
         while (fss.hasMoreElements()) {
             FileSystem fs = (FileSystem) fss.nextElement();
-            if (!fs.isHidden()) {
+            if (TestUtil.isSupportedFileSystem(fs)) {
                 item = new Pair(fs.getDisplayName(), fs);
                 cboFileSystem.addItem(item);
                 if (fs.getSystemName().equals(JUnitSettings.getDefault().getFileSystem())) //replace('\\', '/')
@@ -144,14 +152,14 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             cboSuiteClass.addItem(item);
             if (foTemplates[i].getPackageNameExt('/', '.').equals(JUnitSettings.getDefault().getSuiteTemplate()))
                 cboSuiteClass.setSelectedItem(item);
-
+    
             // add template to Class templates list
             cboTestClass.addItem(item);
             if (foTemplates[i].getPackageNameExt('/', '.').equals(JUnitSettings.getDefault().getClassTemplate()))
                 cboTestClass.setSelectedItem(item);
         }
     }
-
+    
     /** Displays dialog and updates JUnit options according to the user's settings. */
     public static boolean configure() {
         // check if the dialog can be displayed
@@ -167,6 +175,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         cfg.chkPublic.setSelected(JUnitSettings.getDefault().isMembersPublic());
         cfg.chkProtected.setSelected(JUnitSettings.getDefault().isMembersProtected());
         cfg.chkPackage.setSelected(JUnitSettings.getDefault().isMembersPackage());
+        cfg.chkExceptions.setSelected(JUnitSettings.getDefault().isGenerateExceptionClasses());
         cfg.chkComments.setSelected(JUnitSettings.getDefault().isBodyComments());
         cfg.chkContent.setSelected(JUnitSettings.getDefault().isBodyContent());
         cfg.chkJavaDoc.setSelected(JUnitSettings.getDefault().isJavaDoc());
@@ -196,7 +205,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             }
             else
                 JUnitSettings.getDefault().setFileSystem("");
-
+            
             // store Suite class template
             foTemplate = (FileObject)((Pair)cfg.cboSuiteClass.getSelectedItem()).item;
             JUnitSettings.getDefault().setSuiteTemplate(foTemplate.getPackageNameExt('/', '.'));
@@ -209,10 +218,10 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             JUnitSettings.getDefault().setMembersPublic(cfg.chkPublic.isSelected());
             JUnitSettings.getDefault().setMembersProtected(cfg.chkProtected.isSelected());
             JUnitSettings.getDefault().setMembersPackage(cfg.chkPackage.isSelected());
+            JUnitSettings.getDefault().setGenerateExceptionClasses(cfg.chkExceptions.isSelected());
             JUnitSettings.getDefault().setBodyComments(cfg.chkComments.isSelected());
             JUnitSettings.getDefault().setBodyContent(cfg.chkContent.isSelected());
             JUnitSettings.getDefault().setJavaDoc(cfg.chkJavaDoc.isSelected());
-
             JUnitSettings.getDefault().setCfgCreateEnabled(cfg.chkEnabled.isSelected());
             return true;
         }
@@ -256,12 +265,13 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         chkComments = new javax.swing.JCheckBox();
         chkContent = new javax.swing.JCheckBox();
         chkJavaDoc = new javax.swing.JCheckBox();
+        chkExceptions = new javax.swing.JCheckBox();
         chkEnabled = new javax.swing.JCheckBox();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
-        setPreferredSize(new java.awt.Dimension(500, 250));
-        setMinimumSize(new java.awt.Dimension(500, 250));
-        setMaximumSize(new java.awt.Dimension(500, 250));
+        setPreferredSize(new java.awt.Dimension(500, 300));
+        setMinimumSize(new java.awt.Dimension(500, 300));
+        setMaximumSize(new java.awt.Dimension(500, 300));
         
         lblFileSystem.setText(bundle.getString("JUnitCfgOfCreate.lblFileSystem.text"));
         
@@ -388,6 +398,15 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         jpCodeGen.add(chkJavaDoc, gridBagConstraints3);
         
         
+        chkExceptions.setText(bundle.getString("JUnitCfgOfCreate.chkExceptions.text"));
+        gridBagConstraints3 = new java.awt.GridBagConstraints();
+        gridBagConstraints3.gridx = 0;
+        gridBagConstraints3.gridy = 3;
+        gridBagConstraints3.insets = new java.awt.Insets(0, 4, 0, 4);
+        gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
+        jpCodeGen.add(chkExceptions, gridBagConstraints3);
+        
+        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 3;
@@ -411,7 +430,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         
     }//GEN-END:initComponents
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel lblFileSystem;
     private javax.swing.JComboBox cboFileSystem;
@@ -428,7 +446,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
     private javax.swing.JCheckBox chkComments;
     private javax.swing.JCheckBox chkContent;
     private javax.swing.JCheckBox chkJavaDoc;
+    private javax.swing.JCheckBox chkExceptions;
     private javax.swing.JCheckBox chkEnabled;
     // End of variables declaration//GEN-END:variables
-
 }
