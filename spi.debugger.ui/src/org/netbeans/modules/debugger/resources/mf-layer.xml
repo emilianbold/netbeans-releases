@@ -35,6 +35,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org-netbeans-modules-debugger-ui-actions-SessionsAction.instance" />
                 <attr name="org-netbeans-modules-debugger-ui-actions-SessionsAction.instance/org-netbeans-modules-debugger-ui-actions-ThreadsAction.instance" boolvalue="true" />
                 <file name="org-netbeans-modules-debugger-ui-actions-ThreadsAction.instance" />
+                <attr name="org-netbeans-modules-debugger-ui-actions-ThreadsAction.instance/org-netbeans-modules-debugger-ui-actions-ClassesAction.instance" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-ui-actions-ClassesAction.instance" />
             </folder>
             <attr name="Debug/Separator3.instance" boolvalue="true" />
         </folder>
@@ -42,6 +44,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Windows2">
         <folder name="Components">
+            <file name="classes.settings" url="components/classes.settings" />
             <file name="locals.settings" url="components/locals.settings" />
             <file name="watches.settings" url="components/watches.settings" />
             <file name="sessions.settings" url="components/sessions.settings" />
@@ -64,6 +67,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="sessions.wstcref" url="modes/debugger/sessions.wstcref" />
                 <attr name="sessions.wstcref/threads.wstcref" boolvalue="true"/>
                 <file name="threads.wstcref" url="modes/debugger/threads.wstcref" />
+                <attr name="threads.wstcref/classes.wstcref" boolvalue="true"/>
+                <file name="classes.wstcref" url="modes/debugger/classes.wstcref" />
             </folder>
         </folder>
         
@@ -76,6 +81,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="threads.wstcgrp" url="groups/debugger/threads.wstcgrp" />
                 <file name="callstack.wstcgrp" url="groups/debugger/callstack.wstcgrp" />
                 <file name="breakpoints.wstcgrp" url="groups/debugger/breakpoints.wstcgrp" />
+                <file name="classes.wstcgrp" url="groups/debugger/classes.wstcgrp" />
             </folder>
         </folder>
 
