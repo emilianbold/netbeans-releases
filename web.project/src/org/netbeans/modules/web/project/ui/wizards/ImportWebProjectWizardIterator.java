@@ -325,6 +325,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     public final class ThePanel implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
 
         private ImportLocationVisual panel;
+        private WizardDescriptor wizardDescriptor;
         
         private ThePanel () {
         }
@@ -345,14 +346,34 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         
         public boolean isValid () {
-            File f = new File(panel.moduleLocationTextField.getText());
-            File prjFolder = new File(panel.projectLocationTextField.getText());
+            File f = new File(panel.moduleLocationTextField.getText().trim());
+            File prjFolder = new File(panel.projectLocationTextField.getText().trim());
             String prjName = panel.projectNameTextField.getText().trim();
+
+            if (!f.isDirectory()) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportWebProjectWizardIterator.class,"MSG_ProvideExistingSourcesLocation")); //NOI18N
+                return false; //Existing sources location not specified
+            }
+
+//Do we need this check?
+//            if (!prjFolder.isDirectory()) {
+//                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportWebProjectWizardIterator.class,"MSG_ProjectFolderDoesNotExists")); //NOI18N
+//                return false; //Project folder not specified
+//            }
+
+            if (!isWebModule(FileUtil.toFileObject(f))) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportWebProjectWizardIterator.class,"MSG_NoWebModule")); //NOI18N
+                return false; //No web module location
+            }
             
-            return f.isDirectory()
-                && prjFolder.isDirectory()
-                && isWebModule(FileUtil.toFileObject(f))
-                && (prjName != null && !prjName.equals("")); //NOI18N
+            if (prjName == null || prjName.length() == 0) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportWebProjectWizardIterator.class,"MSG_ProvideProjectName")); //NOI18N
+                return false; //Project name not specified
+            }
+            
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+
+            return true;
         }
         
         private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
@@ -377,6 +398,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             }
         }
         public void readSettings (Object settings) {
+            wizardDescriptor = (WizardDescriptor) settings;
         }
         
         public void storeSettings (Object settings) {
