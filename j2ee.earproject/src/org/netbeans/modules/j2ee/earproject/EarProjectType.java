@@ -18,8 +18,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 /**
- * Factory for simple J2SE projects.
- * @author Jesse Glick
+ * Factory for Enterprise Applications
+ * @see WebProjectType
+ * @author vince kraemer
  */
 public final class EarProjectType implements AntBasedProjectType {
     

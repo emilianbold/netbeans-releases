@@ -38,10 +38,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Create a fresh WebProject from scratch or by importing and exisitng web module 
- * in one of the recognized directory structures.
+ * Create a fresh EarProject from scratch.
+ * TODO importing an exisitng enterprise application 
+ * in j2ee blueprint recommended layout format
  *
- * @author Pavel Buzek
+ * @see WebProjectGenerator
+ *
+ * @author vince kraemer
  */
 public class EarProjectGenerator {
     

@@ -20,22 +20,22 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.*;
-import org.netbeans.spi.project.SubprojectProvider;
+//import org.netbeans.api.project.*;
+//import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+//import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
-//import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+//import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 //import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.openide.filesystems.FileUtil;
@@ -44,9 +44,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
-/** A ejb module implementation on top of project.
+/** An enterprise application project's j2eeserver implementation
  *
- * @author  Pavel Buzek
+ * @see ProjectWeb
+ * @author  vince kraemer
  */
 public final class ProjectEar extends J2eeAppProvider  
   implements 
@@ -60,12 +61,12 @@ public final class ProjectEar extends J2eeAppProvider
     public static final String FILE_DD        = "application.xml";//NOI18N
     
     private EarProject project;
-    private AntProjectHelper helper;
+//    private AntProjectHelper helper;
     private Set versionListeners = null;
     
-    ProjectEar (EarProject project, AntProjectHelper helper) {
+    ProjectEar (EarProject project) { // ], AntProjectHelper helper) {
         this.project = project;
-        this.helper = helper;
+//        this.helper = helper;
     }
     
     public FileObject getDeploymentDescriptor() {
@@ -91,19 +92,19 @@ public final class ProjectEar extends J2eeAppProvider
     public ClassPath getJavaSources () {
         ClassPathProvider cpp = (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
         if (cpp != null) {
-            return cpp.findClassPath (getFileObject (ArchiveProjectProperties.SRC_DIR), ClassPath.SOURCE);
+            return cpp.findClassPath (project.getFileObject (EarProjectProperties.SRC_DIR), ClassPath.SOURCE);
         }
         return null;
     }
     
     public FileObject getMetaInf () {
         //throw new java.lang.UnsupportedOperationException("not ready yet");
-        return getFileObject (ArchiveProjectProperties.META_INF);
+        return project.getFileObject (EarProjectProperties.META_INF);
     }
     
-    public FileObject getModuleFolder() {
-        return getMetaInf();
-    }
+//    public FileObject getModuleFolder() {
+//        return getMetaInf();
+//    }
     
     public boolean useDirectoryPath() {
         return false;
@@ -114,10 +115,10 @@ public final class ProjectEar extends J2eeAppProvider
     }
     
     public FileObject getArchive () {
-        return getFileObject (ArchiveProjectProperties.DIST_JAR); //NOI18N
+        return project.getFileObject (EarProjectProperties.DIST_JAR); //NOI18N
     }
     
-    private FileObject getFileObject(String propname) {
+/*    private FileObject getFileObject(String propname) {
         String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
         if (prop != null) {
             return helper.resolveFileObject(prop);
@@ -134,6 +135,7 @@ public final class ProjectEar extends J2eeAppProvider
             return null;
         }
     }
+ **/
     
     public org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule getJ2eeModule () {
         return this;
@@ -153,11 +155,11 @@ public final class ProjectEar extends J2eeAppProvider
     }
     
     public String getServerID () {
-        return helper.getStandardPropertyEvaluator ().getProperty (ArchiveProjectProperties.J2EE_SERVER_TYPE);
+        return project.getServerID(); //helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_TYPE);
     }
 
     public String getServerInstanceID () {
-        return helper.getStandardPropertyEvaluator ().getProperty (ArchiveProjectProperties.J2EE_SERVER_INSTANCE);
+        return project.getServerInstanceID(); //helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_INSTANCE);
     }
     
     public Iterator getArchiveContents () throws java.io.IOException {
@@ -165,16 +167,16 @@ public final class ProjectEar extends J2eeAppProvider
     }
 
     public FileObject getContentDirectory() {
-        return getFileObject (ArchiveProjectProperties.BUILD_DIR); //NOI18N
+        return project.getFileObject (EarProjectProperties.BUILD_DIR); //NOI18N
     }
 
     public FileObject getBuildDirectory() {
-        return getFileObject (ArchiveProjectProperties.BUILD_DIR); //NOI18N
+        return project.getFileObject (EarProjectProperties.BUILD_DIR); //NOI18N
     }
 
-    public File getContentDirectoryAsFile() {
-        return getFile (ArchiveProjectProperties.BUILD_DIR); //NOI18N
-    }
+/*    public File getContentDirectoryAsFile() {
+        return getFile (EarProjectProperties.BUILD_DIR); //NOI18N
+    }*/
 
     public org.netbeans.modules.schema2beans.BaseBean getDeploymentDescriptor (String location) {
         if (! J2eeModule.APP_XML.equals(location))
@@ -269,7 +271,7 @@ public final class ProjectEar extends J2eeAppProvider
     }
 
     public String getJ2eePlatformVersion () {
-        return helper.getStandardPropertyEvaluator ().getProperty (ArchiveProjectProperties.J2EE_PLATFORM);
+        return project.getJ2eePlatformVersion(); // helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_PLATFORM);
     }
     
     
@@ -348,9 +350,9 @@ public final class ProjectEar extends J2eeAppProvider
         }
     }
     
-    private List mods = new ArrayList();
+    private Map mods = new HashMap();
     
-    void setModules(List mods) {
+    void setModules(Map mods) {
         if (null == mods) {
             throw new IllegalArgumentException("mods");
         }
@@ -358,16 +360,33 @@ public final class ProjectEar extends J2eeAppProvider
     }
     
     public J2eeModule[] getModules(ModuleListener ml) {
-        return (J2eeModule[]) mods.toArray(new J2eeModule[mods.size()]);
+//        return (J2eeModule[]) mods.toArray(new J2eeModule[mods.size()]);
+        if (null != ml) {
+            addModuleListener(ml);
+        }
+        J2eeModule[] retVal = new J2eeModule[mods.size()];
+        Iterator iter = mods.values().iterator();
+        int i = 0;
+        while (iter.hasNext()) {
+            retVal[i] = ((J2eeModuleProvider)iter.next()).getJ2eeModule();
+            i++;
+        }
+        return retVal;
     }
     
-    public void addModule(J2eeModule jm) {
-        mods.add(jm);
+    public void addModuleProvider(J2eeModuleProvider jmp, String uri) {
+        mods.put(uri, jmp);
+        J2eeModule jm = jmp.getJ2eeModule();
         fireAddModule(jm);
     }
     
-    public void removeModule(J2eeModule jm) {
-        mods.remove(jm);
+    public void removeModuleProvider(J2eeModuleProvider jmp, String uri) {
+        J2eeModuleProvider tmp = (J2eeModuleProvider) mods.get(uri);
+        if (!tmp.equals(jmp)) {
+            // something fishy may be happening here
+            // XXX log it
+        }
+        J2eeModule jm = jmp.getJ2eeModule();
         fireRemoveModule(jm);
     }
     
@@ -410,7 +429,7 @@ public final class ProjectEar extends J2eeAppProvider
      * @return J2eeModuleProvider object
      */
     public J2eeModuleProvider getChildModuleProvider(String uri) {
-        return null;
+        return (J2eeModuleProvider) mods.get(uri);
     }
     
     /**
@@ -418,7 +437,7 @@ public final class ProjectEar extends J2eeAppProvider
      * @return array of J2eeModuleProvider objects.
      */
     public  J2eeModuleProvider[] getChildModuleProviders() {
-        return new J2eeModuleProvider[0];
+        return (J2eeModuleProvider[]) mods.values().toArray(new J2eeModuleProvider[mods.size()]);
     }
     
 }

@@ -191,6 +191,7 @@ Microsystems, Inc. All Rights Reserved.
 		<package>org.netbeans.modules.j2ee.common</package>
 		<package>org.netbeans.modules.j2ee.api.common</package>
             </public-packages>
+            <javadoc/>
         </data>
     </configuration>
 </project>

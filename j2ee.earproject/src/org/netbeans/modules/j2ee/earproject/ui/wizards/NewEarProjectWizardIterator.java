@@ -99,7 +99,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
     
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
+    transient WizardDescriptor wiz;
     
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
@@ -158,7 +158,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
     public final void removeChangeListener(ChangeListener l) {}
     
     // helper methods, finds indexJSP's FileObject
-    private FileObject getIndexJSPFO(FileObject webRoot, String indexJSP) {
+    FileObject getIndexJSPFO(FileObject webRoot, String indexJSP) {
         // replace '.' with '/'
         indexJSP = indexJSP.replace ('.', '/'); // NOI18N
         

@@ -18,7 +18,8 @@ import java.io.File;
 //import java.text.Collator;
 //import java.util.ArrayList;
 //import java.util.Collections;
-//import java.util.HashMap;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -52,7 +53,8 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.api.java.project.JavaProjectConstants;
 ////import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 //
-import org.netbeans.modules.j2ee.common.ui.customizer.*;
+import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
+import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
 
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.ProjectEar;
@@ -69,6 +71,11 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 //import org.w3c.dom.Node;
 //import org.w3c.dom.NodeList;
 //import org.w3c.dom.Text;
+
+import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
+import java.util.Arrays;
 
 /** Helper class. Defines constants for properties. Knows the proper
  *  place where to store the properties.
@@ -1108,7 +1115,7 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
             if (null != jmp) {
                 J2eeModule jm = jmp.getJ2eeModule();
                 if (null != jm)
-                    earProject.getAppModule().removeModule(jm);
+                    earProject.getAppModule().removeModuleProvider(jmp,path);
             }
                 return;
             }
@@ -1152,13 +1159,13 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
             J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
             //AppDDSegmentProvider seg = (AppDDSegmentProvider) p.getLookup().lookup(AppDDSegmentProvider.class);
             if (null != jmp) {
+                String path = vcpi.getCompletePathInArchive(); //   computePath(vcpi);
                 J2eeModule jm = jmp.getJ2eeModule();
                 if (null != jm) {
-                    earProject.getAppModule().addModule(jm);
+                    earProject.getAppModule().addModuleProvider(jmp,path);
                 } else {
                     return;
                 }
-                String path = vcpi.getCompletePathInArchive(); //   computePath(vcpi);
                 Module mod = (Module) dd.createBean("Module");
                 if (jm.getModuleType() == J2eeModule.EJB) {
                     mod.setEjb(path); // NOI18N
@@ -1252,8 +1259,8 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
         propertyChangeSupport.removePropertyChangeListener (l);
     }
     
-    public List getModuleList() {
-        ArrayList mods = new ArrayList();
+    public Map getModuleMap() {
+        Map mods = new HashMap();
         Object o = properties.get(JAR_CONTENT_ADDITIONAL);
         if (null != o && o instanceof PropertyInfo) {
             PropertyInfo pi = (PropertyInfo) o;
@@ -1262,6 +1269,7 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
             Iterator iter = newV.iterator();
             while (iter.hasNext()) {
                 VisualClassPathItem vcpi = (VisualClassPathItem) iter.next();
+                String path = vcpi.getCompletePathInArchive(); //   computePath(vcpi);
                 Object obj = vcpi.getObject();
                 AntArtifact aa;
                 Project p;
@@ -1276,7 +1284,7 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                 if (null != jmp) {
                     J2eeModule jm = jmp.getJ2eeModule();
                     if (null != jm) {
-                        mods.add(jm);
+                        mods.put(path, jmp);
                     }
                 }
             }
@@ -1285,4 +1293,41 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
     }
 
 
+    public void addJ2eeSubprojects(Project[] moduleProjects) {
+            List artifactList = new ArrayList();
+            for (int i = 0; i < moduleProjects.length; i++) {
+                AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType( 
+                    moduleProjects[i], 
+                    J2eeProjectConstants.ARTIFACT_TYPE_J2EE_ARCHIVE );
+                artifactList.addAll(Arrays.asList(artifacts));
+            }
+            // create the vcpis
+            List newVCPIs = new ArrayList();
+            Iterator iter = artifactList.iterator();
+            while (iter.hasNext()) {
+                AntArtifact art = (AntArtifact) iter.next();
+                VisualClassPathItem vcpi = VisualClassPathItem.create(art,VisualClassPathItem.PATH_IN_WAR_APPLET);
+                    //new VisualClassPathItem(art, VisualClassPathItem.TYPE_ARTIFACT, null, art.getArtifactLocation().toString(), VisualClassPathItem.PATH_IN_WAR_APPLET);
+                vcpi.setRaw(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
+                newVCPIs.add(vcpi);
+            }
+            Object t = get(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
+            if (!(t instanceof List)) {
+                assert false : "jar content isn't a List???";
+                return;
+            }
+            List vcpis = (List) t;
+            newVCPIs.addAll(vcpis);
+            put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, newVCPIs);
+            //epp.updateApplicationXml();
+            store();
+                try {
+                    org.netbeans.api.project.ProjectManager.getDefault().saveProject(getProject());
+                }
+                catch ( java.io.IOException ex ) {
+                    org.openide.ErrorManager.getDefault().notify( ex );
+                }
+            configurationXmlChanged(null);
+        
+    }
 }

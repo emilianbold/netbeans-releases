@@ -33,7 +33,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 //import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+//import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.common.classpath.ClassPathProviderImpl;
 //import org.netbeans.modules.j2ee.ejbjarproject.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.j2ee.earproject.ui.EarCustomizerProvider;
@@ -46,7 +46,7 @@ import org.netbeans.modules.j2ee.common.J2eeProject;
 import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 //import org.netbeans.spi.java.classpath.ClassPathFactory;
-//import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 //import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
@@ -91,8 +91,12 @@ import org.w3c.dom.Text;
 import org.netbeans.modules.j2ee.common.ui.IconBaseProvider;
 
 /**
- * Represents one plain Web project.
- * @author Jesse Glick, et al., Pavel Buzek
+ * Represents an Enterprise Application project.
+ *
+ * This is the project api centric view of the enterprise application.
+ * 
+ * @author vince kraemer
+ * @see WebProject
  */
 public final class EarProject implements J2eeProject, Project, AntProjectListener, FileChangeListener {
     
@@ -114,7 +118,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator ());
         genFilesHelper = new GeneratedFilesHelper(helper);
-        appModule = new ProjectEar (this, helper);
+        appModule = new ProjectEar (this); // , helper);
         lookup = createLookup(aux);
 //        helper.addAntProjectListener(this);
     }
@@ -175,7 +179,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
             new LogicalViewProvider(this, helper, evaluator (), spp, refHelper, abpt),
             new MyIconBaseProvider(),
             new EarCustomizerProvider( this, helper, refHelper, abpt ),
-            new ClassPathProviderImpl(helper),
+            new ClassPathProviderImpl(helper, evaluator()),
 //            new CompiledSourceForBinaryQuery(helper),
 //            new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
@@ -431,7 +435,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
                 //Check libraries and add them to classpath automatically
                 String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.LIBRARIES_DIR);
                 EarProjectProperties wpp = new EarProjectProperties (EarProject.this, helper, refHelper,abpt);
-                getAppModule().setModules(wpp.getModuleList());
+                getAppModule().setModules(wpp.getModuleMap());
                 if (libFolderName != null && new File (libFolderName).isDirectory ()) {
                     List cpItems = (List) wpp.get (EarProjectProperties.JAVAC_CLASSPATH);
                     FileObject libFolder = FileUtil.toFileObject (new File (libFolderName));
@@ -561,4 +565,25 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
                 return "org/netbeans/modules/j2ee/earproject/ui/resources/";
             }
         }
+        
+        FileObject getFileObject(String propname) {
+            String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
+            if (prop != null) {
+                return helper.resolveFileObject(prop);
+            } else {
+                return null;
+            }
+        }
+
+    public String getServerID () {
+        return helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_TYPE);
+    }
+
+    public String getServerInstanceID () {
+        return helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_INSTANCE);
+    }
+    
+    public String getJ2eePlatformVersion () {
+        return  helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_PLATFORM);
+    }
 }
