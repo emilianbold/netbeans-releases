@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="junit.license.file" location="ibm-public-license.txt"/>
 
   <target name="compile-junit-extensions">
-    <javac srcdir="src" destdir="src">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/junit/**"/>
       <classpath>
 	<pathelement location="${binroot}/junit/release/lib/ext/junit.jar"/> 

@@ -112,14 +112,14 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </copy>
     <ant dir="../openide" target="lib-util"/>
-    <javac srcdir="modules-lib/src" destdir="modules-lib/src">
+    <javac srcdir="modules-lib/src" destdir="modules-lib/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <exclude name="org/netbeans/core/modules/ManifestSection.java"/>
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide-util.jar"/>
       </classpath>
     </javac>
     <ant dir="../openide" target="jars"/>
-    <javac srcdir="modules-lib/src" destdir="modules-lib/src">
+    <javac srcdir="modules-lib/src" destdir="modules-lib/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/core/modules/ManifestSection.java"/>
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>

@@ -35,7 +35,7 @@ workspaceswitcher
   <target name="bootstrap" depends="check-for-binaries"
           description="Bootstrap NetBeans-specific Ant extensions.">
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
-    <javac srcdir="antsrc" destdir="antsrc" deprecation="true">
+    <javac srcdir="antsrc" destdir="antsrc" deprecation="true" debug="${build.compiler.debug}">
       <classpath>
         <!-- Needed for CheckLinks: -->
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
