@@ -53,6 +53,8 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     protected static final String ADMIN_PORT= "admin_port";//NOI18N
     protected static final String MONITOR_ENABLED= "monitor_enabled";//NOI18N
     protected static final String CLASSIC = "classic"; //NOI18N
+    protected static final String USER_NAME = "user_name"; //NOI18N
+    protected static final String PASSWORD = "password"; //NOI18N
     protected static final String NAME_FOR_SHARED_MEMORY_ACCESS = "name_for_shared_memory_access"; //NOI18N
     private static final String DEFAULT_NAME_FOR_SHARED_MEMORY_ACCESS = "tomcat_shared_memory_id"; //NOI18N
     
@@ -70,6 +72,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
     
     private int iPort = 0;
+    
     
     public String getDisplayName(){
         Integer port = getServerPort();
@@ -199,6 +202,48 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         return "";
     }
 
+    /** Getter for property userName.
+     * @return Value of property userName.
+     *
+     */
+    private String getUserName() {
+        DeploymentManager m = getDeploymentManager();
+        if (m instanceof TomcatManager){
+            return ((TomcatManager)m).getUsername();
+        };
+        return ""; //NOI18N
+    }    
+    
+    /** Setter for property userName.
+     * @param userName New value of property userName.
+     *
+     */
+    private void setUserName(String userName) {
+        DeploymentManager m = getDeploymentManager();
+        if (m instanceof TomcatManager){
+            ((TomcatManager)m).setUsername(userName);
+        };
+    }
+    
+    /** Getter for property password.
+     * @return Value of property password.
+     *
+     */
+    private String getPassword() {
+        return "*****";
+    }
+    
+    /** Setter for property password.
+     * @param password New value of property password.
+     *
+     */
+    private void setPassword(String password) {
+        DeploymentManager m = getDeploymentManager();
+        if (m instanceof TomcatManager){
+            ((TomcatManager)m).setPassword(password);
+        };
+    }
+    
     // Create a property sheet:
     protected Sheet createSheet () {
 	Sheet sheet = super.createSheet ();
@@ -256,6 +301,36 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                                if (setAdminPort(newPort)) mng.setAdminPort(newPort);
                            }
                        }
+                   }
+               };    
+        ssProp.put(p);  
+        p = new PropertySupport.ReadWrite (
+                   USER_NAME,
+                   String.class,
+                   NbBundle.getMessage (TomcatInstanceNode.class, "PROP_userName"),   // NOI18N
+                   NbBundle.getMessage (TomcatInstanceNode.class, "HINT_userName")   // NOI18N
+               ) {
+                   public Object getValue () {
+                       return getUserName();
+                   }
+                   
+                   public void setValue (Object val){
+                       setUserName((String)val);
+                   }
+               };    
+        ssProp.put(p);  
+        p = new PropertySupport.ReadWrite (
+                   PASSWORD,
+                   String.class,
+                   NbBundle.getMessage (TomcatInstanceNode.class, "PROP_password"),   // NOI18N
+                   NbBundle.getMessage (TomcatInstanceNode.class, "HINT_password")   // NOI18N
+               ) {
+                   public Object getValue () {
+                       return getPassword();
+                   }
+                   
+                   public void setValue (Object val){
+                       setPassword((String)val);
                    }
                };    
         ssProp.put(p);  
@@ -460,5 +535,6 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         SaveCookie savec = (SaveCookie) dobj.getCookie(SaveCookie.class);
         if (savec!=null) savec.save();
     }
+    
     
 }

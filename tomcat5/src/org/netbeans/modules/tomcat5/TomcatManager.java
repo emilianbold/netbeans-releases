@@ -287,14 +287,38 @@ public class TomcatManager implements DeploymentManager {
      * @return username or <CODE>null</CODE> when not connected.
      */
     public String getUsername () {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            return ip.getProperty(InstanceProperties.USERNAME_ATTR);
+        }
         return username;
+    }
+    
+    public void setUsername (String username){
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            ip.setProperty(InstanceProperties.USERNAME_ATTR, username);
+            this.username = username;
+        }
     }
     
     /** Returns password.
      * @return password or <CODE>null</CODE> when not connected.
      */
     public String getPassword () {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            return ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+        }
         return password;
+    }
+    
+    public void setPassword (String password){
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            ip.setProperty(InstanceProperties.PASSWORD_ATTR, password);
+            this.password = password;
+        }
     }
     
     public DeploymentConfiguration createConfiguration (DeployableObject deplObj) 
