@@ -12,7 +12,7 @@ import org.netbeans.junit.*;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerProgress;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerProgress;
 import org.netbeans.tests.j2eeserver.plugin.jsr88.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.*;
 

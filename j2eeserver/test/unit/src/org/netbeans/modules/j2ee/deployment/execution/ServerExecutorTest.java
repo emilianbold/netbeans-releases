@@ -145,6 +145,11 @@ public class ServerExecutorTest extends NbTestCase {
         public org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider getDeploymentConfigurationProvider() {
             return null;
         }
+        
+        public org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport getConfigSupport() {
+            return null;
+        }
+        
     }
     
     public static boolean writeTargetModule(String destFile, TargetModule.List tml) {
