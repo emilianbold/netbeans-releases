@@ -35,9 +35,7 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/netbeans/modules/properties/syntax/"/>
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
         <pathelement location="../editor/netbeans/modules/editor.jar"/>
         <!-- src must be on classpath, otherwise AspectJ compiler (ajc) wouldn't compile -->
