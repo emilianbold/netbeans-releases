@@ -27,8 +27,6 @@ To implement:
 - bundle values beginning or ending with a space (but see JLF recommendations on ui.netbeans.org)
 - readObject etc. methods with incorrect signature (e.g. returning Object)
 - standalone usage checker for library JARs (all classes must resolvable) (or part of openide test suite)
-- nbrescurr: where nbres: suffices
-- use of org.netbeans.core from modules (except apisupport to reload, autoupdate, maybe projects)
 - System.getProperty("java.version").startsWith(...) [cf. #16813]
 - static resource bundle variables (should load using NbBundle if and when needed)
 -->
