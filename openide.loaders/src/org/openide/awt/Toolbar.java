@@ -537,7 +537,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         /** Top gap. */
         static final int TOPGAP = 2;
         /** Bottom gap. */
-        static final int BOTGAP = 0;
+        static final int BOTGAP = 2;
         /** Width of bump element. */
         static final int WIDTH = 6;
         
