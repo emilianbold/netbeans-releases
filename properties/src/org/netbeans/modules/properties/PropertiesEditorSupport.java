@@ -269,9 +269,6 @@ implements EditCookie, PrintCookie, Serializable {
         }
     }
 
-    // [PENDING] direct use of bundle messages from openide is illegal!
-    // Copy the messages to properties Bundle.properties instead.
-    
     /** 
      * Overrides superclass abstract method. 
      * Message to display when an object is being opened.
@@ -281,8 +278,8 @@ implements EditCookie, PrintCookie, Serializable {
         String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N
         
         return NbBundle.getMessage(
-            CloneableEditorSupport.class, 
-            "CTL_ObjectOpen", // NOI18N
+            PropertiesEditorSupport.class,
+            "LBL_ObjectOpen", // NOI18N
             name
         );
     }
@@ -296,8 +293,8 @@ implements EditCookie, PrintCookie, Serializable {
         String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N        
         
         return NbBundle.getMessage(
-            CloneableEditorSupport.class,
-            "CTL_ObjectOpened", // NOI18N
+            PropertiesEditorSupport.class,
+            "LBL_ObjectOpened", // NOI18N
             name
        );
     }
@@ -312,14 +309,14 @@ implements EditCookie, PrintCookie, Serializable {
         
         if(isModified()) {
             return NbBundle.getMessage (
-                CloneableEditorSupport.class,
-                "LAB_EditorName_Modified", // NOI18N
+                PropertiesEditorSupport.class,
+                "LBL_EditorName_Modified", // NOI18N
                 name
             );
         } else {
             return NbBundle.getMessage (
-                CloneableEditorSupport.class,
-                "LAB_EditorName_Uptodate", // NOI18N
+                PropertiesEditorSupport.class,
+                "LBL_EditorName_Uptodate", // NOI18N
                 name
             );
         }
@@ -350,14 +347,14 @@ implements EditCookie, PrintCookie, Serializable {
         FileObject fo = myEntry.getFile();
         
         try {
-            return NbBundle.getMessage (CloneableEditorSupport.class, "LAB_EditorToolTip_Valid", new Object[] {
+            return NbBundle.getMessage (PropertiesEditorSupport.class, "LBL_EditorToolTip_Valid", new Object[] {
                 fo.getPackageName ('.'),
                 fo.getName (),
                 fo.getExt (),
                 fo.getFileSystem ().getDisplayName ()
             });
         } catch (FileStateInvalidException fsie) {
-            return NbBundle.getMessage (CloneableEditorSupport.class, "LAB_EditorToolTip_Invalid", new Object[] {
+            return NbBundle.getMessage (PropertiesEditorSupport.class, "LBL_EditorToolTip_Invalid", new Object[] {
                 fo.getPackageName ('.'),
                 fo.getName (),
                 fo.getExt ()
