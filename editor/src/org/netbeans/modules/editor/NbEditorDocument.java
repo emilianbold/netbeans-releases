@@ -28,6 +28,8 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.PrintContainer;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.Formatter;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
 import org.openide.text.AttributedCharacters;
@@ -44,27 +46,20 @@ public class NbEditorDocument extends GuardedDocument
 implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
 NbDocument.Printable, NbDocument.CustomEditor {
 
+    /** Name of the formatter setting. */
+    public static final String FORMATTER = "formatter";
+
     /** Mime type of the document. The name of this property corresponds
      * to the property that is filled in the document by CloneableEditorSupport.
      */
     public static final String MIME_TYPE_PROP = "mimeType";
 
-    private static final HashMap kit2Formatter = new HashMap();
-    private static final int CLEAR_FORMATTER_CACHE_DELAY = 5000;
-    private static final Timer clearTimer = new Timer(CLEAR_FORMATTER_CACHE_DELAY,
-        new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                synchronized (kit2Formatter) {
-                    kit2Formatter.clear();
-                }
-            }
-        }
-    );
+    /** Formatter being used. */
+    private Formatter formatter;
 
-    static {
-        clearTimer.setRepeats(true);
-        clearTimer.start();
-    }
+    private IndentEngine lastFoundIndentEngine;
+
+    private Formatter lastFoundFormatter;
 
     public NbEditorDocument(Class kitClass) {
         super(kitClass);
@@ -77,6 +72,12 @@ NbDocument.Printable, NbDocument.CustomEditor {
         setNormalStyleName(NbDocument.NORMAL_STYLE_NAME);
     }
 
+    public void settingsChange(SettingsChangeEvent evt) {
+        super.settingsChange(evt);
+
+        // Refresh formatter
+        formatter = (Formatter)Settings.getValue(getKitClass(), FORMATTER);
+    }
 
     public void setCharacterAttributes(int offset, int length, AttributeSet s,
                                        boolean replace) {
@@ -105,14 +106,15 @@ NbDocument.Printable, NbDocument.CustomEditor {
     }
 
     public Formatter getFormatter() {
-        String mimeType = (String)getProperty(MIME_TYPE_PROP);
-        Formatter f = null;
-        if (mimeType != null) {
-            synchronized (kit2Formatter) {
-                f = (Formatter)kit2Formatter.get(mimeType);
-                if (f == null) {
-                    IndentEngine eng = IndentEngine.find(mimeType);
-                    if (eng != null) {
+        Formatter f = formatter;
+        if (f == null) {
+            String mimeType = (String)getProperty(MIME_TYPE_PROP);
+            if (mimeType != null) {
+                IndentEngine eng = IndentEngine.find(mimeType);
+                if (eng != null) {
+                    if (eng == lastFoundIndentEngine) {
+                        f = lastFoundFormatter;
+                    } else {
                         if (eng instanceof FormatterIndentEngine) {
                             f = ((FormatterIndentEngine)eng).getFormatter();
 
@@ -120,7 +122,8 @@ NbDocument.Printable, NbDocument.CustomEditor {
                             f = new IndentEngineFormatter(getKitClass(), eng);
                         }
 
-                        kit2Formatter.put(mimeType, f);
+                        lastFoundIndentEngine = eng;
+                        lastFoundFormatter = f;
                     }
                 }
             }
