@@ -89,9 +89,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
       <folder name="Editing">
         <file name="org-netbeans-modules-beans-beans.shadow">
-<![CDATA[Services/org-netbeans-modules-beans-beans.settings
-SystemFileSystem
-]]>
+	    <attr name="originalFile" stringvalue="Services/org-netbeans-modules-beans-beans.settings"/>
         </file>
       </folder> <!-- Editing -->
     </folder> <!-- Services -->
