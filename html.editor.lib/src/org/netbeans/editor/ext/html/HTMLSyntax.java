@@ -79,10 +79,12 @@ public class HTMLSyntax extends Syntax {
     }
 
     private final boolean isName( char ch ) {
-        return( (ch >= 'a' && ch <= 'z') ||
-                (ch >= 'A' && ch <= 'Z') ||
-                (ch >= '0' && ch <= '9') ||
-                ch == '-' || ch == '_' || ch == '.' || ch == ':' );
+        return Character.isLetterOrDigit(ch) || 
+                ch == '-' || ch == '_' || ch == '.' || ch == ':';
+//        return( (ch >= 'a' && ch <= 'z') ||
+//                (ch >= 'A' && ch <= 'Z') ||
+//                (ch >= '0' && ch <= '9') ||
+//                ch == '-' || ch == '_' || ch == '.' || ch == ':' );
 
     }
 
@@ -96,8 +98,9 @@ public class HTMLSyntax extends Syntax {
      */
 
     private final boolean isWS( char ch ) {
-        return ( ch == '\u0020' || ch == '\u0009' || ch == '\u000c'
-              || ch == '\u200b' || ch == '\n' || ch == '\r' );
+        return Character.isWhitespace(ch);
+//        return ( ch == '\u0020' || ch == '\u0009' || ch == '\u000c'
+//              || ch == '\u200b' || ch == '\n' || ch == '\r' );
     }
 
     protected TokenID parseToken() {
