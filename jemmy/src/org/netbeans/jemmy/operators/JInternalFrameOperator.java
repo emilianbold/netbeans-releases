@@ -368,6 +368,9 @@ public class JInternalFrameOperator extends JComponentOperator
 	checkIconified(false);
 	makeComponentVisible();
 	fDriver.iconify(this);
+	if(getVerification()) {
+            waitIcon(true);
+        }
     }
 
     /**
@@ -382,6 +385,9 @@ public class JInternalFrameOperator extends JComponentOperator
 	output.printGolden("Deiconify JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(true);
 	fDriver.deiconify(this);
+	if(getVerification()) {
+            waitIcon(false);
+        }
     }
 
     /**
@@ -397,6 +403,9 @@ public class JInternalFrameOperator extends JComponentOperator
 	checkIconified(false);
 	makeComponentVisible();
 	fDriver.maximize(this);
+	if(getVerification()) {
+            waitMaximum(true);
+        }
     }
 
     /**
@@ -412,6 +421,9 @@ public class JInternalFrameOperator extends JComponentOperator
 	checkIconified(false);
 	makeComponentVisible();
 	fDriver.demaximize(this);
+	if(getVerification()) {
+            waitMaximum(false);
+        }
     }
 
     /**
@@ -550,6 +562,28 @@ public class JInternalFrameOperator extends JComponentOperator
     public JDesktopIconOperator getIconOperator() {
 	initOperators();
 	return(iconOperator);
+    }
+
+    public void waitIcon(final boolean icon) {
+        waitState(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return(((JInternalFrame)comp).isIcon() == icon);
+                }
+                public String getDescription() {
+                    return("Iconified JInternalFrame");
+                }
+            });
+    }
+
+    public void waitMaximum(final boolean maximum) {
+        waitState(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return(((JInternalFrame)comp).isMaximum() == maximum);
+                }
+                public String getDescription() {
+                    return("Maximizied JInternalFrame");
+                }
+            });
     }
 
     /**

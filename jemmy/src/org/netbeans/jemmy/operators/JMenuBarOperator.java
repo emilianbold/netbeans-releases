@@ -327,11 +327,21 @@ public class JMenuBarOperator extends JComponentOperator
     }
 
     public JMenuItemOperator[] showMenuItems(String[] path, StringComparator comparator) {
-        JMenu menu = (JMenu)pushMenu(path, comparator);
-        JMenuItemOperator[] result = new JMenuItemOperator[menu.getMenuComponentCount()];
-        for(int i = 0; i < result.length; i++) {
-            result[i] = new JMenuItemOperator((JMenuItem)menu.getMenuComponent(i));
-            result[i].copyEnvironment(this);
+        JMenuItemOperator[] result;
+        if(path.length == 0) {
+            MenuElement[] elems =  getSubElements();
+            result = new JMenuItemOperator[elems.length];
+            for(int i = 0; i < elems.length; i++) {
+                result[i] = new JMenuItemOperator((JMenuItem)elems[i]);
+                result[i].copyEnvironment(this);
+            }
+        } else {
+            JMenu menu = (JMenu)pushMenu(path, comparator);
+            result = new JMenuItemOperator[menu.getMenuComponentCount()];
+            for(int i = 0; i < result.length; i++) {
+                result[i] = new JMenuItemOperator((JMenuItem)menu.getMenuComponent(i));
+                result[i].copyEnvironment(this);
+            }
         }
         return(result);
     }

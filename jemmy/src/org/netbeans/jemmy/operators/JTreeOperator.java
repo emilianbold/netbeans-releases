@@ -984,7 +984,7 @@ public class JTreeOperator extends JComponentOperator
 	selectPaths(paths);
         scrollToPath(paths[paths.length - 1]);
 	Point point = getPointToClick(paths[paths.length - 1]);
-	return(JPopupMenuOperator.callPopup(getSource(), 
+	return(JPopupMenuOperator.callPopup(this, 
 					    (int)point.getX(), 
 					    (int)point.getY(), 
 					    mouseButton));

@@ -252,22 +252,21 @@ implements Outputable, Timeoutable {
 
     /**
      * Calls popup by clicking on (x, y) point in component.
-     * @param comp Component to call popup on.
+     * @param oper Component operator to call popup on.
      * @param mouseButton Mouse button mask to call popup.
      * @throws TimeoutExpiredException
      */
-    public static JPopupMenu callPopup(final Component comp, int x, int y, int mouseButton) {
-	ComponentOperator co = new ComponentOperator(comp);
-	co.makeComponentVisible();
-	co.clickForPopup(x, y, mouseButton);
+    public static JPopupMenu callPopup(final ComponentOperator oper, int x, int y, int mouseButton) {
+	oper.makeComponentVisible();
+	oper.clickForPopup(x, y, mouseButton);
 	return(waitJPopupMenu(waitJPopupWindow(new ComponentChooser() {
                 public boolean checkComponent(Component cmp) {
                     Component invoker = ((JPopupMenu)cmp).getInvoker();
-                    return(invoker == comp ||
+                    return(invoker == oper.getSource() ||
                            (invoker instanceof Container &&
-                            ((Container)invoker).isAncestorOf(comp)) ||
-                           (comp instanceof Container &&
-                            ((Container)comp).isAncestorOf(invoker)));
+                            ((Container)invoker).isAncestorOf(oper.getSource())) ||
+                           (oper.getSource() instanceof Container &&
+                            ((Container)oper.getSource()).isAncestorOf(invoker)));
                 }
                 public String getDescription() {
                     return("Popup menu");
@@ -275,6 +274,26 @@ implements Outputable, Timeoutable {
                 }
             }), 
 			      ComponentSearcher.getTrueChooser("Popup menu")));
+    }
+
+    /**
+     * Calls popup by clicking on (x, y) point in component.
+     * @param oper Component operator to call popup on.
+     * @see ComponentOperator#getPopupMouseButton()
+     * @throws TimeoutExpiredException
+     */
+    public static JPopupMenu callPopup(ComponentOperator oper, int x, int y) {
+	return(callPopup(oper, x, y, getPopupMouseButton()));
+    }
+
+    /**
+     * Calls popup by clicking on (x, y) point in component.
+     * @param comp Component to call popup on.
+     * @param mouseButton Mouse button mask to call popup.
+     * @throws TimeoutExpiredException
+     */
+    public static JPopupMenu callPopup(Component comp, int x, int y, int mouseButton) {
+        return(callPopup(new ComponentOperator(comp), x, y, mouseButton));
     }
 
     /**
@@ -492,11 +511,21 @@ implements Outputable, Timeoutable {
     }
 
     public JMenuItemOperator[] showMenuItems(String[] path, StringComparator comparator) {
-        JMenu menu = (JMenu)pushMenu(path, comparator);
-        JMenuItemOperator[] result = new JMenuItemOperator[menu.getMenuComponentCount()];
-        for(int i = 0; i < result.length; i++) {
-            result[i] = new JMenuItemOperator((JMenuItem)menu.getMenuComponent(i));
-            result[i].copyEnvironment(this);
+        JMenuItemOperator[] result;
+        if(path.length == 0) {
+            MenuElement[] elems =  getSubElements();
+            result = new JMenuItemOperator[elems.length];
+            for(int i = 0; i < elems.length; i++) {
+                result[i] = new JMenuItemOperator((JMenuItem)elems[i]);
+                result[i].copyEnvironment(this);
+            }
+        } else {
+            JMenu menu = (JMenu)pushMenu(path, comparator);
+            result = new JMenuItemOperator[menu.getMenuComponentCount()];
+            for(int i = 0; i < result.length; i++) {
+                result[i] = new JMenuItemOperator((JMenuItem)menu.getMenuComponent(i));
+                result[i].copyEnvironment(this);
+            }
         }
         return(result);
     }

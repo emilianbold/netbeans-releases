@@ -135,7 +135,7 @@ public class QueueJMenuDriver extends SupportiveDriver implements MenuDriver {
         return(result);
     }
 
-    private JMenuItem runAction(final QueueTool.QueueAction action, ComponentOperator env, long waitingTime) {
+    private JMenuItem runAction(final OneReleaseAction action, ComponentOperator env, long waitingTime) {
         Waiter waiter = new Waiter(new Waitable() {
                 public Object actionProduced(Object param) {
                     return(queueTool.invokeSmoothly(action));
@@ -152,6 +152,7 @@ public class QueueJMenuDriver extends SupportiveDriver implements MenuDriver {
         try {
             return((JMenuItem)waiter.waitAction(null));
         } catch(InterruptedException e) {
+            action.stop();
             throw(new JemmyException("Waiting has been interrupted", e));
         }
     }
@@ -172,6 +173,7 @@ public class QueueJMenuDriver extends SupportiveDriver implements MenuDriver {
         int depth;
         ComponentOperator env;
         boolean mousePressed = false;
+        private boolean stopped = false;
         public OneReleaseAction(PathChooser chooser, int depth, ComponentOperator env, boolean mousePressed) {
             super("Menu pushing");
             this.chooser = chooser;
@@ -228,11 +230,17 @@ public class QueueJMenuDriver extends SupportiveDriver implements MenuDriver {
                         process(subElements[i]);
                         return(subElements[i]);
                     }
+                    if(stopped) {
+                        return(null);
+                    }
                 }
             }
             return(null);
         }
         public abstract MenuElement getMenuElement();
+        private void stop() {
+            stopped = true;
+        }
     }
 
     private class PopupMenuChooser implements ComponentChooser {

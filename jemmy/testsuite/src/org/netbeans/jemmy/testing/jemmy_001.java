@@ -12,7 +12,7 @@ import java.io.PrintWriter;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JTextField;
 
 import javax.swing.text.JTextComponent;
@@ -28,15 +28,31 @@ public class jemmy_001 extends JemmyTest {
     public int runIt(Object obj) {
 
 	try {
-	    (new ClassReference("org.netbeans.jemmy.testing.Application_001")).startApplication();
+	    Exception e = (Exception)(new ActionProducer(new org.netbeans.jemmy.Action() {
+		    public Object launch(Object obj) {
+			try {
+			    (new ClassReference("org.netbeans.jemmy.testing.Application_001")).startApplication();
+			} catch(Exception ex) {
+			    return(ex);
+			}
+			return(null);
+		    }
+		    public String getDescription() {
+			return("");
+		    }
+		}, false).produceAction(null));
 
-	    JFrame win = JFrameOperator.waitJFrame("Application_001", true, true);
+	    if(e != null) {
+		throw(e);
+	    }
+
+	    JDialog win = JDialogOperator.waitJDialog("Application_001", true, true);
 
             Operator.setDefaultComponentVisualizer(((DefaultVisualizer)Operator.getDefaultComponentVisualizer()).cloneThis());
 
-	    JFrameOperator fo = new JFrameOperator(win);
-	    JFrameOperator fo2 = new JFrameOperator();
-	    FrameOperator fo3 = new FrameOperator();
+	    JDialogOperator fo = new JDialogOperator(win);
+	    JDialogOperator fo2 = new JDialogOperator();
+	    DialogOperator fo3 = new DialogOperator();
 	    if(fo2.getSource() != fo.getSource() ||
 	       fo3.getSource() != fo.getSource()) {
 		getOutput().printError("Wrong");
@@ -223,16 +239,6 @@ public class jemmy_001 extends JemmyTest {
 	    }
 
 	    if(!testWindow(fo)) {
-		finalize();
-		return(1);
-	    }
-
-	    if(!testFrame(fo)) {
-		finalize();
-		return(1);
-	    }
-
-	    if(!testJFrame(fo)) {
 		finalize();
 		return(1);
 	    }
@@ -1047,7 +1053,7 @@ public boolean testWindow(WindowOperator windowOperator) {
     }
     return(true);
 }
-
+    /*
 public boolean testFrame(FrameOperator frameOperator) {
     if(((Frame)frameOperator.getSource()).getIconImage() == null &&
        frameOperator.getIconImage() == null ||
@@ -1169,7 +1175,7 @@ public boolean testJFrame(JFrameOperator jFrameOperator) {
     }
     return(true);
 }
-
+    */
 public boolean testJComboBox(JComboBoxOperator jComboBoxOperator) {
     if(((JComboBox)jComboBoxOperator.getSource()).getActionCommand() == null &&
        jComboBoxOperator.getActionCommand() == null ||

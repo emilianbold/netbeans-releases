@@ -5,6 +5,7 @@ import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.*;
 
 import java.awt.*;
+import java.awt.event.*;
 
 import java.io.*;
 
@@ -13,56 +14,60 @@ import javax.swing.*;
 import org.netbeans.jemmy.demo.*;
 
 public class jemmy_031 extends JemmyTest {
+    JButtonOperator dotButtonOper;
+    JFileChooserOperator chooseOper;
+    File curDir;
+    JFrameOperator winop;
+
     public int runIt(Object obj) {
 
 	try {
 
+            //JemmyProperties.getCurrentTimeouts().loadDebugTimeouts();
+
 	    (new ClassReference("org.netbeans.jemmy.testing.Application_031")).startApplication();
 
 	    JFrame win =JFrameOperator.waitJFrame("Application_031", true, true);
+            winop = new JFrameOperator(win);
 	    
-	    JButtonOperator dotButtonOper = new JButtonOperator(JButtonOperator.findJButton(win, "...", true, true));
+	    dotButtonOper = new JButtonOperator(JButtonOperator.findJButton(win, "...", true, true));
 
-	    new ActionProducer(new org.netbeans.jemmy.Action() {
-		    public Object launch(Object obj) {
-			try {
-			    ((JButtonOperator)obj).push();
-			} catch(TimeoutExpiredException e) {
-			    getOutput().printStackTrace(e);
-			}
-			return(null);
-		    }
-		    public String getDescription() {
-			return("");
-		    }
-		}, false).produceAction(dotButtonOper);
+	    curDir = new File(System.getProperty("user.dir"));
 
-	    JFileChooserOperator chooseoper = new JFileChooserOperator();
+            invoke();
+            cancel();
 
-            chooseoper.selectFileType("All Files");
-            chooseoper.selectFileType("No file");
-            chooseoper.selectFileType("No directory");
-            chooseoper.selectFileType("Nothing");
+            invoke();
+
+            chooseOper.selectFileType("All Files");
+            chooseOper.selectFileType("No file");
+            chooseOper.selectFileType("No directory");
+            chooseOper.selectFileType("Nothing");
+
+            approve();
+            invoke();
 
 	    JFileChooser d = JFileChooserOperator.waitJFileChooser();
 	    getOutput().printLine("By find       : " +                      d.toString());
-	    getOutput().printLine("By comstructor: " + chooseoper.getSource().toString());
-	    if(chooseoper.getSource() != d) {
+	    getOutput().printLine("By comstructor: " + chooseOper.getSource().toString());
+	    if(chooseOper.getSource() != d) {
 		getOutput().printErrLine("Should be the same!");
 		finalize();
 		return(1);
 	    }
 
-	    new QueueTool().waitEmpty(100);
+            approve();
+            invoke();
 
-	    File curDir = new File(System.getProperty("user.dir"));
-
-	    if(!chooseoper.getCurrentDirectory().equals(curDir)) {
-		getOutput().printErrLine("Wrong current directory : " + chooseoper.getCurrentDirectory().toString());
+	    if(!chooseOper.getCurrentDirectory().equals(curDir)) {
+		getOutput().printErrLine("Wrong current directory : " + chooseOper.getCurrentDirectory().toString());
 		getOutput().printErrLine("Should be               : " + curDir.toString());
 		finalize();
 		return(1);
 	    }
+
+            approve();
+            invoke();
 
 	    File[] allFiles = curDir.listFiles();
 	    File firsFile = null;
@@ -72,84 +77,107 @@ public class jemmy_031 extends JemmyTest {
 		    break;
 		}
 	    }
+
+            approve();
+            invoke();
+
 	    if(firsFile != null) {
-		chooseoper.selectFileType("No directory", true, true);
-		new QueueTool().waitEmpty(100);
-		if(!chooseoper.checkFileDisplayed(firsFile.getName(), true, true)) {
+		chooseOper.selectFileType("No directory", true, true);
+		if(!chooseOper.checkFileDisplayed(firsFile.getName(), true, true)) {
 		    getOutput().printErrLine("selectFileType does not work.");
 		    finalize();
 		    return(1);
 		}
 	    }
-	    Thread.sleep(100);
+
+            approve();
+            invoke();
+
 	    File firsDir = null;
+
+	    allFiles = curDir.listFiles();
 	    for(int i = 0; i < allFiles.length; i++) {
 		if(allFiles[i].isDirectory()) {
 		    firsDir = allFiles[i];
 		    break;
 		}
 	    }
+
+            approve();
+            invoke();
+
 	    if(firsDir != null) {
-		chooseoper.selectFileType("No file", true, true);
+		chooseOper.selectFileType("No file", true, true);
 		new QueueTool().waitEmpty(100);
-		chooseoper.waitFileDisplayed(firsDir.getName());
+		chooseOper.waitFileDisplayed(firsDir.getName());
 	    }
-	    Thread.sleep(100);
-	    chooseoper.selectFileType("Nothing", true, true);
-	    chooseoper.waitFileCount(0);
-	    Thread.sleep(100);
-	    chooseoper.selectFileType("All", false, false);
-	    chooseoper.waitFileCount(allFiles.length);
-	    Thread.sleep(100);
 
-	    chooseoper.goUpLevel();
-	    new QueueTool().waitEmpty(100);
+            approve();
+            invoke();
 
-	    if(!chooseoper.getCurrentDirectory().equals(curDir.getParentFile())) {
-		getOutput().printErrLine("Wrong current directory : " + chooseoper.getCurrentDirectory().toString());
+	    chooseOper.selectFileType("Nothing", true, true);
+	    chooseOper.waitFileCount(0);
+	    allFiles = curDir.listFiles();
+            try {
+                chooseOper.selectFileType("All", false, false);
+                chooseOper.waitFileCount(allFiles.length);
+            } catch(TimeoutExpiredException e) {
+                getOutput().printErrLine("Wrong file count: " + chooseOper.getFileCount());
+                getOutput().printErrLine("Expected:         " + allFiles.length);
+                for(int i = 0; i < allFiles.length; i++) {
+                    getOutput().printErrLine(allFiles[i].getCanonicalPath());
+                }
+                throw(e);
+            }
+
+	    chooseOper.goUpLevel();
+
+	    if(!chooseOper.getCurrentDirectory().equals(curDir.getParentFile())) {
+		getOutput().printErrLine("Wrong current directory : " + chooseOper.getCurrentDirectory().toString());
 		getOutput().printErrLine("Should be               : " + curDir.getParentFile().toString());
 		finalize();
 		return(1);
 	    }
 
-	    chooseoper.enterSubDir(curDir.getCanonicalPath().substring(curDir.getParentFile().getCanonicalPath().length() + 1),
+	    chooseOper.enterSubDir(curDir.getCanonicalPath().substring(curDir.getParentFile().getCanonicalPath().length() + 1),
 				   true, true);
-	    new QueueTool().waitEmpty(100);
 
-	    if(!chooseoper.getCurrentDirectory().equals(curDir)) {
-		getOutput().printErrLine("Wrong current directory : " + chooseoper.getCurrentDirectory().toString());
+	    if(!chooseOper.getCurrentDirectory().equals(curDir)) {
+		getOutput().printErrLine("Wrong current directory : " + chooseOper.getCurrentDirectory().toString());
 		getOutput().printErrLine("Should be               : " + curDir.toString());
 		finalize();
 		return(1);
 	    }
 
-	    chooseoper.selectPathDirectory(curDir.getParentFile().getName(), true, true);
-	    new QueueTool().waitEmpty(100);
+            approve();
+            invoke();
 
-	    if(!chooseoper.getCurrentDirectory().equals(curDir.getParentFile())) {
-		getOutput().printErrLine("Wrong current directory : " + chooseoper.getCurrentDirectory().toString());
+	    chooseOper.selectPathDirectory(curDir.getParentFile().getName(), true, true);
+
+	    if(!chooseOper.getCurrentDirectory().equals(curDir.getParentFile())) {
+		getOutput().printErrLine("Wrong current directory : " + chooseOper.getCurrentDirectory().toString());
 		getOutput().printErrLine("Should be               : " + curDir.getParentFile().toString());
 		finalize();
 		return(1);
 	    }
 
-	    chooseoper.goHome();
-	    new QueueTool().waitEmpty(100);
+            approve();
+            invoke();
+
+	    chooseOper.goHome();
 
 	    File homeDir = new File(System.getProperty("user.home"));
 
-	    if(!chooseoper.getCurrentDirectory().equals(homeDir)) {
-		getOutput().printErrLine("Wrong current directory : " + chooseoper.getCurrentDirectory().toString());
+	    if(!chooseOper.getCurrentDirectory().equals(homeDir)) {
+		getOutput().printErrLine("Wrong current directory : " + chooseOper.getCurrentDirectory().toString());
 		getOutput().printErrLine("Should be               : " + homeDir.toString());
 		finalize();
 		return(1);
 	    }
 
-	    String file = allFiles[0].getCanonicalPath();
-	    chooseoper.chooseFile(file);
-	    JTextFieldOperator.waitJTextField(win, file, true, true);
+            approve();
 
-	    if(!testJFileChooser(chooseoper)) {
+	    if(!testJFileChooser(chooseOper)) {
 		finalize();
 		return(1);
 	    }
@@ -162,6 +190,21 @@ public class jemmy_031 extends JemmyTest {
 	finalize();
 
 	return(0);
+    }
+
+    void cancel() {
+        chooseOper.cancel();
+    }
+
+    void approve() throws IOException {
+        String file = curDir.listFiles()[0].getCanonicalPath();
+        chooseOper.chooseFile(file);
+        new JTextFieldOperator(winop, file);
+    }
+
+    void invoke() {
+        dotButtonOper.pushNoBlock();
+        chooseOper = new JFileChooserOperator();
     }
 
 public boolean testJFileChooser(JFileChooserOperator jFileChooserOperator) {
@@ -334,4 +377,24 @@ public boolean testJFileChooser(JFileChooserOperator jFileChooserOperator) {
     return(true);
 }
 
+    class MListener implements ActionListener, MouseListener {
+        public void actionPerformed(ActionEvent e) {
+            org.netbeans.jemmy.JemmyProperties.getCurrentOutput().printLine("actionPerformed" + e.toString());
+        }
+        public void mouseClicked(MouseEvent e) {
+            org.netbeans.jemmy.JemmyProperties.getCurrentOutput().printLine("mouseClicked" + e.toString());
+        }
+        public void mouseEntered(MouseEvent e) {
+            org.netbeans.jemmy.JemmyProperties.getCurrentOutput().printLine("mouseEntered" + e.toString());
+        }
+        public void mouseExited(MouseEvent e) {
+            org.netbeans.jemmy.JemmyProperties.getCurrentOutput().printLine("mouseExited" + e.toString());
+        }
+        public void mousePressed(MouseEvent e) {
+            org.netbeans.jemmy.JemmyProperties.getCurrentOutput().printLine("mousePressed" + e.toString());
+        }
+        public void mouseReleased(MouseEvent e) {
+            org.netbeans.jemmy.JemmyProperties.getCurrentOutput().printLine("mouseReleased" + e.toString());
+        }
+    }
 }

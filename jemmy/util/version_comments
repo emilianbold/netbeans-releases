@@ -702,3 +702,36 @@ New class: PNGDecored. Allows to load image from PNG graphics file.
 Bugfixes: 23436, 28144, 23436, 21011
 
 
+#VERSION 2.1.1
+
+28822:
+src/org/netbeans/jemmy/drivers/menus/DefaultJMenuDriver.java
+	
+28754:
+src/org/netbeans/jemmy/operators/FrameOperator.java
+src/org/netbeans/jemmy/operators/JInternalFrameOperator.java
+	
+28833:
+src/org/netbeans/jemmy/operators/JFileChooserOperator.java
+
+28835:
+src/org/netbeans/jemmy/operators/JFileChooserOperator.java
+	
+24313:
+src/org/netbeans/jemmy/operators/JMenuBarOperator.java
+src/org/netbeans/jemmy/operators/JPopupMenuOperator.java
+	
+28672:
+src/org/netbeans/jemmy/operators/JTabbedPaneOperator.java
+
+some more callPopup methods:
+src/org/netbeans/jemmy/operators/JPopupMenuOperator.java
+	
+Correct initialization:
+src/org/netbeans/jemmy/JemmyProperties.java
+	
+Do not install new queue unless necessary:
+src/org/netbeans/jemmy/QueueTool.java
+	
+	
+

@@ -192,21 +192,51 @@ public class FrameOperator extends WindowOperator implements Outputable {
  	output.printLine("Iconifying frame\n    " + getSource().toString());
  	output.printGolden("Iconifying frame");
 	driver.iconify(this);
+	if(getVerification()) {
+            waitState(Frame.ICONIFIED);
+        }
     }
     public void deiconify() {
  	output.printLine("Deiconifying frame\n    " + getSource().toString());
  	output.printGolden("Deiconifying frame");
 	driver.deiconify(this);
+	if(getVerification()) {
+            waitState(Frame.NORMAL);
+        }
     }
     public void maximize() {
  	output.printLine("Maximizing frame\n    " + getSource().toString());
  	output.printGolden("Maximizing frame");
 	driver.maximize(this);
+	if(getVerification()) {
+            waitState(Frame.NORMAL);
+        }
     }
     public void demaximize() {
  	output.printLine("Demaximizing frame\n    " + getSource().toString());
  	output.printGolden("Demaximizing frame");
 	driver.demaximize(this);
+	if(getVerification()) {
+            waitState(Frame.NORMAL);
+        }
+    }
+
+    public void waitState(final int state) {
+	getOutput().printLine("Wait frame to have " +
+                              Integer.toString(state) +
+			      " state \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait frame to have " +
+                                Integer.toString(state) +
+                                " state");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+                    return(((Frame)comp).getState() == state);
+		}
+		public String getDescription() {
+		    return(Integer.toString(state) + " state");
+		}
+	    });
     }
 
     /**

@@ -56,6 +56,12 @@ public class JemmyProperties {
      */
     public static int ROBOT_MODEL_MASK = 2;
 
+    /**
+     * Event shorcutting model mask. Should not be used
+     * together with robot mask.
+     * @see #getCurrentDispatchingModel()
+     * @see #setCurrentDispatchingModel(int)
+     */
     public static int SHORTCUT_MODEL_MASK = 4;
 
     private static final int DEFAULT_DRAG_AND_DROP_STEP_LENGTH = 100;
@@ -292,7 +298,7 @@ public class JemmyProperties {
      * @see #ROBOT_MODEL_MASK
      */
     public static int getDefaultDispatchingModel() {
-        return(SHORTCUT_MODEL_MASK);
+	return(SHORTCUT_MODEL_MASK | QUEUE_MODEL_MASK);
     }
 
     /**
@@ -340,11 +346,16 @@ public class JemmyProperties {
             System.out.println("Parameters: ");
             System.out.println("<no parameters> - report Jemmy version.");
             System.out.println("\"-f\" - report full jemmy version.");
-    }
+        }
+        System.exit(0);
     }
 
     protected static JemmyProperties push(JemmyProperties props) {
 	return((JemmyProperties)propStack.push(props));
+    }
+
+    static {
+        setCurrentDispatchingModel(getDefaultDispatchingModel());
     }
 
     /**
@@ -402,12 +413,13 @@ public class JemmyProperties {
      * @param shortcut Notifies that event shorcutting should be used.
      */
     public void initDispatchingModel(boolean queue, boolean robot, boolean shortcut) {
-	int model = 0;
+	int model = getDefaultDispatchingModel();
 	getOutput().print("Reproduce user actions ");
 	if(queue) {
 	    model = QUEUE_MODEL_MASK;
 	    getOutput().printLine("through event queue.");
 	} else {
+	    model = model - (model & QUEUE_MODEL_MASK);
 	    getOutput().printLine("directly.");
 	}
 	getOutput().print("Use ");
@@ -415,6 +427,7 @@ public class JemmyProperties {
 	    model = model | ROBOT_MODEL_MASK;
 	    getOutput().print("java.awt.Robot class");
 	} else {
+	    model = model - (model & ROBOT_MODEL_MASK);
 	    getOutput().print("event dispatching");
 	}
 	getOutput().printLine(" to reproduce user actions");
@@ -422,6 +435,7 @@ public class JemmyProperties {
 	    model = model | SHORTCUT_MODEL_MASK;
 	    getOutput().print("Shortcut");
 	} else {
+	    model = model - (model & SHORTCUT_MODEL_MASK);
 	    getOutput().print("Dispatch");
 	}
 	getOutput().printLine(" test events");
@@ -463,7 +477,6 @@ public class JemmyProperties {
 	   !System.getProperty("jemmy.shortcut_events").equals("")) {
 	    smask = System.getProperty("jemmy.shortcut_events").equals("on");
 	}
-
 	initDispatchingModel(qmask, rmask, smask);
     }
 

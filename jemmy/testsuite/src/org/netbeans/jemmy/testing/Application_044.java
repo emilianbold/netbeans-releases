@@ -16,6 +16,9 @@ public class Application_044 extends TestFrame {
 
 	getContentPane().setLayout(new FlowLayout());
 
+        //to hold focus
+        getContentPane().add(new JRadioButton("Cursor holder"));
+
         JButton noncolored = new JButton("Button");
         getContentPane().add(noncolored);
         getContentPane().add(new JButton("Button"));

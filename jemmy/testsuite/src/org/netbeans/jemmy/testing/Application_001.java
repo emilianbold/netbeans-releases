@@ -6,7 +6,7 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
-public class Application_001 extends TestFrame {
+public class Application_001 extends TestDialog {
 
     JComboBox editable;
     DefaultComboBoxModel editableModel;
@@ -60,6 +60,8 @@ public class Application_001 extends TestFrame {
 	pane.add(non_editable);
 
 	setSize(200, 200);
+
+        setModal(true);
     }
 
     public static void main(String[] argv) {

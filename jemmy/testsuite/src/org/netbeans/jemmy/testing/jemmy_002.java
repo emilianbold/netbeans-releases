@@ -127,6 +127,8 @@ public class jemmy_002 extends JemmyTest {
 
             mbo.setTimeouts(mbo.getTimeouts().cloneThis());
             mbo.getTimeouts().setTimeout("ComponentOperator.WaitComponentEnabledTimeout", 1000);
+            mbo.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+            mbo.getTimeouts().setTimeout("JMenuOperator.WaitPopupTimeout", 1000);
             try {
                 mbo.pushMenu("menu|submenu|subsubmenu2", "|", true, true);
                 printLine("Exception was not thrown!");

@@ -26,9 +26,9 @@ public class jemmy_038 extends JemmyTest {
     public int runIt(Object obj) {
 
 	try {
-	    (new ClassReference("org.netbeans.jemmy.testing.Application_001")).startApplication();
+	    (new ClassReference("org.netbeans.jemmy.testing.Application_002")).startApplication();
 
-	    JFrame win =JFrameOperator.waitJFrame("Application_001", true, true);
+	    JFrame win =JFrameOperator.waitJFrame("Application_002", true, true);
 
 	    JFrameOperator fo = new JFrameOperator(win);
 

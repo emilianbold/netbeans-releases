@@ -160,8 +160,15 @@ public class DefaultJMenuDriver extends SupportiveDriver implements MenuDriver {
 	    this.depth = depth;
 	}
 	public Object actionProduced(Object obj) {
+            if(!((Component)cont).isShowing()) {
+                return(null);
+            }
 	    MenuElement[] subElements = cont.getSubElements();
 	    for(int i = 0; i < subElements.length; i++) {
+                if(!((Component)subElements[i]).isShowing()) {
+                    //not all items above have already been displayed - return
+                    return(null);
+                }
 		if(chooser.checkPathComponent(depth, subElements[i])) {
 		    return(subElements[i]);
 		}

@@ -24,6 +24,12 @@ public class jemmy_042 extends JemmyTest {
             getOutput().printLine(DriverManager.getMenuDriver(JMenuBarOperator.class).getClass().getName());
 
             JMenuBarOperator mbo = new JMenuBarOperator(wino);
+            if(mbo.showMenuItems("", "|").length != 2) {
+                getOutput().printError("Wrong menu count.");
+                finalize();
+                return(1);
+            }
+
             mbo.showMenuItem("menu0|submenu00", "|");
             mbo.showMenuItem("menu1|submenu10", "|");
             mbo.showMenuItem("menu0|submenu00|item00", "|");

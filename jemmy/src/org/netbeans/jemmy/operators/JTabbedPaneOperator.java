@@ -299,13 +299,17 @@ public class JTabbedPaneOperator extends JComponentOperator
 		      anotherOperator.getProperties());
     }
 
-    public int findPage(String label, StringComparator comparator) {
+    public int findPage(TabPageChooser chooser) {
 	for(int i = 0; i < getTabCount(); i++) {
-	    if(comparator.equals(getTitleAt(i), label)) {
+	    if(chooser.checkPage(this, i)) {
 		return(i);
 	    }
 	}
 	return(-1);
+    }
+
+    public int findPage(String title, StringComparator comparator) {
+        return(findPage(new BySubStringTabPageChooser(title, comparator)));
     }
 
     /**
@@ -315,8 +319,8 @@ public class JTabbedPaneOperator extends JComponentOperator
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @deprecated Use findPage(String) or findPage(String, StringComparator)
      */
-    public int findPage(String label, boolean ce, boolean ccs) {
-	return(findPage(label, new DefaultStringComparator(ce, ccs)));
+    public int findPage(String title, boolean ce, boolean ccs) {
+	return(findPage(title, new DefaultStringComparator(ce, ccs)));
     }
 
     /**
@@ -325,8 +329,8 @@ public class JTabbedPaneOperator extends JComponentOperator
      * match.
      * Uses StringComparator assigned to this object.
      */
-    public int findPage(String label) {
-	return(findPage(label, getComparator()));
+    public int findPage(String title) {
+	return(findPage(title, getComparator()));
     }
 
     /**
@@ -342,14 +346,19 @@ public class JTabbedPaneOperator extends JComponentOperator
 	return(getComponentAt(index));
     }
 
-    public Component selectPage(String label, StringComparator comparator) {
-	output.printLine("Selecting \"" + label + "\" page in tabbed pane\n    :" + getSource().toString());
-	int index = findPage(label, comparator);
-	if(index != -1) {
-	    return(selectPage(index));
-	} else {
-	    throw(new NoSuchPageException(label));
-	}
+    public Component selectPage(TabPageChooser chooser) {
+	output.printLine("Selecting \"" + chooser.getDescription() + 
+                         "\" page in tabbed pane\n    :" + getSource().toString());
+ 	int index = findPage(chooser);
+ 	if(index != -1) {
+ 	    return(selectPage(index));
+ 	} else {
+ 	    throw(new NoSuchPageException(chooser.getDescription()));
+ 	}
+    }
+
+    public Component selectPage(String title, StringComparator comparator) {
+        return(selectPage(new BySubStringTabPageChooser(title, comparator)));
     }
 
     /**
@@ -357,21 +366,39 @@ public class JTabbedPaneOperator extends JComponentOperator
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @deprecated Use selectPage(String) or selectPage(String, StringComparator)
      */
-    public Component selectPage(String label, boolean ce, boolean ccs) {
-	return(selectPage(label, new DefaultStringComparator(ce, ccs)));
+    public Component selectPage(String title, boolean ce, boolean ccs) {
+	return(selectPage(title, new DefaultStringComparator(ce, ccs)));
     }
 
     /**
      * Selects tab by tab title.
      * Uses StringComparator assigned to this object.
      */
-    public Component selectPage(String label) {
-	int index = findPage(label);
-	if(index != -1) {
-	    return(selectPage(index));
-	} else {
-	    throw(new NoSuchPageException(label));
-	}
+    public Component selectPage(String title) {
+        return(selectPage(title, getComparator()));
+    }
+
+    /**
+     * Wait for a page to exist.
+     */
+    public int waitPage(final TabPageChooser chooser) {
+	waitState(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return(findPage(chooser) > -1);
+                }
+                public String getDescription() {
+                    return("Tabbed with " + chooser.getDescription() + " page.");
+                }
+            });
+        return(findPage(chooser));
+    }
+
+    public int waitPage(String title, StringComparator comparator) {
+        return(waitPage(new BySubStringTabPageChooser(title, comparator)));
+    }
+
+    public int waitPage(String title) {
+        return(waitPage(title, getComparator()));
     }
 
     /**
@@ -684,6 +711,21 @@ public class JTabbedPaneOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    public interface TabPageChooser {
+	/**
+	 * Should be true if a page is good.
+	 * @param oper Operator used to search item.
+	 * @param index Index of a page be checked.
+	 */
+	public boolean checkPage(JTabbedPaneOperator oper, int index);
+
+	/**
+	 * Page description.
+	 */
+	public String getDescription();
+    }
+
+
     public class NoSuchPageException extends JemmyInputException {
 	/**
 	 * Constructor.
@@ -694,11 +736,11 @@ public class JTabbedPaneOperator extends JComponentOperator
     }
 
     public static class JTabbedPaneByItemFinder implements ComponentChooser {
-	String label;
+	String title;
 	int itemIndex;
 	StringComparator comparator;
 	public JTabbedPaneByItemFinder(String lb, int ii, StringComparator comparator) {
-	    label = lb;
+	    title = lb;
 	    itemIndex = ii;
 	    this.comparator = comparator;
 	}
@@ -707,7 +749,7 @@ public class JTabbedPaneOperator extends JComponentOperator
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JTabbedPane) {
-		if(label == null) {
+		if(title == null) {
 		    return(true);
 		}
 		JTabbedPaneOperator tpo = new JTabbedPaneOperator((JTabbedPane)comp);
@@ -720,13 +762,13 @@ public class JTabbedPaneOperator extends JComponentOperator
 			}
 		    }
 		    return(comparator.equals(tpo.getTitleAt(ii).toString(),
-					     label));
+					     title));
 		}
 	    }
 	    return(false);
 	}
 	public String getDescription() {
-	    return("JTabbedPane with text \"" + label + "\" in " + 
+	    return("JTabbedPane with text \"" + title + "\" in " + 
 		   (new Integer(itemIndex)).toString() + "'th item");
 	}
     }
@@ -739,4 +781,24 @@ public class JTabbedPaneOperator extends JComponentOperator
             super(JTabbedPane.class);
 	}
     }
+
+    private class BySubStringTabPageChooser implements TabPageChooser {
+        String title;
+        StringComparator comparator;
+
+        public BySubStringTabPageChooser(String title, StringComparator comparator) {
+            this.title = title;
+            this.comparator = comparator;
+        }
+
+	public boolean checkPage(JTabbedPaneOperator oper, int index) {
+            return(comparator.equals(oper.getTitleAt(index),
+                                     title));
+        }
+
+	public String getDescription() {
+	    return("Page having \"" + title + "\" title.");
+        }
+    }
+
 }

@@ -51,7 +51,7 @@ public class QueueTool implements Outputable, Timeoutable {
     private final static long MAXIMUM_LOCKING_TIME = 180000;
     private final static long INVOCATION_TIMEOUT = 180000;
 
-    private final static JemmyQueue jemmyQueue;
+    private static JemmyQueue jemmyQueue = null;
 
     private TestOut output;
     private Timeouts timeouts;
@@ -79,7 +79,7 @@ public class QueueTool implements Outputable, Timeoutable {
      * Returns system EventQueue.
      */
     public static EventQueue getQueue() {
-        return(jemmyQueue);
+        return(Toolkit.getDefaultToolkit().getSystemEventQueue());
     }
 
     /**
@@ -125,12 +125,24 @@ public class QueueTool implements Outputable, Timeoutable {
      * Dispatches event ahead of all events staying in the event queue.
      */
     public static void shortcutEvent(AWTEvent event) {
+        installQueue();
         jemmyQueue.shortcutEvent(event);
     }
 
+    public static void installQueue() {
+        if(jemmyQueue == null) {
+            jemmyQueue = new JemmyQueue();
+        }
+        jemmyQueue.install();
+    }
+
+    public static void uninstallQueue() {
+        if(jemmyQueue != null) {
+            jemmyQueue.uninstall();
+        }
+    }
+
     static {
-        jemmyQueue = new JemmyQueue();
-        Toolkit.getDefaultToolkit().getSystemEventQueue().push(jemmyQueue);
 	Timeouts.initDefault("QueueTool.WaitQueueEmptyTimeout", WAIT_QUEUE_EMPTY_TIMEOUT);
 	Timeouts.initDefault("QueueTool.QueueCheckingDelta", QUEUE_CHECKING_DELTA);
 	Timeouts.initDefault("QueueTool.LockTimeout", LOCK_TIMEOUT);
@@ -486,6 +498,7 @@ public class QueueTool implements Outputable, Timeoutable {
     }
 
     private static class JemmyQueue extends EventQueue {
+        private boolean installed = false;
         public void shortcutEvent(AWTEvent event) {
             super.dispatchEvent(event);
         }
@@ -499,6 +512,18 @@ public class QueueTool implements Outputable, Timeoutable {
                 //the exceptions should be printed into
                 //Jemmy output - not System.out
                 JemmyProperties.getCurrentOutput().printStackTrace(e);
+            }
+        }
+        public synchronized void install() {
+            if(!installed) {
+                getQueue().push(this);
+                installed = true;
+            }
+        }
+        public synchronized void uninstall() {
+            if(installed) {
+                pop();
+                installed = false;
             }
         }
     }
