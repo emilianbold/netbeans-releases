@@ -324,6 +324,9 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
                                                    public void actionPerformed( ActionEvent evt ) {
                                                        if( !defaultCheckBox.isSelected() ) { // unchecked - set real value
                                                            value = defaultValue;
+                                                           modelSetValue( defaultValue );
+                                                           firePropertyChange( PROP_VALUE, null, null );
+                                                           
                                                        } else { // checked, provide model with default color
                                                            value = null;
                                                            modelSetValue( defaultValue );
