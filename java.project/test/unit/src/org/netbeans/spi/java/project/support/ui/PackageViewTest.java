@@ -167,6 +167,49 @@ public class PackageViewTest extends NbTestCase {
                      
     }
     
+    public void testDefaultPackage() throws Exception {
+        
+        // Prepare test data
+        FileObject root = TestUtil.makeScratchDir( this );
+        // System.out.println("root " + root.getFileSystem().getClass() );
+        
+        
+	// Create children
+        FileUtil.createFolder( root, "src" );
+        Children ch = PackageView.createPackageView( root.getFileObject( "src" ) );
+        
+        // Default package should be there
+        assertNodes( ch, 
+                     new String[] { "<default package>" },
+                     new int[] { 0 } );
+                     
+        // Default package should disappear             
+        FileObject a = FileUtil.createFolder( root, "src/a" );
+        assertNodes( ch, 
+                     new String[] { "a", },
+                     new int[] { 0, } );
+                     
+        // Default package should appear again
+        System.out.println("----------------------------");
+        FileObject someJava = FileUtil.createData( root, "src/Some.java" );
+        assertNodes( ch, 
+                     new String[] { "<default package>", "a", },
+                     new int[] { 1, 0, } );
+                     
+        // Disappear again             
+        someJava.delete();
+        assertNodes( ch, 
+                     new String[] { "a", },
+                     new int[] { 0, } );             
+                     
+        // And appear again
+        a.delete();
+        assertNodes( ch, 
+                     new String[] { "<default package>" },
+                     new int[] { 0 } );
+        
+    }
+    
         
     public static void assertNodes( Children children, String[] nodeNames ) {
         assertNodes( children, nodeNames, null );

@@ -123,7 +123,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     
     private void computeKeys() {
         // XXX this is not going to perform too well for a huge source root...
-        // How ever we have to go through the whole hierarchy in order to find
+        // However we have to go through the whole hierarchy in order to find
         // all packages (Hrebejk)
         names2nodes = new TreeMap();
         findNonExcludedPackages( root );
@@ -155,6 +155,16 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
      */
     private void cleanEmptyKeys( FileObject fo ) {
         FileObject parent = fo.getParent(); 
+        
+        // Special case for default package
+        if ( root.equals( parent ) ) {
+            PackageNode n = get( parent );
+            if ( n != null && PackageNode.isEmpty( root ) ) {
+                remove( root );
+            }
+            return;
+        }
+        
         while ( FileUtil.isParentOf( root, parent ) ) {
             PackageNode n = get( parent );
             if ( n != null && n.isLeaf() ) {
@@ -217,17 +227,14 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     
     public void fileDataCreated( FileEvent fe ) {
         FileObject fo = fe.getFile();
-        // System.out.println("Created " + fe);
         if ( FileUtil.isParentOf( root, fo ) ) {
             FileObject parent = fo.getParent();
             PackageNode n = get( parent );
             if ( n == null ) {
-                // System.out.println("created adding parent " + parent );
                 add( parent );
                 refreshKeys();
             }
             else {
-                // System.out.println("updateing " + n );                
                 n.updateChildren();
             }
         }
@@ -247,7 +254,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 remove( fo );
                 // Now add the parent if necessary 
                 FileObject parent = fo.getParent();
-                if ( FileUtil.isParentOf( root, parent ) && get( parent ) == null && parent.isValid() ) {
+                if ( ( FileUtil.isParentOf( root, parent ) || root.equals( parent ) ) && get( parent ) == null && parent.isValid() ) {
                     // Candidate for adding
                     FileObject kids[] = parent.getChildren();
                     if ( kids.length == 0 /* || onlyFolders( kids ) */ ) {
