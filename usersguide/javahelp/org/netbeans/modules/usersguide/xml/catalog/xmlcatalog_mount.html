@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+ 
+<html>
+<head>
+<meta name="lastupdated" content="24apr2001">
+<title>Mounting and Unmounting an XML Catalog</title>
+<link rel="stylesheet" href="../../ide.css" type="text/css">
+</head>
+<body>
+<h2>Mounting and Unmounting an XML Catalog</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>The Runtime window contains all of your currently mounted XML catalogs under 
+  the XML Entity Catalogs node (<img src="../images/catalog-root.gif" alt="XML entity catalogs node">).</p>
+
+<h4>To mount an XML catalog:</h4>
+<ol><li>In the Runtime window, right-click XML Entity Catalogs and choose Mount
+    Catalog.</li>
+  <li>Select the type of catalog from the installed format recognizers:</li>
+  <ul>
+    <li><b>NetBeans Catalog.</b>&nbsp;Select this option to mount the Netbeans 
+      IDE catalog in read-only form.</li>
+    <li><b>OASIS Catalog Resolver.</b>&nbsp;Select this option to mount an OASIS 
+      XML catalog. 
+      <p> The OASIS Catalog Resolver contains a Prefer public checkbox. Select 
+        this checkbox if you want to use the public identifier specified in the 
+        catalog rather than the system identifier located in the XML document. 
+        In most cases, your catalog maps the public identifier to a local copy 
+        of the entity it represents. In this case, you need to select the Prefer 
+        public checkbox for entity resolution to function properly. 
+    </li>
+    <li><b>XML Catalog.</b>&nbsp;Select this option to mount XML Catalog v0.4 
+      catalogs.</li>
+  </ul>
+  <li>Type the location of the file, or click File to browse to the file's location. 
+    Then click OK. 
+    <p>The appropriate  XML catalog node (<img src="../images/sysCatalog.gif" alt="catalog node icon">)
+       appears under the XML Entity Catalogs node. 
+  </li>
+</ol>
+<h4>To unmount an XML catalog:</h4>
+<ol>
+  <li> Expand the XML Entity Catalogs node in the Runtime window.</li>
+  <li>Right-click the XML catalog node and choose Unmount Catalog.<p>The 
+  designated  XML catalog node (<img src="../images/sysCatalog.gif" alt="catalog node icon">)
+       is removed from the XML Entity Catalogs node. 
+  </li>
+</ol>
+<table>
+  <tr> 
+    <th colspan=2 align=left nowrap><a name="seealso">See Also</a></th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td><a href="xmlcatalog_about.html">XML Catalog Support in the IDE</a><br>
+      <a href="xmlcatalog_formats.html">XML Catalog Formats</a><br>
+      <a href="xmlcatalog_edit.html">Creating and Editing an XML Catalog</a>
+  </tr>
+</table>
+<hr>
+<font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
+

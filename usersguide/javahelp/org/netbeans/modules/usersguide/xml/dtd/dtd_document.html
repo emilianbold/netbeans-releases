@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Generating DTD Documentation</title> 
+<link rel="StyleSheet" href="../../ide.css" type="text/css">
+</head>
+<body>
+<h2>Generating DTD Documentation</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>XHTML documentation describes each of the element declarations
+  in your DTD, including its declared attributes, element content model, and
+  the elements by which it is referenced. The IDE enables you to automatically
+  generate XHTML documentation for any DTDs that are mounted in the IDE. </p>
+<h4>To generate documentation for a DTD:</h4>
+<ol>
+  <li>Add DTDDoc comments to your DTD if necessary.</li>
+  <li>Right-click the DTD node in the Files window and choose Generate Documentation.</li>
+  <li>Type a file name for the documentation file and click OK. <p>The IDE...</li>
+</ol>
+
+<h3>Customizing a  Declaration Description</h3>
+<p>You can add additional information to an element declaration's description
+  by inserting a DTDDoc comment before the element declaration in the DTD. You
+  can format the DTDDoc comment's appearance by using any XHTML tags allowed
+  by the <tt>&lt;DIV&gt;</tt> element, as shown in the following 
+  example:
+
+<pre>&lt;!--- 
+&lt;b&gt;The root element:&lt;/b&gt;
+  &lt;ul&gt;
+    &lt;li&gt;Contains one or more item elements.&lt;/li&gt; 
+    &lt;li&gt;Sets attributes for item elements.&lt;/li&gt;
+  &lt;/ul&gt; 
+--> 
+&lt;!ELEMENT root ANY&gt;</pre>
+<table>
+  <tr>
+    <td valign="top"><img src="../../images/tip.gif" alt="Note"></td>
+    <td valign=top align=left>DTDDoc comments are similar to normal comment tags,
+      but require  three minus characters (<tt>-</tt>) instead of two. </td>
+  </tr>
+</table>
+
+<table> 
+<tr> 
+    <th colspan=2 align=left nowrap><a name="seealso">See Also</a></th>
+  </tr> <tr> <td width="30"></td>
+    <td> 
+      <a href="dtd_create.html">Creating a DTD</a><br>
+      <a href="../schema/schemas.html">Working With XML Schemas</a> <br>
+      <a href="../css/css_create.html">Creating a Cascading Style Sheet</a> </td>
+  </tr> </table>
+<hr>
+<font size=-2><a href="../credits.html">Legal Notices</a></font> 
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
