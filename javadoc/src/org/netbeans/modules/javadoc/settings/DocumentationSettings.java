@@ -23,14 +23,15 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.javadoc.comments.AutoCommenter;
+import org.netbeans.modules.javadoc.settings.ExternalJavadocSettings;
 
 /** Options for applets - which applet viewer use ...
 *
 * @author Petr Hrebejk
 * @version 0.1, Apr 15, 1999
 */
-public class DocumentationSettings extends SystemOption //ContextSystemOption //implements ViewerConstants
-{
+public class DocumentationSettings extends SystemOption {
+    
     private static final String PROP_SEARCH_PATH         = "searchPatch";
     private static final String PROP_SEARCH_SORT         = "idxSearchSort";
     private static final String PROP_SEARCH_NO_HTML      = "idxSearchNoHtml";
@@ -39,33 +40,12 @@ public class DocumentationSettings extends SystemOption //ContextSystemOption //
     private static final String PROP_AUTOCOMENT_MOD_MASK = "autocommentModifierMask";
     private static final String PROP_AUTOCOMENT_PACKAGE  = "autocommentPackage";
     private static final String PROP_AUTOCOMENT_ERR_MASK = "autocommentErrorMask";
+    private static final String PROP_EXECUTOR            = "executorEngine";
+    private static final String PROP_SEARCH              = "searchEngine";
     
-    
-    /** autocoment window settings */
-    //private static int autocommentModifierMask = Modifier.PROTECTED | Modifier.PUBLIC;
-    //private static boolean autocommentPackage = false;
-    //private static int autocommentErrorMask =  AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING;
-
-    /** idexsearch windows settings */
-
     /** generation */
-    private static boolean externalJavadoc = false;
-
-    /** searchpath */
-    //private static String[] searchPath = new String[] {"c:/Jdk1.2/doc" }; // NOI18N
-
-    /** Holds value of property idxSearchSort. */
-    //private static String idxSearchSort = "A"; // NOI18N
-
-    /** Holds value of property idxSearchNoHtml. */
-    //private static boolean idxSearchNoHtml = false;
-
-    /** Holds value of property idxSearchSplit. */
-    //private static int idxSearchSplit = 50;
-
-    /** Holds value of property autocommentSplit. */
-    //private static int autocommentSplit = 35;
-    
+    //private static boolean externalJavadoc = false;
+   
     static final long serialVersionUID =-574331845406968391L;
     
     /** Constructor for DocumentationSettings */
@@ -86,32 +66,27 @@ public class DocumentationSettings extends SystemOption //ContextSystemOption //
             setAutocommentPackage(false);        
         if( getProperty( PROP_AUTOCOMENT_ERR_MASK ) == null )
             setAutocommentErrorMask(AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING);
+        if( getProperty( PROP_EXECUTOR ) == null )
+            setExecutor(new ExternalJavadocSettings().getName());
+        if( getProperty( PROP_SEARCH ) == null )
+            setSearchEngine("");
         
     }
 
 
     /** @return human presentable name */
     public String displayName() {
-        return NbBundle.getBundle(JavadocSettings.class).getString("CTL_Documentation_settings");
+        return NbBundle.getBundle(DocumentationSettings.class).getString("CTL_Documentation_settings");
     }
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx (DocumentationSettings.class);
     }
+    
+    public boolean isGlobal() {
+        return false;
+    }
 
-    /** getter for type of generation
-    */
-/*
-    public boolean isExternalJavadoc () {
-        return externalJavadoc;
-    }
-*/
-    /** setter for viewer */
-/*
-    public void setExternalJavadoc(boolean b) {
-        externalJavadoc = b;
-    }
-*/
     /** Getter for documentation search path
     */  
     public String[] getSearchPath() {
@@ -231,6 +206,34 @@ public class DocumentationSettings extends SystemOption //ContextSystemOption //
         putProperty( PROP_AUTOCOMENT_SPLIT , new Integer(autocommentSplit), true );
         //this.autocommentSplit = autocommentSplit;
     }
+    
+    /** Getter for property executor.
+     * @return Value of property executor.
+ */
+    public java.lang.String getExecutor() {
+        return (String)getProperty( PROP_EXECUTOR );        
+    }
+    
+    /** Setter for property executor.
+     * @param executor New value of property executor.
+ */
+    public void setExecutor(java.lang.String executor) {
+        putProperty( PROP_EXECUTOR , executor, true );        
+    }
+    
+    /** Getter for property search.
+     * @return Value of property search.
+ */
+    public java.lang.String getSearchEngine() {
+        return (String)getProperty( PROP_SEARCH );
+    }
+    
+    /** Setter for property search.
+     * @param search New value of property search.
+ */
+    public void setSearchEngine(java.lang.String search) {
+        putProperty( PROP_SEARCH , search, true );
+    }    
 }
 
 
