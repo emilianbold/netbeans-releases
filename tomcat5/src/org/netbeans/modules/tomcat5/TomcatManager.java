@@ -156,6 +156,9 @@ public class TomcatManager implements DeploymentManager {
     
     private Server root = null;
     
+    /** System process of the started Tomcat */
+    private Process process;
+    
     /** Easier access to some server.xml settings. */
     private TomcatManagerConfig tomcatManagerConfig;
     
@@ -1329,5 +1332,24 @@ public class TomcatManager implements DeploymentManager {
      */
     public LogManager logManager() {
         return logManager;
+    }
+    
+    /**
+     * Set the <code>Process</code> of the started Tomcat.
+     *
+     * @param <code>Process</code> of the started Tomcat.
+     */
+    public void setTomcatProcess(Process p) {
+        process = p;
+    }
+
+    /**
+     * Return <code>Process</code> of the started Tomcat.
+     *
+     * @return <code>Process</code> of the started Tomcat, <code>null</code> if
+     *         Tomcat wasn't started by IDE.
+     */
+    public Process getTomcatProcess() {
+        return process;
     }
 }

@@ -28,6 +28,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.nodes.actions.SharedContextLogAction;
 import org.netbeans.modules.tomcat5.nodes.actions.EditServerXmlAction;
 import org.netbeans.modules.tomcat5.ide.MonitorSupport;
+import org.netbeans.modules.tomcat5.nodes.actions.OpenServerOutputAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.util.HelpCtx;
 import org.openide.loaders.DataObject;
@@ -182,6 +183,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    null,
                    SystemAction.get (EditServerXmlAction.class),
                    SystemAction.get (SharedContextLogAction.class),
+                   SystemAction.get (OpenServerOutputAction.class),
                    null,
                    SystemAction.get(PropertiesAction.class)
                };        
@@ -626,5 +628,22 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
             }
         }
         return false;
+    }
+
+    /**
+     * Open the server log (output).
+     */
+    public void openServerLog() {
+        getTomcatManager().logManager().openServerLog();
+    }
+    
+    /**
+     * Can be the server log (output) displayed?
+     *
+     * @return <code>true</code> if the server log can be displayed, <code>false</code>
+     *         otherwise.
+     */
+    public boolean hasServerLog() {
+        return getTomcatManager().logManager().hasServerLog();
     }
 }

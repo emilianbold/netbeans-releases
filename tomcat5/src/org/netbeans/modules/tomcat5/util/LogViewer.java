@@ -146,7 +146,6 @@ public class LogViewer extends Thread {
      * was closed, <code>true</code> otherwise.
      */
     public boolean isOpen() {
-        // TODO add check when not yet started
         InputOutput io = inOut;
         return !(io == null || stop || (isStarted && io.isClosed()));
     }

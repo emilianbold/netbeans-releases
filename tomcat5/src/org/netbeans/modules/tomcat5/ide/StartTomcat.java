@@ -316,8 +316,10 @@ public final class StartTomcat extends StartServer implements ProgressObject
                         },
                         true,
                         new File (homeDir, "bin") // NOI18N
-                    );        
-                    ProcessSupport.connectProcessToOutputWindow(p, tm.getDisplayName());
+                    );
+                    tm.setTomcatProcess(p);
+                    tm.logManager().closeServerLog();
+                    tm.logManager().openServerLog();
                 } catch (java.io.IOException ioe) {
                     if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                         TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
@@ -343,7 +345,9 @@ public final class StartTomcat extends StartServer implements ProgressObject
                         new File (homeDir, "bin")
                     );
                     if (command == CommandType.START) {
-                        ProcessSupport.connectProcessToOutputWindow(p, tm.getDisplayName());
+                        tm.setTomcatProcess(p);
+                        tm.logManager().closeServerLog();
+                        tm.logManager().openServerLog();
                     }
                 } catch (java.io.IOException ioe) {
                     if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {

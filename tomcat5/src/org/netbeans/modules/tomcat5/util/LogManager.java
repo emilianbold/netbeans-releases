@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.tomcat5.util;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 import org.netbeans.modules.tomcat5.*;
@@ -20,6 +22,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -29,17 +33,82 @@ import org.openide.ErrorManager;
  * @author  Stepan Herold
  */
 public class LogManager {
+    private ServerLog serverLog;    
     private LogViewer sharedContextLogViewer;
     private Map/*<TomcatModule, TomcatModuleConfig>*/ tomcatModuleConfigs = Collections.synchronizedMap(new WeakHashMap());
     private Map/*<String, LogViewer>*/ contextLogViewers = Collections.synchronizedMap(new HashMap());
     private TomcatManager manager;
+    
+    private Object serverLogLock = new Object();
+    private Object sharedContextLogLock = new Object();
+    private Object contextLogLock = new Object();
     
     /** Creates a new instance of LogManager */
     public LogManager(TomcatManager tm) {
         manager = tm;
     }
     
-    private Object sharedContextLogLock = new Object();
+    // ------- server log (output) ---------------------------------------------
+    
+    /**
+     * Open the server log (output).
+     */
+    public void openServerLog() {
+        final Process process = manager.getTomcatProcess();
+        assert process != null;
+        synchronized(serverLogLock) {
+            if (serverLog != null) {
+                serverLog.takeFocus();
+                return;
+            }
+            serverLog = new ServerLog(
+                manager.getDisplayName(),
+                new InputStreamReader(process.getInputStream()),
+                new InputStreamReader(process.getErrorStream()),
+                true,
+                false);
+            serverLog.start();
+        }
+        //PENDING: currently we copy only Tomcat std & err output. We should
+        //         also support copying to Tomcat std input.
+        new Thread() {
+            public void run() {
+                try {
+                    int ret = process.waitFor();
+                    Thread.sleep(2000);  // time for server log
+                } catch (InterruptedException e) {
+                } finally {
+                    serverLog.interrupt();
+                }
+            }
+        }.start();
+    }
+    
+    /**
+     * Stop the server log thread, if started.
+     */
+    public void closeServerLog() {
+        synchronized(serverLogLock) {
+            if (serverLog != null) {
+                serverLog.interrupt();
+                serverLog = null;
+            }
+        }
+    }
+
+    /**
+     * Can be the server log (output) displayed?
+     *
+     * @return <code>true</code> if the server log can be displayed, <code>false</code>
+     *         otherwise.
+     */
+    public boolean hasServerLog() {
+        return manager.getTomcatProcess() != null;
+    }
+    
+    // ------- end of server log (output) --------------------------------------
+    
+    // ------- shared context log ----------------------------------------------
     
     /**
      * Opens shared context log. Shared context log can be defined in the host or
@@ -118,7 +187,9 @@ public class LogManager {
         return tomcatManagerConfig.hasLogger();
     }
     
-    private Object contextLogLock = new Object();
+    // ------- end of shared context log ---------------------------------------
+    
+    // ------- context log -----------------------------------------------------
     
     /**
      * Open a context log for the specified module.
@@ -217,4 +288,6 @@ public class LogManager {
         }
         return moduleConfig.hasLogger();
     }
+    
+    // ------- end of context log ----------------------------------------------
 }
