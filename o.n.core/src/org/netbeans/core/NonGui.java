@@ -104,7 +104,9 @@ public class NonGui extends NbTopManager implements Runnable {
     /** The Class that logs the IDE events to a log file */
     private static TopLogging logger;
 
-
+    /** The flag for accessibility */
+    public static boolean accessibility = true;
+    
     /** Getter for home directory.
     */
     protected static String getHomeDir () {
@@ -296,6 +298,8 @@ public class NonGui extends NbTopManager implements Runnable {
                 );
             } else if (args[i].equalsIgnoreCase("-nosplash")) // NOI18N
                 noSplash = true;
+            else if (args[i].equalsIgnoreCase("-accessibility")) // NOI18N
+                accessibility = true;
             else if (args[i].equalsIgnoreCase("-noinfo")) // NOI18N
                 noinfo = true;
             else if (args[i].equalsIgnoreCase("-nologging")) // NOI18N
