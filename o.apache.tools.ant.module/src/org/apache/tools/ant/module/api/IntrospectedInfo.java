@@ -218,7 +218,7 @@ public final class IntrospectedInfo implements Serializable {
     }
     
     /** Get definitions.
-     * @param the kind of definition, e.g. <code>task</code>
+     * @param kind the kind of definition, e.g. <code>task</code>
      * @return an immutable map from definition names to class names
      */
     public Map getDefs(String kind) {
