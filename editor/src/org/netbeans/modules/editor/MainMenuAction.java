@@ -151,7 +151,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
                     menuInitialized = false;
                 }
             }else{
-                if ((action!=null && action.getClass() != presenterAction.getClass())){
+                if ((action!=null && !action.equals(presenterAction))){
                     presenter.setAction(action);
                     menuInitialized = false;
                 }else if (action == null){
