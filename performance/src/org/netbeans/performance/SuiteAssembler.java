@@ -92,13 +92,11 @@ public final class SuiteAssembler {
     
     /** */
     private void compile(File folder) throws Exception {
-        System.out.println("COPILE: " + folder);
         File[] files = folder.listFiles();
         String[] args = new String[files.length + 3];
         args[0] = "javac";
         args[1] = "-classpath";
         args[2] = System.getProperty("java.class.path") + File.pathSeparatorChar + rootAsString;
-        System.out.println("CLASSES: " + args[2]);
         
         for (int i = 3; i < args.length; i++) {
             args[i] = files[i - 3].getCanonicalPath();
