@@ -32,28 +32,30 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Editor Test Application's Tests
     -->
     
-    <testbag testattribs="all,experimental,apps" name="apps-all">
+    <testbag testattribs="all,validation,apps" name="TestApplication">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
-		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testRoundAdd"/>
-		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testCompoundNext"/>
-		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testIfWhile"/>                                
+                <exclude name="org/netbeans/test/editor/completion/CompletionPerformer.class/" />
             </patternset>
         </testset>
     </testbag>
-    
+
+    <testbag testattribs="all,experimental,apps" name="TestApplication">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/editor/completion/CompletionPerformer.class/" />
+            </patternset>
+        </testset>
+    </testbag>    
+        
     <!-- Code completion non-validation tests: (and three from test editor application) -->
 
     <testbag testattribs="all,failing" name="completion-failing">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
-                
-                <include name="org/netbeans/test/editor/app/tests/*Performer.class/testRoundAdd"/>
-		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testCompoundNext"/>                
-		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testIfWhile"/>                
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />                
             </patternset>
         </testset>
     </testbag>
