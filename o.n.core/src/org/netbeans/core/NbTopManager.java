@@ -262,7 +262,15 @@ public abstract class NbTopManager extends TopManager {
     /** Register new instance.
      */
     public final void register (Object obj) {
-        getInstanceLookup ().add (obj);
+        register(obj, null);
+    }
+    
+    /** Register new instance.
+     * @param obj source
+     * @param conv convertor which postponing an instantiation
+     */
+    public final void register(Object obj, org.netbeans.core.lookup.InstanceLookup.Convertor conv) {
+        getInstanceLookup().add(obj, conv);
     }
     
     /** Unregisters the service.
