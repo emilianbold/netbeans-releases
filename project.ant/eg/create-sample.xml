@@ -21,6 +21,7 @@
         <regenerate-files project="myapp" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
         <regenerate-files project="mylib" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
         <regenerate-files project="extapp" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
+        <regenerate-files project="brokenproj" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
     </target>
     <target name="validate">
         <pathconvert property="xmls" pathsep=",">
@@ -61,12 +62,15 @@
                 <include name="myapp/nbproject/build-impl.xml"/>
                 <include name="mylib/nbproject/build-impl.xml"/>
                 <include name="extapp/nbproject/build-impl.xml"/>
+                <include name="brokenproj/nbproject/build-impl.xml"/>
                 <include name="myapp/nbproject/genfiles.properties"/>
                 <include name="mylib/nbproject/genfiles.properties"/>
                 <include name="extapp/nbproject/genfiles.properties"/>
+                <include name="brokenproj/nbproject/genfiles.properties"/>
                 <include name="myapp/build.xml"/>
                 <include name="mylib/build.xml"/>
                 <include name="extapp/build.xml"/>
+                <include name="brokenproj/build.xml"/>
             </fileset>
         </delete>
     </target>
