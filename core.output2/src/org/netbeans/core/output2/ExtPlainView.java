@@ -53,13 +53,38 @@ class ExtPlainView extends PlainView {
             g.setColor(getColorForLocation(p0, doc, true));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
             if (g.getColor() == WrappedTextView.selectedLinkFg) {
-                g.drawLine (x, y+1, ret, y+1);
+                //#47263 - start hyperlink underline at first
+                //non-whitespace character
+                int wid = g.getFontMetrics().charWidth(' '); //NOI18N
+                char[] txt = s.array;
+                int txtOffset = s.offset;
+                int txtCount = s.count;
+                int n = s.offset + s.count;
+                int tabCount = 0;
+                int wsCount = 0;
+                for (int i = s.offset; i < n; i++) {
+                    if (txt[i] == '\t') { //NOI18N
+                        x = (int) nextTabStop((float) x,
+						p0 + i - txtOffset);
+                        tabCount++;
+                    } else if (Character.isWhitespace(txt[i])) {
+                        x += wid;
+                        wsCount++;
+                    } else {
+                        break;
+                    }
+                }
+                int end = x + (wid * (txtCount - (wsCount + tabCount + 1)));
+                if (end > x) {
+                    g.drawLine (x, y+1, end, y+1);
+                }
             }
             return ret;
         } else {
             return super.drawUnselectedText (g, x, y, p0, p1);
         }
     }
+
     
     protected int drawUnselectedText(Graphics g, int x, int y, 
                                      int p0, int p1) throws BadLocationException {
@@ -71,48 +96,37 @@ class ExtPlainView extends PlainView {
             g.setColor(getColorForLocation(p0, doc, false));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
             if (g.getColor() == WrappedTextView.unselectedLinkFg) {
-                g.drawLine (x, y+1, ret, y+1);
+                //#47263 - start hyperlink underline at first
+                //non-whitespace character
+                
+                int wid = g.getFontMetrics().charWidth(' '); //NOI18N
+                char[] txt = s.array;
+                int txtOffset = s.offset;
+                int txtCount = s.count;
+                int n = s.offset + s.count;
+                int tabCount = 0;
+                int wsCount = 0;
+                for (int i = s.offset; i < n; i++) {
+                    if (txt[i] == '\t') { //NOI18N
+                        x = (int) nextTabStop((float) x,
+						p0 + i - txtOffset);
+                        tabCount++;
+                    } else if (Character.isWhitespace(txt[i])) {
+                        x += wid;
+                        wsCount++;
+                    } else {
+                        break;
+                    }
+                }
+                int end = x + (wid * (txtCount - (wsCount + tabCount + 1)));
+                if (end > x) {
+                    g.drawLine (x, y+1, end, y+1);
+                }
             }
             return ret;
         } else {
             return super.drawUnselectedText (g, x, y, p0, p1);
         }
-    }
-
-    private Rectangle scratch = new Rectangle();
-    public void paint(Graphics g, Shape allocation) {
-        /*
-        //Highlight caret row - need to add support for repainting a horizontal line whenever the
-        //caret changes lines for this to work.
-
-        int dot = comp.getCaret().getDot();
-        int mark = comp.getCaret().getMark();
-        if (dot == mark && dot > 0 && dot <= getDocument().getLength()) {
-            try {
-                Rectangle r = comp.modelToView(dot);
-                r.x = 0;
-                r.width = comp.getWidth();
-                Rectangle clip = allocation instanceof Rectangle ? (Rectangle) allocation : allocation.getBounds();
-                if (clip.y < r.y && clip.y + clip.height > r.y) {
-                    scratch.setBounds (r);
-                    scratch.x = Math.max (r.x, clip.x);
-                    scratch.y = Math.max (r.y, clip.y);
-                    if (scratch.x > 0) {
-                        scratch.width -= scratch.x;
-                    }
-                    if (scratch.y > r.y) {
-                        scratch.height -= (scratch.y - r.y);
-                    }
-                    g.setColor (new Color (245, 245, 237));
-                    g.fillRect (scratch.x, scratch.y, scratch.width, scratch.height);
-                }
-            } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        */
-
-        super.paint (g, allocation);
     }
 
     private static Color getColorForLocation (int start, Document d, boolean selected) {
