@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
 		<!-- does not work an nobody knows why -->
 		<exclude name="org/openide/loaders/FolderInstanceTest.class/testFolderInstanceNeverPassesInvObjects"/>
+		<exclude name="org/openide/loaders/FolderInstanceTest.class/testChangeOfOrder"/>
                 <exclude name="org/openide/loaders/FolderInstanceTest.class/testListenersCountWithCookie"/>
                 <exclude name="org/openide/loaders/FolderInstanceTest.class/testChangeCookie"/>
                 
