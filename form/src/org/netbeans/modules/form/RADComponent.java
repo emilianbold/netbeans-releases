@@ -169,15 +169,21 @@ public class RADComponent {
     }
   }
   
-  public Map getChangedProperties () {
-    return changedPropertyValues;
-  }
-  
-  public void setAuxiliaryValue (String key, Object value) {
+  /** Allows to add an auxiliary <name, value> pair, which is persistent in Gandalf.
+  * The current value can be obtainer using getAuxValue (aux property name) method.
+  * To remove aux value for specified property name, use setAuxValue (name, null).
+  * @param key name of the aux property
+  * @param value new value of the aux property or null to remove it
+  */
+  public void setAuxValue (String key, Object value) {
     auxValues.put (key, value);
   }
 
-  public Object getAuxiliaryValue (String key) {
+  /** Allows to obtain an auxiliary value for specified aux property name.
+  * @param key name of the aux property
+  * @return null if the aux value for specified name is not set
+  */
+  public Object getAuxValue (String key) {
     return auxValues.get (key);
   }
   
@@ -189,6 +195,16 @@ public class RADComponent {
     return eventsList;
   }
 
+  /** @return the map of all changed properties - pairs of <RADProperty, Object> */
+  public Map getChangedProperties () {
+    return changedPropertyValues;
+  }
+
+  /** @return the map of all currently set aux value - pairs of <String, Object> */
+  public Map getAuxValues () {
+    return auxValues;
+  }
+  
   public Node.PropertySet[] getProperties () {
     if (beanPropertySets == null) {
       if (beanExpertProperties.length != 0) {
@@ -921,6 +937,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  25   Gandalf   1.24        6/30/99  Ian Formanek    AuxiliaryValue -> 
+ *       AuxValue
  *  24   Gandalf   1.23        6/30/99  Ian Formanek    reflecting change in 
  *       enhanced property editors interfaces
  *  23   Gandalf   1.22        6/27/99  Ian Formanek    Employed 
