@@ -11,89 +11,89 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<!--
- *     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
->   *     Use is subject to license terms.
->   *
->   *     Copyright 2001 Sun Microsystems, Inc. Tous droits réservés.
->   *     L'utilisation est régie par les termes de cette licence.
->   *
->   *
-> -->
 <html>
 <head>
-<meta name="lastupdated" content="19apr2001">
-
-<title>Connecting to a Database</title>
-<link rel="stylesheet" href="ide.css" type="text/css">
+<title>Connecting  or Disconnecting from a Database</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
-<body bgcolor="#FFFFFF">
 
-<h2>Connecting to a Database </h2>
-
-There are two ways to open the New Connection dialog box, which lets you connect
-  Forte for Java to a database. </p>
+<body bgcolor="#FFFFFF" text="#000000">
+<h2>Connecting or Disconnecting from a Database</h2>
+<p>You can use the Database Explorer to:</p>
+<ul>
+  <li>Connect to a database</li>
+  <li>Display schema information for a database</li>
+  <li>Correct a broken connection</li>
+  <li>Disconnect from the database connection</li>
+</ul>
 <ol>
-  <li>In the contextual menu for Databases or for any existing connection, select
-    Add Connection.</li>
-  <li> In the contextual menu for a driver, select Connect Using... to preselect 
-the driver.</li>
-</ol>
-Enter the following information in the Connect Using... dialog box:
-<ol>
-  <li>Ensure the correct driver is selected in Driver name. </li>
-  <li> Provide the JDBC URL for the database connection in the Database URL. </li>
-  This URL typically begins with <code>jdbc:</code>, followed by a short code
-    name for the driver, followed 
-    by another colon.<br>
-  The rest of the URL depends on the type of driver you are using. <br>
-    For example, you might need to specify a host and port; alternatively, the
-    name of a 
-    database file might suffice, or an ODBC DSN.<br>
-  To help you get started, existing drivers are provided with templates for
-    the correct URL format;
-    if in doubt, refer to the documentation for the driver you are using.
-  <li>Provide the user name and password, if required by your database 
-configuration.</li>
-  <li>Click the Remember Password checkbox to have the IDE remember your password.
+  <li>To open a new connection: 
+    <ul>
+      <li>In the contextual menu for Databases or for any existing connection, 
+        choose Add Connection.</li>
+      <li> In the contextual menu for a driver, choose Connect Using to preselect 
+        the driver.<br>
+      </li>
+    </ul>
   </li>
-<table>
-<tr><td valign=top align=left><img src="images/tip.gif"></td>
-<td valign=top align=left>The password is saved only for
-        the current Forte for Java session;
-        after restarting Forte for Java the password must be entered again.
-        This feature can be turned on or off in the properties of each connected
-        database in the Explorer. </td>
-    </tr>
-  </table>
-  <li>Click OK to connect Forte for Java to the database.</li>
-  <li>If the connection is successful, a new node appears on the same level as
-    Drivers.<br>
-    The icon for a connected database shows complete. </li>
+  <li>In the New Database Connection dialog box, ensure the correct driver is 
+    selected in the Driver field. </li>
+  <li>Provide the JDBC URL for the database connection in the Database URL field. 
+    <p> This URL typically begins with <code>jdbc:</code>and a short code name 
+      for the driver, followed by another colon. The rest of the URL depends on 
+      the type of driver you are using. For example, you might need to specify 
+      a host and port; alternatively, the name of a database file might suffice, 
+      or an ODBC DSN. To help you get started, existing drivers are provided with 
+      templates for the correct URL format. If in doubt, refer to the documentation 
+      for the driver you are using. </p>
+  </li>
+  <li>Provide the user name and password, if required by your database configuration.</li>
+  <li>Click the Remember Password checkbox to have the IDE remember your password. 
+    <p> The password is saved only for the current the IDE session. After restarting 
+      the IDE, yu must type the password again. This feature can be turned on 
+      or off in the properties of each connected database in the Explorer. </p>
+  </li>
+  <li>Click OK to connect the IDE to the database. 
+    <p>If the connection is successful, a new node appears on the same level as 
+      Drivers. The icon for a connected database shows complete. If the connection 
+      attempt fails, Forte for Java displays a dialog box indicating the connection 
+      is broken. </p>
+  </li>
 </ol>
-If the connection attempt fails, Forte for Java displays a dialog box indicating
-  the connection is broken.
-<p> <b>To correct the connection:</b></p>
+<p><b>To display schema information for a database:</b></p>
 <ol>
-  <li> Correct the URL in the property sheet.</li>
-  <li>Connect to the database from the Popup Menu.</li>
+  <li>Choose the Advanced tab on the New Database Connection panel.</li>
+  <li>Select the schema to use with the database object by choosing it from the 
+    combo box. This schema will be used with getter database objects such as tables 
+    and views.</li>
+  <li>Click OK.<br>
+    <br>
+    The database will connect to the database schema and the connection node in 
+    the Databases folder. The IDE displays child folders of this connection node. 
+    These Folders represent lists of tables, views and procedures.</li>
+</ol>
+<p><b>To correct a broken connection:</b></p>
+<ol>
+  <li>Correct the URL in the property sheet.</li>
+  <li>Connect to the database from the contextual menu.</li>
 </ol>
 <p><b>To disconnect from the database connection</b>:</p>
-Choose Disconnect from the Connection contextual menu. You cannot browse
-  the database until you reconnect to the database using Connect.
+<ul>
+  <li>Choose Disconnect from the Connection contextual menu. 
+    <p> You cannot browse the database until you reconnect to the database using 
+      Connect. </p>
+  </li>
+</ul>
 <table>
-         <tr>
-         <th colspan=2 align=left>See also</th>
-         </tr>
-         <tr>
-         <td width="23"></td>
-         <td><a href="connusupp.html">Connecting to Unsupported Databases</a></td>
-    <td width="18">&nbsp;</td>
-</tr>
+  <tr> 
+    <th colspan=2 align=left>See also</th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td><a href="connusupp.html">Connecting to an Unsupported Database</a></td>
+  </tr>
 </table>
-
 <hr>
-<font size=-2><a href="credits.html">Legal Notices</a></font>
+<font size=-2><a href="credits.html">Legal Notices</a></font> 
 </body>
 </html>

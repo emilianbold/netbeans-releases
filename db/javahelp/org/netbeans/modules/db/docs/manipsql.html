@@ -11,60 +11,50 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<!--
- *     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
->   *     Use is subject to license terms.
->   *
->   *     Copyright 2001 Sun Microsystems, Inc. Tous droits réservés.
->   *     L'utilisation est régie par les termes de cette licence.
->   *
->   *
-> -->
 <html>
 <head>
-<meta name="lastupdated" content="19apr2001">
 <title>Enabling and Disabling Debug Mode to Monitor SQL Commands</title>
-<link rel="stylesheet" href="ide.css" type="text/css">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
-<body bgcolor="#FFFFFF">
 
+<body bgcolor="#FFFFFF" text="#000000">
 <h2>Enabling and Disabling Debug Mode to Monitor SQL Commands</h2>
-
-Enable Debug mode to see SQL commands that are being sent to the database. 
-  By default, Debug mode is disabled.
+<p> Enable debug mode to see SQL commands that are being sent to the database. 
+  By default, debug mode is disabled. </p>
 <p><b>To enable debug mode:</b> </p>
-<ol>
-  <li> Right-click the Databases node in the Runtime panel of the Explorer, and select Enable 
-Debug from the contextual 
-    menu; or</li>
-  <li> Select Database Explorer from Options window that appears when you choose Options from 
-the Tools menu. Toggle the Debug mode property on the property sheet to True/False.</li>
-  <li>Once debug mode is enabled, Forte for Java sends SQL commands to the Output 
-    Window, where you can view the command log.</li>
-</ol>
+<ul>
+  <li> Right-click the Databases node in the Runtime tab of the Explorer, and 
+    choose Enable Debug from the contextual menu. 
+    <p> Once debug mode is enabled, the IDE sends SQL commands to the Output window, 
+      where you can view the command log. Debug mode does not list all SQL commands, 
+      only those which you cannot see. For example, SQL queries for viewing data 
+      are not logged. 
+  </li>
+</ul>
+<p></p>
 <p><b>To disable debug mode:</b> </p>
-<ol>
-  <li>Select Disable debug from the Databases node contextual menu in the Runtime panel of the 
-Explorer. </li>
-</ol>
-<table>
-<tr><td valign=top align=left><img src="images/tip.gif"></td>
-<td valign=top align=left> Debug mode does not list all SQL 
-      commands, only those which you cannot see.<br>
-      For example, SQL queries for viewing data are not logged.</td>
-  </tr>
-</table><table>
-  <tr>
-         <th colspan=2 align=left>See also</th>
-         </tr>
-         <tr>
-         <td width="23"></td>
-         <td><a href="browstruct.html">Browsing Structures</a></td>
-</tr>
-</table>
-
-<hr>
-<font size=-2><a href="credits.html">Legal Notices</a></font> 
+<ul>
+  <li>Right-click the Databases node in the Runtime tab of the Explorer, and choose 
+    Disable Debug from the contextual menu.</li>
+  <table>
+    <tr>
+      <td valign=top align=left><img src="images/tip.gif"></td>
+      <td valign=top align=left> You can also enable or disable debug mode from 
+        the Options window. Select the Database Explorer node and switch the Debug 
+        mode property to true or false.. </td>
+    </tr>
+  </table>
+  <table>
+    <tr> 
+      <th colspan=2 align=left>See also</th>
+    </tr>
+    <tr> 
+      <td width="23"></td>
+      <td><a href="browstruct.html">Browsing Structures</a></td>
+    </tr>
+  </table>
+  <hr>
+  <font size=-2><a href="credits.html">Legal Notices</a></font> 
+</ul>
 </body>
 </html>

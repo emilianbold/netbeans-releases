@@ -11,65 +11,54 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<!--
- *     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
->   *     Use is subject to license terms.
->   *
->   *     Copyright 2001 Sun Microsystems, Inc. Tous droits réservés.
->   *     L'utilisation est régie par les termes de cette licence.
->   *
->   *
-> -->
 <html>
 <head>
-<meta name="lastupdated" content="19apr2001">
-
-<title>Adding Database Columns</title>
-<link rel="StyleSheet" href="ide.css" type="text/css">
+<title>Adding a Database Column to a Table</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
-<body bgcolor="#FFFFFF">
 
-<h2>Adding Database Columns</h2>
-
-In addition to adding columns while creating a new table, you can add columns 
-to an existing table in the database using Add column. 
-<p> <b>To add columns to an existing table:</b></p>
+<body bgcolor="#FFFFFF" text="#000000">
+<h2>Adding a Database Column to a Table</h2>
 <ol>
-  <li>Select Add column in the contextual menu for the table node or for an 
-existing 
-    column in the table. <br>
-    Forte for Java opens a dialog box for you to enter values for the column. </li>
-  <li>Enter the name of the column. This is the name used by SQL. </li>
+  <li>Right-click the table node or for an existing column in the table and choose 
+    Add Column. 
+    <p> Type values for the column in the dialog box.</p>
+  </li>
+  <li>Type the name of the column. This is the name used by SQL. </li>
+  <li>Provide the Type of the column by selecting a Type in the Type combo box.</li>
+  <li>Provide the size of the column in the Size text field.</li>
+  <li>Provide a scale value for numeric or decimal data type.</li>
+  <li>Provide a value for the default value for the column.</li>
+  <li>Provide a default name for the column in the Default text field.</li>
   <li>Select constraints you want for column values (Primary key, and Unique or 
-    Null).<br>
-    If you select the Primary key checkbox, the column is included in the primary 
-    key, and
-    you need to choose an index. </li>
-  <li>If you want to use an index, check the Index checkbox and select an index 
+    Null). 
+    <p> If you select the Primary key checkbox, the column is included in the 
+      primary key, and you need to select an index. </p>
+  </li>
+  <li>If you want to use an index, select the Index checkbox and select an index 
     from the combo box. </li>
-  <li>You can optionally use the Check checkbox to enter constraints to be checked 
-    while inserting or updating data in that column. </li>
+  <li> 
+    <p>(Optional) Use the Check checkbox to enter constraints to be checked while 
+      inserting or updating data in that column. </p>
+  </li>
 </ol>
 <table>
-<tr><td valign=top align=left><img src="images/tip.gif"></td>
-<td valign=top align=left> The ability to add or copy columns depends on 
-      the database you use:
-      if your database system allows you to alter tables containing data, 
-      you can use it on non-empty tables,
-      but some systems might require the table to be empty.</td>
-</tr>
-</table><table>
- <tr>
-         <th colspan=2 align=left>See also</th>
-         </tr>
-         <tr>
-         <td width="23"></td>
-         <td> <a href="createtables.html">Creating Tables</a> <br>
-    </td>
-</tr>
+  <tr>
+    <td valign=top align=left><img src="images/tip.gif"></td>
+    <td valign=top align=left> The ability to add or copy columns depends on your 
+      database. you use. Your database system might not allow you to alter tables 
+      containing data.</td>
+  </tr>
 </table>
-
+<table>
+  <tr> 
+    <th colspan=2 align=left>See also</th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td> <a href="createtables.html">Creating a Table</a></td>
+  </tr>
+</table>
 <hr>
 <font size=-2><a href="credits.html">Legal Notices</a></font> 
 </body>

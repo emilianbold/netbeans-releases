@@ -11,110 +11,71 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<!--
- *     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
->   *     Use is subject to license terms.
->   *
->   *     Copyright 2001 Sun Microsystems, Inc. Tous droits réservés.
->   *     L'utilisation est régie par les termes de cette licence.
->   *
->   *
-> -->
 <html>
 <head>
-<meta name="lastupdated" content="19apr2001">
-<link rel="stylesheet" href="ide.css" type="text/css">
+<title>Adding a New Driver</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
-<body bgcolor="#FFFFFF">
 
+<body bgcolor="#FFFFFF" text="#000000">
 <h2>Adding a New Driver</h2>
-
-You can add any one of the predefined drivers available under Runtime | Databases
-| Drivers. <br>
-After you add a driver, you can test the driver to ensure that it is compatible
-with Database Explorer.
-<p>
-<b>To add your own driver:</b> </p>
+<p> You can add any one of the predefined drivers by choosing Databases <img src="arrow.gif" width="5" height="11">Drivers 
+  in the Runtime tab of the Explorer). After you add a driver, you can test the 
+  driver to ensure that it is compatible with the Database Explorer. 
+<p> <b>To add your own driver:</b></p>
 <ol>
-  <li>Right-click Drivers or a specific driver under Drivers.</li>
-  <li>Choose Add Driver. A dialog box appears to enable you to add a new 
-driver.</li>
-  <li>Specify a driver name for the new driver. The IDE uses this name only
-      for display purposes. </li>
-  <li>In the Driver URL, provide the fully qualified driver class name, for 
-example:<br>
-    <code>COM.pointbase.jdbc.jdbcUniversalDriver</code>. 
-  <li>Provide the URL, for example:<br>
-    <code>jdbc:pointbase://embedded[:<PORT>]/<DB></code>.
-    <eul> 
-<table>
- <tr><!-
-      <td valign="top" width="30" height="37"><b><img src="images/tip.gif" 
-width="12" height="12"></b></td>
-       <td valign="top" align=left height="37"> The driver (usually in a JAR
-          or ZIP archive) must be in the Forte for Java CLASSPATH..</td>
-      </tr>
-    </table>
+  <li>In the Runtime tab of the Explorer, expand the Databases node. </li>
+  <li>Right-click the Drivers node or a specific driver under the Drivers node, 
+    choose Add Driver. </li>
+  <li>In the Add Driver dialog box, specify a driver name for the new driver. 
+    <p> The IDE uses this name only for display purposes. </p>
   </li>
-  <li> In the Database URL prefix, enter a template for the URLs of connections
-    you want to make 
-    using this driver. The template can represent a URL that is not the real URL;
-    you can complete the URL later
-    when you connect. For example, you can now add 
-<code>jdbc:pointbase://embedded[:<PORT>]/<DB>
-    </code> </li>
-  <li>Click OK to add the new driver to the list. </li>
-  <li> Later, you can remove drivers by selecting them in the Explorer, and 
-pressing
-    Delete, 
-    or you can open the
-    property sheet and modify their configurations. </li>
+  <li>In the Driver field, provide the fully qualified driver class name. For 
+    example:
+    <p> <code>COM.pointbase.jdbc.jdbcUniversalDriver</code>. </p>
+  </li>
+  <li>Provide the URL for example: 
+    <p> <code>jdbc:pointbase://localhost:9092/sample</code><eul> </p>
+  </li>
+  <li> In the Database URL prefix field, type a template for the URLs of connections 
+    you want to make using this driver. 
+    <p> The template can represent a URL that is not the real URL; you can complete 
+      the URL later when you connect. For example, you can now add: <code>jdbc:pointbase://&lt;HOST&gt;[:PORT]/[DB]/<db> 
+      </code> </p>
+  </li>
+  <li>Click OK to add the new driver to the list. 
+    <p> Later, you can remove a driver by selecting it in the Explorer, right-clicking, 
+      and choosing Delete, or you can open the property sheet and modify its configurations. 
+      You can also remove the driver using the keyboard.</p>
+  </li>
 </ol>
-<p> Note: Adding a new driver just creates a template for new connections; Forte
-  for Java does not actually try to 
-  use that driver or check to make sure it is the correct one until a connection
-  is made using the driver.</p>
-
- <b>To test a connected driver:</b>
-<ol>
-  <li> Right-click  the driver or connection in the Explorer and select Test
-    Driver from the contextual menu.
-  <li> In the dialog box that appears, enter the connection information (database
-    URL, user name,
-    and password) and click OK.
-  <li>If all values shown in the output correspond with the actual database, you
-    can use the drive.
-  <li> If an "unsupported exception" appears, test to make sure that the data
-    displayed in the output window is
-    valid, for example, that the number of tables or columns in the table 
-corresponds
-    with the actual data
-</ol>
-
 <table>
-<tr><td valign=top align=left><img src="images/tip.gif"></td>
-<td valign=top align=left> The system returns the "Internal
-      test driver failed" message whenever it finds a return value of 0<br>
-      or an exception. If your database is empty or a table has no foreign 
-references,
-      the driver might
-      not be the problem.</td>
-</tr>
-</table><table>
-         <tr>
-         <th colspan=2 align=left>See also</th>
-         </tr>
-         <tr>
-         <td width="23"></td>
-         <td> <a href="dbadapt.html">Using a Database Adaptor to Replace Missing
-      Metadata</a><br>
-      <a href="connectdb.html">Connecting to a Database</a> <br>
-      <a href="connusupp.html">Connecting to Unsupported Databases </a></td>
-</tr>
+  <tr>
+    <td valign=top align=left><img src="images/tip.gif"></td>
+    <td valign=top align=left>Adding a new driver just creates a template for 
+      new connections. The IDE does not actually try to use that driver or check 
+      to make sure it is the correct one until a connection is made using the 
+      driver. 
+      <p><br>
+        The driver (usually in a JAR or zip archive) must be in the IDE's CLASSPATH. 
+      </p>
+    </td>
+  </tr>
 </table>
-
+<table>
+  <tr> 
+    <th colspan=2 align=left>See also</th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td> <a href="testdriver.html">Testing a New Driver</a> <br>
+      <a href="dbadapt.html">Using a Database Adaptor to Replace Missing Metadata</a> 
+      <br>
+      <a href="connectdb.html">Connecting to a Database</a> <br>
+      <a href="connusupp.html">Connecting to an Unsupported Database</a></td>
+  </tr>
+</table>
 <hr>
-<font size=-2><a href="credits.html">Legal Notices</a></font>
+<font size=-2><a href="credits.html">Legal Notices</a></font> 
 </body>
 </html>

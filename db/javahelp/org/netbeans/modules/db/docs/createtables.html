@@ -11,92 +11,81 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<!--
- *     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
->   *     Use is subject to license terms.
->   *
->   *     Copyright 2001 Sun Microsystems, Inc. Tous droits réservés.
->   *     L'utilisation est régie par les termes de cette licence.
->   *
->   *
-> -->
 <html>
 <head>
-<meta name="lastupdated" content="19apr2001">
-<title>Creating Tables</title>
-<link rel="stylesheet" href="ide.css" type="text/css">
+<title>Creating  or  Re-creating a Table</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
-<body bgcolor="#FFFFFF">
 
-<h2> Creating Tables</h2>
-You can create a database table with columns and add
-  this table to database. You can open the Create Table dialog box in either:
+<body bgcolor="#FFFFFF" text="#000000">
+<h2> Creating or Re-creating a Table</h2>
+<p> You can create a table using the Create Table dialog box.
+<p>You can also recreate a table in one of two ways
+<ul>
+  <li><a href=#table_structure>Recreate a table and its structure using a database 
+    snapshot</a></li>
+  <li><a href=#table_different>Recreate a table in a different database</a></li>
+</ul>
+<p><b><a name=create_table>To create a new table:</a></b></p>
 <ol>
-  <li>The contextual menu for Tables or</li>
-  <li>The contextual menus for existing tables.</li>
+  <li>Navigate under a connected database. The Explorer displays icons for Tables, 
+    Views, and Procedures.
+  <li>Open the Create Table dialog box using either: 
+    <ul>
+      <li>The contextual menu for the Tables</li>
+      <li>The contextual menus for an existing table</li>
+    </ul>
+  <li>Type the table name. 
+    <p> This name must follow conventions for table names in your database. Case 
+      is usually insignificant and you must not use spaces. </p>
+  </li>
+  <li>Select the owner of the new table from the possible names of database users. 
+    <p> The dialog box defaults to the name by which you are connected. 
+  </li>
+  <li>Click either Add Column or Remove to add or remove columns from the table. 
+  </li>
+  <li>Specify the column type and size. You must specify the column type but size 
+    is optional for some data types. 
+    <p>All other properties are optional. </p>
+  </li>
+  <li>Click OK to create the table.</li>
 </ol>
- You can create a table for one database at time. 
-<p> <b>To create a table using the Create Table dialog box:</b></p>
+<p><b><a name=table_structure>To re-create a table and its structure using a database 
+  snapshot:</a></b></p>
 <ol>
-  <li> Enter the Table name. This name must follow conventions for table names
-    your database; case is usually insignificant and you must not use spaces. 
-</li>
-  <li> Select the Owner of the new table from the possible names of database users
-    offered in the dialog box.<br>
-    The dialog box defaults to the name by which you are connected. </li>
-  <li>Click Add Column or Remove to add or remove columns from the table. Each
-    displayed row is a column in the new table. </li>
-  <li>Once you have specified Name, Type, and Size, the table is created. All
-    other properties are optional,
-    according to your needs. See the description of Add Column for details on
-    customizing your table. </li>
-  <li>Click OK to create the table. </li>
+  <li>Right-click a table from the table node.</li>
+  <li>Choose Grab Structure. This action stores the definition of a selected table 
+    to a file in the file system.</li>
+  <li>Type a file name in which to save the structure of the table (the table 
+    definition).</li>
+  <li>Right-click the Tables node (or the node of any table under the Tables node) 
+    and choose Recreate Table.</li>
+  <li>Select the name of a file from which you want to re-create a table.</li>
+  <li>In the following dialog, specify the table name and click OK to re-create 
+    the table. If you want to modify the table definition command click the Edit 
+    table script button and edit the table definition command.</li>
 </ol>
-<p> <b>Using a database snapshot to recreate a table and its structure without
-  data:</b></p>
-<ol>
-  <li>Right-click a table.</li>
-  <li>Select Grab Structure.</li>
-  <li>You are prompted for a file name in which to save the structure
-    of the table (the table definition.)</li>
-  <li>Select Recreate Table from the contextual menu of the Tables node, or</li>
-  <li>Select Recreate Table from the node of any table under the Tables node.</li>
-  <li>Select a file name to load to send the proper SQL commands to the database
-    to recreate a table.</li>
-
-</ol>
-<p><b>Recreating tables in a different database:</b></p>
-<p>You can recreate tables in a different database from the one from which you
-  saved the structure, even if the SQL syntax to
-  create the second database is different from the syntax of the first. You can
-  thus create database-independent schemas
-  with the Database Explorer. To do so, you can, for example:</p>
-<ol>
-  <li>Develop a complete application with a Pointbase database</li>
-  <li>For deployment, transfer the table structures to an Oracle database to 
-create
-    the Oracle database without editing SQL</li>
-</ol>
-
-
-
+<p><b><a name=table_different>NOTE</a><br>
+  </b>You can recreate a table in a different database from the one from which 
+  you saved the structure, even if the SQL syntax to create the second database 
+  is different from the syntax of the first. You can thus create database-independent 
+  schemas with the Database Explorer. For example, you can develop a complete 
+  application with a Pointbase database. For deployment, you can transfer the 
+  table structures to an Oracle database to create the Oracle database without 
+  editing SQL. </p>
 <table>
-         <tr>
-         <th colspan=2 align=left>See also</th>
-         </tr>
-         <tr>
-         <td width="23"></td>
-         <td>
-      <a href="browstruct.html">Browsing Structures</a><br>
+  <tr> 
+    <th colspan=2 align=left>See also</th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td> <a href="browstruct.html">Browsing Structures</a><br>
       <a href="manipsql.html">Enabling and Disabling Debug Mode to Monitor SQL 
-Commands</a><br>
-      <a href="addcopycols.html">Adding and Copying Database Columns </a>
-    </td>
-</tr>
+      Commands</a><br>
+      <a href="addcopycols.html">Adding a Database Column to a Table</a> </td>
+  </tr>
 </table>
-
 <hr>
-<font size=-2><a href="credits.html">Legal Notices</a></font>
+<font size=-2><a href="credits.html">Legal Notices</a></font> 
 </body>
 </html>
