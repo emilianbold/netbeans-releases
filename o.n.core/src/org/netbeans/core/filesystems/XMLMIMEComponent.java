@@ -249,7 +249,9 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
                     parser.setProperty("http://xml.org/sax/properties/lexical-handler", this);  //NOI18N
                 } catch (SAXException sex) {
                     ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
-                    emgr.log("Warning: XML parser does not support lexical-handler feature.");  //NOI18N
+                    if (emgr != null) {
+                        emgr.log(NbBundle.getMessage(XMLMIMEComponent.class, "W-003"));  //NOI18N
+                    }
                 }
             } catch (SAXException ex) {
                 ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
@@ -267,7 +269,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             if (namespaceURI != null) {
                 print.addElementNS(namespaceURI);
             }
-            if ("".equals(localName)) localName = null;  //#16484
+            if ("".equals(localName)) localName = null;  //#16484  //NOI18N
             print.addElementName(localName != null ? localName : qName);
             for (int i = 0; i<atts.getLength(); i++) {
                 print.addElementAtt(atts.getQName(i), atts.getValue(i));
@@ -300,18 +302,22 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         public void error(SAXParseException exception) throws SAXException {            
             // we are not validating should not occure
             ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);           
-            emgr.notify(emgr.WARNING, exception);  
+            if (emgr != null) {
+                emgr.notify(emgr.WARNING, exception);  
+            }
             this.state = ERROR;
             throw STOP;
         }
 
        public void fatalError(SAXParseException exception) throws SAXException {
 
-            // it may be caused by wrong user XML document
+            //??? it may be caused by wrong user XML document
             ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);           
-            emgr.log(NbBundle.getMessage(getClass(), "W-001", fo, new Integer(exception.getLineNumber())));
-            emgr.log(NbBundle.getMessage(getClass(), "W-002"));
-            emgr.notify(emgr.INFORMATIONAL, exception);  
+            if (emgr != null) {
+                emgr.log(NbBundle.getMessage(XMLMIMEComponent.class, "W-001", fo, new Integer(exception.getLineNumber()))); //NOI18N
+                emgr.log(NbBundle.getMessage(XMLMIMEComponent.class, "W-002"));  //NOI18N
+                emgr.notify(emgr.INFORMATIONAL, exception);  
+            }
 
             this.state = ERROR;
             throw STOP;
