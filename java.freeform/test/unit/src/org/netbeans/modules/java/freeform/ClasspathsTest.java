@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,6 +15,7 @@ package org.netbeans.modules.java.freeform;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -144,14 +146,16 @@ public class ClasspathsTest extends TestBase {
     }
     
     public void testGlobalPathRegistryUsage() throws Exception {
-        Classpaths cp = (Classpaths)simple.getLookup().lookup(Classpaths.class);
-        assertNotNull("have a Classpaths", cp);
         GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
         assertEquals("no BOOT classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.BOOT));
         assertEquals("no COMPILE classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.COMPILE));
         assertEquals("no EXECUTE classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.EXECUTE));
         assertEquals("no SOURCE classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.SOURCE));
-        cp.opened();
+        ProjectOpenedHook hook = (ProjectOpenedHook) simple.getLookup().lookup(ProjectOpenedHook.class);
+        assertNotNull("have a ProjectOpenedHook", hook);
+        Method opened = ProjectOpenedHook.class.getDeclaredMethod("projectOpened", null);
+        opened.setAccessible(true);
+        opened.invoke(hook, null);
         Set/*<ClassPath>*/ boot = gpr.getPaths(ClassPath.BOOT);
         Set/*<ClassPath>*/ compile = gpr.getPaths(ClassPath.COMPILE);
         Set/*<ClassPath>*/ execute = gpr.getPaths(ClassPath.EXECUTE);
@@ -172,7 +176,9 @@ public class ClasspathsTest extends TestBase {
         expected.add(ClassPath.getClassPath(myAppJava, ClassPath.SOURCE));
         expected.add(ClassPath.getClassPath(specialTaskJava, ClassPath.SOURCE));
         assertEquals("correct set of SOURCE classpaths", expected, source);
-        cp.closed();
+        Method closed = ProjectOpenedHook.class.getDeclaredMethod("projectClosed", null);
+        closed.setAccessible(true);
+        closed.invoke(hook, null);
         assertEquals("again no BOOT classpaths", Collections.EMPTY_SET, gpr.getPaths(ClassPath.BOOT));
         assertEquals("again no COMPILE classpaths", Collections.EMPTY_SET, gpr.getPaths(ClassPath.COMPILE));
         assertEquals("again no EXECUTE classpaths", Collections.EMPTY_SET, gpr.getPaths(ClassPath.EXECUTE));
@@ -246,11 +252,13 @@ public class ClasspathsTest extends TestBase {
         TestPCL antL = new TestPCL();
         cpAnt.addPropertyChangeListener(antL);
         
-        Classpaths cp = (Classpaths)simple2.getLookup().lookup(Classpaths.class);
-        assertNotNull("have a Classpaths", cp);
+        ProjectOpenedHook hook = (ProjectOpenedHook) simple2.getLookup().lookup(ProjectOpenedHook.class);
+        assertNotNull("have a ProjectOpenedHook", hook);
         GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
         assertEquals("no COMPILE classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.COMPILE));
-        cp.opened();
+        Method opened = ProjectOpenedHook.class.getDeclaredMethod("projectOpened", null);
+        opened.setAccessible(true);
+        opened.invoke(hook, null);
         Set/*<ClassPath>*/ compile = gpr.getPaths(ClassPath.COMPILE);
         Set/*<ClassPath>*/ expected = new HashSet();
         expected.add(cpSrc);
@@ -318,7 +326,9 @@ public class ClasspathsTest extends TestBase {
         
         compile = gpr.getPaths(ClassPath.COMPILE);
         assertEquals("all three classpaths still there", expected, compile);
-        cp.closed();
+        Method closed = ProjectOpenedHook.class.getDeclaredMethod("projectClosed", null);
+        closed.setAccessible(true);
+        closed.invoke(hook, null);
         compile = gpr.getPaths(ClassPath.COMPILE);
         expected = new HashSet();
         assertEquals("correct set of COMPILE classpaths", expected, compile);
