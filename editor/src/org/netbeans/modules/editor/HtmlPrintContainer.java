@@ -38,6 +38,7 @@ public class HtmlPrintContainer implements PrintContainer {
     private static final String T_BLOCK_S = "<FONT CLASS=\"{0}\">";  //NOI18N
     private static final String T_BLOCK_E = "</FONT>";   //NOI18N
     private static final String T_NAME_TABLE = "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"center\">{0}</TD></TR></TABLE>";    //NOI18N
+    private static final String T_CHARSET = "<META HTTP-EQUIV=\"content-type\" CONTENT=\"text/html; charset={0}\">";    //NOI18N
     private static final String T_STYLE_S = "<STYLE TYPE=\"text/css\">";    //NOI18N
     private static final String T_STYLE_E = "</STYLE>"; //NOI18N
     private static final String T_COMMENT_S = "<!--";   //NOI18N
@@ -73,11 +74,12 @@ public class HtmlPrintContainer implements PrintContainer {
     private Styles styles;
     private boolean[] boolHolder;
     private Map syntaxColoring;
+    private String charset;
 
     public HtmlPrintContainer () {
     }
 
-    public final void begin (FileObject fo, Font font, Color fgColor, Color bgColor, Color hfgColor, Color hbgColor, Class kitClass) {
+    public final void begin (FileObject fo, Font font, Color fgColor, Color bgColor, Color hfgColor, Color hbgColor, Class kitClass, String charset) {
         styles = new Styles ();
         buffer = new StringBuffer();
         fileName = FileUtil.getFileDisplayName(fo);
@@ -88,6 +90,7 @@ public class HtmlPrintContainer implements PrintContainer {
         this.headerForegroundColor = hfgColor;
         this.headerBackgroundColor = hbgColor;
         this.syntaxColoring = SettingsUtil.getColoringMap(kitClass, false, true);
+        this.charset = charset;
     }
 
     public final void add(char[] chars, Font font, Color foreColor, Color backColor) {
@@ -114,6 +117,8 @@ public class HtmlPrintContainer implements PrintContainer {
         result.append (T_HEAD_S);
         result.append (EOL);
         result.append (MessageFormat.format (T_TITLE, new Object[] {this.fileName}));
+        result.append (EOL);
+        result.append (MessageFormat.format (T_CHARSET, new Object[] {this.charset}));
         result.append (EOL);
         result.append (T_STYLE_S);
         result.append (EOL);

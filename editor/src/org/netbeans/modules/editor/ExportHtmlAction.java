@@ -46,6 +46,7 @@ public class ExportHtmlAction extends CookieAction {
     private static final String SHOW_LINES_HIST = "ExportHtmlAction_show_lines_history"; //NOI18N
     private static final String SELECTION_HIST = "ExportHtmlAction_selection_history"; //NOI18N
     private static final String FOLDER_NAME_HIST = "ExportHtmlAction_folder_name_history"; //NOI18N
+    private static final String CHARSET = "UTF-8"; //NOI18N
 
     private Dialog dlg;
 
@@ -200,12 +201,12 @@ public class ExportHtmlAction extends CookieAction {
         Color lnfgColor = coloring.getForeColor();
         FileObject fo = ((DataObject)bdoc.getProperty (Document.StreamDescriptionProperty)).getPrimaryFile();
         HtmlPrintContainer htmlPrintContainer = new HtmlPrintContainer();
-        htmlPrintContainer.begin (fo, font, fgColor, bgColor,lnfgColor,lnbgColor, bdoc.getKitClass());
+        htmlPrintContainer.begin (fo, font, fgColor, bgColor,lnfgColor,lnbgColor, bdoc.getKitClass(), CHARSET);
         bdoc.print (htmlPrintContainer,false, lineNumbers, selectionStart, selectionEnd);
         String result = htmlPrintContainer.end();
         PrintWriter out = null;
         try {
-            out = new PrintWriter (new FileWriter (fileName));
+            out = new PrintWriter (new OutputStreamWriter (new FileOutputStream (fileName), CHARSET));
             out.print (result);
         } finally {
             if (out != null)
