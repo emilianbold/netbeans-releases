@@ -87,7 +87,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
             <file name="org-netbeans-core-actions-SaveSettingsAction.instance"/>
             <file name="org-openide-actions-SaveAction.instance"/>
-            <file name="org-openide-explorer-propertysheet-SetDefaultValueAction.instance"/>
             <file name="org-netbeans-core-actions-SettingsAction.instance"/>
             <file name="org-openide-actions-ToolsAction.instance"/>
             <file name="org-openide-actions-ViewAction.instance"/>
@@ -476,14 +475,6 @@ Microsystems, Inc. All Rights Reserved.
     <file name="S-F8[org-openide-actions-AddWatchAction].instance" />
     <file name="C-N[org-openide-actions-NewTemplateAction].instance" />
     <file name="S-F10[org-openide-actions-PopupAction].instance" />
-
-<!-- These should be added by modules!
-    <file name="C-9[org-netbeans-modules-objectbrowser-ShowBrowserAction].instance" />
-    <file name="CS-N[org-netbeans-modules-projects-NewProjectAction].instance" />
-    <file name="CS-M[org-netbeans-modules-projects-SetMainClassAction].instance" />
-    <file name="CS-I[org-netbeans-modules-projects-ImportProjectAction].instance" />
-    <file name="C-F1[org-netbeans-modules-javadoc-search-SearchDocAction].instance" />
--->
 
   </folder>
 
