@@ -23,6 +23,7 @@ import org.openide.util.Lookup;
 import org.openide.xml.EntityCatalog;
 
 import org.netbeans.modules.xml.catalog.spi.*;
+import java.io.IOException;
 
 /**
  * Read mapping redistered in IDE system resolver/catalog.
@@ -32,7 +33,7 @@ import org.netbeans.modules.xml.catalog.spi.*;
  * @version 1.0
  *
  */
-public class SystemCatalogReader implements CatalogReader, Serializable {
+public class SystemCatalogReader implements EntityResolver, CatalogReader, Serializable {
     /** */
     private static final boolean DEBUG = true;
 
@@ -175,4 +176,12 @@ public class SystemCatalogReader implements CatalogReader, Serializable {
     public int hashCode() {
         return getClass().hashCode();
     }
+    
+    /**
+     * Delegate to entity catalog to resolve unlisted elements.
+     */
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        return EntityCatalog.getDefault().resolveEntity(publicId, systemId);
+    }
+    
 }
