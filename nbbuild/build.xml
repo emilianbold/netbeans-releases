@@ -489,6 +489,11 @@ ToDo:
     <ant dir="../corba" target="netbeans"/>
   </target>
 
+  <!-- XXX illegal dependence on core! -->
+  <target name="all-ui/welcome" depends="all-openide,all-core,all-utilities">
+    <echo message="Building module ui/welcome..."/>
+    <ant dir="../ui/welcome" target="netbeans"/>
+  </target>
 
   <!-- Libs modules -->
   <target name="all-libs/xalan" depends="init">
@@ -808,6 +813,8 @@ the ${netbeans.dest}/bin/ directory.
     <ant dir="../vcscvs" target="nbm"/>
     <echo message="Making NBM for module vcsgeneric..."/>
     <ant dir="../vcsgeneric" target="nbm"/>
+    <echo message="Making NBM for module ui/welcome..."/>
+    <ant dir="../ui/welcome" target="nbm"/>
     <makeupdatedesc desc="../www/www/updates/40_1.1_.xml">
       <!-- Not for now:
       <group name="Standard">
@@ -998,6 +1005,8 @@ the ${netbeans.dest}/bin/ directory.
     <ant dir="../vcscvs/compat" target="nbm"/>
     <echo message="Making NBM for module javacvs..."/>
     <ant dir="../javacvs" target="nbm"/>
+    <echo message="Making NBM for module ui/welcome..."/>
+    <ant dir="../ui/welcome" target="nbm"/>
     <makeupdatedesc desc="../www/www/updates/33me_1.5_.xml">
       <entityinclude file="33_1.5_.ent"/>
       <!-- Not for now: -->
@@ -1048,6 +1057,7 @@ the ${netbeans.dest}/bin/ directory.
           <include name="../web/core/web-jsp.nbm"/>
           <include name="../web/jspsyntax/web-jspsyntax.nbm"/>
           <include name="../scripting/scripting.nbm"/>
+          <include name="../ui/welcome/welcome.nbm"/>
         </fileset>
       </group>
 <!-- 
