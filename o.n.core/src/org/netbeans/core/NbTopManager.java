@@ -538,6 +538,11 @@ public abstract class NbTopManager /*extends TopManager*/ {
                             }
                         }
                         org.netbeans.core.projects.XMLSettingsHandler.saveOptions();
+                        try {
+                            ((Lkp)Lookup.getDefault()).storeCache();
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        }
                         org.netbeans.core.projects.SessionManager.getDefault().close();
                     } catch (ThreadDeath td) {
                         throw td;
@@ -804,17 +809,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
         
         private final void doInitializeLookup () {
             //System.err.println("doInitializeLookup");
-            FileObject services = Repository.getDefault().getDefaultFileSystem()
-                    .findResource("Services");
-            Lookup nue;
-            if (services != null) {
-                StartLog.logProgress("Got Services folder"); // NOI18N
-                FolderLookup f = new FolderLookup(DataFolder.findFolder(services), "SL["); // NOI18N
-                StartLog.logProgress("created FolderLookup"); // NOI18N
-                nue = f.getLookup();
-            } else {
-                nue = Lookup.EMPTY;
-            }
 
             // extend the lookup
             Lookup[] arr = new Lookup[] {
@@ -823,7 +817,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
                 getLookups()[2], // ModuleInfo lookup
                 // XXX figure out how to put this ahead of MetaInfServicesLookup (for NonGuiMain):
                 NbTopManager.get ().getInstanceLookup (),
-                nue,
+                LookupCache.load(),
             };
             StartLog.logProgress ("prepared other Lookups"); // NOI18N
 
@@ -831,6 +825,14 @@ public abstract class NbTopManager /*extends TopManager*/ {
             StartLog.logProgress ("Lookups set"); // NOI18N
 
 	    //StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
+        }
+        
+        public void storeCache() throws IOException {
+            Lookup[] ls = getLookups();
+            if (ls.length == 5) {
+                // modulesClassPathInitialized has been called, so store folder lookup
+                LookupCache.store(ls[4]);
+            }
         }
         
         protected void beforeLookup(Lookup.Template templ) {
