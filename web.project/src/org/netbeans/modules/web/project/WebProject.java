@@ -558,6 +558,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         
         private static final String[] TYPES = new String[] { 
             "java-classes",         // NOI18N
+            "java-main-class",      // NOI18N
             "java-beans",           // NOI18N
             "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
