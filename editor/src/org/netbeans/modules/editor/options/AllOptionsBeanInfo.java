@@ -27,7 +27,7 @@ import org.openide.util.NbBundle;
 public final class AllOptionsBeanInfo extends SimpleBeanInfo {
 
   /** Prefix of the icon location. */
-  private String iconPrefix = "/com/netbeans/editor/resources/allOptions";
+  private String iconPrefix = "/com/netbeans/developer/modules/text/resources/allOptions";
 
   /** Icons for compiler settings objects. */
   private Image icon;
@@ -66,6 +66,7 @@ public final class AllOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  3    Gandalf   1.2         7/9/99   Ales Novak      print options change
 *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package statement
 *       to make it compilable
 *  1    Gandalf   1.0         6/30/99  Ales Novak      
