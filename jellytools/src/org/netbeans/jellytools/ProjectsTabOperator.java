@@ -73,6 +73,7 @@ public class ProjectsTabOperator extends TopComponentOperator {
     /** Getter for Projects JTreeOperator
      * @return JTreeOperator of Projects tree */    
     public JTreeOperator tree() {
+        makeComponentVisible();
         if(_tree==null) {
             _tree = new JTreeOperator(this);
         }

@@ -71,6 +71,7 @@ public class RuntimeTabOperator extends TopComponentOperator {
     /** getter for Runtime JTreeOperator
      * @return JTreeOperator of Runtime tree */    
     public JTreeOperator tree() {
+        makeComponentVisible();
         if(_tree==null) {
             _tree = new JTreeOperator(this);
         }
