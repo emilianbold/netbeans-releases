@@ -18,9 +18,9 @@ import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.parsers.ProcessorNotifier;
 
 /**
- * <code>ValidateXMLCookie</code> and <code>CheckXMLCookie</code>implementation
- * support simplifing cookie providers based on <code>DataObject</code>s
- * representing XML documents and entities.
+ * <code>ValidateXMLCookie</code> implementation support simplifing cookie 
+ * providers based on <code>DataObject</code>s representing XML documents
+ * and entities.
  * <p>
  * <b>Primary use case</b> in a DataObject subclass (which primary file is XML):
  * <pre>
@@ -36,11 +36,10 @@ import org.netbeans.api.xml.parsers.ProcessorNotifier;
  * @author Petr Kuzel
  * @deprecated XML tools SPI candidate
  */
-public class ValidateXMLSupport extends CheckXMLSupport implements ValidateXMLCookie {
+public class ValidateXMLSupport extends TestXMLSupport implements ValidateXMLCookie {
             
     /** 
      * Create new ValidateXMLSupport for given data object 
-     * using DOCUMENT_MODE check strategy for CheckXMLCookie.
      * @param dataObject supported data object
      */    
     public ValidateXMLSupport(DataObject dataObject) {
@@ -48,7 +47,7 @@ public class ValidateXMLSupport extends CheckXMLSupport implements ValidateXMLCo
     }
     
     /** 
-     * Create new CheckXMLSupport for given data object
+     * Create new ValidateXMLSupport for given data object
      * @param dataObject supported data object
      * @param checkStrategy one of <code>CheckXMLSupport.*_MODE</code> constants
      */    
