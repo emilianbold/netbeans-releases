@@ -61,8 +61,8 @@ implements PropertyChangeListener, Runnable {
             // for the updating sate action instance..
             topC = TopComponent.getRegistry().getActivated();
         }
-        if(tc != null) {
-            ActionUtils.closeAllExcept(tc);
+        if(topC != null) {
+            ActionUtils.closeAllExcept(topC);
         }
     }
 
