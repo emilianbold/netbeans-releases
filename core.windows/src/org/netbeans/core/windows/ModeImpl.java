@@ -251,6 +251,7 @@ public final class ModeImpl implements Comparable, Mode, FrameTypeListener, Comp
         setBounds(new Rectangle(original.bounds));
         setContainerType(original.getContainerType());
         setFrameType(original.getFrameType());
+        setHidden(original.isHidden());
         // beware, constraints may conflict
         WindowUtils.changeModeConstraints(this, original.constraints, true);
 
@@ -263,7 +264,10 @@ public final class ModeImpl implements Comparable, Mode, FrameTypeListener, Comp
             Object constr = tcContainer == null ? null : tcContainer.getConstraints(tcs[i]);
             if (canDock(tcs[i])) {
                 if (this.dockInto(tcs[i], constr)) {
-                    tcs[i].open(workspace);
+                    //Open TCs only if Mode is NOT hidden
+                    if (!original.isHidden()) {
+                        tcs[i].open(workspace);
+                    }
                 }
             }
         }        
