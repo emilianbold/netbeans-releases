@@ -198,14 +198,14 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   }  
   
   private synchronized boolean hasOpenTableComponent() {
-System.out.println("hasOpenComponent (table) " + myEntry.getFile().getPackageNameExt('/','.') + " " + ((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent());
+//System.out.println("hasOpenComponent (table) " + myEntry.getFile().getPackageNameExt('/','.') + " " + ((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent());
     return ((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent();
   }
 
   /** Returns whether there is an open editor component. */
   public synchronized boolean hasOpenEditorComponent() {
     java.util.Enumeration en = allEditors.getComponents ();
-System.out.println("hasOpenComponent (editor) " + myEntry.getFile().getPackageNameExt('/','.') + " " + en.hasMoreElements ());
+//System.out.println("hasOpenComponent (editor) " + myEntry.getFile().getPackageNameExt('/','.') + " " + en.hasMoreElements ());
     return en.hasMoreElements ();
   }  
 
@@ -219,11 +219,11 @@ System.out.println("hasOpenComponent (editor) " + myEntry.getFile().getPackageNa
     if ((savec != null) && hasOpenTableComponent()) {
       return false;
     }
-System.out.println("closing");      
+//System.out.println("closing");      
     if (!super.close())
       return false;
       
-System.out.println("closed - document open = " + isDocumentLoaded());
+//System.out.println("closed - document open = " + isDocumentLoaded());
                       
     closeDocumentEntry();                  
     myEntry.getHandler().reparseNowBlocking();  
