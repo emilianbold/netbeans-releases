@@ -326,6 +326,7 @@
 <mapID target="editing.parserdatabase" url="editing/parserdatabase.html" />
 <mapID target="editing.parserdatabase_customizing" url="editing/parserdatabase_customizing.html" />
 <mapID target="editing.parserdatabase_updating" url="editing/parserdatabase_updating.html" />
+<mapID target="editing.parserdatabase_customizer" url="editing/parserdatabase_customizer.html" />
 <mapID target="editing.deleting-pdb" url="editing/deleting-pdb.html" />
 <mapID target="editing.xmlsettings" url="editing/xmlsettings.html" />
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />

@@ -131,9 +131,10 @@
     <tocitem text="Adding a Java Import Statement With Fast Import" target="editing.fastimport"/>
   </tocitem>
   <tocitem text="Code Completion Database" target="editing.parserdatabase">
-    <tocitem text="Updating Code Completion Database Entries" target="editing.parserdatabase_updating"/>
-    <tocitem text="Customizing the Code Completion Database" target="editing.parserdatabase_customizing"/>
-    <tocitem text="Deleting Code Completion Database Files" target="editing.deleting-pdb"/>
+    <tocitem text="Manually Updating Code Completion Database Entries" target="editing.parserdatabase_updating"/>
+    <tocitem text="Customizing Code Completion Database Entries" target="editing.parserdatabase_customizing"/>
+    <tocitem text="Deleting Code Completion Database Entries" target="editing.deleting-pdb"/>
+    <tocitem text="Code Completion Database Manager" target="editing.parserdatabase_customizer"/>
   </tocitem>
   <tocitem text="Sharing Source Editor Settings" target="editing.xmlsettings"/>
   <tocitem text="Configuring the Source Editor" target="editing.configuring">    
