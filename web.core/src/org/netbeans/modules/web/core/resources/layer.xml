@@ -45,8 +45,8 @@ Microsystems, Inc. All Rights Reserved.
       </file>
 --> 
       <folder name="JSPs">
-        <attr name="JSP.jsp/JSP.jspx" boolvalue="true"/>
-        <attr name="JSP.jspx/JSP.jspf" boolvalue="true"/>
+        <attr name="JSP.jsp/JSPX.jspx" boolvalue="true"/>
+        <attr name="JSPX.jspx/JSPF.jsf" boolvalue="true"/>
 	<attr name="templateWizardURL" 
               urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPfolder.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
@@ -62,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
         </file>
 
 	<!--  JSP Document --> 
-        <file name="JSP.jspx" url="templates/JSPDoc.template">
+        <file name="JSPX.jspx" url="templates/JSPDoc.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" 
                 urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPDoc.html"/>
@@ -73,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
         </file>
 
         <!--  JSP Fragment --> 
-        <file name="JSP.jspf" url="templates/JSPF.template">
+        <file name="JSPF.jsf" url="templates/JSPF.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" 
                 urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPF.html"/>
