@@ -235,6 +235,7 @@ public class FormUtils
         { javax.swing.JComboBox.class, CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED },
         { javax.swing.JComboBox.class, CLASS_EXACTLY,
+                "popupVisible", PROP_HIDDEN,
                 "popupMenuListeners", PROP_HIDDEN,
                 "selectedObjects", PROP_HIDDEN },
         { javax.swing.Scrollable.class, CLASS_AND_SWING_SUBCLASSES,
