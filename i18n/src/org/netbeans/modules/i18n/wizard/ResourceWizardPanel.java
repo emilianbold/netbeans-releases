@@ -163,7 +163,8 @@ final class ResourceWizardPanel extends JPanel {
     private void initAccesibility() {        
         addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_CTL_SelectResource"));
         addAllButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_CTL_SelectResourceAll"));
-        resourcesTable.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_resourcesTable"));
+        resourcesTable.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACSD_resourcesTable"));
+        resourcesTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACSN_resourcesTable"));
     }
     
     /** This method is called from within the constructor to
@@ -298,11 +299,11 @@ final class ResourceWizardPanel extends JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addAllButton;
     private javax.swing.JButton addButton;
+    private javax.swing.JTextArea descTextArea;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable resourcesTable;
-    private javax.swing.JButton addAllButton;
-    private javax.swing.JTextArea descTextArea;
     // End of variables declaration//GEN-END:variables
 
     /** Table model for this class. */

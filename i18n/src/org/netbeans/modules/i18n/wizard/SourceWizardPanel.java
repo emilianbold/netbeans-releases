@@ -130,6 +130,18 @@ final class SourceWizardPanel extends JPanel {
             return Util.getString("MSG_SourcesPanel_test_desc");
         }        
     }
+
+    /**
+     * Accessible panel description depends of its container test or i18n role
+     */
+    private String getAccessibleListDescription() {
+        if (testRole == false)   {
+            return Util.getString("ACSD_sourcesList");
+        } else {
+            return Util.getString("ACSD_sourcesList_test");
+        }        
+    }
+    
     
     /** 
      * List content drives remove button enableness.
@@ -155,7 +167,8 @@ final class SourceWizardPanel extends JPanel {
         removeButton.setToolTipText(Util.getString("CTL_RemoveSource_desc"));
         removeButton.setMnemonic(Util.getChar("CTL_RemoveSource_Mnem"));
         
-        sourcesList.getAccessibleContext().setAccessibleDescription(Util.getString("ACS_sourcesList"));
+        sourcesList.getAccessibleContext().setAccessibleName(Util.getString("ACSN_sourcesList"));
+        sourcesList.getAccessibleContext().setAccessibleDescription(getAccessibleListDescription());
     }
     
     /** This method is called from within the constructor to
@@ -308,11 +321,11 @@ final class SourceWizardPanel extends JPanel {
     }//GEN-LAST:event_addButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList sourcesList;
     private javax.swing.JButton addButton;
+    private javax.swing.JTextArea descTextArea;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton removeButton;
-    private javax.swing.JTextArea descTextArea;
+    private javax.swing.JList sourcesList;
     // End of variables declaration//GEN-END:variables
 
 
