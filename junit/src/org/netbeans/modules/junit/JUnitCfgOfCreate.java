@@ -756,24 +756,9 @@ public final class JUnitCfgOfCreate extends JPanel
     /**
      */
     private Component createMessagePanel() {
-        txtAreaMessage = new JTextArea();
-        txtAreaMessage.setEditable(false);
-        txtAreaMessage.setFocusable(false);
-        txtAreaMessage.setLineWrap(true);
-        txtAreaMessage.setWrapStyleWord(true);
+        txtAreaMessage = (JTextArea) GuiUtils.createMultilineLabel(""); //NOI18N
         
-        Color color;
-        color = UIManager.getColor("Label.background");                 //NOI18N
-        if (color == null) {
-            color = UIManager.getColor("Panel.background");             //NOI18N
-        }
-        if (color != null) {
-            txtAreaMessage.setBackground(color);
-        } else {
-            txtAreaMessage.setOpaque(false);
-        }
-        
-        color = UIManager.getColor("nb.errorForeground");               //NOI18N
+        Color color = UIManager.getColor("nb.errorForeground");         //NOI18N
         if (color == null) {
             color = new Color(89, 79, 191);   //RGB suggested by Bruce in #28466
         }
