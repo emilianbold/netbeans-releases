@@ -258,7 +258,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="install-ide" depends="install-from,find-installed-ide,check-installed-ide,make-bin-executable,install-nbms"/>
   
-  <target name="install-from" depends="install-from-zip,install-from-installer,install-from-jarinstaller,install-from-dir"/>
+  <target name="install-from" depends="install-from-zip,install-from-http-zip,install-from-installer,install-from-jarinstaller,install-from-dir"/>
      
   <target name="install-from-installer" depends="check-ide-param" if="ide.install.type.installer">
     <antcall target="clean-ide"/>
@@ -286,8 +286,16 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="${ide.installto}"/>
     <unzip src="${ide.install.path}" dest="${ide.installto}"/>    
   </target>   
+
+  <target name="install-from-http-zip" depends="check-ide-param" if="ide.install.type.http-zip">
+    <antcall target="clean-ide"/>
+    <mkdir dir="${ide.installto}"/>
+    <get src="${ide.install.path}" dest="${ide.installto}/ide.zip" />   
+    <unzip src="${ide.installto}/ide.zip" dest="${ide.installto}"/>    
+    <delete file="${ide.installto}/ide.zip"/>
+  </target>   
   
-   <target name="install-from-dir" depends="check-ide-param" if="ide.install.type.dir">
+  <target name="install-from-dir" depends="check-ide-param" if="ide.install.type.dir">
       <available file="${ide.install.path}/lib/openide.jar" type="file" property="ide.home" value="${ide.install.path}"/>
       <available file="${ide.install.path}/netbeans/lib/openide.jar" type="file" property="ide.home" value="${ide.install.path}${file.separator}netbeans"/>
       <antcall target="find-existing-ide"/>
@@ -321,6 +329,7 @@ Microsystems, Inc. All Rights Reserved.
           <equals arg1="${ide.install.type}" arg2="installer"/>
           <equals arg1="${ide.install.type}" arg2="jarinstaller"/>
           <equals arg1="${ide.install.type}" arg2="dir"/>
+          <equals arg1="${ide.install.type}" arg2="http-zip"/>
         </or>
       </condition>
       <antcall target="install-type-fail"/>
@@ -335,6 +344,9 @@ Microsystems, Inc. All Rights Reserved.
       </condition>
       <condition property="ide.install.type.dir">
           <equals arg1="${ide.install.type}" arg2="dir"/>
+      </condition>
+      <condition property="ide.install.type.http-zip">
+          <equals arg1="${ide.install.type}" arg2="http-zip"/>
       </condition>
   </target>
   
