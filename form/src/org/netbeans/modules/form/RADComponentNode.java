@@ -233,7 +233,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @return <code>true</code> if it can
   */
   public boolean canCopy () {
-    return !(component instanceof FormContainer);
+    return false; // !(component instanceof FormContainer);
   }
 
   /** Test whether this node can be cut.
@@ -250,7 +250,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @throws IOException if it could not copy
   */
   public Transferable clipboardCopy () throws java.io.IOException {
-    System.out.println("Copying...");
+//    System.out.println("Copying...");
     return new RADTransferable (RAD_COMPONENT_COPY_FLAVOR, component);
   }
 
@@ -260,7 +260,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @throws IOException if it could not cut
   */
   public Transferable clipboardCut () throws java.io.IOException {
-    System.out.println("Cutting...");
+//    System.out.println("Cutting...");
     final RADComponent comp = component;
     destroy (); // delete node and component from form
     return new RADTransferable (RAD_COMPONENT_CUT_FLAVOR, component);
@@ -288,17 +288,17 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
         * @throws IOException if something fails
         */
         public Transferable paste() throws java.io.IOException {
-          System.out.println("Paste...");
+//          System.out.println("Paste...");
           try {
             DataFlavor[] flavors = t.getTransferDataFlavors ();
-            System.out.println("COPY FLAVOR: "+RAD_COMPONENT_COPY_FLAVOR);
+/*            System.out.println("COPY FLAVOR: "+RAD_COMPONENT_COPY_FLAVOR);
             System.out.println("CUT FLAVOR: "+RAD_COMPONENT_CUT_FLAVOR);
             for (int i = 0; i < flavors.length; i++) {
               System.out.println("Flavor["+i+"] = "+flavors[i]);
             }
-            
+  */          
             if (t.isDataFlavorSupported (RAD_COMPONENT_COPY_FLAVOR)) {
-              System.out.println("COPY SUPPORTED !!!");
+//              System.out.println("COPY SUPPORTED !!!");
 /*              RADComponent originalComp = (RADComponent)t.getTransferData (RAD_COMPONENT_COPY_FLAVOR);
               FormManager2 pasteManager = component.getFormManager ();
               RADComponent copyComponent;
@@ -353,12 +353,12 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
               
               
   */            
-              System.out.println("Copy!!!");
+//              System.out.println("Copy!!!");
               return null;
             }
             
             if (t.isDataFlavorSupported (RAD_COMPONENT_CUT_FLAVOR)) {
-              System.out.println("CUT SUPPORTED !!!");
+//              System.out.println("CUT SUPPORTED !!!");
               final RADComponent originalComp = (RADComponent)t.getTransferData (RAD_COMPONENT_CUT_FLAVOR);
               FormManager2 pasteManager = component.getFormManager ();
               originalComp.initialize (pasteManager); // if pasting into another form
@@ -495,6 +495,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  17   Gandalf   1.16        6/10/99  Ian Formanek    Removed debug prints, 
+ *       copy disabled
  *  16   Gandalf   1.15        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  15   Gandalf   1.14        6/6/99   Ian Formanek    Cusomizer support added
