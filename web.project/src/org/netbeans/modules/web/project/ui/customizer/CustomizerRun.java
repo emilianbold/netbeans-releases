@@ -34,6 +34,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
 
     String[] serverInstanceIDs;
     String[] serverNames;
+    String[] serverURLs;
     boolean initialized = false;
     
     /** Creates new form CustomizerCompile */
@@ -49,9 +50,11 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         Deployment deployment = Deployment.getDefault ();
         serverInstanceIDs = deployment.getServerInstanceIDs ();
         serverNames = new String[serverInstanceIDs.length];
+        serverURLs = new String[serverInstanceIDs.length];
         for (int i = 0; i < serverInstanceIDs.length; i++) {
             serverNames[i] = deployment.getServerDisplayName (deployment.getServerID (serverInstanceIDs [i])) 
              + " (" + deployment.getServerInstanceDisplayName (serverInstanceIDs [i]) + ")"; //NOI18N
+            serverURLs[i] = deployment.getServerInstanceDisplayName (serverInstanceIDs [i]);
         }
 
         vps.register(jCheckBoxDisplayBrowser, WebProjectProperties.DISPLAY_BROWSER);
@@ -264,7 +267,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     private void setFullURL() {
         int index = jComboBoxServer.getSelectedIndex();
         StringBuffer fullURL = new StringBuffer();
-        fullURL.append(serverNames[index]);
+        fullURL.append(serverURLs[index]);
         if (jTextFieldContextPath.getText().startsWith("/")) //NOI18N
             fullURL.append(jTextFieldContextPath.getText().trim().substring(1));
         else
