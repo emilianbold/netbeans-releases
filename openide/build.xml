@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="preprocess" classname="org.netbeans.nbbuild.Preprocess" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="postprocess" classname="org.netbeans.nbbuild.Postprocess" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="init">
     <available property="jdk13proxies" classname="java.lang.reflect.Proxy"/>
@@ -58,6 +59,12 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/>
       </classpath>
     </javac>
+    <postprocess file="compatkit-work/org/openide/util/actions/SystemAction.class"
+                 old="g3t1c0n" new="getIcon"
+                 min="0" max="1"/>
+    <postprocess file="compatkit-work/org/openide/filesystems/AbstractFileSystem.class"
+                 old="r3fr3shR00t" new="refreshRoot"
+                 min="0" max="1"/>
   </target>
 
   <target name="preprocess">
@@ -70,6 +77,10 @@ Microsystems, Inc. All Rights Reserved.
       <!-- Not possible yet: -->
       <!-- <include name="org/openide/loaders/MultiDataObject.java"/> -->
       <include name="org/openide/compiler/ExternalCompiler.java"/>
+      <include name="org/openide/util/actions/SystemAction.java"/>
+      <include name="org/openide/filesystems/LocalFileSystem.java"/>
+      <include name="org/openide/filesystems/JarFileSystem.java"/>
+      <include name="org/openide/filesystems/AbstractFileSystem.java"/>
     </preprocess>
   </target>
   
