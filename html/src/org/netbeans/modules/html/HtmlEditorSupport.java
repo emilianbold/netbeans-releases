@@ -124,10 +124,10 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         byte[] arr = new byte[4096];
         int len = stream.read (arr, 0, arr.length);
-        String txt = new String (arr, 0, len).toUpperCase();
+        String txt = new String (arr, 0, (len>=0)?len:0).toUpperCase();
         // encoding
         txt = findEncoding (txt);
-        
+
         // join the streams
         if (len < arr.length) {
             stream = new ByteArrayInputStream (arr, 0, len);
