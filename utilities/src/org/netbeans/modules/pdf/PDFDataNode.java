@@ -27,7 +27,7 @@ public class PDFDataNode extends DataNode {
 
     public PDFDataNode (PDFDataObject obj, Children ch) {
         super (obj, ch);
-        setIconBase ("/org/netbeans/modules/pdf/PDFDataIcon");
+        setIconBase ("org/netbeans/modules/pdf/PDFDataIcon");
     }
 
 }
