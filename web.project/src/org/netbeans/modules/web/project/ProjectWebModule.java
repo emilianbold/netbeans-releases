@@ -139,6 +139,10 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return getWebInf(false);
     }
     
+    public File getEnterpriseResourceDirectory() {
+        return getFile(WebProjectProperties.RESOURCE_DIR);
+    }
+    
     public FileObject getWebInf (boolean silent) {
         FileObject documentBase = getDocumentBase(silent);
         if (documentBase == null) {

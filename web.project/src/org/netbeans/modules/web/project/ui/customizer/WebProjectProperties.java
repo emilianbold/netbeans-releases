@@ -91,6 +91,7 @@ public class WebProjectProperties {
     public static final String SRC_DIR = "src.dir"; //NOI18N
     public static final String CONF_DIR = "conf.dir"; //NOI18N
     public static final String WEB_DOCBASE_DIR = "web.docbase.dir"; //NOI18N
+    public static final String RESOURCE_DIR = "resource.dir"; //NOI18N
     public static final String BUILD_DIR = "build.dir"; //NOI18N
     public static final String BUILD_WEB_DIR = "build.web.dir"; //NOI18N
     public static final String BUILD_GENERATED_DIR = "build.generated.dir"; //NOI18N
@@ -171,6 +172,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( WEB_DOCBASE_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( RESOURCE_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( NO_DEPENDENCIES, PROJECT, INVERSE_BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVA_PLATFORM, PROJECT, PLATFORM_PARSER ),
         
