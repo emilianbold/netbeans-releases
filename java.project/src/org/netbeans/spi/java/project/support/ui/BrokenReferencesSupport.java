@@ -80,13 +80,6 @@ public class BrokenReferencesSupport {
             projectHelper.getStandardPropertyEvaluator(), properties, platformProperties);
     }
     
-    /** DEPRECATED.
-     * @deprecated use {@link #isBroken(AntProjectHelper, ReferenceHelper, String[], String[])} instead
-     */
-    public static boolean isBroken(PropertyEvaluator evaluator, String[] properties, String[] platformProperties) {
-        return BrokenReferencesModel.isBroken(null, evaluator, properties, platformProperties);
-    }
-    
     /**
      * Shows UI customizer which gives users chance to fix encountered problems.
      * @param projectHelper AntProjectHelper associated with the project.
