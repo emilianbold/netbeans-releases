@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <code-name-base>com.sun.management.jmx.module.mockup</code-name-base>
+            <code-name-base>com.sun.management.jmx.modules</code-name-base>
             <path>mockup</path>
             <public-packages/>
             <module-dependencies>
@@ -54,7 +54,10 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>4.37</specification-version>
                     </run-dependency>
                 </dependency>
-             </module-dependencies> 
+             </module-dependencies>
+	     <public-packages>
+                <package>com.sun.management.jmx.modules.mbeanwizard</package>
+            </public-packages> 
         </data>
     </configuration>
 </project>
