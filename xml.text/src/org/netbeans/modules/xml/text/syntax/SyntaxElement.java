@@ -21,6 +21,7 @@ import javax.swing.text.*;
 
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.*;
+import org.netbeans.modules.xml.spi.dom.UOException;
 
 /**
  *
@@ -81,7 +82,8 @@ public abstract class SyntaxElement {
                 if( previous != null ) {
                     previous.next = this;
                     if (previous.first.getOffset() == first.getOffset()) {
-                        throw new IllegalStateException("Previous cannot be the same as current element!");
+                        //throw new IllegalStateException("Previous cannot be the same as current element!");
+                        throw new UOException();
                     }                    
                 }
             }
@@ -103,7 +105,8 @@ public abstract class SyntaxElement {
                 if( next != null ) {
                     next.previous = this;
                     if (next.first.getOffset() == first.getOffset()) {
-                        throw new IllegalStateException("Next cannot be the same as current element!");
+                        //throw new IllegalStateException("Next cannot be the same as current element!");
+                        throw new UOException();
                     }
                 }
             }

@@ -41,6 +41,7 @@ import org.openide.loaders.ExtensionList;
 import org.netbeans.modules.xml.text.syntax.*;
 import org.netbeans.modules.xml.text.syntax.dom.*;
 import org.netbeans.modules.xml.api.model.*;
+import org.netbeans.modules.xml.spi.dom.UOException;
 
 import javax.swing.Icon;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
@@ -270,8 +271,13 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
     }
     
     private List queryElements(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {
-        Enumeration res = getPerformer(doc, sup).queryElements(helper.getContext());
-        return translateElements(res);
+        try {
+            Enumeration res = getPerformer(doc, sup).queryElements(helper.getContext());
+            return translateElements(res);
+        } 
+        catch(UOException e){
+            return null;
+        }
     }
 
     private List queryAttributes(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {
