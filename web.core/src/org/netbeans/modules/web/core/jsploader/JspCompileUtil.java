@@ -60,6 +60,8 @@ import org.netbeans.modules.web.webdata.WebResourceImpl;
 public class JspCompileUtil {
     
     private static JspParserFactory parserFactory;
+    
+    private static final Object repositoryJobLock = new Object();
 
     /** Returns the current JspCompileContext for the given page. */
     public static FfjJspCompileContext getCurrentCompileContext(DataObject jsp) {
@@ -233,45 +235,48 @@ public class JspCompileUtil {
     * <li>returns the root of this filesystem
     * </ul> */
     static FileObject getAsRootOfFileSystem(File intendedRoot) {
-        // try to find it among current filesystems
-        for (Enumeration en = Repository.getDefault().getFileSystems(); en.hasMoreElements(); ) {
-            FileSystem fs = (FileSystem)en.nextElement();
-            File root = NbClassPath.toFile(fs.getRoot());
-            if (root != null) {
-                if (root.equals(intendedRoot))
-                    return fs.getRoot();
+        // synchronize on our private lock
+        synchronized (repositoryJobLock) {
+            // try to find it among current filesystems
+            for (Enumeration en = Repository.getDefault().getFileSystems(); en.hasMoreElements(); ) {
+                FileSystem fs = (FileSystem)en.nextElement();
+                File root = NbClassPath.toFile(fs.getRoot());
+                if (root != null) {
+                    if (root.equals(intendedRoot))
+                        return fs.getRoot();
+                }
             }
-        }
 
-        // does not exist in repository
-        if (!intendedRoot.exists()) {
-            boolean success = WebExecUtil.myMkdirs(intendedRoot);
+            // does not exist in repository
+            if (!intendedRoot.exists()) {
+                boolean success = WebExecUtil.myMkdirs(intendedRoot);
+            }
+
+            DebugSourceCapabilityBean cap = new DebugSourceCapabilityBean();
+
+            cap.setCompile(true);
+            cap.setExecute(true);
+            cap.setDebug(true);
+            cap.setDoc(false);
+            cap.setDebugsource(true);
+
+            LocalFileSystem newFs = new LocalFileSystem(cap);
+
+            try {
+                newFs.setRootDirectory(intendedRoot);
+            }
+            catch (Exception e) {
+                NotifyDescriptor.Message message = new NotifyDescriptor.Message(
+                                                       MessageFormat.format(NbBundle.getBundle(JspCompileUtil.class).
+                                                                            getString("EXC_JspFSNotCreated"),
+                                                                            new Object[] {intendedRoot.getAbsolutePath()}), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(message);
+                return null;
+            }
+            newFs.setHidden(true);
+            Repository.getDefault().addFileSystem(newFs);
+            return newFs.getRoot();
         }
-        
-        DebugSourceCapabilityBean cap = new DebugSourceCapabilityBean();
-        
-        cap.setCompile(true);
-        cap.setExecute(true);
-        cap.setDebug(true);
-        cap.setDoc(false);
-        cap.setDebugsource(true);
-        
-        LocalFileSystem newFs = new LocalFileSystem(cap);
-        
-        try {
-            newFs.setRootDirectory(intendedRoot);
-        }
-        catch (Exception e) {
-            NotifyDescriptor.Message message = new NotifyDescriptor.Message(
-                                                   MessageFormat.format(NbBundle.getBundle(JspCompileUtil.class).
-                                                                        getString("EXC_JspFSNotCreated"),
-                                                                        new Object[] {intendedRoot.getAbsolutePath()}), NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(message);
-            return null;
-        }
-        newFs.setHidden(true);
-        Repository.getDefault().addFileSystem(newFs);
-        return newFs.getRoot();
     }
 
     /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
