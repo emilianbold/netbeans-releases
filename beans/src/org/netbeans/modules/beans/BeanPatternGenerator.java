@@ -138,7 +138,8 @@ class BeanPatternGenerator extends Object {
       
       setterBody.append( TAB + indexedType.toString() );
       setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
-      setterBody.append( " = this." ).append( name ).append( ";\n"); // NOI18N
+      setterBody.append( " = this." ).append( name ); // NOI18N
+      setterBody.append( "[index];\n"); // NOI18N
     }
     
     if ( withSet || withSupport ) {
@@ -601,7 +602,7 @@ class BeanPatternGenerator extends Object {
                           String listenerList,
                           boolean passEvent )
     throws SourceException {
-    
+      
     if ( listenerList == null )
       listenerList = "listenerList"; // NOI18N
 
@@ -778,6 +779,7 @@ class BeanPatternGenerator extends Object {
   
   
   static boolean usesConstructorParameters( ClassElement eventClass, boolean passEvent ) {
+    
     if ( passEvent || eventClass == null || eventClass.getConstructors().length > 1 )
       return false;
     else 
@@ -787,6 +789,7 @@ class BeanPatternGenerator extends Object {
 
   static MethodParameter[] generateFireParameters( Type eventType, ClassElement eventClass, boolean passEvent ) {
    
+    
     if ( !usesConstructorParameters( eventClass, passEvent ) ) {
       return new MethodParameter[] 
         { new MethodParameter( "event", eventType, false ) }; // NOI18N
@@ -862,6 +865,8 @@ class BeanPatternGenerator extends Object {
 }
 /* 
  * Log
+ *  10   Gandalf   1.9         1/17/00  Petr Hrebejk    Indexed property setter 
+ *       body fix mk2
  *  9    Gandalf   1.8         1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
  *       and new WeakListener implementation
  *  8    Gandalf   1.7         1/13/00  Petr Hrebejk    i18n mk3
