@@ -33,9 +33,17 @@ public abstract class FactoryRegistry extends Object {
     private static HashMap registry = new HashMap(3);
 
     
-    /** Registers factory to data object class. */
-    public static void registerSupport(String dataObjectClassName, I18nSupport.Factory factory) {
+    /** Registers factory to data object class.
+     * @param dataObjectClassName class name of data object for which factory to register
+     * @param factpry i18n factory for specified data object */
+    public static synchronized void registerSupport(String dataObjectClassName, I18nSupport.Factory factory) {
         registry.put(dataObjectClassName, factory);
+    }
+    
+    /** Unregisters factory for the spcified data object. 
+     * @param dataObjectClassName class name of data object which factory to unregister */
+    public static synchronized void unregisterSupport(String dataObjectClassName) {
+        registry.remove(dataObjectClassName);
     }
 
     /** Gets <code>I18nSupportFactory</code> for specified data object class.
