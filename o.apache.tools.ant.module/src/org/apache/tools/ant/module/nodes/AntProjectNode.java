@@ -53,7 +53,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
 
     public AntProjectNode (DataObject obj) {
         super (obj, new AntProjectChildren ((AntProjectCookie) obj.getCookie (AntProjectCookie.class)));
-        setIconBase ("/org/apache/tools/ant/module/resources/AntIcon"); // NOI18N
+        setIconBase ("org/apache/tools/ant/module/resources/AntIcon"); // NOI18N
         AntProjectCookie cookie = (AntProjectCookie) getCookie (AntProjectCookie.class);
         cookie.addChangeListener (WeakListener.change (this, cookie));
         obj.addPropertyChangeListener (WeakListener.propertyChange (this, obj));
@@ -90,7 +90,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         Throwable exc = cookie.getParseException ();
         if (exc == null) {
             setShortDescription (getDisplayName ());
-            setIconBase ("/org/apache/tools/ant/module/resources/AntIcon"); // NOI18N
+            setIconBase ("org/apache/tools/ant/module/resources/AntIcon"); // NOI18N
         } else {
             String m = exc.getLocalizedMessage ();
             if (m == null || m.length () == 0) {
@@ -99,7 +99,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
                 AntModule.err.notify (ErrorManager.INFORMATIONAL, exc);
             }
             setShortDescription (m);
-            setIconBase ("/org/apache/tools/ant/module/resources/AntIconError"); // NOI18N
+            setIconBase ("org/apache/tools/ant/module/resources/AntIconError"); // NOI18N
         }
     }
 

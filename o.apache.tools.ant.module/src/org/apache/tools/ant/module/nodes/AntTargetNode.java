@@ -82,10 +82,10 @@ public class AntTargetNode extends ElementNode {
         String desc = el.getAttribute ("description"); // NOI18N
         if (desc.length () > 0) {
             setShortDescription (desc);
-            setIconBase ("/org/apache/tools/ant/module/resources/EmphasizedTargetIcon");
+            setIconBase ("org/apache/tools/ant/module/resources/EmphasizedTargetIcon");
         } else {
             setShortDescription (getDisplayName ());
-            setIconBase ("/org/apache/tools/ant/module/resources/TargetIcon");
+            setIconBase ("org/apache/tools/ant/module/resources/TargetIcon");
         }
     }
 
