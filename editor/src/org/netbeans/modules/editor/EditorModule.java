@@ -72,7 +72,7 @@ import org.netbeans.editor.AnnotationTypes;
 public class EditorModule extends ModuleInstall 
 implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable  {
 
-    private static Hashtable kitMapping = new HackMap();
+    private static Hashtable origKitMapping;
     
     /** PrintOptions to be installed */
     Class[] printOpts = new Class[] {
@@ -125,6 +125,9 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
             keyField.setAccessible(true);
             Object key = keyField.get(JEditorPane.class);
+            origKitMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
+            Hashtable kitMapping = (origKitMapping != null)
+                ? new HackMap(origKitMapping) : new HackMap();
             sun.awt.AppContext.getAppContext().put(key, kitMapping);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -173,7 +176,7 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
             keyField.setAccessible(true);
             Object key = keyField.get(JEditorPane.class);
-            sun.awt.AppContext.getAppContext().put(key, new Hashtable() );
+            sun.awt.AppContext.getAppContext().put(key, origKitMapping);
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -240,6 +243,13 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
     }
 
     private static class HackMap extends Hashtable {
+
+        HackMap() {
+        }
+
+        HackMap(java.util.Map m) {
+            super(m);
+        }
 
         private EditorKit findKit(String type) {
             FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Editors/" + type + "/EditorKit.instance");
