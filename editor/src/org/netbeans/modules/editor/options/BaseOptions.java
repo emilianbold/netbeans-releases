@@ -126,6 +126,10 @@ public class BaseOptions extends OptionSupport {
 
     static final long serialVersionUID =-5469192431366914841L;
 
+    /** Whether formatting debug messages should be displayed */
+    private static final boolean debugFormat
+        = Boolean.getBoolean("netbeans.debug.editor.format"); // NOI18N
+
     public BaseOptions() {
         this(BaseKit.class, BASE);
     }
@@ -519,6 +523,11 @@ public class BaseOptions extends OptionSupport {
         }
         Settings.setValue(getKitClass(), NbEditorDocument.INDENT_ENGINE, eng);
         Settings.setValue(getKitClass(), NbEditorDocument.FORMATTER, f);
+        
+        if (debugFormat) {
+            System.err.println("BaseOptions.setIndentEngine(): engine for kitClass=" // NOI18N
+                + getKitClass() + " set to eng=" + eng + ", formatter=" + f); // NOI18N
+        }
     }
 
 }
