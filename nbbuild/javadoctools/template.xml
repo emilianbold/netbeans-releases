@@ -65,7 +65,7 @@ cause it to fail.
         <property name="javadoc.docs.openide/loaders" value="http://www.netbeans.org/download/dev/javadoc/LoadersAPI"/>
         <property name="javadoc.docs.openide/deprecated" value="http://www.netbeans.org/download/dev/javadoc/DeprecatedAPIs"/>
         <property name="javadoc.docs.core/javahelp" value="http://www.netbeans.org/download/dev/javadoc/JavaHelpAPI"/>
-        <property name="javadoc.docs.core/term" value="http://www.netbeans.org/download/dev/javadoc/TerminalEmulatorAPI"/>
+        <property name="javadoc.docs.core/term" value="http://www.netbeans.org/download/dev/javadoc/UnsupportedAPIs/TerminalEmulatorAPI"/>
         <property name="javadoc.docs.java/api" value="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs"/>
         <!-- add more here as needed... -->
         <property name="javadoc.css.dir" location="."/>
