@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -572,6 +572,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              author="false"
              version="false"
              maxmemory="64m"
+             stylesheetfile="api/doc/javadoc.css"
     >
       <sourcepath>
         <pathelement location="api/doc"/>
@@ -618,7 +619,11 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <group title="&lt;a href=&quot;@TOP@org/openide/util/doc-files/api.html&quot;&gt;Utility Classes&lt;/a&gt;"
              packages="org.openide.awt:org.openide.util:org.openide.util.enum:org.openide.util.io:org.openide.xml"/>
     </javadoc>
-    <copy file="api/doc/open-apis.css" tofile="OpenAPIs/open-apis.css"/>
+    <copy todir="OpenAPIs">
+      <fileset dir="api/doc">
+        <include name="*.css"/>
+      </fileset>
+    </copy>
     <replace dir="OpenAPIs" token="@JDK@" value="${jdk-docs-location}">
       <include name="**/doc-files/*.html"/>
       <include name="**/package-summary.html"/>
@@ -664,6 +669,8 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
         <exclude name="org/openide/filesystems/doc-files/resolverDocumentation.html"/>
         <!-- Missing title tags, it is OK: -->
         <exclude name="**/package.html"/>
+        <!-- Maintained separately: -->
+        <exclude name="tutorial/"/>
       </fileset>
       <arg value="-e"/>
       <arg value="--gnu-emacs"/>
