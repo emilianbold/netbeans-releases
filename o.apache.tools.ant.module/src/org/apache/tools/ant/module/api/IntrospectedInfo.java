@@ -18,10 +18,13 @@ package org.apache.tools.ant.module.api;
 import java.io.*;
 import java.util.*;
 import java.util.Map; // override org.apache.tools.ant.Map
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.apache.tools.ant.*;
 
 import org.openide.*;
+import org.openide.util.RequestProcessor;
 
 import org.apache.tools.ant.module.AntModule;
 
@@ -102,18 +105,97 @@ public final class IntrospectedInfo implements Serializable {
     /** definitions first by kind then by name to class name */
     private Map namedefs = new HashMap(); // Map<String,Map<String,String>>
     
+    private transient Set listeners = new HashSet(5); // Set<ChangeListener>
+    private transient Set tonotify = new HashSet(5); // Set<ChangeListener>
+    
     /** Make new empty set of info.
      */
     public IntrospectedInfo () {
     }
+    
     private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
-        is.defaultReadObject();
+        listeners = new HashSet(5);
+        tonotify = new HashSet(5);
+        //is.defaultReadObject();
+        ObjectInputStream.GetField fields = is.readFields();
+        clazzes = (Map)fields.get("clazzes", null); // NOI18N
+        namedefs = (Map)fields.get("namedefs", null); // NOI18n
         if (namedefs == null) {
             // Compatibility with older versions of this class.
+            AntModule.err.log("#15739: reading old version of IntrospectedInfo");
             namedefs = new HashMap();
-            ObjectInputStream.GetField fields = is.readFields();
-            namedefs.put("task", fields.get("tasks", new HashMap())); // NOI18N
-            namedefs.put("type", fields.get("types", new HashMap())); // NOI18N
+            Object tasks_ = fields.get("tasks", null); // NOI18N
+            if (tasks_ == null) throw new NullPointerException();
+            if (! (tasks_ instanceof Map)) throw new ClassCastException(tasks_.toString());
+            namedefs.put("task", tasks_); // NOI18N
+            Map types = (Map)fields.get("types", null); // NOI18N
+            if (types == null) throw new NullPointerException();
+            namedefs.put("type", types); // NOI18N
+        }
+        // #15739 sanity check:
+        Iterator it = namedefs.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry)it.next();
+            String key = (String)entry.getKey();
+            Map value = (Map)entry.getValue();
+            Iterator it2 = value.entrySet().iterator();
+            while (it2.hasNext()) {
+                Map.Entry entry2 = (Map.Entry)it2.next();
+                String key2 = (String)entry2.getKey();
+                String value2 = (String)entry2.getValue();
+                // that's all, just checking for ClassCastException's
+            }
+        }
+        Iterator it2 = clazzes.entrySet().iterator();
+        while (it2.hasNext()) {
+            Map.Entry entry2 = (Map.Entry)it2.next();
+            String key2 = (String)entry2.getKey();
+            IntrospectedClass value2 = (IntrospectedClass)entry2.getValue();
+            // again
+        }
+    }
+    
+    /** Add a listener to changes in the definition set.
+     * @param l the listener to add
+     * @since 2.6
+     */
+    public void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
+    }
+    
+    /** Remove a listener to changes in the definition set.
+     * @param l the listener to remove
+     * @since 2.6
+     */
+    public void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+    
+    private class ChangeTask implements Runnable {
+        public void run() {
+            ChangeListener[] listeners2;
+            synchronized (listeners) {
+                if (tonotify.isEmpty()) return;
+                listeners2 = (ChangeListener[])tonotify.toArray(new ChangeListener[tonotify.size()]);
+                tonotify.clear();
+            }
+            ChangeEvent ev = new ChangeEvent(this);
+            for (int i = 0; i < listeners2.length; i++) {
+                listeners2[i].stateChanged(ev);
+            }
+        }
+    }
+    private void fireStateChanged() {
+        synchronized (listeners) {
+            if (listeners.isEmpty()) return;
+            if (tonotify.isEmpty()) {
+                RequestProcessor.postRequest(new ChangeTask());
+            }
+            tonotify.addAll(listeners);
         }
     }
     
@@ -179,7 +261,7 @@ public final class IntrospectedInfo implements Serializable {
     public Map getAttributes (String clazz) throws IllegalArgumentException {
         Map map = getData (clazz).attrs;
         if (map == null) {
-            return /*1.3: Collections.EMPTY_MAP*/ new HashMap (1);
+            return Collections.EMPTY_MAP;
         } else {
             return Collections.unmodifiableMap (map);
         }
@@ -193,7 +275,7 @@ public final class IntrospectedInfo implements Serializable {
     public Map getElements (String clazz) throws IllegalArgumentException {
         Map map = getData (clazz).subs;
         if (map == null) {
-            return /*1.3: Collections.EMPTY_MAP*/ new HashMap (1);
+            return Collections.EMPTY_MAP;
         } else {
             return Collections.unmodifiableMap (map);
         }
@@ -266,6 +348,7 @@ public final class IntrospectedInfo implements Serializable {
             }
             m.put(name, clazz.getName());
         }
+        fireStateChanged();
         analyze (clazz);
     }
     /** Unregister a definition.
@@ -284,6 +367,7 @@ public final class IntrospectedInfo implements Serializable {
                 m.remove(name);
             }
         }
+        fireStateChanged();
     }
     
     /** Reanalyze a class' structure.
@@ -369,6 +453,7 @@ public final class IntrospectedInfo implements Serializable {
         while (it.hasNext ()) {
             analyze ((Class) it.next ());
         }
+        fireStateChanged();
     }
     
     /* Scan an existing (already-run) project to see if it has any new tasks/types.
@@ -418,6 +503,7 @@ public final class IntrospectedInfo implements Serializable {
                 }
             }
         }
+        fireStateChanged();
     }
     
     public String toString () {

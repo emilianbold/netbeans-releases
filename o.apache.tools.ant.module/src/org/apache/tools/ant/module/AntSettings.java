@@ -16,14 +16,15 @@
 package org.apache.tools.ant.module;
 
 import java.util.Properties;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.*;
 import org.openide.compiler.*;
 import org.openide.execution.*;
 import org.openide.filesystems.FileSystemCapability;
 import org.openide.options.SystemOption;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 
 import org.apache.tools.ant.Project;
 
@@ -31,7 +32,7 @@ import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.loader.AntCompilerSupport;
 import org.apache.tools.ant.module.run.AntExecutor;
 
-public class AntSettings extends SystemOption {
+public class AntSettings extends SystemOption implements ChangeListener {
 
     public static final String PROP_VERBOSITY = "verbosity"; // NOI18N
     public static final String PROP_PROPERTIES = "properties"; // NOI18N
@@ -125,6 +126,9 @@ public class AntSettings extends SystemOption {
     
     public void setCustomDefs (IntrospectedInfo ii) {
         putProperty (PROP_CUSTOM_DEFS, ii, true);
+        ii.addChangeListener(WeakListener.change(this, ii));
+        // Ideally would also remove listener from old one, but in practice
+        // identity of this object never changes so it does not really matter...
     }
 
     /** @return CompilerType */
@@ -168,4 +172,10 @@ public class AntSettings extends SystemOption {
     public void setReuseOutput (boolean b) {
         putProperty (PROP_REUSE_OUTPUT, new Boolean (b), true);
     }
+    
+    public void stateChanged(ChangeEvent e) {
+        // [PENDING] Should not be necessary, but see #15825.
+        firePropertyChange(PROP_CUSTOM_DEFS, null, null);
+    }
+    
 }

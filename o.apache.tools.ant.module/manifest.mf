@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.apache.tools.ant.module/2
 OpenIDE-Module-Localizing-Bundle: org/apache/tools/ant/module/Bundle.properties
-OpenIDE-Module-Specification-Version: 2.5
+OpenIDE-Module-Specification-Version: 2.6
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/apache/tools/ant/module/AntModule.class
 OpenIDE-Module-Layer: org/apache/tools/ant/module/resources/AntModuleLayer.xml
