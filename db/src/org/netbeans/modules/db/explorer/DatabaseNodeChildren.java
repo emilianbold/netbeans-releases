@@ -142,7 +142,12 @@ public class DatabaseNodeChildren extends Children.Array
         if (subnode != null && addToChildrenFlag) {
             DatabaseNodeInfo ninfo = ((DatabaseNode)getNode()).getInfo();
             ninfo.getChildren().add(info);
-            if (isInitialized()) add(new Node[] {subnode});
+            
+            //workaround for issue #31617, children should be initialized if they are not
+            getNodes();
+
+            if (isInitialized())
+                add(new Node[] {subnode});
         }
 
         return subnode;
