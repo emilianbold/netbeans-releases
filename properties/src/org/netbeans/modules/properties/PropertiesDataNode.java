@@ -77,108 +77,117 @@ public class PropertiesDataNode extends DataNode {
     * @return new types
     */
     public NewType[] getNewTypes () {
-        return new NewType[] {
-                   new NewType() {
+        return new NewType[] { 
+            new NewType() {
+                FileObject folder;
+                String newName;
+                PropertiesFileEntry  fe;
+                PropertiesStructure str;
+                MultiDataObject prop;
 
-                       FileObject folder;
-                       String newName;
-                       PropertiesFileEntry  fe;
-                       PropertiesStructure str;
-                       MultiDataObject prop;
+                public String getName() {
+                    return NbBundle.getBundle(PropertiesDataNode.class).getString("LAB_NewLocaleAction");
+                }
 
-                       public String getName() {
-                           return NbBundle.getBundle(PropertiesDataNode.class).getString("LAB_NewLocaleAction");
-                       }
+                public HelpCtx getHelpCtx() {
+                    return new HelpCtx (PropertiesDataNode.class.getName () + ".new_locale");
+                }
 
-                       public HelpCtx getHelpCtx() {
-                           return new HelpCtx (PropertiesDataNode.class.getName () + ".new_locale");
-                       }
+                public void create() throws IOException {
+                    prop = (MultiDataObject)getCookie(DataObject.class);
 
-                       public void create() throws IOException {
+                    final java.awt.Dialog[] dialog = new java.awt.Dialog[1];
+                    final NewLocalePanel panel = new NewLocalePanel(prop.getPrimaryFile().getName());
+                    DialogDescriptor dd = new DialogDescriptor(
+                        panel,
+                        NbBundle.getBundle(PropertiesDataNode.class).getString("CTL_NewLocaleTitle"),
+                        true,
+                        DialogDescriptor.OK_CANCEL_OPTION,
+                        DialogDescriptor.OK_OPTION,
+                        new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent ev) {
+                                // OK pressed
+                                if (ev.getSource() == DialogDescriptor.OK_OPTION) {
+                                    dialog[0].setVisible(false);
+                                    dialog[0].dispose();
 
-                           NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-                                                                NbBundle.getBundle(PropertiesDataNode.class).getString("CTL_NewLocaleLabel"),
-                                                                NbBundle.getBundle(PropertiesDataNode.class).getString("CTL_NewLocaleTitle"));
+                                    newName = panel.getNewLocale();
+                                    try {
+                                        if (newName.length() == 0)
+                                            throw new IllegalArgumentException(NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"));
+                                        if (newName.charAt(0) != PropertiesDataLoader.PRB_SEPARATOR_CHAR)
+                                            newName = "" + PropertiesDataLoader.PRB_SEPARATOR_CHAR + newName;
 
-                           if (NotifyDescriptor.OK_OPTION.equals(TopManager.getDefault().notify(dlg))) {
-                               newName = dlg.getInputText();
-                               try {
-                                   if (newName.length() == 0)
-                                       throw new IllegalArgumentException(NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"));
-                                   if (newName.charAt(0) != PropertiesDataLoader.PRB_SEPARATOR_CHAR)
-                                       newName = "" + PropertiesDataLoader.PRB_SEPARATOR_CHAR + newName;
+                                        // copy the default file to a new file
+                                        //prop = (MultiDataObject)getCookie(DataObject.class);
+                                        
+                                        if (prop != null) {
+                                            fe = (PropertiesFileEntry)prop.getPrimaryEntry();
+                                            str = fe.getHandler().getStructure();
+                                            folder = prop.getPrimaryFile().getParent();
 
-                                   // copy the default file to a new file
-                                   prop = (MultiDataObject)getCookie(DataObject.class);
-                                   if (prop != null) {
-                                       fe = (PropertiesFileEntry)prop.getPrimaryEntry();
-                                       str = fe.getHandler().getStructure();
-                                       folder = prop.getPrimaryFile().getParent();
+                                            folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                                                public void run() throws IOException {
+                                                    FileObject newFile = FileUtil.createData(folder, prop.getPrimaryFile().getName() + newName +
+                                                        "." + PropertiesDataLoader.PROPERTIES_EXTENSION);
+                                                    BufferedWriter bw = null;
+                                                    FileLock lock = newFile.lock();
+                                                    try {
+                                                        bw = new BufferedWriter(new OutputStreamWriter(
+                                                            new PropertiesEditorSupport.NewLineOutputStream(
+                                                                newFile.getOutputStream(lock), fe.getPropertiesEditor().newLineType), "8859_1"));
+                                                            for (Iterator it = str.allItems(); it.hasNext(); ) {
+                                                                Element.ItemElem item1 = (Element.ItemElem)it.next();
+                                                                Element.ItemElem item2 = new Element.ItemElem(null,
+                                                                    new Element.KeyElem(null, item1.getKey()),
+                                                                    new Element.ValueElem(null, item1.getValue()),
+                                                                    new Element.CommentElem(null, item1.getComment()));
+                                                               String ps = item2.printString();
+                                                               bw.write(ps, 0, ps.length());
+                                                            }
+                                                    } finally {
+                                                        if (bw != null) {
+                                                            bw.flush();
+                                                            bw.close();
+                                                        }
+                                                        lock.releaseLock();
+                                                    }
+                                                }
+                                            }); // end of inner class which is run as atomicaction
 
-                                       folder.getFileSystem().runAtomicAction(
-                                           new FileSystem.AtomicAction() {
-                                               public void run() throws IOException {
-                                                   FileObject newFile = FileUtil.createData(folder, prop.getPrimaryFile().getName() + newName +
-                                                                        "." + PropertiesDataLoader.PROPERTIES_EXTENSION);
-                                                   BufferedWriter bw = null;
-                                                   FileLock lock = newFile.lock();
-                                                   try {
-                                                       bw = new BufferedWriter(new OutputStreamWriter(
-                                                                                   new PropertiesEditorSupport.NewLineOutputStream(
-                                                                                       newFile.getOutputStream(lock), fe.getPropertiesEditor().newLineType), "8859_1"));
-                                                       for (Iterator it = str.allItems(); it.hasNext(); ) {
-                                                           Element.ItemElem item1 = (Element.ItemElem)it.next();
-                                                           Element.ItemElem item2 = new Element.ItemElem(null,
-                                                                                    new Element.KeyElem(null, item1.getKey()),
-                                                                                    new Element.ValueElem(null, item1.getValue()),
-                                                                                    new Element.CommentElem(null, item1.getComment()));
-                                                           String ps = item2.printString();
-                                                           bw.write(ps, 0, ps.length());
-                                                       }
-                                                   }
-                                                   finally {
-                                                       if (bw != null) {
-                                                           bw.flush();
-                                                           bw.close();
-                                                       }
-                                                       lock.releaseLock();
-                                                   }
-                                               }
-                                           }); // end of inner class which is run as atomicaction
-
-                                       /*FileObject folder = ((DataObject)prop).getPrimaryFile().getParent();
-                                       FileObject newFo = FileUtil.copyFile(((DataObject)prop).getPrimaryFile(), folder, 
-                                         ((DataObject)prop).getPrimaryFile().getName() + newName);*/
-                                   }
-
-                               }
-                               catch (IllegalArgumentException e) {
-                                   // catch & report badly formatted names
-                                   NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                                                      java.text.MessageFormat.format(
-                                                                          NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
-                                                                          new Object[] {newName}),
-                                                                      NotifyDescriptor.ERROR_MESSAGE);
-                                   TopManager.getDefault().notify(msg);
-                               }
-                               catch (IOException e) {
-                                   // catch & report IO error
-                                   NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                                                      java.text.MessageFormat.format(
-                                                                          NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
-                                                                          new Object[] {newName}),
-                                                                      NotifyDescriptor.ERROR_MESSAGE);
-                                   TopManager.getDefault().notify(msg);
-                               }
-                           }
-
-                       }
-
-                   } // end of inner class
-
-               };
+                                            //FileObject folder = ((DataObject)prop).getPrimaryFile().getParent();
+                                            //FileObject newFo = FileUtil.copyFile(((DataObject)prop).getPrimaryFile(), folder, 
+                                            //((DataObject)prop).getPrimaryFile().getName() + newName);
+                                         }
+                                    } catch (IllegalArgumentException e) {   
+                                        // catch & report badly formatted names
+                                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                                            java.text.MessageFormat.format(
+                                                NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
+                                                    new Object[] {newName}), NotifyDescriptor.ERROR_MESSAGE);
+                                        TopManager.getDefault().notify(msg);
+                                    } catch (IOException e) {
+                                        // catch & report IO error
+                                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                                            java.text.MessageFormat.format(
+                                                NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
+                                                    new Object[] {newName}), NotifyDescriptor.ERROR_MESSAGE);
+                                            TopManager.getDefault().notify(msg);
+                                    }
+                                // Cancel pressed
+                                } else if (ev.getSource() == DialogDescriptor.CANCEL_OPTION) {
+                                    dialog[0].setVisible(false);
+                                    dialog[0].dispose();
+                                }
+                            }
+                        }
+                    );
+                    dialog[0] = TopManager.getDefault().createDialog(dd);
+                    dialog[0].show();
+                }
+            } // end of inner class
+        };
     }
-
 }
 
 /*
