@@ -119,22 +119,7 @@
 				name = "AddNewDriver";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
 			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				system = YES;
-			}
+			delimiter
 		);
 	};
 
@@ -183,6 +168,12 @@
 				name = "AddNewDriver";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
 				node = driverlist;
+			},
+			delimiter,
+			{
+				name = "TestDriver";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.TestDriverAction;
+				node = driver;
 			},
 			delimiter,
 			{
@@ -235,6 +226,11 @@
 			copy = YES;
 			delete = YES;
 		};	
+		children_ordering = {
+			com.netbeans.enterprise.modules.db.explorer.nodes.TableListNode = 0;
+			com.netbeans.enterprise.modules.db.explorer.nodes.ViewListNode = 1;
+			com.netbeans.enterprise.modules.db.explorer.nodes.ProcedureListNode = 2;
+		};
 		actions = (
 			{
 				name = "AddConnection";
@@ -253,6 +249,12 @@
 			{
 				name = "Disconnect";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.DisconnectAction;
+			},
+			delimiter,
+			{
+				name = "TestDriver";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.TestDriverAction;
+				node = driver;
 			},
 			delimiter,
 			{
@@ -356,7 +358,7 @@
 	tablelist = {
 		name = Tables;
 		displayname = "{name}";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.TableListNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.TableListNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
 		children = ();
@@ -366,32 +368,20 @@
 			{
 				name = "CreateTable";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
+				perm = "write";
 			},
 			{
 				name = "RecreateTable";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateTableAction;
+				perm = "write";
 			},
 			delimiter,
 			{
 				name = "Refresh";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
+				perm = "write";
 			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				system = YES;
-			}
+			delimiter
 		);
 	};
 
@@ -414,17 +404,20 @@
 			delete = YES;
 		};	
 		children_ordering = {
-			com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode = 0;
+			com.netbeans.enterprise.modules.db.explorer.nodes.PrimaryKeyNode = 0;
+			com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode = 1;
 		};
 		actions = (
 			{
 				name = "CreateTable";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
 				node = tablelist;
+				perm = "write";
 			},
 			{
 				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				perm = "write";
 			},
 			{
 				name = "Refresh";
@@ -434,11 +427,13 @@
 			{
 				name = "GrabStructure";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabTableAction;
+				perm = "write";
 			},
 			{
 				name = "RecreateTable";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateTableAction;
 				node = tablelist;
+				perm = "write";
 			},
 			delimiter,
 			{
@@ -459,12 +454,14 @@
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
+				perm = "write";
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveTable";
 				class = org.openide.actions.DeleteAction;
+				perm = "write";
 				system = YES;
 			}
 		);
@@ -519,6 +516,7 @@
 			{
 				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				perm = "write";
 				node = table;
 			},
 			delimiter,
@@ -540,12 +538,14 @@
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
+				perm = "write";
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveColumn";
 				class = org.openide.actions.DeleteAction;
+				perm = "write";
 				system = YES;
 			}
 		);
@@ -618,6 +618,7 @@
 			{
 				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				perm = "write";
 				node = table;
 			},
 			delimiter,
@@ -639,12 +640,14 @@
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
+				perm = "write";
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "Remove column";
 				class = org.openide.actions.DeleteAction;
+				perm = "write";
 				system = YES;
 			}
 		);
@@ -716,7 +719,7 @@
 	*/
 	pcolumn = {
 		name = "Primary key";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.PrimaryKeyNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.PrimaryColumnNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnPrimary";
 		resultset = (catalog,schema,tablename,name,keyseq,pkname);
@@ -729,6 +732,7 @@
 			{
 				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				perm = "write";
 				node = table;
 			},
 			delimiter,
@@ -750,12 +754,14 @@
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
+				perm = "write";
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveColumn";
 				class = org.openide.actions.DeleteAction;
+				perm = "write";
 				system = YES;
 			}
 		);
@@ -833,6 +839,7 @@
 			{
 				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				perm = "write";
 				node = table;
 			},
 			delimiter,
@@ -854,12 +861,14 @@
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
+				perm = "write";
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveColumn";
 				class = org.openide.actions.DeleteAction;
+				perm = "write";
 				system = YES;
 			}
 		);
@@ -946,23 +955,9 @@
 			{
 				name = "AddIndex";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddIndexAction;
+				perm = "write";
 			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				system = YES;
-			}
+			delimiter
 		);
 	};
 
@@ -982,11 +977,13 @@
 			{
 				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddToIndexAction;
+				perm = "write";
 			},
 			{
 				name = "AddIndex";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddIndexAction;
 				node = ilist;
+				perm = "write";
 			},
 			{
 				name = "Refresh";
@@ -1006,6 +1003,7 @@
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
+				perm = "write";
 				system = YES;
 			},
 			delimiter,
@@ -1014,6 +1012,7 @@
 				class = org.openide.actions.DeleteAction;
 				node = ilist;
 				system = YES;
+				perm = "write";
 			}
 		);
 		properties = ();
@@ -1045,6 +1044,7 @@
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
+				perm = "write";
 				system = YES;
 			}
 		);
@@ -1111,6 +1111,7 @@
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
 				node = driverlist;
+				perm = "write";
 				system = YES;
 			}
 		);
@@ -1173,37 +1174,19 @@
 	viewlist = {
 		name = "Views";
 		displayname = "{name}";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.ViewListNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ViewListNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
 		children = ();
 		properties = ();
-		options = {
-			cut = YES;
-			copy = YES;
-			delete = YES;
-		};	
+		options = {};	
 		actions = (
 			{
 				name = "AddView";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateViewAction;
+				perm = "write";
 			},
-			delimiter,
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				system = YES;
-			}
+			delimiter
 		);
 	};
 
@@ -1223,6 +1206,7 @@
 			{
 				name = "AddView";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateViewAction;
+				perm = "write";
 				node = viewlist;
 			},
 			delimiter,
@@ -1244,12 +1228,14 @@
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
+				perm = "write";
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveView";
 				class = org.openide.actions.DeleteAction;
+				perm = "write";
 				system = YES;
 			}
 		);
@@ -1294,6 +1280,7 @@
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
+				perm = "write";
 				system = YES;
 			},
 		);
@@ -1344,38 +1331,13 @@
 	procedurelist = {
 		name = "Procedures";
 		displayname = "{name}";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.ProcedureListNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ProcedureListNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
 		children = ();
 		properties = ();
-		options = {
-			cut = YES;
-			copy = YES;
-			delete = YES;
-		};	
-		actions = (
-/*			{
-				name = "AddProcedure";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
-			},
-			delimiter,
-*/			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				system = YES;
-			}
-		);
+		options = {};	
+		actions = ();
 	};
 
 	procedure = {
@@ -1474,6 +1436,7 @@
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
+				perm = "write";
 				system = YES;
 			},
 			delimiter,
@@ -1482,6 +1445,7 @@
 				class = org.openide.actions.DeleteAction;
 				node = procedurelist;
 				system = YES;
+				perm = "write";
 			}
 		);
 		properties = (
