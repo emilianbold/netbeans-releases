@@ -7,6 +7,9 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1, org.openidex.ut
 OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 
+Name: org/netbeans/modules/javadoc/settings/DocumentationSettings.class
+OpenIDE-Module-Class: Option
+
 Name: org/netbeans/modules/javadoc/GenerateDocAction.class
 OpenIDE-Module-Class: Action
 

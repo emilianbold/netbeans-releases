@@ -17,7 +17,7 @@ import java.io.File;
 import java.lang.reflect.Modifier;
 
 //import org.openide.options.ContextSystemOption;
-//import org.openide.options.SystemOption;
+import org.openide.options.SystemOption;
 import org.openide.util.SharedClassObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -29,7 +29,7 @@ import org.netbeans.modules.javadoc.comments.AutoCommenter;
 * @author Petr Hrebejk
 * @version 0.1, Apr 15, 1999
 */
-public class DocumentationSettings extends SharedClassObject //ContextSystemOption //implements ViewerConstants
+public class DocumentationSettings extends SystemOption //ContextSystemOption //implements ViewerConstants
 {
     private static final String PROP_SEARCH_PATH         = "searchPatch";
     private static final String PROP_SEARCH_SORT         = "idxSearchSort";
@@ -70,14 +70,22 @@ public class DocumentationSettings extends SharedClassObject //ContextSystemOpti
     
     /** Constructor for DocumentationSettings */
     public DocumentationSettings () {
-        setSearchPath(new String[] {"c:/Jdk1.2/doc" });
-        setIdxSearchSort("A");
-        setIdxSearchNoHtml(false);
-        setIdxSearchSplit(50);
-        setAutocommentSplit(35);
-        setAutocommentModifierMask(Modifier.PROTECTED | Modifier.PUBLIC);
-        setAutocommentPackage(false);
-        setAutocommentErrorMask(AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING);
+        if( getProperty( PROP_SEARCH_PATH ) == null )
+            setSearchPath(new String[] {"c:/Jdk1.2/doc" });
+        if( getProperty( PROP_SEARCH_SORT ) == null )
+            setIdxSearchSort("A");
+        if( getProperty( PROP_SEARCH_NO_HTML ) == null )
+            setIdxSearchNoHtml(false);
+        if( getProperty( PROP_SEARCH_SPLIT ) == null )
+            setIdxSearchSplit(50);
+        if( getProperty( PROP_AUTOCOMENT_SPLIT ) == null )
+            setAutocommentSplit(35);        
+        if( getProperty( PROP_AUTOCOMENT_MOD_MASK ) == null )
+            setAutocommentModifierMask(Modifier.PROTECTED | Modifier.PUBLIC);        
+        if( getProperty( PROP_AUTOCOMENT_PACKAGE ) == null )
+            setAutocommentPackage(false);        
+        if( getProperty( PROP_AUTOCOMENT_ERR_MASK ) == null )
+            setAutocommentErrorMask(AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING);
         
     }
 
