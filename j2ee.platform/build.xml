@@ -54,7 +54,6 @@ Microsystems, Inc. All Rights Reserved.
 	<target name="compile" depends="j2ee-api-14, projectized.compile"/>
 
 	<target name="clean" depends="projectized.clean">
-		<ant dir="${external}" target="clean"/>
 		<delete file="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/j2eeri-1_4-doc-api.zip"/>
 	</target>
 </project>
