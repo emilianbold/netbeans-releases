@@ -18,6 +18,7 @@
 <mapID target="gs.key" url="getstart/keyconcepts.html" />
 <mapID target="gs.tutorials" url="getstart/tutorials.html" />
 
+<mapID target="proj_about" url="project/proj_about.html" />
 <mapID target="proj_creating" url="project/proj_creating.html" />
 <mapID target="proj_main" url="project/proj_main.html" />
 <mapID target="proj_process" url="project/proj_process.html" />
@@ -35,10 +36,10 @@
 <mapID target="proj_stand_customize" url="project/proj_stand_customize.html" />
 <mapID target="proj_gloss_freeform" url="project/csh/glossary_freeform.html" />
 <mapID target="proj_gloss_standard" url="project/csh/glossary_standard.html" />
-<mapID target="proj_fav_window" url="project/csh/proj_fav_window" />
+<mapID target="proj_fav_window" url="project/csh/proj_fav_window.html" />
 
 <mapID target="files.diff" url="files/files_diff.html" />
-<!--<mapID target="files.icons" url="files/files_icons.html" />-->
+<mapID target="files_favorite" url="files/files_favorite.html" />
 <mapID target="files.ignore-files" url="files/files_ignore-files.html" />
 <mapID target="files.search" url="files/files_search.html" />
 <mapID target="files.template" url="files/files_template.html" />
@@ -102,7 +103,7 @@
 <mapID target="comp_process" url="compile/comp_process.html" />
 <mapID target="comp_quickref" url="compile/comp_quickref.html" />
 <mapID target="comp_libraries" url="compile/comp_libraries.html" />
-<mapID target="output.window" url="pending.html" />
+<mapID target="output.window" url="compile/comp_output.html" />
 
 <mapID target="run_about" url="run/run_about.html" />
 <mapID target="run_app" url="run/run_app.html" />
@@ -314,9 +315,7 @@
 <mapID target="configure.quickref" url="configure/configure_quickref.html" />
 <mapID target="configure.options" url="configure/configure_options.html" />
 <mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
-<!--maybe reincorporate the following 2 topics later-->
-<!--<mapID target="configure.output" url="configure/output.html" />-->
-<!--<mapID target="configure.system.settings" url="configure/system_settings.html" />-->
+<mapID target="configure.system.settings" url="configure/system_settings.html" />
 
 <mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
 <mapID target="workspace.window.mode" url="configure/workspace/window_modes.html" />

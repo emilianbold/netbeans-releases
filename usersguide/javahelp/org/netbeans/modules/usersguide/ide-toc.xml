@@ -21,7 +21,7 @@
   </tocitem>
   
   <tocitem text="Working with Projects" >
-    <tocitem text="About Projects" target="tbd" />
+    <tocitem text="About Projects" target="proj_about" />
     <tocitem text="Working with Projects" target="proj_process"/>
     <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
     <tocitem text="Creating a Java Project" target="proj_creating"/>
@@ -29,7 +29,7 @@
     <tocitem text="Setting the Main Project" target="proj_main" />
     <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
     <tocitem text="Setting the Target JDK" target="proj_jdk" />
-    <tocitem text="Standard Projects" target="tbd" >
+    <tocitem text="Standard Projects" >
       <tocitem text="About Standard Projects" target="proj_stand_about" />
       <tocitem text="Managing the Classpath" target="comp_classpath" />
       <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
@@ -49,6 +49,7 @@
   <tocitem text="Working with Files" >
     <tocitem text="Searching Files" target="files.search" />
     <tocitem text="Comparing Two Files in the IDE" target="files.diff" />
+    <tocitem text="Accessing Files Outside of a Project" target="files_favorite" />
     <tocitem text="Creating a Template" target="files.template" />
     <tocitem text="Working with Unknown File Extensions" target="files.unknown" />
     <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />
@@ -80,7 +81,7 @@
     <tocitem text="Configuring General IDE Settings" >
       <tocitem text="Using the Options Window" target="configure.options" />
       <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />      
-      <!--<tocitem text="Configuring System Settings" target="configure.system.settings" />-->
+      <tocitem text="Configuring System Settings" target="configure.system.settings" />
       <tocitem text="Configuring Java Settings" target="java.java_sources" />
       <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
     </tocitem>
@@ -218,7 +219,6 @@
       <tocitem text="Code Formats for Internationalized Strings" target="internation.replformat" />
       <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
       <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
-      <tocitem text="Running Java Sources in a Specific Locale" target="tbd" />
     </tocitem>
     <tocitem text="Configuring the Source Editor" >
       <tocitem text="About" target="editing.configuring"/>    
