@@ -21,6 +21,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.junit.GuiUtils;
+import org.netbeans.modules.junit.SelfResizingPanel;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
@@ -63,7 +64,7 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel {
                         GuiUtils.CHK_HINTS}));
         chkCodeHints = chkBoxes[0];
 
-        JComponent box = new JPanel();
+        JComponent box = new SelfResizingPanel();
         box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
         box.add(optCode);
         box.add(Box.createVerticalStrut(11));
