@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="JSP.jsp/JSP.jspx" boolvalue="true"/>
         <attr name="JSP.jspx/JSP.jspf" boolvalue="true"/>
 	<attr name="templateWizardURL" 
-              urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+              urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPfolder.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
 	<!-- Basic JSP --> 
         <file name="JSP.jsp" url="templates/JSP.template">
