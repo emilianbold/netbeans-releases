@@ -101,6 +101,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="netbeans"/>
         <delete file="core-ide.nbm"/>
         <delete dir="Info"/>
+        <delete file="manifest-subst.mf"/>
     </target>
 
     <target name="real-clean" depends="clean">
