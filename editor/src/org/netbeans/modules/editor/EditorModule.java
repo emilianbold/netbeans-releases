@@ -15,8 +15,6 @@
 package org.netbeans.modules.editor;
 
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Field;
 import java.io.IOException;
 import java.util.Hashtable;
@@ -28,23 +26,13 @@ import javax.swing.text.EditorKit;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.DialogSupport;
-import org.netbeans.editor.ext.java.JavaCompletion;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.editor.LocaleSupport;
-import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.editor.java.JCStorage;
-import org.netbeans.modules.editor.java.JCUpdateAction;
-import org.netbeans.modules.editor.html.HTMLKit;
-import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
-import org.netbeans.modules.editor.options.JavaOptions;
-import org.netbeans.modules.editor.options.HTMLOptions;
-import org.netbeans.modules.editor.options.PlainOptions;
 import org.netbeans.modules.editor.options.JavaPrintOptions;
 import org.netbeans.modules.editor.options.HTMLPrintOptions;
 import org.netbeans.modules.editor.options.PlainPrintOptions;
-import org.netbeans.modules.editor.options.AbbrevsMIMEProcessor;
 import org.openide.TopManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.InstanceCookie;
@@ -84,8 +72,7 @@ import org.openide.loaders.DataFolder;
  * @author Miloslav Metelka
  */
 
-public class EditorModule extends ModuleInstall 
-implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable  {
+public class EditorModule extends ModuleInstall {
 
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
 
@@ -102,6 +89,7 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
     
     /** Module installed again. */
     public void restored () {
+
 
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
         LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
@@ -152,9 +140,6 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
 
 	// defer the rest of initialization, but enable a bit of paralelism
 //        org.openide.util.RequestProcessor.postRequest (this, 0, Thread.MIN_PRIORITY);
-
-        // Prepares lazy init of java code completion.
-        prepareJCCInit();
 
         // Options
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
@@ -264,66 +249,6 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             }
         }
         
-    }
-
-    /** Prepares lazy init of JCC. */
-    private void prepareJCCInit() {
-        // Sets initializer to JavaCompletion, see JavaCompletion.
-        JavaCompletion.setFinderInitializer(this);
-
-        // Listen on TopComponent activation, and if opened such one using JavaKit,
-        // init java completion and remove itself from listening.
-        TopComponent.getRegistry().addPropertyChangeListener(this);
-    }
-    
-    
-    /** Implements <code>JavaCompletion.JCFinderInitializer</code>.
-     * Initializes JCC. */
-    public void initJCFinder() {
-        JCStorage.getStorage();
-    }
-    
-    /** Implements <code>Runnable</code> interface. */
-    public void run() {
-        // Java completion storage init.
-        JCStorage.getStorage();
-        
-    }
-    
-    /** Implements <code>PropertyChangeListener</code>.
-     * Listens on <code>TopComponent.Registry</code> to init JCC when first 
-     * node with java editor is activated and has focus. */
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
-            Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-
-            if(nodes == null || nodes.length == 0) {
-                return;
-            }
-
-            EditorCookie ec = (EditorCookie)nodes[0].getCookie(EditorCookie.class);
-
-            if(ec == null) {
-                return;
-            }
-
-            JEditorPane[] panes = ec.getOpenedPanes();
-
-            if(panes == null || panes.length == 0 || !panes[0].hasFocus()) {
-                return;
-            }
-            
-            EditorKit kit = panes[0].getEditorKit();
-
-            if(!(kit instanceof JavaKit)) {
-                return;
-            }
-
-            TopComponent.getRegistry().removePropertyChangeListener(this);
-
-            // Finally init the java completion.
-            RequestProcessor.postRequest(this);
-        };
     }
 
     private static class HackMap extends Hashtable {
