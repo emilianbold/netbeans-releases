@@ -91,13 +91,13 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
             
             case ICON_COLOR_16x16:
             default:
-                return Utilities.loadImage( "/org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16C.gif" );    // NOI18N
+                return Utilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16C.gif" );    // NOI18N
             case ICON_COLOR_32x32:
-                return Utilities.loadImage( "/org/netbeans/modules/javadoc/httpfs/resources/BeanIcon32C.gif" );    // NOI18N
+                return Utilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon32C.gif" );    // NOI18N
             case ICON_MONO_16x16:
-                return Utilities.loadImage( "/org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16M.gif" );    // NOI18N
+                return Utilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16M.gif" );    // NOI18N
             case ICON_MONO_32x32:
-                return Utilities.loadImage( "/org/netbeans/modules/javadoc/httpfs/resources/BeanIcon32M.gif" );    // NOI18N
+                return Utilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon32M.gif" );    // NOI18N
         }
     }
 

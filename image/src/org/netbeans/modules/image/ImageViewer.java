@@ -302,7 +302,7 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Overrides superclass method. Gets <code>Icon</code>. */
     public Image getIcon () {
-        return Utilities.loadImage("/org/netbeans/modules/image/imageObject.gif"); // NOI18N
+        return Utilities.loadImage("org/netbeans/modules/image/imageObject.gif"); // NOI18N
     }
     
     /** Draws zoom in scaled image. */
