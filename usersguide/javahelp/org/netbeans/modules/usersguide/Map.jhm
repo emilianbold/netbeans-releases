@@ -474,6 +474,7 @@
 <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
 <mapID target="javadoc.doc.window" url="javadoc/doc_comment_window.html" />
 <mapID target="javadoc.windows.all" url="javadoc/javadoc_windows.html" />
+<mapID target="javadoc.manager.window" url="javadoc/manager.html" />
 
 <mapID target="jarpackager" url="jarpackager/jarpackager.html" />
 <mapID target="jarpackager.creating" url="jarpackager/jarpackager_creating.html" />
