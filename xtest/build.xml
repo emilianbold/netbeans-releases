@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="prepare-nbjunit">
     <ant dir="nbjunit" antfile="build.xml" target="jar-nbjunit"/>
-    <copy file="${xtest/nbjunit.dir}/${nb.modules.dir}/ext/nbjunit.jar" todir="lib"/>
+    <copy file="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit.jar" todir="lib"/>
   </target>
 
   <target name="init" depends="default.init">
