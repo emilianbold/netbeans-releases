@@ -180,31 +180,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="printconfig">
         <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
-
-	<path id="codetest.classpath">
-	        <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
-	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-	        <fileset dir="../../core/netbeans/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-        	</fileset>
-    	</path>
-    	<path id="codetest.classpath">
-	        <pathelement location="../src"/>
-	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-	        <fileset dir="../../core/netbeans/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-        	</fileset>
-    	</path>
-    	<path id="codetest.classpath">
-	        <pathelement location="${netbeans.home}/modules/autoload/openidex.jar"/>
-	        <pathelement location="${netbeans.home}/lib/openide.jar"/>
-          	<fileset dir="${netbeans.home}/lib">
-	            	<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-	    	</fileset>
-    	</path>
     
 </project>
 
