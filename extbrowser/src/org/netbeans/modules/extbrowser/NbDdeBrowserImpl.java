@@ -269,7 +269,6 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
 
                     try {
-                        System.out.println("WWW_Activate");
                         data = reqDdeMessage(getDDEServerName(),"WWW_Activate",winID,5000);
                     }
                     catch (NbBrowserException ex) {
@@ -289,14 +288,12 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     }
                 }
                 else {
-                    System.out.println("no WWW_Activate");
                     data = null;
                 }
 
 
                 if (getDDEServerName().equals(ExtBrowserSettings.IEXPLORE)) {
                     winID = (hasNoWindow && !win9xHack())? "0": "-1";
-                    System.out.println("winID = "+winID);
                 }
                 else
                     winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: currWinID).toUpperCase(); // NOI18N
@@ -306,19 +303,15 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 String args1;
                 args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(ddeProgressSrvName==null?"":ddeProgressSrvName);  // NOI18N
                 if (!win9xHack ()) {
-                    System.out.println("OpenURL");
                     data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
                 }
                 else {
                     // we've skipped WWW_Activate step so we need to start it if it doesn't run 
                     try {
-                        System.out.println("win9x openURL");
                         data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
                     }
                     catch (NbBrowserException ex) {
-                        System.out.println("win9x startBrowser");
                         startBrowser ();
-                        System.out.println("win9x openURL");
                         data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
                     }
                 }
