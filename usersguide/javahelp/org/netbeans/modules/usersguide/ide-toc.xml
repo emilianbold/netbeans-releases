@@ -426,7 +426,7 @@
         <tocitem text="About Running Web Modules" target="webmod_servconfig" />
         <tocitem text="Changing Web Browsers for Running Web Modules" target="webmod_browser" />
         <tocitem text="Changing Web Servers" target="webmod_server_set" />
-        <tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>									
+        <tocitem text="Passing Parameters to a JSP Page" target="jsp_queryparams"/>									
     </tocitem> <!-- Running and Testing Web Modules -->
 
     <tocitem text="Debugging Web Modules" > 
