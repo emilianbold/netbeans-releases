@@ -37,7 +37,7 @@ public class IndexNodeInfo extends TableNodeInfo {
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+            drvSpec.getIndexInfo(catalog, dmd, table, false, false);
 
             if (drvSpec.rs != null) {
                 Hashtable ixmap = new Hashtable();
@@ -93,6 +93,8 @@ public class IndexNodeInfo extends TableNodeInfo {
             Specification spec = (Specification)getSpecification();
             AbstractCommand cmd = spec.createCommandDropIndex(getName());
             cmd.execute();
+            //refresh list of columns due to the column's icons
+            getParent().getParent().refreshChildren();
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
