@@ -2379,7 +2379,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../j2ee/platform" target="netbeans"/>
   </target>
 
-  <target name="all-j2ee/refactoring" depends="init, all-j2ee/ejbapi, all-websvc/websvcapi">
+  <target name="all-j2ee/refactoring" depends="init, all-j2ee/ejbapi, all-websvc/websvcapi, all-websvc/core">
     <echo message="Building module j2ee/refactoring.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
