@@ -346,16 +346,10 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Build">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-CompileAllAction.instance"/>
-            <attr name="org-openide-actions-CompileAllAction.instance/org-openide-actions-BuildAllAction.instance" boolvalue="true" />
             <file name="org-openide-actions-BuildAllAction.instance"/>
-            <attr name="org-openide-actions-BuildAllAction.instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
-<!--
-            <file name="org-openide-actions-CompileAction.instance"/>
-            <attr name="org-openide-actions-CompileAction.instance/org-openide-actions-BuildAction.instance" boolvalue="true" />
+            <attr name="org-openide-actions-BuildAllAction.instance/org-openide-actions-BuildAction.instance" boolvalue="true" />
             <file name="org-openide-actions-BuildAction.instance"/>
             <attr name="org-openide-actions-BuildAction.instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
--->
             <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/>
             <attr name="org-netbeans-core-actions-NextOutJumpAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
             <file name="org-openide-actions-ExecuteAction.instance"/>
@@ -364,12 +358,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-FindAction.instance"/>
             <attr name="org-openide-actions-FindAction.instance/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
-<!--
-            <file name="org-openide-actions-NextTabAction.instance"/>
-            <attr name="org-openide-actions-NextTabAction.instance/org-openide-actions-OpenLocalExplorerAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
-            <attr name="org-openide-actions-OpenLocalExplorerAction.instance/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
--->
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
         </folder>
         <folder name="Debug">
