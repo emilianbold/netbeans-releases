@@ -179,7 +179,14 @@ public abstract class I18nUtil {
      * the object have to have <code>SourceCookie</code>
      * @see org.openide.cookies.SourceCookie */
     public static void createField(ResourceBundleString rbString, DataObject targetDataObject) {
+        // Check if we have to generate field.
         if(!rbString.getGenerateField())
+            return;
+
+        ClassElement sourceClass = getSourceClassElement(targetDataObject);
+
+        if(sourceClass.getField(Identifier.create(rbString.getIdentifier())) != null)
+            // Field with such identifer exsit already, do nothing.
             return;
         
         try {
@@ -188,8 +195,6 @@ public abstract class I18nUtil {
             newField.setModifiers(rbString.getModifiers());
             newField.setType(Type.parse("java.util.ResourceBundle")); // NOI18N
             newField.setInitValue(getInitJavaCode(rbString, targetDataObject));
-            
-            final ClassElement sourceClass = getSourceClassElement(targetDataObject);
             
             if(sourceClass != null)
                 // Trying to add new field.
@@ -254,13 +259,14 @@ public abstract class I18nUtil {
     public static void addKeyToBundle(ResourceBundleString rbString) {
         if((rbString.getResourceBundle() == null) || (rbString.getKey() == null))
             return;
+
         try {
             BundleStructure bundleStructure = rbString.getResourceBundle().getBundleStructure();
             
             String key = rbString.getKey();
             String value = rbString.getDefaultValue();
             String comment = rbString.getDefaultComment();
-            
+
             for(int i=0; i<bundleStructure.getEntryCount(); i++) {
                 PropertiesStructure propStructure = bundleStructure.getNthEntry(i).getHandler().getStructure();
                 org.netbeans.modules.properties.Element.ItemElem item = propStructure.getItem(key);
@@ -279,9 +285,6 @@ public abstract class I18nUtil {
             if(Boolean.getBoolean(DEBUG)) // NOI18N
                 e.printStackTrace();
             TopManager.getDefault().notifyException(e);
-        } finally {
-            rbString.setDefaultValue(null);
-            rbString.setDefaultComment(null);
         }
         
         // Open table component if is not opened already.

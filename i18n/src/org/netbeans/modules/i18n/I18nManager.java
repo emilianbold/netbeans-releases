@@ -162,10 +162,6 @@ public class I18nManager {
         ResourceBundleString oldRbString = i18nPanel.getResourceBundlePanel().getResourceBundleString();
         ResourceBundleString newRbString = support.getDefaultBundleString(oldRbString);
         
-        // Check in case new value is added and not initialized.
-        if(newRbString.getResourceBundle() == null)
-            newRbString.setResourceBundle(PropertiesModule.getLastBundleUsed());
-       
         i18nPanel.setResourceBundleString(newRbString);
         i18nPanel.setI18nInfo(support.getInfo());
         
