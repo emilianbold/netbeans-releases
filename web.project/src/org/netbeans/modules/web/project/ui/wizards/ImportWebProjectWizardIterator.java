@@ -250,8 +250,9 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         while (ch.hasMoreElements ()) {
             FileObject f = (FileObject) ch.nextElement ();
             if (f.isFolder () && f.getName ().equals ("WEB-INF")) {
-                if (f.getFileObject ("web.xml").isData ()) {
-                    return f.getParent ();
+                final FileObject webXmlFO = f.getFileObject ("web.xml");
+                if (webXmlFO != null && webXmlFO.isData()) {
+                    return f.getParent();
                 }
             }
         }
@@ -325,7 +326,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         return null;
     }
     
-    public final class ThePanel implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
+    public final class ThePanel implements WizardDescriptor.ValidatingPanel {
 
         private ImportLocationVisual panel;
         private WizardDescriptor wizardDescriptor;
@@ -333,10 +334,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         private ThePanel () {
         }
         
-        public boolean isFinishPanel() {
-            return false;
-        }
-
         public java.awt.Component getComponent () {
             if (panel == null) {
                 panel = new ImportLocationVisual (this);
@@ -464,7 +461,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     
     public final class SecondPanel implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
         private ImportWebLocationsVisual panel;
-        
+        private WizardDescriptor wizardDescriptor;
+
         private SecondPanel () {
         }
         
@@ -483,43 +481,41 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             return new HelpCtx(SecondPanel.class);
         }
         
-        public boolean isValid () {
-            boolean res1 = false;
-            boolean res2 = false;
-            boolean res3 = true;
-            
-            if (panel.jTextFieldWebPages.getText().trim().length() > 0)
-                res1 = relativePath(panel.jTextFieldWebPages.getText().trim());
-            if (panel.jTextFieldJavaSources.getText().trim().length() > 0)
-                res2 = relativePath(panel.jTextFieldJavaSources.getText().trim());
-            if (panel.jTextFieldLibraries.getText().trim().length() > 0)
-                res3 = relativePath(panel.jTextFieldLibraries.getText().trim());
-                
-            return res1 && res2 && res3;
-        }
-        
-        private boolean relativePath(String path) {
-            String moduleRoot = ((ImportLocationVisual) panels[0].getComponent()).moduleLocationTextField.getText().trim();
-            File fp = new File(moduleRoot);
-            FileObject parent = FileUtil.toFileObject(fp);
-
-            File fch = new File(path);
-            FileObject child;
-            try {
-                child = FileUtil.toFileObject(fch);
-            } catch (Exception exc) {
+        public boolean isValid() {
+            final String webPages = panel.jTextFieldWebPages.getText().trim();
+            if (webPages.length() == 0) {
+                setErrorMessage("MSG_WebPagesMandatory"); //NOI18N
                 return false;
             }
-            if (child == null)
+            if(!new File(webPages).exists()) {
+                setErrorMessage("MSG_WebPagesFolderDoesNotExist"); //NOI18N
                 return false;
-            
-            if (child.equals(parent))
-                return true;
-            if (!FileUtil.isParentOf(parent, child))
+            }
+            final String javaSources = panel.jTextFieldJavaSources.getText().trim();
+            if (javaSources.length() == 0) {
+                setErrorMessage("MSG_JavaSourcesMandatory"); //NOI18N
                 return false;
+            }
+            if(!new File(javaSources).exists()) {
+                setErrorMessage("MSG_JavaSourcesFolderDoesNotExist"); //NOI18N
+                return false;
+            }
+            final String libraries = panel.jTextFieldLibraries.getText().trim();
+            if (libraries.length() > 0) {
+                if(!new File(libraries).exists()) {
+                    setErrorMessage("MSG_LibrariesFolderDoesNotExist"); //NOI18N
+                    return false;
+                }
+            }
+            setErrorMessage(null);
             return true;
         }
-        
+
+        private void setErrorMessage(final String msg) {
+            String s = (msg == null) ? null : NbBundle.getMessage(ImportWebProjectWizardIterator.class, msg); //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", s); //NOI18N
+        }
+
         private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
         public final void addChangeListener(ChangeListener l) {
             synchronized (listeners) {
@@ -545,13 +541,14 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         
         public void readSettings (Object settings) {
+            wizardDescriptor = (WizardDescriptor) settings;
             presetSecondPanel(moduleLoc);
             
             // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
             // this name is used in NewProjectWizard to modify the title
             Object substitute = ((JComponent) panel).getClientProperty("NewProjectWizard_Title"); //NOI18N
             if (substitute != null)
-                ((WizardDescriptor) settings).putProperty("NewProjectWizard_Title", substitute); //NOI18N
+                wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); //NOI18N
         }
         
         public void storeSettings (Object settings) {
