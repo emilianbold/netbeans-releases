@@ -67,10 +67,22 @@ public class DiffAction extends NodeAction {
     public boolean enable(Node[] nodes) {
         //System.out.println("DiffAction.enable() = "+(nodes.length == 2));
         if (nodes.length == 2) {
-            DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
-            DataObject do2 = (DataObject) nodes[1].getCookie(DataObject.class);
-            if (do1 != null && do2 != null) {
-                if (do1.getPrimaryFile().isData() && do2.getPrimaryFile().isData()) {
+            FileObject fo1 = (FileObject) nodes[0].getLookup().lookup(FileObject.class);
+            FileObject fo2 = (FileObject) nodes[1].getLookup().lookup(FileObject.class);
+            if (fo1 == null) {
+                DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
+                if (do1 != null) {
+                    fo1 = do1.getPrimaryFile();
+                }
+            }
+            if (fo2 == null) {
+                DataObject do2 = (DataObject) nodes[1].getCookie(DataObject.class);
+                if (do2 != null) {
+                    fo2 = do2.getPrimaryFile();
+                }
+            }
+            if (fo1 != null && fo2 != null) {
+                if (fo1.isData() && fo2.isData()) {
                     Diff d = Diff.getDefault();
                     return d != null;
                 }
@@ -91,8 +103,13 @@ public class DiffAction extends NodeAction {
     public void performAction(Node[] nodes) {
         ArrayList fos = new ArrayList();
         for (int i = 0; i < nodes.length; i++) {
-            DataObject dd = (DataObject) (nodes[i].getCookie(DataObject.class));
-            if (dd != null) fos.add(dd.getPrimaryFile());
+            FileObject fo = (FileObject) nodes[i].getLookup().lookup(FileObject.class);
+            if (fo != null) {
+                fos.add(fo);
+            } else {
+                DataObject dd = (DataObject) (nodes[i].getCookie(DataObject.class));
+                if (dd != null) fos.add(dd.getPrimaryFile());
+            }
         }
         if (fos.size() < 2) return ;
         final FileObject fo1 = (FileObject) fos.get(0);
