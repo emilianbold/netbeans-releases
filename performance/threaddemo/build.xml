@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xml-apis.jar" location="${nbroot}/core/external/xml-apis-1.0b2.jar"/>
     <!-- Trunk, except Mutex*.java should be with tag mutex_32439: -->
     <property name="openide.jar" location="???/openide/netbeans/lib/openide.jar"/>
-    <property name="naming.jar" location="${nbroot}/core/naming/netbeans/modules/autoload/naming.jar"/>
     <property name="looks" location="${nbroot}/openide/looks"/>
     <property name="looks.jar" location="${looks}/netbeans/modules/autoload/openide-looks.jar"/>
     <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
@@ -33,7 +32,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <path id="cp">
         <pathelement location="${openide.jar}"/>
-        <pathelement location="${naming.jar}"/>
         <pathelement location="${looks.jar}"/>
         <pathelement location="${Spin.jar}"/>
         <pathelement location="${xerces.jar}"/>
