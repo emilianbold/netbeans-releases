@@ -57,10 +57,6 @@ Microsystems, Inc. All Rights Reserved.
                     </strong>
                 </xsl:if>
             
-                <xsl:apply-templates />    
-                
-                <hr/>
-
                 <h2>Interfaces table</h2>
 
                 <xsl:call-template name="for-each-group">
@@ -73,12 +69,12 @@ Microsystems, Inc. All Rights Reserved.
                     <b> WARNING: No imported or exported interfaces! </b>
                 </xsl:if>
 
-                <hr/>
-                                
+                <xsl:apply-templates />    
+                
                 <xsl:if test="$arch.footer">
+                    <hr/>
                     <p><xsl:value-of select="$arch.footer"/></p>
                 </xsl:if>
-                
             </body>
         </html>
     </xsl:template>
