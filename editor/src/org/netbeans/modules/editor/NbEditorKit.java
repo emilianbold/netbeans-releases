@@ -689,6 +689,7 @@ public class NbEditorKit extends ExtKit {
             if (desc != null) {
                 putValue(SHORT_DESCRIPTION, desc);
             }
+            putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -717,6 +718,7 @@ public class NbEditorKit extends ExtKit {
             if (desc != null) {
                 putValue(SHORT_DESCRIPTION, desc);
             }
+            putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
         public String getShortDescription() {

@@ -100,6 +100,14 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         TreeMap treeMap = new TreeMap( );
         // Fill it with new ActionDescriptors for actions, they'll be in-sorted
         for( int i=0; i<actions.length; i++ ) {
+            if (actions[i]!=null){
+                Object internalActionObj = actions[i].getValue(BaseAction.NO_KEYBINDING);
+                if (internalActionObj instanceof Boolean){
+                    if (((Boolean)internalActionObj).booleanValue()){
+                        continue; //filter out editor internal actions - #49589
+                    }
+                }
+            }
             ActionDescriptor val = new ActionDescriptor( actions[i] );
             treeMap.put( val.name, val );
         }
