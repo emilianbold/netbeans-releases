@@ -88,30 +88,27 @@ public class IndexNode extends DatabaseNode {
             IndexNodeInfo destinfo = (IndexNodeInfo)getInfo();
             
             if (info != null) {
-                Connection con;
-                DatabaseMetaData dmd;
                 Specification spec;
-                String catalog;
 
                 try {
-                    con = info.getConnection();
-                    dmd = info.getSpecification().getMetaData();
                     spec = (Specification)info.getSpecification();
-                    catalog = (String)info.get(DatabaseNode.CATALOG);
-                    boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false); //NOI18N
-
                     DriverSpecification drvSpec = info.getDriverSpecification();
-                    drvSpec.getIndexInfo(catalog, dmd, info.getTable(), false, false);
-                    if (drvSpec.rs != null) {
+                    drvSpec.getIndexInfo(info.getTable(), false, false);
+                    ResultSet rs = drvSpec.getResultSet();
+                    if (rs != null) {
                         String index = destinfo.getName();
                         HashSet ixrm = new HashSet();
+                        HashMap rset = new HashMap();
 
-                        while (drvSpec.rs.next()) {
-                            String ixname = drvSpec.rs.getString("INDEX_NAME"); //NOI18N
-                            String colname = drvSpec.rs.getString("COLUMN_NAME"); //NOI18N
-                            if (ixname.equals(index)) ixrm.add(colname);
+                        while (rs.next()) {
+                            rset = drvSpec.getRow();
+                            String ixname = (String) rset.get(new Integer(6));
+                            String colname = (String) rset.get(new Integer(9));
+                            if (ixname.equals(index))
+                                ixrm.add(colname);
+                            rset.clear();
                         }
-                        drvSpec.rs.close();
+                        rs.close();
 
                         if (ixrm.contains(info.getName())) {
                             String message = MessageFormat.format(bundle.getString("EXC_IndexContainsColumn"), new String[] {index, info.getName()}); // NOI18N
@@ -129,26 +126,25 @@ public class IndexNode extends DatabaseNode {
                         spec.createCommandDropIndex(index).execute();
                         icmd.execute();
 
-                        drvSpec.getIndexInfo(catalog, dmd, destinfo.getTable(), false, false);
-                        if (drvSpec.rs != null) {
-                            while (drvSpec.rs.next()) {
-                                if (jdbcOdbcBridge) drvSpec.rsTemp.next();
-                                String ixname = drvSpec.rs.getString("INDEX_NAME"); //NOI18N
-                                String colname = drvSpec.rs.getString("COLUMN_NAME"); //NOI18N
+                        drvSpec.getIndexInfo(destinfo.getTable(), false, false);
+                        rs = drvSpec.getResultSet();
+                        if (rs != null) {
+                            IndexNodeInfo ixinfo;
+                            Object value;
+                            while (rs.next()) {
+                                rset = drvSpec.getRow();
+                                String ixname = (String) rset.get(new Integer(6));
+                                String colname = (String) rset.get(new Integer(9));
                                 if (ixname.equals(index) && colname.equals(info.getName())) {
-                                    IndexNodeInfo ixinfo;
-                                    if (jdbcOdbcBridge)
-                                        ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, drvSpec.rsTemp);
-                                    else
-                                        ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, drvSpec.rs);
-
-                                    if (ixinfo != null) {
+                                    ixinfo = (IndexNodeInfo) DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, rset);
+                                    if (ixinfo != null)
                                         ((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
-                                    } else throw new Exception(bundle.getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
+                                    else
+                                        throw new Exception(bundle.getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
                                 }
+                                rset.clear();
                             }
-                            drvSpec.rs.close();
-                            if (jdbcOdbcBridge) drvSpec.rsTemp.close();
+                            rs.close();
                         }
                     }
                 } catch (Exception e) {
