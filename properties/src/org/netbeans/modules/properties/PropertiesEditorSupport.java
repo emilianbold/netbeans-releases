@@ -121,39 +121,16 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
      * @return <code>true</code> if everything can be closed
      */
     protected boolean canClose () {
-        SaveCookie savec = (SaveCookie) myEntry.getCookie(SaveCookie.class);
-        if (savec != null) {
-            // if the table is open, can close without worries, don't remove the save cookie
-            if (hasOpenedTableComponent())
-                return true;
-            
-            // PENDING - is not thread safe
-            MessageFormat format = new MessageFormat(NbBundle.getBundle(PropertiesEditorSupport.class).getString("MSG_SaveFile"));
-            String msg = format.format(new Object[] { myEntry.getFile().getName()});
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
-            Object ret = TopManager.getDefault().notify(nd);
-            
-            // cancel
-            if (NotifyDescriptor.CANCEL_OPTION.equals(ret))
-                return false;
-            
-            // yes
-            if (NotifyDescriptor.YES_OPTION.equals(ret)) {
-                try {
-                    savec.save();
-                } catch (IOException e) {
-                    TopManager.getDefault().notifyException(e);
-                    return false;
-                }
-            }
-            
-            // no
-            if (NotifyDescriptor.NO_OPTION.equals(ret)) {
-                return true;
-            }
-            
+        // if the table is open, can close without worries, don't remove the save cookie
+        if (hasOpenedTableComponent()){
+            return true;
+        }else{
+            DataObject propDO = myEntry.getDataObject();
+            if (propDO == null || !propDO.isModified()) return true;
+            return super.canClose();
         }
-        return true;
+            
+            
     }
     
     /** 
