@@ -237,9 +237,7 @@
   <tocitem text="Refactoring Java Source">
     <tocitem text="About Refactoring Java Source" target="refactor.aboutRefactoring" /> 
     <tocitem text="Undoing Refactoring Changes" target="refactor.Undo" />   
-    <tocitem text="Finding Class Usages in Java Source" target="refactor.findClass" /> 
-    <tocitem text="Finding Method Usages in Java Source" target="refactor.findMethod" /> 
-    <tocitem text="Finding Variable Usages in Java Source" target="refactor.findField"/> 
+    <tocitem text="Finding Class, Method, and Field Usages" target="refactor.findClass" /> 
     <tocitem text="Renaming a Class or Interface" target="refactor.renameClass" />
     <tocitem text="Renaming a Field or Method" target="refactor.renameField"/>       
     <tocitem text="Moving Java Objects" target="refactor.moveClass" />  
