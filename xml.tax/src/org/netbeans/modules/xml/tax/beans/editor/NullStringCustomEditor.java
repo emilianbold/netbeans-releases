@@ -36,6 +36,8 @@ public class NullStringCustomEditor extends JPanel implements EnhancedCustomProp
 
         textArea.setText (editor.getAsText());
         textArea.setEditable (editor.isEditable());
+        
+        initAccessibility();
     }
 
 
@@ -88,5 +90,12 @@ public class NullStringCustomEditor extends JPanel implements EnhancedCustomProp
     private javax.swing.JScrollPane textAreaScroll;
     private javax.swing.JTextArea textArea;
     // End of variables declaration//GEN-END:variables
-
+    
+   /** Initialize accesibility
+     */
+    public void initAccessibility(){
+        
+       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_NullStringCustomEditor"));
+       textArea.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_textArea")); 
+    }
 }

@@ -65,6 +65,7 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
     public TreeAttlistDeclAttributeListCustomizer() {
         initComponents ();
         attrTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        initAccessibility();
     }
 
     
@@ -269,5 +270,15 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
         }
 
     } // end: class AttlistTableModel
+    
+    
+   /** Initialize accesibility
+     */
+    public void initAccessibility(){
+        
+       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeAttlistDeclAttributeListCustomizer"));
+       attrTable.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_attrTable1")); 
+       attrTable.getAccessibleContext().setAccessibleName(Util.getString("ACSN_attrTable1")); 
+    }
 
 }
