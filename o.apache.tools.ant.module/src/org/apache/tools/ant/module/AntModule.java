@@ -15,7 +15,8 @@
 
 package org.apache.tools.ant.module;
 
-import java.beans.PropertyEditorManager;
+import java.awt.Image;
+import java.beans.*;
 import java.io.*;
 import java.util.Enumeration;
 
@@ -45,7 +46,7 @@ public class AntModule extends ModuleInstall {
     }
     
     private static FileSystem createJarFS (File zipfile) throws Exception {
-        JarFileSystem fs = new JarFileSystem ();
+        JarFileSystem fs = new GlobalJarFileSystem ();
         fs.setJarFile (zipfile);
         fs.setHidden (true);
         FileSystemCapability capab = fs.getCapability ();
@@ -56,7 +57,7 @@ public class AntModule extends ModuleInstall {
             bean.setDebug (false);
             bean.setDoc (true);
         } else {
-            System.err.println ("Warning: JarFileSystem had strange capability: " + capab);
+            err.log (ErrorManager.INFORMATIONAL, "Warning: JarFileSystem had strange capability: " + capab);
         }
         return fs;
     }
@@ -76,72 +77,33 @@ public class AntModule extends ModuleInstall {
                     final FileSystem fs = createJarFS (f);
                     // Mount docs in Documentation Repository:
                     final Repository repo = TopManager.getDefault ().getRepository ();
-                    final boolean[] skip = { false };
                     if (repo.findFileSystem (fs.getSystemName ()) == null) {
 			repo.addFileSystem (fs);
-			// Don't ask: bug/misdesign in Projects module necessitates this.
-                        repo.addRepositoryListener (new RepositoryListener () {
-                            public void fileSystemRemoved (RepositoryEvent ev) {
-                                if (skip[0]) return;
-                                if (ev.getFileSystem () == fs) {
-                                    RequestProcessor.postRequest (new Runnable () {
-                                            public void run () {
-                                                if (repo.findFileSystem (fs.getSystemName ()) == null) {
-                                                    try {
-                                                        FileSystem fs2 = createJarFS (f);
-                                                        repo.addFileSystem (fs2);
-                                                        skip[0] = true;
-                                                    } catch (Exception ioe) {
-                                                        ioe.printStackTrace ();
-                                                    }
-                                                }
-                                            }
-                                        });
-                                }
-                            }
-                            public void fileSystemAdded (RepositoryEvent ev) {
-                            }
-                            public void fileSystemPoolReordered (RepositoryReorderedEvent ev) {
-                            }
-                        });
                     } else {
-                        System.err.println ("Note: ant-api.zip was already present in Repository.");
+                        err.log (ErrorManager.INFORMATIONAL, "Note: ant-api.zip was already present in Repository.");
 		    }
                 } catch (Exception e) {
-                    if (Boolean.getBoolean ("netbeans.debug.exceptions"))
-                        e.printStackTrace ();
+                    err.notify (ErrorManager.INFORMATIONAL, e);
                 }
             } else {
-                System.err.println("Note: ant-api.zip not found to add to Javadoc, ignoring...");
+                err.log (ErrorManager.INFORMATIONAL, "Note: ant-api.zip not found to add to Javadoc, ignoring...");
             }
         }
+        // [PENDING] use Class.forName(...,false,...)
         PropertyEditorManager.registerEditor (AntProjectCookie.class, AntProjectCookieEditor.class);
+        // [PENDING] do this more lazily...
         AntProjectSupport.startFiringProcessor ();
     }
 
     public void uninstalled () {
         // Unmount docs (AutoUpdate should handle actually removing the file):
-        File fo = findAPIDocs ();
-        if (fo != null) {
-            Repository repo = TopManager.getDefault ().getRepository ();
-            Enumeration e = repo.fileSystems ();
-            while (e.hasMoreElements ()) {
-                Object o = e.nextElement ();
-                if (o instanceof JarFileSystem) {
-                    JarFileSystem jfs = (JarFileSystem) o;
-                    try {
-                        if (fo.getCanonicalPath ().equals (jfs.getJarFile ().getCanonicalPath ())) {
-                            repo.removeFileSystem (jfs);
-                            break;
-                        }
-                    } catch (IOException ioe) {
-                        if (Boolean.getBoolean ("netbeans.debug.exceptions"))
-                            ioe.printStackTrace ();
-                    }
-                }
+        Repository repo = TopManager.getDefault ().getRepository ();
+        Enumeration e = repo.fileSystems ();
+        while (e.hasMoreElements ()) {
+            Object o = e.nextElement ();
+            if (o instanceof GlobalJarFileSystem) {
+                repo.removeFileSystem ((FileSystem) o);
             }
-        } else {
-            System.err.println("Note: ant-api.zip not found to remove from Javadoc, ignoring...");
         }
         AntProjectSupport.stopFiringProcessor ();
     }
@@ -164,7 +126,7 @@ public class AntModule extends ModuleInstall {
                 if (f.exists ()) return f.getCanonicalFile ();
             }
         } catch (IOException ioe) {
-            TopManager.getDefault ().notifyException (ioe);
+            err.notify (ErrorManager.INFORMATIONAL, ioe);
         }
         return null;
     }
@@ -177,6 +139,35 @@ public class AntModule extends ModuleInstall {
     public void writeExternal (ObjectOutput out) throws IOException {
         super.writeExternal (out);
         out.writeObject (getProperty (PROP_INSTALL_COUNT));
+    }
+    
+    /** Exists only for the sake of its bean info. */
+    public static final class GlobalJarFileSystem extends JarFileSystem {
+        private static final long serialVersionUID = -2165058869503900139L;
+    }
+    /** Marks it as global (not project-specific). */
+    public static final class GlobalJarFileSystemBeanInfo extends SimpleBeanInfo {
+        public BeanDescriptor getBeanDescriptor () {
+            BeanDescriptor bd = new BeanDescriptor (GlobalJarFileSystem.class);
+            bd.setValue ("global", Boolean.TRUE); // NOI18N
+            return bd;
+        }
+        public BeanInfo[] getAdditionalBeanInfo () {
+            try {
+                return new BeanInfo[] { Introspector.getBeanInfo (JarFileSystem.class) };
+            } catch (IntrospectionException ie) {
+                err.notify (ie);
+                return null;
+            }
+        }
+        public Image getIcon (int kind) {
+            try {
+                return Introspector.getBeanInfo (JarFileSystem.class).getIcon (kind);
+            } catch (IntrospectionException ie) {
+                err.notify (ie);
+                return null;
+            }
+        }
     }
 
 }
