@@ -130,7 +130,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         if (curDir instanceof File) {
             currentDirectory = (File)curDir;
             if(! currentDirectory.isDirectory()) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "java.io.File will not accept currentDir=" + baseDirectory); // NOI18N
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "java.io.File will not accept currentDir=" + currentDirectory); // NOI18N
                 currentDirectory = null;
             }
         } // XXX else if != null, warn
@@ -349,12 +349,12 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 f = new File(rel);
             }
         }
-        
+
         // use to be setValue(f) - the next line is
         // workaround for JDK bug 4533419
         // it should be returned back to setValue(f) after the
         // mentioned bug is fixed in JDK.
-        setValue(new File(f.getAbsolutePath()));
+        setValue(new File(f.getPath()));
         
         lastCurrentDir = chooser.getCurrentDirectory();
     }
