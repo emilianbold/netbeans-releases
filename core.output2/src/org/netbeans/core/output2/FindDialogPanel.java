@@ -68,8 +68,6 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
            findWhat, acceptButton
        };
 
-       setFocusCycleRoot(true);
-       setFocusTraversalPolicy(new FdFocusTraversalPolicy(order));
     }
 
     public void run() {
@@ -88,69 +86,6 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
         return result;
     }
 
-    private class FdFocusTraversalPolicy extends FocusTraversalPolicy {
-        private JComponent[] order;
-        FdFocusTraversalPolicy (JComponent[] order) {
-            this.order = order;
-        }
-
-        public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
-            int idx = Arrays.asList (order).indexOf(aComponent);
-            if (idx == -1) {
-                for (int i=0; i < order.length; i++) { //Combo box editor
-                    if (order[i].isAncestorOf(aComponent)) {
-                        idx = i == order.length -1 ? 0 : i+1;
-                        break;
-                    }
-                }
-                if (idx == -1) {
-                    idx = 0;
-                }
-            } else {
-                if (idx == order.length -1) {
-                    idx = 0;
-                } else {
-                    idx++;
-                }
-            }
-            return order[idx];
-        }
-
-
-        public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
-            int idx = Arrays.asList (order).indexOf(aComponent);
-            if (idx == -1) {
-                for (int i=0; i < order.length; i++) { //Combo box editor
-                    if (order[i].isAncestorOf(aComponent)) {
-                        idx = i == 0 ? order.length-1 : i-1;
-                        break;
-                    }
-                }
-                if (idx == -1) {
-                    idx = 0;
-                }
-            } else {
-                if (idx == 0) {
-                    idx = order.length-1;
-                } else {
-                    idx--;
-                }
-            }
-            return order[idx];
-        }
-
-        public Component getFirstComponent(Container focusCycleRoot) {
-            return findWhat;
-        }
-
-        public Component getLastComponent(Container focusCycleRoot) {
-            return acceptButton;
-        }
-
-        public Component getDefaultComponent(Container focusCycleRoot) {
-            return findWhat;
-        }
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -262,7 +197,6 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
                                    }
                                });
         Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog( dialogDescriptor );
-        dialog.setFocusTraversalPolicy(findPanel.getFocusTraversalPolicy());
 
         dialog.getAccessibleContext().setAccessibleName(
             NbBundle.getMessage(FindDialogPanel.class, "ACSN_Find")); //NOI18N
