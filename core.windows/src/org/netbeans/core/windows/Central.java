@@ -252,7 +252,6 @@ final class Central implements ControllerHandler {
         if(old == frameState) {
             return;
         }
-
         model.setEditorAreaFrameState(frameState);
         
         if(isVisible()) {
@@ -1419,13 +1418,14 @@ final class Central implements ControllerHandler {
     public void userClosedMode(ModeImpl mode) {
         if(mode != null) {
             closeMode(mode);
+            // Unmaximize if necessary.
+            if(mode.getOpenedTopComponents().isEmpty()
+                && mode == getMaximizedMode()) 
+            {
+                setMaximizedMode(null);
+            }
         }
         
-        // Unmaximize if necessary.
-        if(mode.getOpenedTopComponents().isEmpty()
-        && mode == getMaximizedMode()) {
-            setMaximizedMode(null);
-        }
     }
     
     
