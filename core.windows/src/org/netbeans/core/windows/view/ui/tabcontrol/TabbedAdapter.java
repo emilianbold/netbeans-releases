@@ -376,8 +376,29 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
             if (changeListenerList == null) return;
             list = (java.util.ArrayList)changeListenerList.clone();
         }
-        for (int i = 0; i < list.size(); i++) {
-            ((javax.swing.event.ChangeListener)list.get(i)).stateChanged(event);
+        //Note: Firing the events while holding the tree lock avoids many
+        //gratuitous repaints that slow down switching tabs.  To demonstrate this,
+        //comment this code out and run the IDE with -J-Dawt.nativeDoubleBuffering=true
+        //so you'll really see every repaint.  When switching between a form
+        //tab and an editor tab, you will see the property sheet get repainted
+        //8 times due to changes in the component hierarchy, before the 
+        //selected node is event changed to the appropriate one for the new tab.
+        //Synchronizing here ensures that never happens.
+        
+        //XXX need to double check that this code is *never* called from
+        //non AWT thread
+        if (!SwingUtilities.isEventDispatchThread()) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                "All state changes to the tab component must happen on the event thread!"); //NOI18N
+            Exception e = new Exception();
+            e.fillInStackTrace();
+            System.err.println(e.getStackTrace()[1]);
+        }
+        
+        synchronized (getTreeLock()) {
+            for (int i = 0; i < list.size(); i++) {
+                ((javax.swing.event.ChangeListener)list.get(i)).stateChanged(event);
+            }
         }
     }
     
