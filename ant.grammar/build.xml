@@ -56,7 +56,8 @@ Microsystems, Inc. All Rights Reserved.
              topdir="."
              module="netbeans/modules/eager/ant-grammar.jar"
 	     homepage="http://ant.${homepage.base}/"
-	     distribution="http://${dist.base}/ant-grammar.nbm">
+	     distribution="http://${dist.base}/ant-grammar.nbm"
+             needsrestart="false">
       <license name="ant-grammar-license.txt">
         <file location="${license.file}"/>
       </license>
