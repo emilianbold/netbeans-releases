@@ -171,20 +171,22 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
             c.gridwidth = 1;
             c.weightx = 1.0;
-            c.insets = new Insets (3, 3, 3, 3);
+            c.insets = new Insets (0, 0, 0, 0);
             c.anchor = GridBagConstraints.WEST;
             JLabel l = new JLabel (bundle.getString ("CTL_Font"));                    //NoI18N
             l.setDisplayedMnemonic(bundle.getString ("CTL_Font_mnemonic").charAt(0)); //NoI18N
             l.setLabelFor(lFont);
             la.setConstraints (l, c);
             add (l);
-
+            
+            c.insets = new Insets (0, 5, 0, 0);  
             l = new JLabel (bundle.getString ("CTL_FontStyle"));                           //NoI18N  
             l.setDisplayedMnemonic(bundle.getString ("CTL_FontStyle_mnemonic").charAt(0)); //NoI18N
             l.setLabelFor(lStyle);
             la.setConstraints (l, c);
             add (l);
 
+            c.insets = new Insets (0, 5, 0, 0);
             c.gridwidth = GridBagConstraints.REMAINDER;
             l = new JLabel (bundle.getString ("CTL_Size"));                           //NoI18N
             l.setDisplayedMnemonic(bundle.getString ("CTL_Size_mnemonic").charAt(0)); //NoI18N
@@ -192,18 +194,21 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             la.setConstraints (l, c);
             add (l);
 
-            c.gridwidth = 1;
+            c.insets = new Insets (5, 0, 0, 0);
+            c.gridwidth = 1;            
             c.fill = GridBagConstraints.HORIZONTAL;
             tfFont = new JTextField (FontEditor.this.font.getName ());
             tfFont.setEnabled (false);
             la.setConstraints (tfFont, c);
             add (tfFont);
 
+            c.insets = new Insets (5, 5, 0, 0);
             tfStyle = new JTextField (getStyleName (FontEditor.this.font.getStyle ()));
             tfStyle.setEnabled (false);
             la.setConstraints (tfStyle, c);
             add (tfStyle);
 
+            c.insets = new Insets (5, 5, 0, 0);
             c.gridwidth = GridBagConstraints.REMAINDER;
             tfSize = new JTextField ("" + FontEditor.this.font.getSize ()); // NOI18N
             tfSize.addActionListener (new ActionListener () {
@@ -220,6 +225,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             add (tfSize);
 
             c.gridwidth = 1;
+            c.insets = new Insets (5, 0, 0, 0);
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
             c.weighty = 1.0;
@@ -254,6 +260,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                                             );
             sp = new JScrollPane (lStyle);
             sp.setVerticalScrollBarPolicy (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            c.insets = new Insets (5, 5, 0, 0);
             la.setConstraints (sp, c);
             add (sp);
 
@@ -272,13 +279,14 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                                            );
             sp = new JScrollPane (lSize);
             sp.setVerticalScrollBarPolicy (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            c.insets = new Insets (5, 5, 0, 0);
             la.setConstraints (sp, c);
             add (sp);
 
             c.gridwidth = GridBagConstraints.REMAINDER;
             c.weighty = 2.0;
             JPanel p = new JPanel (new BorderLayout());
-            p.setBorder (new TitledBorder (bundle.getString ("CTL_Preview")));
+            p.setBorder (new TitledBorder (" " + bundle.getString ("CTL_Preview") + " "));
 
             JPanel pp = new JPanel () {
                             public Dimension getPreferredSize () {
@@ -291,6 +299,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                             }
                         };
             p.add ("Center", pp); // NOI18N
+            c.insets = new Insets (12, 0, 0, 0);
             la.setConstraints (p, c);
             add (p);
 
