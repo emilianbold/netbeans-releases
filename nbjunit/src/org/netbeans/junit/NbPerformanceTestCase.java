@@ -20,6 +20,7 @@ import java.util.ArrayList;
  */
 public class NbPerformanceTestCase extends NbTestCase implements NbPerformanceTest {
     
+    
     /** Creates a new instance of NbPerformanceTestCase
      * @param name String test name
      */
@@ -41,7 +42,7 @@ public class NbPerformanceTestCase extends NbTestCase implements NbPerformanceTe
      * @param value measured perofrmance value
      */    
     public void reportPerformance(long value) {
-        reportPerformance(null, value, null);
+        reportPerformance(null, value, null, NbPerformanceTest.PerformanceData.NO_ORDER);
     }
     
     /** method for storing and reporting measured performance value,
@@ -50,7 +51,7 @@ public class NbPerformanceTestCase extends NbTestCase implements NbPerformanceTe
      * @param unit unit name of measured value
      */    
     public void reportPerformance(long value, String unit) {
-        reportPerformance(null, value, unit);
+        reportPerformance(null, value, unit, NbPerformanceTest.PerformanceData.NO_ORDER);
     }
 
     /** method for storing and reporting measured performance value,
@@ -59,19 +60,21 @@ public class NbPerformanceTestCase extends NbTestCase implements NbPerformanceTe
      * @param value measured perofrmance value
      */    
     public void reportPerformance(String name, long value) {
-        reportPerformance(name, value, null);
+        reportPerformance(name, value, null, NbPerformanceTest.PerformanceData.NO_ORDER);
     }
     
     /** method for storing and reporting measured performance value
      * @param name measured value name
      * @param value measured perofrmance value
      * @param unit unit name of measured value
+     * @param runOrder order in which the data was measured (1st, 2nd, ...)
      */    
-    public void reportPerformance(String name, long value, String unit) {
+    public void reportPerformance(String name, long value, String unit, int runOrder) {
         NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
         d.name = name==null? getName() : name;
         d.value = value;
         d.unit = unit;
+        d.runOrder = runOrder;
         data.add(d);
     }
     

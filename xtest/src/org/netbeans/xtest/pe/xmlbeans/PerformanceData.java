@@ -85,11 +85,28 @@ public class PerformanceData extends XMLBean {
         this.unitTestSuite_id = unitTestSuite_id;
     }
     
+    /** Getter for property xmlat_runOrder.
+     * @return Value of property xmlat_runOrder.
+     *
+     */
+    public int getRunOrder() {
+        return xmlat_runOrder;
+    }    
+    
+    /** Setter for property xmlat_runOrder.
+     * @param xmlat_runOrder New value of property xmlat_runOrder.
+     *
+     */
+    public void setRunOrder(int xmlat_runOrder) {
+        this.xmlat_runOrder = xmlat_runOrder;
+    }    
+    
     /** Holds value of property unitTestSuite_id. */
     private long unitTestSuite_id;
     
     // attributes
     public String   xmlat_name;
     public long     xmlat_value;
-    public String   xmlat_unit;
+    public String   xmlat_unit;    
+    public int      xmlat_runOrder;
 }

@@ -22,12 +22,15 @@ public interface NbPerformanceTest extends NbTest {
 
     /** Helper class holding one measured performance value */    
     public static class PerformanceData extends Object {
+        public static final int NO_ORDER = 0;
         /** performance value name */        
         public String name;
         /** easured performance value */        
         public long value;
         /** performance value unit */        
         public String unit;
+        /** run order - for same performance name, which run of the test is it **/
+        public int runOrder;
     }
     
     /** getter for all measured performance data from current test
