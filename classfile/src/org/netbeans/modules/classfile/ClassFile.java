@@ -41,6 +41,8 @@ public class ClassFile {
     boolean synthetic = false;
     InnerClass[] innerClasses;
     private HashMap attributes;
+    short majorVersion;
+    short minorVersion;
     
     /** size of buffer in buffered input streams */
     private static final int BUFFER_SIZE = 4096;
@@ -156,8 +158,8 @@ public class ClassFile {
             throw new IOException("invalid class format");
         }
             
-        short minor = in.readShort();
-        short major = in.readShort();
+        minorVersion = in.readShort();
+        majorVersion = in.readShort();
         int count = in.readShort();
         ConstantPool pool = new ConstantPool(count, in);
         classAccess = in.readUnsignedShort();
@@ -364,6 +366,20 @@ public class ClassFile {
         return Arrays.asList(innerClasses);
     }
 
+    /**
+     * Returns the major version number of this classfile.
+     */
+    public int getMajorVersion() {
+	return majorVersion;
+    }
+
+    /**
+     * Returns the minor version number of this classfile.
+     */
+    public int getMinorVersion() {
+	return minorVersion;
+    }
+    
     /* Return the collection of all unique class references in this class.
      *
      * @return a Set of ClassNames specifying the referenced classnames.
