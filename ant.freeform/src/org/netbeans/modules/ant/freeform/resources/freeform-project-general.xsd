@@ -17,6 +17,8 @@ XML Schema to define the main parts of project.xml for a freeform project.
 Cf. http://projects.netbeans.org/buildsys/design.html#freeform
 -->
 
+<!-- XXX go over all uses of XSD primitive types and review (e.g. NMTOKEN vs. token vs. string) -->
+
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="http://www.netbeans.org/ns/freeform-project/1"
             xmlns="http://www.netbeans.org/ns/freeform-project/1"
@@ -32,8 +34,19 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                 <!-- List of sources. Default: just project directory. -->
                 <xsd:element name="folders" minOccurs="0" type="folders"/>
                 <!-- List of actions to run. -->
-                <xsd:element name="actions" minOccurs="0" type="actions"/>
-                <!-- XXX logical view items, actions -->
+                <xsd:element name="ide-actions" minOccurs="0" type="bound-actions"/>
+                <!-- List of exported build products. -->
+                <xsd:element name="export" minOccurs="0" maxOccurs="unbounded" type="export"/>
+                <!-- Appearance of logical view: -->
+                <xsd:element name="view" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="items" type="view-items"/>
+                            <xsd:element name="context-menu" minOccurs="0" type="context-menu"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <!-- XXX subprojects -->
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
@@ -50,8 +63,11 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
             <xsd:choice minOccurs="0" maxOccurs="unbounded">
                 <xsd:element name="property">
                     <xsd:complexType>
-                        <xsd:derivation base="xsd:substitutable-text"/>
-                        <xsd:attribute name="name" type="xsd:NMTOKEN"/>
+                        <xsd:simpleContent>
+                            <xsd:extension base="substitutable-text">
+                                <xsd:attribute name="name" type="xsd:NMTOKEN"/>
+                            </xsd:extension>
+                        </xsd:simpleContent>
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="property-file" type="substitutable-text"/>
@@ -80,15 +96,15 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
     
     <!-- A typed or generic source root. Also has a display name and maybe a type parameter (e.g. 'java'). -->
     <xsd:complexType name="maybe-typed-source-root">
-        <xsd:derivation base="root">
-            <xsd:sequence>
-                <xsd:element name="name" type="xsd:token"/>
-                <xsd:element name="type" type="xsd:NMTOKEN" minOccurs="0"/>
-            </xsd:sequence>
-        </xsd:derivation>
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:token"/>
+            <xsd:element name="type" type="xsd:NMTOKEN" minOccurs="0"/>
+            <xsd:element name="location" type="substitutable-text"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID"/>
     </xsd:complexType>
     
-    <xsd:complexType name="actions">
+    <xsd:complexType name="bound-actions">
         <xsd:sequence>
             <xsd:element name="action" minOccurs="0" maxOccurs="unbounded">
                 <xsd:complexType>
@@ -117,5 +133,54 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
             <!-- XXX enum... can it be extended? -->
         </xsd:restriction>
     </xsd:simpleType>
+    
+    <xsd:complexType name="export">
+        <xsd:sequence>
+            <xsd:element name="type" type="xsd:NMTOKEN"/>
+            <xsd:element name="location" type="substitutable-text"/>
+            <xsd:element name="build-target" type="xsd:token"/>
+            <xsd:element name="clean-target" type="xsd:token" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="view-items">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="source-folder">
+                    <xsd:complexType>
+                        <xsd:attribute name="refid" type="xsd:IDREF" use="required"/>
+                        <xsd:attribute name="style" type="xsd:NMTOKEN" use="required"/>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="source-file" minOccurs="0" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="location" type="substitutable-text"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="context-menu">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="ide-action">
+                    <xsd:complexType>
+                        <xsd:attribute name="name" type="xsd:NMTOKEN" use="required"/>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="action">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="label" type="xsd:token"/>
+                            <xsd:element name="target" type="xsd:token"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
     
 </xsd:schema>
