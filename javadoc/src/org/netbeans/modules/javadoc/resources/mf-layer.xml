@@ -6,7 +6,7 @@
   <folder name="Menu">
 	<folder name="Help">
             <file name="org-netbeans-modules-javadoc-search-SearchDocAction.instance"/>
-	    <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-javadoc-search-SearchDocAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
         </folder>
   </folder>
 
