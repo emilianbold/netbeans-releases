@@ -553,8 +553,9 @@ public class PropertyUtils {
                 }
             }
             if (dosHack != '\0') {
-                if (lastDelim == ':' && delimCount == 1 && s.charAt(0) == '\\') {
-                    // We had a single letter followed by ':' now followed by \something
+                // #50679 - "C:/something" is also accepted as DOS path
+                if (lastDelim == ':' && delimCount == 1 && (s.charAt(0) == '\\' || s.charAt(0) == '/')) {
+                    // We had a single letter followed by ':' now followed by \something or /something
                     s = "" + dosHack + ':' + s;
                     // and use the new token with the drive prefix...
                 } else {

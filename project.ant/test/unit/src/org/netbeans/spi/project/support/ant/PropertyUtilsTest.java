@@ -169,6 +169,9 @@ public class PropertyUtilsTest extends NbTestCase {
             assertEquals("DOS paths start with '\\'",
                 Arrays.asList(new String[] {"c", "foo", "D:\\\\bar"}),
                 Arrays.asList(PropertyUtils.tokenizePath("c:foo;D:\\\\bar")));
+            assertEquals("DOS paths start with '/'",
+                Arrays.asList(new String[] {"c", "/foo", "D:/bar", "/path"}),
+                Arrays.asList(PropertyUtils.tokenizePath("c;/foo;D:/bar:/path")));
             assertEquals("empty path handled",
                 Collections.EMPTY_LIST,
                 Arrays.asList(PropertyUtils.tokenizePath("")));
