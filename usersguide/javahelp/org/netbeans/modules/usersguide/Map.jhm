@@ -203,18 +203,23 @@
 <!-- could use a more specific page for this. -->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
+<mapID target="compile.run.jump" url="compile/compile_run.html" />
+
 <mapID target="compile.jump" url="compile/compile_jump.html" />
 <mapID target="compile.program" url="compile/compile.html" />
 <mapID target="compile.error" url="compile/error.html" />
 <mapID target="compile.stop" url="compile/stop.html" />
 <mapID target="compile.output" url="compile/output.html" />
+<mapID target="compile.messages" url="compile/messages.html" />
 <mapID target="compile.disable" url="compile/disable.html" />
 <mapID target="compile.delete" url="compile/delete.html" />
 <mapID target="compile.types" url="compile/types_jump.html" />
+<mapID target="compile.options.jump" url="compile/options_jump.html" />
 <mapID target="compile.default" url="compile/default.html" />
 <mapID target="compile.external" url="compile/external.html" />
 <mapID target="compile.internal" url="compile/internal.html" />
 <mapID target="compile.fastjavac" url="compile/fastjavac.html" />
+<mapID target="compile.jikes" url="compile/jikes.html" />
 <mapID target="compile.new" url="compile/new.html" />
 <mapID target="compile.remove" url="compile/remove.html" />
 <mapID target="compile.template" url="compile/template.html" />
@@ -225,10 +230,12 @@
 <mapID target="run.debug.applet" url="run/run_applet.html" />
 <mapID target="run.startup" url="run/startup.html" />
 <mapID target="run.arguments" url="run/arguments.html" />
+<mapID target="run.options.jump" url="run/run_options_jump.html" />
 <mapID target="run.workspace" url="run/workspace.html" />
 <mapID target="run.options" url="run/options.html" />
 <mapID target="run.locale" url="run/locale.html" />
 <mapID target="run.vm_arguments" url="run/vm_arguments.html" />
+<mapID target="run.executor.options" url="run/executor_options.html" />
 <mapID target="run.executors" url="run/executors.html" />
 <mapID target="run.project" url="run/project.html" />
 <mapID target="run.external" url="run/external.html" />
