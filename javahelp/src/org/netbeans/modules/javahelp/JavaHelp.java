@@ -267,19 +267,17 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
      *This is the basic call which should be used externally
      *and is the result of {@link TopManager#showHelp}.
      *Handles null contexts, missing or null help IDs, and null URLs.
-     *If possible, looks for an existing help window in the proper mode
-     *on this workspace that is showing the same help set as this context
-     *help object requests. If there is any problem, shows the master set
+     *If there is any problem, shows the master set
      *instead, or it may also create a new help window.
      *Works correctly if invoked while a modal dialog is open--creates a new modal
      *dialog with the help. Else creates a frame to view the help in.
      * @param ctx the help context to display
      * @param showmaster whether to show the master help set or not
      */
-    public void showHelp(HelpCtx ctx, boolean showmaster) {
+    public void showHelp(HelpCtx ctx, final boolean showmaster) {
+        final HelpCtx ctx2 = (ctx != null) ? ctx : HelpCtx.DEFAULT_HELP;
         if (!SwingUtilities.isEventDispatchThread()) {
             Installer.err.log("showHelp later...");
-            final HelpCtx ctx2 = ctx;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     showHelp(ctx2);
@@ -287,28 +285,25 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             });
             return;
         }
-        Installer.err.log("showing help: " + ctx);
-        if (ctx == null) ctx = HelpCtx.DEFAULT_HELP;
+        Installer.err.log("showing help: " + ctx2);
         final HelpSet[] hs_ = new HelpSet[1];
-        Runnable run;
-        if (showmaster || ctx.equals(HelpCtx.DEFAULT_HELP)) {
-            run = new Runnable() {
-                public void run() {
+        Runnable run = new Runnable() {
+            public void run() {
+                String id = ctx2.getHelpID();
+                if (showmaster || ctx2.equals(HelpCtx.DEFAULT_HELP) || id == null) {
                     Installer.err.log("getting master...");
                     hs_[0] = getMaster();
                     Installer.err.log("getting master...done");
                 }
-            };
-        } else {
-            final String id = ctx.getHelpID();
-            run = new Runnable() {
-                public void run() {
+                if (hs_[0] == null ||
+                        /* #22670: if ID in hidden helpset, use that HS, even if showmaster */
+                        (id != null && !hs_[0].getCombinedMap().isValidID(id, hs_[0]))) {
                     Installer.err.log("finding help set for " + id + "...");
                     hs_[0] = findHelpSetForID(id);
                     Installer.err.log("finding help set for " + id + "...done");
                 }
-            };
-        }
+            }
+        };
         if (master == null) {
             // Computation required. Show the progress dialog and do the computation
             // in a separate thread. When finished, the progress dialog will hide
@@ -334,7 +329,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             Installer.err.log("showing as dialog");
             displayHelpInDialog(jh);
         }
-        displayInJHelp(jh, ctx.getHelpID(), ctx.getHelp());
+        displayInJHelp(jh, ctx2.getHelpID(), ctx2.getHelp());
     }
 
     /** Handle modal dialogs opening and closing. Note reparentToFrameLater state = rTFL.
