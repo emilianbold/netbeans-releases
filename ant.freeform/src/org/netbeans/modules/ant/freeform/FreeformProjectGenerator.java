@@ -17,11 +17,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -580,6 +583,10 @@ public class FreeformProjectGenerator {
                     List exports = guessExports(h[0].getStandardPropertyEvaluator(), mappings, compUnits);
                     if (exports.size() > 0) {
                         putExports(h[0], exports);
+                    }
+                    List subprojects = guessSubprojects(h[0].getStandardPropertyEvaluator(), compUnits, locationF, dirF);
+                    if (subprojects.size() > 0) {
+                        putSubprojects(h[0], subprojects);
                     }
                 }
             }
@@ -1286,6 +1293,69 @@ public class FreeformProjectGenerator {
                 exportEl.appendChild(el);
             }
             appendChildElement(data, exportEl, rootElementsOrder);
+        }
+        helper.putPrimaryConfigurationData(data, true);
+    }
+    
+    /**
+     * Try to guess project's subprojects. See issue #49640 for more details.
+     */
+    public static List/*<String>*/ guessSubprojects(PropertyEvaluator evaluator,
+            List/*<JavaCompilationUnit>*/ javaCompilationUnits, File projectBase, File freeformBase) {
+        Set/*<String>*/ subprojs = new HashSet();
+        Iterator it = javaCompilationUnits.iterator();
+        while (it.hasNext()) {
+            JavaCompilationUnit cu = (JavaCompilationUnit)it.next();
+            if (cu.classpath != null) {
+                Iterator it2 = cu.classpath.iterator();
+                while (it2.hasNext()) {
+                    JavaCompilationUnit.CP cp = (JavaCompilationUnit.CP)it2.next();
+                    if (!"compile".equals(cp.mode))  { // NOI18N
+                        continue;
+                    }
+                    String classpath = evaluator.evaluate(cp.classpath);
+                    if (classpath == null) {
+                        continue;
+                    }
+                    String[] path = PropertyUtils.tokenizePath(classpath);
+                    for (int i=0; i<path.length; i++) {
+                        File file = FileUtil.normalizeFile(new File(path[i]));
+                        AntArtifact aa = AntArtifactQuery.findArtifactFromFile(file);
+                        if (aa != null) {
+                            File proj = FileUtil.toFile(aa.getProject().getProjectDirectory());
+                            String p = relativizeLocation(projectBase, freeformBase, proj);
+                            subprojs.add(p);
+                        }
+                    }
+                }
+            }
+        }
+        return new ArrayList(subprojs);
+    }
+    
+    /**
+     * Update subprojects of the project. 
+     * Project is left modified and you must save it explicitely.
+     * @param helper AntProjectHelper instance
+     * @param exports list of Export instances
+     */
+    public static void putSubprojects(AntProjectHelper helper, List/*<String>*/ subprojects) {
+        ArrayList list = new ArrayList();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        Element subproject = Util.findElement(data, "subprojects", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (subproject != null) {
+            data.removeChild(subproject);
+        }
+        subproject = doc.createElementNS(FreeformProjectType.NS_GENERAL, "subprojects"); // NOI18N
+        appendChildElement(data, subproject, rootElementsOrder);
+        
+        Iterator it = subprojects.iterator();
+        while (it.hasNext()) {
+            String proj = (String)it.next();
+            Element projEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "project"); // NOI18N
+            projEl.appendChild(doc.createTextNode(proj));
+            subproject.appendChild(projEl);
         }
         helper.putPrimaryConfigurationData(data, true);
     }

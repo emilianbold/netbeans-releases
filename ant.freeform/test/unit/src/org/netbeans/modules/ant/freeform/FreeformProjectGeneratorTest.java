@@ -164,6 +164,8 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         e.location = "folder/output.jar";
         e.buildTarget = "target";
         exports.add(e);
+        List subprojects = new ArrayList();
+        subprojects.add("/projA");
         
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
@@ -171,16 +173,17 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putSourceFolders(helper, folders, null);
         FreeformProjectGenerator.putSourceViews(helper, folders, null);
         FreeformProjectGenerator.putExports(helper, exports);
+        FreeformProjectGenerator.putSubprojects(helper, subprojects);
 //        ProjectManager.getDefault().saveAllProjects();
         
         // check that all elements are written in expected order
         
         Element el = helper.getPrimaryConfigurationData(true);
         List subElements = Util.findSubElements(el);
-        assertEquals(6, subElements.size());
+        assertEquals(7, subElements.size());
         assertElementArray(subElements, 
-            new String[]{"name", "properties", "folders", "ide-actions", "export", "view"}, 
-            new String[]{null, null, null, null, null, null});
+            new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}, 
+            new String[]{null, null, null, null, null, null, null});
         Element el2 = (Element)subElements.get(5);
         subElements = Util.findSubElements(el2);
         assertEquals(2, subElements.size());
@@ -208,6 +211,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         // style is not read by getSourceFolders and needs to be fixed here:
         ((FreeformProjectGenerator.SourceFolder)folders.get(0)).style = "tree";
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
+        FreeformProjectGenerator.putSubprojects(helper, subprojects);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
         FreeformProjectGenerator.putExports(helper, exports);
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
@@ -218,14 +222,15 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putExports(helper, exports);
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
+        FreeformProjectGenerator.putSubprojects(helper, subprojects);
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         el = helper.getPrimaryConfigurationData(true);
         subElements = Util.findSubElements(el);
-        assertEquals(6, subElements.size());
+        assertEquals(7, subElements.size());
         assertElementArray(subElements, 
-            new String[]{"name", "properties", "folders", "ide-actions", "export", "view"}, 
-            new String[]{null, null, null, null, null, null});
+            new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}, 
+            new String[]{null, null, null, null, null, null, null});
         el2 = (Element)subElements.get(5);
         subElements = Util.findSubElements(el2);
         assertEquals(2, subElements.size());
@@ -1267,7 +1272,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertEquals("export is properly configured", "target-1", e.buildTarget);
     }
     
-    public void testRawExports() throws Exception {
+    public void testPutExports() throws Exception {
         AntProjectHelper helper = createEmptyProject("proj", "proj", false);
         FileObject base = helper.getProjectDirectory();
         Project p = ProjectManager.getDefault().findProject(base);
@@ -1319,7 +1324,6 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         ProjectManager.getDefault().saveAllProjects();
         validate(p);
             
-        
         // now test updating
         
         exports = new ArrayList();
@@ -1351,7 +1355,107 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         validate(p);
             
     }
-
+    
+    public void testGuessSubprojects() throws Exception {
+        AntProjectHelper helper = createEmptyProject("proj1", "proj1", false);
+        FileObject base = helper.getProjectDirectory();
+        Project p = ProjectManager.getDefault().findProject(base);
+        assertNotNull("Project was not created", p);
+        assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
+        ArrayList exports = new ArrayList();
+        FreeformProjectGenerator.Export e = new FreeformProjectGenerator.Export();
+        e.type = "jar";
+        e.location = "libs/some.jar"; // this jar is created in createEmptyProject() so let's use it as export
+        e.buildTarget = "build_target";
+        exports.add(e);
+        FreeformProjectGenerator.putExports(helper, exports);
+        ProjectManager.getDefault().saveAllProjects();
+        String lib1path = lib1.getAbsolutePath();
+        String proj1path = FileUtil.toFile(base).getAbsolutePath();
+        
+        AntProjectHelper helper2 = createEmptyProject("proj2", "proj2", false);
+        FileObject base2 = helper.getProjectDirectory();
+        File projBase = FileUtil.toFile(base2);
+        Project p2 = ProjectManager.getDefault().findProject(base2);
+        assertNotNull("Project was not created", p2);
+        assertEquals("Project folder is incorrect", base2, p.getProjectDirectory());
+        
+        PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
+            PropertyUtils.fixedPropertyProvider(
+            Collections.singletonMap("lib1", lib1path))});
+            
+        ArrayList units = new ArrayList();
+        FreeformProjectGenerator.JavaCompilationUnit cu = new FreeformProjectGenerator.JavaCompilationUnit();
+        FreeformProjectGenerator.JavaCompilationUnit.CP cp = new FreeformProjectGenerator.JavaCompilationUnit.CP();
+        cp.mode = "compile";
+        cp.classpath = "../something.jar;${lib1};";
+        cu.classpath = new ArrayList();
+        cu.classpath.add(cp);
+        units.add(cu);
+        cu = new FreeformProjectGenerator.JavaCompilationUnit();
+        cp = new FreeformProjectGenerator.JavaCompilationUnit.CP();
+        cp.mode = "compile";
+        cp.classpath = lib1path+";";
+        cu.classpath = new ArrayList();
+        cu.classpath.add(cp);
+        units.add(cu);
+        
+        List l = FreeformProjectGenerator.guessSubprojects(evaluator, units, projBase, projBase);
+        assertEquals("one subproject", 1, l.size());
+        assertEquals("project1 is subproject", proj1path, l.get(0));
+    }
+    
+    public void testPutSubprojects() throws Exception {
+        AntProjectHelper helper = createEmptyProject("proj", "proj", false);
+        FileObject base = helper.getProjectDirectory();
+        Project p = ProjectManager.getDefault().findProject(base);
+        assertNotNull("Project was not created", p);
+        assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
+        
+        // check that all data are correctly persisted
+        
+        List subprojects = new ArrayList();
+        subprojects.add("/some/path/projA");
+        subprojects.add("C:\\dev\\projB");
+        
+        FreeformProjectGenerator.putSubprojects(helper, subprojects);
+        Element el = helper.getPrimaryConfigurationData(true);
+        Element subprojectsEl = Util.findElement(el, "subprojects", FreeformProjectType.NS_GENERAL);
+        assertNotNull("<subprojects> element exists", subprojectsEl);
+        List subElements = Util.findSubElements(subprojectsEl);
+        assertEquals("project depends on two subprojects", 2, subElements.size());
+        Element el2 = (Element)subElements.get(0);
+        assertElement(el2, "project", "/some/path/projA");
+        el2 = (Element)subElements.get(1);
+        assertElement(el2, "project", "C:\\dev\\projB");
+        
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+        
+        // now test updating
+        
+        subprojects = new ArrayList();
+        subprojects.add("/projC");
+        FreeformProjectGenerator.putSubprojects(helper, subprojects);
+        el = helper.getPrimaryConfigurationData(true);
+        subprojectsEl = Util.findElement(el, "subprojects", FreeformProjectType.NS_GENERAL);
+        subElements = Util.findSubElements(subprojectsEl);
+        assertEquals("project depends on one subproject", 1, subElements.size());
+        el2 = (Element)subElements.get(0);
+        assertElement(el2, "project", "/projC");
+        subprojects = new ArrayList();
+        FreeformProjectGenerator.putSubprojects(helper, subprojects);
+        el = helper.getPrimaryConfigurationData(true);
+        subprojectsEl = Util.findElement(el, "subprojects", FreeformProjectType.NS_GENERAL);
+        subElements = Util.findSubElements(subprojectsEl);
+        assertEquals("project depends on one subproject", 0, subElements.size());
+        
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+        
+    }    
 
     private static class Listener implements ChangeListener {
         int count = 0;
