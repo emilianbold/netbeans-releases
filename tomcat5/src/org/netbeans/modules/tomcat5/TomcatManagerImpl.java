@@ -221,7 +221,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     String ctx = ltok.nextToken ();
                     String s = ltok.nextToken ();
                     String tag = ltok.nextToken ();
-                    String path = line.substring (ctx.length () + s.length () + tag.length () + 3);
                     if ("running".equals (s)
                     &&  (state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_RUNNING)) {
                         modules.add (new TomcatModule (t, ctx));
@@ -382,7 +381,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 reader = new InputStreamReader(hconn.getInputStream());
                 retries = -1;
                 StringBuffer buff = new StringBuffer();
-                String error = null;
                 msg = null;
                 boolean first = !command.startsWith ("jmxproxy");   // NOI18N
                 while (true) {
@@ -395,12 +393,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                         buff.setLength(0);
                         TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, line);
                         if (first) {
-                            if (!line.startsWith("OK -")) { // NOI18N
-                                error = line;
-                            }
-                            else { 
-                                msg = line;
-                            }
+                            msg = line;
                             first = false;
                         }
                         pes.fireHandleProgressEvent (
@@ -414,11 +407,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 }
                 if (buff.length() > 0) {
                     TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, buff.toString());
-                }
-                if (error != null) {
-                    TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
-                    TomcatFactory.getEM ().log (error);
-                    pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, error, StateType.FAILED));
                 }
 
             } catch (Exception e) {
