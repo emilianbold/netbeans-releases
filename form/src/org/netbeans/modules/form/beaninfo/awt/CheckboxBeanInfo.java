@@ -23,7 +23,7 @@ import java.awt.Checkbox;
 public class CheckboxBeanInfo extends ComponentBeanInfo.Support {
 
     public CheckboxBeanInfo() {
-        super("checkbox"); // NOI18N
+        super("checkbox", java.awt.Checkbox.class); // NOI18N
     }
 
     /** @return Propertydescriptors */

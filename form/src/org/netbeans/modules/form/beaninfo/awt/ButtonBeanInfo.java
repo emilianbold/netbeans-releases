@@ -23,7 +23,7 @@ import java.awt.Button;
 public class ButtonBeanInfo extends ComponentBeanInfo.Support {
 
     public ButtonBeanInfo() {
-        super("button"); // NOI18N
+        super("button", java.awt.Button.class); // NOI18N
     }
 
     /** @return Propertydescriptors */

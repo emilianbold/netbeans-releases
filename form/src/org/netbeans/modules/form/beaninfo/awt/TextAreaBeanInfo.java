@@ -23,7 +23,7 @@ import java.awt.TextArea;
 public class TextAreaBeanInfo extends ComponentBeanInfo.Support {
     
     public TextAreaBeanInfo() {
-        super("textarea"); // NOI18N
+        super("textarea", java.awt.TextArea.class); // NOI18N
     }
     
     public BeanInfo[] getAdditionalBeanInfo() {

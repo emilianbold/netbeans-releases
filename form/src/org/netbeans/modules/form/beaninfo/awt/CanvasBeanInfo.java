@@ -20,6 +20,6 @@ package org.netbeans.modules.form.beaninfo.awt;
 public class CanvasBeanInfo extends ComponentBeanInfo.Support {
 
     public CanvasBeanInfo() {
-        super("canvas"); // NOI18N
+        super("canvas", java.awt.Canvas.class); // NOI18N
     }
 }

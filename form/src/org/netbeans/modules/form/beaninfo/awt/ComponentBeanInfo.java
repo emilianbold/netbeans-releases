@@ -47,11 +47,17 @@ public class ComponentBeanInfo extends SimpleBeanInfo {
     static class Support extends SimpleBeanInfo {
 
         String iconName;
+        Class beanClass;
         
-        Support(String icon) {
+        Support(String icon, Class beanClass) {
             iconName = icon;
+            this.beanClass = beanClass;
         }
-        
+
+        public BeanDescriptor getBeanDescriptor() {
+            return new BeanDescriptor(beanClass);
+        }
+
         /**
         * Return the icon
         */

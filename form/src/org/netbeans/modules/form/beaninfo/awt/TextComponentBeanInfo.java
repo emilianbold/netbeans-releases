@@ -24,7 +24,7 @@ class TextComponentBeanInfo extends ComponentBeanInfo.Support {
 
     /** no-arg */
     TextComponentBeanInfo() {
-        super(null);
+        super(null, java.awt.TextComponent.class);
     }
 
     /** @return Propertydescriptors */

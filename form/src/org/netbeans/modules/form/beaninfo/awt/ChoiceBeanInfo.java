@@ -23,7 +23,7 @@ import java.awt.Choice;
 public class ChoiceBeanInfo extends ComponentBeanInfo.Support {
 
     public ChoiceBeanInfo() {
-        super("choice"); // NOI18N
+        super("choice", java.awt.Choice.class); // NOI18N
     }
 
     /** @return Propertydescriptors */

@@ -23,7 +23,7 @@ import java.awt.TextField;
 public class TextFieldBeanInfo extends ComponentBeanInfo.Support {
     
     public TextFieldBeanInfo() {
-        super("textfield"); // NOI18N
+        super("textfield", java.awt.TextField.class); // NOI18N
     }
     
     public BeanInfo[] getAdditionalBeanInfo() {

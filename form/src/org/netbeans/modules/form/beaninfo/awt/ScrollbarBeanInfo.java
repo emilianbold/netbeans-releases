@@ -26,7 +26,7 @@ import java.awt.Scrollbar;
 public class ScrollbarBeanInfo extends ComponentBeanInfo.Support {
 
     public ScrollbarBeanInfo() {
-        super("scrollbar"); // NOI18N
+        super("scrollbar", java.awt.Scrollbar.class); // NOI18N
     }
 
     /** @return Propertydescriptors */

@@ -20,7 +20,7 @@ package org.netbeans.modules.form.beaninfo.awt;
 public class ScrollPaneBeanInfo extends ComponentBeanInfo.Support {
 
     public ScrollPaneBeanInfo() {
-        super("scrollpane"); // NOI18N
+        super("scrollpane", java.awt.ScrollPane.class); // NOI18N
     }
 
 }

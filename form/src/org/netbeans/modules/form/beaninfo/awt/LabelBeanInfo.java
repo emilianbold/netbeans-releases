@@ -27,7 +27,7 @@ import org.openide.util.NbBundle;
 public class LabelBeanInfo extends ComponentBeanInfo.Support {
 
     public LabelBeanInfo() {
-        super("label"); // NOI18N
+        super("label", java.awt.Label.class); // NOI18N
     }
 
     /** @return Propertydescriptors */

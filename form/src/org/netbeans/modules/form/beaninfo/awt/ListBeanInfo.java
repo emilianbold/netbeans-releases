@@ -24,7 +24,7 @@ import java.awt.List;
 public class ListBeanInfo extends ComponentBeanInfo.Support {
 
     public ListBeanInfo() {
-        super("list"); // NOI18N
+        super("list", java.awt.List.class); // NOI18N
     }
 
     /** @return Propertydescriptors */

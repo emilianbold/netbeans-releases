@@ -20,6 +20,6 @@ package org.netbeans.modules.form.beaninfo.awt;
 public class PanelBeanInfo extends ComponentBeanInfo.Support {
 
     public PanelBeanInfo() {
-        super("panel"); // NOI18N
+        super("panel", java.awt.Panel.class); // NOI18N
     }
 }
