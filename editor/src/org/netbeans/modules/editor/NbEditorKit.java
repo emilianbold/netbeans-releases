@@ -247,9 +247,13 @@ public class NbEditorKit extends ExtKit {
                             }
 
                             if (action != null){
-                                JMenuItem item = (action instanceof Presenter.Popup) ?
-                                    ((Presenter.Popup)action).getPopupPresenter() :
-                                    new JMenuItem (action);                                            
+                                JMenuItem item;
+                                if (action instanceof Presenter.Popup) {
+                                    item = ((Presenter.Popup)action).getPopupPresenter();
+                                } else {
+                                    item = new JMenuItem (action);
+                                    Mnemonics.setLocalizedText(item, item.getText());
+                                }
 
                                 if (item != null && !(item instanceof JMenu)) {
                                     Keymap km = (Keymap)Lookup.getDefault().lookup(Keymap.class);
@@ -331,9 +335,10 @@ public class NbEditorKit extends ExtKit {
                         if (itemText == null){
                             itemText = getItemText(target, actionName, a);
                         }
-                        
+
                         if (itemText != null) {
-                            item = new JMenuItem(itemText);
+                            item = new JMenuItem();
+                            Mnemonics.setLocalizedText(item, itemText);
                             item.addActionListener(a);
                             // Try to get the accelerator
                             Keymap km = target.getKeymap();
