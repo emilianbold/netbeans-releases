@@ -25,6 +25,8 @@ public interface Constants {
      * Thread State column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String THREAD_STATE_COLUMN_ID = "ThreadState";
 
@@ -32,6 +34,8 @@ public interface Constants {
      * Thread Suspended column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String THREAD_SUSPENDED_COLUMN_ID = "ThreadSuspended";
 
@@ -39,6 +43,8 @@ public interface Constants {
      * Breakpoint Enabled column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String BREAKPOINT_ENABLED_COLUMN_ID = 
         "BreakpointEnabled";
@@ -47,6 +53,8 @@ public interface Constants {
      * CallStackFrame Location column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String CALL_STACK_FRAME_LOCATION_COLUMN_ID = 
         "CallStackFrameLocation";
@@ -55,6 +63,8 @@ public interface Constants {
      * Locals toString () column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String LOCALS_TO_STRING_COLUMN_ID = "LocalsToString";
 
@@ -62,6 +72,8 @@ public interface Constants {
      * Locals Tyoe column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String LOCALS_TYPE_COLUMN_ID = "LocalsType";
 
@@ -69,12 +81,16 @@ public interface Constants {
      * Locals Value column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String LOCALS_VALUE_COLUMN_ID = "LocalsValue";
 
     /**
      * Watch toString () column id.
      *
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      * @see org.netbeans.spi.treeview.ColumnModel#getID
      */
     public static final String WATCH_TO_STRING_COLUMN_ID = "WatchToString";
@@ -83,6 +99,8 @@ public interface Constants {
      * Watch Tyoe column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String WATCH_TYPE_COLUMN_ID = "WatchType";
 
@@ -90,6 +108,8 @@ public interface Constants {
      * Watch Value column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String WATCH_VALUE_COLUMN_ID = "WatchValue";
 
@@ -97,6 +117,8 @@ public interface Constants {
      * Session Host Name column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String SESSION_HOST_NAME_COLUMN_ID = "SessionHostName";
 
@@ -104,6 +126,8 @@ public interface Constants {
      * Session State column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String SESSION_STATE_COLUMN_ID = "SessionState";
 
@@ -111,6 +135,8 @@ public interface Constants {
      * Session Language column id.
      *
      * @see org.netbeans.spi.treeview.ColumnModel#getID
+     * @see org.netbeans.spi.treeview.ColumnModel#getPreviuosColumnID
+     * @see org.netbeans.spi.treeview.ColumnModel#getNextColumnID
      */
     public static final String SESSION_LANGUAGE_COLUMN_ID = "SessionLanguage";
 }
