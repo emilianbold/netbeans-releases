@@ -18,8 +18,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Project">
             <!-- XXX why are these here? should be moved elsewhere -->
-            <attr name="Web/Standard" boolvalue="true"/>
-            <attr name="Web/Mobile" boolvalue="true"/>
             <attr name="Mobile/Standard" boolvalue="true"/>
 
             <folder name="Standard">

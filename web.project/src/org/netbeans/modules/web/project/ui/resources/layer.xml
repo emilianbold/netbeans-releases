@@ -17,8 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
-            <attr name="Web/Standard" boolvalue="true"/>
-            <attr name="Web/Mobile" boolvalue="true"/>
+            <attr name="Standard/Web" boolvalue="true"/>
 
             <folder name="Web">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.wizards.Bundle"/>

@@ -87,8 +87,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     
         <folder name="Project">
-            <attr name="J2EE/Standard" boolvalue="true"/>
-            <attr name="J2EE/Mobile" boolvalue="true"/>
+            <attr name="Web/J2EE" boolvalue="true"/>
 
             <folder name="J2EE">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
