@@ -914,7 +914,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 for (int i=0; i < sets.length; i++)
                     if ("layout".equals(sets[i].getName())) // NOI18N
                         return new Node.PropertySet[] { sets[i] };
-                return null; // should not happen
+                return new Node.PropertySet[0]; // cannot return null...
             }
         }
 
