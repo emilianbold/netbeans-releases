@@ -102,10 +102,17 @@ is divided into following sections:
                         <equals arg1="${{platform.java.tmp}}" arg2="$${{platforms.${{platform.active}}.java}}"/>
                     </condition>
                     <property name="platform.java" value="${{platform.java.tmp}}"/>
+                    <condition property="platform.invalid" value="true">
+                        <or>
+                            <contains string="${{platform.javac}}" substring="$${{platforms."/>
+                            <contains string="${{platform.java}}" substring="$${{platforms."/>
+                        </or>
+                    </condition>
                     <fail unless="platform.home">Must set platform.home</fail>
                     <fail unless="platform.bootcp">Must set platform.bootcp</fail>                        
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
+                    <fail if="platform.invalid">Platform is not correctly set up</fail>
                 </xsl:if>
                 <available file="${{manifest.file}}" property="manifest.available"/>
                 <condition property="manifest.available+main.class">
