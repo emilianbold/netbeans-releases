@@ -100,6 +100,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     }
 
     public void validate() throws WizardValidationException {
-        component.validateProjectLocation();
+        getComponent ();
+        component.validate (wizardDescriptor);
     }
 }

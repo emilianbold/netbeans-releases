@@ -128,9 +128,22 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     
     void read(WizardDescriptor settings) {
         wizardDescriptor = settings;
+        
+        File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
+        if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory ())
+            projectLocation = ProjectChooser.getProjectsFolder();
+        else
+            projectLocation = projectLocation.getParentFile();
+        
         if(generatedProjectNameIndex == 0) {
-            generatedProjectNameIndex = FoldersListSettings.getDefault().getNewProjectCount() + 1;
-            generatedProjectName = PanelProjectLocationVisual.getProjectName(generatedProjectNameIndex);
+            generatedProjectName = (String) settings.getProperty ("name"); //NOI18N
+            if (generatedProjectName == null) {
+                    generatedProjectNameIndex = FoldersListSettings.getDefault().getNewProjectCount() + 1;
+                    String formater = NbBundle.getMessage(PanelSourceFolders.class,"LBL_NPW1_DefaultProjectName");
+                    while ((generatedProjectName = validFreeProjectName(projectLocation, formater, generatedProjectNameIndex)) == null)
+                        generatedProjectNameIndex++;                
+                    settings.putProperty (NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(generatedProjectNameIndex));
+            }
             projectNameTextField.setText(generatedProjectName);
             moduleLocationTextField.selectAll();
         }
@@ -720,6 +733,12 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     private String getSelectedServer() {
         int idx = serverInstanceComboBox.getSelectedIndex();
         return idx == -1 ? null : (String)serverInstanceIDs.get(idx);
+    }
+
+    private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
+        String name = MessageFormat.format (formater, new Object[]{new Integer (index)});                
+        File file = new File (parentFolder, name);
+        return file.exists() ? null : name;
     }
 
 }

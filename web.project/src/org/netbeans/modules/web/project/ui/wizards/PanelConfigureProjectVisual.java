@@ -71,9 +71,10 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
         return projectLocationPanel.valid(wizardDescriptor) && optionsPanel.valid(wizardDescriptor);
     }
 
-    public void validateProjectLocation() throws WizardValidationException {
-        projectLocationPanel.validateProjectLocation();
+    void validate (WizardDescriptor d) throws WizardValidationException {
+        projectLocationPanel.validate (d);
     }
+    
     void read (WizardDescriptor d) {
         projectLocationPanel.read(d);
         optionsPanel.read(d);
