@@ -115,13 +115,13 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
       actions.add (null);
       actions.add (SystemAction.get(GotoFormAction.class));
       actions.add (SystemAction.get(GotoEditorAction.class));
-//      actions.add (SystemAction.get(GotoEditorAction.class)); // [PENDING]
+      actions.add (SystemAction.get(GotoInspectorAction.class));
       actions.add (null);
       actions.add (SystemAction.get(PasteAction.class));
     } else {
       actions.add (SystemAction.get(GotoFormAction.class));
       actions.add (SystemAction.get(GotoEditorAction.class));
-//      actions.add (SystemAction.get(GotoEditorAction.class)); // [PENDING]
+      actions.add (SystemAction.get(GotoInspectorAction.class));
       actions.add (null);
       actions.add (SystemAction.get(MoveUpAction.class));
       actions.add (SystemAction.get(MoveDownAction.class));
@@ -507,6 +507,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  19   Gandalf   1.18        7/2/99   Ian Formanek    GotoInspectorAction 
+ *       employed in popup menu
  *  18   Gandalf   1.17        6/27/99  Ian Formanek    Many form actions 
  *       (compile, save, ...) are now enabled on form and component inspector, 
  *       EventsAction, Goto actions employed
