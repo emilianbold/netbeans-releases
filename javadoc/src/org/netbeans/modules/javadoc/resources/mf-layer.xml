@@ -111,6 +111,10 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </file>
 
+        <file name="org-netbeans-modules-javadoc-httpfs-HTTPURLMapper.instance">
+            <attr name="instanceOf" stringvalue="org.openide.filesystems.URLMapper"/>
+        </file>
+
         <folder name="JavadocType">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
