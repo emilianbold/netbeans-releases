@@ -23,6 +23,7 @@ import java.util.List;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -56,6 +57,10 @@ public class FileOwnerQuery {
     public static Project getOwner(FileObject file) {
         if (file == null) {
             throw new NullPointerException("Passed null to FileOwnerQuery.getOwner(FileObject)"); // NOI18N
+        }
+        FileObject archiveRoot = FileUtil.getArchiveFile(file);
+        if (archiveRoot != null) {
+            file = archiveRoot;
         }
         Iterator it = getInstances().iterator();
         while (it.hasNext()) {

@@ -54,6 +54,9 @@ public final class TestUtil extends ProxyLookup {
     public TestUtil() {
         Assert.assertNull(DEFAULT);
         DEFAULT = this;
+        setLookups(new Lookup[] {
+            Lookups.singleton(TestUtil.class.getClassLoader()),
+        });
     }
     
     /**
