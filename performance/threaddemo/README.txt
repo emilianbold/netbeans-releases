@@ -80,15 +80,11 @@ Major known problems:
   also currently does not listen for changes, so it will not work with the Swung model
   which relies on change events even with a read-only underlying model.
 
-- Node view has not been updated to show XML parse structure.
+- Raw and Node views have not been updated to show XML parse structure.
+
+- Look view does not seem to refresh children properly. (Use LookNode view!)
 
 - Spun model seems to cause problems for scrollbar painting in raw look views.
-
-- Spun and Swung models may give assertion errors when used with nodes, as
-  Look and Children do not always ask for things from AWT.
-
-- Locking models may deadlock when refactoring due to multi-thread behavior
-  of CloneableEditorSupport.openDocument().
 
 - Swung model may not behave correctly in general.
 
@@ -99,6 +95,6 @@ Major known problems:
 - Element index does not seem to give accurate tallies in all cases.
 
 - Refactoring while an XML file is expanded sometimes causes an infinite loop and
-  GUI freeze.
+  GUI freeze. (Possible Xerces bug? If so, still apparently in 2.4.0...)
 
 -jglick@netbeans.org
