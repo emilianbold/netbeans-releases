@@ -37,10 +37,7 @@ public class GtkLFCustoms extends LFCustoms {
 
 
     public Object[] createApplicationSpecificKeysAndValues () {
-        
         Border lowerBorder = new AdaptiveMatteBorder (false, true, true, true, 3);
-        boolean blueprint = UIUtils.isBlueprintTheme();
-
         //Avoid using ThemeValue if it can't work - mainly due to testing issues when trying to run GTK UI customizations
         //on the Mac, which doesn't have a GTKLookAndFeel
 
@@ -89,14 +86,10 @@ public class GtkLFCustoms extends LFCustoms {
             
             "controlFont", controlFont, //NOI18N
 
-            //Use ProxyLazyValue so we don't have to load the class and all of
-            //its gunk unless it's really needed
-            "gtkColorsFailover", new UIDefaults.ProxyLazyValue("org.netbeans.swing.plaf.gtk.GtkLFCustoms$ChicletDefaults"), //NOI18N
-
             //UI Delegates for the tab control
-            EDITOR_TAB_DISPLAYER_UI, /* blueprint ? "org.netbeans.swing.tabcontrol.plaf.GtkEditorTabDisplayerUI" : */
+            EDITOR_TAB_DISPLAYER_UI, 
                 "org.netbeans.swing.tabcontrol.plaf.WinClassicEditorTabDisplayerUI", //NOI18N
-            VIEW_TAB_DISPLAYER_UI, /* blueprint ? "org.netbeans.swing.tabcontrol.plaf.GtkViewTabDisplayerUI" : */
+            VIEW_TAB_DISPLAYER_UI, 
                 "org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI", //NOI18N
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.GtkSlidingButtonUI", //NOI18N
@@ -112,8 +105,6 @@ public class GtkLFCustoms extends LFCustoms {
     }
     
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
-        boolean blueprint = UIUtils.isBlueprintTheme();
-        
         if (ThemeValue.functioning()) {
             return new Object[] {
                 //XXX once the JDK team has integrated support for standard
@@ -144,102 +135,5 @@ public class GtkLFCustoms extends LFCustoms {
             };
             return result;
         }
-    }
-    
-    
-    public static class ChicletDefaults {
-        public static final String CHICLET_SELECTEDPRESSED_UPPERTOP = "nb.gradient.selectedpressedactive.uppertop"; //NOI18N
-        public static final String CHICLET_SELECTEDPRESSED_UPPERBOTTOM = "nb.gradient.selectedpressedactive.upperbottom"; //NOI18N
-        public static final String CHICLET_SELECTEDPRESSED_LOWERTOP = "nb.gradient.selectedpressedactive.lowertop"; //NOI18N
-        public static final String CHICLET_SELECTEDPRESSED_LOWERBOTTOM = "nb.gradient.selectedpressedactive.lowerbottom"; //NOI18N
-
-        public static final String CHICLET_SELECTED_UPPERTOP = "nb.gradient.selectedactive.uppertop"; //NOI18N
-        public static final String CHICLET_SELECTED_UPPERBOTTOM = "nb.gradient.selectedactive.upperbottom"; //NOI18N
-        public static final String CHICLET_SELECTED_LOWERTOP = "nb.gradient.selectedactive.lowertop"; //NOI18N
-        public static final String CHICLET_SELECTED_LOWERBOTTOM = "nb.gradient.selectedactive.lowerbottom"; //NOI18N
-
-        public static final String CHICLET_INACTIVE_UPPERTOP = "nb.gradient.inactive.uppertop"; //NOI18N
-        public static final String CHICLET_INACTIVE_UPPERBOTTOM = "nb.gradient.inactive.upperbottom"; //NOI18N
-        public static final String CHICLET_INACTIVE_LOWERTOP = "nb.gradient.inactive.lowertop"; //NOI18N
-        public static final String CHICLET_INACTIVE_LOWERBOTTOM = "nb.gradient.inactive.lowerbottom"; //NOI18N
-
-        public static final String CHICLET_SELECTEDINACTIVE_UPPERTOP = "nb.gradient.selectedinactive.uppertop"; //NOI18N
-        public static final String CHICLET_SELECTEDINACTIVE_UPPERBOTTOM = "nb.gradient.selectedinactive.upperbottom"; //NOI18N
-        public static final String CHICLET_SELECTEDINACTIVE_LOWERTOP = "nb.gradient.selectedinactive.lowertop"; //NOI18N
-        public static final String CHICLET_SELECTEDINACTIVE_LOWERBOTTOM = "nb.gradient.selectedinactive.lowerbottom"; //NOI18N
-
-        public static final String CHICLET_CLOSING_UPPERTOP = "nb.gradient.closing.uppertop"; //NOI18N
-        public static final String CHICLET_CLOSING_UPPERBOTTOM = "nb.gradient.closing.upperbottom"; //NOI18N
-        public static final String CHICLET_CLOSING_LOWERTOP = "nb.gradient.closing.lowertop"; //NOI18N
-        public static final String CHICLET_CLOSING_LOWERBOTTOM = "nb.gradient.closing.lowerbottom"; //NOI18N
-
-        public static final String CHICLET_ACTIVE_UPPERTOP = "nb.gradient.active.uppertop"; //NOI18N
-        public static final String CHICLET_ACTIVE_UPPERBOTTOM = "nb.gradient.active.upperbottom"; //NOI18N
-        public static final String CHICLET_ACTIVE_LOWERTOP = "nb.gradient.active.lowertop"; //NOI18N
-        public static final String CHICLET_ACTIVE_LOWERBOTTOM = "nb.gradient.active.lowerbottom"; //NOI18N
-
-    //These are the default colors for the GTK blueprint theme
-        Color[] selectedActive = new Color[]{
-            new Color(130, 90, 233), new Color(105, 40, 175),
-            new Color(100, 40, 175), new Color(80, 0, 130)};
-
-        Color[] selectedPressedActive = new Color[]{
-            new Color(100, 40, 175), new Color(80, 0, 130),
-            new Color(105, 40, 175), new Color(130, 90, 233)};
-
-        Color[] inactive = new Color[]{
-            new Color(150, 150, 244), new Color(136, 117, 198),
-            new Color(136, 117, 198), new Color(108, 58, 180)};
-
-        Color[] selectedInactive = new Color[]{
-            new Color(150, 150, 244), new Color(136, 117, 198),
-            new Color(136, 117, 198), new Color(108, 58, 180)};
-
-        Color[] closing = new Color[]{
-            new Color(233, 0, 130), new Color(175, 0, 105),
-            new Color(175, 0, 100), new Color(130, 0, 80)};
-            
-        public ChicletDefaults() {
-            System.err.println("Creating chiclet defaults");
-            UIManager.getDefaults().putDefaults(createKeysAndValues());
-        }
-            
-        
-        public Object[] createKeysAndValues() {
-            Object[] result = new Object[] {
-            //GTK Editor UI in case getting the theme colors by reflection fails
-                CHICLET_INACTIVE_UPPERTOP, inactive[0],
-                CHICLET_INACTIVE_UPPERBOTTOM, inactive[1],
-                CHICLET_INACTIVE_LOWERTOP, inactive[2],
-                CHICLET_INACTIVE_LOWERBOTTOM, inactive[3],
-
-                CHICLET_SELECTEDINACTIVE_UPPERTOP, selectedInactive[0],
-                CHICLET_SELECTEDINACTIVE_UPPERBOTTOM, selectedInactive[1],
-                CHICLET_SELECTEDINACTIVE_LOWERTOP, selectedInactive[2],
-                CHICLET_SELECTEDINACTIVE_LOWERBOTTOM, selectedInactive[3],
-
-                CHICLET_SELECTED_UPPERTOP, selectedActive[0],
-                CHICLET_SELECTED_UPPERBOTTOM, selectedActive[1],
-                CHICLET_SELECTED_LOWERTOP, selectedActive[2],
-                CHICLET_SELECTED_LOWERBOTTOM, selectedActive[3],
-
-                CHICLET_ACTIVE_UPPERTOP, selectedActive[0],
-                CHICLET_ACTIVE_UPPERBOTTOM, selectedActive[1],
-                CHICLET_ACTIVE_LOWERTOP, selectedActive[2],
-                CHICLET_ACTIVE_LOWERBOTTOM, selectedActive[3],
-
-                CHICLET_SELECTEDPRESSED_UPPERTOP, selectedPressedActive[0],
-                CHICLET_SELECTEDPRESSED_UPPERBOTTOM, selectedPressedActive[1],
-                CHICLET_SELECTEDPRESSED_LOWERTOP, selectedPressedActive[2],
-                CHICLET_SELECTEDPRESSED_LOWERBOTTOM, selectedPressedActive[3],
-
-                CHICLET_CLOSING_UPPERTOP, closing[0],
-                CHICLET_CLOSING_UPPERBOTTOM, closing[1],
-                CHICLET_CLOSING_LOWERTOP, closing[2],
-                CHICLET_CLOSING_LOWERBOTTOM, closing[3],
-            };
-            return result;
-        }
-        
     }
 }
