@@ -36,12 +36,13 @@ Microsystems, Inc. All Rights Reserved.
           <pathelement location="${xml/tax.dir}/${nb.modules/autoload.dir}/xml-tax.jar"/>
           <pathelement location="${xml/tax.dir}/${nb.modules/autoload.dir}/ext/tax.jar"/>
           <pathelement location="${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar"/>
+          <pathelement location="${java/api.dir}/${nb.modules/autoload.dir}/java-api.jar"/>
         </path>
     </target>
 
     <target name="compile" depends="init">
         <echo message="Compiling XML tools module classes..."/>
-        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
             <classpath refID="cp"/>
         </javac>
     </target>
@@ -102,7 +103,7 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>
 
-    <target name="clean" depends="init">
+    <target name="clean" depends="init" description="Clean build products.">
         <delete>
             <fileset dir="src">
                 <include name="**/*.class"/>

@@ -91,7 +91,7 @@ public class EventSetPattern extends Pattern {
         findEventSetType();
         name = findEventSetName();
 
-        typeElement = ClassElement.forName( type.getClassName().getFullName() ) ;
+        typeElement = patternAnalyser.findClassElement( type.getClassName().getFullName() ) ;
 
 
     }
@@ -161,7 +161,7 @@ public class EventSetPattern extends Pattern {
         }
 
         if ( fire ) {
-            ClassElement listener = ClassElement.forName( type.toString() );
+            ClassElement listener = patternAnalyser.findClassElement( type.toString() );
 
 
             if ( listener != null ) {
@@ -282,8 +282,8 @@ public class EventSetPattern extends Pattern {
 
         //if (!java.util.EventListener.class.isAssignableFrom( newType.toClass() ) ) {
         if ( !PatternAnalyser.isSubclass(
-                    ClassElement.forName( newType.getClassName().getFullName() ),
-                    ClassElement.forName( "java.util.EventListener" ) ) ) { // NOI18N
+                    patternAnalyser.findClassElement( newType.getClassName().getFullName() ),
+                    patternAnalyser.findClassElement( "java.util.EventListener" ) ) ) { // NOI18N
 
             DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(PatternNode.getString("MSG_InvalidListenerInterface"),
@@ -368,7 +368,7 @@ public class EventSetPattern extends Pattern {
         
         // delete associated "fire" methods
         declaringClass = getDeclaringClass();
-        ClassElement listener = ClassElement.forName( type.toString() );
+        ClassElement listener = patternAnalyser.findClassElement( type.toString() );
         boolean canDelete = false;
 
         if ( listener != null ) {

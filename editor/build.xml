@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
       <pathelement location="${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar"/>
       <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/>
+      <pathelement location="${java/api.dir}/${nb.modules/autoload.dir}/java-api.jar"/>
       <pathelement location="libsrc"/>
     </path>
     <path id="libcp">
@@ -39,11 +40,11 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="init">
-    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <!-- We need Openide-util library. Namely RequestProcessor. -->
       <classpath refID="libcp"/>
     </javac>
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <classpath refID="cp"/>
     </javac>
   </target>
@@ -90,7 +91,7 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean" depends="init">
+  <target name="clean" depends="init" description="Clean build products.">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>

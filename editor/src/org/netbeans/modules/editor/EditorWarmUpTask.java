@@ -33,11 +33,10 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
+import org.netbeans.modules.editor.java.JCFinderFactory;
 import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.plain.PlainKit;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 
 /**
  * "Warm-up" task for editor. Executed after IDE startup, it should
@@ -94,18 +93,15 @@ public class EditorWarmUpTask implements Runnable{
         = Boolean.getBoolean("netbeans.editor.warmup.disable"); // NOI18N
     
     
-    private void sampleDirParsing(){
-        File userdir = new File(System.getProperty("netbeans.user", ""),"sampledir"); //NOI18N
-        String fsName = userdir.getAbsolutePath().replace('\\','/');
-        JCStorage.getStorage().parseFSOnBackground(Repository.getDefault().findFileSystem(fsName));
-    }
-    
     public void run() {
         long startTime = System.currentTimeMillis();
         
         // initializing code completion database. Reading *.jcs files and creating memory map of available 
         // completin classes
         JCStorage.getStorage();
+        // initialize also finder factory. It will start listening on 
+        // GlobalPathRegistry and project open will triggers its parserDB creation
+        JCFinderFactory.getDefault();
         if (debug){
             System.out.println("Storage initialized:"+(System.currentTimeMillis()-startTime));
             startTime = System.currentTimeMillis();

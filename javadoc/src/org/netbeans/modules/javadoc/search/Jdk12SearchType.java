@@ -7,25 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* Base class providing search for JDK1.2/1.3 documentation
- * Jdk12SearchType.java
- *
- * Created on 19. únor 2001, 17:14
- * @author Petr Hrebejk, Petr Suchomel
- */
-
 package org.netbeans.modules.javadoc.search;
-
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
+/* Base class providing search for JDK1.2/1.3 documentation
+ * @author Petr Hrebejk, Petr Suchomel
+ */
 public class Jdk12SearchType extends JavadocSearchType {
 
     private boolean caseSensitive = true;
@@ -63,35 +58,14 @@ public class Jdk12SearchType extends JavadocSearchType {
         this.firePropertyChange("caseSensitive", oldVal ? Boolean.TRUE : Boolean.FALSE, caseSensitive ? Boolean.TRUE : Boolean.FALSE);   //NOI18N
     }
 
-    /** default returns null, must be overriden
-     * @param fs File system where to find index files
-     * @param rootOffset offset , position of index files in file system, normally null
-     * @return File object containing index-files
-    */
-    public FileObject getDocFileObject( FileSystem fs , String rootOffset ) {
-        //System.out.println("in jdk 12");        
-        if( rootOffset != null && rootOffset.length() != 0 ){
-            rootOffset = ( rootOffset.replace('/', '.') + '.' );
-        }
-        else{
-            rootOffset = "";    //NOI18N
-        }            
-        FileObject fo = fs.find( rootOffset + "index-files", null, null ); // NOI18N
+    public FileObject getDocFileObject( FileObject apidocRoot ) {
+    
+        FileObject fo = apidocRoot.getFileObject( "index-files" ); // NOI18N
         if ( fo != null ) {
             return fo;
         }
 
-        fo = fs.find( rootOffset + "", "index-all", "html" ); // NOI18N
-        if ( fo != null ) {
-            return fo;
-        }
-
-        fo = fs.find( rootOffset + "api.index-files", null, null ); // NOI18N
-        if ( fo != null ) {
-            return fo;
-        }
-
-        fo = fs.find( rootOffset + "api", "index-all", "html" ); // NOI18N
+        fo = apidocRoot.getFileObject( "index-all.html" ); // NOI18N
         if ( fo != null ) {
             return fo;
         }

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,104 +8,9 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<project name="debuggerjpda" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/> 
-
-  <target name="init" depends="default.init">
-    <patternset id="debuggerjpda.files">
-      <include name="${nb.modules.dir}/jpdaDebugger.jar"/>
-    </patternset>
-
-    <path id="cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-      <pathelement location="${jdkhome}/lib/tools.jar"/>
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <pathelement location="${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar"/>
-      <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
-      <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
-      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-      <pathelement location="${debuggercore.dir}/${nb.modules/autoload.dir}/debuggerCore.jar"/>
-      <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/>
-    </path>
-  </target>
-
-  <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <classpath refid="cp"/>
-    </javac>
-  </target>
-
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/jpdaDebugger.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-         excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
-  </target>
-
-  <target name="netbeans" depends="jars">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/jpdaDebugger.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="debuggerjpda.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="debuggerjpda.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/jpdaDebugger.jar"
-	     homepage="http://debuggerjpda.${homepage.base}/"
-	     distribution="http://${dist.base}/debuggerjpda.nbm">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean" depends="init">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="debuggerjpda.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="debuggerjpda.nbm"/>
-    <delete dir="javadoc"/>
-  </target>
-
-  <target name="javadoc" depends="init" description="Build debuggerjpda module API documentation.">
-    <tstamp/>
-    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
-    <echo message="Build debuggerjpda module API documentation..."/>
-    <mkdir dir="javadoc"/>
-    <javadoc destdir="javadoc"
-             packagenames="org.netbeans.modules.debugger.jpda,org.netbeans.modules.debugger.jpda.evaluator,org.netbeans.modules.debugger.jpda.util"
-             doctitle="NetBeans debuggerjpda module APIs"
-             windowtitle="NetBeans debuggerjpda module APIs"
-             bottom="${apis-footer}"
-             use="true"
-             splitindex="true"
-             author="false"
-             version="false"
-             maxmemory="384m"
-    >
-      <sourcepath>
-        <pathelement location="src"/>
-      </sourcepath>
-      <classpath refid="cp"/>
-    </javadoc>    
-  </target>
-
+<project basedir="." default="netbeans" name="debuggerjpda">
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

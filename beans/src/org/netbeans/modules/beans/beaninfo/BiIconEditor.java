@@ -33,6 +33,7 @@ import org.openide.util.HelpCtx;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.NotifyDescriptor;
 import java.text.MessageFormat;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -48,6 +49,8 @@ import org.openide.filesystems.Repository;
 class BiIconEditor extends PropertyEditorSupport {
     
     private static final String BEAN_ICONEDITOR_HELP = "beans.icon";    
+    
+    private FileObject sourceFileObject;
     
     /** Standard variable for localization. */
     static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
@@ -67,7 +70,8 @@ class BiIconEditor extends PropertyEditorSupport {
     
     // init .......................................................................................
     
-    public BiIconEditor() {
+    public BiIconEditor( FileObject sourceFileObject ) {
+        this.sourceFileObject = sourceFileObject;
     }
     
     // Special access methods......................................................................
@@ -77,7 +81,7 @@ class BiIconEditor extends PropertyEditorSupport {
      * resource path to the image on classpath */
     public String getSourceName() {
         if (getValue() instanceof BiImageIcon)
-            return ((BiImageIcon)getValue()).name;
+            return ((BiImageIcon)getValue()).getName();
         else
             return null;
     }
@@ -94,7 +98,7 @@ class BiIconEditor extends PropertyEditorSupport {
         
         if (val instanceof BiImageIcon) {
             BiImageIcon ii = (BiImageIcon)val;
-            return ii.name; // NOI18N
+            return ii.getName(); // NOI18N
         }
         return null;
     }
@@ -107,7 +111,14 @@ class BiIconEditor extends PropertyEditorSupport {
      * @param text  The string to be parsed.
      */
     public void setAsText(String string) throws IllegalArgumentException {
-        setValue(iconFromText(string));
+        try { 
+            setValue(iconFromText(string));
+        }
+        catch ( IllegalArgumentException e ) {
+            // User inserted incorrect path either report or
+            // do nothing
+            // For now choosing doing nothing
+        }
     }
     
     private BiImageIcon iconFromText(String string) throws IllegalArgumentException {
@@ -117,9 +128,10 @@ class BiIconEditor extends PropertyEditorSupport {
                 ii = null;
             }
             else {
-                URL url = Repository.getDefault().findResource(string).getURL();
-                ii = new BiImageIcon(url);
-                ii.name = string;
+                ClassPath cp = ClassPath.getClassPath( sourceFileObject, ClassPath.SOURCE );                
+                
+                URL url = cp.findResource( string ).getURL();
+                ii = new BiImageIcon(url, string);
             }
         } catch (Throwable e) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
@@ -160,26 +172,29 @@ class BiIconEditor extends PropertyEditorSupport {
         return new IconPanel();
     }
     
-    public static class BiImageIcon extends ImageIcon implements Externalizable {
+    public static class BiImageIcon extends ImageIcon /* implements Externalizable */ {
         /** generated Serialized Version UID */
-        static final long serialVersionUID = 7018807466471349466L;
-        String name;
+        //static final long serialVersionUID = 7018807466471349466L;
+        private String name;
         
         public BiImageIcon() {
         }
         
-        BiImageIcon(URL url) {
+        BiImageIcon(URL url, String name) {
             super(url);
+            this.name = name;
         }
         
-        BiImageIcon(String file) {
+        BiImageIcon(String file, String name ) {
             super(file);
+            this.name = name;
         }
         
         String getName() {
-            return name;
+            return name;            
         }
         
+        /*
         public void writeExternal(ObjectOutput oo) throws IOException {
             oo.writeObject(name);
         }
@@ -191,6 +206,7 @@ class BiIconEditor extends PropertyEditorSupport {
             ii = new ImageIcon(Repository.getDefault().findResource(name).getURL());
             setImage(ii.getImage());
         }
+         */
     }
     
     class IconPanel extends JPanel implements EnhancedCustomPropertyEditor {
@@ -321,7 +337,9 @@ class BiIconEditor extends PropertyEditorSupport {
                             },
                             null
                             )[0].getCookie(DataObject.class);
-                            name = (d.getPrimaryFile().getPackageNameExt('/', '.'));
+                            FileObject sourceFo = d.getPrimaryFile();
+                            ClassPath cp = ClassPath.getClassPath( sourceFo, ClassPath.SOURCE );
+                            name = cp.getResourceName( sourceFo );
                         } catch (org.openide.util.UserCancelException ex) {
                             return;
                         }
@@ -347,7 +365,7 @@ class BiIconEditor extends PropertyEditorSupport {
             
             rbClasspath.setSelected(true);
             bSelect.setEnabled(true);
-            tfName.setText(((BiImageIcon)i).name);
+            tfName.setText(((BiImageIcon)i).getName());
         }
         
         void updateIcon() {
@@ -368,7 +386,9 @@ class BiIconEditor extends PropertyEditorSupport {
             try {
                 BiIconEditor.this.setValue(iconFromText(val));
             } catch (IllegalArgumentException ee) {
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ee);
+                // Reporting the exception is maybe too much let's do nothing
+                // instead 
+                // org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ee);
             }
             updateIcon();
         }
@@ -377,11 +397,11 @@ class BiIconEditor extends PropertyEditorSupport {
             BiImageIcon ii = null;
             String s = tfName.getText().trim();
             try {
-                if (rbClasspath.isSelected() && s.length() != 0 ) {
-                    FileObject f = Repository.getDefault().findResource(s);
+                if (rbClasspath.isSelected() && s.length() != 0 ) {                    
+                    ClassPath cp = ClassPath.getClassPath( sourceFileObject, ClassPath.SOURCE );
+                    FileObject f = cp.findResource( s );
                     try{
-                        ii = new BiImageIcon(f.getURL());
-                        ii.name = s;
+                        ii = new BiImageIcon(f.getURL(), s);
                     }
                     catch(java.lang.Throwable t){
                         MessageFormat message = new MessageFormat( bundle.getString("CTL_Icon_not_exists")); //NOI18N

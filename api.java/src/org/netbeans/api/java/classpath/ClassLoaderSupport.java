@@ -18,7 +18,7 @@ import java.util.*;
 
 import org.openide.execution.NbClassLoader;
 import org.openide.filesystems.*;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -33,15 +33,21 @@ import org.openide.util.LookupListener;
  */
 class ClassLoaderSupport extends NbClassLoader
     implements FileChangeListener, PropertyChangeListener {
+    
+    public static ClassLoader create(ClassPath cp) {
+        try {
+            return new ClassLoaderSupport(cp);
+        } catch (FileStateInvalidException e) {
+            // Should not happen, we already trimmed unused roots:
+            throw new AssertionError(e);
+        }
+    }
 
     /** change listener */
     private org.openide.filesystems.FileChangeListener listener;
 
     /** PropertyChangeListener */
     private java.beans.PropertyChangeListener propListener;
-
-    /** holds current classloader (or null if not created yet) */
-    private static ClassLoaderSupport current;
 
     /** contains AllPermission */
     private static java.security.PermissionCollection allPermission;
@@ -53,50 +59,16 @@ class ClassLoaderSupport extends NbClassLoader
      */
     private ClassPath   classPath;
 
-    /** @return the current classloader for the system */
-    synchronized static ClassLoader currentClassLoader () {
-        if (current == null) {
-            current = new ClassLoaderSupport (ClassPath.getClassPath(null, ClassPath.EXECUTE));
-            if (firstTime) {
-                firstTime = false;
-                Lookup.getDefault().lookup(new Lookup.Template(ClassLoader.class)).addLookupListener(new LookupListener() {
-                    public void resultChanged(LookupEvent e) {
-                        if (current != null) {
-                            current.reset();
-                        }
-                    }
-                });
-            }
-        }
-        return current;
-    }
-
-    private static FileSystem[] getFileSystems(FileObject[] roots) {
-        Collection fss = new ArrayList(roots.length);
-        for (int i = 0; i < roots.length; i++) {
-            try {
-                fss.add(roots[i].getFileSystem());
-            } catch (FileStateInvalidException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-        }
-        return (FileSystem[])fss.toArray(new FileSystem[fss.size()]);
-    }
-
     /** Constructor that attaches itself to the filesystem pool.
     */
-    ClassLoaderSupport (ClassPath cp) {
-        super(getFileSystems(cp.getRoots()));
+    private ClassLoaderSupport (ClassPath cp) throws FileStateInvalidException {
+        super(cp.getRoots(), ClassLoader.getSystemClassLoader(), null);
         this.classPath = cp;
 
         setDefaultPermissions(getAllPermissions());
-        listener = WeakListener.fileChange (this, null);
-        propListener = WeakListener.propertyChange (this, null);
+        listener = FileUtil.weakFileChangeListener(this, null);
+        propListener = WeakListeners.propertyChange (this, null);
         cp.addPropertyChangeListener(propListener);
-    }
-
-    protected void finalize () {
-        org.openide.ErrorManager.getDefault().getInstance("org.netbeans.api.java").log ("Collected currentClassLoader");
     }
 
     /**
@@ -139,9 +111,7 @@ class ClassLoaderSupport extends NbClassLoader
     * listening on given file object.
     */
     private void testRemove (org.openide.filesystems.FileObject fo) {
-        if (current != this) {
-            fo.removeFileChangeListener (listener);
-        }
+        fo.removeFileChangeListener (listener);
     }
 
     /** Fired when a new folder has been created. This action can only be

@@ -3,9 +3,6 @@ OpenIDE-Module: org.netbeans.modules.debugger.core/3
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/debugger/multisession/EnterpriseModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.20
-OpenIDE-Module-Module-Dependencies: org.openide.src > 1.0, org.openide.compiler > 1.0, org.openide.execution > 1.0, org.openide.io > 1.0, org.openide.debugger > 1.0
-OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine, org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
+OpenIDE-Module-Requires: org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
 OpenIDE-Module-Specification-Version: 2.10
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 

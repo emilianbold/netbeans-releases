@@ -73,7 +73,6 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
 
         // add Scenario support
         set.add (new ScenarioSupport (this));    
-        set.add(new ScenarioExecSupport(this));
 
         // editor support defines MIME type understood by EditorKits registry         
         TextEditorSupport.TextEditorSupportFactory editorFactory =

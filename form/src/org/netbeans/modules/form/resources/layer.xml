@@ -14,13 +14,11 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
-    <folder name="Mount">
-        <folder name="java">
-           <file name="org-netbeans-modules-form-absolutelayout-library.xml" url="absolutelayout.xml">
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-              <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout.gif" />
-	  </file>
-      </folder>
+
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="absolutelayout.xml" url="absolutelayout.xml"/>
+        </folder>
     </folder>
 
     <folder name="Services">
@@ -54,8 +52,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Form">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
 
-            <file name="org-netbeans-modules-form-actions-InstallToPaletteAction.instance" />
-            <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance" />
+<!--            <file name="org-netbeans-modules-form-actions-InstallToPaletteAction.instance" />
+            <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance" /> -->
             <file name="org-netbeans-modules-form-actions-CustomizeLayoutAction.instance" />
             <file name="org-netbeans-modules-form-actions-GotoEditorAction.instance" />
             <file name="org-netbeans-modules-form-actions-TestAction.instance" />
@@ -90,11 +88,11 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="Form/Debugger" boolvalue="true" />
         </folder>
 
-        <folder name="Tools">
+<!--        <folder name="Tools">
             <attr name="Separator1.instance/org-netbeans-modules-form-actions-InstallBeanAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance" />
             <attr name="org-netbeans-modules-form-actions-InstallBeanAction.instance/Separator2.instance" boolvalue="true" />
-        </folder>
+        </folder> -->
     </folder>
 
     <folder name="Palette">
@@ -511,6 +509,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Beans">
+            <file name="org-netbeans-examples-lib-timerbean-Timer.instance_hidden"/>
         </folder>
 
         <attr name="Swing/AWT" boolvalue="true" />

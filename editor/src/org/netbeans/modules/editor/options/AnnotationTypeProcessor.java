@@ -22,7 +22,6 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.loaders.XMLDataObject;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileSystemCapability;
 import org.netbeans.editor.AnnotationType;
 import java.util.ResourceBundle;
 import java.awt.Color;

@@ -16,22 +16,23 @@
 package org.apache.tools.ant.module;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.*;
-import org.openide.compiler.*;
-import org.openide.execution.*;
-import org.openide.filesystems.FileSystemCapability;
 import org.openide.options.SystemOption;
 import org.openide.util.*;
 
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.bridge.AntBridge;
-import org.apache.tools.ant.module.loader.AntCompilerSupport;
-import org.apache.tools.ant.module.run.AntExecutor;
+import org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider;
+import org.openide.execution.NbClassPath;
 import org.openide.modules.InstalledFileLocator;
 
 public class AntSettings extends SystemOption implements ChangeListener {
@@ -40,19 +41,13 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public static final String PROP_PROPERTIES = "properties"; // NOI18N
     public static final String PROP_SAVE_ALL = "saveAll"; // NOI18N
     public static final String PROP_CUSTOM_DEFS = "customDefs"; // NOI18N
-    public static final String PROP_COMPILER = "compiler"; // NOI18N
-    public static final String PROP_EXECUTOR = "executor"; // NOI18N
     public static final String PROP_REUSE_OUTPUT = "reuseOutput"; // NOI18N
     public static final String PROP_ANT_VERSION = "antVersion"; // NOI18N
     public static final String PROP_INPUT_HANDLER = "inputHandler"; // NOI18N
     public static final String PROP_ANT_HOME = "antHome"; // NOI18N
     public static final String PROP_EXTRA_CLASSPATH = "extraClasspath"; // NOI18N
+    public static final String PROP_AUTOMATIC_EXTRA_CLASSPATH = "automaticExtraClasspath"; // NOI18N
     
-    private static final String DEF_CLASS_PATH = "netbeans.class.path"; // NOI18N
-    private static final String DEF_BOOTCLASS_PATH = "netbeans.bootclass.path"; // NOI18N
-    private static final String DEF_LIBRARY_PATH = "netbeans.library.path"; // NOI18N
-    private static final String DEF_FILESYSTEMS_PATH = "netbeans.filesystems.path"; // NOI18N
-
     private static final long serialVersionUID = -4457782585534082966L;
     
     protected void initialize () {
@@ -66,11 +61,6 @@ public class AntSettings extends SystemOption implements ChangeListener {
         setReuseOutput (false);
         setSaveAll (true);
         setCustomDefs (new IntrospectedInfo ());
-        setCompiler (AntCompilerSupport.NoCompiler.NO_COMPILER);
-        Executor exec = Executor.find (AntExecutor.class);
-        if (exec == null)
-            exec = new AntExecutor();
-        setExecutor (exec);
     }
 
     public String displayName () {
@@ -97,35 +87,11 @@ public class AntSettings extends SystemOption implements ChangeListener {
         HashMap m = (HashMap)getProperty(PROP_PROPERTIES);
         Properties p = new Properties();
         p.putAll(m);
-        p.setProperty (DEF_CLASS_PATH, getClassPath(NbClassPath.createClassPath ()));
-        p.setProperty (DEF_BOOTCLASS_PATH, getClassPath(NbClassPath.createBootClassPath ()));
-        p.setProperty (DEF_LIBRARY_PATH, getClassPath(NbClassPath.createLibraryPath ()));
-        p.setProperty (DEF_FILESYSTEMS_PATH, getClassPath(NbClassPath.createRepositoryPath (FileSystemCapability.EXECUTE)));
         return p;
     }
     
-    // See #17148: NbClassPath sticks extra quotes on classpaths for some reason.
-    private static String getClassPath(NbClassPath p) {
-        String s = p.getClassPath();
-        if (s.startsWith("\"") && s.endsWith("\"")) { // NOI18N
-            return s.substring(1, s.length() - 1);
-        } else {
-            return s;
-        }
-    }
-
     public void setProperties (Properties p) {
-        // #16003: don't actually store a Properties; store something else,
-        // to ensure that SystemOption will store what we actually keep here,
-        // which will *not* contain the r/o properties DEF_CLASS_PATH etc.
-        // Old serialized settings will still call this setter and so we
-        // will upgrade storage; subsequent saves will only serialize the smaller
-        // HashMap, without all of these useless keys.
         HashMap m = new HashMap(p);
-        m.remove(DEF_CLASS_PATH);
-        m.remove(DEF_BOOTCLASS_PATH);
-        m.remove(DEF_LIBRARY_PATH);
-        m.remove(DEF_FILESYSTEMS_PATH);
         putProperty (PROP_PROPERTIES, m, true);
     }
     
@@ -148,39 +114,6 @@ public class AntSettings extends SystemOption implements ChangeListener {
         // identity of this object never changes so it does not really matter...
     }
 
-    /** @return CompilerType */
-    public CompilerType getCompiler() {
-        CompilerType.Handle compilerType = (CompilerType.Handle) getProperty (PROP_COMPILER);
-        CompilerType c = (CompilerType) compilerType.getServiceType ();
-        if (c != null) {
-            return c;
-        } else {
-            // #15256
-            return AntCompilerSupport.NoCompiler.NO_COMPILER;
-        }
-    }
-
-    /** Uses given CompilerType */
-    public void setCompiler(CompilerType ct) {
-        putProperty(PROP_COMPILER, new CompilerType.Handle(ct), true);
-    }
-
-    /** @return Executor */
-    public Executor getExecutor() {
-        ServiceType.Handle serviceType = (ServiceType.Handle) getProperty(PROP_EXECUTOR);
-        Executor e = (Executor) serviceType.getServiceType();
-        if (e != null) {
-            return e;
-        } else {
-            return new AntExecutor();
-        }
-    }
-
-    /** sets an executor */
-    public void setExecutor(Executor ct) {
-        putProperty(PROP_EXECUTOR, new ServiceType.Handle(ct), true);
-    }
-    
     /** If true, Ant Execution uses always the same Output tab. */
     public boolean getReuseOutput () {
         return ((Boolean) getProperty (PROP_REUSE_OUTPUT)).booleanValue ();
@@ -248,6 +181,44 @@ public class AntSettings extends SystemOption implements ChangeListener {
     
     public void setExtraClasspath(NbClassPath p) {
         putProperty(PROP_EXTRA_CLASSPATH, p, true);
+    }
+    
+    public NbClassPath getAutomaticExtraClasspath() {
+        NbClassPath p = (NbClassPath)getProperty(PROP_AUTOMATIC_EXTRA_CLASSPATH);
+        if (p != null) {
+            return p;
+        } else {
+            return defaultAutomaticExtraClasspath();
+        }
+    }
+    
+    public void setAutomaticExtraClasspath(NbClassPath p) {
+        putProperty(PROP_AUTOMATIC_EXTRA_CLASSPATH, p, true);
+    }
+    
+    private NbClassPath defAECP = null;
+    private Lookup.Result aecpResult = null;
+    
+    private synchronized NbClassPath defaultAutomaticExtraClasspath() {
+        if (aecpResult == null) {
+            aecpResult = Lookup.getDefault().lookup(new Lookup.Template(AutomaticExtraClasspathProvider.class));
+            aecpResult.addLookupListener(new LookupListener() {
+                public void resultChanged(LookupEvent ev) {
+                    defAECP = null;
+                    firePropertyChange(PROP_AUTOMATIC_EXTRA_CLASSPATH, null, null);
+                }
+            });
+        }
+        if (defAECP == null) {
+            List/*<File>*/ items = new ArrayList();
+            Iterator it = aecpResult.allInstances().iterator();
+            while (it.hasNext()) {
+                AutomaticExtraClasspathProvider provider = (AutomaticExtraClasspathProvider)it.next();
+                items.addAll(Arrays.asList(provider.getClasspathItems()));
+            }
+            defAECP = new NbClassPath((File[])items.toArray(new File[items.size()]));
+        }
+        return defAECP;
     }
     
 }

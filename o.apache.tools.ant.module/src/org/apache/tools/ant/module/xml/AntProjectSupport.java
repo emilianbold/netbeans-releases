@@ -210,10 +210,6 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
             // scan desired system
             fobj = fs.findResource (fileName);
         }
-        if (fobj == null) {
-            // scan all systems
-            fobj = rep.findResource (fileName);
-        }
         if (fobj != null) {
             fo = fobj;
         }

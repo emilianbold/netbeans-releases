@@ -27,7 +27,6 @@ import javax.swing.*;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.actions.ExecuteAction;
 import org.openide.execution.ExecutorTask;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
@@ -142,7 +141,9 @@ public class Install extends ModuleInstall {
             }
             err.log(ErrorManager.WARNING, b.toString());
         }
+        /*
         ExecuteAction.execute(obj, true);
+         */
     }
 
     // A class that server as a pending dialog manager.

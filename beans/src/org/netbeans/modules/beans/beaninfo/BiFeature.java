@@ -19,11 +19,14 @@ import org.openide.src.MethodElement;
 import org.openide.src.ClassElement;
 import org.openide.nodes.Node;
 import org.openide.ErrorManager;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 import org.netbeans.modules.beans.Pattern;
 import org.netbeans.modules.beans.PropertyPattern;
 import org.netbeans.modules.beans.IdxPropertyPattern;
 import org.netbeans.modules.beans.EventSetPattern;
+import org.netbeans.modules.beans.PatternAnalyser;
 
 /** The basic class representing features included in BeanInfo.
 * 
@@ -633,7 +636,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
 
             try {
                 org.openide.src.Type listenerType = pattern.getType();
-                org.openide.src.ClassElement listener = org.openide.src.ClassElement.forName(listenerType.getClassName().getFullName());
+                org.openide.src.ClassElement listener = PatternAnalyser.findClassElement(listenerType.getClassName().getFullName(), pattern);
                 listenerMethods = listener.getMethods();
                 Arrays.sort(listenerMethods, this);
             } catch (IllegalStateException e) {
@@ -722,87 +725,20 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
       MethodElement element;
       private String varName;
       private MethodElement me;
-      
-      Method( MethodElement me ) {
+      private PatternAnalyser pa;
+
+      Method( MethodElement me, PatternAnalyser pa ) {
         super( me );
         element = me;
         this.me = me;
+        this.pa = pa;
       }
 
         String getBracketedName() {
             return "[METHOD_" + getName() + "]";
         }
-
-        private static String getSignature(org.openide.src.ClassElement cls) {
-            org.openide.src.Identifier n = cls.getName();
-            if (!cls.isInner()) {
-                return n.getFullName();
-            }
-
-            StringBuffer sb = new StringBuffer(n.getFullName());
-            org.openide.src.ClassElement c = cls;
-            int index = sb.length();
-
-            while (true) {
-                index -= n.getSourceName().length() + 1;
-                sb.setCharAt(index, '$');
-                c = c.getDeclaringClass();
-                if (!c.isInner())
-                    break;
-                n = c.getName();
-            } 
-            return sb.toString();
-        }
         
-      private static String getVMClassName(org.openide.src.Type type) {
-        try {
-            if (!type.isArray()) {
-                String fqn = type.getClassName().getFullName();
-                org.openide.src.ClassElement cls = org.openide.src.ClassElement.forName(fqn);
-                if (cls == null)
-                    return fqn;
-                return getSignature(cls);    	    
-            }
-
-            int depth = 0;
-            org.openide.src.Type t = type;
-
-            do {
-                ++depth;
-                t = t.getElementType();
-            } while (t.isArray());		
-
-            StringBuffer sb = new StringBuffer(depth + 1);
-            for (int i = 0; i < depth; i++) {
-                sb.append('[');
-            }
-            if (t.isPrimitive()) {
-                sb.append(getPrimitiveCode(t));
-            } else {
-                sb.append('L');
-                sb.append(getVMClassName(t));
-                sb.append(';');
-            }
-            return sb.toString();
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
-            return "";
-        }
-      }
-      
-        private static String getPrimitiveCode(org.openide.src.Type type) {
-            if (type.equals(type.INT)) return "I";
-            else if (type.equals(type.BOOLEAN)) return "Z";
-            else if (type.equals(type.CHAR)) return "C";
-            else if (type.equals(type.LONG)) return "J";
-            else if (type.equals(type.SHORT)) return "S";
-            else if (type.equals(type.BYTE)) return "B";
-            else if (type.equals(type.FLOAT)) return "F";
-            else if (type.equals(type.DOUBLE)) return "D";
-            else return "V";
-        }
-
-        private static String getTypeClass(org.openide.src.Type type) {
+        private static String getTypeClass(org.openide.src.Type type, PatternAnalyser pa) {
           if (type.isPrimitive()) {
               if (type.equals(type.INT)) return "Integer.TYPE";
               else if (type.equals(type.BOOLEAN)) return "Boolean.TYPE";
@@ -820,7 +756,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
                   return type.toString() + ".class";
               }
           } else /*(type.isArray())*/ {
-              return "Class.forName(\"" + getVMClassName(type) + "\")";
+                 return "Class.forName(\"" + type.getVMClassName(pa.findFileObject()) + "\")";
           }
       }
       
@@ -855,7 +791,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             
             for (int i = 0; i < parameters.length; i ++) {
                 try {
-                    sb.append(getTypeClass(parameters[i].getType())); // NOI18N
+                    sb.append(getTypeClass(parameters[i].getType(), pa)); // NOI18N
                 } catch (Exception e) {
                     ErrorManager.getDefault().notify(e);
                 }

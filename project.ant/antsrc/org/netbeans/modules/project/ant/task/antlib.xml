@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<antlib>
+    <!-- XXX would be nice to give a classpath, but how to give it relative to this JAR? -->
+    <taskdef name="regenerate-files" classname="org.netbeans.modules.project.ant.task.RegenerateFilesTask"/>
+    <taskdef name="show-crc" classname="org.netbeans.modules.project.ant.task.ShowCRCTask"/>
+</antlib>

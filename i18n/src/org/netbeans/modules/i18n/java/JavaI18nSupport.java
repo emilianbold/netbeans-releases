@@ -27,6 +27,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.InfoPanel;
@@ -43,6 +44,7 @@ import org.openide.cookies.SourceCookie;
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.src.ClassElement;
 import org.openide.src.FieldElement;
 import org.openide.src.Identifier;
@@ -103,8 +105,8 @@ public class JavaI18nSupport extends I18nSupport {
     public I18nString getDefaultI18nString(HardCodedString hcString) {
         I18nString i18nString = new JavaI18nString(this);
         
-        if(i18nString.getSupport().getResourceHolder().getResource() == null && I18nUtil.getOptions().getLastResource() != null)
-            i18nString.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource());
+        if(i18nString.getSupport().getResourceHolder().getResource() == null && I18nUtil.getOptions().getLastResource2() != null)
+            i18nString.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
 
         if(hcString == null)
             return i18nString;
@@ -260,13 +262,18 @@ public class JavaI18nSupport extends I18nSupport {
         String initJavaFormat = getInitFormat();
 
         // Create map.
+        FileObject fo = resourceHolder.getResource().getPrimaryFile();
+        ClassPath cp = ClassPath.getClassPath( fo, ClassPath.SOURCE );
+
+        
         Map map = new HashMap(3);
 
-        map.put("bundleNameSlashes", resourceHolder.getResource().getPrimaryFile().getPackageName('/')); // NOI18N
-        map.put("bundleNameDots", resourceHolder.getResource().getPrimaryFile().getPackageName('.')); // NOI18N
+        map.put("bundleNameSlashes", cp.getResourceName( fo, '/', false ) ); // NOI18N
+        map.put("bundleNameDots", cp.getResourceName( fo, '.', false ) ); // NOI18N
         map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
 
         return MapFormat.format(initJavaFormat, map);
+        
     }
     
     /** Helper method. Finds main top-level class element for <code>sourceDataObject</code> which should be initialized. */

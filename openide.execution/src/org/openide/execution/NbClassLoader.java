@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,11 +31,10 @@ import org.openide.filesystems.*;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
-// ClassLoader constructs URL (NbfsURL) in this way:
-// "protocol"://"fs_name"#"package"/"name.extension" // NOI18N
 /** A class loader which is capable of loading classes from the Repository.
 * Classes loaded from file systems in the repository are handled by {@link NbfsStreamHandlerFactory}.
-*
+ * XXX the only useful thing this class does is effectively make
+ * ExecutionEngine.createPermissions public! Consider deprecating this class...
 * @author Ales Novak, Petr Hamernik, Jaroslav Tulach, Ian Formanek
 */
 public class NbClassLoader extends URLClassLoader {
@@ -56,10 +55,8 @@ public class NbClassLoader extends URLClassLoader {
      * @deprecated Misuses classpath.
     */
     public NbClassLoader () {
-        super (
-            createRootURLs (FileSystemCapability.EXECUTE.fileSystems ()),
-            systemClassLoader()
-        );
+        super(new URL[0], systemClassLoader());
+        Thread.dumpStack();
     }
 
     /** Create a new class loader retrieving classes from the core IDE as well as the Repository,
@@ -69,7 +66,21 @@ public class NbClassLoader extends URLClassLoader {
      * @deprecated Misuses classpath.
      */
     public NbClassLoader(InputOutput io) {
-        this();
+        super(new URL[0], systemClassLoader());
+        inout = io;
+        Thread.dumpStack();//XXX
+    }
+    
+    /**
+     * Create a new class loader retrieving classes from a set of package roots.
+     * @param roots a set of package roots
+     * @param parent a parent loader
+     * @param io an I/O tab in the Output Window, or null
+     * @throws FileStateInvalidException if some of the roots are not valid
+     * @since XXX
+     */
+    public NbClassLoader(FileObject[] roots, ClassLoader parent, InputOutput io) throws FileStateInvalidException {
+        super(createRootURLs(roots), parent);
         inout = io;
     }
 
@@ -78,7 +89,8 @@ public class NbClassLoader extends URLClassLoader {
      * @deprecated Misuses classpath.
     */
     public NbClassLoader (FileSystem[] fileSystems) {
-        this(fileSystems, systemClassLoader());
+        super(new URL[0], systemClassLoader(), null);
+        Thread.dumpStack();
     }
 
     /** Create a new class loader.
@@ -87,10 +99,8 @@ public class NbClassLoader extends URLClassLoader {
      * @deprecated Misuses classpath.
     */
     public NbClassLoader (FileSystem[] fileSystems, ClassLoader parent) {
-        super (
-            createRootURLs (Collections.enumeration (Arrays.asList (fileSystems))),
-            parent
-        );
+        super(new URL[0], parent);
+        Thread.dumpStack();
     }
 
     /** Create a URL to a resource specified by name.
@@ -116,17 +126,16 @@ public class NbClassLoader extends URLClassLoader {
                 URL[] urls = getURLs ();
                 for (int i = 0; i < urls.length; i++) {
                     //System.err.println (urls[i].toString ());
-                    FileObject root = NbfsURLConnection.decodeURL (urls[i]);
-                    if (root == null) continue; // pretty normal, e.g. non-nbfs: URL
-                    if (! root.isRoot ()) continue; // only want to load from roots of FSs
+                    FileObject[] roots = URLMapper.findFileObjects(urls[i]);
+                    if (roots.length == 0) {
+                        continue; // pretty normal, e.g. non-nbfs: URL
+                    }
                     try {
-                        FileSystem fs = root.getFileSystem ();
-                        //System.err.println (fs.toString () + ": " + fs.getDisplayName ());
-                        FileObject fo = fs.findResource (resource);
+                        FileObject fo = roots[0].getFileObject(resource);
                         if (fo != null) {
                             // Got it. If there is an associated manifest, load it.
-                            FileObject manifo = fs.findResource ("META-INF/MANIFEST.MF"); // NOI18N
-                            if (manifo == null) manifo = fs.findResource ("meta-inf/manifest.mf"); // NOI18N
+                            FileObject manifo = roots[0].getFileObject("META-INF/MANIFEST.MF"); // NOI18N
+                            if (manifo == null) manifo = roots[0].getFileObject("meta-inf/manifest.mf"); // NOI18N
                             if (manifo != null) {
                                 //System.err.println (manifo.toString () + " " + manifo.getClass ().getName () + " " + manifo.isValid ());
                                 Manifest mani = new Manifest ();
@@ -221,20 +230,16 @@ public class NbClassLoader extends URLClassLoader {
     }
 
 
-    /** Creates urls for filesystems.
-    * @param enumeration of FileSystems
-    * @return array of urls
-    */
-    private static URL[] createRootURLs (Enumeration en) {
-        ArrayList list = new ArrayList ();
-        while (en.hasMoreElements ()) {
-            FileSystem fs = (FileSystem)en.nextElement ();
-            try {
-                list.add (fs.getRoot ().getURL ());
-            } catch (FileStateInvalidException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
+    /**
+     * Creates URLs for file objects.
+     * @param roots file roots
+     * @return array of URLs
+     */
+    private static URL[] createRootURLs(FileObject[] roots) throws FileStateInvalidException {
+        URL[] urls = new URL[roots.length];
+        for (int i = 0; i < roots.length; i++) {
+            urls[i] = roots[i].getURL();
         }
-        return (URL[])list.toArray (new URL[list.size()]);
+        return urls;
     }
 }

@@ -987,6 +987,8 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(" =("); // NOI18N
             initCodeWriter.write(getSourceClassName(comp.getBeanClass()));
             initCodeWriter.write(")java.beans.Beans.instantiate(getClass().getClassLoader(), \""); // NOI18N
+            assert false : "XXX needs to be rewritten";
+            /*
             // write package name
             // !! [this won't work when filesystem root != classpath root]
             String packageName = formEditorSupport.getFormDataObject()
@@ -1001,6 +1003,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write("} catch (java.io.IOException e) {\n"); // NOI18N
             initCodeWriter.write("e.printStackTrace();\n"); // NOI18N
             initCodeWriter.write("}\n"); // NOI18N
+             */
         }
         else { // generate standard component creation code
             StringBuffer varBuf = new StringBuffer();

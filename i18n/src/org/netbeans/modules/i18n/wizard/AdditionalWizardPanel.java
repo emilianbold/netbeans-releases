@@ -30,6 +30,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nSupport;
@@ -302,8 +303,10 @@ final class AdditionalWizardPanel extends JPanel {
                 DataObject source = (DataObject)it.next();
                 
                 SourceData sourceData = (SourceData)sourceMap.get(source);
+                
+                ClassPath cp = ClassPath.getClassPath( source.getPrimaryFile(), ClassPath.SOURCE );
 
-                progressPanel.setMainText(NbBundle.getBundle(getClass()).getString("LBL_AdditionalIn")+" "+source.getPrimaryFile().getPackageName('.')); // NOI18N
+                progressPanel.setMainText(NbBundle.getBundle(getClass()).getString("LBL_AdditionalIn")+" "+cp.getResourceName( source.getPrimaryFile(), '.', false ) ); // NOI18N
                 
                 Object[] hcStrings = sourceData.getStringMap().keySet().toArray();
                 

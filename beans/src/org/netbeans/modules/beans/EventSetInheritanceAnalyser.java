@@ -64,7 +64,7 @@ class EventSetInheritanceAnalyser extends Object {
         if( superClass == null ) //no extends or implements clause
             return null;
 
-        ClassElement parent = ClassElement.forName( superClass.getFullName() );
+        ClassElement parent = ClassElement.forName( superClass.getFullName(), PatternAnalyser.fileObjectForElement( clazz ) );
         if( parent == null )
             return parent; 
         else {

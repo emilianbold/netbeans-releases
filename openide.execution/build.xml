@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -18,11 +18,11 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="default.init">
       <patternset id="openide/execution.files">
         <include name="${nb.modules/autoload.dir}/openide-execution.jar"/>
+        <include name="${nb.system.dir}/ModuleAutoDeps/org-openide-execution.xml"/>
       </patternset>
       <path id="cp">
         <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
       </path>
     </target>
@@ -43,8 +43,15 @@ Microsystems, Inc. All Rights Reserved.
 	     excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
 	     compress="false"/>
     </target>
+    
+    <target name="release">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}"/>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}">
+            <fileset dir="release/system"/>
+        </copy>
+    </target>
 
-    <target name="netbeans" depends="init,jars" description="Build everything.">
+    <target name="netbeans" depends="init,jars,release" description="Build everything.">
       <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/openide-execution.jar">
         <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
           <patternset refID="openide/execution.files"/>
@@ -68,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="javadoc.base" location="."/>
             <property name="javadoc.name" value="ExecutionAPI"/>
             <property name="javadoc.title" value="Execution API"/>
-            <property name="javadoc.packages" value="org.openide.actions,org.openide.cookies,org.openide.execution,org.openide.loaders"/>
+            <property name="javadoc.packages" value="org.openide.execution"/>
             <property name="javadoc.classpath" refid="cp"/>
             <property name="javadoc.main.page" value="org/openide/execution/doc-files/api.html"/>
             <property name="javadoc.arch" location="../arch/arch-openide-execution.xml"/>

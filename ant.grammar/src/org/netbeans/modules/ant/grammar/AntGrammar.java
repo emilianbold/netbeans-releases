@@ -544,6 +544,7 @@ class AntGrammar implements GrammarQuery {
     private static final String[] PROPERTY_NAME_VALUED_PROPERTY_NAMES = {
         "if",
         "unless",
+        // XXX accept any *property
         "property",
         "failureproperty",
         "errorproperty",

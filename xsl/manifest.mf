@@ -13,7 +13,7 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.libs.jaxp/1,
  org.netbeans.libs.xalan/1 > 1.1,
  org.netbeans.modules.servletapi/1,
- org.openide.execution > 1.0
+ org.openide.execution > 1.2
 OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl
 
 Name: org/netbeans/modules/xsl/XSLDataLoader.class

@@ -294,7 +294,8 @@ public final class AntBridge {
     }
     
     private static ClassLoader createMainClassLoader() throws Exception {
-        List cp = new ArrayList(); // List<URL>
+        // Use LinkedHashSet to automatically suppress duplicates.
+        Collection/*<URL>*/ cp = new LinkedHashSet();
         File libdir = new File(AntSettings.getDefault().getAntHome(), "lib"); // NOI18N
         if (!libdir.isDirectory()) throw new IOException("No such Ant library dir: " + libdir); // NOI18N
         AntModule.err.log("Creating main class loader from " + libdir);
@@ -310,6 +311,15 @@ public final class AntBridge {
             extrapath = extrapath.substring(1, extrapath.length() - 1);
         }
         StringTokenizer tok = new StringTokenizer(extrapath, File.pathSeparator);
+        while (tok.hasMoreTokens()) {
+            cp.add(new File(tok.nextToken()).toURI().toURL());
+        }
+        extra = AntSettings.getDefault().getAutomaticExtraClasspath();
+        extrapath = extra.getClassPath();
+        if (extrapath.startsWith("\"") && extrapath.endsWith("\"")) { // NOI18N
+            extrapath = extrapath.substring(1, extrapath.length() - 1);
+        }
+        tok = new StringTokenizer(extrapath, File.pathSeparator);
         while (tok.hasMoreTokens()) {
             cp.add(new File(tok.nextToken()).toURI().toURL());
         }

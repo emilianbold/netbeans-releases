@@ -131,7 +131,8 @@ final class Util {
             if(d2 == null)
                 return 1;
 
-            return d1.getPrimaryFile().getPackageName('.').compareTo(d2.getPrimaryFile().getPackageName('.'));
+            //return d1.getPrimaryFile().getPackageName('.').compareTo(d2.getPrimaryFile().getPackageName('.'));
+            return d1.getPrimaryFile().getPath().compareTo( d2.getPrimaryFile().getPath() );
         }
         
         /** Implements <code>Comparator</code> interface method. */

@@ -1,0 +1,313 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.java.j2seplatform.wizard;
+
+import java.io.*;
+import java.util.*;
+import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+
+import javax.swing.event.ChangeListener;
+
+import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.ErrorManager;
+import org.openide.modules.SpecificationVersion;
+
+import org.netbeans.api.java.platform.*;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
+import org.openide.modules.InstalledFileLocator;
+
+/**
+ * Wizard Iterator for standard J2SE platforms. It assumes that there is a
+ * 'bin{/}java[.exe]' underneath the platform's directory, which can be run to
+ * produce the target platform's VM environment.
+ *
+ * @author Svata Dedic
+ */
+public class J2SEWizardIterator
+    implements TemplateWizard.Iterator, Runnable {
+
+
+    private static final String CLASSIC = "classic";        //NOI18N
+    private static final String MODERN = "modern";          //NOI18N
+    private static final String JAVAC13 = "javac1.3";       //NOI18N
+
+
+    DataFolder                  installFolder;
+    DetectPanel.WizardPanel     detectPanel;
+    SrcDocLocation.Panel        srcDocPanel;
+    Collection                  listeners;
+    JDKImpl                     platform;
+    boolean                     valid;
+    int                         currentIndex;
+
+    public J2SEWizardIterator(FileObject installFolder) {
+        this.installFolder = DataFolder.findFolder(installFolder);
+        this.platform  = JDKImpl.create (installFolder);
+    }
+
+    FileObject getInstallFolder() {
+        return installFolder.getPrimaryFile();
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        listeners.add(l);
+    }
+
+    public Panel current() {
+        switch (this.currentIndex) {
+            case 0:
+                return this.detectPanel;
+            case 1:
+                return this.srcDocPanel;
+            default:
+                throw new IllegalStateException();
+        }
+    }
+
+    public boolean hasNext() {
+        return this.currentIndex == 0;
+    }
+
+    public boolean hasPrevious() {
+        return this.currentIndex == 1;
+    }
+
+    public void initialize(TemplateWizard wiz) {
+        this. detectPanel = new DetectPanel.WizardPanel(this);
+        this.srcDocPanel = new SrcDocLocation.Panel (this);
+        this.currentIndex = 0;
+    }
+
+    /**
+     * This finally produces the java platform's XML that represents the basic
+     * platform's properties. The XML is returned in the resulting Set.
+     * @return singleton Set with java platform's instance DO inside.
+     */
+    public java.util.Set instantiate(TemplateWizard wiz) throws IOException {
+        final String systemName = ((J2SEPlatformImpl)getPlatform()).getAntName();
+        FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource(
+                "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
+        if (platformsFolder.getFileObject(systemName,"xml")!=null) {   //NOI18N
+            String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName");
+            throw (IllegalStateException)ErrorManager.getDefault().annotate(
+                new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
+        }
+        try {
+            ProjectManager.mutex().writeAccess(
+                    new Mutex.ExceptionAction () {
+                        public Object run () throws Exception{
+                            String homePropName = createName(systemName,"home");      //NOI18N
+                            String bootClassPathPropName = createName(systemName,"bootclasspath");    //NOI18N
+                            String compilerType= createName (systemName,"compiler");  //NOI18N
+                            EditableProperties props = PropertyUtils.getGlobalProperties();
+                            if (props.getProperty(homePropName) != null || props.getProperty(bootClassPathPropName) != null
+                               || props.getProperty(compilerType)!=null) {
+                                //Already defined warn user
+                                String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName");
+                                throw (IllegalStateException)ErrorManager.getDefault().annotate(
+                                        new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
+                            }
+                            props.setProperty(homePropName,(String)getPlatform().getProperties().get("platform.home")); //NOI18N
+                            props.setProperty(bootClassPathPropName,((JDKImpl)getPlatform()).getBootstrapLibrariesAsString());   //NOI18N
+                            props.setProperty(compilerType,getCompilerType(getPlatform()));
+                            PropertyUtils.putGlobalProperties (props);
+                            return null;
+                        }
+                    }
+            );
+            DataObject dobj = PlatformConvertor.create(getPlatform(), DataFolder.findFolder(platformsFolder),systemName);
+            return Collections.singleton(dobj);
+        } catch (MutexException me) {
+            Exception originalException = me.getException();
+            if (originalException instanceof RuntimeException) {
+                throw (RuntimeException) originalException;
+            }
+            else if (originalException instanceof IOException) {
+                throw (IOException) originalException;
+            }
+            else
+            {
+                throw new IllegalStateException (); //Should never happen
+            }
+        }
+    }
+
+    public String name() {
+        return NbBundle.getMessage(J2SEWizardIterator.class, "TITLE_J2SEWizardIterator_Configure");
+    }
+
+    public void nextPanel() {
+        this.currentIndex++;
+    }
+
+    public void previousPanel() {
+        this.currentIndex--;
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        listeners.add(l);
+    }
+
+    public void uninitialize(TemplateWizard wiz) {
+        this.detectPanel = null;
+        this.srcDocPanel = null;
+        this.currentIndex = -1;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public JavaPlatform getPlatform() {
+        return platform;
+    }
+
+    /**
+     * Returns a path to java executable, starting from the JDK installation
+     * root.
+     * @return File for the java executable, may be null if such thing does
+     * not exist.
+     */
+    static File getJavaExecutablePath(FileObject folder) {
+        File f = new File(FileUtil.toFile(folder), "bin"); // NOI18N
+        if (!f.exists() || !f.isDirectory())
+            return null;
+        // special behaviour for WinOS.
+        if (Utilities.isWindows()) {
+            f = new File(f, "java.exe"); // NOI18N
+        } else {
+            f = new File(f, "java"); // NOI18N
+        }
+        return f.exists() ? f : null;
+    }
+
+    /**
+     * Actually performs the detection and stores relevant information
+     * in this Iterator
+     */
+    public void run() {
+        try {
+            File java = getJavaExecutablePath(installFolder.getPrimaryFile());
+            if (java == null)
+                return;
+            String javapath = java.getAbsolutePath();
+            String filePath = File.createTempFile("nb-platformdetect", "properties").getAbsolutePath();
+            getSDKProperties(javapath, filePath);
+            File f = new File(filePath);
+            Properties p = new Properties();
+            InputStream is = new FileInputStream(f);
+            p.load(is);
+            Map m = new HashMap(p.size());
+            for (Enumeration en = p.keys(); en.hasMoreElements(); ) {
+                String k = (String)en.nextElement();
+                m.put(k, p.getProperty(k));
+            }
+            this.platform.loadProperties(m);
+            this.valid = true;
+            is.close();
+            f.delete();
+        } catch (IOException ex) {
+            this.valid = false;
+        }
+    }
+
+    private void getSDKProperties(String javaPath, String path) throws IOException {
+        Runtime runtime = Runtime.getRuntime();
+        URL codeBase = getClass().getProtectionDomain().getCodeSource().getLocation();
+        try {
+            String[] command = new String[5];
+            command[0] = javaPath;
+            command[1] = "-classpath";    //NOI18N
+            command[2] = InstalledFileLocator.getDefault().locate("modules/ext/org-netbeans-modules-java-j2seplatform-probe.jar", "org.netbeans.modules.java.j2seplatform", false).getAbsolutePath(); // NOI18N
+            command[3] = "org.netbeans.modules.java.j2seplatform.wizard.SDKProbe";
+            command[4] = path;
+            System.out.println("Probe command: "+Arrays.asList(command));
+            final Process process = runtime.exec(command);
+            // PENDING -- this may be better done by using ExecEngine, since
+            // it produces a cancellable task.
+            process.waitFor();
+            int exitValue = process.exitValue();
+            System.out.println("Probe exit status: "+exitValue);
+            if (exitValue != 0)
+                throw new IOException();
+        } catch (InterruptedException ex) {
+            IOException e = new IOException();
+            ErrorManager.getDefault().annotate(e,ex);
+            throw e;
+        }
+    }
+
+
+    private static String createName (String propName, String propType) {
+        return "platforms." + propName + "." + propType;        //NOI18N
+    }
+
+    private static String getCompilerType (JavaPlatform platform) {
+        assert platform != null;
+        String prop = (String) platform.getSystemProperties().get("java.specification.version"); //NOI18N
+        assert prop != null;
+        SpecificationVersion specificationVersion = new SpecificationVersion (prop);
+        SpecificationVersion jdk13 = new SpecificationVersion("1.3");   //NOI18N
+        int c = specificationVersion.compareTo (jdk13);
+        if (c<0) {
+            return CLASSIC;
+        }
+        else if (c == 0) {
+            return JAVAC13;
+        }
+        else {
+            return MODERN;
+        }
+    }
+
+    /**
+     * Rather dummy implementation of the Java Platform, but sufficient for communication
+       inside the Wizard.
+     */
+    static class JDKImpl extends J2SEPlatformImpl {
+
+        static JDKImpl create (FileObject installFolder) {
+            assert installFolder != null;
+            Map platformProperties = new HashMap ();
+            File file = FileUtil.toFile (installFolder);
+            platformProperties.put (PLAT_PROP_PLATFORM_HOME,file.getAbsolutePath());
+            return new JDKImpl(null,platformProperties,Collections.EMPTY_MAP);
+        }
+
+        private JDKImpl(String name, Map platformProperties, Map systemProperties) {
+            super(name, name, platformProperties, systemProperties);
+        }
+
+        void loadProperties(Map m) {
+            super.setSystemProperties(m);
+        }
+
+        public String getBootstrapLibrariesAsString() {
+            return (String)getSystemProperties().get(J2SEPlatformImpl.SYSPROP_BOOT_CLASSPATH);        //NOI18N
+        }
+    }
+}

@@ -95,17 +95,6 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
      */
     public HTTPFileSystem() {
         
-        // The default capabilities of this file system
-        FileSystemCapability.Bean   httpFileSystemCapabilities;
-        
-        
-        // Set the capabilies to "Documentation" only
-        httpFileSystemCapabilities = new FileSystemCapability.Bean( );
-        httpFileSystemCapabilities.setDoc( true );
-        httpFileSystemCapabilities.setExecute( false );
-        httpFileSystemCapabilities.setCompile( false );
-        httpFileSystemCapabilities.setDebug( false );        
-        setCapability( httpFileSystemCapabilities );
         setHidden( true );
         addVetoableChangeListener( this );
         refreshRate = 0;
@@ -562,19 +551,6 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
     }
 
 
-    /**
-     *	Add this file system to the CLASSPATH of the environment.  Always throws
-     *  an exception, because this file system cannot be used in a CLASSPATH.
-     *
-     *	@since 1.0
-     */
-    public void prepareEnvironment(FileSystem.Environment env) throws EnvironmentNotSupportedException {
-
-        throw new EnvironmentNotSupportedException(this);
-
-    }
-    
-    
     /**
      *	Cleans up this object.
      *

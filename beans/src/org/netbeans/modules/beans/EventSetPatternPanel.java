@@ -37,11 +37,15 @@ public class EventSetPatternPanel extends javax.swing.JPanel
     private PatternGroupNode groupNode;
     /** Geneartion for interface/class */
     private boolean forInterface;
+    
+    private transient PatternAnalyser patternAnalyser;
 
     static final long serialVersionUID =-6439362166672698327L;
 
     /** Initializes the Form */
-    public EventSetPatternPanel() {
+    public EventSetPatternPanel( PatternAnalyser patternAnalyser) {
+        this.patternAnalyser = patternAnalyser;
+        
         initComponents ();
         initAccessibility();
 
@@ -373,8 +377,8 @@ public class EventSetPatternPanel extends javax.swing.JPanel
                 
                 // Check whether the property points to a valid listener
                 if ( !PatternAnalyser.isSubclass(
-                    ClassElement.forName( type.getClassName().getFullName() ),
-                    ClassElement.forName( "java.util.EventListener" ) ) ) { // NOI18N
+                    patternAnalyser.findClassElement( type.getClassName().getFullName() ),
+                    patternAnalyser.findClassElement( "java.util.EventListener" ) ) ) { // NOI18N
 
                     DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(PatternNode.getString("MSG_InvalidListenerInterface"),

@@ -168,7 +168,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             String name = rawName.substring(0,1).toUpperCase() + rawName.substring(1);
 
             final FileObject folder = primFile.getParent();
-            final String packageName = folder.getPackageName ('.');
+            final String packageName = Util.findJavaPackage(folder);
 
             // prepare inital model
 

@@ -19,10 +19,12 @@ import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -144,14 +146,15 @@ public class I18nPanel extends JPanel {
         if (dataObject != null) {
             // look for peer Bundle.properties
             FileObject fo = dataObject.getPrimaryFile();
-            FileObject folder = fo;
+            ClassPath cp = ClassPath.getClassPath( fo, ClassPath.SOURCE );
             
-            // scan parents for first Bundle.properties
-            while (true) {
-                folder = folder.getParent();
-                if (folder == null) return;
-                String name = folder.getPackageName('/');
-                FileObject peer = Repository.getDefault().findResource(name + "/Bundle.properties");
+            FileObject folder = cp.findResource( cp.getResourceName( fo.getParent() ) );
+            
+            while( folder != null && cp.contains( folder ) ) {
+                
+                String rn = cp.getResourceName( folder ) + "/Bundle.properties"; // NOI18N
+                
+                FileObject peer = cp.findResource( rn );
                 if (peer != null) {
                     try {
                         DataObject peerDataObject = DataObject.find(peer);
@@ -161,7 +164,8 @@ public class I18nPanel extends JPanel {
                         // no default resource
                     }
                 }
-            }
+                folder = folder.getParent();
+            }            
         }        
     }
     

@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="external" target="unscramble"/>
     <patternset id="junit.files">
       <include name="${nb.modules.dir}/junit.jar"/>
-      <include name="${nb.modules.dir}/ext/juni-testrunnert.jar"/>
       <include name="${nb.modules/docs.dir}/junit-module-help.jar"/>
       <include name="${nb.docs.dir}/junit-3.8.1-api.zip"/>
       <include name="${nb.modules.dir}/ext/junit*.jar"/>
@@ -31,14 +30,9 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
-      <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
-      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
       <pathelement location="${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar"/>
-      <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/>
-      <fileset dir="external">
-        <include name="junit*.jar"/>
-      </fileset>
+      <pathelement location="${java/api.dir}/${nb.modules/autoload.dir}/java-api.jar"/>
+      <pathelement location="${ant.dir}/${nb.modules.dir}/ant.jar"/>
     </path>
   </target>
   
@@ -48,8 +42,7 @@ Microsystems, Inc. All Rights Reserved.
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}"
            source="1.4">
-      <exclude name="org/netbeans/junit/**"/>
-      <classpath refID="cp"/>
+    <classpath refid="cp"/>
     </javac>
   </target>
 
@@ -61,18 +54,10 @@ Microsystems, Inc. All Rights Reserved.
          manifest="manifest-subst.mf"
          basedir="src"
          excludesfile="../nbbuild/standard-jar-excludes.txt"
-         compress="false"
-	 includes="org/netbeans/modules/junit/**"
-         excludes="org/netbeans/modules/junit/testrunner/**"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/junit-testrunner.jar"
-         basedir="src"
-         excludesfile="../nbbuild/standard-jar-excludes.txt"
-         compress="false"
-	 includes="org/netbeans/modules/junit/testrunner/**"/>
+         compress="false"/>
   </target>
 
   <target name="javahelp" depends="init">
-    <!-- XXX consider running jhindexer too -->
     <mkdir dir="javahelp/org/netbeans/modules/junit/docs/JavaHelpSearch"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/junit/docs/"
                db="javahelp/org/netbeans/modules/junit/docs/JavaHelpSearch">
@@ -135,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean" depends="init">
+  <target name="clean" depends="init" description="Clean build products.">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>

@@ -120,7 +120,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
                                                    ClassElement superClass = BiSuperClass.createForClassElement( pa.getClassElement() );
                                                    ClassElement theClass = pa.getClassElement();
 
-                                                   pa = new PatternAnalyser( superClass );
+                                                   pa = new PatternAnalyser( superClass, pa.getClassElement() );
                                                    pa.analyzeAll();
 
                                                    BiAnalyser bia = new BiAnalyser( pa, theClass );

@@ -17,6 +17,7 @@ package org.netbeans.modules.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.io.IOException;
@@ -46,7 +47,6 @@ import org.openide.modules.ModuleInstall;
 import org.openide.nodes.Node;
 import org.openide.options.SystemOption;
 import org.openide.text.PrintSettings;
-import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.SharedClassObject;
 import org.openide.windows.TopComponent;
@@ -66,6 +66,7 @@ import org.openide.loaders.OperationAdapter;
 import org.openide.cookies.SourceCookie;
 import org.netbeans.modules.editor.java.JCUpdater;
 import org.netbeans.modules.editor.java.JavaKit;
+import org.netbeans.modules.editor.java.ParserThread;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.RepositoryEvent;
@@ -85,7 +86,6 @@ public class EditorModule extends ModuleInstall {
 
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
     private RequestProcessor ccUpdateProcessor;
-    private RepositListener repoListen;
     private RepositOperations operationListener;
 
 
@@ -204,25 +204,11 @@ public class EditorModule extends ModuleInstall {
         operationListener = new RepositOperations();
         ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).addOperationListener(operationListener);
 
-        if (repoListen==null){
-            Repository repo = Repository.getDefault();
-            if (repo!=null){
-                repoListen=new RepositListener();
-                repo.addRepositoryListener(repoListen);
-                listenOnProjects(repoListen, true);
-            }
-        }
-
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
 
-        if (repoListen!=null){
-            Repository.getDefault().removeRepositoryListener(repoListen);
-            listenOnProjects(repoListen, false);
-        }
-        
         AllOptionsFolder.unregisterModuleRegListener();
         
         ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).removeOperationListener(operationListener);
@@ -279,6 +265,9 @@ public class EditorModule extends ModuleInstall {
                 }
             }
         }
+
+        // stop any queued updates of parser DB
+        ParserThread.getParserThread().stopParserThread();
         
         inited = false; // moved here as part of fix of #27418
     }
@@ -447,163 +436,66 @@ public class EditorModule extends ModuleInstall {
         classes or packages and updates Code Completion DB */
     private final class RepositOperations extends OperationAdapter {
 
+        // for DataFolder move you will receive move events
+        // for individual DataObjects in folder.
         public void operationMove(OperationEvent.Move ev){
             final DataObject dobj = ev.getObject();
-            if (dobj==null){
+            if (dobj == null) {
                 return;
             }
             SourceCookie sc = (SourceCookie)dobj.getCookie(SourceCookie.class);
-            if (sc == null){
+            if (sc == null) {
                 return;
             }
-
-            getCCUpdateProcessor().post(new Runnable() {
-                public void run() {
-                    JCUpdater update = new JCUpdater();
-                    update.processDataObject(dobj, null);
-                }
-            });
-            
-            removeClass(ev.getOriginalPrimaryFile(),null);
+            // Remove old class from parser DB. The moved file will
+            // be added into parser DB automatically because of package
+            // rename and consequent save operation.
+            JCStorage.getStorage().removeClass(ev.getOriginalPrimaryFile());
         }
         
+        // for DataFolder delete you will receive delete events
+        // for individual DataObjects in folder.
         public void operationDelete(OperationEvent ev){
             DataObject dobj = ev.getObject();
-            if (dobj==null){
+            if (dobj == null) {
                 return;
             }
             SourceCookie sc = (SourceCookie)dobj.getCookie(SourceCookie.class);
-            if (sc == null){
+            if (sc == null) {
                 return;
             }
-            removeClass(dobj.getPrimaryFile(),null);
+            // Remove old class from parser DB
+            JCStorage.getStorage().removeClass(dobj.getPrimaryFile());
         }
-        
         
         public void operationRename(OperationEvent.Rename ev){
             DataObject dobj = ev.getObject();
-            if (dobj==null) return;
+            if (dobj == null) {
+                return;  
+            }
+
+            // create path (including the file name) of the renamed file
+            String oldPath = dobj.getPrimaryFile().getParent().getPath();
+            if (oldPath.length() > 0) {
+                oldPath += '/';
+            }
+            oldPath += ev.getOriginalName();
             
-            final DataFolder df = (DataFolder)dobj.getCookie(DataFolder.class);
-            final String replacedName = replaceName(dobj.getPrimaryFile().getPackageName('.'), ev.getOriginalName());
-            
-            if(df!=null){
-                getCCUpdateProcessor().post(new Runnable() {
-                    public void run() {
-                        inspectFolder(df, replacedName, new JCUpdater());
-                    }
-                });
-                return;
-            }
-            
-            SourceCookie sc = (SourceCookie)dobj.getCookie(SourceCookie.class);
-            if (sc == null) return;
-            
-            removeClass(dobj.getPrimaryFile(),replacedName);
-        }
-
-        
-        private String replaceName(String newName, String oldName){
-            StringBuffer sb = new StringBuffer(newName);
-            sb.replace(newName.lastIndexOf(".")+1,newName.length(),oldName); //NOI18N
-            return sb.toString();
-        }
-        
-        private void inspectFolder(DataFolder df, String oldFolderName, JCUpdater updater) {
-            DataObject[] children = df.getChildren();
-            for (int i = 0; i < children.length; i++) {
-                DataObject dob = children[i];
-                if (dob instanceof DataFolder) {
-                    inspectFolder((DataFolder)dob, (oldFolderName+"."+dob.getPrimaryFile().getName()), updater); //NOI18N
-                } else if(dob!=null){
-                    SourceCookie sc = (SourceCookie)dob.getCookie(SourceCookie.class);
-                    if (sc == null) continue;
-                    updater.removeClass(dob.getPrimaryFile(), oldFolderName+"."+dob.getPrimaryFile().getName()); //NOI18N
-                }
-            }
-        }
-                
-        private void removeClass(final FileObject fob, final String oldName){
-            // Update changes in Code Completion DB on background in thread with minPriority
-            getCCUpdateProcessor().post(new Runnable() {
-                public void run() {
-                    JCUpdater update = new JCUpdater();
-                    update.removeClass(fob,oldName);
-                }
-            });
-        }
-    }
-    
-    class RepositListener implements org.openide.filesystems.RepositoryListener, PropertyChangeListener {
-        
-        private boolean ignoreRepositoryChanges;
-        
-        /** Creates new RepositListener */
-        public RepositListener() {
-        }
-
-        private void handleFSAddRemove(final FileSystem fs, final boolean add) {
-            if (fs == null || Boolean.getBoolean("netbeans.full.hack") || ignoreRepositoryChanges) {
-                return; 
-            }
-            Mutex.EVENT.readAccess(new Runnable() {
-                public void run() {
-                    java.awt.Frame frm = WindowManager.getDefault().getMainWindow();
-                    if (frm != null && frm.isVisible()) {
-                        getCCUpdateProcessor().post(new Runnable() {
-                            public void run() {
-                                JCStorage storage = JCStorage.getStorage();
-                                if (add) {
-                                    storage.parseFSOnBackground(fs);
-                                } else {
-                                    storage.removeParsedFS(fs);
-                                }
-                            }
-                        });
-                    }
-                }
-            });
-        }
-
-        public void fileSystemAdded(RepositoryEvent ev){
-            handleFSAddRemove(ev.getFileSystem(), true);
-        }
-        
-        public void fileSystemRemoved(RepositoryEvent ev){
-            handleFSAddRemove(ev.getFileSystem(), false);
-        }
-        
-        public void fileSystemPoolReordered(RepositoryReorderedEvent ev){
-        }
-    
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getOldValue() == null) return;
-            if ("nb-projects-beforeOpenProject".equals(evt.getPropertyName())) { //NOI18N
-                ignoreRepositoryChanges = true;
-                JCStorage.getStorage().ignoreChanges(true, evt.getOldValue() != null);
-            }
-            if ("nb-projects-afterOpenProject".equals(evt.getPropertyName())) { //NOI18N
-                ignoreRepositoryChanges = false;
-                JCStorage.getStorage().ignoreChanges(false, false);
-            }
-        }
-    }
-
-    // don't hold anything from projects modules allowing it to be succesfully uninstalled
-    private void listenOnProjects(PropertyChangeListener listener, boolean add) {
-        try {
-            ClassLoader classLoader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
-            Class cpnClass = classLoader.loadClass("org.netbeans.modules.projects.CurrentProjectNode"); //NOI18N
-            Method m = cpnClass.getDeclaredMethod("getDefault", new Class [0]); //NOI18N
-            Node cpn = (Node) m.invoke(null, new Class [0]);
-
-            if (add) {
-                cpn.addPropertyChangeListener(repoListen);
+            DataFolder df = (DataFolder)dobj.getCookie(DataFolder.class);
+            if (df != null) {
+                // DataFolder was renamed. It is necessary to remove all classes
+                // from renamed package from parser DB
+                JCStorage.getStorage().removePackage(oldPath);
             } else {
-                cpn.removePropertyChangeListener(repoListen);
+                SourceCookie sc = (SourceCookie)dobj.getCookie(SourceCookie.class);
+                if (sc == null) {
+                    return;
+                }
+                // Remove the renamed class from parser DB
+                JCStorage.getStorage().removeClass(oldPath);
             }
-        } catch (Exception e) {
-            // ignore
         }
+
     }
+    
 }

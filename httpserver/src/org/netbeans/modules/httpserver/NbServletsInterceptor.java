@@ -47,15 +47,6 @@ public class NbServletsInterceptor extends BaseInterceptor {
         HttpServerSettings op = (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
         ServletWrapper sw;
         
-	sw=addServlet( ctx, "RepositoryServlet", "org.netbeans.modules.httpserver.RepositoryServlet");  // NOI18N
-	ctx.addServletMapping(op.getRepositoryBaseURL() + "*", "RepositoryServlet");                    // NOI18N
-        
-	sw=addServlet( ctx, "ClasspathServlet", "org.netbeans.modules.httpserver.ClasspathServlet");    // NOI18N
-	ctx.addServletMapping(op.getClasspathBaseURL() + "*", "ClasspathServlet");                      // NOI18N
-        
-	sw=addServlet( ctx, "JavadocServlet", "org.netbeans.modules.httpserver.JavadocServlet");        // NOI18N
-	ctx.addServletMapping(op.getJavadocBaseURL() + "*", "JavadocServlet");                          // NOI18N
-        
 	sw=addServlet( ctx, "WrapperServlet", "org.netbeans.modules.httpserver.WrapperServlet");        // NOI18N
 	ctx.addServletMapping(op.getWrapperBaseURL () + "*", "WrapperServlet");                         // NOI18N
     }

@@ -294,23 +294,11 @@ Microsystems, Inc. All Rights Reserved.
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
                     <attr name="Separator5.instance/org-openide-windows-TopComponent" boolvalue="true"/>
-
-                    <attr name="Separator1.instance/org-openide-actions-CompileAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CompileAction.instance"/>
-                    <attr name="org-openide-actions-CompileAction.instance/Separator6.instance" boolvalue="true"/>
-
-                    <file name="Separator6.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator6.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true"/>
-
-                    <file name="org-openide-actions-ExecuteAction.instance"/>
-                    <attr name="org-openide-actions-ExecuteAction.instance/Separator7.instance" boolvalue="true"/>
-
+                    
                     <file name="Separator7.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-
+                                        
                     <attr name="Separator7.instance/Separator8.instance" boolvalue="true"/>
 
                     <file name="Separator8.instance">

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,95 +8,9 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<project name="java" default="netbeans" basedir=".">
-  <import file="../../nbbuild/default.xml"/>
-  
-  <target name="init" depends="default.init">
-    <patternset id="java/api.files">
-      <include name="${nb.modules/autoload.dir}/java-api.jar"/>
-    </patternset>
-    <path id="cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
-      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-    </path>
-  </target>
-  
-  <!-- External documentation referenced from the API -->
-  <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
-  <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
-  <property name="openide.package-list.loc" location="doc/external/openide"/>
-
-  <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath refid="cp"/>
-    </javac>
-  </target>
-
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/java-api.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-	 excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
-  </target>
-
-  <target name="netbeans" depends="jars">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/java-api.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="java/api.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="java-api.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules/autoload.dir}/java-api.jar"
-	     homepage="http://java.${homepage.base}/"
-	     distribution="http://${dist.base}/java-api.nbm">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-  
-  <target name="javadoc" depends="init">
-    <property name="_cp" refid="cp"/>
-    <ant dir="../../nbbuild/javadoctools" antfile="template.xml" target="javadoc">
-	<property name="javadoc.base" location="."/>
-	<property name="javadoc.docfiles" location="doc"/> <!-- nonstandard naming convention -->
-	<property name="javadoc.name" value="JavaSupportAPIs"/>
-	<property name="javadoc.title" value="Java Support APIs"/>
-	<property name="javadoc.packages" value="org.netbeans.api.java.classpath"/>
-	<property name="javadoc.classpath" value="${_cp}"/>
-	<property name="javadoc.main.page" value="org/netbeans/api/java/classpath/doc-files/api.html"/>
-        <property name="javadoc.overview" location="doc/overview.html"/>
-        <property name="javadoc.apichanges" location="doc/changes/apichanges.xml"/>
-        <property name="javadoc.arch" location="../arch/arch-java-api.xml"/>
-    </ant>
-  </target>
-
-  <target name="clean" depends="init">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="java/api.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="java-api.nbm"/>
-    <delete dir="javadoc"/>
-  </target>
-  
+<project basedir="." default="netbeans" name="java/api">
+    <import file="../../nbbuild/templates/projectized.xml"/>
 </project>

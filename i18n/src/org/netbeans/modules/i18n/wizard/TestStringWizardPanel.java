@@ -43,6 +43,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.AbstractCellEditor;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nString;
@@ -593,7 +594,8 @@ final class TestStringWizardPanel extends JPanel {
                 // Do actual replacement.
                 Iterator it = stringMap.keySet().iterator();
 
-                progressPanel.setSubText(Util.getString("LBL_Source")+" "+((DataObject)source).getPrimaryFile().getPackageName('.'));
+                ClassPath cp = ClassPath.getClassPath( ((DataObject)source).getPrimaryFile(), ClassPath.SOURCE );                
+                progressPanel.setSubText(Util.getString("LBL_Source")+" "+cp.getResourceName( ((DataObject)source).getPrimaryFile(), '.', false)); //NOI18N
 
                 for(int j=0; it.hasNext(); j++) {
                     HardCodedString hcString = (HardCodedString)it.next();
@@ -607,7 +609,8 @@ final class TestStringWizardPanel extends JPanel {
                     String comment = i18nString.getComment();
                     if (source instanceof DataObject && (comment == null || "".equals(comment) ) ) {
                         DataObject dobj = (DataObject) source;
-                        comment = dobj.getPrimaryFile().getPackageName('.');
+                        cp = ClassPath.getClassPath( dobj.getPrimaryFile(), ClassPath.SOURCE );                
+                        comment = cp.getResourceName( dobj.getPrimaryFile(), '.', false );
                     }
 
                     // we may have already added it in, it is the referenced from

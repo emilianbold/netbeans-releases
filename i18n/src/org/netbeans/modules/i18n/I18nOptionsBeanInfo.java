@@ -43,7 +43,7 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
             PropertyDescriptor regExpPD       = new PropertyDescriptor(I18nOptions.PROP_REGULAR_EXPRESSION, I18nOptions.class);
             PropertyDescriptor i18nRegExpPD   = new PropertyDescriptor(I18nOptions.PROP_I18N_REGULAR_EXPRESSION, I18nOptions.class);
             PropertyDescriptor replaceValuePD = new PropertyDescriptor(I18nOptions.PROP_REPLACE_RESOURCE_VALUE, I18nOptions.class);
-            PropertyDescriptor lastResPD      = new PropertyDescriptor(I18nOptions.PROP_LAST_RESOURCE, I18nOptions.class);
+            PropertyDescriptor lastResPD      = new PropertyDescriptor(I18nOptions.PROP_LAST_RESOURCE2, I18nOptions.class);
 
             // Set expert flags.
             initCodePD.setExpert(true);

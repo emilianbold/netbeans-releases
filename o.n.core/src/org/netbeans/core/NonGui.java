@@ -111,19 +111,7 @@ public class NonGui extends NbTopManager implements Runnable {
             
             /** #11735. Relative userDir is converted to absolute*/
             // #21085: userDir might contain ../ sequences which should be removed
-            // XXX should use some well-maintained "normalizeFile" method in FileUtil when available...
-            if (Utilities.isWindows()) {
-                // On Windows, best to canonicalize.
-                try {
-                    userDir = new File(userDir).getCanonicalPath();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    userDir = new File(userDir).getAbsolutePath();
-                }
-            } else {
-                // On Unix, do not want to traverse symlinks.
-                userDir = new File(new File(userDir).toURI().normalize()).getAbsolutePath();
-            }
+            userDir = FileUtil.normalizeFile(new File(userDir)).getPath();
             System.setProperty("netbeans.user", userDir); // NOI18N
             
             File systemDirFile = new File (userDir, NbRepository.SYSTEM_FOLDER);

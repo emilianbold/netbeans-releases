@@ -11,7 +11,7 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
   <folder name="Templates">
@@ -50,54 +50,9 @@ Microsystems, Inc. All Rights Reserved.
     <attr name="JarPackager/Ant" boolvalue="true"/>
     <attr name="Ant/Other" boolvalue="true"/>
 
-    <!-- Service templates -->
-    <folder name="Services">
-        <folder name="CompilerType">
-            <file name="org-apache-tools-ant-module-AntCompiler.settings" url="AntCompiler.settings">
-                <attr boolvalue="true" name="template"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-            </file>
-            <file name="org-apache-tools-ant-module-IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
-                <attr boolvalue="true" name="template"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-            </file>
-        </folder>
-
-        <folder name="Executor">
-            <file name="org-apache-tools-ant-module-AntExecutor.settings" url="AntExecutor.settings">
-                <attr boolvalue="true" name="template"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-            </file>
-        </folder>
-    </folder>
-
   </folder>
 
   <folder name="Services">
-
-    <folder name="CompilerType">
-        <file name="org-apache-tools-ant-module-AntCompiler.settings" url="AntCompiler.settings">
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-        </file>
-        <file name="org-apache-tools-ant-module-IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-        </file>
-    </folder>
-
-    <folder name="Executor">
-        <file name="org-apache-tools-ant-module-AntExecutor.settings" url="AntExecutor.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        </file>
-    </folder>
 
     <file name="org-apache-tools-ant-module-AntSettings.settings" url="AntSettings.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>

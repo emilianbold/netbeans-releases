@@ -17,29 +17,23 @@ import java.io.*;
 import java.lang.ref.*;
 import java.text.Collator;
 import java.util.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import javax.swing.text.html.parser.*;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 
 /**
  * Builds index of Javadoc filesystems.
  * @author Svata Dedic, Jesse Glick
  */
-public class IndexBuilder implements Runnable, RepositoryListener, PropertyChangeListener {
+public class IndexBuilder implements Runnable /*, RepositoryListener */ {
 
     private static final String[] INDEX_FILE_NAMES = {
         "overview-summary.html", // NOI18N
-        "api/overview-summary.html", // NOI18N
         "index.html", // NOI18N
-        "api/index.html", // NOI18N
         "index.htm", // NOI18N
-        "api/index.htm", // NOI18N
     };
 
     private static IndexBuilder INSTANCE;
@@ -65,15 +59,10 @@ public class IndexBuilder implements Runnable, RepositoryListener, PropertyChang
          * Name of the index/overview file
          */
         String      indexFileName;
-        /**
-         * filesystem offset
-         */ 
-        String      root;
     }
 
     private IndexBuilder() {
-        Repository.getDefault().addRepositoryListener(this);
-        DocumentationSettings.getDefault().addPropertyChangeListener(this);
+//        Repository.getDefault().addRepositoryListener(this);
         err = ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexBuilder"); // NOI18N
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("new IndexBuilder");
@@ -130,9 +119,9 @@ public class IndexBuilder implements Runnable, RepositoryListener, PropertyChang
         SortedSet pairs = new TreeSet(); // SortedSet<Pair>
         for (int i = 0; i < m.size(); i++) {
             Map.Entry e = (Map.Entry)it.next();
-            FileSystem fs = (FileSystem)e.getKey();
+            FileObject f = (FileObject)e.getKey();
             Info info = (Info)e.getValue();
-            FileObject fo = fs.findResource(info.indexFileName);
+            FileObject fo = f.getFileObject(info.indexFileName);
             if (fo == null)
                 continue;
             Pair p = new Pair();
@@ -161,30 +150,23 @@ public class IndexBuilder implements Runnable, RepositoryListener, PropertyChang
         synchronized (this) {
             oldMap = this.filesystemInfo;
         }
-        Enumeration e = FileSystemCapability.DOC.fileSystems();
+        //Enumeration e = FileSystemCapability.DOC.fileSystems();
+        FileObject docRoots[] = JavadocRegistry.getDefault().getDocRoots();
+        // XXX needs to be able to listen to result; when it changes, call scheduleTask()
         Map m = new WeakHashMap();
 
-        while (e.hasMoreElements()) {
-            FileSystem fs = (FileSystem)e.nextElement();
-            JavaDocFSSettings fss = JavaDocFSSettings.getSettingForFS(fs);
-            String secondRoot = fss.getSecondRoot();
-            Info oldInfo = (Info)oldMap.get(fs);
-            if (oldInfo != null && oldInfo.root == secondRoot) {
+        for ( int ifCount = 0; ifCount < docRoots.length; ifCount++ ) {
+            FileObject fo = docRoots[ifCount];
+            Info oldInfo = (Info)oldMap.get(fo);
+            if (oldInfo != null) {
                 // No need to reparse.
-                m.put(fs, oldInfo);
+                m.put(fo, oldInfo);
                 continue;
-            }
-            
-            FileObject root;
-            if (secondRoot == null) {
-                root = fs.getRoot();
-            } else {
-                root = fs.findResource(secondRoot);
             }
             
             FileObject index = null;
             for (int i = 0; i < INDEX_FILE_NAMES.length; i++) {
-                if ((index = root.getFileObject(INDEX_FILE_NAMES[i])) != null) {
+                if ((index = fo.getFileObject(INDEX_FILE_NAMES[i])) != null) {
                     break;
                 }
             }
@@ -195,10 +177,7 @@ public class IndexBuilder implements Runnable, RepositoryListener, PropertyChang
                 // [PENDING] Display name is not ideal, e.g. "org.openide.windows (NetBeans Input/Output API)"
                 // where simply "NetBeans Input/Output API" is preferable... but standard title filter
                 // regexps are not so powerful (to avoid matching e.g. "Servlets (Main Documentation)").
-                FileObject packageList = root.getFileObject("package-list"); // NOI18N
-                if (packageList == null) {
-                    packageList = root.getFileObject("api/package-list"); // NOI18N
-                }
+                FileObject packageList = fo.getFileObject("package-list"); // NOI18N
                 if (packageList != null) {
                     try {
                         InputStream is = packageList.getInputStream();
@@ -208,10 +187,7 @@ public class IndexBuilder implements Runnable, RepositoryListener, PropertyChang
                             if (line != null && r.readLine() == null) {
                                 // Good, exactly one line as expected. A package name.
                                 String resName = line.replace('.', '/') + "/package-summary.html"; // NOI18N
-                                FileObject pindex = root.getFileObject(resName);
-                                if (pindex == null) {
-                                    pindex = root.getFileObject("api/" + resName); // NOI18N
-                                }
+                                FileObject pindex = fo.getFileObject(resName);
                                 if (pindex != null) {
                                     index = pindex;
                                 }
@@ -229,8 +205,8 @@ public class IndexBuilder implements Runnable, RepositoryListener, PropertyChang
             if (index != null) {
                 // Try to find a title.
                 String title = parseTitle(index);
-                if (title != null && fss != null) {
-                    JavadocSearchType st = fss.getSearchTypeEngine();
+                if (title != null) {
+                    JavadocSearchType st = JavadocRegistry.getDefault().findSearchType( fo );
                     if (st == null)
                         continue;
                     title = st.getOverviewTitleBase(title);
@@ -238,14 +214,13 @@ public class IndexBuilder implements Runnable, RepositoryListener, PropertyChang
                 if ("".equals(title)) { // NOI18N
                     title = java.text.MessageFormat.format(ResourceUtils.getBundledString(
                             "FMT_NoOverviewTitle"), new Object[] { index.getPath(),
-                                                                   fs.getDisplayName(),
-                                                                   fs.getSystemName() });
+                                                                   fo.getName(),
+                                                                   fo.getName() });
                 }
                 Info info = new Info();
-                info.title = title == null ? fs.getDisplayName() : title;
-                info.indexFileName = index.getPath();
-                info.root = secondRoot;
-                m.put(fs, info);
+                info.title = title == null ? fo.getName() : title;
+                info.indexFileName = FileUtil.getRelativePath(fo, index);
+                m.put(fo, info);
             }
             synchronized (this) {
                 this.filesystemInfo = m;
@@ -305,6 +280,7 @@ public class IndexBuilder implements Runnable, RepositoryListener, PropertyChang
         }
     }
 
+    
     private synchronized static void scheduleTask() {
         if (task == null)
             task = RequestProcessor.getDefault().create(getDefault());
@@ -313,22 +289,4 @@ public class IndexBuilder implements Runnable, RepositoryListener, PropertyChang
         task.schedule(100);
     }
 
-    public void fileSystemAdded(RepositoryEvent ev) {
-        scheduleTask();
-    }
-
-    public void fileSystemRemoved(RepositoryEvent ev) {
-        scheduleTask();
-    }
-
-    public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {
-        // do nothing here - do not care about order
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        // root offset of some filesystem could be changed
-        if ("fileSystemSettings".equals(evt.getPropertyName())) { // NOI18N
-            scheduleTask();
-        }
-    }
 }

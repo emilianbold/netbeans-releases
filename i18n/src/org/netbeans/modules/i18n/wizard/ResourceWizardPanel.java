@@ -34,6 +34,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.HardCodedString;
@@ -132,8 +133,9 @@ final class ResourceWizardPanel extends JPanel {
 
                 DataObject dataObject = (DataObject)value;
 
-                if(dataObject != null) {
-                    label.setText(dataObject.getPrimaryFile().getPackageName('.')); // NOI18N
+                if(dataObject != null) {                    
+                    ClassPath cp = ClassPath.getClassPath( dataObject.getPrimaryFile(), ClassPath.SOURCE );                    
+                    label.setText(cp.getResourceName( dataObject.getPrimaryFile(), '.', false )); // NOI18N
                     label.setIcon(new ImageIcon(dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)));
                 } else {
                     label.setText(""); // NOI18N
@@ -461,8 +463,9 @@ final class ResourceWizardPanel extends JPanel {
             for(int i=0; sourceIterator.hasNext(); i++) {
                 DataObject source = (DataObject)sourceIterator.next();
 
+                ClassPath cp = ClassPath.getClassPath( source.getPrimaryFile(), ClassPath.SOURCE );                
                 progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_Loading") 
-                    + " " + source.getPrimaryFile().getPackageName('.')); // NOI18N
+                    + " " + cp.getResourceName( source.getPrimaryFile(), '.', false )); // NOI18N
 
                 // Get source data.
                 SourceData sourceData = (SourceData)sourceMap.get(source);
@@ -489,8 +492,10 @@ final class ResourceWizardPanel extends JPanel {
                     sourceMap.put(source, sourceData);
                 }
 
+                
+                cp = ClassPath.getClassPath( source.getPrimaryFile(), ClassPath.SOURCE );
                 progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SearchingIn")
-                    + " " + source.getPrimaryFile().getPackageName('.')); // NOI18N
+                    + " " + cp.getResourceName( source.getPrimaryFile(), '.', false ) ); // NOI18N
                 
                 // Get string map.
                 Map stringMap = sourceData.getStringMap();

@@ -30,6 +30,8 @@ import org.openide.src.Element;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.*;
 
+import org.openide.filesystems.FileObject;
+
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.DialogDisplayer;
 

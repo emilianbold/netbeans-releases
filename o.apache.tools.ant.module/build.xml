@@ -30,7 +30,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
       <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
       <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
       <pathelement location="${java/api.dir}/${nb.modules/autoload.dir}/java-api.jar"/>
@@ -39,18 +38,21 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       </fileset>
       <pathelement location="${core/javahelp.dir}/${nb.modules/autoload.dir}/javahelp-api.jar"/>
     </path>
+
     <path id="cp+ant">
       <path refid="cp"/>
-      <pathelement location="src"/>
+      <pathelement location="build/classes"/>
       <pathelement location="external/lib/ant.jar"/>
     </path>
   </target>
 
   <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+    <mkdir dir="build/classes"/>
+    <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <classpath refid="cp"/>
     </javac>
-    <javac srcdir="src-bridge" destdir="src-bridge" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <mkdir dir="build/bridge-classes"/>
+    <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath refid="cp+ant"/>
     </javac>
   </target>
@@ -61,12 +63,15 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ant.jar"
          manifest="manifest-subst.mf"
-         basedir="src"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false">
+      <fileset dir="build/classes"/>
+      <fileset dir="src">
+        <excludesfile name="../nbbuild/standard-jar-excludes.txt"/>
+      </fileset>
     </jar>
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
     <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/bridge.jar" compress="false">
+      <fileset dir="build/bridge-classes"/>
       <fileset dir="src-bridge">
         <excludesfile name="../nbbuild/standard-jar-excludes.txt"/>
       </fileset>
@@ -89,7 +94,8 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   </target>
 
   <target name="nbm" depends="netbeans" description="Build module NBM file.">
-    <makenbm file="ant.nbm"
+    <mkdir dir="build"/>
+    <makenbm file="build/ant.nbm"
              productdir="${netbeans.dest.dir}/${cluster.dir}"
              module="${nb.modules.dir}/ant.jar"
 	     homepage="http://ant.${homepage.base}/"
@@ -109,19 +115,13 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   </target>
 
   <target name="clean" depends="init" description="Clean out build products.">
+    <delete dir="build"/>
     <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="src-bridge">
-        <include name="**/*.class"/>
-      </fileset>
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="ant.files"/>
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <delete file="ant.nbm"/>
     <delete dir="javadoc"/>
     <!-- See target 'release-helper': -->
     <delete dir="release-work"/>

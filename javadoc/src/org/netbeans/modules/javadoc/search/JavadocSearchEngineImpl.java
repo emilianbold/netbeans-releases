@@ -14,12 +14,13 @@
 /*
  * JavadocSearchEngineImpl.java
  *
- * Created on 18. èerven 2001, 14:55
+ * Created on 18. ?erven 2001, 14:55
  */
 
 package org.netbeans.modules.javadoc.search;
 
 import java.util.ArrayList;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -30,7 +31,6 @@ class JavadocSearchEngineImpl extends JavadocSearchEngine {
     
     private ArrayList tasks;
 
-    private DocFileSystem[] docSystems;
     private IndexSearchThread.DocIndexItemConsumer diiConsumer;
     
     /** Used to search for set elements in javadoc repository
@@ -38,8 +38,8 @@ class JavadocSearchEngineImpl extends JavadocSearchEngine {
      * @throws NoJavadocException if no javadoc directory is mounted, nothing can be searched
      */
     public void search(String[] items, final SearchEngineCallback callback) throws NoJavadocException {
-        docSystems = DocFileSystem.getFolders();
-        tasks = new ArrayList( docSystems.length );
+        FileObject docRoots[] = JavadocRegistry.getDefault().getDocRoots();
+        tasks = new ArrayList( docRoots.length );
 
         diiConsumer = new IndexSearchThread.DocIndexItemConsumer() {
                           public void addDocIndexItem( final DocIndexItem dii ) {
@@ -53,27 +53,31 @@ class JavadocSearchEngineImpl extends JavadocSearchEngine {
                           }
                       };
                       
-        if ( docSystems.length <= 0 ) {            
+        if ( docRoots.length <= 0 ) {            
             callback.finished();
             throw new NoJavadocException();            
         }
         String toFind = items[0];
         
-        for( int i = 0; i < docSystems.length; i++ ) {
-            try {
-                JavaDocFSSettings setting = JavaDocFSSettings.getSettingForFS( docSystems[i].getIndexFile().getFileSystem() );
-                //System.out.println(setting.getSearchTypeEngine().getName());
-                JavadocSearchType st = setting.getSearchTypeEngine();
-                if (st == null)
-                    continue;
-                IndexSearchThread searchThread = st.getSearchThread( toFind,  docSystems[i].getIndexFile() , diiConsumer );
+        for( int i = 0; i < docRoots.length; i++ ) {
+            
+            JavadocSearchType st = JavadocRegistry.getDefault().findSearchType( docRoots[i] );
+            if (st == null) {
+                System.out.println("NO Search type for " + docRoots[i]);
+                continue;
+            }
+            FileObject indexFo = st.getDocFileObject( docRoots[i] );
+            if (indexFo == null) {
+                System.out.println("NO Index files fot " + docRoots[i] );
+                continue;
+            }
+            
+            System.out.println("IndexFo " + indexFo);
+            
+            IndexSearchThread searchThread = st.getSearchThread( toFind, indexFo, diiConsumer );
 
-                tasks.add( searchThread );
-                searchThread.go();
-            }
-            catch(org.openide.filesystems.FileStateInvalidException fsEx){
-                fsEx.printStackTrace();
-            }
+            tasks.add( searchThread );
+            searchThread.go();            
         }
         //callback.finished();
     }

@@ -10,31 +10,27 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * JUnitCfgOfCreate.java
- *
- * Created on January 30, 2001, 10:11 AM
- */
 
 package org.netbeans.modules.junit;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Dialog;
+import java.util.ResourceBundle;
+import javax.swing.JPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
-import org.openide.*;
 import org.openide.ErrorManager;
-import org.openide.filesystems.*;
-import org.openide.explorer.propertysheet.*;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+
 
 /**
  *
  * @author  vstejskal
- * @version 1.0
  */
-public class JUnitCfgOfCreate extends javax.swing.JPanel {
+public class JUnitCfgOfCreate extends JPanel {
 
     private class Pair {
         public String  name;
@@ -48,63 +44,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         }
     }
     
-    private class CmdMountListener implements ActionListener {
-        public void actionPerformed(ActionEvent ev) {
-            PropertyPanel       panel;
-            DialogDescriptor    descriptor;
-            FileSystem          selectedFS;
-            
-            panel = new PropertyPanel(JUnitCfgOfCreate.this, "newFileSystem", PropertyPanel.PREF_CUSTOM_EDITOR); // NOI18N
-            descriptor = new DialogDescriptor(panel, bundle.getString("LBL_New_FS_Dialog_Title"));
-                
-            Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(descriptor);
-            dialog.show();
-            dialog.dispose();
-            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                // first update the panel's value in case it was edited by EnhancedCustomPropertyEditor
-                panel.updateValue();
-                
-                // get the value
-                try {
-                    selectedFS = (FileSystem)panel.getModel().getValue();
-                } catch (Exception e) {
-                    ErrorManager.getDefault().notify(e);
-                    return;
-                }
-                
-                // try to select returned new File system
-                int i, iCnt;
-                Pair item;
-                FileSystem fs;
-                
-                iCnt = cboFileSystem.getItemCount();
-                for(i = 0; i < iCnt; i++) {
-                    item = (Pair)cboFileSystem.getItemAt(i);
-                    fs = (FileSystem) item.item;
-                    if (null != fs && fs.getSystemName().equals(selectedFS.getSystemName())) {
-                        cboFileSystem.setSelectedItem(item);
-                        break;
-                    }
-                }
-
-                if (i == iCnt) {
-                    // selected FS was not found - check if it is accaptable for tests
-                    if (!TestUtil.isSupportedFileSystem(selectedFS)) {
-                        String msg = bundle.getString("MSG_fs_not_acceptable");
-                        NotifyDescriptor descr = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-                        org.openide.DialogDisplayer.getDefault().notify(descr);
-                        return;
-                    }
-                    
-                    // new mounted one - add it
-                    item = new Pair(selectedFS.getDisplayName(), selectedFS);
-                    cboFileSystem.addItem(item);
-                    cboFileSystem.setSelectedItem(item);
-                }
-            }
-        }
-    }
-        
     /** Creates new form JUnitCfgOfCreate */
     private JUnitCfgOfCreate() {
         // init components
@@ -188,11 +127,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         
         // labels
         
-        this.lblFileSystem.setDisplayedMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.lblFileSystem.mne"));
-        this.lblFileSystem.setLabelFor(cboFileSystem);
-        this.cboFileSystem.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboFileSystem.AD"));
-        this.cboFileSystem.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboFileSystem.AN"));
-        
         this.lblSuiteClass.setDisplayedMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.lblSuiteClass.mne"));
         this.lblSuiteClass.setLabelFor(cboSuiteClass);
         this.cboSuiteClass.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AD"));
@@ -207,29 +141,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
     
     //public static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.junit.Bundle");
     public static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.junit.Bundle");
-    private FileSystem fileSystem;
-    
-    private void fillFileSystems() {
-        Pair        item;
-        Enumeration fss;
-        
-        // insert the default value
-        //item = new Pair(NbBundle.getMessage(JUnitCfgOfCreate.class, "LBL_no_file_system_selected"), null);
-        //cboFileSystem.addItem(item);
-        //cboFileSystem.setSelectedItem(item);
-                
-        
-        fss = Repository.getDefault().getFileSystems();
-        while (fss.hasMoreElements()) {
-            FileSystem fs = (FileSystem) fss.nextElement();
-            if (TestUtil.isSupportedFileSystem(fs)) {
-                item = new Pair(fs.getDisplayName(), fs);
-                cboFileSystem.addItem(item);
-                if (fs.getSystemName().equals(JUnitSettings.getDefault().getFileSystem())) //replace('\\', '/')
-                    cboFileSystem.setSelectedItem(item);
-            }
-        }
-    }
     
     private void fillTemplates() {
         Pair        item;
@@ -247,12 +158,12 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             item = new Pair(foTemplates[i].getName(), foTemplates[i]);
             // add template to Suite templates list
             cboSuiteClass.addItem(item);
-            if (foTemplates[i].getPackageNameExt('/', '.').equals(JUnitSettings.getDefault().getSuiteTemplate()))
+            if (foTemplates[i].getPath().equals(JUnitSettings.getDefault().getSuiteTemplate()))
                 cboSuiteClass.setSelectedItem(item);
     
             // add template to Class templates list
             cboTestClass.addItem(item);
-            if (foTemplates[i].getPackageNameExt('/', '.').equals(JUnitSettings.getDefault().getClassTemplate()))
+            if (foTemplates[i].getPath().equals(JUnitSettings.getDefault().getClassTemplate()))
                 cboTestClass.setSelectedItem(item);
         }
     }
@@ -269,7 +180,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         JUnitCfgOfCreate cfg = new JUnitCfgOfCreate();
         
         // setup the panel
-        cfg.fillFileSystems();
         cfg.fillTemplates();
         cfg.chkPublic.setSelected(JUnitSettings.getDefault().isMembersPublic());
         cfg.chkProtected.setSelected(JUnitSettings.getDefault().isMembersProtected());
@@ -289,32 +199,21 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             bundle.getString("JUnitCfgOfCreate.Title")
         );
         descriptor.setHelpCtx(new HelpCtx(JUnitCfgOfCreate.class));
-        Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(descriptor);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.show();
         dialog.dispose();
         
         // save panel settings
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            FileSystem  fs;
             FileObject  foTemplate;
-            
-            // store File System, add it to file systems if neccessary
-            if (null != (fs = (FileSystem)((Pair)cfg.cboFileSystem.getSelectedItem()).item)) {
-                if (null == Repository.getDefault().findFileSystem(fs.getSystemName()))
-                    Repository.getDefault().addFileSystem(fs);
-                
-                JUnitSettings.getDefault().setFileSystem(fs.getSystemName());
-            }
-            else
-                JUnitSettings.getDefault().setFileSystem("");
             
             // store Suite class template
             foTemplate = (FileObject)((Pair)cfg.cboSuiteClass.getSelectedItem()).item;
-            JUnitSettings.getDefault().setSuiteTemplate(foTemplate.getPackageNameExt('/', '.'));
+            JUnitSettings.getDefault().setSuiteTemplate(foTemplate.getPath());
             
             // store Test class template
             foTemplate = (FileObject)((Pair)cfg.cboTestClass.getSelectedItem()).item;
-            JUnitSettings.getDefault().setClassTemplate(foTemplate.getPackageNameExt('/', '.'));
+            JUnitSettings.getDefault().setClassTemplate(foTemplate.getPath());
             
             // store code generation options
             JUnitSettings.getDefault().setMembersPublic(cfg.chkPublic.isSelected());
@@ -335,21 +234,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         return false;
     }
     
-    /**
-     * Setter for fileSystem - used by PropertyPanel
-     */
-    public void setNewFileSystem(FileSystem f) {
-        firePropertyChange("newFileSystem", fileSystem, f);
-        fileSystem = f;
-    }
-    /**
-     * Getter for fileSystem - used by PropertyPanel
-     * @return new fileSystem
-     */
-    public FileSystem getNewFileSystem() {
-        return fileSystem;
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -358,8 +242,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        lblFileSystem = new javax.swing.JLabel();
-        cboFileSystem = new javax.swing.JComboBox();
         jpTemplates = new javax.swing.JPanel();
         lblSuiteClass = new javax.swing.JLabel();
         lblTestClass = new javax.swing.JLabel();
@@ -381,21 +263,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setMinimumSize(new java.awt.Dimension(500, 320));
-        lblFileSystem.setText(bundle.getString("JUnitCfgOfCreate.lblFileSystem.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 6);
-        add(lblFileSystem, gridBagConstraints);
-
-        cboFileSystem.setMinimumSize(new java.awt.Dimension(200, 26));
-        cboFileSystem.setPreferredSize(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 2, 2, 4);
-        add(cboFileSystem, gridBagConstraints);
-
         jpTemplates.setLayout(new java.awt.GridBagLayout());
 
         jpTemplates.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(), bundle.getString("JUnitCfgOfCreate.jpTemplates.title")));
@@ -546,24 +413,22 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
     }//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel lblSuiteClass;
-    private javax.swing.JCheckBox chkContent;
-    private javax.swing.JCheckBox chkComments;
-    private javax.swing.JLabel lblFileSystem;
-    private javax.swing.JPanel jpTemplates;
-    private javax.swing.JComboBox cboTestClass;
-    private javax.swing.JCheckBox chkPublic;
-    private javax.swing.JLabel lblTestClass;
-    private javax.swing.JCheckBox chkProtected;
-    private javax.swing.JCheckBox chkPackage;
-    private javax.swing.JCheckBox chkJavaDoc;
-    private javax.swing.JComboBox cboFileSystem;
-    private javax.swing.JCheckBox chkAbstractImpl;
-    private javax.swing.JCheckBox chkPackagePrivateClasses;
     private javax.swing.JComboBox cboSuiteClass;
-    private javax.swing.JCheckBox chkGenerateSuites;
-    private javax.swing.JCheckBox chkExceptions;
-    private javax.swing.JPanel jpCodeGen;
+    private javax.swing.JComboBox cboTestClass;
+    private javax.swing.JCheckBox chkAbstractImpl;
+    private javax.swing.JCheckBox chkComments;
+    private javax.swing.JCheckBox chkContent;
     private javax.swing.JCheckBox chkEnabled;
+    private javax.swing.JCheckBox chkExceptions;
+    private javax.swing.JCheckBox chkGenerateSuites;
+    private javax.swing.JCheckBox chkJavaDoc;
+    private javax.swing.JCheckBox chkPackage;
+    private javax.swing.JCheckBox chkPackagePrivateClasses;
+    private javax.swing.JCheckBox chkProtected;
+    private javax.swing.JCheckBox chkPublic;
+    private javax.swing.JPanel jpCodeGen;
+    private javax.swing.JPanel jpTemplates;
+    private javax.swing.JLabel lblSuiteClass;
+    private javax.swing.JLabel lblTestClass;
     // End of variables declaration//GEN-END:variables
 }

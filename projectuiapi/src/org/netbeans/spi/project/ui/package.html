@@ -1,0 +1,29 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<html>
+<body>
+
+Ability to provide a tailored UI for a project.
+
+<p>Normally a project type provider will supply some special UI representation
+of the project making use of domain-specific features.
+{@link org.netbeans.spi.project.ui.LogicalViewProvider} permits a project to
+display itself however it likes in the <b>Projects</b> Explorer tab.
+{@link org.netbeans.spi.project.ui.CustomizerProvider} permits the project to
+be customized in an arbitrary way, typically opening a GUI dialog.</p>
+
+<p>{@link org.netbeans.spi.project.ui.ProjectOpenedHook} may be used by projects
+wishing to take some special action upon being opened in the GUI.</p>
+  
+</body>
+</html>

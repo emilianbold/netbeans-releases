@@ -1,0 +1,69 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.spi.java.queries;
+
+import java.net.URL;
+import org.openide.filesystems.FileObject;
+
+// XXX add a listener to changes in result
+
+/**
+ * Information about where Java sources corresponding to binaries
+ * (classfiles) can be found.
+ * <p>
+ * A default implementation is registered by the
+ * <code>org.netbeans.modules.java.project</code> module which looks up the
+ * project corresponding to the file (if any; <code>jar</code>-protocol URLs
+ * actually check the owner of the JAR file itself) and checks whether that
+ * project has an implementation of this interface in its lookup. If so, it
+ * delegates to that implementation. Therefore it is not generally necessary
+ * for a project type provider to register its own global implementation of
+ * this query, if it depends on the Java Project module and uses this style.
+ * </p>
+ * <div class="nonnormative">
+ * <p>
+ * Note that if you supply a <code>SourceForBinaryQueryImplementation</code>
+ * corresponding to an entry in a {@link org.netbeans.spi.java.classpath.ClassPathProvider} for some source
+ * files, there needs to be a {@link org.netbeans.spi.java.classpath.ClassPathProvider} for the sources
+ * used as dependencies as well. Otherwise code completion will not work well;
+ * the current parser database creation strategy uses the following search order
+ * when deciding what to parse for a binary classpath element:
+ * </p>
+ * <ol>
+ * <li>The sources returned by <code>SourceForBinaryQueryImplementation</code>,
+ *     <em>if</em> these have at least a bootclasspath specified as well by some
+ *     {@link org.netbeans.spi.java.classpath.ClassPathProvider}.</li>
+ * <li>Compiled classes mixed into the "source" directory, if there are any.</li>
+ * <li>Compiled classes in the binary classpath element.</li>
+ * </ol>
+ * </div>
+ * @see org.netbeans.api.java.queries.SourceForBinaryQuery
+ * @see org.netbeans.api.queries.FileOwnerQuery
+ * @see org.netbeans.api.project.Project#getLookup
+ * @since org.netbeans.api.java/1 1.4
+ */
+public interface SourceForBinaryQueryImplementation {
+
+    /**
+     * Returns the source root(s) for a given binary root.
+     * <p>
+     * Any absolute URL may be used but typically it will use the <code>file</code>
+     * protocol for directory entries and <code>jar</code> protocol for JAR entries
+     * (e.g. <samp>jar:file:/tmp/foo.jar!/</samp>).
+     * </p>
+     * @param binaryRoot the class path root of Java class files
+     * @return a list of source roots; may be empty but not null
+     */
+    public FileObject[] findSourceRoot(URL binaryRoot);
+    
+}

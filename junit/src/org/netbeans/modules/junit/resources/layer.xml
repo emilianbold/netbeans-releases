@@ -11,33 +11,17 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
 
 <filesystem>
-
-    <!-- mounts -->
-    <folder name="Mount">
-        <folder name="Javadoc">
-            <!-- JUnit JavaDoc -->
-            <file name="org-netbeans-modules-junit-junit-javadoc.xml" url="Mount-Javadoc-JUnit.xml">
-               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-               <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
-            </file>
-        </folder>
-        <folder name="java">
-            <file name="org-netbeans-modules-junit-junit-library.xml" url="Mount-java-JUnit.xml">
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
-           </file>
-           <file name="org-netbeans-modules-junit-junit-testrunner.xml" url="Mount-java-JUnit-testrunner.xml">
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
-           </file>
-         </folder>
-    </folder>
+	<folder name="org-netbeans-api-project-libraries">
+    	<folder name="Libraries">
+			<file name="junit.xml" url="junit_lib.xml"/>
+		</folder>
+	</folder>
 
     <!-- templates -->
     <folder name="Templates">
@@ -62,7 +46,6 @@
         <folder name="Unit tests">
             <file name="org-netbeans-modules-junit-CreateTestAction.instance" />
             <file name="org-netbeans-modules-junit-OpenTestAction.instance" />
-            <file name="org-netbeans-modules-junit-RunTestAction.instance" />
         </folder>
        
     </folder>
@@ -74,9 +57,6 @@
 	</file>
         <file name="CA-K.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.OpenTestAction"/>
-	</file>
-        <file name="CA-L.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.RunTestAction"/>
 	</file>
     </folder>
     

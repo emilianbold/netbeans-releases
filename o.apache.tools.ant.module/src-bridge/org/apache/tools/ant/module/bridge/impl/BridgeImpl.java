@@ -208,13 +208,14 @@ public class BridgeImpl implements BridgeInterface {
                 defs.put("type", p2.getDataTypeDefinitions());
                 custom.scanProject(defs);
                 // #8993: also try to refresh FS that script was on...
-                if (buildFileObject != null) {
-                    try {
-                        FileSystem fs = buildFileObject.getFileSystem();
-                        fs.refresh(false);
-                    } catch (FileStateInvalidException e) {
-                        AntModule.err.notify(ErrorManager.WARNING, e);
-                    }
+                // (actually refresh them all since we don't really know
+                // what is needed, and the script might be in SFS)
+                Enumeration e = Repository.getDefault().fileSystems();
+                while (e.hasMoreElements()) {
+                    // Do not restrict to just visible filesystems; hidden ones
+                    // may be important too for various reasons.
+                    FileSystem fs = (FileSystem)e.nextElement();
+                    fs.refresh(false);
                 }
                 gutProject(p2);
             }

@@ -158,7 +158,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
             ClassElement superClass = pa.getClassElement();
             MethodElement[] meMethods = superClass.getMethods();
             for (int i = 0; i < meMethods.length; i ++) {
-                methods.add(new BiFeature.Method(meMethods[i]));
+                methods.add(new BiFeature.Method(meMethods[i], pa));
             }
         }
 

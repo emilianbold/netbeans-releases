@@ -2207,6 +2207,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 if (serFile == null)
                     serFile = formFile.getName() + "_" + comp.getName(); // NOI18N
 
+                assert false : "XXX needs to be rewritten";
+                /*
                 // !! [this won't work when filesystem root != classpath root]
                 String serName = formFile.getParent().getPackageName('.');
                 if (!"".equals(serName)) // NOI18N
@@ -2217,6 +2219,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                                     serName);
 
                 comp.setInstance(instance);
+                 */
             }
             catch (Exception ex) { // ignore
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);

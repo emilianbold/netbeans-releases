@@ -33,6 +33,7 @@ import org.openide.src.FieldElement;
 import org.openide.src.MethodParameter;
 import org.openide.src.Type;
 import org.openide.src.Identifier;
+import org.openide.filesystems.FileObject;
 
 /** Analyses the ClassElement trying to find source code patterns i.e.
  * properties or event sets;
@@ -61,6 +62,8 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
     private ClassElement classElement;
     
+    private ClassElement referenceClassElement;
+    
     private boolean analyzed = false;
 
     private boolean ignore;
@@ -71,6 +74,15 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         this.classElement = classElement;
     }
 
+    /** Contructor for ClassElements which do not exists on the disk.
+     * @param referenceClassElement some ClassElements which contains the 
+     *        dataObjectCookie.
+     */
+    public PatternAnalyser( ClassElement classElement, ClassElement referenceClassElement ) {
+        this( classElement );
+        this.referenceClassElement = referenceClassElement;   
+    }
+    
     public void analyzeAll() {
 
         if ( ignore ) {
@@ -193,8 +205,8 @@ public class PatternAnalyser extends Object implements Node.Cookie {
             //if (!Introspector.isSubclass( argType.toClass(), java.util.EventListener.class ) ) {
             //if (!java.util.EventListener.class.isAssignableFrom( argType.toClass() ) ) {
             if ( !isSubclass(
-                        ClassElement.forName( argType.getClassName().getFullName() ),
-                        ClassElement.forName( "java.util.EventListener" ) ) ) // NOI18N
+                        findClassElement( argType.getClassName().getFullName() ),
+                        findClassElement( "java.util.EventListener" ) ) ) // NOI18N
                 continue;
             /*
               }
@@ -452,14 +464,14 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
         for ( ClassElement x = a;
                 x != null;
-                x = x.getSuperclass() == null ? null : ClassElement.forName( x.getSuperclass().getFullName() )  ){
+                x = x.getSuperclass() == null ? null : ClassElement.forName( x.getSuperclass().getFullName(), fileObjectForElement( a ) )  ){
             if (x.getName().compareTo( b.getName(), false ) ) {
                 return true;
             }
             if (b.isInterface()) {
                 Identifier interfaces[] = x.getInterfaces();
                 for (int i = 0; i < interfaces.length; i++) {
-                    ClassElement interfaceElement = ClassElement.forName( interfaces[i].getFullName() );
+                    ClassElement interfaceElement = ClassElement.forName( interfaces[i].getFullName(), fileObjectForElement( a ) );
                     if (isSubclass(interfaceElement, b)) {
                         return true;
                     }
@@ -562,4 +574,28 @@ public class PatternAnalyser extends Object implements Node.Cookie {
             }
         }
     }
+    
+            
+    public static org.openide.filesystems.FileObject fileObjectForElement( org.openide.src.Element element ) {
+        
+        org.openide.loaders.DataObject dobj = (org.openide.loaders.DataObject)element.getCookie( org.openide.loaders.DataObject.class );        
+        return dobj == null ? null : dobj.getPrimaryFile();
+        
+    }
+    
+    public static ClassElement findClassElement( String name, Pattern pattern ) {
+        return pattern.patternAnalyser.findClassElement( name );
+    }
+
+
+    public FileObject findFileObject () {
+        return fileObjectForElement( referenceClassElement != null ? referenceClassElement : classElement );
+    }
+
+    ClassElement findClassElement( String name ) {
+        // Find the fileobject either by referenceElement or classElement
+        org.openide.filesystems.FileObject fo = this.findFileObject();
+        return fo == null ? null : ClassElement.forName( name, fo );
+    }
+    
 }

@@ -56,12 +56,8 @@ public class FormNode extends AbstractNode implements FormCookie {
         Node.Cookie cookie = super.getCookie(type);
         if (cookie == null
             && (DataObject.class.isAssignableFrom(type)
-                || CompilerCookie.class.isAssignableFrom(type)
                 || SaveCookie.class.isAssignableFrom(type)
-                || ExecCookie.class.isAssignableFrom(type)
-                || type.getName().equals("org.openide.cookies.DebuggerCookie") // NOI18N
                 || CloseCookie.class.isAssignableFrom(type)
-                || ArgumentsCookie.class.isAssignableFrom(type)
                 || PrintCookie.class.isAssignableFrom(type)))
         {
             FormDataObject fdo = FormEditorSupport.getFormDataObject(formModel);

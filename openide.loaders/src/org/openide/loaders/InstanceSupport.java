@@ -71,7 +71,13 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     * @return the name for the instance
     */
     public String instanceName () {
-        return instanceOrigin ().getPackageName ('.');
+        // XXX does this make any sense? Is this method useful for anything?
+        String p = instanceOrigin().getPath();
+        int x = p.lastIndexOf('.');
+        if (x != -1 && x > p.lastIndexOf('/')) {
+            p = p.substring(0, x);
+        }
+        return p.replace('/', '.');
     }
 
     /* The class of the instance represented by this cookie.
@@ -486,6 +492,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
      */
     protected ClassLoader createClassLoader() {
         ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        /* XXX this will not work any more
         try {
             Class c = Class.forName("org.openide.execution.NbClassLoader", true, l); // NOI18N
             ClassLoader nbcl = (ClassLoader)c.newInstance();
@@ -501,6 +508,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
         }
+         */
         return l;
     }
 

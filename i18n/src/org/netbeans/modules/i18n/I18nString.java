@@ -17,6 +17,8 @@ package org.netbeans.modules.i18n;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.filesystems.FileObject;
 
 import org.openide.loaders.DataObject;
 import org.openide.util.MapFormat;
@@ -167,11 +169,15 @@ public class I18nString {
             replaceFormat = I18nUtil.getOptions().getReplaceJavaCode();
 
         // Create map.
+        
+        FileObject fo = getSupport().getResourceHolder().getResource().getPrimaryFile();
+        ClassPath cp = ClassPath.getClassPath( fo, ClassPath.SOURCE );
+        
         Map map = new HashMap(4);
 
         map.put("key", getKey()); // NOI18N
-        map.put("bundleNameSlashes", getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('/')); // NOI18N
-        map.put("bundleNameDots", getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('.')); // NOI18N
+        map.put("bundleNameSlashes", cp.getResourceName( fo, '/', false ) ); // NOI18N
+        map.put("bundleNameDots", cp.getResourceName( fo, '.', false ) ); // NOI18N
 
         DataObject sourceDataObject = getSupport().getSourceDataObject();
         map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N

@@ -1,15 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.i18n/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/i18n/Bundle.properties
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
-OpenIDE-Module-Module-Dependencies: 
- org.netbeans.modules.properties/1, 
- org.netbeans.core/1 > 1.0,
- org.openide.src > 1.0, org.openide.execution > 1.0,
- org.netbeans.modules.javahelp/1 > 1.2
-OpenIDE-Module-Requires: org.openide.execution.ExecutionEngine
 OpenIDE-Module-Specification-Version: 1.14
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/i18n/Layer.xml
 
 Name: org/netbeans/modules/i18n/I18nGroupPopupAction.class

@@ -1,0 +1,36 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<html>
+<body>
+
+General "queries" or communication channels pertaining to aspects of how files
+are used and related.
+
+<p>These queries permit a module to ascertain limited kinds of information about
+files or other interesting artifacts, where the information is ultimately
+supplied by a possibly unrelated module, without mandating a direct dependency.
+The querier is insulated from needing to understand, much less rely on details
+of, the model used by the query implementation.</p>
+
+<p>Although the queries are heavily used by project-related code, they may be
+both queried and implemented without any projects at all.</p>
+
+<p>{@link org.netbeans.api.queries.CollocationQuery} checks whether files are
+logically part of one directory tree and thus whether relative paths between
+them would have any sense. {@link org.netbeans.api.queries.FileBuiltQuery} can
+be used to see if a file that can be "built", currently needs to be.
+{@link org.netbeans.api.queries.SharabilityQuery} checks whether a file is
+intended to be important data kept in a version-control system.</p>
+  
+</body>
+</html>

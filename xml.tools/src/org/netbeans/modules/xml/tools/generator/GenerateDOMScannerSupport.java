@@ -75,7 +75,7 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
             String name = rawName.substring(0,1).toUpperCase() + rawName.substring(1) + Util.THIS.getString("NAME_SUFFIX_Scanner");
             
             FileObject folder = primFile.getParent();
-            String packageName = folder.getPackageName ('.');
+            String packageName = Util.findJavaPackage(folder);
 
             FileObject generFile = (new SelectFileDialog (folder, name, JAVA_EXT)).getFileObject();
             name = generFile.getName();
@@ -129,7 +129,7 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
         getDTD();
         
 	String header = GenerateSupportUtils.getJavaFileHeader (name, primFile);
-	String packageLine = (packageName.length() != 0 ? "package " + packageName + ";\n" : ""); // NOI18N
+	String packageLine = (packageName != null && packageName.length() != 0 ? "package " + packageName + ";\n" : ""); // NOI18N
 	ClassElement clazz = prepareDOMScannerClass (name);
 	
 	StringBuffer buf = new StringBuffer();

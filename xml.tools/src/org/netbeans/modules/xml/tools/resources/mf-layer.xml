@@ -87,15 +87,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- entities -->
     </folder> <!-- xml -->
 
-    <folder name="Mount">
-        <folder name="Javadoc">
-            <file name="org-netbeans-modules-xml-tools-resources-xml_apis.xml" url="xml_apis-javadoc.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.tools.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
-            </file>
-        </folder> <!-- Javadoc -->
-    </folder> <!-- Mount -->
-
     <folder name="Shortcuts">
         <file name="A-F9.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.CheckAction"/>

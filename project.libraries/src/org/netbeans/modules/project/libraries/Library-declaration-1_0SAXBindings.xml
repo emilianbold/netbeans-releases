@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE SAX-bindings PUBLIC "-//XML Module//DTD SAX Bindings 1.0//EN" "">
+<SAX-bindings version='1'>
+	<bind element='volume' method='volume' type='CONTAINER' ></bind>
+	<bind element='type' method='type' type='DATA' ></bind>
+	<bind element='description' method='description' type='DATA' ></bind>
+    <bind element='localizing-bundle' method='localizingBundle' type='DATA' ></bind>
+	<bind element='library' method='library' type='CONTAINER' ></bind>
+	<bind element='resource' method='resource' type='DATA' parslet='parseResource' ></bind>
+	<bind element='name' method='name' type='DATA' ></bind>
+	<parslet parslet='parseLocation' return='java.net.URL' />
+	<parslet parslet='parseResource' return='java.net.URL' />
+</SAX-bindings>

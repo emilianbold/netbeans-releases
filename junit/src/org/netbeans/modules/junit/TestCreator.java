@@ -18,19 +18,14 @@
 
 package org.netbeans.modules.junit;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
-import javax.swing.text.Element;
-import javax.swing.text.BadLocationException;
+import java.util.*;
+import org.openide.filesystems.FileObject;
 
 import org.openide.src.*;
-import org.openide.filesystems.*;
-import org.openide.cookies.SourceCookie;
-import org.openide.cookies.SourceCookie.Editor;
-import org.openide.util.Task;
 import org.openide.util.NbBundle;
+
 
 /**
  *
@@ -62,7 +57,7 @@ public class TestCreator extends java.lang.Object {
         return result;   
     }
 
-    static public void createTestClass(ClassElement classSource, ClassElement classTarget) throws SourceException {
+    static public void createTestClass(FileObject sourceCtx, ClassElement classSource, FileObject classCtx, ClassElement classTarget) throws SourceException {
         SourceElement   srcelSource;
         SourceElement   srcelTarget;
         
@@ -75,7 +70,7 @@ public class TestCreator extends java.lang.Object {
         srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));        
 
         // construct/update test class from the source class
-        fillTestClass(classSource, classTarget);
+        fillTestClass(sourceCtx, classSource, classCtx, classTarget);
         
         // if aplicable, add main method (method checks options itself)
         addMainMethod(classTarget);
@@ -106,7 +101,7 @@ public class TestCreator extends java.lang.Object {
         if (JUnitSettings.getDefault().isMembersPublic()) cfg_MethodsFilter |= Modifier.PUBLIC;
     }
 
-    static public boolean isClassTestable(ClassElement ce) {
+    static public boolean isClassTestable(FileObject ctx, ClassElement ce) {
 // @@        System.out.println("isClassTestable : " + ce.getName().getFullName());
         
         ClassElement[]  innerClasses;
@@ -122,7 +117,7 @@ public class TestCreator extends java.lang.Object {
         //System.err.println("isClassTestable: class name="+ce.getVMName());
         
         // check whether class implements test interfaces
-        if (TestUtil.isClassElementImplementingTestInterface(ce)) {
+        if (TestUtil.isClassElementImplementingTestInterface(ctx, ce)) {
             //System.err.println("!!Class implements Test Interface");
             if ( ! settings.isGenerateTestsFromTestClasses()) {
                 // we don't want to generate tests from test classes                
@@ -135,7 +130,7 @@ public class TestCreator extends java.lang.Object {
         if ( ((0 != (classModifiers & Modifier.PUBLIC)) || 
                 ( settings.isIncludePackagePrivateClasses() && (0 == ( classModifiers & Modifier.PRIVATE )))
               ) &&
-             (settings.isGenerateExceptionClasses() || ! TestUtil.isClassElementException(ce)) &&
+             (settings.isGenerateExceptionClasses() || ! TestUtil.isClassElementException(ctx, ce)) &&
              (!ce.isInner() || 0 != (classModifiers & Modifier.STATIC)) &&
              (0 == (classModifiers & Modifier.ABSTRACT) || settings.isGenerateAbstractImpl()) &&
               hasTestableMethods(ce)) {
@@ -153,7 +148,7 @@ public class TestCreator extends java.lang.Object {
         // check for testable inner classes
         innerClasses = ce.getClasses();
         for(int i = 0; i < innerClasses.length; i++) {
-            if (isClassTestable(innerClasses[i]))
+            if (isClassTestable(ctx, innerClasses[i]))
                 return true;
         }
 
@@ -193,7 +188,7 @@ public class TestCreator extends java.lang.Object {
      * appends all test functions in the class and creates sub-suites for
      * all test inner classes.
      */
-    static private MethodElement createTestClassSuiteMethod(ClassElement classTest) throws SourceException {
+    static private MethodElement createTestClassSuiteMethod(FileObject ctx, ClassElement classTest) throws SourceException {
         StringBuffer    body = new StringBuffer(512);
         ClassElement    innerClasses[];        
         
@@ -225,7 +220,7 @@ public class TestCreator extends java.lang.Object {
         innerClasses = classTest.getClasses();        
         for(int i = 0; i < innerClasses.length; i++) {
             ClassElement innerClass = innerClasses[i];
-            if (TestUtil.isClassElementTest(innerClass)) {
+            if (TestUtil.isClassElementTest(ctx, innerClass)) {
                 //System.err.println("Adding inner class:"+innerClasses[i].getVMName());
                 body.append("suite.addTest(");
                 body.append(innerClass.getName().getName());
@@ -377,7 +372,7 @@ public class TestCreator extends java.lang.Object {
         }
     }
     
-    static private void fillTestClass(ClassElement classSource, ClassElement classTest) throws SourceException {
+    static private void fillTestClass(FileObject sourceCtx, ClassElement classSource, FileObject classCtx, ClassElement classTest) throws SourceException {
         LinkedList      methods;
         ClassElement    innerClasses[];        
         
@@ -386,7 +381,7 @@ public class TestCreator extends java.lang.Object {
         // create test classes for inner classes
         innerClasses = classSource.getClasses();
         for(int i = 0; i < innerClasses.length; i++) {
-            if (isClassTestable(innerClasses[i])) {
+            if (isClassTestable(sourceCtx, innerClasses[i])) {
                 // create new test class
                 ClassElement    innerTester;
                 Identifier      name = Identifier.create(TestUtil.getTestClassName(innerClasses[i].getName().getName()));
@@ -399,7 +394,7 @@ public class TestCreator extends java.lang.Object {
                 }
                 
                 // process tested inner class the same way like top-level class
-                fillTestClass(innerClasses[i], innerTester);
+                fillTestClass(sourceCtx, innerClasses[i], classCtx, innerTester);
                 
                 // do additional things for test class to became inner class usable for testing in JUnit
                 innerTester.setModifiers(innerTester.getModifiers() | Modifier.STATIC);
@@ -412,7 +407,7 @@ public class TestCreator extends java.lang.Object {
         // add suite method ... only if we are supposed to do so
         if (JUnitSettings.getDefault().isGenerateSuiteClasses()) {
             methods = new LinkedList();
-            methods.add(createTestClassSuiteMethod(classTest));
+            methods.add(createTestClassSuiteMethod(classCtx, classTest));
             addMethods(classTest, methods);            
         } else {
             //System.err.println("TestCreator.createTestClassSuiteMethod() - do not regenerate ...");

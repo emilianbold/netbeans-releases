@@ -206,9 +206,12 @@ public final class BeanInstaller
                         String name = null;
                         if (obj instanceof FileObject) {
                             if ("class".equals(((FileObject)obj).getExt())) { // NOI18N
+                                assert false : "XXX needs to be rewritten";
+                                /*
                                 name =((FileObject)obj).getPackageName('.');
                                 if (name != null)
                                     createInstance(categoryFolder, name);
+                                 */
                             }
                             else {
                                 createShadow(categoryFolder, (FileObject)obj);

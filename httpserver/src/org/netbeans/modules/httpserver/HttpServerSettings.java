@@ -50,7 +50,7 @@ import org.openide.DialogDisplayer;
 * @version 0.12, May 5, 1999
 */
 public class HttpServerSettings extends SystemOption 
-    implements HttpServer.Impl, PropertyChangeListener {
+    /*implements HttpServer.Impl*/ {
 
     private static final int MAX_START_RETRIES = 20;
     private static int currentRetries = 0;
@@ -74,10 +74,7 @@ public class HttpServerSettings extends SystemOption
 
     public static final String PROP_PORT               = "port"; // NOI18N
     public static final String PROP_HOST_PROPERTY      = "hostProperty"; // NOI18N
-    public static final String PROP_REPOSITORY_BASEURL = "repositoryBaseURL"; // NOI18N
-    public static final String PROP_CLASSPATH_BASEURL  = "classpathBaseURL"; // NOI18N
-    public static final String PROP_JAVADOC_BASEURL    = "javadocBaseURL"; // NOI18N
-           static final String PROP_WRAPPER_BASEURL    = "wrapperBaseURL"; // NOI18N
+    static final String PROP_WRAPPER_BASEURL    = "wrapperBaseURL"; // NOI18N
     public static final String PROP_RUNNING            = "running"; // NOI18N
 
     private static final String PROP_HOST               = "host"; // NOI18N
@@ -91,15 +88,6 @@ public class HttpServerSettings extends SystemOption
     /** allowed connections hosts - local/any */
     private static String host = LOCALHOST;
 
-    /** mapping of repository to URL */
-    private static String repositoryBaseURL = "/repository/"; // NOI18N
-
-    /** mapping of classpath to URL */
-    private static String classpathBaseURL = "/classpath/"; // NOI18N
-
-    /** mapping of javadoc to URL */
-    private static String javadocBaseURL = "/javadoc/"; // NOI18N
-    
     /** mapping of wrapper to URL */
     private static String wrapperBaseURL = "/resource/"; // NOI18N
     
@@ -144,7 +132,6 @@ public class HttpServerSettings extends SystemOption
 
     protected void initialize () {
         super.initialize ();
-        addPropertyChangeListener (this);
     }
     
     /** This is a project option. */
@@ -279,87 +266,6 @@ public class HttpServerSettings extends SystemOption
         firePropertyChange(PROP_RUNNING, !running ? Boolean.TRUE : Boolean.FALSE, running ? Boolean.TRUE : Boolean.FALSE);
     }
 
-    /** getter for repository base */
-    public String getRepositoryBaseURL() {
-        return repositoryBaseURL;
-    }
-
-    /** setter for repository base */
-    public void setRepositoryBaseURL(String repositoryBaseURL) {
-        // canonical form starts and ends with a /
-        String newURL = getCanonicalRelativeURL(repositoryBaseURL);
-
-        // check if any change is taking place
-        if (this.repositoryBaseURL.equals(newURL))
-            return;
-
-        // implement the change
-        synchronized (httpLock ()) {
-            this.repositoryBaseURL = newURL;
-            restartIfNecessary(false);
-        }
-        firePropertyChange(PROP_REPOSITORY_BASEURL, null, this.repositoryBaseURL);
-    }
-
-    /** getter for classpath base */
-    public String getClasspathBaseURL() {
-        return classpathBaseURL;
-    }
-
-    /** setter for classpath base */
-    public void setClasspathBaseURL(String classpathBaseURL) {
-        // canonical form starts and ends with a /
-        String newURL = getCanonicalRelativeURL(classpathBaseURL);
-
-        // check if any change is taking place
-        if (this.classpathBaseURL.equals(newURL))
-            return;
-
-        // implement the change
-        synchronized (httpLock ()) {
-            this.classpathBaseURL = newURL;
-            restartIfNecessary(false);
-        }
-        firePropertyChange(PROP_CLASSPATH_BASEURL, null, this.classpathBaseURL);
-    }
-
-    /** getter for classpath base */
-    public String getJavadocBaseURL() {
-        return javadocBaseURL;
-    }
-
-    /** setter for classpath base */
-    public void setJavadocBaseURL(String javadocBaseURL) {
-        // canonical form starts and ends with a /
-        String oldURL;
-        String newURL = getCanonicalRelativeURL(javadocBaseURL);
-
-        // check if any change is taking place
-        if (this.javadocBaseURL.equals(newURL))
-            return;
-
-        // implement the change
-        synchronized (httpLock ()) {
-            oldURL = this.javadocBaseURL;
-            this.javadocBaseURL = newURL;
-            restartIfNecessary(false);
-        }
-        firePropertyChange(PROP_JAVADOC_BASEURL, oldURL, this.javadocBaseURL);
-    }
-
-    /** Maps a file object to a URL. Should ensure that the file object is accessible on the given URL. */
-    public URL getJavadocURL(FileObject fo) throws MalformedURLException, UnknownHostException {
-        try {
-            setRunning(true);
-            return new URL("http", getLocalHost(), getPort(), // NOI18N
-                           getJavadocBaseURL() + mangle (fo.getFileSystem ().getSystemName ()) + "/" + // NOI18N
-                           fo.getPath()); // NOI18N
-        }
-        catch (org.openide.filesystems.FileStateInvalidException ex) {
-            throw new MalformedURLException ();
-        }
-    }
-
     // NOT publicly available
     
     /** getter for classpath base */
@@ -468,42 +374,42 @@ public class HttpServerSettings extends SystemOption
 
     /* Implementation of HttpServer.Impl interface */
 
-    /** Maps a file object to a URL. Should ensure that the file object is accessible on the given URL. */
-    public URL getRepositoryURL(FileObject fo) throws MalformedURLException, UnknownHostException {
-        setRunning(true);
-        return new URL("http", getLocalHost(), getPort(), // NOI18N
-                       getRepositoryBaseURL() + fo.getPath()); // NOI18N
-    }
-
-    /** Maps the repository root to a URL. This URL should serve a page from which repository objects are accessible. */
-    public URL getRepositoryRoot() throws MalformedURLException, UnknownHostException {
-        setRunning(true);
-        return new URL("http", getLocalHost(), getPort(), getRepositoryBaseURL()); // NOI18N
-    }
-
-    /** Maps a resource path to a URL. Should ensure that the resource is accessible on the given URL.
-    * @param resourcePath path of the resource in the classloader format
-    * @see ClassLoader#getResource(java.lang.String)
-    * @see TopManager#systemClassLoader()
-    */
-    public URL getResourceURL(String resourcePath) throws MalformedURLException, UnknownHostException {
-        setRunning(true);
-        return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + // NOI18N
-                       (resourcePath.startsWith("/") ?                            // NOI18N 
-                        resourcePath.substring(1) : 
-                        resourcePath));
-    }
-
-    /** Maps a resource root to a URL. Should ensure that all resources under the root are accessible under an URL
-    * consisting of the returned URL and fully qualified resource name.
-    * @param resourcePath path of the resource in the classloader format
-    * @see ClassLoader#getResource(java.lang.String)
-    * @see TopManager#systemClassLoader()
-    */
-    public URL getResourceRoot() throws MalformedURLException, UnknownHostException {
-        setRunning(true);
-        return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL()); // NOI18N
-    }
+//    /** Maps a file object to a URL. Should ensure that the file object is accessible on the given URL. */
+//    public URL getRepositoryURL(FileObject fo) throws MalformedURLException, UnknownHostException {
+//        setRunning(true);
+//        return new URL("http", getLocalHost(), getPort(), // NOI18N
+//                       getRepositoryBaseURL() + fo.getPath()); // NOI18N
+//    }
+//
+//    /** Maps the repository root to a URL. This URL should serve a page from which repository objects are accessible. */
+//    public URL getRepositoryRoot() throws MalformedURLException, UnknownHostException {
+//        setRunning(true);
+//        return new URL("http", getLocalHost(), getPort(), getRepositoryBaseURL()); // NOI18N
+//    }
+//
+//    /** Maps a resource path to a URL. Should ensure that the resource is accessible on the given URL.
+//    * @param resourcePath path of the resource in the classloader format
+//    * @see ClassLoader#getResource(java.lang.String)
+//    * @see TopManager#systemClassLoader()
+//    */
+//    public URL getResourceURL(String resourcePath) throws MalformedURLException, UnknownHostException {
+//        setRunning(true);
+//        return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + // NOI18N
+//                       (resourcePath.startsWith("/") ?                            // NOI18N 
+//                        resourcePath.substring(1) : 
+//                        resourcePath));
+//    }
+//
+//    /** Maps a resource root to a URL. Should ensure that all resources under the root are accessible under an URL
+//    * consisting of the returned URL and fully qualified resource name.
+//    * @param resourcePath path of the resource in the classloader format
+//    * @see ClassLoader#getResource(java.lang.String)
+//    * @see TopManager#systemClassLoader()
+//    */
+//    public URL getResourceRoot() throws MalformedURLException, UnknownHostException {
+//        setRunning(true);
+//        return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL()); // NOI18N
+//    }
 
     public void addGrantAccessListener(GrantAccessListener l) {
         listenerList.add(GrantAccessListener.class, l);
@@ -527,9 +433,9 @@ public class HttpServerSettings extends SystemOption
         return (grantAccessEvent == null) ? false : grantAccessEvent.isGranted();
     }
 
-    public boolean allowAccess(InetAddress addr) {
-        throw new UnsupportedOperationException();
-    }
+//    public boolean allowAccess(InetAddress addr) {
+//        throw new UnsupportedOperationException();
+//    }
 
     /** Requests access for address addr. If necessary asks the user. Returns true it the access
     * has been granted. */  
@@ -716,33 +622,6 @@ public class HttpServerSettings extends SystemOption
     
     public void setShowGrantAccessDialog (boolean show) {
         putProperty (PROP_SHOW_GRANT_ACCESS, show ? Boolean.TRUE : Boolean.FALSE, true);
-    }
-    
-    public void propertyChange (PropertyChangeEvent evt) {
-        if (isReadExternal () || !equals(evt.getSource ()))
-            return;
-        
-        // check definity of servlet paths
-        String prop = evt.getPropertyName ();
-        if (PROP_CLASSPATH_BASEURL.equals (prop)
-        ||  PROP_JAVADOC_BASEURL.equals (prop)
-        ||  PROP_REPOSITORY_BASEURL.equals (prop)) {
-            boolean clash = getClasspathBaseURL ().startsWith (getJavadocBaseURL ());
-            clash |= getClasspathBaseURL ().startsWith (getRepositoryBaseURL ());
-            clash |= getJavadocBaseURL ().startsWith (getClasspathBaseURL ());
-            clash |= getJavadocBaseURL ().startsWith (getRepositoryBaseURL ());
-            clash |= getRepositoryBaseURL ().startsWith (getClasspathBaseURL ());
-            clash |= getRepositoryBaseURL ().startsWith (getJavadocBaseURL ());
-            
-            if (clash) {
-                org.openide.util.RequestProcessor.getDefault().post (new Runnable () {
-                    public void run () {
-                        DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (
-                            NbBundle.getMessage (HttpServerSettings.class, "MSG_MappingsConflict")));
-                    }
-                });
-            }
-        }
     }
     
     /** Property value that describes set of host with granted access

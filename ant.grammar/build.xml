@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -13,95 +13,26 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="ant/grammar" default="netbeans" basedir=".">
-  <import file="../../nbbuild/default.xml"/> 
 
-  <target name="init" depends="default.init">
-    <ant dir="../external" target="unscramble"/>
-    <patternset id="ant/grammar.files">
-      <include name="${nb.modules/eager.dir}/ant-grammar.jar"/>
-    </patternset>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <path id="cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${ant.dir}/${nb.modules.dir}/ant.jar"/>
-      <pathelement location="${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar"/>
-    </path>
-  </target>
+    <target name="jar-with-module-deps" if="module.dependencies">
+        <property file="../../xml/spec-vers.properties"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Specification-Version" value="1.5.${xml.common.impl.version}"/>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.modules.xml.core/2 = ${xml.common.impl.version}, org.apache.tools.ant.module/3 &gt; 3.3"/>
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+            </manifest>
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
 
-  <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <classpath refid="cp"/>
-    </javac>
-  </target>
-
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/eager.dir}"/>
-    <property file="../../xml/spec-vers.properties"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on">
-      <filterchain>
-        <expandproperties/>
-      </filterchain>
-    </copy>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/eager.dir}/ant-grammar.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-         excludesfile="../../nbbuild/standard-jar-excludes.txt"
-	 compress="false">
-    </jar>
-  </target>
-
-  <target name="netbeans" depends="jars" description="Build module.">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/eager.dir}/ant-grammar.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="ant/grammar.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans" description="Build module NBM file.">
-    <makenbm file="ant-grammar.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules/eager.dir}/ant-grammar.jar"
-	     homepage="http://ant.${homepage.base}/"
-	     distribution="http://${dist.base}/ant-grammar.nbm"
-             needsrestart="false">
-      <license name="ant-grammar-license.txt">
-        <file location="${license.file}"/>
-      </license>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="reload" depends="jars" description="Test module inside running IDE.">
-    <mkdir dir="reload"/>
-    <copy file="netbeans/modules/eager/ant-grammar.jar" tofile="reload/ant-grammar.jar"/>
-    <nbinstaller module="reload/ant-grammar.jar" action="reinstall"/>
-  </target>
-
-  <target name="test" depends="jars" description="Run unit tests.">
-    <path id="source.cp">
-      <path refid="cp"/>
-      <pathelement location="src"/>
-    </path>
-    <ant dir="test/unit" target="runtests" inheritrefs="true"/>
-  </target>
-
-  <target name="clean" description="Clean out build products." depends="init">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="ant/grammar.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="ant-grammar.nbm"/>
-  </target>
-
-  <target name="real-clean" depends="clean">
-    <delete dir="reload"/>
-  </target>
+    <target name="test-preinit" depends="init">
+        <property name="junit-sys-prop.test.ant.home" location="${netbeans.dest.dir}/${cluster.dir}/ant"/>
+        <property name="junit-sys-prop.test.ant.bridge" location="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/bridge.jar"/>
+    </target>
 
 </project>

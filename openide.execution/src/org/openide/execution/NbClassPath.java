@@ -88,6 +88,7 @@ public final class NbClassPath extends Object implements java.io.Serializable {
     * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
     */
     public static NbClassPath createRepositoryPath () {
+        Thread.dumpStack();
         return createRepositoryPath (FileSystemCapability.ALL);
     }
 
@@ -103,6 +104,7 @@ public final class NbClassPath extends Object implements java.io.Serializable {
     * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
     */
     public static NbClassPath createRepositoryPath (FileSystemCapability cap) {
+        Thread.dumpStack();
         final LinkedList res = new LinkedList ();
 
 
@@ -137,6 +139,7 @@ public final class NbClassPath extends Object implements java.io.Serializable {
      * its exact meaning is vague, and probably not what you want.
     */
     public static NbClassPath createLibraryPath () {
+        Thread.dumpStack();
         // modules & libs
         ExecutionEngine ee = (ExecutionEngine)Lookup.getDefault().lookup(ExecutionEngine.class);
         if (ee != null) {
@@ -153,6 +156,7 @@ public final class NbClassPath extends Object implements java.io.Serializable {
      * its exact meaning is vague, and probably not what you want.
     */
     public static NbClassPath createClassPath () {
+        Thread.dumpStack();
         // ${java.class.path} minus openide-compat.jar
         String cp = System.getProperty ("java.class.path"); // NOI18N
         if (cp == null || cp.length () == 0) return new NbClassPath (""); // NOI18N
@@ -177,8 +181,10 @@ public final class NbClassPath extends Object implements java.io.Serializable {
      * There are generally no excuses to be using this method as part of a normal module.
      * For more information consult the <a href="../doc-files/classpath.html">Module Class Path</a> document.
     * @return class path of system class including extensions
+     * @deprecated Use the Java Platform API instead.
     */
     public static NbClassPath createBootClassPath () {
+        Thread.dumpStack();
         // boot
         String boot = System.getProperty("sun.boot.class.path"); // NOI18N
         StringBuffer sb = (boot != null ? new StringBuffer(boot) : new StringBuffer());
@@ -207,55 +213,13 @@ public final class NbClassPath extends Object implements java.io.Serializable {
     }
 
     /** Take one file object and try to convert it into a local file.
-    * The conversion can succeed only if the file object's file system
-    * supports work with {@link org.openide.filesystems.FileSystem.Environment}.
-    *
     * @param fo file object to convert
     * @return disk file for that file object, or <code>null</code> if there is no corresponding disk file
-    * @deprecated You probably should use {@link org.openide.filesystems.FileUtil#toFile} instead.
+    * @deprecated You should use {@link org.openide.filesystems.FileUtil#toFile} instead.
     */
     public static File toFile (FileObject fo) {
-        final String pne = fo.getPath().replace('/', File.separatorChar);
-
-        final class Env extends FileSystem.Environment {
-            /** the file found or null */
-            public File found;
-            /** the file suggested or null */
-            //public File suggest;
-
-            /* method of interface Environment */
-            public void addClassPath(String element) {
-                if (found != null) {
-                    // file found, ignore the rest
-                    return;
-                }
-
-                File p = new File (element);
-                if (! p.isDirectory ()) {
-                    // JAR entry, for example:
-                    return;
-                }
-                File f = new File (p, pne);
-
-                /* #8928: ought not return nonexistent file
-                if (suggest == null) {
-                    suggest = f;
-                }
-                */
-
-                if (f.exists ()) {
-                    found = f;
-                }
-            }
-        }
-
-        Env env = new Env ();
-        try {
-            fo.getFileSystem ().prepareEnvironment(env);
-            return /*env.found == null ? env.suggest : */env.found;
-        } catch (java.io.IOException ex) {
-            return null;
-        }
+        Thread.dumpStack();
+        return FileUtil.toFile(fo);
     }
 
     /** If there were some problems during creation of the class path, they can be identified

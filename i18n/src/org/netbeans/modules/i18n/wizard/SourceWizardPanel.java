@@ -18,9 +18,14 @@ package org.netbeans.modules.i18n.wizard;
 import java.awt.Component;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -28,6 +33,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.I18nUtil;
@@ -45,6 +52,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.util.Lookup;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 /**
  * First panel used in I18N (test) Wizard.
@@ -231,15 +242,54 @@ final class SourceWizardPanel extends JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        DataFilter dataFilter = new DataFilter() {
-            public boolean acceptDataObject (DataObject dataObject) {
-                return (dataObject instanceof DataFolder
-                 || FactoryRegistry.hasFactory(dataObject.getClass()));
+
+//       Following code is a bit too CPU intensive (memory probably as well) 
+//       for working with  MasterFS
+//
+//        DataFilter dataFilter = new DataFilter() {
+//            public boolean acceptDataObject (DataObject dataObject) {
+//                return (dataObject instanceof DataFolder
+//                 || FactoryRegistry.hasFactory(dataObject.getClass()));
+//            }
+//        };
+//
+//        Node repositoryNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
+
+        // Thus changing to work with GlobalPathRegistry
+        Set paths = GlobalPathRegistry.getDefault().getPaths( ClassPath.SOURCE );
+        List roots = new ArrayList();
+        for ( Iterator it = paths.iterator(); it.hasNext(); ) {
+            ClassPath cp = (ClassPath)it.next();
+            roots.addAll( Arrays.asList( cp.getRoots() ) );            
+        }
+        
+        // XXX This is a bit dirty and should be rewritten to Children.Keys
+        // XXX The subnodes deserve better names than src and test
+        List nodes = new ArrayList();
+        Set names = new HashSet();        
+        for( Iterator it = roots.iterator(); it.hasNext(); ) {
+            FileObject fo = (FileObject)it.next();
+            if ( names.contains( fo.getPath()) ) {
+                continue;
             }
-        };
-
-        Node repositoryNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
-
+            names.add( fo.getPath () );
+            try {
+                nodes.add( DataObject.find( fo ).getNodeDelegate() );
+            }
+            catch( DataObjectNotFoundException e ) {
+                // Ignore
+            }
+        }
+        
+        Children ch = new Children.Array();
+        Node[] nodesArray = new Node[ nodes.size() ];
+        nodes.toArray( nodesArray );
+        ch.add( nodesArray );
+        
+        Node repositoryNode = new AbstractNode( ch );
+        repositoryNode.setName( NbBundle.getMessage( SourceWizardPanel.class, "LBL_Sources" ) ); 
+        // XXX Needs some icon.
+        
         // Selects source data objects which could be i18n-ized.
         try {
             Node[] selectedNodes= NodeOperation.getDefault().select(
@@ -320,7 +370,9 @@ final class SourceWizardPanel extends JPanel {
             DataObject dataObject = (DataObject)value;
 
             if(dataObject != null) {
-                label.setText(dataObject.getPrimaryFile().getPackageName('.'));
+                ClassPath cp = ClassPath.getClassPath( dataObject.getPrimaryFile(), ClassPath.SOURCE );
+                                
+                label.setText(cp.getResourceName( dataObject.getPrimaryFile(), '.', false )); // NOI18N
                 label.setIcon(new ImageIcon(dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)));
             } else {
                 label.setText(""); // NOI18N

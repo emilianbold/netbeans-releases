@@ -18,6 +18,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.io.File;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import javax.swing.Action;
+import org.netbeans.modules.beans.PatternAnalyser;
 
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
@@ -502,22 +504,27 @@ public final class BiNode extends AbstractNode {
         *
         * @return array of system actions that should be in popup menu
         */
-        public SystemAction[] getActions () {
-            SystemAction[] staticActions;
-            
-            Children ch = getChildren();
-            Node[] nodes = ch.getNodes();
-            if ( nodes == null )
-                return new SystemAction[0];
+        public Action[] getActions ( boolean context ) {
+            if ( context ) {
+                return super.getActions( true );
+            }
+            else {
+                SystemAction[] staticActions;
 
-            if( nodes.length == 0 || ( nodes[0] != null && ((BiFeatureNode)nodes[0]).getBiFeature() instanceof BiFeature.Descriptor) )
-                return new SystemAction[0];
-            
-            return new SystemAction[] {
-                                    SystemAction.get (BiIncludeAllAction.class),
-                                    SystemAction.get (BiExcludeAllAction.class),
-                                    null
-                                };
+                Children ch = getChildren();
+                Node[] nodes = ch.getNodes();
+                if ( nodes == null )
+                    return new SystemAction[0];
+
+                if( nodes.length == 0 || ( nodes[0] != null && ((BiFeatureNode)nodes[0]).getBiFeature() instanceof BiFeature.Descriptor) )
+                    return new SystemAction[0];
+
+                return new SystemAction[] {
+                                        SystemAction.get (BiIncludeAllAction.class),
+                                        SystemAction.get (BiExcludeAllAction.class),
+                                        null
+                                    };
+            }                          
         }
 
         void includeAll( boolean value) {
@@ -570,7 +577,7 @@ public final class BiNode extends AbstractNode {
         ImagePropertySupportRW(String name, Class type,
                               String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
-            ie = new BiIconEditor();            
+            ie = new BiIconEditor( PatternAnalyser.fileObjectForElement( biAnalyser.classElement ) );            
         }
 
         public PropertyEditor getPropertyEditor() {

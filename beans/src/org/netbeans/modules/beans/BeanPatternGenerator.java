@@ -659,7 +659,7 @@ class BeanPatternGenerator extends Object {
         else
             eventType = Type.createClass( Identifier.create( "java.util.EventObject" ) ); // NOI18N
 
-        ClassElement eventClass = ClassElement.forName( eventType.toString() );
+        ClassElement eventClass = ClassElement.forName( eventType.toString(), PatternAnalyser.fileObjectForElement( classElement ) );
 
 
         //addMethod = classElement.getMethod( addMethodId, new Type[] { listenerType }  );
@@ -763,7 +763,7 @@ class BeanPatternGenerator extends Object {
         else
             eventType = Type.createClass( Identifier.create( "java.util.EventObject" ) ); // NOI18N
 
-        ClassElement eventClass = ClassElement.forName( eventType.toString() );
+        ClassElement eventClass = ClassElement.forName( eventType.toString(), PatternAnalyser.fileObjectForElement( classElement ) );
 
         //addMethod = classElement.getMethod( addMethodId, new Type[] { listenerType }  );
 

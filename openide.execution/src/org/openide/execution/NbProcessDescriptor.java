@@ -150,23 +150,10 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
         
         envp = substituteEnv(format, envp);
        
-        //Conditional for OpenVMS execution. OpenVMS has a 255 character limit for shell command, so we use
-        //special OpenVMS JVM  switch, -V <file>. The switch causes the JVM to read the remainder of the command line switches
-        //from <file>. 
-        //This code only affects the OpenVMS platform. 
-        
-        //we are only interested in commands that support -V switch, these are java and javac
-        //
-        if ( (org.openide.util.Utilities.getOperatingSystem() == org.openide.util.Utilities.OS_VMS) &&
-              isJavaCmd( args ) ) {        
-            call = constructVMSCmdLine( format, args );
-        }
-        else {
-             // copy the call string
-            call = new String[args.length + 1];
-            call[0] = format == null ? processName : format.format(processName);
-            System.arraycopy (args, 0, call, 1, args.length); 
-        }
+        // copy the call string
+        call = new String[args.length + 1];
+        call[0] = format == null ? processName : format.format(processName);
+        System.arraycopy (args, 0, call, 1, args.length); 
 
         logArgs(call);
         
@@ -237,24 +224,7 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
     }
     
     private static void logArgs(String[] args) {
-        try {
-            java.util.ResourceBundle rb = NbBundle.getBundle("org.openide.execution.Bundle"); // NOI18N
-            String exc = rb.getString ("CTL_Exec"); // NOI18N
-            String fmt = rb.getString("FMT_ExecParams"); // NOI18N
-            java.text.MessageFormat msgformat = new java.text.MessageFormat(fmt);
-            StringWriter writer;
-            PrintWriter printer = new PrintWriter(writer = new StringWriter());
-            printer.println(exc);
-            for (int i = 0; i < args.length; i++) {
-                printer.println(msgformat.format(new Object[] { new Integer(i), args[i]})); // NOI18N
-            }
-            printer.close();
-            
-            getExecLog().log(ErrorManager.INFORMATIONAL, writer.toString());
-            
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
-        }
+        getExecLog().log(ErrorManager.INFORMATIONAL, "Running: " + Arrays.asList(args)); // NOI18N
     }
 
     /** Executes the process with arguments and processNme formatted by the provided
@@ -315,67 +285,6 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
             execLog = ErrorManager.getDefault().getInstance("IDE-Exec"); // NOI18N
         }
         return execLog;
-    }
-    
-    /** Determines if the shell command is for java or javac
-     * @param args is argument string
-     * @return boolean
-     */
-    private boolean isJavaCmd ( String[] args ) {
-     
-        return  (args.length > 0 ) &&
-            ( processName.endsWith( "{" + ProcessExecutor.Format.TAG_SEPARATOR + "}" + "java") || // NOI18N
-              processName.endsWith( "{" + ProcessExecutor.Format.TAG_SEPARATOR + "}" + "javac") ) ; // NOI18N
-    }
-    
-    /** Construct the file containing most of the VMS command lines
-     * @param format contains the format of the command and command line arguments
-     * @param args contains the actual command line arguments
-     * @return the array of commands containing special OpenVMS JVM  switch, -V <file>
-     */
-    private String [] constructVMSCmdLine( Format format, String [] args ) throws IOException {
-        
-        //creates a temporary file containing the switches
-        //
-        PrintWriter pWriter = null;
-        File switchFile = null;
-        String atFileName = null;
-        final String javacCmd = "{" + ProcessExecutor.Format.TAG_SEPARATOR + "}" + "javac" ; // NOI18N
-        try {
-            switchFile = File.createTempFile("compilerparams", "pms"); // NOI18N
-            switchFile.deleteOnExit(); 
-            pWriter = new PrintWriter ( new BufferedOutputStream ( new FileOutputStream( switchFile ) ) );
-                     
-            //copy the command arguments into the file
-            //
-            for ( int i=0; i< args.length; i++ ){
-                         
-                //only one @file at most
-                //
-                if ( (args[i].charAt(0) == '@') &&  
-                      processName.endsWith( javacCmd ) ) {
-                     atFileName = args[i];
-                     continue;
-                }
-                pWriter.println( args[i] );
-            }
-        }
-        finally {
-            if ( pWriter != null )
-                pWriter.close();
-        }
-
-        // copy the call string
-        //
-        String [] call = atFileName != null ?  new String[4] : new String[3];   //when atFileName is null then we only have three args
-        call[0] = format == null ? processName : format.format(processName);
-        call[1] = "-V"; // NOI18N
-        call[2] = switchFile.getAbsolutePath();
-                 
-        if ( call.length > 3 )
-            call[3] = atFileName;
-            
-        return call;
     }
     
     /** Iterates through envp and applies format.format() on values

@@ -3,6 +3,8 @@
   <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
+<!-- XXX merge w/ arch.xml -->
+
 <api-answers
   question-version="1.23"
   module="junit"

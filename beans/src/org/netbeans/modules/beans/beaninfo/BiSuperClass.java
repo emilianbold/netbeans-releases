@@ -14,6 +14,7 @@
 package org.netbeans.modules.beans.beaninfo;
 
 import java.lang.reflect.Modifier;
+import org.netbeans.modules.beans.PatternAnalyser;
 
 import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
@@ -64,7 +65,7 @@ class BiSuperClass extends Object {
                 }
             }
             
-            ce = ce.getSuperclass() == null ? null : ClassElement.forName( ce.getSuperclass().getFullName() );
+            ce = ce.getSuperclass() == null ? null : ClassElement.forName( ce.getSuperclass().getFullName(), PatternAnalyser.fileObjectForElement( classElement ) );
         }
 
         /*

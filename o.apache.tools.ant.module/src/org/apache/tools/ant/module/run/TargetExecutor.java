@@ -20,7 +20,6 @@ import java.io.*;
 import java.util.*;
 
 import org.openide.*;
-import org.openide.actions.ExecuteAction;
 import org.openide.awt.Actions;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;

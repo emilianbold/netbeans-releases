@@ -16,6 +16,8 @@
 package org.apache.tools.ant.module.bridge.impl;
 
 import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -56,6 +58,8 @@ final class NbBuildLogger implements BuildLogger {
         out = ps;
     }
     
+    private static final Pattern classpathPattern = Pattern.compile("\n'-classpath'\n'(.*)'\n"); // NOI18N
+    
     public void messageLogged(BuildEvent ev) {
         if (ev.getPriority() <= level) {
             if (ev.getPriority() <= Project.MSG_WARN) {
@@ -71,6 +75,16 @@ final class NbBuildLogger implements BuildLogger {
                 out.println(ev.getMessage());
             }
         }
+        // Hack to find the classpath an Ant task is using.
+        // Cf. Commandline.describeArguments, issue #28190.
+        if (ev.getPriority() == Project.MSG_VERBOSE) {
+            Matcher m = classpathPattern.matcher(ev.getMessage());
+            if (m.find()) {
+                String cp = m.group(1);
+                err.println("***CLASSPATH***=" + cp); // NOI18N
+            }
+        }
+        // XXX should also probably clear classpath when taskFinished called
     }
     
     public void buildStarted(BuildEvent ev) {

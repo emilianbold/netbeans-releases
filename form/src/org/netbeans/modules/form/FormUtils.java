@@ -27,6 +27,7 @@ import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 
@@ -1117,8 +1118,21 @@ public class FormUtils
 
     public static ClassLoader getClassLoader() {
         // we keep the classloader to have the same instance as long as possible
-        FormEditorSupport.userClassLoader =
-            ClassPath.getClassPath(null, ClassPath.EXECUTE).getClassLoader(true);
+//        FormEditorSupport.userClassLoader =
+//            ClassPath.getClassPath(null, ClassPath.EXECUTE).getClassLoader(true);
+        
+        // XXX: temporarily return the classloader of the Java Platform (i.e. JDK)
+        //FormEditorSupport.userClassLoader = 
+        //    JavaPlatform.getDefault().getBootstrapLibraries().getClassLoader(false);
+        
+        // XXX: use Form module classloader instead of platform one to prevent:
+        // java.lang.ClassNotFoundException: org.netbeans.modules.form.layoutsupport.delegates.BorderLayoutSupport
+        //FormEditorSupport.userClassLoader = FormUtils.class.getClassLoader();
+        
+        // XXX: Is this correct? It at least can load the needed classes e,g.
+        // from i18n/form module        
+        FormEditorSupport.userClassLoader = (ClassLoader)Lookup.getDefault().lookup( ClassLoader.class );
+        
         return FormEditorSupport.userClassLoader;
     }
 

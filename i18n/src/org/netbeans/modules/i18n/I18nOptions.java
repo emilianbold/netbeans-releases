@@ -16,12 +16,14 @@ package org.netbeans.modules.i18n;
 
 
 import java.io.IOException;
+import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Options for i18n module.
@@ -61,7 +63,7 @@ public class I18nOptions extends SystemOption {
     
     /** Property name for last used resource data object.
      * Hidden property which serializes last resource data object used by i18n module. */
-    public static final String PROP_LAST_RESOURCE = "lastResource"; // NOI18N
+    public static final String PROP_LAST_RESOURCE2 = "lastResource2"; // NOI18N
 
     
     /** Provided due exeternaliazation only. 
@@ -186,33 +188,25 @@ public class I18nOptions extends SystemOption {
     }
     
     /** Getter for last resource property. */
-    public DataObject getLastResource() {
-        String resourceName = (String)getProperty(PROP_LAST_RESOURCE);
-        
-        if(resourceName == null)
-            return null;
-
-        DataObject lastResource = null;
-        
-        FileObject fileObject = Repository.getDefault().findResource(resourceName);
-        if(fileObject != null) {
+    public DataObject getLastResource2() {
+        FileObject f = (FileObject)getProperty(PROP_LAST_RESOURCE2);
+        if (f != null) {
             try {
-                lastResource = DataObject.find(fileObject);
-            } catch (IOException ioe) {
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ioe);
+                return DataObject.find(f);
+            } catch (DataObjectNotFoundException e) {
+                ErrorManager.getDefault().notify(e);
             }
         }
-
-        return lastResource;
+        return null;
     }
     
     /** Setter for last resource property. */
-    public void setLastResource(DataObject lastResource) {
+    public void setLastResource2(DataObject lastResource) {
         // Make sure it is sane.        
         if(lastResource == null)
             return;
         
-        putProperty(PROP_LAST_RESOURCE, lastResource.getPrimaryFile().getPackageNameExt('/', '.'), true);
+        putProperty(PROP_LAST_RESOURCE2, lastResource.getPrimaryFile(), true);
     }
     
     /** Get context help for this system option.

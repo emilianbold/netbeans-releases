@@ -55,25 +55,13 @@ import org.netbeans.api.javahelp.Help;
 /** A node representing an Ant build target.
  */
 public class AntTargetNode extends ElementNode implements ChangeListener {
-
+    
     public AntTargetNode (final AntProjectCookie project, final Element targetElem) {
         super (targetElem, new AntTargetChildren (targetElem));
         /*
         AntTargetCookie targetCookie = new AntTargetSupport (project, targetElem);
         getCookieSet().add(targetCookie);
          */
-        if (project.getFile () != null) {
-            getCookieSet ().add (new ExecCookie () {
-                    public void start () {
-                        try {
-                            TargetExecutor te = new TargetExecutor(project, new String[] {targetElem.getAttribute("name")}); // NOI18N
-                            te.execute();
-                        } catch (IOException ioe) {
-                            AntModule.err.notify(ioe);
-                        }
-                    }
-                });
-        }
         project.addChangeListener(WeakListener.change(this, project));
     }
     
@@ -98,9 +86,11 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
         }
     }
 
-    protected SystemAction[] createActions () {
-        return new SystemAction[] {
-            SystemAction.get (ExecuteAction.class),
+    private final Action EXECUTE = new ExecuteAction();
+
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            EXECUTE,
             null,
             SystemAction.get (OpenLocalExplorerAction.class),
             null,
@@ -122,8 +112,26 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
         };
     }
 
-    public SystemAction getDefaultAction () {
-        return SystemAction.get (ExecuteAction.class);
+    public Action getPreferredAction() {
+        return EXECUTE;
+    }
+    
+    private final class ExecuteAction extends AbstractAction {
+        
+        ExecuteAction() {
+            super(NbBundle.getMessage(AntTargetNode.class, "LBL_execute_target"));
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            AntProjectCookie project = (AntProjectCookie)getCookie(AntProjectCookie.class);
+            try {
+                TargetExecutor te = new TargetExecutor(project, new String[] {el.getAttribute("name")}); // NOI18N
+                te.execute();
+            } catch (IOException ioe) {
+                AntModule.err.notify(ioe);
+            }
+        }
+        
     }
 
     public HelpCtx getHelpCtx () {

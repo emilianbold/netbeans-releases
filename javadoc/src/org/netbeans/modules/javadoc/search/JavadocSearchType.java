@@ -36,12 +36,12 @@ public abstract class JavadocSearchType extends ServiceType {
     /** generated Serialized Version UID */
     static final long serialVersionUID =-7643543247564581246L;
 
-    /** default returns null, must be overriden
-     * @param fs File system where to find index files
-     * @param rootOffset offset , position of index files in file system, normally null
-     * @return File object containing index-files
-    */
-    public abstract FileObject getDocFileObject( FileSystem fs , String rootOffset );
+    /** Tries to find javadoc index files in given directory
+     * @param apidocRoot Folder where to look for index files where to find index files
+     * @return File object containing index-files e.g index-files directory
+     *         or index-all.html.
+     */
+    public abstract FileObject getDocFileObject( FileObject apidocRoot );
     
     private Pattern[]  overviewLabelFilters;
 

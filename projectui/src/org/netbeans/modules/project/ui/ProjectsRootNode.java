@@ -1,0 +1,275 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.project.ui;
+
+import java.awt.Image;
+import org.openide.nodes.FilterNode;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.Collator;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ResourceBundle;
+import javax.swing.Action;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.LogicalViews;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
+
+/** Root node for list of open projects
+ * @author Petr Hrebejk
+ */
+public class ProjectsRootNode extends AbstractNode {
+    
+    static final int PHYSICAL_VIEW = 0;
+    static final int LOGICAL_VIEW = 1;
+    
+    private static final String ICON_BASE = "org/netbeans/modules/project/ui/resources/projectsRootNode"; //NOI18N
+    
+    private static final Action[] NO_ACTIONS = new Action[0];
+    
+    private static Action[] ACTIONS;
+    
+    private ResourceBundle bundle;
+    
+    private Node.Handle handle;
+    
+    public ProjectsRootNode( int type ) {
+        super( new ProjectChildren( type ) );
+        setIconBase( ICON_BASE );
+        handle = new Handle( type );
+    }
+        
+    public String getName() {
+        return ( "OpenProjects" ); // NOI18N
+    }
+    
+    public String getDisplayName() {
+        if ( this.bundle == null ) {
+            this.bundle = NbBundle.getBundle( ProjectsRootNode.class );
+        }
+        return bundle.getString( "LBL_OpenProjectsNode_Name" ); // NOI18N
+    }
+    
+    public boolean canRename() {
+        return false;
+    }
+        
+    public Node.Handle getHandle() {        
+        return handle;        
+    }
+    
+    public Action[] getActions( boolean context ) {
+        
+        if ( context ) {
+            return NO_ACTIONS;
+        }
+        else {
+            if ( ACTIONS == null ) {
+                // Create the actions
+                ACTIONS = new Action[] {
+                    SystemAction.get( NodeNewProjectAction.class ),
+                    SystemAction.get( NodeOpenProjectAction.class ),
+                };
+            }
+            
+            return ACTIONS;
+        }
+        
+        
+    }
+    
+    private static class Handle implements Node.Handle {
+
+        private static final long serialVersionUID = 78374332058L;
+        
+        private int viewType;
+        
+        public Handle( int viewType ) {
+            this.viewType = viewType;
+        }
+        
+        public Node getNode() {
+            return new ProjectsRootNode( viewType );
+        }
+        
+    }
+
+    // XXX Needs to listen to project rename
+    private static class ProjectChildren extends Children.Keys implements PropertyChangeListener {
+        
+        int type;
+        
+        public ProjectChildren( int type ) {
+            this.type = type;
+            OpenProjectList.getDefault().addPropertyChangeListener( this );
+        }
+        
+        // Children.Keys impl --------------------------------------------------
+        
+        public void addNotify() {            
+            setKeys( getKeys() );
+        }
+        
+        public void removeNotify() {
+            setKeys( Collections.EMPTY_LIST );
+        }
+        
+        protected Node[] createNodes( Object key ) {
+            
+            Project project = (Project)key;
+            
+            LogicalViewProvider lvp = (LogicalViewProvider)project.getLookup().lookup( LogicalViewProvider.class );
+            
+            if ( lvp == null || type == PHYSICAL_VIEW ) {
+                // Provide physical view as a fallback for projects whic do not
+                // have logical view or set it when the node represents logical view
+                lvp = LogicalViews.physicalView(project);
+            }
+            
+            Node n = lvp.createLogicalView();
+            
+            if (n.getLookup().lookup(Project.class) != project) {
+                // Various actions, badging, etc. are not going to work.
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + project.getName() + " failed to supply itself in the lookup of the root node of its own logical view");
+            }
+            
+            return new Node[] { new BadgingNode( n ) };
+        }        
+        
+        // PropertyChangeListener impl -------------------------------------------------
+        
+        public void propertyChange( PropertyChangeEvent e ) {
+            if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
+                setKeys( getKeys() );
+            }
+        }
+        
+        // Own methods ---------------------------------------------------------
+        
+        public Collection getKeys() {
+            List projects = Arrays.asList( OpenProjectList.getDefault().getOpenProjects() );
+            Collections.sort( projects, ProjectComparator.INSTANCE );
+            
+            return projects;
+        }
+                                                
+    }
+    
+    private static class ProjectComparator implements Comparator {
+        
+        private static Comparator INSTANCE = new ProjectComparator();        
+        private static Comparator COLLATOR = Collator.getInstance();
+        
+        public int compare(Object o1, Object o2) {
+            
+            if ( !( o1 instanceof Project ) ) {
+                return 1;
+            }
+            if ( !( o2 instanceof Project ) ) {
+                return -1;
+            }
+            
+            Project p1 = (Project)o1;
+            Project p2 = (Project)o2;
+            
+//            Uncoment to make the main project be the first one
+//            but then needs to listen to main project change
+//            if ( OpenProjectList.getDefault().isMainProject( p1 ) ) {
+//                return -1;
+//            }
+//            
+//            if ( OpenProjectList.getDefault().isMainProject( p2 ) ) {
+//                return 1;
+//            }
+            
+            return COLLATOR.compare( p1.getDisplayName(), p2.getDisplayName() );
+        }
+        
+    }
+    
+    private static class NodeOpenProjectAction extends OpenProjectAction {
+        
+        public String getName() {
+            return NbBundle.getMessage( ProjectsRootNode.class, "LBL_NodeOpenProjectAction_Name" );
+        }
+        
+        
+    }
+    
+    private static class NodeNewProjectAction extends PlaceHolderAction.NewProject {
+        
+        public String getName() {
+            return NbBundle.getMessage( ProjectsRootNode.class, "LBL_NodeNewProjectAction_Name" );
+        }
+        
+        
+    }
+    
+    private static final class BadgingNode extends FilterNode implements PropertyChangeListener {
+
+        private static Image mainProjectBadge = Utilities.loadImage( "org/netbeans/modules/project/ui/resources/mainProjectBadge.gif" ); // NOI18N
+        
+        private static String badgedNamePattern = NbBundle.getMessage( ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern" );
+        
+        public BadgingNode( Node n) {
+            super( n );
+            OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
+        }
+        
+        public String getDisplayName() {
+            String original = super.getDisplayName();
+            return isMain() ? MessageFormat.format( badgedNamePattern, new Object[] { original } ) : original;
+        }
+
+        public Image getIcon( int type ) {
+            Image original = super.getIcon( type );                
+            return isMain() ? Utilities.mergeImages( original, mainProjectBadge, 5, 10 ) : original;
+        }
+
+        public Image getOpenedIcon( int type ) {
+            Image original = super.getOpenedIcon(type);                
+            return isMain() ? Utilities.mergeImages( original, mainProjectBadge, 5, 10 ) : original;            
+        }            
+
+        public void propertyChange( PropertyChangeEvent e ) {
+            if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) ) {
+                fireIconChange();
+                fireDisplayNameChange( null, null );
+            }
+        }
+
+        private boolean isMain() {
+            Project p = (Project)getLookup().lookup( Project.class );
+            return p != null && OpenProjectList.getDefault().isMainProject( p );
+        }
+        
+    }
+    
+}

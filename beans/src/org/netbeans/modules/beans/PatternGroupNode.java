@@ -245,7 +245,7 @@ public class  PatternGroupNode extends AbstractNode {
         case PATTERN_KIND_UC_EVENT_SET:
             UEventSetPatternPanel uEventSetPanel;
 
-            dd = new DialogDescriptor( (uEventSetPanel = new UEventSetPatternPanel()),
+            dd = new DialogDescriptor( (uEventSetPanel = new UEventSetPatternPanel( ((PatternChildren)getChildren()).getPatternAnalyser())),
                                        PatternNode.getString( "CTL_TITLE_NewUniCastES"),     // Title
                                        true,                                                 // Modal
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
@@ -271,7 +271,7 @@ public class  PatternGroupNode extends AbstractNode {
         case PATTERN_KIND_MC_EVENT_SET:
             EventSetPatternPanel eventSetPanel;
 
-            dd = new DialogDescriptor( (eventSetPanel = new EventSetPatternPanel()),
+            dd = new DialogDescriptor( (eventSetPanel = new EventSetPatternPanel( ((PatternChildren)getChildren()).getPatternAnalyser() )),
                                        PatternNode.getString( "CTL_TITLE_NewMultiCastES"),     // Title
                                        true,                                                 // Modal
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list

@@ -37,10 +37,11 @@ public abstract class AntOutputStream extends OutputStream {
     /** have we printed any lines yet? used to prevent initial blank line */
     private boolean hadFirst = false;
 	    
-    private AntOutputParser antOutputParser = AntOutputParser.getDefault();
+    private AntOutputParser antOutputParser = new AntOutputParser();
 
     final public void close() throws IOException {
         flush ();
+        antOutputParser = null;
         handleClose();
     }
 
@@ -101,6 +102,9 @@ public abstract class AntOutputStream extends OutputStream {
             buffer.delete(0, buffer.length());
         }
     }
+    
+    /** see NbBuildLogger */
+    private static final String CP_PREFIX = "***CLASSPATH***="; // NOI18N
 
     private void flushLine (String l) throws IOException {
         //System.err.println("flushing: " + l);
@@ -110,6 +114,11 @@ public abstract class AntOutputStream extends OutputStream {
             if (l.trim ().length () == 0) {
                 return;
             }
+        }
+        if (l.startsWith(CP_PREFIX)) {
+            String cp = l.substring(CP_PREFIX.length());
+            antOutputParser.setClasspath(cp);
+            return; // do not actually print it!
         }
         AntOutputParser.Result r = antOutputParser.parse(l);
         if (r == null) {
@@ -134,13 +143,12 @@ public abstract class AntOutputStream extends OutputStream {
     /** Write one line of text which was not parsed.
      */
     abstract protected void writeLine(String line) throws IOException;
-
+    
     /** Create well formated message from the parsed information.
+     * @deprecated No longer used.
      */
     protected String formatMessage(String fileName, String message, int line1, int col1, int line2, int col2) {
         String m = (message != null ? message : NbBundle.getMessage (AntOutputStream.class, "ERR_unknown"));
-        fileName = fileName.replace('\\', File.separatorChar);
-        fileName = fileName.replace('/', File.separatorChar);
         if (line1 == -1) {
             return NbBundle.getMessage
                 (AntOutputStream.class, "MSG_err", fileName, m); // NOI18N

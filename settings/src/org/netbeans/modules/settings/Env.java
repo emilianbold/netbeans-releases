@@ -126,7 +126,11 @@ public final class Env implements Environment.Provider {
      * @return entity file object
      */
     public static FileObject findEntityRegistration(FileObject provider) {
-        String filename = provider.getPackageName('/');
+        String filename = provider.getPath();
+        int i = filename.lastIndexOf('.');
+        if (i != -1 && i > filename.lastIndexOf('/')) {
+            filename = filename.substring(0, i);
+        }
         String resource = xmlEntitiesPrefix +
             filename.substring(xmlLookupsPrefix.length(), filename.length());
         

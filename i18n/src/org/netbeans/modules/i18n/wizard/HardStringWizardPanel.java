@@ -43,6 +43,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.AbstractCellEditor;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nString;
@@ -633,7 +634,8 @@ final class HardStringWizardPanel extends JPanel {
                 // Do actual replacement.
                 Iterator it = stringMap.keySet().iterator();
 
-                progressPanel.setSubText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Source")+" "+((DataObject)source).getPrimaryFile().getPackageName('.'));
+                ClassPath cp = ClassPath.getClassPath( ((DataObject)source).getPrimaryFile(), ClassPath.SOURCE );
+                progressPanel.setSubText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Source")+" "+cp.getResourceName( ((DataObject)source).getPrimaryFile(), '.', false ) );
 
                 for(int j=0; it.hasNext(); j++) {
                     HardCodedString hcString = (HardCodedString)it.next();

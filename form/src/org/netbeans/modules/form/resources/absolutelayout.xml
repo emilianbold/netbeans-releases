@@ -12,7 +12,14 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
-<Library>
-  <Archive name="modules/ext/AbsoluteLayout.jar"/>
-</Library>
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+
+<library version="1.0">
+    <name>absolutelayout</name>
+    <type>j2se</type>
+    <localizing-bundle>org/netbeans/modules/form/resources/Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>modules/ext/AbsoluteLayout.jar</resource>
+    </volume>
+</library>

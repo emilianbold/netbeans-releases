@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.openide.execution
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.11
 OpenIDE-Module-Module-Dependencies: org.openide.io > 1.0
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Localizing-Bundle: org/openide/execution/Bundle.properties
 

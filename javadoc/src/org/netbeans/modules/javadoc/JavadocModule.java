@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,11 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
-import org.openide.filesystems.FileSystemCapability;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.modules.ModuleInstall;
 import org.openide.windows.TopComponent;
-
 
 /** Class for initializing Javadoc module on IDE startup.
 
@@ -69,41 +66,4 @@ public final class JavadocModule extends ModuleInstall {
         }
     }
     
-    /** Exists only for the sake of its bean info.
-     * @deprecated Exists only for compability reasons
-     */    
-    public static final class GlobalLocalFileSystem extends LocalFileSystem {        
-        private static final long serialVersionUID = 3563912690225075761L;
-        
-        public GlobalLocalFileSystem(){
-            super();
-        }
-        public GlobalLocalFileSystem(FileSystemCapability cap){
-            super(cap);
-        }
-    }
-    /** Marks it as global (not project-specific). 
-     * @deprecated Exists only for compability reasons
-     */
-    public static final class GlobalLocalFileSystemBeanInfo extends SimpleBeanInfo {
-        public BeanDescriptor getBeanDescriptor () {
-            BeanDescriptor bd = new BeanDescriptor (GlobalLocalFileSystem.class);
-            bd.setValue ("global", Boolean.TRUE); // NOI18N
-            return bd;
-        }
-        public BeanInfo[] getAdditionalBeanInfo () {
-            try {
-                return new BeanInfo[] { Introspector.getBeanInfo (LocalFileSystem.class) };
-            } catch (IntrospectionException ie) {
-                return null;
-            }
-        }
-        public Image getIcon (int kind) {
-            try {
-                return Introspector.getBeanInfo (LocalFileSystem.class).getIcon (kind);
-            } catch (IntrospectionException ie) {
-                return null;
-            }
-        }
-    }
 }

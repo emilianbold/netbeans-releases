@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "HTTP://www.w3.org/TR/html4/loose.dtd">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+HTTP://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<html>
+<head>
+  <title>Libraries API</title>
+  <meta name="GENERATOR" content="Quanta Plus">
+  <style TYPE="text/css">
+<!--
+.STR {color: #99006b}
+.NUM {color: #780000}
+.ID {color: #000099; font-family: Monospaced; font-weight: bold}
+.COMMENT {color: #808080; font-family: Monospaced; font-style: italic}
+-->
+</STYLE>
+</head>
+<body>
+<p>Representation of a library, and the ability to find the installed libraries.</p>
+<h1>
+Contents
+</h1>
+<ul>
+<li><a href="#overview">Overview</a>
+<li><a href="#manager">How to obtain a list of installed libraries</a>
+<li><a href="#customizer">Managing libraries</a>
+<li><a href="#dtd">Library definition format</a>
+</ul>
+
+<h1>Libraries API</h1>
+<h2><a name="overview">Overview</a></h2>
+<p>The libraries API provides a client API of the Libraries framework. The <strong>Library</strong> itself is a typed set of
+volumes. The <strong>volume</strong> is a ordered list of <strong>resources</strong>. The type of library implies the volumes contained
+in it. For example the J2SE library contains three volumes (sources, classpath and javadoc). The resource is a
+valid URL of the physical resource.
+</p>
+<h2><a name="manager">How to obtain a list of installed libraries or given library</a></h2>
+<p>
+To obtain a list of installed libraries you want to call
+{@link org.netbeans.api.project.libraries.LibraryManager#getLibraries}
+as in the following example for listing the names of installed libraries.
+<pre>
+Library[] libraries = LibraryManager.getDefault().getLibraries ();
+<font CLASS="ID">for</font> (<font CLASS="ID">int</font> i = <font CLASS="NUM">0</font>; i&lt; libraries.length; i++) {
+    System.out.println(libraries[i].getName()+<font CLASS="STR">" : "</font>+libraries[i].getType());
+}
+</pre>
+To obtain a library with a given name you want to call
+{@link org.netbeans.api.project.libraries.LibraryManager#getLibrary} method as in the following example.
+<pre>
+Library library = LibraryManager.getDefault().getLibrary (<font CLASS="STR">"Ant"</font>);
+<font CLASS="ID">if</font> (library != <font CLASS="ID">null</font>) {
+    System.out.println(library.getName()+<font CLASS="STR">" : "</font>+libraries[i].getType());
+}
+</pre>
+</p>
+<h2><a name="customizer">Managing libraries</a></h2>
+Libraries module provides graphical manager of libraries. The manager allows you to create a new library
+of a given type, to delete existing library or to change content of volumes. It is not possible to create
+or delete a volume in the library since the volumes are implied by the library type.</p>
+<p>
+To open the graphical libraries manager you need to call
+{@link org.netbeans.api.project.libraries.LibrariesCustomizer#showCustomizer} method.
+</p>
+<h2><a name="dtd">Library definition format</a></h2>
+<p>
+A module is able to register the predefined library. For example the junit module installs
+the junit library. The library definition is placed in the <strong>org-netbeans-api-project-libraries/Libraries</strong> folder
+on the system filesystem.</p>
+<p>
+The library format is given by the following DTD.
+<pre>
+&lt;?<font CLASS="ID">xml</font> <font CLASS="ID">version</font>="1.0" <font CLASS="ID">encoding</font>="UTF-8"?&gt;
+
+<font CLASS="COMMENT">&lt;!--</font>
+<font CLASS="COMMENT">  Root element of library definition descriptor.</font>
+<font CLASS="COMMENT">--&gt;</font>
+&lt;!<font CLASS="ID">ELEMENT</font> library (name, type, description?, localizing-bundle?, volume*) &gt;
+
+<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT"> The version attribute specifies the version of the library </font><font CLASS="COMMENT">--&gt;</font>
+
+&lt;!<font CLASS="ID">ATTLIST</font> library version <font CLASS="ID">CDATA</font> <font CLASS="ID">#FIXED</font> <font CLASS="STR">"</font><font CLASS="STR">1.0</font><font CLASS="STR">"</font> &gt;
+
+<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Library unique identifier - a string.</font>
+
+<font CLASS="COMMENT"> In the case when the localizing-bundle element presents the name value is used </font>
+<font CLASS="COMMENT"> as a key into bundle to locate the display name. Otherwise the name value is </font>
+<font CLASS="COMMENT"> used as a display name</font><font CLASS="COMMENT">--&gt;</font>
+&lt;!<font CLASS="ID">ELEMENT</font> name (<font CLASS="ID">#PCDATA</font>) &gt;
+
+<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">Short description of given library - a string.</font>
+<font CLASS="COMMENT"> In the case when the localizing-bundle element presents the description value</font>
+<font CLASS="COMMENT"> is used as a key into bundle to locate the localized description. Otherwise</font>
+<font CLASS="COMMENT"> the description value is used.</font><font CLASS="COMMENT">--&gt;</font>
+&lt;!<font CLASS="ID">ELEMENT</font> description (<font CLASS="ID">#PCDATA</font>) &gt;
+
+<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT"> The resource name of base bundle without an extension - a string.</font>
+<font CLASS="COMMENT"> The bundle used to lookup the localized strings.</font>
+<font CLASS="COMMENT"> The bundle is looked up by NbBundle.getBundle (String) method.</font>
+<font CLASS="COMMENT"> Example of localizing bundle: org/netbeans/modules/junit/resources/Bundle </font><font CLASS="COMMENT">--&gt;</font>
+&lt;!<font CLASS="ID">ELEMENT</font> localizing-bundle (<font CLASS="ID">#PCDATA</font>)&gt;
+
+<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Volume is typed list of resources </font><font CLASS="COMMENT">--&gt;</font>
+&lt;!<font CLASS="ID">ELEMENT</font> volume (type, resource*) &gt;
+
+<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Volume type of a library volume - a string </font>
+<font CLASS="COMMENT"> For example the J2SE library supports the following types of volume:</font>
+
+<font CLASS="COMMENT"> classpath, javadoc and src </font><font CLASS="COMMENT">--&gt;</font>
+&lt;!<font CLASS="ID">ELEMENT</font> type (<font CLASS="ID">#PCDATA</font>) &gt;
+
+<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Volume resource coded as either absolute or relative URI</font>
+<font CLASS="COMMENT"> In the case of absolute URI the URI is used as a absolute path.</font>
+
+<font CLASS="COMMENT"> In the case of relative URI the URI is resolved from the NetBeans installation</font>
+<font CLASS="COMMENT"> dircetory.</font>
+<font CLASS="COMMENT"> Example:</font>
+<font CLASS="COMMENT"> file:///usr/lib/java/xerces.jar is resolved to /usr/lib/java/xerces.jar</font>
+<font CLASS="COMMENT"> modules/ext/junit.jar is resolved to ${ide</font><font CLASS="COMMENT">.home</font><font CLASS="COMMENT">}</font><font CLASS="COMMENT">/modules/ext/junit.jar</font>
+
+ <font CLASS="COMMENT">--&gt;</font>
+&lt;!<font CLASS="ID">ELEMENT</font> resource (<font CLASS="ID">#PCDATA</font>) &gt;
+</pre>
+</p>
+</body>
+</html>

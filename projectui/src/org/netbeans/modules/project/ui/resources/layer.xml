@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="Project">
+            <!-- Project operations -->
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$NewProject.instance"/>
+            <file name="org-netbeans-modules-project-ui-OpenProjectAction.instance"/>
+            <file name="org-netbeans-modules-project-ui-CloseProjectAction.instance"/>
+            <file name="org-netbeans-modules-project-ui-CustomizeProjectAction.instance"/>
+            <file name="org-netbeans-modules-project-ui-SaveProjectAction.instance"/>
+            <file name="org-netbeans-modules-project-ui-SetMainProjectAction.instance"/>
+            
+            <!-- Building project -->
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$BuildMainProject.instance"/>            
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$RebuildMainProject.instance"/>            
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$JavadocProject.instance"/>                       
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$CompileSingle.instance"/>
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$StopBuilding.instance"/>
+                        
+            <!-- Running project -->
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$RunMainProject.instance"/>
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugMainProject.instance"/>
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$TestProject.instance"/>
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$RunSingle.instance"/>
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$TestSingle.instance"/>
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugTestSingle.instance"/>
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance"/>
+                        
+            <!-- Project tabs opening -->
+            <file name="org-netbeans-modules-project-ui-logical-tab-action.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.ProjectTabAction.projectsLogical"/>
+            </file>
+            <file name="org-netbeans-modules-project-ui-physical-tab-action.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.ProjectTabAction.projectsPhysical"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Templates">
+        <folder name="Project">
+            <!-- Project type providers should register their templates here -->
+            <attr name="simple" boolvalue="false" /> <!-- do not show this in regular temlate wizard -->
+			<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/ProjectTemplates.html"/>
+        </folder>
+    </folder>
+    
+    <folder name="Windows2">
+        
+        <folder name="Modes">
+            <file name="explorer.wsmode" url="explorer-override.wsmode"/>
+            <folder name="explorer">            
+                <file name="projectTabLogical_tc.wstcref" url="projectsLogical.wstcref"/>
+                <attr name="projectTabLogical_tc.wstcref/projectTab_tc.wstcref" boolvalue="true" />
+                <file name="projectTab_tc.wstcref" url="projects.wstcref"/>
+                <attr name="projectTab_tc.wstcref/filesystems.wstcref" boolvalue="true" />
+                <file name="filesystems.wstcref" url="filesystems-override.wstcref" />
+                <file name="runtime.wstcref" url="runtime-override.wstcref" />
+            </folder>
+        </folder>    
+            
+        <folder name="Components">
+	    <file name="projectTabLogical_tc.settings" url="projectsLogical.settings" />
+            <file name="projectTab_tc.settings" url="projects.settings" />
+        </folder>
+        
+    </folder>
+        
+    <!-- Private folder for module settings -->
+    
+    <folder name="Services">
+        <!-- Has to be in Services folder iorder to be able to use the
+             SystemOption. At least temporarily -->
+        <folder name="org-netbeans-modules-project-ui">
+            <file name="OpenProjectList.settings" url="openProjectList.settings"/>
+        </folder>
+        
+        <folder name="Hidden">
+            <!-- Hide masterfs's JAR FS provider -->
+            <file name="JarFileSystemProvider.instance_hidden"/>
+            <!-- Temporary VCS FS provider -->
+            <file name="HackedVCSProvider.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.HackedVCSProvider" />
+            </file>
+        </folder>
+        
+    </folder>
+    
+    <!-- XXX Strange hacks - to be removed later -->
+    
+    <folder name="Menu"> <!-- Hacking menus -->
+    
+        <folder name="File">
+            <!-- attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" /-->
+
+            <!-- New actions -->
+            
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$NewProject.instance"/>
+            
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$NewProject.instance/org-netbeans-core-actions-NewTemplateCallableAction.instance" boolvalue="true" />
+            <!-- file name="org-netbeans-core-actions-NewTemplateCallableAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+            </file -->
+            
+            <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/SeparatorNew.instance" boolvalue="true" />
+            <file name="SeparatorNew.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                 
+            </file>
+            
+            <!-- Open actions -->
+            
+            <attr name="SeparatorNew.instance/org-netbeans-modules-project-ui-OpenProjectAction.instance" boolvalue="true" />                 
+            <file name="org-netbeans-modules-project-ui-OpenProjectAction.instance"/>
+            
+            <attr name="org-netbeans-modules-project-ui-OpenProjectAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
+            
+            <!-- file name="org-netbeans-modules-openfile-OpenFileAction.instance"/ -->
+            
+            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/SeparatorOpen.instance" boolvalue="true" />
+            <file name="SeparatorOpen.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                 
+            </file>
+            
+            <!-- Close and customize -->
+            
+            <attr name="SeparatorOpen.instance/org-netbeans-modules-project-ui-CloseProjectAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-project-ui-CloseProjectAction.instance"/>
+                    
+            <attr name="org-netbeans-modules-project-ui-CloseProjectAction.instance/org-netbeans-modules-project-ui-CustomizeProjectAction.instance" boolvalue="true" />            
+            <file name="org-netbeans-modules-project-ui-CustomizeProjectAction.instance"/>
+                    
+            <attr name="org-netbeans-modules-project-ui-CustomizeProjectAction.instance/SeparatorPrj.instance" boolvalue="true" />            
+            <attr name="org-netbeans-modules-project-ui-CustomizeProjectAction.instance/Separator2.instance" boolvalue="true" />            
+
+            <attr name="org-openide-actions-SaveAllAction.instance/org-netbeans-core-actions-RefreshAllFilesystemsAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-core-actions-RefreshAllFilesystemsAction.instance/SeparatorRecent.instance" boolvalue="true"/>
+            
+            <file name="SeparatorRecent.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            
+            <attr name="SeparatorRecent.instance/org-netbeans-modules-project-ui-RecentProjectsAction.instance" boolvalue="true" />            
+            <file name="org-netbeans-modules-project-ui-RecentProjectsAction.instance"/>            
+                        
+            <attr name="org-netbeans-modules-project-ui-RecentProjectsAction.instance/Separator3.instance" boolvalue="true" />
+                                    
+            <!-- Hide existing actions -->
+            <file name="org-netbeans-core-actions-NewFileSystemAction.instance_hidden"/> <!-- Mount FS -->
+            <file name="org-netbeans-core-actions-UnmountFSAction.instance_hidden"/> <!-- Unmount FS -->
+            <!-- Do NOT hide org-netbeans-core-actions-RefreshAllFilesystemsAction.instance -->
+            <file name="Separator1.instance_hidden"/>
+        </folder>
+        
+        <attr name="View/BuildProject" boolvalue="true" />
+        
+        <folder name="BuildProject">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+        
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$BuildMainProject.instance"/>            
+            
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$BuildMainProject.instance/org-netbeans-modules-project-ui-PlaceHolderAction$RebuildMainProject.instance" boolvalue="true" />            
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$RebuildMainProject.instance"/>            
+
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$RebuildMainProject.instance/org-netbeans-modules-project-ui-SetMainProjectAction.instance" boolvalue="true" />                       
+            <file name="org-netbeans-modules-project-ui-SetMainProjectAction.instance"/>            
+                                                    
+            <attr name="org-netbeans-modules-project-ui-SetMainProjectAction.instance/SeparatorMainProject.instance" boolvalue="true"/>
+            <file name="SeparatorMainProject.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            
+            <attr name="SeparatorMainProject.instance/org-netbeans-modules-project-ui-PlaceHolderAction$JavadocProject.instance" boolvalue="true" />                    
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$JavadocProject.instance"/>    
+                   
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$JavadocProject.instance/SeparatorJavadoc.instance" boolvalue="true"/>
+            <file name="SeparatorJavadoc.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+                 
+            <attr name="SeparatorJavadoc.instance/org-netbeans-modules-project-ui-PlaceHolderAction$CompileSingle.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$CompileSingle.instance"/>
+            
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$CompileSingle.instance/SeparatorCompileSingle.instance" boolvalue="true" />
+            <file name="SeparatorCompileSingle.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            
+            <attr name="SeparatorCompileSingle.instance/org-netbeans-modules-project-ui-PlaceHolderAction$StopBuilding.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$StopBuilding.instance"/>
+            
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$StopBuilding.instance/SeparatorStopBuilding.instance" boolvalue="true" />
+            <file name="SeparatorStopBuilding.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            
+            <attr name="SeparatorStopBuilding.instance/org-netbeans-core-output-NextOutJumpAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-output-NextOutJumpAction.instance"/>
+            
+            <attr name="org-netbeans-core-output-NextOutJumpAction.instance/org-netbeans-core-output-PreviousOutJumpAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-output-PreviousOutJumpAction.instance"/>
+            
+        </folder>
+        
+        <attr name="BuildProject/RunProject" boolvalue="true" />        
+        
+        <folder name="RunProject">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+        
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$RunMainProject.instance"/>
+            
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$RunMainProject.instance/org-netbeans-modules-project-ui-PlaceHolderAction$DebugMainProject.instance" boolvalue="true" />                
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugMainProject.instance"/>
+           
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugMainProject.instance/org-netbeans-modules-project-ui-SetMainProjectAction.instance" boolvalue="true" />                             
+            <file name="org-netbeans-modules-project-ui-SetMainProjectAction.instance"/>            
+            
+            <attr name="org-netbeans-modules-project-ui-SetMainProjectAction.instance/SeparatorMainProject.instance" boolvalue="true" />                                                    
+            <file name="SeparatorMainProject.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+
+            <attr name="SeparatorMainProject.instance/org-netbeans-modules-project-ui-PlaceHolderAction$TestProject.instance" boolvalue="true" />                
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$TestProject.instance"/>
+
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$TestProject.instance/SeparatorTest.instance" boolvalue="true" />                                                    
+            <file name="SeparatorTest.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+
+            <attr name="SeparatorTest.instance/org-netbeans-modules-project-ui-PlaceHolderAction$RunSingle.instance" boolvalue="true" />                
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$RunSingle.instance"/>
+            
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$RunSingle.instance/org-netbeans-modules-project-ui-PlaceHolderAction$TestSingle.instance" boolvalue="true" />                
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$TestSingle.instance"/>
+                        
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$TestSingle.instance/org-netbeans-modules-project-ui-PlaceHolderAction$DebugTestSingle.instance" boolvalue="true" />                
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugTestSingle.instance"/>
+                                                                    
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugTestSingle.instance/SeparatorRun.instance" boolvalue="true" />
+            <file name="SeparatorRun.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            
+            <attr name="SeparatorRun.instance/org-netbeans-modules-debugger-support-actions-ConnectAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance" />                                                
+
+            <attr name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance/SeparatorConnect.instance" boolvalue="true" />
+            <file name="SeparatorConnect.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            
+            <attr name="SeparatorConnect.instance/org-netbeans-modules-debugger-support-actions-FinishAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-FinishAction.instance/Separator1.instance" boolvalue="true" />
+            <file name="Separator1.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+	    
+            <attr name="Separator1.instance/org-netbeans-modules-debugger-support-actions-PauseAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-PauseAction.instance" />
+            <attr name="org-netbeans-modules-debugger-support-actions-PauseAction.instance/org-netbeans-modules-debugger-support-actions-ContinueAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance/Separator2.instance" boolvalue="true" />
+            <file name="Separator2.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+
+            <attr name="Separator2.instance/org-netbeans-modules-debugger-support-actions-StepOverAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance/org-netbeans-modules-debugger-support-actions-StepIntoAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance/org-netbeans-modules-debugger-support-actions-StepOutAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance/org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance/Separator3.instance" boolvalue="true" />
+            <file name="Separator3.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+    
+            <attr name="Separator3.instance/org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance"/>
+            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance/Separator4.instance" boolvalue="true" />
+            <file name="Separator4.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            
+            <attr name="Separator4.instance/Stack" boolvalue="true" />
+            <folder name="Stack">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/actions/Folder.gif" />
+                
+                <file name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance"/>
+                <attr name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance/org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance"/>
+                <attr name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance/Separator5.instance" boolvalue="true" />
+                <file name="Separator5.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                </file>
+                
+                <attr name="Separator5.instance/org-netbeans-modules-debugger-support-actions-PopTopmostFrameAction.instance" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-support-actions-PopTopmostFrameAction.instance"/>
+            </folder>
+            <attr name="Stack/Separator6.instance" boolvalue="true" />
+                
+            <file name="Separator6.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            
+            <attr name="Separator6.instance/org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
+            <attr name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddWatchAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-AddWatchAction.instance"/>
+            
+        </folder>
+        
+        <attr name="RunProject/Versioning" boolvalue="true" />
+        
+        <folder name="Window"> <!-- Add project tab into the Window menu -->
+            
+            <file name="org-netbeans-modules-project-ui-logical-tab-action.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
+            </file>
+        
+            <attr name="org-netbeans-modules-project-ui-logical-tab-action.shadow/org-netbeans-modules-project-ui-physical-tab-action.shadow" boolvalue="true" />
+
+            <file name="org-netbeans-modules-project-ui-physical-tab-action.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
+            </file>
+        
+            <attr name="org-netbeans-modules-project-ui-physical-tab-action.shadow/ViewFilesystemsTabAction.shadow" boolvalue="true"/>
+            
+        </folder>
+        
+    </folder>    
+
+    
+    <!-- Hacking toolbars -->    
+    <folder name="Toolbars">
+    
+        <folder name="Build">            
+            <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$BuildMainProject.instance"/>
+            </file>
+        
+            <attr name="org-netbeans-modules-project-ui-BuildMainProject.shadow/org-netbeans-modules-project-ui-RebuildMainProject.shadow" boolvalue="true"/>
+            
+            <file name="org-netbeans-modules-project-ui-RebuildMainProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$RebuildMainProject.instance"/>
+            </file>
+            
+            <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/org-netbeans-core-output-NextOutJumpAction.instance" boolvalue="true"/>
+        </folder>
+        
+        <folder name="Debug">
+        
+            <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$RunMainProject.instance"/>
+            </file>
+            
+            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-DebugMainProject.shadow" boolvalue="true"/>
+                            
+            <file name="org-netbeans-modules-project-ui-DebugMainProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$DebugMainProject.instance"/>
+            </file>
+
+            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-project-ui-FinishSessions.shadow" boolvalue="true"/>
+                        
+            <file name="org-netbeans-modules-project-ui-FinishSessions.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
+            </file>
+            
+            <attr name="org-netbeans-modules-project-ui-FinishSessions.shadow/org-netbeans-modules-project-ui-Continue.shadow" boolvalue="true"/>
+            
+            <file name="org-netbeans-modules-project-ui-Continue.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-support-actions-ContinueAction.instance"/>
+            </file>
+            
+            <attr name="org-netbeans-modules-project-ui-Continue.shadow/org-netbeans-modules-debugger-support-actions-StepIntoAction.instance" boolvalue="true"/>
+                                                 
+        </folder>
+        
+        <folder name="DebugFull">
+            <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$RunMainProject.instance"/>
+            </file>
+            
+            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-DebugMainProject.shadow" boolvalue="true"/>
+                            
+            <file name="org-netbeans-modules-project-ui-DebugMainProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$DebugMainProject.instance"/>
+            </file>
+         
+            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-debugger-support-actions-FinishAction.instance" boolvalue="true"/>
+            
+           
+            <attr name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance/org-netbeans-modules-project-ui-DebugFix.shadow" boolvalue="true"/>
+            
+            <file name="org-netbeans-modules-project-ui-DebugFix.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance"/>
+            </file>
+            
+            <attr name="org-netbeans-modules-project-ui-DebugFix.shadow/org-netbeans-modules-debugger-support-actions-AddWatchAction.instance" boolvalue="true"/>
+        </folder>
+    
+    </folder>
+        
+    <folder name="Mount"> 
+        <!-- XXX Mounts all roots into explorer
+             Replace with masterFS in core/ui and remove hiding in core/ide -->
+<!--        <file name="PrjAllRoots.instance">
+            <attr name="instanceClass" stringvalue="[Lorg.openide.filesystems.FileSystem;" /> 
+            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UIUtils.allRoots" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+        </file>  -->
+        
+        <!-- XXX Hide the sample from userguide
+             Replace the userguide sample with some real project later -->        
+        <file name="org-netbeans-modules-usersguide-sampledir.settings_hidden" url="sampledir.xml"/>
+        
+    </folder>
+
+    <!-- Shortcuts for the new actions -->    
+    
+    <folder name="Shortcuts">
+    
+        <file name="CS-N.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$NewProject.instance"/>
+	</file>
+        
+        <file name="CS-O.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProjectAction.instance"/>
+	</file>
+    
+        <file name="C-7.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
+	</file>
+        
+        <file name="C-2.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
+	</file>
+        
+        <file name="F9.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$CompileSingle.instance"/>
+	</file>
+        
+        
+        <file name="F6.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$RunMainProject.instance"/>
+	</file>
+                
+        <file name="S-F6.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$DebugMainProject.instance"/>
+	</file>
+                       
+        <file name="A-F6.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$TestProject.instance"/>
+	</file> 
+        
+        <file name="C-F6.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$TestSingle.instance"/>
+	</file>
+        
+        <file name="CS-F6.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$DebugTestSingle.instance"/>
+	</file>
+        
+        <file name="F11.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$BuildMainProject.instance"/>
+	</file>
+        
+        <file name="S-F11.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-PlaceHolderAction$RebuildMainProject.instance"/>
+	</file>
+        
+    </folder>
+    
+</filesystem>

@@ -18,24 +18,36 @@
 
 package org.netbeans.modules.junit;
 
-import org.openide.*;
-import org.openide.nodes.*;
+import java.io.IOException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import javax.swing.Action;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
+import org.openide.cookies.SaveCookie;
+import org.openide.cookies.SourceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
+import org.openide.src.ClassElement;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.openide.loaders.*;
-import org.openide.src.*;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem; // override java.io.FileSystem
-import org.openide.cookies.*;
-
-import java.util.*;
-import java.io.*;
-import java.text.MessageFormat;
 
 /** Action sensitive to some cookie that does something useful.
  *
- * @author  vstejskal
+ * @author  vstejskal, David Konecny
  * @version 1.0
  */
 public class CreateTestAction extends CookieAction {
@@ -51,8 +63,6 @@ public class CreateTestAction extends CookieAction {
     
     /* protected members */
     protected Class[] cookieClasses() {
-        //return new Class[] { DataFolder.class, DataObject.class, ClassElement.class };
-        // return new Class[] { DataFolder.class, SourceCookie.Editor.class, ClassElement.class };
         return new Class[] { DataFolder.class, SourceCookie.class, ClassElement.class };
     }
     
@@ -75,7 +85,7 @@ public class CreateTestAction extends CookieAction {
     
     protected void initialize() {
         super.initialize();
-        putProperty(javax.swing.Action.SHORT_DESCRIPTION, NbBundle.getMessage(CreateTestAction.class, "HINT_Action_CreateTest"));
+        putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(CreateTestAction.class, "HINT_Action_CreateTest"));
     }
     
     protected String iconResource() {
@@ -93,30 +103,19 @@ public class CreateTestAction extends CookieAction {
     }
 
     protected void performAction(Node[] nodes) {
-        FileSystem      fsTest = null;
-        DataObject      doTestTempl = null;
-        DataObject      doSuiteTempl = null;
-        String          temp;
-        FileObject      fo;
+        DataObject doTestTempl = null;
+        DataObject doSuiteTempl = null;
         
-        // show configuration dialog - get the test file system and other settings
+        // show configuration dialog
         // when dialog is canceled, escape the action
         if (!JUnitCfgOfCreate.configure())
             return;
         
-        // get the target file system
-        temp = JUnitSettings.getDefault().getFileSystem();
-        if (null == (fsTest = Repository.getDefault().findFileSystem(temp))) {
-            String msg = NbBundle.getMessage(CreateTestAction.class, "MSG_file_system_not_found");
-            NotifyDescriptor descr = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-            org.openide.DialogDisplayer.getDefault().notify(descr);
-            return;
-        }
-        
+        String temp = null;
         try {
             // get the Suite class template
             temp = JUnitSettings.getDefault().getSuiteTemplate();
-            fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
             doSuiteTempl = DataObject.find(fo);
             
             // get the Test class template
@@ -125,122 +124,98 @@ public class CreateTestAction extends CookieAction {
             doTestTempl = DataObject.find(fo);
         }
         catch (DataObjectNotFoundException e) {
-            String msg = NbBundle.getMessage(CreateTestAction.class, "MSG_template_not_found");
-            msg += " (" + temp + ")";
-            NotifyDescriptor descr = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-            org.openide.DialogDisplayer.getDefault().notify(descr);
+            String msg = NbBundle.getMessage(CreateTestAction.class, "MSG_template_not_found", temp);
+            NotifyDescriptor descr = new Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(descr);
             return;
         }
         
         TestCreator.initialize();
         
-        String msg;
         ProgressIndicator progress = new ProgressIndicator();
         progress.show();
         
-        boolean testCreated = false;
-        
-        msg = NbBundle.getMessage(
-                CreateTestAction.class,
-                "MSG_StatusBar_CreateTest_Begin");                      //NOI18N
+        String msg = NbBundle.getMessage(CreateTestAction.class,
+            "MSG_StatusBar_CreateTest_Begin"); //NOI18N
         progress.displayStatusText(msg);
+        
         try {
             // go through all nodes
             for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
-                if (!hasParentAmongNodes(nodes, nodeIdx)) {
-                    if (null != (fo = TestUtil.getFileObjectFromNode(nodes[nodeIdx])))
-                        if (createTest(fsTest, fo, doTestTempl, doSuiteTempl, null, progress)) {
-                            testCreated = true;
-                        }
-                    else {
-                        // @@ log - the node has no file associated
-                        // System.out.println("@@ log - the node has no file associated");
-                    }
+                if (hasParentAmongNodes(nodes, nodeIdx)) {
+                    continue;
                 }
+                FileObject fo = TestUtil.getFileObjectFromNode(nodes[nodeIdx]);
+                if (fo == null) {
+                    TestUtil.notifyUser(NbBundle.getMessage(CreateTestAction.class, "MSG_file_from_node_failed"));
+                    continue;
+                }
+                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (cp == null) {
+                    TestUtil.notifyUser(NbBundle.getMessage(CreateTestAction.class,
+                        "MSG_no_project", fo));
+                    continue;
+                }
+                FileObject packageRoot = cp.findOwnerRoot(fo);
+                String resource = cp.getResourceName(fo, '/', false);
+                
+                URL testRoot = UnitTestForSourceQuery.findUnitTest(packageRoot);
+                if (testRoot == null) {
+                    TestUtil.notifyUser(NbBundle.getMessage(CreateTestAction.class,
+                        "MSG_no_tests_in_project", fo));
+                    continue;
+                }
+                ArrayList cpItems = new ArrayList();
+                cpItems.add(ClassPathSupport.createResource(testRoot));
+                ClassPath testClassPath = ClassPathSupport.createClassPath(cpItems);
+                createTests(testClassPath, fo, doTestTempl, doSuiteTempl, null, progress);
             }
-            msg = NbBundle.getMessage(
-                    CreateTestAction.class,
-                    "MSG_StatusBar_CreateTests_Finished");              //NOI18N
-            progress.displayStatusText(msg);
-        }
-        catch (CreateTestCanceledException e) {
-            // tests creation has been canceled by the user
-            msg = NbBundle.getMessage(
-                    CreateTestAction.class,
-                    "MSG_StatusBar_CreateTests_Cancelled");             //NOI18N
-            progress.displayStatusText(msg);
-        }
-        finally {
+        } finally {
             progress.hide();
         }
-        if (!testCreated) {
-            msg = NbBundle.getMessage(
-                    CreateTestAction.class,
-                    "MSG_No_test_created");                             //NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    msg, NotifyDescriptor.WARNING_MESSAGE));
-        }
     }
     
-    /* private members */
-    private final int NODETYPE_UNKNOWN  = 0;
-    private final int NODETYPE_CLASS    = 1;
-    private final int NODETYPE_PACKAGE  = 2;
-    
-    private class CreateTestCanceledException extends Exception {}
-    
-    private void createSuiteTest(FileSystem fsTest,
-                                 DataFolder folder,
-                                 LinkedList suite,
-                                 DataObject doSuiteT,
-                                 LinkedList parentSuite,
-                                 ProgressIndicator progress)
-    {
-        ClassElement[]      classTargets;
-        DataObject          doTarget;
-        FileObject          fo;
+    private void createSuiteTest(ClassPath testClassPath, DataFolder folder,
+            LinkedList suite, DataObject doSuiteT, LinkedList parentSuite,
+            ProgressIndicator progress) {
         
-        try {
-            fo = folder.getPrimaryFile();
-            // find the suite class, if it exists or create one from active template
-            doTarget = getTestClass(fsTest, TestUtil.getTestSuiteFullName(fo), doSuiteT);
-            // generate the test suite for all listed test classes
-            classTargets = TestUtil.getAllClassElementsFromDataObject(doTarget);
-            
-            for (int i=0; i < classTargets.length; i++) {
-                ClassElement classTarget = classTargets[i];
-                progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
-                
-                TestCreator.createTestSuite(suite, fo.getPackageName('.'), classTarget);
+        // find correct package name
+        FileObject fo = folder.getPrimaryFile();
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        assert cp != null : "SOURCE classpath was not found for "+fo;
+        if (cp == null) {
+            return;
+        }
+        String pkg = cp.getResourceName(fo, '/', false);
+        
+        // find the suite class, if it exists or create one from active template
+        DataObject doTarget = getTestClass(testClassPath, TestUtil.convertPackage2SuiteName(pkg), doSuiteT);
+        // generate the test suite for all listed test classes
+        ClassElement[] classTargets = TestUtil.getAllClassElementsFromDataObject(doTarget);
+
+        for (int i=0; i < classTargets.length; i++) {
+            ClassElement classTarget = classTargets[i];
+            progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
+
+            try {
+                TestCreator.createTestSuite(suite, pkg.replace('/', '.'), classTarget);
                 save(doTarget);
-                
-                // add the suite class to the list of members of the parent
-                if (null != parentSuite) {
-                    parentSuite.add(classTarget.getName().getFullName());
-                }
+            } catch (Exception e) {
+                ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
+                return;
+            }
+
+            // add the suite class to the list of members of the parent
+            if (null != parentSuite) {
+                parentSuite.add(classTarget.getName().getFullName());
             }
         }
-        catch (Exception e) {
-            // @@ log - the suite file creation failure
-            // System.out.println("@@ log - the suite file creation failure");
-        }
     }
     
-    /**
-     * @return  <code>true</code> if at least one test has been created;
-     *          <code>false</code> otherwise
-     * @exception  org.netbeans.modules.junit.CreateTestCanceledException
-     *             if the process of tests creation has been cancelled
-     */
-    private boolean createTest(FileSystem fsTest,
-                            FileObject foSource,
-                            DataObject doTestT,
-                            DataObject doSuiteT,
-                            LinkedList parentSuite,
-                            ProgressIndicator progress)
-        throws CreateTestCanceledException
-    {
-        boolean testCreated = false;
+    private boolean createTests(ClassPath testClassPath, FileObject foSource, 
+            DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite,
+            ProgressIndicator progress) {
+                
         if (foSource.isFolder()) {
             // recurse of subfolders
             FileObject  childs[] = foSource.getChildren();
@@ -248,105 +223,102 @@ public class CreateTestAction extends CookieAction {
             
             progress.setMessage(getScanningMsg(foSource.getName()), false);
             for( int i = 0; i < childs.length; i++) {
-                boolean recurse;
-                
-                if (childs[i].isFolder())
-                    recurse = true;
-                else {
-                    String ext = childs[i].getNameExt().substring(childs[i].getNameExt().lastIndexOf('.') + 1);
-                    recurse = ext.equals("java");
+                if (progress.isCanceled()) {
+                    return false;
                 }
-                
-                if (recurse) {
-                    createTest(fsTest, childs[i], doTestT, doSuiteT, mySuite, progress);
+                if (childs[i].isData() && !("java".equals(childs[i].getExt()))) {
+                    continue;
+                }
+                if (!createTests(testClassPath, childs[i], doTestT, doSuiteT, mySuite, progress)) {
+                    // aborted
+                    return false;
                 }
             }
             
             if ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses())) {
-                createSuiteTest(fsTest, DataFolder.findFolder(foSource), mySuite, doSuiteT, parentSuite, progress);
+                createSuiteTest(testClassPath, DataFolder.findFolder(foSource), mySuite, doSuiteT, parentSuite, progress);
             }
-            if (0 < mySuite.size()) {
-                testCreated = true;
-            }
+        } else {
+            createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress);
         }
-        else {
-            ClassElement[]  classSources;
-            ClassElement    classTarget;
-            DataObject      doTarget;
-            String          name;
-            
-            try {
-                classSources = TestUtil.getAllClassElementsFromDataObject(DataObject.find(foSource));
-                for (int i=0; i < classSources.length; i++) {
-                    ClassElement classSource = classSources[i];
-                    if (null != classSource) {
-                        if (TestCreator.isClassTestable(classSource)) {
-                            // find the test class, if it exists or create one from active template
-                            doTarget = getTestClass(fsTest, TestUtil.getTestClassFullName(classSource), doTestT);
-                            
-                            // generate the test of current node
-                            classTarget = TestUtil.getClassElementFromDataObject(doTarget);
-                            
-                            progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
-                            
-                            TestCreator.createTestClass(classSource, classTarget);
-                            save(doTarget);
-                            
-                            name = classTarget.getName().getFullName();
-                            // add the test class to the parent's suite
-                            if (null != parentSuite) {
-                                parentSuite.add(name);
-                            }
-                            testCreated = true;
-                        }
-                        else
-                            progress.setMessage(getIgnoringMsg(classSource.getName().getFullName()), false);
-                    }
-                    else {
-                        // @@ log - the tested class file can't be parsed
-                        // System.out.println("@@ log - the tested class file can't be parsed.");
-                    }
-                }
-            }
-            catch (Exception e) {
-                // @@ log - the test file creation failure
-                // System.out.println("@@ log - the test file creation failure");
-                e.printStackTrace();
-            }
-        }
-        
-        if (progress.isCanceled())
-            throw new CreateTestCanceledException();
-        return testCreated;
+        return true;
     }
     
-    
-    
-    private DataObject getTestClass(FileSystem fsTest, String testClassName, DataObject doTemplate) throws IOException, DataObjectNotFoundException {
-        FileObject      fo;
-        DataObject      doTarget = null;
-        
-        if (null != (fo = fsTest.findResource(testClassName))) {
-            // target class already exists, get reference
-            doTarget = DataObject.find(fo);
+    private void createSingleTest(ClassPath testClassPath, FileObject foSource,
+            DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite,
+            ProgressIndicator progress) {
+                
+        DataObject dobj;
+        try {
+            dobj = DataObject.find(foSource);
+        } catch (DataObjectNotFoundException ex) {
+            ErrorManager.getDefault().log(ErrorManager.ERROR, ex.toString());
+            return;
         }
-        else {
-            // create target class from the template
-            String  name;
-            File    f = new File(testClassName);
-            
-            name = f.getName();
-            if (null != f.getParent())
-                fo = FileUtil.createFolder(fsTest.getRoot(), f.getParent().replace('\\', '/'));
-            else
-                fo = fsTest.getRoot();
-            
-            // create the name as a correct name of class
-            name = name.substring(0, name.lastIndexOf("."));
-            doTarget = doTemplate.createFromTemplate(DataFolder.findFolder(fo), name);
+
+        ClassElement[] classSources = TestUtil.getAllClassElementsFromDataObject(dobj);
+        for (int i=0; i < classSources.length; i++) {
+            ClassElement classSource = classSources[i];
+            if (classSource == null) {
+                continue;
+            }
+            if (TestCreator.isClassTestable(foSource, classSource)) {
+                // find the test class, if it exists or create one from active template
+                DataObject doTarget = getTestClass(testClassPath, TestUtil.getTestClassFullName(classSource), doTestT);
+
+                // generate the test of current node
+                ClassElement classTarget = TestUtil.getClassElementFromDataObject(doTarget);
+
+                progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
+
+                try {
+                    TestCreator.createTestClass(foSource, classSource, doTarget.getPrimaryFile(), classTarget);
+                    save(doTarget);
+                } catch (Exception e) {
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
+                    return;
+                }
+
+                String name = classTarget.getName().getFullName();
+                // add the test class to the parent's suite
+                if (null != parentSuite) {
+                    parentSuite.add(name);
+                }
+            }
+            else {
+                progress.setMessage(getIgnoringMsg(classSource.getName().getFullName()), false);
+            }
         }
-        
-        return doTarget;
+    }
+    
+    private DataObject getTestClass(ClassPath cp, String testClassName, DataObject doTemplate) {
+        FileObject fo = cp.findResource(testClassName+".java");
+        if (fo != null) {
+            try {
+                return DataObject.find(fo);
+            } catch (DataObjectNotFoundException e) {
+                ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
+                return null;
+            }
+        } else {
+            // test file does not exist yet so create it:
+            assert cp.getRoots().length == 1;
+            FileObject root = cp.getRoots()[0];
+            int index = testClassName.lastIndexOf('/');
+            String pkg = index > -1 ? testClassName.substring(0, index) : "";
+            String clazz = index > -1 ? testClassName.substring(index+1) : testClassName;
+            try {
+                // create package if it does not exist
+                if (pkg.length() > 0) {
+                    root = FileUtil.createFolder(root, pkg);
+                }
+                // instantiate template into the package
+                return doTemplate.createFromTemplate(DataFolder.findFolder(root), clazz);
+            } catch (IOException e) {
+                ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
+                return null;
+            }
+        }
     }
     
     private boolean hasParentAmongNodes(Node[] nodes, int idx) {

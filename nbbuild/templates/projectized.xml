@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="projectized" default="init" basedir=".">
+
+    <!-- XXX supply descriptions for the appropriate targets -->
+
+    <import file="../default.xml"/>
+
+    <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+
+    <target name="init" depends="default.init,basic-init,files-init"/>
+
+    <target name="basic-init" depends="default.init">
+        <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
+        <property file="nbproject/private/private.properties"/>
+        <property file="nbproject/project.properties"/>
+        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" codenamebasedashesproperty="code.name.base.dashes" autoload="${is.autoload}" eager="${is.eager}" modulejardirproperty="module.jar.dir" moduleclasspathproperty="module.classpath"/>
+        <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
+        <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
+        <property name="nbm" value="${code.name.base.dashes}.nbm"/>
+        <property name="build.compiler.debug" value="true"/>
+        <property name="build.compiler.deprecation" value="true"/>
+        <property name="build.sysclasspath" value="ignore"/>
+        <property name="manifest.mf" location="manifest.mf"/>
+        <property name="src.dir" location="src"/>
+        <property name="build.classes.dir" location="build/classes"/>
+        <property name="nbm.domain" value="www"/><!-- XXX is this important to override? -->
+        <path id="cp">
+            <pathelement path="${module.classpath}"/>
+            <pathelement path="${cp.extra}"/>
+        </path>
+    </target>
+
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+        </patternset>
+    </target>
+
+    <target name="test-preinit" depends="init"/>
+    <target name="test-init" depends="init,test-preinit">
+        <property name="test.src.dir" location="test/unit/src"/>
+        <property name="build.test.classes.dir" location="build/test/classes"/>
+        <property name="build.test.results.dir" location="build/test/results"/>
+        <path id="test.cp">
+            <path refid="cp"/>
+            <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+            <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
+            <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
+            <pathelement path="${test.cp.extra}"/>
+        </path>
+        <path id="test.run.cp">
+            <path refid="test.cp"/>
+            <pathelement location="${build.test.classes.dir}"/>
+            <pathelement path="${test.run.cp.extra}"/>
+        </path>
+        <propertyset id="test.properties">
+            <propertyref prefix="junit-sys-prop."/>
+            <mapper type="glob" from="junit-sys-prop.*" to="*"/>
+        </propertyset>
+    </target>
+
+    <target name="compile" depends="init">
+        <mkdir dir="${build.classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" source="1.4" includeantruntime="false">
+            <classpath refid="cp"/>
+        </javac>
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${src.dir}" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+    </target>
+
+    <target name="compile-single" depends="init">
+        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+        <mkdir dir="${build.classes.dir}"/>
+        <!-- XXX consider forcing debug=true and deprecation=true -->
+        <!-- XXX consider deleting the .class file first to force a rebuild -->
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}"
+               debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}"
+               source="1.4" includes="${javac.includes}" includeantruntime="false">
+            <classpath refid="cp"/>
+        </javac>
+    </target>
+
+    <target name="jar-prep" depends="init">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${module.jar.dir}"/>
+        <tstamp>
+            <format property="buildnumber" pattern="yyMMdd" timezone="UTC"/>
+        </tstamp>
+    </target>
+
+    <target name="jar-no-module-deps" unless="module.dependencies">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+            <!-- XXX it seems that using <manifest> forces the JAR to be recreated each time -->
+            <!-- so might have to use e.g. <manifest> task (created in build/ somewhere)? -->
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <!-- XXX make this conditional so can use OIDE-M-B-V instead -->
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+            </manifest>
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
+
+    <target name="jar-with-module-deps" if="module.dependencies">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
+                <!-- XXX make this conditional so can use OIDE-M-B-V instead -->
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+            </manifest>
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
+
+    <!-- XXX need to actually use 4 targets, I guess, depending on whether or not ${ide.dependencies} is defined: -->
+    <target name="jar" depends="init,compile,jar-prep,jar-no-module-deps,jar-with-module-deps"/>
+    
+    <target name="reload" depends="init,jar">
+        <fail unless="netbeans.home">Reloading modules works only inside the NetBeans IDE</fail>
+        <nbinstaller module="${netbeans.dest.dir}/${cluster.dir}/${module.jar.dir}" action="reinstall"/>
+    </target>
+
+    <target name="netbeans" depends="init,jar">
+        <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${module.jar}">
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+                <patternset refid="module.files"/>
+            </fileset>
+        </genlist>
+    </target>
+    
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
+                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 module="${module.jar}"
+                 homepage="http://${nbm.domain}.${homepage.base}/"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}">
+            <license file="${license.file}"/>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
+
+    <target name="javadoc" depends="init">
+        <fail unless="javadoc.name">Must set javadoc.name</fail>
+        <fail unless="javadoc.title">Must set javadoc.title</fail>
+        <!-- This should become an import at some point, perhaps: -->
+        <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
+            <property name="javadoc.base" location="."/>
+            <property name="javadoc.packages" value="${module.javadoc.packages}"/>
+            <property name="javadoc.classpath" refid="cp"/>
+        </ant>
+    </target>
+
+    <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home">
+        <nbbrowse file="javadoc/${javadoc.name}/index.html"/>
+    </target>
+        
+    <target name="test-build" depends="init,test-init,jar">
+        <mkdir dir="${build.test.classes.dir}"/>
+        <javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}"
+               debug="true" deprecation="${build.compile.deprecation}"
+               source="1.4" includeantruntime="false">
+            <classpath refid="test.cp"/>
+        </javac>
+        <copy todir="${build.test.classes.dir}">
+            <fileset dir="${test.src.dir}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="compile-test-single" depends="init,test-init,jar">
+        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+        <mkdir dir="${build.test.classes.dir}"/>
+        <!-- XXX consider forcing deprecation=true -->
+        <!-- XXX consider deleting the .class file first to force a rebuild -->
+        <javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}"
+               debug="true" deprecation="${build.compile.deprecation}"
+               source="1.4" includeantruntime="false" includes="${javac.includes}">
+            <classpath refid="test.cp"/>
+        </javac>
+    </target>
+
+    <target name="test" depends="init,test-init,test-build">
+        <mkdir dir="${build.test.results.dir}"/>
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
+            <batchtest todir="${build.test.results.dir}">
+                <fileset dir="${test.src.dir}">
+                    <!-- XXX could include only out-of-date tests... -->
+                    <include name="**/*Test.java"/>
+                </fileset>
+            </batchtest>
+            <classpath refid="test.run.cp"/>
+            <syspropertyset refid="test.properties"/>
+            <formatter type="brief" usefile="false"/>
+        </junit>
+        <fail if="tests.failed">Some tests failed; see details above.</fail>
+    </target>
+
+    <target name="test-single" depends="init,test-init,test-build">
+        <fail unless="test.includes">Must set test.includes</fail>
+        <mkdir dir="${build.test.results.dir}"/>
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
+            <batchtest todir="${build.test.results.dir}">
+                <fileset dir="${test.src.dir}" includes="${test.includes}"/>
+            </batchtest>
+            <classpath refid="test.run.cp"/>
+            <syspropertyset refid="test.properties"/>
+            <formatter type="brief" usefile="false"/>
+        </junit>
+        <fail if="tests.failed">Some tests failed; see details above.</fail>
+    </target>
+
+    <target name="do-debug-test-single">
+        <fail unless="test.class">Must set test.class</fail>
+        <java fork="true" classname="junit.textui.TestRunner">
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <classpath refid="test.run.cp"/>
+            <syspropertyset refid="test.properties"/>
+            <arg line="${test.class}"/>
+        </java>
+    </target>
+
+    <target name="debug-test-single" depends="init,test-init,test-build,do-debug-test-single"/>
+
+    <target name="debug-test-single-nb" depends="init,test-init,test-build" if="netbeans.home">
+        <fail unless="test.class">Must set test.class</fail>
+        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
+            <classpath refid="test.run.cp"/>
+        </nbjpdastart>
+        <antcall target="do-debug-test-single"/>
+    </target>
+
+    <target name="clean" depends="init">
+        <!-- XXX could probably have clean depend on a lesser init target: -->
+        <!-- no need to define classpath, etc. just for this -->
+        <delete dir="build"/>
+        <delete dir="javadoc"/>
+        <delete>
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+                <patternset refid="module.files"/>
+            </fileset>
+        </delete>
+        <delete file="${netbeans.dest.dir}/${cluster.dir}/update_tracking/${code.name.base.dashes}.xml"/>
+    </target>
+
+</project>

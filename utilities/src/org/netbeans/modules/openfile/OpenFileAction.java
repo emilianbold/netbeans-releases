@@ -7,31 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.openfile;
 
-
 import java.io.File;
-import java.util.Enumeration;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.utilities.Manager;
-import org.openide.DialogDisplayer;
-
-import org.openide.NotifyDescriptor;
-import org.openide.util.actions.CallableSystemAction;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.JarFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.WindowManager;
-
 
 /** 
  * Action which allows user open file from disk. It is installed
@@ -62,43 +51,12 @@ public class OpenFileAction extends CallableSystemAction {
     }
 
     /**
-     * Resolves directory to be set as a current directory for the file chooser.
-     * If the file chooser has already been displayed since the beginning
-     * of the current NetBeans session, the last used current directory
-     * is returned. Otherwise, the root of the first visible valid non-JAR
-     * filesystem, having a non-empty system name, is returned.
-     * <p>
-     * <em>Warning:</em> The returned directory may not exist&nbsp;-
-     * <code>JFileChooser</code> should handle such situations.
-     *
-     * @return  directory to be used as a current directory,
-     *          or <code>null</code> if the resolution failed
-     */
-    private File resolveInitialDirectory() {
-        if (currDir != null) {
-            return currDir;
-        }
-        try {
-            Enumeration enu = Repository.getDefault().getFileSystems();
-            while (enu.hasMoreElements()) {
-                FileSystem fs = (FileSystem) enu.nextElement();
-                if (fs != null && fs.isValid() && fs.isHidden() == false
-                        && fs instanceof JarFileSystem == false
-                        && fs.getSystemName() != null) {
-                    return new File(fs.getSystemName());
-                }
-            }
-        } catch (Exception ex) { }
-        return null;
-    }
-    
-    /**
      * Creates and initializes a file chooser.
      *
      * @return  the initialized file chooser
      */
     protected JFileChooser prepareFileChooser() {
-        JFileChooser chooser = new JFileChooser(resolveInitialDirectory());
+        JFileChooser chooser = new JFileChooser(currDir);
         HelpCtx.setHelpIDString(chooser, getHelpCtx().getHelpID());
         
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -136,20 +94,6 @@ public class OpenFileAction extends CallableSystemAction {
                 throw new UserCancelException();
             }
             files = chooser.getSelectedFiles();
-            if (files.length == 0) {
-                // In jdk.1.2 is in fact not supported multi selection -> bug.
-                // Try to get the first file and open.
-                File selected = chooser.getSelectedFile();
-                
-                if (selected != null) {
-                    files = new File[] {selected};
-                } else {
-                    // Selected file doesn't exist.
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(OpenFileAction.class, "MSG_noFileSelected"),
-                            NotifyDescriptor.WARNING_MESSAGE));
-                }
-            }
         } while (files.length == 0);
         return files;
     }

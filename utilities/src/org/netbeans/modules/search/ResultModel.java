@@ -513,14 +513,7 @@ public class ResultModel implements TaskListener {
 
             FileObject fileFolder = originalDataObject.getPrimaryFile().getParent();
             if(fileFolder != null) {
-                String packageName = fileFolder.getPackageName ('.');
-                String hint;
-                if(packageName.equals("")) // NOI18N
-                    hint = NbBundle.getBundle(ResultModel.class).getString("HINT_result_default_package"); // NOI18N                    
-                else
-                    hint = MessageFormat.format(NbBundle.getBundle(ResultModel.class).getString("HINT_result_package"), // NOI18N
-                         new Object[] { packageName });
-
+                String hint = fileFolder.getPath();
                 disableDelegation(DELEGATE_SET_SHORT_DESCRIPTION |
                                    DELEGATE_GET_SHORT_DESCRIPTION);
                 setShortDescription (hint);

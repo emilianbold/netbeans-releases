@@ -1,10 +1,7 @@
 OpenIDE-Module: org.netbeans.modules.masterfs/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/masterfs/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.26
 OpenIDE-Module-Layer: org/netbeans/modules/masterfs/resources/mf-layer.xml
-OpenIDE-Module-Public-Packages: org.netbeans.api.masterfs.*, org.netbeans.spi.masterfs.*
 
 Name: org/netbeans/modules/masterfs/FolderDataLoader.class
 OpenIDE-Module-Class: Loader

@@ -248,7 +248,7 @@ public final class I18nUtil {
     
     /** Gets resource bundle for i18n module. */
     public static ResourceBundle getBundle() {
-        return NbBundle.getBundle(I18nModule.class);
+        return NbBundle.getBundle(I18nUtil.class);
     }
     
     /** Gets i18n options. */

@@ -1,0 +1,36 @@
+<!--
+    DTD to describe a standard JDK/JRE installation
+-->
+
+<!-- 
+attributes: 
+    name = displayed name of the platform, must be present unless
+     the platform is default.
+    default = yes|<missing>
+-->    
+<!ELEMENT platform (properties|sysproperties)*>
+<!ATTLIST platform 
+    name CDATA #IMPLIED
+    default CDATA #IMPLIED
+>
+
+<!--
+Properties element lists various properties associated with the Platform
+by extension modules.
+-->
+<!ELEMENT properties (property)*>
+
+<!--
+Sysproperties hold a list of system properties as reported by the JDK
+-->
+<!ELEMENT sysproperties (property)*>
+
+<!--
+Definition of one property: it has a name and some optional string data
+-->
+<!ELEMENT property EMPTY>
+<!ATTLIST property
+    name CDATA #REQUIRED
+    value CDATA #IMPLIED
+ >
+ 

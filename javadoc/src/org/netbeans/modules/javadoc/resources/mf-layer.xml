@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -27,13 +27,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-objectbrowser-ShowBrowserAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
             <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/Separator2.instance" boolvalue="true"/>
         </folder>
-        <folder name="Tools">
-            <file name="org-netbeans-modules-javadoc-ManageDocAction.instance" />            
-            <attr name="org-netbeans-modules-javadoc-ManageDocAction.instance/org-netbeans-modules-autoupdate-UpdateAction" boolvalue="true" /> 
-        </folder>
   </folder>  <!-- Main menu -->
-
-
 
   <!-- Register actions in actions pool -->
   <folder name="Actions">
@@ -43,9 +37,6 @@ Microsystems, Inc. All Rights Reserved.
       </file>
     </folder>
     <folder name="Build">
-      <file name="Generate Javadoc Action.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.GenerateDocAction"/>
-      </file>
       <file name="Show Doc Action.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.ShowDocAction"/>
       </file>
@@ -67,38 +58,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.SearchDocAction"/>
       </file>
   </folder> 
-
-  <folder name="xml">
-    <folder name="entities">
-        <folder name="NetBeans_IDE">
-            <!-- public ID defined by LibraryProcessor -->
-            <file name="DTD_JavadocLibrary" url="nbresloc:/org/netbeans/modules/javadoc/search/environment/library.dtd"/>
-        </folder>    
-    </folder>
-
-    <folder name="lookups">
-        <folder name="NetBeans_IDE">
-            <!-- public ID defined by LibraryProcessor -->
-            <file name="DTD_JavadocLibrary.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.environment.JavadocProcessor" />
-            </file>
-        </folder>    
-    </folder>
-  </folder>
-
-  <!-- pseudolibraries, naked javadoc resource -->
-  <folder name="Mount">
-    <folder name="Javadoc">
-      <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.FileSystem.docroots"/>
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/showjavadoc.gif"/>
-      <file name="org-netbeans-modules-javadoc-default.xml" url="javadoc-default.xml">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/generatejavadoc.gif"/>
-      </file>
-    </folder>
-  </folder>
-
+   
   <folder name="NodeFactories">
     <folder name="java">
 		  <folder name="explorer">
@@ -125,31 +85,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="instanceOf" stringvalue="org.openide.filesystems.URLMapper"/>
         </file>
 
-        <folder name="JavadocType">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.JavaDocType"/>
-            <file name="org-netbeans-modules-javadoc-settings-ExternalJavadocSettingsService.settings" url="javadoc_external_executor.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-                <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            </file>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        </folder>  
-
-        <folder name="StdDocletType">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
-            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.StdDocletType"/>
-
-            <file name="org-netbeans-modules-javadoc-settings-StdDocletSettingsService.settings" url="javadoc_doclets.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
-                <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            </file>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        </folder>
-
         <folder name="JavadocSearchType">
             <attr name="hidden" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
@@ -168,19 +103,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </folder>  
-
-        <folder name="ExternalJavadocProcess">
-            <attr name="hidden" boolvalue="true"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-
-            <file name="javadoc_external_process.settings" url="javadoc_external_process.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-                <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            </file>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-         </folder>   
     </folder>
 
     <folder name="UI">
@@ -192,12 +114,6 @@ Microsystems, Inc. All Rights Reserved.
 	        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-javadoc-settings-DocumentationSettings.settings"/>
             </file>
 
-            <file name="JavadocType.shadow">
-	        <attr name="originalFile" stringvalue="Services/JavadocType"/>
-            </file>
-            <file name="StdDocletType.shadow">
-	      <attr name="originalFile" stringvalue="Services/StdDocletType"/>
-            </file>
             <file name="JavadocSearchTypes.shadow">
 	      <attr name="originalFile" stringvalue="Services/JavadocSearchType"/>
             </file>
@@ -209,30 +125,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <folder name="Templates">
       <folder name="Services">
-
-          <folder name="JavadocType">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.JavaDocType"/>
-
-            <file name="org-netbeans-modules-javadoc-settings-ExternalJavadocSettingsService.settings" url="javadoc_external_executor.settings">
-              <attr name="template" boolvalue="true"/>
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-              <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-            </file>    
-          </folder>  
-
-          <folder name="StdDocletType">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
-            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.StdDocletType"/>
-
-            <file name="org-netbeans-modules-javadoc-settings-StdDocletSettingsService.settings" url="javadoc_doclets.settings">
-              <attr name="template" boolvalue="true"/>
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-              <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
-            </file>
-          </folder>  
 
           <folder name="JavadocSearchType">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
@@ -251,16 +143,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
           </folder>  
 
-          <folder name="ExternalJavadocProcess">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-
-            <file name="javadoc_external_process.settings" url="javadoc_external_process.settings">
-              <attr name="template" boolvalue="true"/>
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
-              <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-            </file>    
-          </folder>
       </folder>
    </folder>
 

@@ -16,6 +16,7 @@ package org.netbeans.modules.javadoc.search;
 import java.net.URL;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
@@ -40,13 +41,15 @@ public final class SrcFinder extends Object {
 
     static Element findSource( String aPackage, URL url  ) {
 
+        aPackage = aPackage.replace( '.', '/' ); // NOI18N
         String thePackage = null;
-        String member = url.getRef();
-        String clazz = url.getFile().replace( '/', '.' );
+        String member = url.getRef(); 
+        String clazz = url.getFile();
         String filename = null;
         Type[] params;
 
         int pIndex;
+        
         if ( ( pIndex = clazz.toLowerCase().indexOf( aPackage.trim().toLowerCase() ) ) != -1 ) {
             thePackage = clazz.substring(pIndex, pIndex + aPackage.trim().length()  - 1 );
             clazz = clazz.substring( pIndex + aPackage.trim().length(), clazz.length() - 5 );
@@ -59,19 +62,21 @@ public final class SrcFinder extends Object {
                 filename = clazz;
 
         }
+        
+//        System.out.println("================================");
+//        System.out.println("URL     :" + url   );
+//        System.out.println("aPCKG   :" + aPackage );
+//        System.out.println("--------------------------------");
+//        System.out.println("MEMBER  :" + member ); // NOI18N
+//        System.out.println("CLASS   :" + clazz ); // NOI18N
+//        System.out.println("PACKAGE :" + thePackage ); // NOI18N
+//        System.out.println("FILENAME:" + filename ); // NOI18N
 
-
-        // System.out.println("MEMBER  :" + member ); // NOI18N
-        // System.out.println("CLASS   :" + clazz ); // NOI18N
-        // System.out.println("PACKAGE :" + thePackage ); // NOI18N
-        // System.out.println("FILENAME:" + filename ); // NOI18N
-
-        Repository repository = Repository.getDefault();
-
-        FileObject fo = repository.find( thePackage, filename, "java" ); // NOI18N
-
+        String resourceName = thePackage + "/" + filename + ".java"; // NOI18N       
+        FileObject fo = GlobalPathRegistry.getDefault().findResource( resourceName );
+        
         if ( fo != null ) {
-            try {
+            try {        
                 DataObject dobj = DataObject.find( fo );
 
                 SourceCookie sc = (SourceCookie)dobj.getCookie( SourceCookie.class );
