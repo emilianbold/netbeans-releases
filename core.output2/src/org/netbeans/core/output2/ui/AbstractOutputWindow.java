@@ -143,6 +143,10 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         }
         if (c instanceof AbstractOutputTab && c.getParent() == null) {
             removed ((AbstractOutputTab) c);
+        } 
+        if (getComponentCount() == 1 && getComponent(0) instanceof AbstractOutputTab) {
+            updateSingletonName((AbstractOutputTab) getComponent(0), 
+                getComponent(0).getName());
         }        
         revalidate();
     }
