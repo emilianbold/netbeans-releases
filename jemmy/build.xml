@@ -17,9 +17,9 @@
   <property name="testtimeouts" value="testsuite/jemmy.timeouts"/>
   <property name="testresultdir" value="testsuite/run"/>
   <property name="testrundir" value="run"/>
-  <property name="queue" value="on"/>
   <property name="robot" value="off"/>
   <property name="shortcut" value="off"/>
+  <property name="dispatch" value="off"/>
 
   <target name="compile">
     <tstamp>
@@ -92,7 +92,7 @@
            rundir="${testrundir}" 
            robotdispatching="${robot}"
            shortcutevents="${shortcut}"
-           usequeue="${queue}"/>
+           dispatchevents="${dispatch}"/>
   </target>
 
   <target name="compiletest" depends="compile">
