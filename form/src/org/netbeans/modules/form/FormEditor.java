@@ -451,6 +451,8 @@ final public class FormEditor extends Object {
     public void focusForm (FormManager2 formManager) {
       //System.out.println("Focus Form: "+formManager);
       this.formManager = formManager;
+      designModeAction.setFormManager (formManager);
+      testModeAction.setFormManager (formManager);
       if (formManager == null) {
         getExplorerManager ().setRootContext (emptyInspectorNode);
       } else {
@@ -604,6 +606,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  16   Gandalf   1.15        5/31/99  Ian Formanek    Design/Test Mode
  *  15   Gandalf   1.14        5/24/99  Ian Formanek    
  *  14   Gandalf   1.13        5/20/99  Ian Formanek    FormNodeCookie->RADComponentCookie
  *       
