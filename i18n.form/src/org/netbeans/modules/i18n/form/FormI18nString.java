@@ -34,6 +34,8 @@ import org.netbeans.modules.properties.UtilConvert;
  */
 public class FormI18nString extends JavaI18nString implements FormDesignValue {
 
+    String bundleName;
+
     /** Creates new <code>FormI18nString</code>. */
     public FormI18nString(I18nSupport i18nSupport) {
         super(i18nSupport);

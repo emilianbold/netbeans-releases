@@ -242,8 +242,9 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
             node = namedNodes.getNamedItem(ATTR_KEY);
             String key = (node == null) ? null : node.getNodeValue();
 
-            // Set the resource bundle property.
+            // Set the resource bundle.
             if(bundleName != null) {
+                DataObject resourceDO = null;
                 FileObject sourceFo = sourceDataObject.getPrimaryFile();
                 if ( sourceFo != null ) {
                     ClassPath sourcePath = ClassPath.getClassPath( sourceFo, ClassPath.SOURCE );
@@ -251,14 +252,16 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
                     
                     if(fileObject != null) {
                         try {
-                            DataObject dataObject = DataObject.find(fileObject);
-                            if( dataObject.getClass().equals(formI18nString.getSupport().getResourceHolder().getResourceClasses()[0])) // PENDING
-                                formI18nString.getSupport().getResourceHolder().setResource(dataObject);
+                            resourceDO = DataObject.find(fileObject);
+                            if( resourceDO.getClass().equals(formI18nString.getSupport().getResourceHolder().getResourceClasses()[0])) // PENDING
+                                formI18nString.getSupport().getResourceHolder().setResource(resourceDO);
                         } 
                         catch (IOException e) {
                         }
                     }
                 }
+                if (resourceDO == null)
+                    formI18nString.bundleName = bundleName;
             }
 
             // Set the key property.
@@ -380,11 +383,19 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
     public Node storeToXML(Document doc) {
         Element element = doc.createElement (XML_RESOURCESTRING);
 
-        FileObject fo = formI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile();
-        ClassPath cp = ClassPath.getClassPath( fo, ClassPath.SOURCE );
-        
-        String bundleName = (formI18nString.getSupport().getResourceHolder().getResource() == null) ? "" : // NOI18N
-            cp.getResourceName( fo, '/', true ); // NOI18N
+        DataObject resourceDO = formI18nString.getSupport().getResourceHolder().getResource();
+        String bundleName = null;
+        if (resourceDO == null) {
+            bundleName = formI18nString.bundleName; // remembered from reading time
+        }
+        else {
+            FileObject fo = resourceDO.getPrimaryFile();
+            ClassPath cp = ClassPath.getClassPath( fo, ClassPath.SOURCE );
+            if (cp != null)
+                bundleName = cp.getResourceName( fo, '/', true ); // NOI18N
+        }
+        if (bundleName == null)
+            bundleName = ""; // NOI18N
             
         // Set bundle and key property.    
         element.setAttribute(ATTR_BUNDLE, bundleName);
