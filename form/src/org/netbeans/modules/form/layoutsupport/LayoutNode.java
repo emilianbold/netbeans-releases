@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form.layoutsupport;
 
 import java.awt.*;
@@ -79,10 +78,10 @@ public class LayoutNode extends AbstractNode implements FormLayoutCookie
         if (customizerClass == null)
             return null;
 
-        RADVisualContainer container = layoutSupport.getContainer();
-        FormDesigner designer = container.getFormModel().getFormDesigner();
-        if (!designer.isInDesignedTree(container))
-            designer.setTopDesignContainer(container);
+//        RADVisualContainer container = layoutSupport.getContainer();
+//        FormDesigner designer = container.getFormModel().getFormDesigner();
+//        if (!designer.isInDesignedTree(container))
+//            designer.setTopDesignContainer(container);
 
         Object customizer;
         try {
