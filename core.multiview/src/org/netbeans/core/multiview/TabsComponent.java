@@ -1,7 +1,14 @@
 /*
- * TabsComponent.java
- *
- * Created on March 23, 2004, 10:58 AM
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.multiview;
@@ -56,15 +63,6 @@ class TabsComponent extends JPanel {
         setLayout(new BorderLayout());
         add(bar, BorderLayout.NORTH);
         startToggling();
-//        setFocusCycleRoot(true);
-//        setFocusTraversalKeysEnabled(true);
-//        Set leftKeys = new HashSet();
-//        leftKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0));
- //       Set rightKeys = new HashSet();
-//        rightKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
-//        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, rightKeys);
-//        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, leftKeys);
-//        setFocusTraversalPolicy(new TabsFocusTraversalPolicy());
     }
     
     
@@ -283,11 +281,11 @@ class TabsComponent extends JPanel {
     
   
     void startToggling() {
-        ActionMap map = getActionMap();
+        ActionMap map = bar.getActionMap();
         Action act = new TogglesGoEastAction();
         // JToolbar action name
         map.put("navigateRight", act);
-        InputMap input = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        InputMap input = bar.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         
         act = new TogglesGoWestAction();
         // JToolbar action name
@@ -345,10 +343,6 @@ class TabsComponent extends JPanel {
             model.getActiveElement().getVisualRepresentation().requestFocusInWindow();
         }
     }
-    
-    
-    
-    
     
     
 /**
@@ -781,76 +775,5 @@ class TabsComponent extends JPanel {
             }
         }
     }        
-    
-//    private class TabsFocusTraversalPolicy extends FocusTraversalPolicy {
-//        private final int DIR_ASC = 1;
-//        private final int DIR_DES = -1;
-//        
-//        private Component getComponent(int direction, int startIndex, Container focusCycleRoot) {
-//            int count = TabsComponent.this.getComponentCount();
-//            if (count == 0) {
-//                System.out.println("count is zero...");
-//                return null;
-//            }
-//            int index = startIndex + direction;
-//            System.out.println("startindex=" + index);
-//            System.out.println("count=" + count);
-//            while (true) {
-//                if (index < 0) {
-//                    index = count - 1;
-//                } else if (index >= count) {
-//                    index = 0;
-//                }
-//                Component comp = TabsComponent.this.getComponentAtIndex(index);
-////                System.out.println("component atindex=" + index + " is " + comp);
-//                if (comp instanceof JToggleButton) {
-//                    return comp;
-//                }
-//                index = index + direction;
-//            }
-//            
-//        }
-//        
-//        public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
-////            System.out.println("getafter" + aComponent);
-//            if (aComponent == TabsComponent.this) {
-//                return getFirstComponent(focusCycleRoot);
-//            }
-//            int index = TabsComponent.this.getComponentIndex(aComponent);
-//            Component comp = getComponent(DIR_ASC, index, focusCycleRoot);
-//            System.out.println("getafter compo=" + comp);
-//            return comp;
-//        }
-//        
-//        public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
-////            System.out.println("getbefore" + aComponent);
-//            if (aComponent == TabsComponent.this) {
-//                return getFirstComponent(focusCycleRoot);
-//            }
-//            int index = TabsComponent.this.getComponentIndex(aComponent);
-//            Component comp = getComponent(DIR_DES, index, focusCycleRoot);
-//            System.out.println("getbefore compo=" + comp);
-//            return comp;
-//        }
-//        
-//        
-//        
-//        public Component getFirstComponent(Container focusCycleRoot) {
-//            System.out.println("getfirst compo");
-//            return getComponent(DIR_ASC, -1, focusCycleRoot);
-//        }
-//        
-//        public Component getLastComponent(Container focusCycleRoot) {
-//            System.out.println("getlast compo");
-//            return getComponent(DIR_DES, TabsComponent.this.getComponentCount(), focusCycleRoot);
-//        }
-//        
-//        public Component getDefaultComponent(Container focusCycleRoot) {
-//            Component comp = getComponent(DIR_ASC, -1, focusCycleRoot);
-//            System.out.println("getdefault compo=" + comp);
-//            return comp;
-//        }
-//        
-//    }
     
 }
