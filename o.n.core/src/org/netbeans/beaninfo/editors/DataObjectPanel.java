@@ -95,32 +95,34 @@ public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEdi
             add(l, gbc);
         }
         
-        if (dataFilter != null) {
-            if (folderFilter != null) {
-                DataFilter dFilter = new DataFilter() {
-                    public boolean acceptDataObject(DataObject obj) {
-                        if (folderFilter.acceptDataObject(obj)) {
-                            return true;
+        if (rootNode == null) {
+            if (dataFilter != null) {
+                if (folderFilter != null) {
+                    DataFilter dFilter = new DataFilter() {
+                        public boolean acceptDataObject(DataObject obj) {
+                            if (folderFilter.acceptDataObject(obj)) {
+                                return true;
+                            }
+                            return dataFilter.acceptDataObject(obj);
                         }
-                        return dataFilter.acceptDataObject(obj);
-                    }
-                };
-                rootNode = TopManager.getDefault().getPlaces().
-                nodes().repository(dFilter);
+                    };
+                    rootNode = TopManager.getDefault().getPlaces().
+                    nodes().repository(dFilter);
+                } else {
+                    rootNode = TopManager.getDefault().getPlaces().
+                    nodes().repository(dataFilter);
+                }
             } else {
-                rootNode = TopManager.getDefault().getPlaces().
-                nodes().repository(dataFilter);
-            }
-        } else {
-            if (folderFilter != null) {
-                rootNode = TopManager.getDefault().getPlaces().
-                nodes().repository(folderFilter);
-            } else {
-                rootNode = TopManager.getDefault().getPlaces().
-                nodes().repository();
+                if (folderFilter != null) {
+                    rootNode = TopManager.getDefault().getPlaces().
+                    nodes().repository(folderFilter);
+                } else {
+                    rootNode = TopManager.getDefault().getPlaces().
+                    nodes().repository();
+                }
             }
         }
-        
+
         if (nodeFilter != null) {
             FilteredChildren children = 
                 new FilteredChildren(rootNode, nodeFilter, dataFilter);
@@ -264,7 +266,11 @@ public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEdi
     public void setRootObject(DataObject obj) {
         rootObject = obj;
     }
-    
+
+    public void setRootNode(Node n) {
+        rootNode = n;
+    }
+
     /**
      * This filter can be used to filter folders.
      * It is applied before the data filter.

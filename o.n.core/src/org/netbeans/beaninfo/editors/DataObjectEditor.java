@@ -37,6 +37,8 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     /** Name of the custom property that can be passed in PropertyEnv. */
     private static final String PROPERTY_ROOT_FOLDER = "rootFolder"; // NOI18N
     /** Name of the custom property that can be passed in PropertyEnv. */
+    private static final String PROPERTY_ROOT_NODE = "rootNode"; // NOI18N
+    /** Name of the custom property that can be passed in PropertyEnv. */
     private static final String PROPERTY_COOKIES = "cookies"; // NOI18N
     /** Name of the custom property that can be passed in PropertyEnv. */
     private static final String PROPERTY_DATA_FILTER = "dataFilter"; // NOI18N
@@ -56,6 +58,8 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
    
     /** A property stored between calls to atachEnv and getCustomEditor() */
     private DataFolder rootFolder;
+    /** A property stored between calls to atachEnv and getCustomEditor() */
+    private Node rootNode;
     /** A property stored between calls to atachEnv and getCustomEditor() */
     private DataFolder currentFolder;
     /** A property stored between calls to atachEnv and getCustomEditor() */
@@ -87,6 +91,10 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         newObj = env.getFeatureDescriptor().getValue(PROPERTY_ROOT_FOLDER);
         if (newObj instanceof DataFolder) {
             rootFolder = (DataFolder)newObj;
+        }
+        newObj = env.getFeatureDescriptor().getValue(PROPERTY_ROOT_NODE);
+        if (newObj instanceof Node) {
+            rootNode = (Node)newObj;
         }
         newObj = env.getFeatureDescriptor().getValue(PROPERTY_COOKIES);
         if (newObj instanceof Class[]) {
@@ -164,6 +172,9 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         }
         if (rootFolder != null) {
             customEditor.setRootObject(rootFolder);
+        }
+        if (rootNode != null) {
+            customEditor.setRootNode(rootNode);
         }
         customEditor.setInsetValue(insets);
         return customEditor;
