@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.0
+Created-By: Jayme C. Edwards
+OpenIDE-Module-Install: org/apache/tools/ant/module/AntModuleInstall
+ .class
+OpenIDE-Module-Description: org.apache.tools.ant.module.docs.HelpSet
+OpenIDE-Module: org.apache.tools.ant.module
+OpenIDE-Module-Implementation-Version: 96
+OpenIDE-Module-Name: Ant
+
+Name: org/apache/tools/ant/module/AntProjectDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.openide.loaders.XMLDataObject, org.openide.
+ developer.modules.loaders.xml.XML.DataLoader

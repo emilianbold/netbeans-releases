@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<!--@(#)build.xml-->
+<!--Ant project for the Ant Module for Sun's Forte For Java IDE-->
+<!--@author Jayme Edwards-->
+
+<project name="Ant Module" default="all" basedir=".">
+  <target name="setProps">
+    <property name="build.compiler" value="classic"/>
+    <property name="dist.classes" value="classes"/>
+    <property name="module.package" value="org${file.separator}apache${file.separator}tools${file.separator}ant${file.separator}module"/>
+    <property name="module.classes" value="${dist.classes}${file.separator}${module.package}"/>
+    <property name="module.javahelp" value="javahelp${file.separator}${module.package}${file.separator}docs"/>
+    <property name="module.templates" value="tojar${file.separator}${module.package}"/>
+    <property name="module.jar" value="tojar${file.separator}${module.package}${file.separator}templates.jar"/>
+    <property name="module.libs" value=".${file.separator}release${file.separator}lib"/>
+    <property name="module.ext" value="${module.libs}${file.separator}ext"/>
+    <property name="module.src" value="src"/>
+    <property name="build.classpath" value="${module.src};${module.ext}${file.separator}ant.jar;${module.ext}${file.separator}xml.jar;${module.ext}${file.separator}xerces.jar;${module.ext}${file.separator}xalan.jar;${module.ext}${file.separator}openide.jar"/>
+  </target>
+  <target name="clean" depends="setProps">
+    <deltree dir="${dist.classes}"/>
+  </target>
+  <target name="postClean" depends="setProps">
+    <deltree dir="${dist.classes}"/>
+  </target>
+  <target name="prepare" depends="setProps">
+    <mkdir dir="${dist.classes}"/>
+  </target>
+  <target name="build" depends="setProps">
+    <echo message="compiling with classpath: ${build.classpath}"/>
+    <javac srcdir="${module.src}" destdir="${dist.classes}" classpath="${build.classpath}"/>
+  </target>
+  <target name="packTemplates" depends="setProps">
+    <jar jarfile="${module.classes}${file.separator}templates.jar" basedir="${module.jar}" includes="Ant/**"/>
+  </target>
+  <target name="packModule" depends="setProps">
+    <copydir src="${module.javahelp}" dest="${module.classes}${file.separator}docs"/>
+    <jar jarfile="${module.libs}${file.separator}antmodule.jar" basedir="${dist.classes}" manifest="manifest.mf" includes="${module.package}${file.separator}**" excludes="**/*.jar.MAKEME"/>
+  </target>
+  <target name="all" depends="clean,prepare,build,packTemplates,packModule,postClean"/>
+</project>
