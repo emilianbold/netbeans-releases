@@ -499,7 +499,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              packages="org.openide.modules"/>
       <group title="TopManager, ServiceType, WizardDescriptor, ..."
              packages="org.openide"/>
-      <group title="&lt;a href=&quot;@TOP@org/openide/doc-files/services-api.html&quot;&gt;Services API&lt;/a&gt;"
+      <group title="&lt;a href=&quot;@TOP@org/openide/doc-files/services-api.html&quot;&gt;Services and Lookup APIs&lt;/a&gt;"
              packages="org.openide.util.lookup"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/filesystems/doc-files/api.html&quot;&gt;FileSystems API&lt;/a&gt;"
              packages="org.openide.filesystems"/>
