@@ -749,6 +749,8 @@ public class Controller { //XXX public only for debug access to logging code
         if (l != null) {
             ControllerOutputEvent oe = new ControllerOutputEvent (tab.getIO(), line);
             l.outputLineAction(oe);
+            //Select the text on click
+            tab.getOutputPane().sendCaretToLine(line, true);
         }
     }
 
@@ -970,56 +972,12 @@ public class Controller { //XXX public only for debug access to logging code
             int line = comp.getFirstNavigableListenerLine();
             if (Controller.log) Controller.log ("NAV TO FIRST LISTENER LINE: " + line);
             if (line > 0) {
-                TimedNavigator nav = new TimedNavigator(comp, line);
-                if (out.isClosed()) {
-                    nav.actionPerformed(null);
-                } else {
-                    Timer t = new Timer (400, nav);
-                    t.setRepeats(false);
-                    t.start();
-                }
-                return true;
+                comp.getOutputPane().sendCaretToLine (line, false);
             }
         }
         return false;
     }
     
-    /**
-     * When automatically navigating to a line, we actually want to go
-     * a line or two below it; however, if we run as soon as the line is
-     * written, there won't *be* a line or two below it yet.  So we run
-     * it on a timer instead, to give the process a chance to write a little
-     * more output before we move the caret.
-     */
-    private class TimedNavigator implements ActionListener {
-        private OutputTab comp;
-        private int line;
-        public TimedNavigator (OutputTab comp, int line) {
-            this.comp = comp;
-            this.line = line;
-        }
-        public void actionPerformed (ActionEvent ae) {        
-            OutWriter out = comp.getIO().out();
-            if (out == null) return;
-            if (log)
-                log("Sending caret to first error line: " + line);
-            //Go to the line above the first error, so we don't trigger
-            //automatically selecting it in the editor (good idea? bad?)
-            ignoreCaretChanges = true;
-            try {
-                //Try to nav to a line one or two below the error line
-                int sendTo = line + 2;
-                while (line >= out.lineCount()) line--;
-                comp.getOutputPane().sendCaretToLine(sendTo, false);
-                //To ensure next error works correctly from editor, now move
-                //it above
-                comp.getOutputPane().sendCaretToLine(line - 1, false);
-            } finally {
-                ignoreCaretChanges = false;
-            }
-        }
-    }
-
     /**
      * Flag used to block navigating the editor to the first error line when
      * selecting the error line in the output window after a build (or maybe
@@ -1237,7 +1195,7 @@ public class Controller { //XXX public only for debug access to logging code
     public static boolean verbose = Boolean.getBoolean("nb.output.log.verbose");
     static final boolean logStdOut = Boolean.getBoolean("nb.output.log.stdout"); //NOI18N
     public static void log (String s) {
-        s = Long.toString(System.currentTimeMillis()) + ":" + s;
+        s = Long.toString(System.currentTimeMillis()) + ":" + s + "(" + Thread.currentThread() + ")  ";
         if (logStdOut) {
             System.out.println(s);
             return;

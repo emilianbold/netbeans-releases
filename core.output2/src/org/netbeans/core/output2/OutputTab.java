@@ -35,14 +35,10 @@ final class OutputTab extends AbstractOutputTab {
     
     public void addNotify() {
         super.addNotify();
-        if (Controller.log) Controller.log ("TAB ADDNOTIFY: " + this);
-        if (Controller.log) Controller.logStack();
     }
     
     public void removeNotify() {
         super.removeNotify();
-        if (Controller.log) Controller.log ("TAB REMOVE NOTIFY: " + this);
-        if (Controller.log) Controller.logStack();
     }
 
     public void setDocument (Document doc) {

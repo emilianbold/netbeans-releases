@@ -56,7 +56,7 @@ class PairMap {
     }
     
     public synchronized boolean isEmpty() {
-        return size() > 0;
+        return size() == 0;
     }
     
     public synchronized void setWeak(boolean val) {

@@ -188,16 +188,22 @@ class FileMapStorage implements Storage {
         int position = size();
         int byteCount = bb.position();
         bb.flip();
-        writeChannel().write (bb);
-        writeChannel().write(ByteBuffer.wrap(OutWriter.lineSepBytes));
-        synchronized (this) {
-            bytesWritten += byteCount + OutWriter.lineSepBytes.length;
-            outstandingBufferCount--;
+        if (writeChannel().isOpen()) { //If a thread was terminated while writing, it will be closed
+            writeChannel().write (bb);
+            writeChannel().write(ByteBuffer.wrap(OutWriter.lineSepBytes));
+            synchronized (this) {
+                bytesWritten += byteCount + OutWriter.lineSepBytes.length;
+                outstandingBufferCount--;
+            }
         }
         return position;
     }
 
     public synchronized void dispose() {
+        if (Controller.log) {
+            Controller.log ("Disposing file map storage");
+            Controller.logStack();
+        }
         if (writeChannel != null && writeChannel.isOpen()) {
             try {
                 writeChannel.close();
@@ -284,6 +290,7 @@ class FileMapStorage implements Storage {
 
     public void flush() throws IOException {
         if (buffer != null) {
+            if (Controller.log) Controller.log("FILEMAP STORAGE flush(): " + outstandingBufferCount);
             write (buffer);
             writeChannel.force(false);
             buffer = null;
@@ -295,11 +302,11 @@ class FileMapStorage implements Storage {
             flush();
             writeChannel.close();
             writeChannel = null;
-            if (Controller.log) Controller.log("FileMapStorage closed.  Outstanding buffer count: " + outstandingBufferCount);
+            if (Controller.log) Controller.log("FILEMAP STORAGE CLOSE.  Outstanding buffer count: " + outstandingBufferCount);
         }
     }
 
     public boolean isClosed() {
-        return writeChannel == null;
+        return writeChannel == null || !writeChannel.isOpen();
     }
 }

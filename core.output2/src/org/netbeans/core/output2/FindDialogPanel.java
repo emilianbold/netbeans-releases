@@ -57,12 +57,6 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
                    SwingUtilities.invokeLater (FindDialogPanel.this);
                }
            });
-       bwdSearch.getAccessibleContext().setAccessibleDescription(
-           NbBundle.getMessage(FindDialogPanel.class, "ACSD_BackwardSearch"));
-       matchCase.getAccessibleContext().setAccessibleDescription(
-           NbBundle.getMessage(FindDialogPanel.class, "ACSD_MatchCase"));
-       wholeWords.getAccessibleContext().setAccessibleDescription(
-           NbBundle.getMessage(FindDialogPanel.class, "ACSD_MatchWhole"));
 
        acceptButton = new JButton( NbBundle.getBundle(FindDialogPanel.class).getString("BTN_Find") );
        acceptButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(FindDialogPanel.class).getString("ACSD_FindBTN"));
@@ -71,7 +65,7 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
        findWhatLabel.setFocusable(false);
 
        JComponent[] order = new JComponent[] {
-           findWhat, matchCase, bwdSearch, wholeWords, acceptButton
+           findWhat, acceptButton
        };
 
        setFocusCycleRoot(true);
@@ -168,20 +162,16 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
 
         findWhatLabel = new javax.swing.JLabel();
         findWhat = new javax.swing.JComboBox();
-        matchCase = new javax.swing.JCheckBox();
-        wholeWords = new javax.swing.JCheckBox();
-        bwdSearch = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
         findWhatLabel.setDisplayedMnemonic(NbBundle.getBundle(FindDialogPanel.class).getString("LBL_Find_What_Mnemonic").charAt(0));
         findWhatLabel.setLabelFor(findWhat);
-        findWhatLabel.setText(org.openide.util.NbBundle.getBundle(FindDialogPanel.class).getString("LBL_Find_What"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 5, 0);
         add(findWhatLabel, gridBagConstraints);
 
         findWhat.setEditable(true);
@@ -191,47 +181,14 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 11, 9, 10);
+        gridBagConstraints.insets = new java.awt.Insets(7, 11, 9, 10);
         add(findWhat, gridBagConstraints);
-
-        matchCase.setMnemonic(NbBundle.getBundle(FindDialogPanel.class).getString("LBL_Find_Case_Mnemonic").charAt(0));
-        matchCase.setText(org.openide.util.NbBundle.getBundle(FindDialogPanel.class).getString("LBL_Find_Case"));
-        matchCase.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(1, 1, 1, 1)));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
-        add(matchCase, gridBagConstraints);
-
-        wholeWords.setMnemonic(NbBundle.getBundle(FindDialogPanel.class).getString("LBL_Find_Whole_Mnemonic").charAt(0));
-        wholeWords.setText(org.openide.util.NbBundle.getBundle(FindDialogPanel.class).getString("LBL_Find_Whole"));
-        wholeWords.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(1, 1, 1, 1)));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(wholeWords, gridBagConstraints);
-
-        bwdSearch.setMnemonic(NbBundle.getBundle(FindDialogPanel.class).getString("LBL_Find_Back_Mnemonic").charAt(0));
-        bwdSearch.setText(org.openide.util.NbBundle.getBundle(FindDialogPanel.class).getString("LBL_Find_Back"));
-        bwdSearch.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(1, 1, 1, 1)));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 10);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(bwdSearch, gridBagConstraints);
 
     }//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JComboBox findWhat;
-    protected javax.swing.JCheckBox bwdSearch;
-    protected javax.swing.JCheckBox matchCase;
-    protected javax.swing.JCheckBox wholeWords;
     protected javax.swing.JLabel findWhatLabel;
     // End of variables declaration//GEN-END:variables
 
@@ -271,21 +228,6 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
         return findPanel != null ? (String) findPanel.findWhat.getSelectedItem() : null;
     }
     
-    boolean isMatchCase() {
-        FindDialogPanel findPanel = (FindDialogPanel) panel.get();
-        return findPanel != null ? findPanel.matchCase.isSelected() : false;
-    }
-    
-    boolean isWholeWordsOnly() {
-        FindDialogPanel findPanel = (FindDialogPanel) panel.get();
-        return findPanel != null ? findPanel.wholeWords.isSelected() : false;
-    }
-    
-    boolean isBackwardSearch() {
-        FindDialogPanel findPanel = (FindDialogPanel) panel.get();
-        return findPanel != null ? findPanel.bwdSearch.isSelected() : false;
-    }
-
     private void updateHistory() {
         Object pattern = findWhat.getEditor().getItem();
 

@@ -12,6 +12,7 @@
  */
 package org.netbeans.core.output2;
 
+import javax.swing.text.DefaultCaret;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
@@ -76,25 +77,42 @@ public class WrappedTextView extends View {
     private boolean aa = false;
 
     //Self explanatory...
-    private static Color selectedFg;
-    private static Color unselectedFg;
-    private static Color selectedLinkFg;
-    private static Color unselectedLinkFg;
-    private static Color selectedErr;
-    private static Color unselectedErr;
-    private static final Color arrowColor = new Color (80, 162, 80);
+    static Color selectedFg;
+    static Color unselectedFg;
+    static Color selectedLinkFg;
+    static Color unselectedLinkFg;
+    static Color selectedErr;
+    static Color unselectedErr;
+    static final Color arrowColor = new Color (80, 162, 80);
 
     static {
-        //XXX clean these colors up a bit for different look and feels
-        selectedFg = UIManager.getColor("textText") == null ? Color.BLACK : //NOI18N
-            UIManager.getColor("textText"); //NOI18N
-        unselectedFg = selectedFg;
+        selectedFg = UIManager.getColor ("nb.output.foreground.selected"); //NOI18N
+        if (selectedFg == null) {
+            selectedFg = UIManager.getColor("textText") == null ? Color.BLACK : //NOI18N
+               UIManager.getColor("textText"); //NOI18N
+        }
+        
+        unselectedFg = UIManager.getColor ("nb.output.foreground"); //NOI18N
+        if (unselectedFg == null) {
+            unselectedFg = selectedFg;
+        }
 
-        selectedLinkFg = Color.BLUE;
-        unselectedLinkFg = selectedLinkFg;
+        selectedLinkFg = UIManager.getColor("nb.output.link.foreground.selected"); //NOI18N
+        if (selectedLinkFg == null) selectedLinkFg = Color.BLUE;
+        
+        unselectedLinkFg = UIManager.getColor("nb.output.link.foreground"); //NOI18N
+        if (unselectedLinkFg == null) {
+            unselectedLinkFg = selectedLinkFg;
+        }
 
-        selectedErr = new Color (164, 0, 0);
-        unselectedErr = selectedErr;
+        selectedErr = UIManager.getColor ("nb.output.err.foreground.selected"); //NOI18N
+        if (selectedErr == null) {
+            selectedErr = new Color (164, 0, 0);
+        }
+        unselectedErr = UIManager.getColor ("nb.output.err.foreground"); //NOI18N
+        if (unselectedErr == null) {
+            unselectedErr = selectedErr;
+        }
     }
 
 
@@ -156,7 +174,6 @@ public class WrappedTextView extends View {
                 default :
                     throw new IllegalArgumentException (Integer.toString(axis));
             }
-//            System.err.println ("Minimum " + a2s(axis) + "=" + result+ " for " + doc.getElementCount() + " lines"+ l2c(axis, result));
         }
         return result;
     }
@@ -167,10 +184,11 @@ public class WrappedTextView extends View {
         if (doc != null) {
             switch (axis) {
                 case X_AXIS :
-                    result = doc.getLongestLineLength();
+                    result = doc.getLongestLineLength() * charWidth();
                     break;
                 case Y_AXIS :
                     result = doc.getLogicalLineCountIfWrappedAt(80) + fontDescent();
+                    System.err.println("Max span: " + result);
                     break;
                 default :
                     throw new IllegalArgumentException (Integer.toString(axis));
@@ -352,9 +370,15 @@ public class WrappedTextView extends View {
         updateInfo(g);
 //        highlightCaretRow (g, allocation); //XXX commenting out for now
         
+        comp.getHighlighter().paint(g);
+        
+        Rectangle vis = comp.getVisibleRect();
+        
         OutputDocument d = odoc();
         if (d != null) {
             Rectangle clip = g.getClipBounds();
+            clip.y = Math.max (0, clip.y - charHeight());
+            clip.height += charHeight() * 2;
 
             int lineCount = d.getElementCount();
             if (lineCount == 0) {
@@ -371,7 +395,7 @@ public class WrappedTextView extends View {
 
             int firstline = ln[0];
 
-            int count = lineCount - firstline;
+            int count = (lineCount - firstline);          
 
             g.setColor (comp.getForeground());
 
@@ -381,8 +405,11 @@ public class WrappedTextView extends View {
 
             int selStart = comp.getSelectionStart();
             int selEnd = comp.getSelectionEnd();
-
-            int y = (clip.y - (clip.y % charHeight())) + charHeight();
+            
+            int lineHeight = charHeight() + fontDescent();
+            
+            int y = (clip.y - (clip.y % charHeight()) + charHeight());
+            
             try {
                 for (int i=0; i < count; i++) {
                     int lineStart = d.getLineStart(i + firstline);
@@ -417,12 +444,12 @@ public class WrappedTextView extends View {
                         }
                         int realPos = lineStart + charpos;
 
-                        if (realPos >= selStart && realPos + lenToDraw < selEnd) {
+                        if (realPos >= selStart && realPos + lenToDraw <= selEnd) {
                             Color c = g.getColor();
                             g.setColor (comp.getSelectionColor());
                             g.fillRect (margin(), y+fontDescent()-charHeight(), lenToDraw * charWidth(), charHeight());
                             g.setColor (c);
-                        } else if (realPos < selStart && realPos + lenToDraw > selStart) {
+                        } else if (realPos <= selStart && realPos + lenToDraw >= selStart) {
                             int selx = margin() + (charWidth() * (selStart - realPos));
                             int selLen = selEnd > realPos + lenToDraw ? ((lenToDraw + realPos) - selStart) * charWidth() :
                                     (selEnd - selStart) * charWidth();
@@ -454,6 +481,7 @@ public class WrappedTextView extends View {
             }
         }
     }
+    
     /**
      * Draw the decorations used with wrapped lines.
      *
@@ -515,7 +543,8 @@ public class WrappedTextView extends View {
     }
 
     public Shape modelToView(int pos, Shape a, Position.Bias b) throws BadLocationException {
-        Rectangle result = new Rectangle(0, 0, charWidth(), charHeight());
+        Rectangle result = new Rectangle();
+        result.setBounds (0, 0, charWidth(), charHeight());
         OutputDocument od = odoc();
         if (od != null) {
             int line = od.getElementIndex(pos);
@@ -532,6 +561,7 @@ public class WrappedTextView extends View {
             }
             result.y = (row * charHeight()) + fontDescent();
             result.x = margin() + (column * charWidth());
+//            System.err.println(pos + "@" + result.x + "," + result.y + " line " + line + " start " + start + " row " + row + " col " + column);
         }
         return result;
     }
@@ -552,6 +582,9 @@ public class WrappedTextView extends View {
             int wraps = ln[2] - 1;
 
             int totalLines = od.getElementCount();
+            if (totalLines == 0) {
+                return 0;
+            }
             if (logicalLine >= totalLines) {
                 return od.getLength() - 1;
             }

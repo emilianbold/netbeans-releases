@@ -20,7 +20,7 @@
  public class TestFrame extends JFrame implements Runnable {
     public static void main (String[] ignored) {
         try {
-         //   UIManager.setLookAndFeel(new javax.swing.plaf.metal.MetalLookAndFeel());
+            UIManager.setLookAndFeel(new javax.swing.plaf.metal.MetalLookAndFeel());
         } catch (Exception e) {}
         
         new TestFrame().setVisible(true);
@@ -37,6 +37,11 @@
         validate();
         System.err.println ("Writing content");
         io.getOut().println("This is an output window");
+        
+        io.getOut().write ("This is using write()");
+        io.getOut().write ("This is using println");
+        io.getOut().write ("1 a line\n2 another line");
+        
         for (int i=0; i < 200; i++) {
             out.println (Thread.currentThread().getName() + i +  ": Wow, we will write a long line of text here.  Very long in fact - who knows just how long it" +
                 " might end up being?  Well, we'll have to see.");
@@ -48,11 +53,12 @@
                 } catch (Exception e) {}
             }
             try {
-                Thread.currentThread().sleep(20);
+//                Thread.currentThread().sleep(50);
             } catch (Exception e) {}
+            System.err.println("Writing ");
 
             io.getErr().println (i + ": This is a not so long line");
-//            out.println (i + ": This, on the other hand, is a relatively short line");
+            out.println (i + ": This, on the other hand, is a relatively short line");
             if (stopped) {
                 out.println("Some dastardly individual has STOPPED me!");
                 out.flush();
@@ -66,6 +72,7 @@
         io.getErr().close();
         out.close();
         written = true;
+        System.err.println("DONE");
     }
 
     private static boolean written = false;
@@ -88,11 +95,11 @@
         OutputWindow.DEFAULT = win;
         getContentPane().setLayout (new BorderLayout());
         getContentPane().add (win, BorderLayout.CENTER);
-        setBounds (20, 20, 300, 300);
+        setBounds (20, 20, 335, 300);
         io = (NbIO) new NbIOProvider().getIO ("Test", false);
     }
 
-    private static int ct = 3;
+    private static int ct = 0;
     public void run () {
         if (SwingUtilities.isEventDispatchThread()) {
             out = (OutWriter) io.getOut();

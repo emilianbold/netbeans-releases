@@ -108,7 +108,7 @@ class OutWriter extends OutputWriter implements Runnable {
 
     private boolean unused = true;
     protected synchronized void init() {
-        knownCharCounts = null;
+        knownLogicalLineCounts = null;
         storage = null;
         lineStartList = new IntList(100);
         linesToListeners = new IntMap();
@@ -440,11 +440,15 @@ class OutWriter extends OutputWriter implements Runnable {
         if (checkError() || disposed || trouble) {
             return;
         }
-        if (Controller.log) {
-            Controller.log (this + ": Output close");
-        }
         closesRequired--;
+        if (Controller.log) {
+            Controller.log (this + ": Output close - remaining streams to close: " + closesRequired);
+        }
         if (closesRequired == 0) {
+            if (Controller.log) {
+                Controller.log (this + ": OUTPUT CLOSE ");
+                Controller.logStack();
+            }
             doClose();
         }
     }
@@ -452,7 +456,7 @@ class OutWriter extends OutputWriter implements Runnable {
     public synchronized void doClose() {
         try {
             if (Controller.log) {
-                Controller.log (this + ": both streams closed, losing OutWriter");
+                Controller.log (this + ": DO CLOSE: both streams closed, OutWriter is defunct");
             }
             getStorage().close();
             closesRequired = 0;
@@ -483,7 +487,7 @@ class OutWriter extends OutputWriter implements Runnable {
         try {
             ByteBuffer buf = getStorage().getWriteBuffer(1);
             buf.position (buf.position() + toByteIndex(1));
-            if (c == '\n') {  //XXX WRONG
+            if (c == '\n') {
                 write(buf);
             }
         } catch (IOException ioe) {
@@ -495,41 +499,20 @@ class OutWriter extends OutputWriter implements Runnable {
         if (checkError()) {
             return;
         }
-        //XXX look for newlines and split lines
-        try {
-            ByteBuffer result;
-            synchronized (this) {
-                result = getStorage().getWriteBuffer(len);
+        int count = off;
+        int start = off;
+        while (count < len + off) {
+            char curr = data[count];
+            if (count == (off + len) -1 || curr == '\n') { //NOI18N
+                println (new String(data, start, (count + 1 - start)));
+                start = count;
             }
-            ByteBuffer buf = result;
-
-            buf.asCharBuffer().put(data, off, len);
-            
-            buf.position (buf.position() + toByteIndex(len));
-            
-            write (buf);
-        } catch (IOException e) {
-            handleException (e);
+            count++;
         }
     }
 
     public synchronized void write(char data[]) {
-        if (checkError()) {
-            return;
-        }
-        try {
-            //XXX look for newlines and split lines
-            ByteBuffer result;
-            synchronized (this) {
-                result = getStorage().getWriteBuffer(data.length);
-            }
-            ByteBuffer buf = result;
-            buf.asCharBuffer().put(data);
-            buf.position (buf.position() + toByteIndex(data.length));
-            write (buf);
-        } catch (IOException e) {
-            handleException (e);
-        }
+        write (data, 0, data.length);
     }
     
     /** Generic exception handling, marking the error flag and notifying it with ErrorManager */
@@ -717,22 +700,28 @@ class OutWriter extends OutputWriter implements Runnable {
             knownCharCount = charCount;
             calcCharCounts(charCount);
         }
-        return line == 0 ? 0 : knownCharCounts.get(line-1);
+        return line == 0 ? 0 : knownLogicalLineCounts.get(line-1);
     }
     
     private int cachedLogicalLineCountIfWrappedAt (int charCount) {
+        if (charCount == 0) {
+            return 0;
+        }
         if (charCount != knownCharCount ) {
             knownCharCount = charCount;
             calcCharCounts(charCount);
         }
         int lineCount = lineCount();
-        return knownCharCounts.get(lineCount-1);
+        int result = knownLogicalLineCounts.get(lineCount-1);
+        int len = length (lineCount - 1);
+        result += (len / charCount) + 1;
+        return result;
     }
     
     private void calcCharCounts(int width) {
         int max = lineStartList.size();
-        knownCharCounts = new IntList(max);
-        knownCharCounts.add(0);
+        knownLogicalLineCounts = new IntList(max);
+        knownLogicalLineCounts.add(0);
         
         int bcount = toByteIndex(width);
         
@@ -746,11 +735,11 @@ class OutWriter extends OutputWriter implements Runnable {
                 ct++;
             }
             prev = curr;
-            knownCharCounts.add(ct);
+            knownLogicalLineCounts.add(ct);
         }        
     }
     
-    private IntList knownCharCounts = null;
+    private IntList knownLogicalLineCounts = null;
     
     
     private int lastCharCountForWrapCalculation = -1;
@@ -759,6 +748,7 @@ class OutWriter extends OutputWriter implements Runnable {
      * Gets the number of lines the document will require if line wrapped at the
      * specified character index.
      */
+
     private int dynLogicalLineCountIfWrappedAt (int charCount) {
         int bcount = toByteIndex(charCount);
         if (longestLine <= bcount) {
@@ -798,16 +788,11 @@ class OutWriter extends OutputWriter implements Runnable {
      * @return The number of logical wrapped lines above the passed line
      */
     private int dynLogicalLineCountAbove (int line, int charCount) {
-        //XXX this will need a lookup table above a threshold size - at about 200Mb of output,
-        //the IDE becomes unusable when word wrapped
         int lineCount = lineCount();
         if (line == 0 || lineCount == 0) {
             return 0;
         }
         int bcount = toByteIndex(charCount);
-        if (longestLine <= bcount) {
-            return line;
-        }
         if (charCount == lastCharCountForWrapAboveCalculation && lastWrappedAboveLineCount != -1 && line == lastWrappedAboveLine) {
             return lastWrappedAboveLineCount;
         }
@@ -859,7 +844,7 @@ class OutWriter extends OutputWriter implements Runnable {
         if (storage != null) {
             storage.dispose();
         }
-        knownCharCounts = null;
+        knownLogicalLineCounts = null;
         trouble = true;
         listener = null;
         if (Controller.log) Controller.log (this + ": Setting owner to null, trouble to true, dirty to false.  This OutWriter is officially dead.");
@@ -962,7 +947,7 @@ class OutWriter extends OutputWriter implements Runnable {
         clearListeners();
         int oldSize;
         cleared = false;
-        knownCharCounts = null;
+        knownLogicalLineCounts = null;
         
         if (storage != null) {
             closesRequired = err != null ? 2 : 1;

@@ -34,27 +34,6 @@ import java.awt.*;
  */
 class ExtPlainView extends PlainView {
     private static final Segment SEGMENT = new Segment(); 
-    private static Color selectedFg;
-    private static Color unselectedFg;
-    private static Color selectedLinkFg;
-    private static Color unselectedLinkFg;
-    private static Color selectedErr;
-    private static Color unselectedErr;
-    
-    static {
-        //XXX clean these colors up a bit for different look and feels
-        selectedFg = UIManager.getColor("textText") == null ? Color.BLACK : //NOI18N
-            UIManager.getColor("textText"); //NOI18N
-        unselectedFg = selectedFg;
-        
-        selectedLinkFg = Color.BLUE;
-        unselectedLinkFg = selectedLinkFg;
-        
-        //XXX it looks like current ant runs simply print *everything* to
-        //stderr, which may make trying to color it separately a bit useless.
-        selectedErr = new Color (164, 0, 0);
-        unselectedErr = selectedErr;
-    }
 
     private JTextComponent comp;
     /** Creates a new instance of ExtPlainView */
@@ -73,7 +52,7 @@ class ExtPlainView extends PlainView {
             doc.getText(p0, p1 - p0, s);
             g.setColor(getColorForLocation(p0, doc, true));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
-            if (g.getColor() == selectedLinkFg) {
+            if (g.getColor() == WrappedTextView.selectedLinkFg) {
                 g.drawLine (x, y+1, ret, y+1);
             }
             return ret;
@@ -91,7 +70,7 @@ class ExtPlainView extends PlainView {
             doc.getText(p0, p1 - p0, s);
             g.setColor(getColorForLocation(p0, doc, false));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
-            if (g.getColor() == unselectedLinkFg) {
+            if (g.getColor() == WrappedTextView.unselectedLinkFg) {
                 g.drawLine (x, y+1, ret, y+1);
             }
             return ret;
@@ -141,8 +120,16 @@ class ExtPlainView extends PlainView {
         int line = od.getElementIndex (start);
         boolean hyperlink = od.isHyperlink(line);
         boolean isErr = od.isErr(line);
-        return hyperlink ? selected ? selectedLinkFg : unselectedLinkFg :
-            selected ? isErr ? selectedErr : selectedFg : isErr ? unselectedErr : unselectedFg;
+        return hyperlink ? 
+            selected ? 
+                WrappedTextView.selectedLinkFg : 
+                WrappedTextView.unselectedLinkFg :
+            selected ? isErr ? 
+                WrappedTextView.selectedErr : 
+                WrappedTextView.selectedFg : 
+            isErr ? 
+                WrappedTextView.unselectedErr : 
+                WrappedTextView.unselectedFg;
     }
 
 }

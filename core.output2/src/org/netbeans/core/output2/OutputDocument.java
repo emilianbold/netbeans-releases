@@ -221,10 +221,9 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
      */
     public void toLogicalLineIndex (final int[] physIdx, int charsPerLine) {
         physIdx[1] = 0;
-        if (charsPerLine >= getLongestLineLength()) {
-            return;
-        }
-        if (writer.lineCount() <= 1) {
+        if (charsPerLine >= getLongestLineLength() || (writer.lineCount() <= 1)) {
+            physIdx[1] = 0;
+            physIdx[2] = 1;
             return;
         }
         int line = physIdx[0] + 1;
@@ -346,14 +345,14 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     private volatile DO lastEvent = null;
     private int lastPostedLine = -1;
     public void stateChanged(ChangeEvent changeEvent) {
-        if (Controller.log) Controller.log (changeEvent != null ? "Document got change event from writer" : "Document timer polling");
+        if (Controller.verbose) Controller.log (changeEvent != null ? "Document got change event from writer" : "Document timer polling");
         if (dlisteners.isEmpty()) {
-            if (Controller.log) Controller.log ("listeners empty, not firing");
+            if (Controller.verbose) Controller.log ("listeners empty, not firing");
             return;
         }
         if (writer.checkDirty()) {
             if (lastEvent != null && !lastEvent.isConsumed()) {
-                if (Controller.log) Controller.log ("Last event not consumed, not firing");
+                if (Controller.verbose) Controller.log ("Last event not consumed, not firing");
                 return;
             }
             boolean initial = false; 
@@ -363,35 +362,25 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             int lastLine = lastPostedLine;
             lastPostedLine = lineCount;
             
-            if (Controller.log) Controller.log ("Document may fire event - last fired line=" + lastLine + " line count now " + lineCount);
+            if (Controller.verbose) Controller.log ("Document may fire event - last fired line=" + lastLine + " line count now " + lineCount);
             if (lastLine != lineCount || initial) {
                 lastEvent = new DO (Math.max(0, lastLine), initial);
 //                evts.add (lastEvent);
                 Mutex.EVENT.readAccess (new Runnable() {
                     public void run() {
-                        if (Controller.log) Controller.log("Firing document event on EQ with start index " + lastEvent.start);
+                        if (Controller.verbose) Controller.log("Firing document event on EQ with start index " + lastEvent.start);
                         fireDocumentEvent (lastEvent);
                     }
                 });
             } else {
-                if (Controller.log) Controller.log ("Line count is still " + lineCount + " - not firing");
+                if (Controller.verbose) Controller.log ("Line count is still " + lineCount + " - not firing");
             }
         } else {
-            if (Controller.log) Controller.log ("Writer says it is not dirty, firing no change");
+            if (Controller.verbose) Controller.log ("Writer says it is not dirty, firing no change");
         }
         updateTimerState();
     }    
     
-/*    private Vector evts = new Vector();
-    private void logInfo() {
-        if (log && Controller.log) {
-            Controller.log("STREAM CLOSED.  EVENTS FIRED:");
-            for (Iterator i = evts.iterator(); i.hasNext();) {
-                Controller.log(i.next().toString());
-            }
-        }
-    }
- */
     private boolean updatingTimerState = false;
     private synchronized void updateTimerState() {
         if (updatingTimerState) {
@@ -426,7 +415,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
         if (timer != null && timer.getDelay() < 350) {
             timer.setDelay (timer.getDelay() + 20);
-            if (Controller.log) Controller.log ("Decreased timer interval to " + timer.getDelay());
+            if (Controller.verbose) Controller.log ("Decreased timer interval to " + timer.getDelay());
         }
         lastFireTime = newTime;
         updatingTimerState = false;
@@ -451,16 +440,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             dl.insertUpdate(de);
         }
     }
-    
-    
-    private static final boolean log = System.getProperty("netbeans.user") == null; //NOI18N //XXX delete
-    private void log (String s) { //XXX delete
-        //Cannot log from inside NetBeans, we'll end up modifying our own contents
-        if (Controller.log) {
-            Controller.log(s);
-        }
-    }
-    
+
     //**************  StyledDocument implementation ****************************
     
     public boolean isHyperlink (int line) {
@@ -684,7 +664,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             if (!consumed) {
 //                synchronized (writer) {
                     consumed = true;
-                    if (Controller.log) Controller.log ("EVENT CONSUMED: " + start);
+                    if (Controller.verbose) Controller.log ("EVENT CONSUMED: " + start);
                     int charsWritten = writer.charsWritten();
                     if (initial) {
                         first = 0;
