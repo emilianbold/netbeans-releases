@@ -29,8 +29,8 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.modules.editor.util</package>
-                <package>org.netbeans.modules.editor.util.element</package>
+                <package>org.netbeans.lib.editor.util</package>
+                <package>org.netbeans.lib.editor.util.swing</package>
             </public-packages>
         </data>
     </configuration>

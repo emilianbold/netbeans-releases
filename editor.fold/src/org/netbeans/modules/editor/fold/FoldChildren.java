@@ -15,7 +15,7 @@ package org.netbeans.modules.editor.fold;
 
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.modules.editor.fold.ApiPackageAccessor;
-import org.netbeans.modules.editor.util.GapList;
+import org.netbeans.lib.editor.util.GapList;
 
 //import org.netbeans.spi.lexer.util.GapObjectArray;
 

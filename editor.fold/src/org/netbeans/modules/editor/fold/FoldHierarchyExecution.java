@@ -39,7 +39,7 @@ import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
 import org.netbeans.spi.editor.fold.FoldOperation;
-import org.netbeans.modules.editor.util.PriorityMutex;
+import org.netbeans.lib.editor.util.PriorityMutex;
 import org.openide.ErrorManager;
 
 /**
