@@ -94,5 +94,6 @@ public class EnumEditor extends PropertyEditorSupport
         "JTable",               // NOI18N
         "JTextField",           // NOI18N
         "JViewport",            // NOI18N
+        "JFrame",               // NOI18N        
     };
 }
