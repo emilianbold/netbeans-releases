@@ -9,13 +9,11 @@ package Templates.Beans;
 import java.beans.*;
 
 /**
- *
- * @author  __USER__
+ * @author __USER__
  */
 public class PropertyEditor extends PropertyEditorSupport {
 
-    /** Creates new __NAME__ */
-    public PropertyEditor () {
+    public PropertyEditor() {
     }
 
 }
