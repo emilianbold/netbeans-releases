@@ -94,6 +94,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
       return NO_BORDER; 
     } else if (current instanceof DesignBorder) {
       BorderInfo info = ((DesignBorder)current).getInfo();
+      if (info==null) return null; // NOI18N
       return info.getDisplayName ();
     } else {
       return org.openide.util.Utilities.getShortClassName (current.getClass ());
@@ -101,7 +102,6 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
   }
 
   public void setAsText (String string) {
-    throw new IllegalArgumentException();
   }
 
   public String getJavaInitializationString () {
@@ -438,6 +438,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
 
 /*
  * Log
+ *  17   Gandalf   1.16        1/20/00  Pavel Buzek     
  *  16   Gandalf   1.15        1/13/00  Ian Formanek    NOI18N #2
  *  15   Gandalf   1.14        1/10/00  Ian Formanek    provides better 
  *       getAsText 
