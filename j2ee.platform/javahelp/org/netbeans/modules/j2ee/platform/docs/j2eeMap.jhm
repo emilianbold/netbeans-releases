@@ -93,7 +93,17 @@
 	<mapID target="test_ws" url="web/webservice/test_ws.html" />
 	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />
 	<mapID target="call_ws_operation" url="web/webserviceclient/call_ws_operation.html" />
+	
+<!-- Library Manager -->
+<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/taglibUI/ctx_repaddto.html" />
 
+<!-- Standard Web Project Properties dialog-->
+<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerGeneral" url="web/overvw/WebCustomizerGeneral.html" />
+<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/overvw/WebCustomizerCompile.html" />
+<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWar" url="web/overvw/WebCustomizerWar.html" />
+<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/overvw/WebCustomizerJavadoc.html" />
+<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRun" url="web/overvw/WebCustomizerRun.html" />
+	
 <!-- End of web apps help -->
 
 <!-- Start of Enterprise Application help -->
