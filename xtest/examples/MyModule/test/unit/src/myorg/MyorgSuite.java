@@ -13,6 +13,7 @@
 
 package myorg;
 
+import junit.framework.*;
 import org.netbeans.junit.*;
 
 public class MyorgSuite extends NbTestCase {
@@ -25,11 +26,11 @@ public class MyorgSuite extends NbTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
-    public static NbTest suite() {
+    public static Test suite() {
         //--JUNIT:
         //This block was automatically generated and can be regenerated again.
         //Do NOT change lines enclosed by the --JUNIT: and :JUNIT-- tags.
-        NbTestSuite suite = new NbTestSuite("MyorgSuite");
+        TestSuite suite = new NbTestSuite("MyorgSuite");
         suite.addTest(myorg.Hello2Test.suite());
         //:JUNIT--
         //This value MUST ALWAYS be returned from this function.
