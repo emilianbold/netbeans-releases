@@ -71,7 +71,7 @@ import java.lang.reflect.Constructor;
  *  BeanProp instances to the DOM nodes.
  *
  */
-public abstract class BaseBean implements Cloneable {
+public abstract class BaseBean implements Cloneable, Bean {
     
     /*
      *	Because schema2beans doesn't generate user information about the
@@ -123,8 +123,8 @@ public abstract class BaseBean implements Cloneable {
     //	HashMaps of the properties - those are the same properties but are
     //	sorted by Bean name (propByName) and by dtd name (propByDtdName).
     //
-    private HashMap 			propByName;
-    private HashMap 			propByOrder;
+    private Map 			propByName;
+    private Map 			propByOrder;
     
     //
     //	If we use this hashMap, we have better performances whenever we
@@ -211,6 +211,15 @@ public abstract class BaseBean implements Cloneable {
             for (int i=0; i<size; i++)
                 this.comparators.add(comps.get(i));
         }
+    }
+
+    /**
+     * Call this to save a little memory if properties are actually
+     * going to be stored elsewhere.
+     */
+    protected void propertiesStoredElsewhere() {
+        propByName = null;
+        propByOrder = null;
     }
     
     //
@@ -418,14 +427,30 @@ public abstract class BaseBean implements Cloneable {
      *	Set the value for the single property named name.
      */
     public void setValue(String name, Object value) {
-	this.beanProp(name).setValue(0, value);
+        setValue(beanProp(name), 0, value);
     }
     
     /**
      *	Set the value of an element for the indexed property named name.
      */
     public void setValue(String name, int index, Object value) {
-	this.beanProp(name).setValue(index, value);
+        setValue(beanProp(name), index, value);
+    }
+
+    protected void setValue(BeanProp prop, int index, Object value) {
+        prop.setValue(index, value);
+    }
+
+    protected int addValue(BeanProp prop, Object value) {
+        return prop.addValue(value);
+    }
+
+    protected int removeValue(BeanProp prop, Object value) {
+        return prop.removeValue(value);
+    }
+    
+    protected void removeValue(BeanProp prop, int index) {
+        prop.removeValue(index);
     }
     
     /**
@@ -449,21 +474,21 @@ public abstract class BaseBean implements Cloneable {
      *	Add a value to the indexed property named name.
      */
     public int addValue(String name, Object value) {
-	return this.beanProp(name).addValue(value);
+        return addValue(beanProp(name), value);
     }
     
     /**
      *	Remove a value from the indexed property named name.
      */
     public int removeValue(String name, Object value) {
-	return this.beanProp(name).removeValue(value);
+        return removeValue(beanProp(name), value);
     }
 
     /**
      *	Remove a value from the indexed property named name.
      */
     public void removeValue(String name, int index) {
-	this.beanProp(name).removeValue(index);
+        removeValue(beanProp(name), index);
     }
     
     /**
@@ -1023,12 +1048,7 @@ public abstract class BaseBean implements Cloneable {
      * right encoding for the Writer @param w.
      */
     public void write(java.io.Writer w)	throws IOException, Schema2BeansException {
-        reindent();
-        if (this.graphManager != null) {
-            this.graphManager.write(w);
-        } else
-            throw new IllegalStateException(Common.
-                  getMessage("CantWriteBeanNotInDOMTree_msg"));
+        write(w, null);
     }
 
     /**
@@ -1354,31 +1374,30 @@ public abstract class BaseBean implements Cloneable {
      *	This method is used to copy non BaseBean properties
      *	(a clone on a BaseBean automatically copies the attributes).
      */
-    private void copyProperty(BeanProp prop, BaseBean bean, 
-			      int index, Object value) {
+    protected void copyProperty(BeanProp prop, BaseBean bean, 
+                                int index, Object value) {
 
-	boolean isArray = Common.isArray(prop.type);
-	String name = prop.getName();
+        boolean isArray = Common.isArray(prop.type);
+        String name = prop.getName();
 
-	//  Copy the property value
-	if (value == null) {
+        //  Copy the property value
+        if (value == null) {
+            if (isArray)
+                value = bean.getValue(name, index);
+            else
+                value = bean.getValue(name, 0);
+        }
 
-	    if (isArray)
-		value = bean.getValue(name, index);
-	    else
-		value = bean.getValue(name, 0);
-	}
+        int newIndex = 0;
 
-	int newIndex = 0;
+        if (isArray) {
+            newIndex = addValue(prop, value);
+        } else {
+            setValue(prop, 0, value);
+            index = 0;
+        }
 
-	if (isArray) {
-	    newIndex = prop.addValue(value);
-	} else {
-	    prop.setValue(0, value);
-	    index = 0;
-	}
-
-	this.copyAttributes(prop, newIndex, bean, index);
+        this.copyAttributes(prop, newIndex, bean, index);
     }
 
     /*
@@ -1543,8 +1562,9 @@ public abstract class BaseBean implements Cloneable {
 		    //	For each of our current property elts ...
 		    for (i=0; i<size1; i++) {
                 o1 = prop.getValue(i);
+                //System.out.println("looking at prop "+i+" o1="+o1);
 			
-                if (o1 == null)
+                if (isBean && o1 == null)
                     continue;	// Nothing to compare
 			
                 boolean found = false;
@@ -1559,14 +1579,14 @@ public abstract class BaseBean implements Cloneable {
                         if (!compared[j]) {
                             o2 = bean.getValue(name, j);
 				    
-                            if (o2 == null) {
-                                // Ignore null elt
-                                compared[j] = true;
-                                toAdd[j] = false;
-                                continue;
-                            }
-				    
                             if (isBean) {
+                                if (o2 == null) {
+                                // Ignore null elt
+                                    compared[j] = true;
+                                    toAdd[j] = false;
+                                    continue;
+                                }
+				    
                                 o3 = cmp.compareBean(name,
                                                      (BaseBean)o1,
                                                      (BaseBean)o2);
@@ -1654,7 +1674,8 @@ public abstract class BaseBean implements Cloneable {
 		    if ((mode & MERGE_INTERSECT) == MERGE_INTERSECT) {
                 for (i=0, j=0; i<size1; i++) {
                     if (toRemove[i] && hasKey) {
-                        prop.removeValue(i-j);
+                        //System.out.println("MERGE_INTERSECT: "+name+": removeValue("+prop.getBeanName()+", "+ (i-j)+")");
+                        removeValue(prop, i-j);
                         j++;
                     }
                 }
@@ -1664,11 +1685,12 @@ public abstract class BaseBean implements Cloneable {
 		    if ((mode & MERGE_UNION) == MERGE_UNION) {
                 for (j=0; j < size2; j++) {
                     if (toAdd[j] && hasKey) {
+                        //System.out.println("MERGE_UNION: "+name+": add j="+j);
                         if (isBean) {
                             //	Attrs are within the BaseBean
                             BaseBean srcBean = (BaseBean) bean.getValue(name, j);
                             o2 = srcBean.clone();
-                            prop.addValue(o2);
+                            addValue(prop, o2);
                             // Make sure that whitespace & comments get brought over.
                             ((BaseBean)o2).mergeTree(srcBean, mode);
                         } else {
@@ -1760,10 +1782,10 @@ public abstract class BaseBean implements Cloneable {
 
 			    if (isBean) {
                     if (newValue != null) {
-                        prop.setValue(0, 
-                                      ((BaseBean)newValue).clone());
+                        setValue(prop, 0, 
+                                 ((BaseBean)newValue).clone());
                     } else {
-                        prop.setValue(0, newValue);
+                        setValue(prop, 0, newValue);
                     }
 			    }
 			    else {
@@ -2034,7 +2056,7 @@ public abstract class BaseBean implements Cloneable {
      *	associated to the DOMBinding object (see the BeanProp and DOMBinding
      *	classes)
      */
-    protected BaseBean propertyById(String name, int id) {
+    public Bean propertyById(String name, int id) {
         BeanProp bp = this.beanProp(name);
 	
         if (Common.isBean(bp.type)) {
@@ -2064,12 +2086,32 @@ public abstract class BaseBean implements Cloneable {
      *	part of a schema2beans graph yet.
      */
     public BaseBean parent() {
-	BeanProp bp = this.beanProp();
+        BeanProp bp = this.beanProp();
 	
-	if (bp != null)
-	    return this.beanProp().getBean();
-	else
-	    return null;
+        if (bp != null)
+            return this.beanProp().getBean();
+        else
+            return null;
+    }
+
+    public Bean _getParent() {
+        return parent();
+    }
+
+    /**
+     * Return the root of the graph.  If the graph is not connected to a
+     * generated root, then the topmost bean is returned.
+     */
+    public Bean _getRoot() {
+        Bean b = this;
+        Bean bParent;
+        while (!b.isRoot()) {
+            bParent = b._getParent();
+            if (bParent == null)
+                break;
+            b = bParent;
+        }
+        return b;
     }
 
     /**
@@ -2417,10 +2459,10 @@ public abstract class BaseBean implements Cloneable {
     }
 
     public String nameSelf() {
-        return beanProp().getBeanName();
+        return beanProp().getFullName();
     }
 
     public String nameChild(Object childObj, boolean returnSchemaName) {
-        return null;
+        return findValue(childObj)[0];
     }
 }

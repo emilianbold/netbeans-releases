@@ -214,13 +214,9 @@ public class BeanProp implements BaseProperty {
     //	generated class)
     public Class	propClass;
 
-    protected boolean useBindings = true;
-    
     //	Array of DOMBinding, might contain only one element if TYPE_1
     ArrayList		bindings;
 
-    protected Object[] values;
-    
     ArrayList		knownValues;
     
     //	List of attributes this property has
@@ -284,14 +280,6 @@ public class BeanProp implements BaseProperty {
 	this.isRoot = isRoot;
     }
 
-    /**
-     * Whether or not to use DOMBindings to store the data.
-     * Call this before any data is set in here.
-     */
-    public void setUseBindings(boolean value) {
-        useBindings = value;
-    }
-    
     /**
      *	Called by the BaseBean class when the property is fully created.
      *	(no more creation work needs to be done in the BaseBean for this
@@ -471,13 +459,7 @@ public class BeanProp implements BaseProperty {
     }
 
     protected int bindingsSize() {
-        if (useBindings)
-            return bindings.size();
-        else {
-            if (values == null)
-                return 0;
-            return values.length;
-        }
+        return bindings.size();
     }
     
     //////
@@ -486,16 +468,17 @@ public class BeanProp implements BaseProperty {
     //
     
     public Object getValue(int index) {
-	if (!Common.isArray(this.type)) {
-	    //	Value not set for single type property - return null
-	    if ((index > 0) || (this.bindingsSize() == 0))
-		return null;
-	}
+        if (!Common.isArray(this.type)) {
+            //	Value not set for single type property - return null
+            if ((index > 0) || (this.bindingsSize() == 0))
+                return null;
+        }
+        if (bindingsSize() == 0) {
+            // Ok no value set so far. return null.
+            return null;
+        } // end of if (this.bindingsSize() == 0)
 
-    if (!useBindings)
-        return values[index];
-	
-	DOMBinding b = (DOMBinding)this.bindings.get(index);
+        DOMBinding b = (DOMBinding)this.bindings.get(index);
 
         if (b != null)
             return b.getValue(this);
@@ -511,11 +494,6 @@ public class BeanProp implements BaseProperty {
      *	for example, used to build the absolute name of an elt of the graph)
      */
     public Object getValueById(int id) {
-        if (!useBindings) {
-            if (id < 0 || id >= values.length)
-                return null;
-            return values[id];
-        }
         int size = this.bindingsSize();
         for (int i=0; i<size; i++) {
             DOMBinding b = (DOMBinding)this.bindings.get(i);
@@ -531,9 +509,6 @@ public class BeanProp implements BaseProperty {
      *	the unique DOMBinding id.
      */
     public int indexToId(int index) {
-        if (!useBindings) {
-            return index;
-        }
         if (index>=0 && index<this.bindingsSize()) {
             DOMBinding b = (DOMBinding)this.bindings.get(index);
             if (b != null)
@@ -547,9 +522,6 @@ public class BeanProp implements BaseProperty {
      *  This method may return -1 if we cannot figure out the index.
      */
     public int idToIndex(int id) {
-        if (!useBindings) {
-            return id;
-        }
         int size = this.bindingsSize();
         for (int i=0; i<size; i++) {
             DOMBinding b = (DOMBinding)this.bindings.get(i);
@@ -564,11 +536,7 @@ public class BeanProp implements BaseProperty {
     //	Build an Object[] of the current indexed property value
     //	Make room for extra elements at the end of the array.
     //
-    private Object[] getObjectArray(int extraElements) {
-        if (!useBindings) {
-            return values;
-        }
-
+    protected Object[] getObjectArray(int extraElements) {
 	int size = this.bindingsSize();
 	Object a = 
 	    Array.newInstance(this.propClass,
@@ -629,11 +597,6 @@ public class BeanProp implements BaseProperty {
 	    //	and the change can happen.
 	}
 	
-    if (!useBindings) {
-        values = value;
-        return;
-    }
-
 	//
 	//	Remove deleted element, add the new ones then sort the new array.
 	//
@@ -917,7 +880,7 @@ public class BeanProp implements BaseProperty {
      *	is created and takes care of setting the new value.
      *
      */
-    private int setElement(int index, Object value, boolean add) {
+    protected int setElement(int index, Object value, boolean add) {
 	this.checkParams(index, value, add);
 	
 	if ((value != null) && Common.isBean(this.type)
@@ -994,41 +957,41 @@ public class BeanProp implements BaseProperty {
 	if (value != null) {
 	    //	Before adding the new value, remove the previous one
 	    if (Common.isBean(this.type) && !add)
-		this.removeElement(index, false);
+            this.removeElement(index, false);
 	    
 	    DOMBinding b = null;
 	    boolean empty = true;
 	    Object	oldValue = null;
 	    
 	    if (!add) {
-		empty = (this.bindingsSize() == 0);
-		if (!empty)
-		    b = (DOMBinding)this.bindings.get(index);
+            empty = (this.bindingsSize() == 0);
+            if (!empty)
+                b = (DOMBinding)this.bindings.get(index);
 	    }
 	    
 	    if (b == null) {
-		//
-		//  This is a brand new property - create the DOMBinding
-		//  for this object. The DOMBinding will take care
-		//  later on to create the proper DOM tree structures.
-		//
-		b = new DOMBinding();
-		b.register(this, value);
-		b.setDefaultAttributeValues(this);
+            //
+            //  This is a brand new property - create the DOMBinding
+            //  for this object. The DOMBinding will take care
+            //  later on to create the proper DOM tree structures.
+            //
+            b = new DOMBinding();
+            b.register(this, value);
+            b.setDefaultAttributeValues(this);
 	    }
 	    
 	    if (add)
-		index = this.bindingsSize();
+            index = this.bindingsSize();
 	    
 	    if (empty)
-		this.bindings.add(b);
+            this.bindings.add(b);
 	    else
-		this.bindings.set(index, b);
+            this.bindings.set(index, b);
 	    
 	    if (DDLogFlags.debug) {
-		TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-		DDLogFlags.DBG_BLD, 1, DDLogFlags.NEWBIND,
-		this.dtdName + "[" + (empty?0:index) + "]");
+            TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                            DDLogFlags.DBG_BLD, 1, DDLogFlags.NEWBIND,
+                            this.dtdName + "[" + (empty?0:index) + "]");
 	    }
 	    
 	    oldValue = b.setValue(this, value);
@@ -1042,14 +1005,14 @@ public class BeanProp implements BaseProperty {
 	    //	flush into the DOM tree all the cached values.
 	    //
 	    if (this.bean.hasDomNode()) {
-		b.syncNodes(this, new Action(Action.ADD));
+            b.syncNodes(this, new Action(Action.ADD));
 	    }
 	    else {
-		if (DDLogFlags.debug) {
-		    TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-		    DDLogFlags.DBG_BLD, 1, DDLogFlags.CACHING,
-		    this.dtdName);
-		}
+            if (DDLogFlags.debug) {
+                TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                                DDLogFlags.DBG_BLD, 1, DDLogFlags.CACHING,
+                                this.dtdName);
+            }
 	    }
 	    
 	    //
@@ -1060,13 +1023,13 @@ public class BeanProp implements BaseProperty {
 	    
 	    //	Attribute values might have been cached in the bean
 	    if (Common.isBean(this.type) && (value != null)) {
-		BaseBean bb = (BaseBean)value;
-		String[] names = bb.cachedAttributeNames();
-		for (int i=0; i<names.length; i++) {
-		    this.setAttributeValue(index, names[i],
-		    bb.cachedAttributeValue(names[i]));
-		}
-		bb.cachedAttributeClear();
+            BaseBean bb = (BaseBean)value;
+            String[] names = bb.cachedAttributeNames();
+            for (int i=0; i<names.length; i++) {
+                this.setAttributeValue(index, names[i],
+                                       bb.cachedAttributeValue(names[i]));
+            }
+            bb.cachedAttributeClear();
 	    }
 	}
 	else
@@ -1832,35 +1795,35 @@ public class BeanProp implements BaseProperty {
     }
     
     public String getFullName(int index) {
-	return this.buildFullName(index, null);
+        return this.buildFullName(index, null);
     }
     
     public String getFullName() {
-	return this.buildFullName(0, null);
+        return this.buildFullName(0, null);
     }
     
     String buildFullName(int index, String attr) {
-	StringBuffer name = new StringBuffer();
+        StringBuffer name = new StringBuffer();
 	
-	if (!Common.isArray(this.type)) {
-	    //	Value not set for single type property - return null
-	    if ((index > 0) || (this.bindingsSize() == 0))
-		return null;
-	}
+        if (!Common.isArray(this.type)) {
+            //	Value not set for single type property - return null
+            if ((index > 0) || (this.bindingsSize() == 0))
+                return null;
+        }
 	
-	DOMBinding b = (DOMBinding)this.bindings.get(index);
+        DOMBinding b = (DOMBinding)this.bindings.get(index);
 	
-	if (b != null) {
-	    if (attr != null) {
-		name.append(":");	// NOI18N
-		name.append(attr);
-	    }
-	    this.buildPathName(b, name);
-	}
-	else
-	    return null;
+        if (b != null) {
+            if (attr != null) {
+                name.append(":");	// NOI18N
+                name.append(attr);
+            }
+            this.buildPathName(b, name);
+        }
+        else
+            return null;
 	
-	return name.toString();
+        return name.toString();
     }
     
     public int getInstanceType() {

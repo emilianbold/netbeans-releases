@@ -590,195 +590,196 @@ public class DOMBinding {
      *
      */
     void syncNodes(BeanProp prop, BeanProp.Action a) {
-	BeanProperty 	bp = this.getBeanProperty(prop);
+        BeanProperty 	bp = this.getBeanProperty(prop);
 	
-	if (DDLogFlags.debug) {
-	    TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-			    DDLogFlags.DBG_BLD, 1,
-			    DDLogFlags.SYNCNODES,
-			    a.toString() + " " + prop.getDtdName() +
-			    (bp==null?" - unknown prop!":""));
-	}
-	
-	if (bp == null)
-	    return;
-	
-	if(a.action == a.REMOVE) {
-	    int i = prop.idToIndex(this.id);
-	    if (i != -1)
-		bp.lastIndex = i;
-	    
-	    PropertyChangeEvent e =
-		prop.prepareForChangeEvent(this, bp.value, null, null);
-	    
-	    if (Common.isBean(prop.type)) {
-		//  Recurse on all the properties of the bean
-		BaseBean bean = ((BaseBean)bp.value);
-		bean.syncNodes(a);
-	    }
-        //System.out.println("this.prop="+this.prop+" this.prop.beanProp="+this.prop.beanProp+" this.prop.beanProp==prop "+(this.prop.beanProp==prop)+" this.prop.value="+this.prop.value+" bp.value="+bp.value);
-        if (this.prop != null && this.prop.beanProp==prop) {
-            // See IZ#19802
-            if (node != null &&
-                (prop.getType() & Common.MASK_TYPE) == Common.TYPE_STRING) {
-                // Since it's a String, the value is stored in the DOM
-                // graph, and not in our BeanProperty.  Stash the contents
-                // of the DOM node into our BeanProperty,
-                // before we remove the node and lose the value.
-                bp.value = getDomValue(node);
-            }
-            //this.removeProp(prop);
+        if (DDLogFlags.debug) {
+            TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                            DDLogFlags.DBG_BLD, 1,
+                            DDLogFlags.SYNCNODES,
+                            a.toString() + " " + prop.getDtdName() +
+                            (bp==null?" - unknown prop!":""));
         }
-	    this.removeNode(prop);
-	    prop.notifyInternal(e, false);
-	}
-	else
-	    if(a.action == a.ADD) {
+	
+        if (bp == null)
+            return;
+	
+        if(a.action == a.REMOVE) {
+            int i = prop.idToIndex(this.id);
+            if (i != -1)
+                bp.lastIndex = i;
+	    
+            PropertyChangeEvent e =
+                prop.prepareForChangeEvent(this, bp.value, null, null);
+	    
             if (Common.isBean(prop.type)) {
-                NodeFactory f = prop.getNodeFactory();
-		    
-                if (this.node != null)
-                    throw new IllegalStateException(Common.getMessage(
-                                                                      "DOMBindingAlreadyHasNode_msg"));
-		    
-                Node parent = prop.getParentNode();
-                this.node = f.createElement(prop);
-		    
-                if (DDLogFlags.debug) {
-                    TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-                                    DDLogFlags.DBG_BLD, 1,
-                                    DDLogFlags.SYNCING,
-                                    "adding new child " +
-                                    this.node.getNodeName() +
-                                    " to node " + parent.getNodeName());
-                }
-		    
-                Node sibling = prop.getFollowingSibling(this);
-                parent.insertBefore(this.node, sibling);
-		    
-                //  Recurse the syncNodes on all the properties of the bean
+                //  Recurse on all the properties of the bean
                 BaseBean bean = ((BaseBean)bp.value);
-                bean.setGraphManager(prop.bean.graphManager());
                 bean.syncNodes(a);
-            } else if (Common.isBoolean(prop.type)) {
-                boolean v = false;
-			
-                if (bp.value != null)
-                    v = ((Boolean)bp.value).booleanValue();
-
-                if (Common.shouldNotBeEmpty(prop.type) || node == null ||
-                    (nodeToBoolean(prop)).booleanValue() != v) {
-                    //  Current node and expected value are not the same
-                    if (DDLogFlags.debug) {
-                        TraceLogger.put(TraceLogger.DEBUG,
-                                        TraceLogger.SVC_DD,
-                                        DDLogFlags.DBG_BLD, 1,
-                                        DDLogFlags.SYNCING,
-                                        (v?"adding new":"removing") +
-                                        " tag " +	
-                                        prop.getDtdName());
-                    }
-			    
-                    Node parent = prop.getParentNode();
-                    if (v || Common.shouldNotBeEmpty(prop.type)) {
-                        NodeFactory f = prop.getNodeFactory();
-                        if (node == null) {
-                            node = f.createElement(prop);
-                            Node sibling = prop.getFollowingSibling(this);
-                            parent.insertBefore(this.node, sibling);
-                        }
-                        if (Common.shouldNotBeEmpty(prop.type)) {
-                            CharacterData text =
-                                (CharacterData) node.getFirstChild();
-                            if (text == null) {
-                                text = (CharacterData)f.createText();
-                                node.appendChild(text);
-                                if (DDLogFlags.debug) {
-                                    TraceLogger.put(TraceLogger.DEBUG,
-                                                    TraceLogger.SVC_DD,
-                                                    DDLogFlags.DBG_BLD, 1,
-                                                    DDLogFlags.SYNCING,
-                                                    "adding new text node " +
-                                                    text.getNodeName() +
-                                                    " to node " +
-                                                    this.node.getNodeName());
-                                }
-                            }
-                            text.setData(""+v);
-                        }
-                    } else if (node != null) {
-                        parent.removeChild(this.node);
-                        this.node = null;
-                    }
+            }
+            //System.out.println("this.prop="+this.prop+" this.prop.beanProp="+this.prop.beanProp+" this.prop.beanProp==prop "+(this.prop.beanProp==prop)+" this.prop.value="+this.prop.value+" bp.value="+bp.value);
+            if (this.prop != null && this.prop.beanProp==prop) {
+                // See IZ#19802
+                if (node != null &&
+                    (prop.getType() & Common.MASK_TYPE) == Common.TYPE_STRING) {
+                    // Since it's a String, the value is stored in the DOM
+                    // graph, and not in our BeanProperty.  Stash the contents
+                    // of the DOM node into our BeanProperty,
+                    // before we remove the node and lose the value.
+                    bp.value = getDomValue(node);
                 }
-                else {
-                    if (DDLogFlags.debug) {
-                        TraceLogger.put(TraceLogger.DEBUG,
-                                        TraceLogger.SVC_DD,
-                                        DDLogFlags.DBG_BLD, 1,
-                                        DDLogFlags.SYNCING,
-                                        "keeping same boolean value");
-                    }
-                }
-            } else {
-                NodeFactory f = prop.getNodeFactory();
-                if (this.node == null) {
+                //this.removeProp(prop);
+            }
+            this.removeNode(prop);
+            prop.notifyInternal(e, false);
+        }
+        else
+            if(a.action == a.ADD) {
+                if (Common.isBean(prop.type)) {
+                    NodeFactory f = prop.getNodeFactory();
+		    
+                    if (this.node != null)
+                        throw new IllegalStateException(Common.getMessage(
+                                     "DOMBindingAlreadyHasNode_msg",
+                                     node.toString()));
+		    
                     Node parent = prop.getParentNode();
                     this.node = f.createElement(prop);
-			    
+		    
                     if (DDLogFlags.debug) {
-                        TraceLogger.put(TraceLogger.DEBUG,
-                                        TraceLogger.SVC_DD,
+                        TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
                                         DDLogFlags.DBG_BLD, 1,
                                         DDLogFlags.SYNCING,
                                         "adding new child " +
                                         this.node.getNodeName() +
-                                        " to node " +
-                                        parent.getNodeName());
+                                        " to node " + parent.getNodeName());
                     }
-			    
+		    
                     Node sibling = prop.getFollowingSibling(this);
                     parent.insertBefore(this.node, sibling);
-                }
+		    
+                    //  Recurse the syncNodes on all the properties of the bean
+                    BaseBean bean = ((BaseBean)bp.value);
+                    bean.setGraphManager(prop.bean.graphManager());
+                    bean.syncNodes(a);
+                } else if (Common.isBoolean(prop.type)) {
+                    boolean v = false;
 			
-                CharacterData text =
-                    (CharacterData)this.node.getFirstChild();
-			
-                if (text == null) {
-                    text = (CharacterData)f.createText();
-                    this.node.appendChild(text);
-                    if (DDLogFlags.debug) {
-                        TraceLogger.put(TraceLogger.DEBUG,
-                                        TraceLogger.SVC_DD,
-                                        DDLogFlags.DBG_BLD, 1,
-                                        DDLogFlags.SYNCING,
-                                        "adding new text node " +
-                                        text.getNodeName() +
-                                        " to node " +
-                                        this.node.getNodeName());
+                    if (bp.value != null)
+                        v = ((Boolean)bp.value).booleanValue();
+
+                    if (Common.shouldNotBeEmpty(prop.type) || node == null ||
+                        (nodeToBoolean(prop)).booleanValue() != v) {
+                        //  Current node and expected value are not the same
+                        if (DDLogFlags.debug) {
+                            TraceLogger.put(TraceLogger.DEBUG,
+                                            TraceLogger.SVC_DD,
+                                            DDLogFlags.DBG_BLD, 1,
+                                            DDLogFlags.SYNCING,
+                                            (v?"adding new":"removing") +
+                                            " tag " +	
+                                            prop.getDtdName());
+                        }
+			    
+                        Node parent = prop.getParentNode();
+                        if (v || Common.shouldNotBeEmpty(prop.type)) {
+                            NodeFactory f = prop.getNodeFactory();
+                            if (node == null) {
+                                node = f.createElement(prop);
+                                Node sibling = prop.getFollowingSibling(this);
+                                parent.insertBefore(this.node, sibling);
+                            }
+                            if (Common.shouldNotBeEmpty(prop.type)) {
+                                CharacterData text =
+                                    (CharacterData) node.getFirstChild();
+                                if (text == null) {
+                                    text = (CharacterData)f.createText();
+                                    node.appendChild(text);
+                                    if (DDLogFlags.debug) {
+                                        TraceLogger.put(TraceLogger.DEBUG,
+                                                        TraceLogger.SVC_DD,
+                                                        DDLogFlags.DBG_BLD, 1,
+                                                        DDLogFlags.SYNCING,
+                                                        "adding new text node " +
+                                                        text.getNodeName() +
+                                                        " to node " +
+                                                        this.node.getNodeName());
+                                    }
+                                }
+                                text.setData(""+v);
+                            }
+                        } else if (node != null) {
+                            parent.removeChild(this.node);
+                            this.node = null;
+                        }
                     }
-                }
+                    else {
+                        if (DDLogFlags.debug) {
+                            TraceLogger.put(TraceLogger.DEBUG,
+                                            TraceLogger.SVC_DD,
+                                            DDLogFlags.DBG_BLD, 1,
+                                            DDLogFlags.SYNCING,
+                                            "keeping same boolean value");
+                        }
+                    }
+                } else {
+                    NodeFactory f = prop.getNodeFactory();
+                    if (this.node == null) {
+                        Node parent = prop.getParentNode();
+                        this.node = f.createElement(prop);
+			    
+                        if (DDLogFlags.debug) {
+                            TraceLogger.put(TraceLogger.DEBUG,
+                                            TraceLogger.SVC_DD,
+                                            DDLogFlags.DBG_BLD, 1,
+                                            DDLogFlags.SYNCING,
+                                            "adding new child " +
+                                            this.node.getNodeName() +
+                                            " to node " +
+                                            parent.getNodeName());
+                        }
+			    
+                        Node sibling = prop.getFollowingSibling(this);
+                        parent.insertBefore(this.node, sibling);
+                    }
 			
-                text.setData(bp.value.toString());
-            }
+                    CharacterData text =
+                        (CharacterData)this.node.getFirstChild();
+			
+                    if (text == null) {
+                        text = (CharacterData)f.createText();
+                        this.node.appendChild(text);
+                        if (DDLogFlags.debug) {
+                            TraceLogger.put(TraceLogger.DEBUG,
+                                            TraceLogger.SVC_DD,
+                                            DDLogFlags.DBG_BLD, 1,
+                                            DDLogFlags.SYNCING,
+                                            "adding new text node " +
+                                            text.getNodeName() +
+                                            " to node " +
+                                            this.node.getNodeName());
+                        }
+                    }
+			
+                    text.setData(bp.value.toString());
+                }
 		
-            //  Add any attribute cached for this new node
-            if (this.node != null) {
-                if (bp.attributes != null) {
-                    for (int i=0; i<bp.attributes.size(); i++) {
-                        CacheAttr ca = (CacheAttr)bp.attributes.get(i);
-                        // null value means, remove. 
-                        // Ignore remove for a new node.
-                        if (ca.value != null)
-                            ((Element)this.node).setAttribute(ca.name, ca.value);
+                //  Add any attribute cached for this new node
+                if (this.node != null) {
+                    if (bp.attributes != null) {
+                        for (int i=0; i<bp.attributes.size(); i++) {
+                            CacheAttr ca = (CacheAttr)bp.attributes.get(i);
+                            // null value means, remove. 
+                            // Ignore remove for a new node.
+                            if (ca.value != null)
+                                ((Element)this.node).setAttribute(ca.name, ca.value);
+                        }
+                        bp.attributes = null;
                     }
-                    bp.attributes = null;
                 }
             }
-	    }
-	    else
-		throw new IllegalArgumentException(Common.getMessage(
-		    "UnknownAction_msg", new Integer(a.action)));
+            else
+                throw new IllegalArgumentException(Common.getMessage(
+                                                                     "UnknownAction_msg", new Integer(a.action)));
     }
     
     boolean hasDomNode() {

@@ -164,68 +164,68 @@ public class BeanComparator {
     
     /**
      *	Default comparison implementation for comparing two property values.
+     * @return curValue if the same, newValue if different.
      */
     public Object compareProperty(String 	propertyName,
-				  BaseBean 	curBean,
-				  Object 	curValue,
-				  int		curIndex,
-				  BaseBean	newBean,
-				  Object 	newValue,
-				  int		newIndex) {
-
-	Object ret = curValue;
-	BeanProp prop = curBean.beanProp(propertyName);
-	boolean isKey = this.hasKeyDefined(prop);
+                                  BaseBean 	curBean,
+                                  Object 	curValue,
+                                  int		curIndex,
+                                  BaseBean	newBean,
+                                  Object 	newValue,
+                                  int		newIndex) {
+        Object ret = curValue;
+        BeanProp prop = curBean.beanProp(propertyName);
+        boolean isKey = this.hasKeyDefined(prop);
 	
-	if (isKey && ((curValue == null) || !curValue.equals(newValue)))
-	    ret = newValue;
+        // Values are the same - check their attributes
+        if (isKey) {
+            if (curValue == null || !curValue.equals(newValue))
+                ret = newValue;
 
-	// Values are the same - check their attributes
-	if (isKey) {
+            String[] attrs = curBean.getAttributeNames(propertyName);
+            int i1 = 0;
+            int i2 = 0;
 
-	    String[] attrs = curBean.getAttributeNames(propertyName);
-	    int i1 = 0;
-	    int i2 = 0;
+            if (curIndex != -1) {
+                i1 = curIndex;
+                i2 = newIndex;
+            }
 
-	    if (curIndex != -1) {
-		i1 = curIndex;
-		i2 = newIndex;
-	    }
+            for(int j=0; j<attrs.length; j++) {
+                String a = attrs[j];
 
-	    for(int j=0; j<attrs.length; j++) {
-		String a = attrs[j];
+                String v1 = curBean.getAttributeValue(propertyName, i1, a);
+                String v2 = newBean.getAttributeValue(propertyName, i2, a);
 
-		String v1 = curBean.getAttributeValue(propertyName, i1, a);
-		String v2 = newBean.getAttributeValue(propertyName, i2, a);
-
-		if (v1 != null) {
-		    if (!v1.equals(v2)) {
-			ret = newValue;
-			break;
-		    }
-		} else if (v2 != v1) {
-		    ret = newValue;
-		    break;
-		}
+                if (v1 != null) {
+                    if (!v1.equals(v2)) {
+                        ret = newValue;
+                        break;
+                    }
+                } else if (v2 != v1) {
+                    ret = newValue;
+                    break;
+                }
 		
-	    }
-	}
+            }
+        } else {
+        }
 	
-	if (DDLogFlags.debug) {
-	    TraceLogger.put(TraceLogger.DEBUG,
-			    TraceLogger.SVC_DD,
-			    DDLogFlags.DBG_BLD, 5,
-			    DDLogFlags.PROPCOMP,
-			    propertyName + " - " +
-			    ((curValue==null)?"<null>":curValue) +
-			    ((curIndex==-1)?"":("."+curIndex)) + " / " +
-			    ((newValue==null)?"<null>":newValue) +
-			    ((newIndex==-1)?"":("."+newIndex)) + " " +
-			    ((ret == curValue)? "same":"different") +
-			    " (" +((isKey)?"Key":"!Key") + ")");
-	}
+        if (DDLogFlags.debug) {
+            TraceLogger.put(TraceLogger.DEBUG,
+                            TraceLogger.SVC_DD,
+                            DDLogFlags.DBG_BLD, 5,
+                            DDLogFlags.PROPCOMP,
+                            propertyName + " - " +
+                            ((curValue==null)?"<null>":curValue) +
+                            ((curIndex==-1)?"":("."+curIndex)) + " / " +
+                            ((newValue==null)?"<null>":newValue) +
+                            ((newIndex==-1)?"":("."+newIndex)) + " " +
+                            ((ret == curValue)? "same":"different") +
+                            " (" +((isKey)?"Key":"!Key") + ")");
+        }
 	
-	return ret;
+        return ret;
     }
     
     //

@@ -580,13 +580,17 @@ public class GraphManager extends Object {
      *	Return the bean holding the property 'name' as a BaseBean object
      */
     public BaseBean getPropertyParent(String name) {
+        return (BaseBean) getPropertyParent(root, name);
+    }
+    
+    public static Bean getPropertyParent(Bean theRoot, String name) {
         if (!name.startsWith("/"))	// NOI18N
             throw new IllegalArgumentException(Common.getMessage(
                                                                  "NameShouldStartWithSlash_msg", name));
 	
         int		i1, i2, i;
         String		beanName, indexName;
-        BaseBean	curBean = null;
+        Bean	curBean = null;
 	
         i1 = 0;
 	
@@ -597,7 +601,7 @@ public class GraphManager extends Object {
                 i2 = name.indexOf('/', i1);
                 if (i2 == -1) {
                     if (curBean == null)
-                        curBean = this.root;
+                        curBean = theRoot;
                     //	We reached the property, return the bean found
                     break;
                 }
@@ -618,7 +622,7 @@ public class GraphManager extends Object {
                     indexName = "0";	// NOI18N
 		
                 if (curBean == null)
-                    curBean = this.root;
+                    curBean = theRoot;
                 else
                     curBean = curBean.propertyById(beanName,
                                                    Integer.parseInt(indexName, 
@@ -648,9 +652,15 @@ public class GraphManager extends Object {
      */
     public String getKeyPropertyName(String propName, String[] prop,
 				     String[] key, boolean keyName) {
+        return getKeyPropertyName(root, propName, prop, key, keyName);
+    }
+    
+    public static String getKeyPropertyName(Bean theRoot,
+                                            String propName, String[] prop,
+                                            String[] key, boolean keyName) {
 
 	StringBuffer	keyPropName = new StringBuffer();
-	BaseBean	curBean = this.root;
+	Bean	curBean = theRoot;
 	String 		beanName, indexName;
 	String		name = propName;
 	
@@ -684,8 +694,8 @@ public class GraphManager extends Object {
 		indexName = "0";	// NOI18N
 	    
 	    
-	    if (this.root.hasName(beanName)) {
-		curBean = this.root;
+	    if (theRoot.hasName(beanName)) {
+            curBean = theRoot;
 	    } else {
 		if (curBean.getProperty(beanName).isBean()) {
 		    curBean = curBean.propertyById(beanName,
@@ -759,7 +769,7 @@ public class GraphManager extends Object {
     /**
      *	Return the name of the bean holding the property 'name'
      */
-    public String getPropertyParentName(String name) {
+    public static String getPropertyParentName(String name) {
 	int i = name.lastIndexOf('/');
 	if (i != -1)
 	    name = name.substring(0, i);
@@ -782,7 +792,7 @@ public class GraphManager extends Object {
      *	attribute:		/Book/Chapter.2:title	-> Chapter
      *
      */
-    public String getPropertyName(String name) {
+    public static String getPropertyName(String name) {
 	int i = name.lastIndexOf('/');
 	if (i != -1)
 	    name = name.substring(i+1);
@@ -827,7 +837,7 @@ public class GraphManager extends Object {
     /**
      *	Return the index value of the property, as a string
      */
-    private String extractPropertyIndex(String name) {
+    private static String extractPropertyIndex(String name) {
 	int i = name.lastIndexOf('/');
 	if (i != -1)
 	    name = name.substring(i+1);
@@ -849,26 +859,29 @@ public class GraphManager extends Object {
      *	the property.
      */
     public int getPropertyIndex(String name) {
-	String index = this.extractPropertyIndex(name);
-	if (index != null) {
-	    int i = index.lastIndexOf('i');
-	    if (i != -1) {
-		//  This is a removed property - return the old value
-		return Integer.parseInt(index.substring(i+1));
-	    }
-	    else {
-		//  Get the current index value
-		BaseBean bean = this.getPropertyParent(name);
-		if (bean != null) {
-		    BeanProp bp = bean.beanProp(this.getPropertyName(name));
+        return getPropertyIndex(root, name);
+    }
+    public static int getPropertyIndex(Bean theRoot, String name) {
+        String index = extractPropertyIndex(name);
+        if (index != null) {
+            int i = index.lastIndexOf('i');
+            if (i != -1) {
+                //  This is a removed property - return the old value
+                return Integer.parseInt(index.substring(i+1));
+            }
+            else {
+                //  Get the current index value
+                Bean bean = getPropertyParent(theRoot, name);
+                if (bean != null) {
+                    BeanProp bp = bean.beanProp(getPropertyName(name));
 		    
-		    if (bp != null)
-			return bp.idToIndex(Integer.parseInt(index, 16));
-		}
-	    }
-	}
+                    if (bp != null)
+                        return bp.idToIndex(Integer.parseInt(index, 16));
+                }
+            }
+        }
 	
-	return -1;
+        return -1;
     }
     
     //
