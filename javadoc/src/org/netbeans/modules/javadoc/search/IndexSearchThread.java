@@ -7,18 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.javadoc.search;
 
 import java.util.StringTokenizer;
-import java.io.*;
 
 import org.openide.util.RequestProcessor;
-import org.openide.util.TaskListener;
-import org.openide.util.Task;
 import org.openide.filesystems.FileObject;
 
 /** Abstract class for thread which searches for documentation
@@ -26,7 +23,7 @@ import org.openide.filesystems.FileObject;
  *  @author Petr Hrebejk, Petr Suchomel
  */
 
-public abstract class IndexSearchThread extends Thread  {
+public abstract class IndexSearchThread implements Runnable  {
 
     // PENDING: Add some abstract methods
 
@@ -164,7 +161,7 @@ public abstract class IndexSearchThread extends Thread  {
     }
 
     public void go() {
-        rpTask = RequestProcessor.getDefault().post( this, 0, NORM_PRIORITY );
+        rpTask = RequestProcessor.getDefault().post( this, 0, Thread.NORM_PRIORITY );
     }
 
     public void finish() {

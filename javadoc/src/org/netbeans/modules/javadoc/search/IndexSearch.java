@@ -17,9 +17,9 @@ import java.io.*;
 import java.net.URL;
 
 import java.util.ArrayList;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JSplitPane;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import javax.swing.*;
 
 import org.netbeans.api.javahelp.Help;
 import org.openide.awt.HtmlBrowser;
@@ -30,8 +30,6 @@ import org.openide.src.Element;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.*;
 
-import org.openide.filesystems.FileObject;
-
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.DialogDisplayer;
 
@@ -39,7 +37,7 @@ import org.openide.DialogDisplayer;
  *
  * @author Petr Hrebejk, Petr Suchomel
  */
-public class IndexSearch
+public final class IndexSearch
             extends TopComponent
     implements Externalizable {
 
@@ -50,28 +48,18 @@ public class IndexSearch
     static final long serialVersionUID =1200348578933093459L;
 
     /** The only instance allowed in system */
-    private static IndexSearch indexSearch;
+    private static Reference refIndexSearch;
+    
+    /** cache of previously searched strings */
+    private static Object[] MRU = new Object[0];
 
     /** Search engine */
     private JavadocSearchEngine searchEngine = null;
 
     /** The state of the window is stored in hidden options of DocumentationSettings */
-    DocumentationSettings ds = DocumentationSettings.getDefault();
+    private DocumentationSettings ds = DocumentationSettings.getDefault();
 
     private String quickFind;
-
-    /* Button icons */
-    //private static final ImageIcon windowIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
-    private static final ImageIcon refSortIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/refSort.gif")); // NOI18N
-    private static final ImageIcon typeSortIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/typeSort.gif")); // NOI18N
-    private static final ImageIcon alphaSortIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/alphaSort.gif")); // NOI18N
-    private static final ImageIcon listOnlyIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/list_only.gif")); // NOI18N
-    private static final ImageIcon listHtmlIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/list_html.gif")); // NOI18N
-    private static final ImageIcon showSourceIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/showSource.gif")); // NOI18N
-
-    private final static String ICON_RESOURCE = "/org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
-    private final static java.awt.Image windowIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
-                IndexSearch.class.getResource (ICON_RESOURCE));
 
     /* Current sort mode */
     private String currentSort = "A"; // NOI18N
@@ -98,11 +86,12 @@ public class IndexSearch
     /* Holds split position if the quick view is disabled */
     private int oldSplit = DocumentationSettings.getDefault().getIdxSearchSplit();
 
-    private static final DefaultListModel waitModel = new DefaultListModel();
-    private static final DefaultListModel notModel = new DefaultListModel();
+    private final DefaultListModel waitModel = new DefaultListModel();
+    private final DefaultListModel notModel = new DefaultListModel();
     private boolean setDividerLocation;
 
-    static {
+    /** Initializes the Form */
+    public IndexSearch() {
         DocIndexItem dii = new DocIndexItem( ResourceUtils.getBundledString("CTL_SEARCH_Wait" ), "", null, "" );    //NOI18N
         dii.setIconIndex( DocSearchIcons.ICON_WAIT );
         waitModel.addElement( dii );
@@ -110,10 +99,7 @@ public class IndexSearch
         DocIndexItem diin = new DocIndexItem( ResourceUtils.getBundledString("CTL_SEARCH_NotFound" ), "", null, "" );   //NOI18N
         diin.setIconIndex( DocSearchIcons.ICON_NOT_FOUND );
         notModel.addElement( diin );
-    }
-
-    /** Initializes the Form */
-    public IndexSearch() {
+        
         initComponents ();
         
         // Force winsys to not show tab when this comp is alone                                                                                                                 
@@ -192,12 +178,13 @@ public class IndexSearch
 
         searchButton.setText( STR_FIND );
 
-        sourceButton.setIcon( showSourceIcon );
-        byReferenceButton.setIcon( refSortIcon );
-        byTypeButton.setIcon( typeSortIcon );
-        byNameButton.setIcon( alphaSortIcon );
-        quickViewButton.setIcon( listHtmlIcon );
-        quickViewButton.setSelectedIcon( listOnlyIcon );
+        
+        sourceButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/showSource.gif"))); // NOI18N
+        byReferenceButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/refSort.gif"))); // NOI18N
+        byTypeButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/typeSort.gif"))); // NOI18N
+        byNameButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/alphaSort.gif"))); // NOI18N
+        quickViewButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_html.gif"))); // NOI18N
+        quickViewButton.setSelectedIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_only.gif"))); // NOI18N
 
         javax.swing.ButtonGroup bg = new javax.swing.ButtonGroup();
         bg.add( byReferenceButton );
@@ -259,7 +246,7 @@ public class IndexSearch
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
-        searchComboBox = new javax.swing.JComboBox();
+        searchComboBox = new javax.swing.JComboBox(MRU);
         searchButton = new javax.swing.JButton();
         sourceButton = new javax.swing.JButton();
         byNameButton = new javax.swing.JToggleButton();
@@ -299,8 +286,8 @@ public class IndexSearch
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 3);
         jPanel1.add(searchButton, gridBagConstraints);
 
-        sourceButton.setMinimumSize(new java.awt.Dimension(25, 25));
         sourceButton.setPreferredSize(new java.awt.Dimension(25, 25));
+        sourceButton.setMinimumSize(new java.awt.Dimension(25, 25));
         sourceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showSource(evt);
@@ -312,9 +299,9 @@ public class IndexSearch
         jPanel1.add(sourceButton, gridBagConstraints);
 
         byNameButton.setSelected(true);
+        byNameButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byNameButton.setActionCommand("A");
         byNameButton.setMinimumSize(new java.awt.Dimension(25, 25));
-        byNameButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byNameButton.setRequestFocusEnabled(false);
         byNameButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -324,9 +311,9 @@ public class IndexSearch
 
         jPanel1.add(byNameButton, new java.awt.GridBagConstraints());
 
+        byReferenceButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byReferenceButton.setActionCommand("R");
         byReferenceButton.setMinimumSize(new java.awt.Dimension(25, 25));
-        byReferenceButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byReferenceButton.setRequestFocusEnabled(false);
         byReferenceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -336,9 +323,9 @@ public class IndexSearch
 
         jPanel1.add(byReferenceButton, new java.awt.GridBagConstraints());
 
+        byTypeButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byTypeButton.setActionCommand("T");
         byTypeButton.setMinimumSize(new java.awt.Dimension(25, 25));
-        byTypeButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byTypeButton.setRequestFocusEnabled(false);
         byTypeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -360,8 +347,8 @@ public class IndexSearch
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         jPanel1.add(quickViewButton, gridBagConstraints);
 
-        helpButton.setText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp"));
         helpButton.setToolTipText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp_tooltip"));
+        helpButton.setText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp"));
         helpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpButtonActionPerformed(evt);
@@ -546,15 +533,15 @@ public class IndexSearch
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton searchButton;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JButton sourceButton;
-    private javax.swing.JComboBox searchComboBox;
     private javax.swing.JToggleButton byNameButton;
-    private javax.swing.JButton helpButton;
     private javax.swing.JToggleButton byReferenceButton;
-    private javax.swing.JToggleButton quickViewButton;
     private javax.swing.JToggleButton byTypeButton;
+    private javax.swing.JButton helpButton;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JToggleButton quickViewButton;
+    private javax.swing.JButton searchButton;
+    private javax.swing.JComboBox searchComboBox;
+    private javax.swing.JButton sourceButton;
     // End of variables declaration//GEN-END:variables
 
 
@@ -608,13 +595,14 @@ public class IndexSearch
     }
 
     public static IndexSearch getDefault() {
-        if ( indexSearch == null ) {
+        IndexSearch indexSearch;
+        if (refIndexSearch == null || null == (indexSearch = (IndexSearch) refIndexSearch.get())) {
             indexSearch = new IndexSearch ();
-            org.netbeans.modules.javadoc.JavadocModule.registerTopComponent(indexSearch);
+            refIndexSearch = new SoftReference(indexSearch);
 
             indexSearch.setName( ResourceUtils.getBundledString ("CTL_SEARCH_WindowTitle") );   //NOI18N
+            indexSearch.setIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
         }
-        indexSearch.setIcon( windowIcon );
         return indexSearch;
     }
 
@@ -638,26 +626,19 @@ public class IndexSearch
                                                     }
                                                 } );
     }
-
-    public void readExternal(final ObjectInput in )
-    throws java.io.IOException, java.lang.ClassNotFoundException {
-
-        super.readExternal( in );
-        indexSearch = this;
-        resolveButtonState();
-        indexSearch = getDefault(); //test for null
+    
+    /**
+     * Replaces previously stored instances with the default one. Just due to
+     * backward compatibility.
+     * @return the default instance
+     * @throws ObjectStreamException
+     */ 
+    private Object readResolve() throws ObjectStreamException {
+        return getDefault();
     }
-
-    public void writeExternal(final ObjectOutput out)
-    throws java.io.IOException {
-
-        super.writeExternal( out );
-    }
-
-
 
     void go() {
-        String toFind = new String( searchComboBox.getEditor().getItem().toString() );
+        String toFind = searchComboBox.getEditor().getItem().toString();
 
         // Alocate array for results
         results = new ArrayList();
@@ -676,6 +657,7 @@ public class IndexSearch
         }
 
         searchComboBox.insertItemAt( toFind, 0 );
+        mirrorMRUStrings();
         searchComboBox.getEditor().setItem( toFind );
 
         resultsList.setModel( waitModel );
@@ -698,6 +680,15 @@ public class IndexSearch
         
         searchButton.setText( STR_STOP );
         searchButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_ButtonStop_Mnemonic").charAt(0));  // NOI18N
+    }
+    
+    private void mirrorMRUStrings() {
+        ComboBoxModel model = searchComboBox.getModel();
+        int size = model.getSize();
+        MRU = new Object[size];
+        for (int i = 0; i < size; i++) {
+            MRU[i] = model.getElementAt(i);
+        }
     }
 
     DefaultListModel generateModel( java.util.Comparator comp ) {
