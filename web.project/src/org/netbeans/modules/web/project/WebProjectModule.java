@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -133,10 +134,11 @@ public class WebProjectModule extends ModuleInstall {
                                 ep.setProperty(JSPC_CLASSPATH, jspc_cp);
                                 changed = true;
                             }
-                            String copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false).toString();
+                            File copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false);
+                            assert copy_files != null : "Cannot find ant/extra/copyfiles.jar in installation.";
                             String copy_files_old = ep.getProperty(COPYFILES_CLASSPATH);
-                            if (copy_files_old == null || !copy_files_old.equals(copy_files)) {
-                                ep.setProperty(COPYFILES_CLASSPATH, copy_files);
+                            if (copy_files_old == null || !copy_files_old.equals(copy_files.toString())) {
+                                ep.setProperty(COPYFILES_CLASSPATH, copy_files.toString());
                                 changed = true;
                             }
                             if (changed) {
