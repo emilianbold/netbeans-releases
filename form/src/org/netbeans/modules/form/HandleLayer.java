@@ -106,17 +106,19 @@ class HandleLayer extends JPanel
 
     private void paintSelection(Graphics2D g, RADComponent metacomp) {
         Object comp = formDesigner.getComponent(metacomp);
-        if (comp instanceof Component && ((Component)comp).isShowing()) {
-            Component component = (Component) comp;
+        if (!(comp instanceof Component))
+            return;
 
+        Component component = (Component) comp;
+        Component parent = component.getParent();
+
+        if (parent != null && component.isShowing()) {
             Rectangle rect = component.getBounds();
-            rect = SwingUtilities.convertRectangle(component.getParent(),
-                                                   rect,
-                                                   this);
+            rect = SwingUtilities.convertRectangle(parent, rect, this);
 
             Rectangle parentRect = new Rectangle(new Point(0,0),
-                                                 component.getParent().getSize());
-            parentRect = SwingUtilities.convertRectangle(component.getParent(),
+                                                 parent.getSize());
+            parentRect = SwingUtilities.convertRectangle(parent,
                                                          parentRect,
                                                          this);
 

@@ -330,8 +330,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
     public boolean removeComponentFromContainer(Container container,
                                                 Container containerDelegate,
-                                                Component component,
-                                                int index)
+                                                Component component)
     {
         containerDelegate.remove(component);
         return true;

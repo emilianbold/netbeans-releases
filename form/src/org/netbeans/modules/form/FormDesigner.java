@@ -271,7 +271,7 @@ public class FormDesigner extends TopComponent
     
     FormDesigner(FormModel formModel) {
         // instruct winsys to save state of this top component only if opened
-        putClientProperty("PersistenceType", "OnlyOpened");
+        putClientProperty("PersistenceType", "OnlyOpened"); // NOI18N
         
         setIcon(Utilities.loadImage(iconURL));
         
@@ -569,11 +569,11 @@ public class FormDesigner extends TopComponent
         updateName(formModel.getName());
     }
 
-    void placeUpdateTask(int type, Object updateObj) {
+    void placeUpdateTask(int type, FormModelEvent event) {
         if (formModel == null)
             return;
 
-        updater.addTask(type, updateObj);
+        updater.addTask(type, event);
         if (!updateTaskPlaced) {
             updateTaskPlaced = true;
             SwingUtilities.invokeLater(updater);
@@ -782,21 +782,17 @@ public class FormDesigner extends TopComponent
     class FormListener extends FormModelAdapter {
 
         public void containerLayoutChanged(FormModelEvent e) {
-            placeUpdateTask(UpdateTask.LAYOUT, e.getContainer());
+            placeUpdateTask(UpdateTask.LAYOUT, e);
         }
 
         public void componentLayoutChanged(FormModelEvent e) {
-            RADComponent metacomp = e.getComponent();
-            if (metacomp instanceof RADVisualComponent) {
-                placeUpdateTask(UpdateTask.LAYOUT,
-                                metacomp.getParentComponent());
-            }
+            if (e.getComponent() instanceof RADVisualComponent)
+                placeUpdateTask(UpdateTask.LAYOUT, e);
         }
 
         public void componentAdded(FormModelEvent e) {
-            RADComponent metacomp = e.getComponent();
-            if (isInDesignedTree(metacomp))
-                placeUpdateTask(UpdateTask.ADD, metacomp);
+            if (isInDesignedTree(e.getComponent()))
+                placeUpdateTask(UpdateTask.ADD, e);
         }
 
         public void componentRemoved(FormModelEvent e) {
@@ -812,18 +808,18 @@ public class FormDesigner extends TopComponent
                 placeUpdateTask(UpdateTask.ALL, null);
             }
             else
-                placeUpdateTask(UpdateTask.REMOVE, removed);
+                placeUpdateTask(UpdateTask.REMOVE, e);
 
             if (isComponentSelected(removed))
                 removeComponentFromSelection(removed);
         }
 
         public void componentsReordered(FormModelEvent e) {
-            placeUpdateTask(UpdateTask.ORDER, e.getContainer());
+            placeUpdateTask(UpdateTask.ORDER, e);
         }
 
         public void componentPropertyChanged(FormModelEvent e) {
-            placeUpdateTask(UpdateTask.PROPERTY, e.getComponentProperty());
+            placeUpdateTask(UpdateTask.PROPERTY, e);
         }
 
         public void syntheticPropertyChanged(FormModelEvent e) {
@@ -850,10 +846,10 @@ public class FormDesigner extends TopComponent
             }
         }
 
-        synchronized public void addTask(int type, Object param) {
+        synchronized public void addTask(int type, FormModelEvent event) {
             if (updateTasks == null)
                 updateTasks = new ArrayList();
-            updateTasks.add(new UpdateTask(type, param));
+            updateTasks.add(new UpdateTask(type, event));
         }
 
         synchronized public void performTasks() {
@@ -925,11 +921,11 @@ public class FormDesigner extends TopComponent
         static final int PROPERTY = 6; // update property
 
         int type;
-        Object param;
+        FormModelEvent event;
 
-        UpdateTask(int type, Object param) {
+        UpdateTask(int type, FormModelEvent ev) {
             this.type = type;
-            this.param = param;
+            this.event = ev;
         }
 
         void performUpdate() {
@@ -946,23 +942,26 @@ public class FormDesigner extends TopComponent
                     break;
 
                 case ORDER:
-                    replicator.reorderComponents((ComponentContainer) param);
+                    replicator.reorderComponents(event.getContainer());
                     break;
 
                 case LAYOUT:
-                    replicator.updateContainerLayout((RADVisualContainer) param);
+                    replicator.updateContainerLayout((RADVisualContainer)
+                                                     event.getContainer());
                     break;
 
                 case ADD:
-                    replicator.addComponent((RADComponent) param);
+                    replicator.addComponent(event.getComponent());
                     break;
 
                 case REMOVE:
-                    replicator.removeComponent((RADComponent) param);
+                    replicator.removeComponent(event.getComponent(),
+                                               event.getContainer());
                     break;
 
                 case PROPERTY:
-                    replicator.updateComponentProperty((RADProperty) param);
+                    replicator.updateComponentProperty(
+                                   event.getComponentProperty());
                     break;
             }
         }
@@ -976,37 +975,29 @@ public class FormDesigner extends TopComponent
             switch (type) {
                 case ORDER:
                 case LAYOUT:
-                    if (prevTask.type == type)
-                        return param == prevTask.param;
-                    if (prevTask.type == ADD || prevTask.type == REMOVE)
-                        return prevTask.param instanceof RADComponent
-                                && ((RADComponent)prevTask.param)
-                                        .getParentComponent() == param;
+                    if (prevTask.type == type
+                            || prevTask.type == ADD || prevTask.type == REMOVE)
+                        return event.getContainer() == prevTask.event.getContainer();
                     break;
 
                 case ADD:
                     if (prevTask.type == ADD)
-                        return param == prevTask.param;
+                        return event.getComponent() == prevTask.event.getComponent();
                     break;
 
                 case REMOVE:
-                    RADComponent comp;
-                    if (prevTask.param instanceof RADComponent)
-                        comp = (RADComponent) prevTask.param;
-                    else if (prevTask.param instanceof RADProperty)
-                        comp = ((RADProperty)prevTask.param).getRADComponent();
-                    else comp = null;
-
-                    if (comp != null && comp == param)
-                        return true;
-                    break;
+                    Object comp = event.getComponent();
+                    return comp != null
+                           && (comp == prevTask.event.getComponent()
+                               || comp == prevTask.event.getContainer());
             }
 
             return false;
         }
     }
-    
-    
+
+    // ------------
+
     public static class FormDesignerPanel extends JPanel {
         
         private JComponent formDesignerLayer;

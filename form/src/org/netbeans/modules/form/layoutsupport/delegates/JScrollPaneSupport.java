@@ -74,8 +74,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
 
     public boolean removeComponentFromContainer(Container container,
                                                 Container containerDelegate,
-                                                Component component,
-                                                int index)
+                                                Component component)
     {
         return false;
     }

@@ -246,7 +246,9 @@ public class VisualReplicator {
         }
     }
 
-    public void removeComponent(RADComponent metacomp) {
+    public void removeComponent(RADComponent metacomp,
+                                ComponentContainer metacont)
+    {
         if (metacomp == null)
             return;
 
@@ -254,7 +256,8 @@ public class VisualReplicator {
         if (clone == null)
             return;
 
-        if (clone instanceof JMenuBar) { // JMenuBar must be reset in JRootPane
+        if (clone instanceof JMenuBar) { // JMenuBar meta component was removed
+            // reset JMenuBar in JRootPane
             Container menuParent = ((Component)clone).getParent();
             Container cont = menuParent;
             while (cont != null && !(cont instanceof JRootPane))
@@ -266,11 +269,48 @@ public class VisualReplicator {
                 menuParent.remove((Component)clone);
             else return;
         }
-        else if (clone instanceof Component) {
+        else if (clone instanceof Component) { // visual meta component was removed
             Component comp = (Component) clone;
-            if (comp.getParent() != null)
-                comp.getParent().remove(comp);
-            else return;
+            // do we know the parent container of the removed meta component?
+            RADVisualContainer parentCont =
+                metacont instanceof RADVisualContainer ?
+                    (RADVisualContainer) metacont : null;
+            Container cont = parentCont != null ?
+                             (Container) getClonedComponent(parentCont) : null;
+
+            if (cont == null) {
+                // we don't know the meta container (layout support), so will
+                // just simply remove the component from its parent
+                if (comp.getParent() != null)
+                    comp.getParent().remove(comp);
+            }
+            else { // let the layout support remove the visual component
+                Container contDelegate = parentCont.getContainerDelegate(cont);
+                LayoutSupportManager laysup = parentCont.getLayoutSupport();
+                if (!laysup.removeComponentFromContainer(
+                                cont, contDelegate, comp))
+                {   // layout delegate cannot remove individual components,
+                    // we must clear the container and add the components again
+                    laysup.clearContainer(cont, contDelegate);
+
+                    RADVisualComponent[] metacomps = parentCont.getSubComponents();
+                    if (metacomps.length > 0) {
+                        // we assume the metacomponent is already removed
+                        Component[] comps = new Component[metacomps.length];
+                        for (int i=0; i < metacomps.length; i++) {
+                            comp = (Component) getClonedComponent(metacomps[i]);
+                            // becaues the components were removed, we must
+                            // re-attach their fake peers (if needed)
+                            boolean attached = FakePeerSupport.attachFakePeer(comp);
+                            if (attached && comp instanceof Container)
+                                FakePeerSupport.attachFakePeerRecursively(
+                                                           (Container)comp);
+                            comps[i] = comp;
+                        }
+                        laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
+                    }
+                }
+            }
         }
         else if (clone instanceof MenuComponent) { // AWT menu
             MenuComponent menuComp = (MenuComponent) clone;
@@ -299,7 +339,7 @@ public class VisualReplicator {
         // [maybe this should be done for all AWT components]
         if (targetComp instanceof java.awt.Scrollbar) {
             // remove the component and add a new clone
-            removeComponent(metacomp);
+            removeComponent(metacomp, null);
             addComponent(metacomp);
             return;
         }

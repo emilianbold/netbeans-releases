@@ -426,11 +426,33 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         layoutDelegate.removeComponent(index);
 
         // remove the component instance from the primary container instance
-        layoutDelegate.removeComponentFromContainer(
-                           getPrimaryContainer(),
-                           getPrimaryContainerDelegate(),
-                           metacomp.getComponent(),
-                           index);
+        if (!layoutDelegate.removeComponentFromContainer(
+                                getPrimaryContainer(),
+                                getPrimaryContainerDelegate(),
+                                metacomp.getComponent()))
+        {   // layout delegate does not support removing individual components,
+            // so we clear the container and add the remaining components again
+            layoutDelegate.clearContainer(getPrimaryContainer(),
+                                          getPrimaryContainerDelegate());
+
+            RADVisualComponent[] metacomps = metaContainer.getSubComponents();
+            if (metacomps.length > 1) {
+                // we rely on that metacomp was not removed from the model yet
+                Component[] comps = new Component[metacomps.length-1];
+                for (int i=0; i < metacomps.length; i++) {
+                    if (i != index) {
+                        Component comp = metacomps[i].getComponent();
+                        ensureFakePeerAttached(comp);
+                        comps[i < index ? i : i-1] = comp;
+                    }
+                }
+                layoutDelegate.addComponentsToContainer(
+                                   getPrimaryContainer(),
+                                   getPrimaryContainerDelegate(),
+                                   comps,
+                                   0);
+            }
+        }
     }
 
     public void removeAll() {
@@ -516,11 +538,10 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
     public boolean removeComponentFromContainer(Container container,
                                                 Container containerDelegate,
-                                                Component component,
-                                                int index)
+                                                Component component)
     {
         return layoutDelegate.removeComponentFromContainer(
-                            container, containerDelegate, component, index);
+                            container, containerDelegate, component);
     }
 
     public boolean clearContainer(Container container,

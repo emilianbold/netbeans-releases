@@ -72,10 +72,9 @@ public interface LayoutSupportDelegate {
                                   int index);
     boolean removeComponentFromContainer(Container container,
                                          Container containerDelegate,
-                                         Component component,
-                                         int index);
+                                         Component component);
     boolean clearContainer(Container container,
-                                  Container containerDelegate);
+                           Container containerDelegate);
 
     // drag and drop support
     LayoutConstraints getNewConstraints(Container container,
