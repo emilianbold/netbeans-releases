@@ -118,6 +118,8 @@ public final class NbMainExplorer extends CloneableTopComponent
         rootsListener = new RootsListener();
         NbPlaces p = NbPlaces.getDefault();
         p.addChangeListener(WeakListener.change(rootsListener, p));
+
+        refreshRoots();
     }
 
     public HelpCtx getHelpCtx () {
@@ -128,20 +130,20 @@ public final class NbMainExplorer extends CloneableTopComponent
     /** Finds module tab in mapping of module tabs to their root node classes.
      * If it is not found it is added when parameter tc is not null. When parameter
      * tc is null new ModuleTab is created using default constructor. */
-    static synchronized ModuleTab findModuleTab (String nodeClassName, ModuleTab tc) {
+    private static synchronized ModuleTab findModuleTab (Node root, ModuleTab tc) {
         if (moduleTabs == null) {
-            moduleTabs = new HashMap(5);
+            moduleTabs = new WeakHashMap(5);
         }
-        ModuleTab tab = (ModuleTab) moduleTabs.get(nodeClassName);
+        ModuleTab tab = (ModuleTab) moduleTabs.get(root);
         if (tab != null) {
             return tab;
         } else {
             if (tc != null) {
-                moduleTabs.put(nodeClassName, tc);
+                moduleTabs.put(root, tc);
                 return tc;
             } else {
                 ModuleTab newTC = new ModuleTab();
-                moduleTabs.put(nodeClassName, newTC);
+                moduleTabs.put(root, newTC);
                 return newTC;
             }
         }
@@ -250,20 +252,6 @@ public final class NbMainExplorer extends CloneableTopComponent
     * will reflect new nodes. Called when content of "roots" nodes is changed.
     */
     final void refreshRoots () {
-        /* huh??
-        // attach listener to the ide settings if possible
-        if (!listenerInitialized) {
-            IDESettings ideS = (IDESettings)IDESettings.findObject(IDESettings.class);
-            if (ideS != null) {
-                ideS.addPropertyChangeListener(weakRootsL);
-                listenerInitialized = true;
-            }
-        }
-         */
-        
-        // should we close ProjectsTab?
-        ProjectsTab prjToClose = null;
-
         List curRoots = getRoots ();
         // first of all we have to close top components for
         // the roots that are no longer present in the roots content
@@ -277,20 +265,6 @@ public final class NbMainExplorer extends CloneableTopComponent
                 if (toRemove.contains(r)) {
                     // close top component asociated with this root context
                     // on all workspaces
-                    
-//                    // but not the project since it is a singleton
-//                    // i.e. mark it for closing
-//                    if (NbProjectOperation.hasProjectDesktop()) {
-//                        if (NbProjectOperation.getProjectDesktop().getClass() == r.getClass()) {
-//                            prjToClose = (ProjectsTab) me.getValue();
-//                            continue;
-//                        }
-//                        // bugfix #19129 if there is a project opened
-//                        // then the project tab shouldn't be closed
-//                        if (me.getValue() instanceof ProjectsTab) {
-//                            continue;
-//                        }
-//                    }
                     closeEverywhere((TopComponent)me.getValue());
                 }
             }
@@ -312,43 +286,14 @@ public final class NbMainExplorer extends CloneableTopComponent
                 // are already opened
                 tc = createTC(r);
                 
-                if (tc != prjToClose) {
-                    for (Iterator iter2 = workspaces.iterator(); iter2.hasNext(); ) {
-                        tc.open((Workspace)iter2.next());
-                    }
+                for (Iterator iter2 = workspaces.iterator(); iter2.hasNext(); ) {
+                    tc.open((Workspace)iter2.next());
                 }
             }
-            
-//            if (r.equals(NbProjectOperation.getProjectDesktop())) {
-//                // put a request for later validation
-//                // we must do this here, because of ExplorerManager's deserialization.
-//                // Root context of ExplorerManager is validated AFTER all other
-//                // deserialization, so we must wait for it
-//                
-//                //assert tc == prjToClose
-//                tc.scheduleValidation();
-//                // unmark close flag
-//                prjToClose = null;
-//            }
         }
-        
-        if (prjToClose != null) {
-            closeEverywhere(prjToClose);
-        }
-        
+
         // save roots for use during future changes
         prevRoots = curRoots;
-
-        // now select the right component
-        // PENDING
-        /*ExplorerTab tab = getRootPanel (currentRoot);
-        if (tab == null) {
-          // root not found
-          currentRoot = (Node)roots.get (0);
-          tabs.setSelectedIndex (0);
-    } else {
-          tabs.setSelectedComponent (tab);
-    }*/
     }
 
     /** Helper method - closes given top component on all workspaces
@@ -406,10 +351,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         // switch according to the type of the root context
         MainTab panel = null;
         NbPlaces places = NbPlaces.getDefault();
-//        if (rc.equals(places.projectDesktop())) {
-//            // projects tab
-//            panel = ProjectsTab.getDefault();
-//        } else
+
         if (rc.equals(RepositoryNodeFactory.getDefault().repository(DataFilter.ALL))) {
             panel = RepositoryTab.getDefaultRepositoryTab();
         } else if (rc.equals(places.environment())) {
@@ -417,10 +359,11 @@ public final class NbMainExplorer extends CloneableTopComponent
             panel = MainTab.getDefaultMainTab();
         } else {
             // tabs added by modules
-            panel = NbMainExplorer.findModuleTab(rc.getClass().getName(), null);
+            panel = NbMainExplorer.findModuleTab(rc, null);
         }
         
         panel.setRootContext(rc);
+        
         rootsToTCs().put(rc, panel);
         return panel;
     }
@@ -1097,6 +1040,12 @@ public final class NbMainExplorer extends CloneableTopComponent
         public ModuleTab() {
         }
                 
+        
+        public void setRootContext(Node root) {
+            super.setRootContext(root);
+            adjustComponentPersistence();
+        }
+        
         /** Throws deserialized root context and sets proper node found
         * in roots set as new root context for this top component.
         * The reason for such construction is to keep the uniquennes of
@@ -1116,18 +1065,14 @@ public final class NbMainExplorer extends CloneableTopComponent
         
         /** Deserialization of ModuleTab */
         public Object readResolve() throws java.io.ObjectStreamException {
-            Class nodeClass = getExplorerManager().getRootContext().getClass();
-            //Bugfix #18021: Handle deserialization of Javadoc tab from NB 3.0
-            //It should be removed as soon as support of NB 3.0 deserialization
-            //will be removed.
-            ModuleTab tc;
-            if ("org.openide.nodes.AbstractNode".equals(nodeClass.getName()) &&
-                "Javadoc".equals(getName())) {
-                tc = NbMainExplorer.findModuleTab
-                ("org.netbeans.modules.javadoc.search.JavaDocNode", this);
-            } else {
-                tc = NbMainExplorer.findModuleTab(nodeClass.getName(), this);
+            Node root = getExplorerManager().getRootContext();
+            
+            ModuleTab tc = NbMainExplorer.findModuleTab(root, this);
+            if(tc == null) {
+                throw new java.io.InvalidObjectException(
+                    "Cannot deserialize ModuleTab for node " + root); // NOI18N
             }
+            
             tc.scheduleValidation();
             return tc;
         }
@@ -1182,6 +1127,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     private final class RootsListener extends Object
         implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
+
                 // possible change in list of roots
                 // defer refresh request if window system is in inconsistent state
                 WindowManagerImpl.deferredPerformer().putRequest(

@@ -64,17 +64,16 @@ final class EnvironmentNode extends AbstractNode {
                     synchronized (lock) {
                         Node n = (Node)types.get (name);
                         if (n == null) {
-                            if (ManifestSection.NodeSection.TYPE_ROOTS.equals(name)) {
-                                n = new EnvironmentNode (name, NbPlaces.getDefault().createChildren(name));
+                            DataFolder folder = null;
+                            if (ManifestSection.NodeSection.TYPE_ENVIRONMENT.equals(name)) {
+                                folder = NbPlaces.getDefault().findSessionFolder("UI/Runtime"); // NOI18N
+                            } else if(ManifestSection.NodeSection.TYPE_ROOTS.equals(name)) {
+                                folder = NbPlaces.getDefault().findSessionFolder("UI/Roots");
                             } else {
-                                DataFolder folder = null;
-                                if (ManifestSection.NodeSection.TYPE_ENVIRONMENT.equals(name)) {
-                                    folder = NbPlaces.getDefault().findSessionFolder("UI/Runtime"); // NOI18N
-                                } else {
-                                    folder = NbPlaces.getDefault().findSessionFolder("UI/Services"); // NOI18N
-                                }
-                                n = new PersistentLookupNode(name, folder);
+                                folder = NbPlaces.getDefault().findSessionFolder("UI/Services"); // NOI18N
                             }
+
+                            n = new PersistentLookupNode(name, folder);
                             types.put (name, n);
                         }
                         return n;
@@ -120,19 +119,31 @@ final class EnvironmentNode extends AbstractNode {
     }
 
     /** Adds serialization support to LookupNode */
-    private static final class PersistentLookupNode extends LookupNode {
+    private static final class PersistentLookupNode extends LookupNode 
+    implements java.beans.PropertyChangeListener {
         
         private String filter;
         
         public PersistentLookupNode (String filter, DataFolder folder) {
             super(folder);
             this.filter = filter;
+            
+            if(ManifestSection.NodeSection.TYPE_ROOTS.equals(filter)) {
+                folder.addPropertyChangeListener(
+                    org.openide.util.WeakListener.propertyChange(this, folder));
+            }
         }
         
         public Node.Handle getHandle () {
             return new EnvironmentHandle (filter);
         }
-        
+
+        /** Listens on changes on root nodes. */
+        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+            if(DataFolder.PROP_CHILDREN.equals(evt.getPropertyName())) {
+                NbPlaces.getDefault().fireChange();
+            }
+        }
     } // end of PersistentLookupNode
 
     static final class EnvironmentHandle implements Node.Handle {

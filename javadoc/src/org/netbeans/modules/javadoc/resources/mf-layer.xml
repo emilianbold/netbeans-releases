@@ -20,11 +20,12 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-javadoc-search-SearchDocAction.instance"/>
             <file name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance"/>
             <attr name="org-netbeans-modules-javadoc-search-SearchDocAction.instance/org-netbeans-modules-javadoc-search-IndexOverviewAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/Separator2.instance" boolvalue="true"/>
+            <!--<attr name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance/org-netbeans-modules-javadoc-search-IndexOverviewAction.instance" boolvalue="true"/>-->
             <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
-            <attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
+            <!--<attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />-->
+            <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/org-netbeans-modules-form-actions-FormEditorAction.instance" boolvalue="true"/>
             <attr name="org-netbeans-modules-objectbrowser-ShowBrowserAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
-            <attr name="org-netbeans-modules-javadoc-search-SearchDocAction.instance/Separator2.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-javadoc-search-SearchDocAction.instance/org-netbeans-core-actions-ViewRuntimeTabAction.instance" boolvalue="true" />
         </folder>
         <folder name="Tools">
             <file name="org-netbeans-modules-javadoc-ManageDocAction.instance" />            
