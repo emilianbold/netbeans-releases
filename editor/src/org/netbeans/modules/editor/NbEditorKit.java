@@ -179,10 +179,15 @@ public class NbEditorKit extends ExtKit {
     public static class NbUndoAction extends ActionFactory.UndoAction {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            // Delegate to system undo action
-            UndoAction ua = (UndoAction)SystemAction.get(UndoAction.class);
-            if (ua != null && ua.isEnabled()) {
-                ua.actionPerformed(evt);
+            if (NbEditorUtilities.getTopManager() != null) {
+                // Delegate to system undo action
+                UndoAction ua = (UndoAction)SystemAction.get(UndoAction.class);
+                if (ua != null && ua.isEnabled()) {
+                    ua.actionPerformed(evt);
+                }
+
+            } else {
+                super.actionPerformed(evt, target);
             }
         }
 
@@ -191,10 +196,15 @@ public class NbEditorKit extends ExtKit {
     public static class NbRedoAction extends ActionFactory.RedoAction {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            // Delegate to system redo action
-            RedoAction ra = (RedoAction)SystemAction.get(RedoAction.class);
-            if (ra != null && ra.isEnabled()) {
-                ra.actionPerformed(evt);
+            if (NbEditorUtilities.getTopManager() != null) {
+                // Delegate to system redo action
+                RedoAction ra = (RedoAction)SystemAction.get(RedoAction.class);
+                if (ra != null && ra.isEnabled()) {
+                    ra.actionPerformed(evt);
+                }
+
+            } else {
+                super.actionPerformed(evt, target);
             }
         }
 
