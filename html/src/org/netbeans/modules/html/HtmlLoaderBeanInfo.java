@@ -63,9 +63,10 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
   }
 
   private static void initializeDescriptors () {
-    final ResourceBundle bundle =
-      NbBundle.getBundle(HtmlLoaderBeanInfo.class);
     try {
+      final ResourceBundle bundle =
+        NbBundle.getBundle(HtmlLoaderBeanInfo.class);
+
       descriptors =  new PropertyDescriptor[] {
         new PropertyDescriptor ("displayName", HtmlLoader.class,
                                 "getDisplayName", null),
@@ -85,6 +86,7 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  2    Gandalf   1.1         2/11/99  Jan Jancura     
 *  1    Gandalf   1.0         1/11/99  Jan Jancura     
 * $
 */

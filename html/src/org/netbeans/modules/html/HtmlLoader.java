@@ -61,6 +61,8 @@ public class HtmlLoader extends UniFileLoader {
 
   public HtmlLoader() {
     super (MultiDataObject.class);
+    setDisplayName(NbBundle.getBundle(this).
+                   getString("PROP_HtmlLoader_Name"));
     getExtensions ().addExtension ("txt");
     getExtensions ().addExtension ("html");
     getExtensions ().addExtension ("htm");
@@ -69,14 +71,15 @@ public class HtmlLoader extends UniFileLoader {
 
   protected MultiDataObject createMultiObject (FileObject primaryFile)
   throws DataObjectExistsException, IOException {
-  
+
     MultiDataObject obj = new MultiDataObject (primaryFile, this);
+    obj.setIconBase ("/com/netbeans/developer/modules/loaders/html/htmlObject");
     EditorSupport es = new EditorSupport (obj.getPrimaryEntry ());
     es.setActions (new SystemAction [] {
       SystemAction.get (CutAction.class),
       SystemAction.get (CopyAction.class),
       SystemAction.get (PasteAction.class),
-    });  
+    });
     obj.getCookieSet ().add (es);
     obj.getCookieSet ().add (
 //      new View (obj.getPrimaryEntry ())
@@ -84,18 +87,18 @@ public class HtmlLoader extends UniFileLoader {
     );
     return obj;
   }
-  
-  
+
+
   // innerclasses ......................................................................
-  
+
   public static class ICEView extends OpenSupport implements ViewCookie {
     DataObject obj;
-  
+
     ICEView (DataObject obj) {
       super (obj.getPrimaryFile ());
       this.obj = obj;
     }
-     
+
     /** A method to create a new component. Overriden in subclasses.
     * @return the cloneable top component for this support
     */
@@ -107,20 +110,20 @@ public class HtmlLoader extends UniFileLoader {
   public static class ICEViewComponent extends CloneableTopComponent {
     private Browser browser;
     DataObject obj;
-  
+
     /** Constructor
     * @param obj data object we belong to
     */
     public ICEViewComponent (DataObject obj) {
       super (obj);
       this.obj = obj;
-      
+
       setLayout (new BorderLayout ());
       setMode (Mode.EDITOR);
 //      if (actions != null)
 //        add (SystemAction.getToolbarPresenter (actions), BorderLayout.NORTH);
-        
-      browser = new Browser ();  
+
+      browser = new Browser ();
       try {
         browser.setCurrentLocation ("" + obj.getPrimaryFile ().getURL ());
       } catch (com.netbeans.ide.filesystems.FileStateInvalidException e) {
@@ -144,7 +147,7 @@ public class HtmlLoader extends UniFileLoader {
     */
     protected void componentActivated () {
     }
-  
+
     /**
     * This method is called when parent window of this component losts focus,
     * or when this component losts preferrence in the parent window.
@@ -157,7 +160,7 @@ public class HtmlLoader extends UniFileLoader {
      /*
   public static class View implements OpenCookie {
     EditorSupport es;
-  
+
     /**
     * Creates cookie for the file specified.
     * @param fo file object of a class or ser file
@@ -166,7 +169,7 @@ public class HtmlLoader extends UniFileLoader {
       es = new EditorSupport (entry);
       es.setEditable (false);
     }
-  
+
     /** Instructs an viewer to be opened. The operation can
     * immediatelly return and the viewer be openned later.
     * There can be more viewers opened, so one of them is
@@ -181,6 +184,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  5    Gandalf   1.4         2/11/99  Jan Jancura     
 *  4    Gandalf   1.3         2/3/99   Jaroslav Tulach 
 *  3    Gandalf   1.2         1/11/99  Jan Jancura     
 *  2    Gandalf   1.1         1/11/99  Jan Jancura     
