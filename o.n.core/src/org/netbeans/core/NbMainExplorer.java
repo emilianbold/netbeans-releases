@@ -38,6 +38,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.io.NbMarshalledObject;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
@@ -476,13 +477,22 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
               throws IOException {
     super.writeExternal(out);
     // write explorer panels and current one
-    out.writeObject(panels);
-    out.writeObject(new Integer(tabs.getSelectedIndex()));
+
+    out.writeInt (managers.length);
+    for (int i = 0; i < managers.length; i++) {
+      out.writeObject(new NbMarshalledObject (managers[i]));
+    }
+
+    // serializes handle to the node
+    Node.Handle h = roots[tabs.getSelectedIndex()].getHandle ();
+    out.writeObject (new NbMarshalledObject (h));
+
+
     // write switchable sheet state
-    out.writeObject(new Boolean(sheetVisible));
-    out.writeObject(new Boolean(split.getPanesSwapped()));
-    out.writeObject(new Integer(split.getSplitPosition()));
-    out.writeObject(new Integer(split.getSplitType()));
+    out.writeBoolean (sheetVisible);
+    out.writeBoolean (split.getPanesSwapped());
+    out.writeInt (split.getSplitPosition());
+    out.writeInt (split.getSplitType());
   }
   
   
@@ -494,53 +504,55 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     super.readExternal(in);
     // read and update explorer panels (and managers)
     // and update tabbed pane
-    tabs.removeAll ();
-    
-    panels = (ExplorerPanel[])in.readObject();
-    int selIndex = ((Integer)in.readObject()).intValue();
-    managers = new ExplorerManager[panels.length];
-    roots = new Node[panels.length];
 
-    for (int i = 0; i < panels.length; i++) {
-      managers[i] = panels[i].getExplorerManager ();
-      roots[i] = managers[i].getRootContext ();
-      tabs.addTab (
-        roots[i].getDisplayName (), 
-        new ImageIcon (roots[i].getIcon (BeanInfo.ICON_COLOR_16x16)),
-        panels[i], 
-        roots[i].getShortDescription ()
-      );
+
+
+    int cnt = in.readInt ();
+    // root to manager (Node, ExplorerManager)
+    HashMap map = new HashMap (cnt);
+
+    for (int i = 0; i < cnt; i++) {
+      NbMarshalledObject obj = (NbMarshalledObject)in.readObject ();
+      try {
+        ExplorerManager man = (ExplorerManager)obj.get ();
+        map.put (man.getRootContext (), man);
+      } catch (IOException e) {
+      } catch (ClassNotFoundException e) {
+      }
+    }
+
+    Node selRoot = roots[tabs.getSelectedIndex ()];
+    NbMarshalledObject obj = (NbMarshalledObject)in.readObject ();
+    try {
+      selRoot = ((Node.Handle)obj.get ()).getNode ();
+    } catch (IOException e) {
+    } catch (ClassNotFoundException e) {
+    }
+
+    for (int i = 0; i < roots.length; i++) {
+      if (roots[i].equals (selRoot)) {
+        tabs.setSelectedIndex (i);
+      }
+
+      ExplorerManager man = (ExplorerManager)map.get (roots[i]);
+      if (man != null) {
+        try {
+          managers[i].setExploredContext (man.getExploredContext ());
+          managers[i].setSelectedNodes (man.getSelectedNodes ());
+        } catch (PropertyVetoException e) {
+          // ignore
+        }
+      }
     }
     
-    /* JST: Has to refresh because roots are changing
-    for (int i = 0; i < panels.length; i++) {
-      managers[i] = panels[i].getExplorerManager();
-      BeanTreeView treeView = new BeanTreeView ();
-      panels[i].setLayout (new BorderLayout ());
-      panels[i].add (treeView);
-      tabs.addTab (
-        roots[i].getDisplayName (), 
-        new ImageIcon (roots [i].getIcon (BeanInfo.ICON_COLOR_16x16)),
-        panels[i], 
-        roots[i].getShortDescription ()
-      );
-    }
-    */
-
-    if (tabs.getTabCount () > selIndex) {
-      currentManager = panels[selIndex].getExplorerManager();
-      tabs.setSelectedIndex(selIndex);
-    } else {
-      currentManager = panels[0].getExplorerManager ();
-    }
     
     // force later reassigning of listeners
     listenersRegistered = false;
     // read property shhet switcher state...
-    sheetVisible = ((Boolean)in.readObject()).booleanValue();
-    boolean swapped = ((Boolean)in.readObject()).booleanValue();
-    split.setSplitPosition(((Integer)in.readObject()).intValue());
-    split.setSplitType(((Integer)in.readObject()).intValue());
+    sheetVisible = in.readBoolean ();
+    boolean swapped = in.readBoolean ();
+    split.setSplitPosition(in.readInt ());
+    split.setSplitType(in.readInt ());
     if (sheetVisible) {
       //split.setKeepFirstSame(true);
       split.add(getSheetPanel(), SplittedPanel.ADD_RIGHT);
@@ -602,6 +614,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  26   Gandalf   1.25        8/3/99   Jaroslav Tulach Serialization of 
+*       NbMainExplorer improved again.
 *  25   Gandalf   1.24        8/2/99   Jaroslav Tulach 
 *  24   Gandalf   1.23        8/1/99   Jaroslav Tulach MainExplorer now listens 
 *       to changes in root elements.

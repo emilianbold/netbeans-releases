@@ -35,8 +35,8 @@ import org.openide.util.actions.SystemAction;
 * @author Jaroslav Tulach, Petr Hamernik
 */
 final class DataSystem extends AbstractNode implements RepositoryListener {
-  /** generated Serialized Version UID */
-  static final long serialVersionUID = -7272169513973465669L;
+  /** default instance */
+  private static DataSystem def;
 
   /** the file system pool to work with */
   private transient Repository fileSystemPool;
@@ -71,9 +71,15 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
   /** Factory for DataSystem instances */
   public static DataSystem getDataSystem(DataFilter filter) {
-    if (filter == null) filter = DataFilter.ALL;
-    DataSystem ds = new DataSystem(new DSMap (), filter);
-    return ds;
+    if (filter == null) {
+      if (def != null) {
+        return def;
+      }
+      return def = new DataSystem(new DSMap (), DataFilter.ALL);
+    } else {
+      DataSystem ds = new DataSystem(new DSMap (), filter);
+      return ds;
+    }
   }
 
   /** Gets a DataSystem */
@@ -94,7 +100,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
   /** writes this node to ObjectOutputStream and its display name
   */
   public Handle getHandle() {
-    return new DSHandle(filter);
+    return filter == DataFilter.ALL ? new DSHandle (null) : new DSHandle(filter);
   }
 
 
@@ -215,13 +221,15 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     }
 
     public Node getNode() {
-      return org.openide.TopManager.getDefault().getPlaces().nodes().repository(filter);
+      return getDataSystem (filter);
     }
   }
 }
 
 /*
  * Log
+ *  19   Gandalf   1.18        8/3/99   Jaroslav Tulach Serialization of 
+ *       NbMainExplorer improved again.
  *  18   Gandalf   1.17        7/8/99   Jesse Glick     Context help.
  *  17   Gandalf   1.16        6/9/99   Ian Formanek    ToolsAction
  *  16   Gandalf   1.15        6/8/99   Ian Formanek    ---- Package Change To 
