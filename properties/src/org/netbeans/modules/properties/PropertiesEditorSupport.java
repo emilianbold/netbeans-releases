@@ -190,74 +190,72 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
      * @return the document annotated by the properties
      */
     protected StyledDocument createStyledDocument(EditorKit kit) {
-        StyledDocument doc = super.createStyledDocument(kit);
+        StyledDocument document = super.createStyledDocument(kit);
         
         // Set additional proerties to document.
         // Set document name property. Used in CloneableEditorSupport.
-        doc.putProperty(Document.TitleProperty, myEntry.getFile().getPackageNameExt('/', '.'));
+        document.putProperty(Document.TitleProperty, myEntry.getFile().getPackageNameExt('/', '.'));
         
         // Set dataobject to stream desc property.
-        doc.putProperty(Document.StreamDescriptionProperty, myEntry.getDataObject());
+        document.putProperty(Document.StreamDescriptionProperty, myEntry.getDataObject());
         
-        return doc;
+        return document;
     }
 
     /**
-     * Overrides superclass method. 
-     * Read the file from the stream, filter the guarded section
-     * comments, and mark the sections in the editor.
-     * @param doc the document to read into
-     * @param stream the open stream to read from
-     * @param kit the associated editor kit
+     * Reads the file from the stream, filter the guarded section
+     * comments, and mark the sections in the editor. Overrides superclass method. 
+     * @param document the document to read into
+     * @param inputStream the open stream to read from
+     * @param editorKit the associated editor kit
      * @throws <code>IOException</code> if there was a problem reading the file
      * @throws <code>BadLocationException</code> should not normally be thrown
      * @see #saveFromKitToStream
      */
-    protected void loadFromStreamToKit (StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-        NewLineInputStream is = new NewLineInputStream(stream);
+    protected void loadFromStreamToKit(StyledDocument document, InputStream inputStream, EditorKit editorKit)
+    throws IOException, BadLocationException {
+        NewLineReader newLineReader = new NewLineReader(inputStream);
+        
         try {
-            kit.read(is, doc, 0);
-            newLineType = is.getNewLineType();
+            editorKit.read(newLineReader, document, 0);
+            newLineType = newLineReader.getNewLineType();
         } finally {
-            is.close();
+            newLineReader.close();
         }
     }
 
     /** 
+     * Adds new lines according actual value of <code>newLineType</code> variable.
      * Overrides superclass method.
-     * Adds new lines according actual value of <code>newLineType</code> vraiable.
-     * @param doc the document to write from
-     * @param kit the associated editor kit
-     * @param stream the open stream to write to
+     * @param document the document to write from
+     * @param editorKit the associated editor kit
+     * @param ouputStream the open stream to write to
      * @throws IOException if there was a problem writing the file
      * @throws BadLocationException should not normally be thrown
      * @see #loadFromStreamToKit
      */
-    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        OutputStream os = new NewLineOutputStream(stream, newLineType);
+    protected void saveFromKitToStream(StyledDocument document, EditorKit editorKit, OutputStream outputStream)
+    throws IOException, BadLocationException {
+        Writer writer = new NewLineWriter(outputStream, newLineType);
+        
         try {
-            kit.write(os, doc, 0, doc.getLength());
+            editorKit.write(writer, document, 0, document.getLength());
         } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                }
-            }
+            writer.flush();
+            writer.close();
         }
     }
     
     /** 
-     * Overrides superclass method. Adds a save cookie if the document has been marked modified.
-     * @return true if the environment accepted being marked as modified
-     *    or false if it refused it and the document should still be unmodified
+     * Adds a save cookie if the document has been marked modified. Overrides superclass method. 
+     * @return <code>true</code> if the environment accepted being marked as modified
+     *    or <code>false</code> if it refused it and the document should still be unmodified
      */
     protected boolean notifyModified () {
         // Reparse file.
         myEntry.getHandler().autoParse();
         
         if (super.notifyModified()) {
-            
             ((Environment)env).addSaveCookie();
             
             return true;
@@ -884,13 +882,13 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
 
     // PENDING Will be changed soon. This stream wrapping is cumbersome.
     /** This stream is able to filter various new line delimiters and replace them by \n. */
-    static class NewLineInputStream extends InputStream {
+    static class NewLineReader extends BufferedReader {
         
         /** Encapsulated input stream */
-        BufferedInputStream bufis;
+//        BufferedInputStream bufis; // TEMP
         
         /** Next character to read. */
-        int nextToRead;
+//        int nextToRead; // TEMP
         
         /** The count of types new line delimiters used in the file */
         int[] newLineTypes;
@@ -902,9 +900,9 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
          *        store the guarded block information. True means just filter,
          *        false means store the information.
          */
-        public NewLineInputStream(InputStream is) throws IOException {
-            bufis = new BufferedInputStream(is);
-            nextToRead = bufis.read();
+        public NewLineReader(InputStream is) throws IOException {
+            super(new InputStreamReader(is, "8859_1")); // NOI18N
+            
             newLineTypes = new int[] { 0, 0, 0 };
         }
 
@@ -914,15 +912,18 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
          * @exception IOException if any problem occured.
          */
         public int read() throws IOException {
+            int nextToRead = super.read();
+            
             if (nextToRead == -1)
                 return -1;
             
             if (nextToRead == '\r') {
-                nextToRead = bufis.read();
+                nextToRead = super.read();
+                
                 while (nextToRead == '\r')
-                    nextToRead = bufis.read();
+                    nextToRead = super.read();
                 if (nextToRead == '\n') {
-                    nextToRead = bufis.read();
+                    nextToRead = super.read();
                     newLineTypes[NEW_LINE_RN]++;
                     return '\n';
                 } else {
@@ -931,15 +932,12 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
                 }
             }
             if (nextToRead == '\n') {
-                nextToRead = bufis.read();
+                nextToRead = super.read();
                 newLineTypes[NEW_LINE_N]++;
                 return '\n';
             }
             
-            int oldNextToRead = nextToRead;
-            nextToRead = bufis.read();
-            
-            return oldNextToRead;
+            return nextToRead;
         }
 
         /** Gets new line type. */
@@ -951,19 +949,12 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
             }
         }
         
-        /** Closes stream. */
-        public void close() throws IOException {
-            bufis.close();
-        }
-    } // End of nested class NewLineInputStream.
+    } // End of nested class NewLineReader.
     
     
     /** This stream is used for changing the new line delimiters.
      * Replaces the '\n' by '\n', '\r' or "\r\n". */
-    static class NewLineOutputStream extends OutputStream {
-        
-        /** Underlaying stream. */
-        OutputStream stream;
+    static class NewLineWriter extends BufferedWriter {
         
         /** The type of new line delimiter */
         byte newLineType;
@@ -973,8 +964,9 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
          * @param stream Underlaying stream
          * @param newLineType The type of new line delimiter
          */
-        public NewLineOutputStream(OutputStream stream, byte newLineType) {
-            this.stream = stream;
+        public NewLineWriter(OutputStream stream, byte newLineType) throws UnsupportedEncodingException {
+            super(new OutputStreamWriter(stream, "8859_1"));
+            
             this.newLineType = newLineType;
         }
         
@@ -989,27 +981,21 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
             if(character == '\n') {
                 if(newLineType == NEW_LINE_R) {
                     // Replace new line by \r.
-                    stream.write('\r');
+                    super.write('\r');
                 } else if(newLineType == NEW_LINE_N) {
                     // Replace new line by \n.
-                    stream.write('\n');
+                    super.write('\n');
                 } else if(newLineType == NEW_LINE_RN) {
                     // Replace new line by \r\n.
-                    stream.write('\r');
-                    stream.write('\n');
+                    super.write('\r');
+                    super.write('\n');
                 }
             } else {
-                stream.write(character);
+                super.write(character);
             }
         }
         
-        /** Closes the underlaying stream.
-         */
-        public void close() throws IOException {
-            stream.flush();
-            stream.close();
-        }
-    } // End of nested class NewLineOutputStream.
+    } // End of nested class NewLineWriter.
     
     
     /** Inner class. UndoRedo manager which saves a StampFlag

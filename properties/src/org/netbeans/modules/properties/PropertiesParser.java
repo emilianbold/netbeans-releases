@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 
@@ -35,7 +36,7 @@ import org.openide.text.PositionBounds;
 /** 
  * Parser of .properties files. It generates structure of comment-key-vaue property elements.
  *
- * @author Petr Jiricka, Petr Hamernik
+ * @author Petr Jiricka, Petr Hamernik, Peter Zavadsky
  * @see PropertiesStructure
  * @see Element.ItemElem
  */
@@ -48,7 +49,7 @@ class PropertiesParser {
     PropertiesEditorSupport editor;
 
     /** Properties file reader. Input stream. */
-    PropertiesReader input;
+    PropertiesReader propertiesReader;
     
     /** Flag if parsing should be stopped. */
     private boolean stop = false;
@@ -67,7 +68,7 @@ class PropertiesParser {
      * @exception IOException if any i/o problem occured during reading */
     void initParser() throws IOException {
         editor = pfe.getPropertiesEditor();
-        input = createReader();
+        propertiesReader = createReader();
     }
     
     /** Creates new input stream from the file object.
@@ -77,17 +78,18 @@ class PropertiesParser {
      */
     private PropertiesReader createReader() throws IOException {
         if(editor.isDocumentLoaded()) {
-            // Loading from the memory (Document)
-            final Document doc = editor.getDocument();
+            // Loading from the document in memory.
+            final Document document = editor.getDocument();
             final String[] str = new String[1];
             
             // safely take the text from the document
-            doc.render(new Runnable() {
+            document.render(new Runnable() {
                 public void run() {
                     try {
-                        str[0] = doc.getText(0, doc.getLength());
-                    } catch (javax.swing.text.BadLocationException e) {
-                        // impossible
+                        str[0] = document.getText(0, document.getLength());
+                    } catch(BadLocationException ble) {
+                        // Should be not possible.
+                        ble.printStackTrace();
                     }
                 }
             });
@@ -95,10 +97,10 @@ class PropertiesParser {
             return new PropertiesReader(str[0]);
             
         } else {
-            // Loading from the file.
-            InputStream is = new PropertiesEditorSupport.NewLineInputStream(pfe.getFile().getInputStream());
-            
-            return new PropertiesReader(is);
+            // Loading from the file (document wasn't loaded yet).
+            Reader reader = new PropertiesEditorSupport.NewLineReader(pfe.getFile().getInputStream());
+
+            return new PropertiesReader(reader);
         }
     }
 
@@ -125,10 +127,10 @@ class PropertiesParser {
     
     /** Provides clean up after finish parsing. */
     public void clean() {
-        if(input != null) {
+        if(propertiesReader != null) {
             try {
-                input.close();
-                input = null;
+                propertiesReader.close();
+                propertiesReader = null;
             } catch(IOException ioe) {
                 if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                     ioe.printStackTrace();
@@ -149,7 +151,7 @@ class PropertiesParser {
                 return null;
             }
             
-            reader = input;
+            reader = propertiesReader;
             if(reader == null)
                 // Parsing was stopped.
                 return null;
@@ -323,43 +325,28 @@ class PropertiesParser {
      * Properties reader which allows reading from an input stream or from a string and remembers
      * its position in the document.
      */
-    private static class PropertiesReader {
+    private static class PropertiesReader extends BufferedReader {
 
         /** Name constant of line separator system property. */
         private static final String LINE_SEPARATOR = "line.separator"; // NOI18N
         
-        /** The underlaying reader. */
-        private Reader reader;
-
         /** The character that someone peeked. */
-        private int peekChar;
+        private int peekChar = -1;
         
         /** Position after the last character read. */
-        public int position;
+        public int position = 0;
 
-        
-        /** Does the initialization */
-        private PropertiesReader() {
-            peekChar = -1;
-            position = 0;
+
+        /** Creates <code>PropertiesReader</code> from buffer. */
+        private PropertiesReader(String buffer) {
+            super(new StringReader(buffer));
+        }
+
+        /** Creates <code>PropertiesReader</code> from another reader. */
+        private PropertiesReader(Reader reader) {
+            super(reader);
         }
         
-        /** Creates the reader from the text. */
-        private PropertiesReader(String text) {
-            this();
-            reader = new StringReader(text);
-        }
-
-        /** Creates the reader from the another stream. */
-        private PropertiesReader(InputStream stream) {
-            this();
-            try {
-                reader = new BufferedReader(new InputStreamReader(stream, "8859_1")); // NOI18N
-            } catch (UnsupportedEncodingException e) {
-                // Impossible - this encoding is always supported.
-            }
-        }
-
         
         /** Read one character from the stream and increases the position.
          * @return the character or -1 if the end of the stream has been reached
@@ -379,7 +366,8 @@ class PropertiesParser {
          */
         private int peek() throws IOException {
             if(peekChar == -1)
-                peekChar = reader.read();
+                peekChar = super.read();
+            
             return peekChar;
         }
 
@@ -456,10 +444,6 @@ class PropertiesParser {
             return fl;
         }
 
-        /** Closes the stream */
-        public void close() throws IOException {
-            reader.close();
-        }
     } // End of nested class PropertiesReader.
 
     
