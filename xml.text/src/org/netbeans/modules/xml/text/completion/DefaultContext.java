@@ -56,6 +56,7 @@ class DefaultContext implements HintContext, Attr {
         this.next = next;
         this.type = Node.ELEMENT_NODE;        
         virtual = true;
+        this.peer = parent; // Not correct, but better than not setting it
     }
 
     /**
@@ -72,6 +73,7 @@ class DefaultContext implements HintContext, Attr {
         this.text = text;
         this.type = Node.ATTRIBUTE_NODE;
         virtual = true;
+        this.peer = parent; // Not correct, but better than not setting it
     }
     
     /**
