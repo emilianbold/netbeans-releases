@@ -125,7 +125,7 @@ public class AddWatchAction extends CallableSystemAction {
         );
         dd.setHelpCtx (new HelpCtx ("debug.add.watch"));
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
-        dialog.show ();
+        dialog.setVisible(true);
         dialog.dispose ();
 
         if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
