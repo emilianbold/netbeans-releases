@@ -42,7 +42,15 @@ import org.openide.util.NbBundle;
 */
 class OpenFile extends Object {
 
-    static final String PACKAGE = "package";
+    /** Extenstion for .java files. */
+    static final String JAVA_EXT = ".JAVA"; // NOI18N
+    
+    /** Extension for .txt files. */
+    static final String TXT_EXT = ".TXT"; // NOI18N
+    
+    /** Name of package java keyword. */
+    private static final String PACKAGE = "package"; // NOI18N
+
     
     /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
     * showing it in the Explorer.
@@ -56,57 +64,62 @@ class OpenFile extends Object {
     static void open (File f, final boolean wait, InetAddress addr, int port, int line) {
         FileObject fo = find (f);
 
-        if (fo != null) {
-            try {
-                DataObject obj = DataObject.find (fo);
-                final EditorCookie edit = line != -1 ? (EditorCookie) obj.getCookie (EditorCookie.class) : null;
-                final OpenCookie open = (OpenCookie) obj.getCookie (OpenCookie.class);
-                final ViewCookie view = (ViewCookie) obj.getCookie (ViewCookie.class);
-                if (open != null || view != null || edit != null) {
-                    TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString (wait ? "MSG_openingAndWaiting" : "MSG_opening", f.toString ()));
-                    if (edit != null) {
-                        edit.open ();
-                        StyledDocument doc = edit.openDocument ();
-                        JEditorPane[] panes = edit.getOpenedPanes ();
-                        if (panes.length > 0)
-                            panes[0].setCaretPosition (NbDocument.findLineOffset (doc, line));
-                        else
-                            TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString ("MSG_couldNotOpenAt"));
-                    } else if (open != null) {
-                        open.open ();
-                    } else {
-                        view.view ();
-                    }
-                    TopManager.getDefault ().setStatusText (""); // NOI18N
-                    if (wait) {
-                        // Could look for a SaveCookie just to see, but need not.
-                        Server.waitFor (obj, addr, port);
-                    }
+        if(fo == null) 
+            return;
+        
+        try {
+            DataObject obj = DataObject.find (fo);
+            final EditorCookie edit = line != -1 ? (EditorCookie) obj.getCookie (EditorCookie.class) : null;
+            final OpenCookie open = (OpenCookie) obj.getCookie (OpenCookie.class);
+            final ViewCookie view = (ViewCookie) obj.getCookie (ViewCookie.class);
+            if (open != null || view != null || edit != null) {
+                TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString (wait ? "MSG_openingAndWaiting" : "MSG_opening", f.toString ()));
+                if (edit != null) {
+                    edit.open ();
+                    StyledDocument doc = edit.openDocument ();
+                    JEditorPane[] panes = edit.getOpenedPanes ();
+                    if (panes.length > 0)
+                        panes[0].setCaretPosition (NbDocument.findLineOffset (doc, line));
+                    else
+                        TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString ("MSG_couldNotOpenAt"));
+                } else if (open != null) {
+                    open.open ();
                 } else {
-                    Node n = obj.getNodeDelegate ();
-                    if (fo.isRoot ()) {
-                        // Try to get the node used in the usual Repository, which
-                        // has a non-blank display name and is thus nicer.
-                        FileSystem fs = fo.getFileSystem ();
-                        Node reponode = TopManager.getDefault ().getPlaces ().nodes ().repository ();
-                        Children repokids = reponode.getChildren ();
-                        Enumeration fsenum = repokids.nodes ();
-                        while (fsenum.hasMoreElements ()) {
-                            Node fsnode = (Node) fsenum.nextElement ();
-                            DataFolder df = (DataFolder) fsnode.getCookie (DataFolder.class);
-                            if (df != null && df.getPrimaryFile ().getFileSystem ().equals (fs)) {
-                                n = fsnode;
-                                break;
-                            }
+                    view.view ();
+                }
+                TopManager.getDefault ().setStatusText (""); // NOI18N
+                if (wait) {
+                    // Could look for a SaveCookie just to see, but need not.
+                    Server.waitFor (obj, addr, port);
+                }
+            } else {
+                Node n = obj.getNodeDelegate ();
+                if (fo.isRoot ()) {
+                    // Try to get the node used in the usual Repository, which
+                    // has a non-blank display name and is thus nicer.
+                    FileSystem fs = fo.getFileSystem ();
+                    Node reponode = TopManager.getDefault ().getPlaces ().nodes ().repository ();
+                    Children repokids = reponode.getChildren ();
+                    Enumeration fsenum = repokids.nodes ();
+                    while (fsenum.hasMoreElements ()) {
+                        Node fsnode = (Node) fsenum.nextElement ();
+                        DataFolder df = (DataFolder) fsnode.getCookie (DataFolder.class);
+                        if (df != null && df.getPrimaryFile ().getFileSystem ().equals (fs)) {
+                            n = fsnode;
+                            break;
                         }
                     }
-                    TopManager.getDefault ().getNodeOperation ().explore (n);
-                    if (wait)
-                        TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_cannotOpenWillClose", f)));
                 }
-            } catch (IOException ioe) {
-                TopManager.getDefault ().notifyException (ioe);
+
+// PENDING Opening in new explorer window was submitted as bug (#8809).
+// Here would be nice probably this: check for default data object. Convert it to text if
+// text module is available and open it.
+                    TopManager.getDefault ().getNodeOperation ().explore (n);
+                if (wait)
+                    TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_cannotOpenWillClose", f)));
             }
+        } catch (IOException ioe) {
+            TopManager.getDefault ().notifyException (ioe);
         }
     }
 
@@ -200,7 +213,7 @@ class OpenFile extends Object {
         // a .java is used and its package decl
         // indicates a real dir
         boolean packageKnown = false;
-        if (fileNameUpper.endsWith (".JAVA")) { // NOI18N
+        if (fileNameUpper.endsWith(JAVA_EXT)) { // NOI18N
             // Try to find the package name and then infer a directory to mount.
             BufferedReader rd = null;
             try {
@@ -214,7 +227,7 @@ class OpenFile extends Object {
                 rd.read(cbuf, 0, 2);
                 if (cbuf[0] == 255 && cbuf[1] == 254) {
                     rd.close();
-                    rd = new BufferedReader(new SourceReader(new FileInputStream(f), "Unicode"));
+                    rd = new BufferedReader(new SourceReader(new FileInputStream(f), "Unicode")); // NOI18N
                 }
                 else {
                     rd.reset();
@@ -331,7 +344,17 @@ class OpenFile extends Object {
             } while (pos != -1);
         }
         if (! packageKnown) pkgLevel = -1;
-        askForMountPoint (f, pkgLevel, dirToMount, mountPackage);
+        
+        // PENDING This is just partial temp solution. It should be done somehow for all file extensions from
+        // text module file and. Propbably merge of utilities and text modules would solve finally the
+        // problem, (ability to access TXT loader extensions etc.).
+        if(fileNameUpper.endsWith(TXT_EXT)) { // NOI18N
+            // Text fiel mount to default package without asking.
+            dirToMount[0] = f.getParentFile();            
+            mountPackage[0] = ""; // NOI18N
+        } else
+            askForMountPoint (f, pkgLevel, dirToMount, mountPackage);
+        
         if (dirToMount[0] == null) return null;
         // Mount it.
         LocalFileSystem fs = new LocalFileSystem ();
