@@ -23,10 +23,12 @@ import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditCookie;
 import org.openide.loaders.*;
 import org.openide.util.Utilities;
+import org.openide.util.SharedClassObject;
 import org.openide.windows.*;
 
 import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.form.palette.PaletteTopComponent;
+import org.netbeans.modules.form.actions.FormEditorAction;
 
 /**
  *
@@ -57,11 +59,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
     /** An indicator whether the form should be opened additionally when
      * switching back from a non-editing workspace to an editing one */
-    private boolean openOnEditing = false; // [is this needed??]
+    private static boolean openOnEditing = false;
 
     // listeners
     private FormModelListener formListener;
-    private PropertyChangeListener workspacesListener;
+    private static PropertyChangeListener workspacesListener;
     private static PropertyChangeListener settingsListener;
     private static PropertyChangeListener topcompsListener;
 
@@ -448,6 +450,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
      * whether the workspace was activated.
      */
     private boolean activateWorkspace() {
+        attachWorkspacesListener();
+
         if (isCurrentWorkspaceEditing()) {
             String formWorkspace = FormEditor.getFormSettings().getWorkspace();
             if (!formWorkspace.equalsIgnoreCase(FormEditor.getFormBundle()
@@ -461,52 +465,36 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             return true;
         }
         else {
-            // if this is not "editing" workspace, attach a listener on
-            // workspace switching and wait for the editing one
-            attachWorkspacesListener();
+            // if this is not an "editing" workspace, do not open the designer
+            openOnEditing = true;
             return false;
         }
+    }
+
+    private static boolean isCurrentWorkspaceEditing() {
+        String name = TopManager.getDefault().getWindowManager()
+                                         .getCurrentWorkspace().getName();
+        return "Editing".equals(name) || "Visual".equals(name) // NOI18N
+               || FormEditor.getFormSettings().getWorkspace().equals(name);
     }
 
     /** Opens FormDesigner and ComponentInspector.
      */
     private void openGUI() {
-/*        if (isCurrentWorkspaceEditing()) {
-            String formWorkspace = FormEditor.getFormSettings().getWorkspace();
-            if (!formWorkspace.equalsIgnoreCase(FormEditor.getFormBundle()
-                                        .getString("VALUE_WORKSPACE_NONE"))) {
-                Workspace visualWorkspace =
-                    TopManager.getDefault().getWindowManager()
-                        .findWorkspace(formWorkspace);
-                if (visualWorkspace != null)
-                    visualWorkspace.activate();
-            } */
-
         // open FormDesigner
-            FormDesigner designer = getFormDesigner(formModel);
-            designer.initialize();
-            designer.open();
+        FormDesigner designer = getFormDesigner(formModel);
+        designer.initialize();
+        designer.open();
 
-            // open ComponentInspector
-            ComponentInspector.getInstance().open();
-            ComponentInspector.getInstance().focusForm(this, true);
+        // open ComponentInspector
+        ComponentInspector.getInstance().open();
+        ComponentInspector.getInstance().focusForm(this, true);
 
-            // open ComponentPalette
-            PaletteTopComponent.getInstance().open();
+        // open ComponentPalette
+        PaletteTopComponent.getInstance().open();
 
-            // bring the FormDesigner to front and give it the focus
-            designer.requestFocus();
-//        }
-        // if this is not "editing" workspace, attach a listener on
-        // workspace switching and wait for the editing one
-//        else attachWorkspacesListener();
-    }
-
-    private boolean isCurrentWorkspaceEditing() {
-        String name = TopManager.getDefault().getWindowManager()
-                                         .getCurrentWorkspace().getName();
-        return !"Browsing".equals(name) && !"Running".equals(name)
-                && !"Debugging".equals(name);
+        // bring the FormDesigner to front and give it the focus
+        designer.requestFocus();
     }
 
     // -----------
@@ -559,9 +547,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
         // remove listeners
         detachFormListener();
-        detachWorkspacesListener();
         if (openForms.isEmpty()) {
             ComponentInspector.getInstance().focusForm(null, false);
+            detachWorkspacesListener();
             detachSettingsListener();
             detachTopComponentsListener();
 
@@ -632,20 +620,47 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         }
     }
 
-    private void attachWorkspacesListener() {
-        openOnEditing = true;
+    private static void attachWorkspacesListener() {
         if (workspacesListener != null)
             return;
 
         workspacesListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (WindowManager.PROP_CURRENT_WORKSPACE.equals(evt.getPropertyName())) {
-                    if (openOnEditing) {
-                        if (isCurrentWorkspaceEditing()) {
-                            openOnEditing = false;
-                            activateWorkspace();
-                            openGUI();
-                            detachWorkspacesListener();
+                if (!WindowManager.PROP_CURRENT_WORKSPACE.equals(
+                                           evt.getPropertyName()))
+                    return;
+
+                if (openOnEditing && isCurrentWorkspaceEditing()) {
+                    openOnEditing = false;
+                    FormEditorAction viewAction = (FormEditorAction)
+                        SharedClassObject.findObject(FormEditorAction.class, true);
+                    viewAction.performAction();
+                }
+                else {
+                    Workspace ws = TopManager.getDefault().getWindowManager()
+                                                       .getCurrentWorkspace();
+                    if (FormEditor.getFormSettings().getWorkspace().equals(
+                                                              ws.getName()))
+                        return; // switched to the main "GUI" workspace
+
+                    Mode formMode = ws.findMode("Form"); // NOI18N
+                    if (formMode != null) {
+                        boolean modeOpened = false;
+                        TopComponent[] comps = formMode.getTopComponents();
+                        for (int i=0; i < comps.length; i++)
+                            if (comps[i].isOpened(ws)) {
+                                modeOpened = true;
+                                break;
+                            }
+
+                        if (modeOpened) {
+                            FormModel[] forms = FormEditorSupport.getOpenedForms();
+                            for (int i=0; i < forms.length; i++) {
+                                TopComponent formDesigner =
+                                    FormEditorSupport.getFormDesigner(forms[i]);
+                                if (formDesigner != null)
+                                    formDesigner.open(ws);
+                            }
                         }
                     }
                 }
@@ -656,7 +671,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             .addPropertyChangeListener(workspacesListener);
     }
 
-    private void detachWorkspacesListener() {
+    private static void detachWorkspacesListener() {
         if (workspacesListener != null) {
             TopManager.getDefault().getWindowManager()
                     .removePropertyChangeListener(workspacesListener);
