@@ -383,6 +383,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             expressions.clear();
         if (loadedComponents != null)
             loadedComponents.clear();
+        this.formModel = null;
     }
 
     private void loadNonVisuals(org.w3c.dom.Node node) {
@@ -2426,6 +2427,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
             catch (IOException ex) {} // ignore
             lock.releaseLock();
+            this.formModel = null;
         }
     }
 

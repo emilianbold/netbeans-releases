@@ -15,6 +15,7 @@ package org.netbeans.modules.form.layoutsupport;
 
 import java.awt.*;
 import java.util.*;
+import java.lang.ref.*;
 
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
@@ -44,12 +45,12 @@ public class LayoutSupportRegistry {
 
     private static Map instanceMap;
 
-    private FormModel formModel;
+    private Reference formModelRef;
 
     // -------
 
     private LayoutSupportRegistry(FormModel formModel) {
-        this.formModel = formModel;
+        this.formModelRef = new WeakReference(formModel);
     }
 
     public static LayoutSupportRegistry getRegistry(FormModel formModel) {
@@ -315,7 +316,7 @@ public class LayoutSupportRegistry {
 
     private Class loadClass(String className) {
         try {
-            return FormUtils.loadClass(className, formModel);
+            return FormUtils.loadClass(className, (FormModel)formModelRef.get());
         }
         catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

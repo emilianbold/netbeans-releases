@@ -892,9 +892,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 processEvents(events);
         }
 
-        private void processEvents(FormModelEvent[] events) {
-            this.events = events;
-
+        private synchronized void processEvents(FormModelEvent[] events) {
             boolean lafBlock;
             if (events == null) {
                 lafBlock = true;
@@ -915,6 +913,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     return;
             }
 
+            this.events = events;
             if (lafBlock) // Look&Feel UI defaults remapping needed
                 FormLAF.executeWithLookAndFeel(this);
             else
