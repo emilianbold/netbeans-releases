@@ -18,6 +18,7 @@ import java.beans.*;
 import javax.swing.*;
 
 import org.openide.TopManager;
+import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
@@ -322,9 +323,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
             try {
                 String name = action.getName ();
                 if (name == null) name = NbBundle.getBundle(LoaderActionsPanel.class).getString("LBL_no_system_action_name");
-                int amp = name.indexOf ('&');
-                if (amp != -1) name = name.substring (0, amp) + name.substring (amp + 1, name.length ());
-                label.setText (name);
+                label.setText (Actions.cutAmpersand (name));
                 Icon icon = action.getIcon ();
                 if (icon != null) label.setIcon (icon);
             } catch (RuntimeException re) {
