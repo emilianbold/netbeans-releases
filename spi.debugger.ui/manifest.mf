@@ -3,13 +3,13 @@ NetBeans-Module-Name: Debugger
 NetBeans-Module-Specification-Version: 1.0
 NetBeans-Module-Implementation-Version: 1.0
 
-Name: com/netbeans/developer/modules/debugger/DebuggerSettings.class
+Name: com/netbeans/developer/modules/debugger/support/DebuggerSettings.class
 NetBeans-Module-Class: Option
 
-Name: com/netbeans/developer/modules/debugger/JavaDebugger.class
+Name: com/netbeans/developer/modules/debugger/debug/ToolsDebugger.class
 NetBeans-Module-Class: Debugger
 
-Name: com/netbeans/developer/modules/debugger/nodes/DebuggerNode.class
+Name: com/netbeans/developer/modules/debugger/support/nodes/DebuggerNode.class
 NetBeans-Module-Class: Node
 Type: Environment
 
