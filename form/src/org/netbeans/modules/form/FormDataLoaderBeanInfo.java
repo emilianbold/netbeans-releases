@@ -15,9 +15,8 @@ package com.netbeans.developer.modules.loaders.form;
 
 import java.beans.*;
 import java.awt.Image;
-import java.util.ResourceBundle;
 
-import org.openide.util.NbBundle;
+import com.netbeans.developer.modules.loaders.java.JavaDataLoader;
 
 /** Form data loader bean info.
 *
@@ -25,23 +24,19 @@ import org.openide.util.NbBundle;
 */
 public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
 
+  public BeanInfo[] getAdditionalBeanInfo () {
+    try {
+      return new BeanInfo[] { Introspector.getBeanInfo (JavaDataLoader.class) };
+    } catch (IntrospectionException ie) {
+      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+        ie.printStackTrace ();
+      return null;
+    }
+  }
+    
   /** Icons for url data loader. */
   private static Image icon;
   private static Image icon32;
-
-  /** Propertydescriptors */
-  private static PropertyDescriptor[] descriptors;
-
-  /**
-  * @return Returns an array of PropertyDescriptors
-  * describing the editable properties supported by this bean.
-  */
-  public PropertyDescriptor[] getPropertyDescriptors () {
-    if (descriptors == null) { 
-      initializeDescriptors();
-    }
-    return descriptors;
-  }
 
   /** @param type Desired type of the icon
   * @return returns the Form loader's icon
@@ -59,24 +54,11 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
     }
   }
 
-  private static void initializeDescriptors () {
-    final ResourceBundle bundle =
-      NbBundle.getBundle(FormDataLoaderBeanInfo.class);
-    try {
-      descriptors =  new PropertyDescriptor[] {
-        new PropertyDescriptor ("displayName", FormDataLoader.class, "getDisplayName", null), // NOI18N
-      };
-      descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
-      descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
-    } catch (IntrospectionException e) {
-      e.printStackTrace ();
-    }
-  }
-
 }
 
 /*
 * Log
+*  5    Gandalf   1.4         1/13/00  Jesse Glick     Bean info fixes.
 *  4    Gandalf   1.3         1/5/00   Ian Formanek    NOI18N
 *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
