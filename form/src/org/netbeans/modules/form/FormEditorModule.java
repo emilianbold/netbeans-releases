@@ -91,10 +91,10 @@ public class FormEditorModule extends ModuleInstall {
     
     /** Module installed again. */
     public void restored() {
+        Beans.setDesignTime(true);
+        
         timerBeanHack();
         
-        BeanInstaller.autoLoadBeans();
-
         lastProjectDesktop = TopManager.getDefault().getPlaces().nodes().projectDesktop();
         if (projectListener == null) {
             projectListener = new ProjectChangeListener();
@@ -143,6 +143,7 @@ public class FormEditorModule extends ModuleInstall {
                 Node projectDesktop = TopManager.getDefault().getPlaces().nodes().projectDesktop();
                 if (projectDesktop != lastProjectDesktop) {
                     lastProjectDesktop = projectDesktop;
+                    BeanInstaller.autoLoadBeans();
                     ComponentPalette.getDefault().updatePalette();
                 }
             }

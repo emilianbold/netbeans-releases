@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="View">
-            <attr name="Separator1[javax-swing-JSeparator].instance/Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" boolvalue="true" />
             <file name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" />
             <attr name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance/org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" boolvalue="true" />
         </folder>
@@ -253,9 +253,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Beans">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
-
-            <file name="Timer[org-netbeans-examples-lib-timerbean-Timer].instance" />
         </folder>
 
         <folder name="Layouts">

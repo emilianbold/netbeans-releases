@@ -346,6 +346,8 @@ to make the first user start faster and better.)
     <delete file="netbeans/system/project.basic"/>
     <delete file="netbeans/system/project.last"/>
     <delete file="netbeans/beans/libs.properties"/>
+    <delete file="netbeans/beans/installed.properties"/>
+    <delete dir="netbeans/system/Palette/Beans"/>
     <echo file="netbeans/build_info">NetBeans dev build
 ------------------
 Number:   ${buildnumber}
