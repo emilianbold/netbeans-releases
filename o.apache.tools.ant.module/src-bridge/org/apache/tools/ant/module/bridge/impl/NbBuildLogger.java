@@ -16,7 +16,6 @@
 package org.apache.tools.ant.module.bridge.impl;
 
 import java.io.*;
-import java.text.MessageFormat;
 
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -86,10 +85,10 @@ final class NbBuildLogger implements BuildLogger {
     public void buildFinished(BuildEvent ev) {
         Throwable t = ev.getException();
         // result message
-        err.println();
+        long time = System.currentTimeMillis() - startTime; // #10305
         if (t == null) {
             // [PENDING] should check for target member (and TargetExecutor should set it...)
-            err.println(NbBundle.getMessage(NbBuildLogger.class, "MSG_finished_target_printed"));
+            err.println(formatMessageWithTime("FMT_finished_target_printed", time));
             if (updateStatusLine) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "MSG_finished_target_status"));
             }
@@ -100,15 +99,11 @@ final class NbBuildLogger implements BuildLogger {
             } else {
                 t.printStackTrace(err);
             }
-            err.println(NbBundle.getMessage(NbBuildLogger.class, "MSG_target_failed_printed")); // #10305
+            err.println(formatMessageWithTime("FMT_target_failed_printed", time)); // #10305
             if (updateStatusLine) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "MSG_target_failed_status"));
             }
         }
-        
-        // time
-        err.println();
-        err.println(formatTime(System.currentTimeMillis() - startTime)); // #10305
     }
     
     public void targetStarted(BuildEvent ev) {
@@ -131,17 +126,10 @@ final class NbBuildLogger implements BuildLogger {
      * Total time: {0} minutes
      *             {1} seconds
      */
-    protected static String formatTime(long millis) {
+    private static String formatMessageWithTime(String key, long millis) {
         int secs = (int) (millis / 1000);
         int minutes = secs / 60;
         int seconds = secs % 60;
-        
-        // get resourcestring and set up MessageFormat
-        String msgformat= NbBundle.getMessage(NbBuildLogger.class, "MSG_finished_target_time");
-        MessageFormat mf = new MessageFormat(msgformat);
-        
-        // return formatted String
-        Integer[] values = {new Integer(minutes), new Integer(seconds)};
-        return mf.format(values);
+        return NbBundle.getMessage(NbBuildLogger.class, key, new Integer(minutes), new Integer(seconds));
     }
 }
