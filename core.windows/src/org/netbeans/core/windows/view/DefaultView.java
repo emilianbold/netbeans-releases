@@ -69,9 +69,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(DefaultView.class);
     
-    private boolean reentryFlag = false;
-
-    
     public DefaultView(ControllerHandler controllerHandler) {
         this.controllerHandler = controllerHandler;
     }
@@ -107,31 +104,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                
 
     public void changeGUI(ViewEvent[] viewEvents, WindowSystemSnapshot snapshot) {
-        try {
-        if (reentryFlag) {
-            // winsys is not reentrant. having the later snapshot proceesed before the
-            // original one causes problems.
-            boolean isDangerous = false;
-            for(int i = 0; i < viewEvents.length; i++) {
-                ViewEvent viewEvent = viewEvents[i];
-                int type = viewEvent.getType();
-                // these should not cause any problems since they don't change the structure of the snapshot.
-                if (type != CHANGE_TOPCOMPONENT_DISPLAY_NAME_CHANGED &&
-                    type != CHANGE_TOPCOMPONENT_DISPLAY_NAME_ANNOTATION_CHANGED &&
-                    type != CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED && 
-                    type != CHANGE_TOPCOMPONENT_ICON_CHANGED && 
-                    type != CHANGE_PROJECT_NAME) {
-                        isDangerous = true;
-                        break;
-                }
-            }
-            if (isDangerous) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                     new IllegalStateException("Assertion failed. Windows API is not meant to be reentrant. In such a case, non predictable side effects can emerge. " +
-                                               "Please consider making your calls to Window System at a different point.")); // NOI18N
-            }
-        }
-        reentryFlag = true;
+
         // Change to view understandable-convenient structure.
         WindowSystemAccessor wsa = ViewHelper.createWindowSystemAccessor(snapshot);
         
@@ -179,7 +152,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 windowSystemVisibilityChanged(((Boolean)viewEvent.getNewValue()).booleanValue(), wsa);
                 // PENDING this should be processed separatelly, there is nothing to coallesce.
 
-                reentryFlag = false;
                 return;
             }
         }
@@ -457,9 +429,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         for(Iterator it = toHide.iterator(); it.hasNext(); ) {
             TopComponent tc = (TopComponent)it.next();
             WindowManagerImpl.getInstance().componentHidden(tc);
-        }
-        } finally {
-            reentryFlag = false;
         }
     }
     

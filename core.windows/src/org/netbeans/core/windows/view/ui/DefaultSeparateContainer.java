@@ -41,7 +41,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
 
     /** JFrame instance representing the separated mode. */
     private final JFrame frame;
-    
+    private long frametimestamp = 0;
 
     /** Creates a DefaultSeparateContainer. */
     public DefaultSeparateContainer(final ModeView modeView, WindowDnDManager windowDnDManager, Rectangle bounds) {
@@ -78,10 +78,17 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
                 modeView.getController().userClosingMode(modeView);
             }
             
-            public void windowActivated(WindowEvent evt) {
-                modeView.getController().userActivatedModeWindow(modeView);
+            public void windowActivated(WindowEvent event) {
+                if (frametimestamp != 0 && System.currentTimeMillis() > frametimestamp + 500) {
+                    modeView.getController().userActivatedModeWindow(modeView);
+                } 
             }
+            public void windowOpened(WindowEvent event) {
+                frametimestamp = System.currentTimeMillis();
+            }
+            
         });
+        
         
         frame.addWindowStateListener(new WindowStateListener() {
             
@@ -139,7 +146,10 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
     
     protected void updateActive(boolean active) {
         if(active && !frame.isActive()) {
-            frame.toFront();
+            frametimestamp = System.currentTimeMillis();
+            if (frame.isVisible()) {
+                frame.toFront();
+            } 
         } 
     }
     

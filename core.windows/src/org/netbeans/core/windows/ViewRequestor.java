@@ -49,6 +49,8 @@ class ViewRequestor {
      * Manipulate it in AWT thread only. */
     private WindowSystemSnapshot snapshot;
     
+    private boolean reentryFlag = false;    
+    
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(ViewRequestor.class);
     
@@ -147,6 +149,7 @@ class ViewRequestor {
         if(SwingUtilities.isEventDispatchThread()) {
             processRequest();
         } else {
+            Thread.dumpStack();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     processRequest();
@@ -178,6 +181,9 @@ class ViewRequestor {
     // !! AWT thread only >>
     
     private void processRequest() {
+        if (reentryFlag) {
+            return;
+        }
         if(snapshot == null) {
             // The system was made invisible.
             return;
@@ -204,8 +210,8 @@ class ViewRequestor {
             }
             viewEvents.add(getViewEvent(r));
         }
-        
         dispatchRequest((ViewEvent[])viewEvents.toArray(new ViewEvent[0]), snapshot);
+
     }
     
     private void processVisibilityRequest(ViewRequest visibilityRequest) {
@@ -226,7 +232,14 @@ class ViewRequestor {
     }
     
     private void dispatchRequest(ViewEvent[] viewEvents, WindowSystemSnapshot snapshot) {
-        view.changeGUI(viewEvents, snapshot);
+        try {
+            reentryFlag = true;        
+            view.changeGUI(viewEvents, snapshot);
+        } finally {
+            reentryFlag = false;
+            // check for events that appeared while processing..
+            processRequest();
+        }        
     }
 
     private void updateSnapshot(ViewRequest[] requests) {

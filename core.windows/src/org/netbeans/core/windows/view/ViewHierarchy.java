@@ -332,8 +332,8 @@ final class ViewHierarchy {
     }
 
     public void activateMode(ModeAccessor activeModeAccessor) {
-        ModeView activeModeView = getModeViewForAccessor(activeModeAccessor);
-        activateModeView(activeModeView);
+        ModeView activeModeV = getModeViewForAccessor(activeModeAccessor);
+        activateModeView(activeModeV);
     }
 
     private void activateModeView(ModeView modeView) {
@@ -495,12 +495,18 @@ final class ViewHierarchy {
     
     public void setSeparateModesVisible(boolean visible) {
         if(editorAreaFrame != null) {
-            editorAreaFrame.setVisible(visible);
-        }
+            if (editorAreaFrame.isVisible() != visible) {
+                //#48829 the visible check needed because of this issue
+                editorAreaFrame.setVisible(visible);
+            }
+        } 
         
         for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
             ModeView mv = (ModeView)it.next();
-            mv.getComponent().setVisible(visible);
+            if (mv.getComponent().isVisible() != visible) {
+                //#48829 the visible check needed because of this issue
+                mv.getComponent().setVisible(visible);
+            }
         }
     }
 
@@ -753,12 +759,18 @@ final class ViewHierarchy {
         });
         
         frame.addWindowListener(new WindowAdapter() {
+            private long frametimestamp = 0;
             public void windowClosing(WindowEvent evt) {
                 closeEditorModes();
             }
             
             public void windowActivated(WindowEvent evt) {
-                controller.userActivatedEditorWindow();
+                if (frametimestamp != 0 && System.currentTimeMillis() > frametimestamp + 500) {
+                    controller.userActivatedEditorWindow();
+                }
+            }
+            public void windowOpened(WindowEvent event) {
+                frametimestamp = System.currentTimeMillis();
             }
         });
         
