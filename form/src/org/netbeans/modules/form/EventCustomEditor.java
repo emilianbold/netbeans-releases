@@ -35,8 +35,6 @@ public class EventCustomEditor extends javax.swing.JPanel {
         initComponents();
         enableButtons();
 
-        org.openide.util.HelpCtx.setHelpIDString(this, "gui.csh.handlers"); // NOI18N
-
         addButton.setMnemonic(
             FormUtils.getBundleString("CTL_EE_ADD_Mnemonic").charAt(0)); // NOI18N
         removeButton.setMnemonic(
