@@ -465,6 +465,10 @@ public final class AntBridge {
         protected final PermissionCollection getPermissions(CodeSource cs) {
             return getAllPermissions();
         }
+        
+        public String toString() {
+            return super.toString() + "[parent=" + getParent() + ",urls=" + Arrays.asList(getURLs()) + "]";
+        }
 
         /* Debugging:
         public URL getResource(String name) {
