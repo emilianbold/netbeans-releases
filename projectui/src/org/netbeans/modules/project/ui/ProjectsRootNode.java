@@ -287,7 +287,6 @@ public class ProjectsRootNode extends AbstractNode {
 
         public void propertyChange( PropertyChangeEvent e ) {
             if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) ) {
-                fireIconChange();
                 fireDisplayNameChange( null, null );
             }
         }
