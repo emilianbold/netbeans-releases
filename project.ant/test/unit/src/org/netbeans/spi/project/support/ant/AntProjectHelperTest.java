@@ -228,6 +228,11 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("DOS-style ..\\ resolves up and down", projdirF, h.resolveFile("..\\proj"));
         assertEquals("Unix-style ../ resolves up and down", projdir, h.resolveFileObject("../proj"));
         assertEquals("DOS-style ..\\ resolves up and down", projdir, h.resolveFileObject("..\\proj"));
+        assertEquals("absolute path is left alone", scratchF, h.resolveFile(scratchF.getAbsolutePath()));
+        assertEquals("absolute path is left alone", scratch, h.resolveFileObject(scratchF.getAbsolutePath()));
+        File somethingElseF = new File(scratchF.getParentFile(), "nonexistent-file-path");
+        assertEquals("absolute (nonexistent) path is left alone", somethingElseF, h.resolveFile(somethingElseF.getAbsolutePath()));
+        assertEquals("absolute (nonexistent) path has no file object", null, h.resolveFileObject(somethingElseF.getAbsolutePath()));
     }
     
     /**
