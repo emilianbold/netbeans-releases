@@ -1,3 +1,1 @@
-org.netbeans.modules.web.debug.actions.JspGoIntoActionProvider
-org.netbeans.modules.web.debug.actions.JspGoToCursorActionProvider
 org.netbeans.modules.web.debug.actions.JspToggleBreakpointActionProvider
