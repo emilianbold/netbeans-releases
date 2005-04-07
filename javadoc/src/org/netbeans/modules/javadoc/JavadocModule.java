@@ -55,5 +55,4 @@ public final class JavadocModule extends ModuleInstall {
             tc.close();
         }
     }
-    
 }

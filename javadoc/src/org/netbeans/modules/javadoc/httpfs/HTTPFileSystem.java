@@ -25,6 +25,7 @@ import java.util.*;
 
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.FileSystemAction;
@@ -396,14 +397,14 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
             if( !newURL.getProtocol( ).equals( "http" ) && !newURL.getProtocol( ).equals( "https" ) ) { //NOI18N
                 
                 // Reject this URL
-                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotHTTPProtocol" ), propertyChangeEvent );    //NOI18N
+                throw new PropertyVetoException( NbBundle.getMessage(HTTPFileSystem.class, "MSG_NotHTTPProtocol" ), propertyChangeEvent );    //NOI18N
                 
             }
             // If this URL doesn't point to a directory,
             if( !newURL.toExternalForm( ).endsWith( "/" ) ){    //NOI18N
 
                 // Reject this URL
-                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotDirectory" ), propertyChangeEvent );    //NOI18N
+                throw new PropertyVetoException( NbBundle.getMessage(HTTPFileSystem.class, "MSG_NotDirectory" ), propertyChangeEvent );    //NOI18N
 
             }
             
@@ -416,7 +417,7 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
             if( newRefreshRate < 0 ) {
 
                 // Reject this refresh rate
-                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_RefreshRateCannotBeNegative" ), propertyChangeEvent );    //NOI18N
+                throw new PropertyVetoException( NbBundle.getMessage(HTTPFileSystem.class, "MSG_RefreshRateCannotBeNegative" ), propertyChangeEvent );    //NOI18N
 
             }
 
@@ -454,25 +455,19 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
         // Values to pass to the message formatter
         Object  replacementValues[];
 
-
-        // Get the name of the URL
-        replacementValues = new Object[]{ baseURL.toExternalForm( ) };
-
         // If the web server is being scanned,
         if( getState( ) == STATE_READING ) {
 
             // Use the "scanning" message
             messageKey = "DisplayName_Scanning"; // NOI18N
-
         // If the web server is not being scanned,
         } else {
 
             // Use the "normal" message
             messageKey = "DisplayName_Normal"; // NOI18N
-
         }
 
-        return ResourceUtils.getFormattedBundledString( messageKey, replacementValues );
+        return NbBundle.getMessage(HTTPFileSystem.class, messageKey, baseURL.toExternalForm( ) );
 
     }
     

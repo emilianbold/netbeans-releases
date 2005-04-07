@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.ResourceBundle;
 import javax.swing.*;
 
 import org.netbeans.api.javahelp.Help;
@@ -73,8 +74,8 @@ public final class IndexSearch
 
     /** Button titles */
 
-    private static final String STR_FIND = ResourceUtils.getBundledString ("CTL_SEARCH_ButtonFind");    //NOI18N
-    private static final String STR_STOP = ResourceUtils.getBundledString ("CTL_SEARCH_ButtonStop");    //NOI18N
+    private static final String STR_FIND = NbBundle.getMessage(IndexSearch.class, "CTL_SEARCH_ButtonFind");    //NOI18N
+    private static final String STR_STOP = NbBundle.getMessage(IndexSearch.class, "CTL_SEARCH_ButtonStop");    //NOI18N
     
     /** List models for different sorts */
     private ArrayList results = new ArrayList();
@@ -92,11 +93,12 @@ public final class IndexSearch
 
     /** Initializes the Form */
     public IndexSearch() {
-        DocIndexItem dii = new DocIndexItem( ResourceUtils.getBundledString("CTL_SEARCH_Wait" ), "", null, "" );    //NOI18N
+        ResourceBundle b = NbBundle.getBundle(IndexSearch.class);
+        DocIndexItem dii = new DocIndexItem( b.getString("CTL_SEARCH_Wait" ), "", null, "" );    //NOI18N
         dii.setIconIndex( DocSearchIcons.ICON_WAIT );
         waitModel.addElement( dii );
 
-        DocIndexItem diin = new DocIndexItem( ResourceUtils.getBundledString("CTL_SEARCH_NotFound" ), "", null, "" );   //NOI18N
+        DocIndexItem diin = new DocIndexItem( b.getString("CTL_SEARCH_NotFound" ), "", null, "" );   //NOI18N
         diin.setIconIndex( DocSearchIcons.ICON_NOT_FOUND );
         notModel.addElement( diin );
         
@@ -193,23 +195,23 @@ public final class IndexSearch
 
         // Adding ToolTips
 
-        searchButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_search_ToolTip" ));    //NOI18N
-        byReferenceButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byReference_ToolTip" ));   //NOI18N
-        byReferenceButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_byReference_Mnemonic").charAt(0));  // NOI18N
-        byTypeButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byType_ToolTip" ));   //NOI18N
-        byTypeButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_byType_Mnemonic").charAt(0));  // NOI18N
-        byNameButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byName_ToolTip" ));   //NOI18N
-        byNameButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_byName_Mnemonic").charAt(0));  // NOI18N
-        quickViewButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_quickView_ToolTip" ));   //NOI18N
-        quickViewButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_quickView_Mnemonic").charAt(0));  // NOI18N
-        sourceButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_showSource_ToolTip" ));   //NOI18N
-        sourceButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_showSource_Mnemonic").charAt(0));  // NOI18N
-        searchComboBox.setToolTipText(ResourceUtils.getBundledString( "ACS_SEARCH_SearchComboBoxA11yDesc" ));   //NOI18N
-        resultsList.setToolTipText(ResourceUtils.getBundledString( "ACS_SEARCH_ResultsListA11yDesc" ));   //NOI18N
-        quickBrowser.setToolTipText(ResourceUtils.getBundledString( "ACS_SEARCH_QuickBrowserA11yDesc" ));   //NOI18N
+        searchButton.setToolTipText(b.getString( "CTL_SEARCH_search_ToolTip" ));    //NOI18N
+        byReferenceButton.setToolTipText(b.getString( "CTL_SEARCH_byReference_ToolTip" ));   //NOI18N
+        byReferenceButton.setMnemonic(b.getString("CTL_SEARCH_byReference_Mnemonic").charAt(0));  // NOI18N
+        byTypeButton.setToolTipText(b.getString( "CTL_SEARCH_byType_ToolTip" ));   //NOI18N
+        byTypeButton.setMnemonic(b.getString("CTL_SEARCH_byType_Mnemonic").charAt(0));  // NOI18N
+        byNameButton.setToolTipText(b.getString( "CTL_SEARCH_byName_ToolTip" ));   //NOI18N
+        byNameButton.setMnemonic(b.getString("CTL_SEARCH_byName_Mnemonic").charAt(0));  // NOI18N
+        quickViewButton.setToolTipText(b.getString( "CTL_SEARCH_quickView_ToolTip" ));   //NOI18N
+        quickViewButton.setMnemonic(b.getString("CTL_SEARCH_quickView_Mnemonic").charAt(0));  // NOI18N
+        sourceButton.setToolTipText(b.getString( "CTL_SEARCH_showSource_ToolTip" ));   //NOI18N
+        sourceButton.setMnemonic(b.getString("CTL_SEARCH_showSource_Mnemonic").charAt(0));  // NOI18N
+        searchComboBox.setToolTipText(b.getString( "ACS_SEARCH_SearchComboBoxA11yDesc" ));   //NOI18N
+        resultsList.setToolTipText(b.getString( "ACS_SEARCH_ResultsListA11yDesc" ));   //NOI18N
+        quickBrowser.setToolTipText(b.getString( "ACS_SEARCH_QuickBrowserA11yDesc" ));   //NOI18N
         
-        searchButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_ButtonFind_Mnemonic").charAt(0));  // NOI18N
-        helpButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_ButtonHelp_Mnemonic").charAt(0));  // NOI18N
+        searchButton.setMnemonic(b.getString("CTL_SEARCH_ButtonFind_Mnemonic").charAt(0));  // NOI18N
+        helpButton.setMnemonic(b.getString("CTL_SEARCH_ButtonHelp_Mnemonic").charAt(0));  // NOI18N
         
         initAccessibility();
     }
@@ -227,14 +229,15 @@ public final class IndexSearch
     }
     
     private void initAccessibility() {
-        getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_PanelA11yName"));  // NOI18N
-        getAccessibleContext().setAccessibleDescription(ResourceUtils.getBundledString("ACS_SEARCH_PanelA11yDesc"));  // NOI18N
-        searchComboBox.getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_SearchComboBoxA11yName"));  // NOI18N
-        searchComboBox.getAccessibleContext().setAccessibleDescription(ResourceUtils.getBundledString("ACS_SEARCH_SearchComboBoxA11yDesc")); // NOI18N
-        resultsList.getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_ResultsListA11yName"));  // NOI18N
-        resultsList.getAccessibleContext().setAccessibleDescription(ResourceUtils.getBundledString("ACS_SEARCH_ResultsListA11yDesc")); // NOI18N
-        quickBrowser.getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_QuickBrowserA11yName"));  // NOI18N
-        quickBrowser.getAccessibleContext().setAccessibleDescription(ResourceUtils.getBundledString("ACS_SEARCH_QuickBrowserA11yDesc"));  // NOI18N
+        ResourceBundle b = NbBundle.getBundle(IndexSearch.class);
+        getAccessibleContext().setAccessibleName(b.getString("ACS_SEARCH_PanelA11yName"));  // NOI18N
+        getAccessibleContext().setAccessibleDescription(b.getString("ACS_SEARCH_PanelA11yDesc"));  // NOI18N
+        searchComboBox.getAccessibleContext().setAccessibleName(b.getString("ACS_SEARCH_SearchComboBoxA11yName"));  // NOI18N
+        searchComboBox.getAccessibleContext().setAccessibleDescription(b.getString("ACS_SEARCH_SearchComboBoxA11yDesc")); // NOI18N
+        resultsList.getAccessibleContext().setAccessibleName(b.getString("ACS_SEARCH_ResultsListA11yName"));  // NOI18N
+        resultsList.getAccessibleContext().setAccessibleDescription(b.getString("ACS_SEARCH_ResultsListA11yDesc")); // NOI18N
+        quickBrowser.getAccessibleContext().setAccessibleName(b.getString("ACS_SEARCH_QuickBrowserA11yName"));  // NOI18N
+        quickBrowser.getAccessibleContext().setAccessibleDescription(b.getString("ACS_SEARCH_QuickBrowserA11yDesc"));  // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -242,7 +245,8 @@ public final class IndexSearch
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the FormEditor.
      */
-    private void initComponents() {//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
@@ -255,17 +259,15 @@ public final class IndexSearch
         quickViewButton = new javax.swing.JToggleButton();
         helpButton = new javax.swing.JButton();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         searchComboBox.setEditable(true);
-        searchComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchComboBoxActionPerformed(evt);
-            }
-        });
+        searchComboBox.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -275,11 +277,7 @@ public final class IndexSearch
         jPanel1.add(searchComboBox, gridBagConstraints);
 
         searchButton.setText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("IndexSearch.searchButton.text"));
-        searchButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchButtonActionPerformed(evt);
-            }
-        });
+        searchButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -288,11 +286,7 @@ public final class IndexSearch
 
         sourceButton.setPreferredSize(new java.awt.Dimension(25, 25));
         sourceButton.setMinimumSize(new java.awt.Dimension(25, 25));
-        sourceButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showSource(evt);
-            }
-        });
+        sourceButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 3);
@@ -303,11 +297,7 @@ public final class IndexSearch
         byNameButton.setActionCommand("A");
         byNameButton.setMinimumSize(new java.awt.Dimension(25, 25));
         byNameButton.setRequestFocusEnabled(false);
-        byNameButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sortButtonActionPerformed(evt);
-            }
-        });
+        byNameButton.addActionListener(formListener);
 
         jPanel1.add(byNameButton, new java.awt.GridBagConstraints());
 
@@ -315,11 +305,7 @@ public final class IndexSearch
         byReferenceButton.setActionCommand("R");
         byReferenceButton.setMinimumSize(new java.awt.Dimension(25, 25));
         byReferenceButton.setRequestFocusEnabled(false);
-        byReferenceButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sortButtonActionPerformed(evt);
-            }
-        });
+        byReferenceButton.addActionListener(formListener);
 
         jPanel1.add(byReferenceButton, new java.awt.GridBagConstraints());
 
@@ -327,21 +313,13 @@ public final class IndexSearch
         byTypeButton.setActionCommand("T");
         byTypeButton.setMinimumSize(new java.awt.Dimension(25, 25));
         byTypeButton.setRequestFocusEnabled(false);
-        byTypeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sortButtonActionPerformed(evt);
-            }
-        });
+        byTypeButton.addActionListener(formListener);
 
         jPanel1.add(byTypeButton, new java.awt.GridBagConstraints());
 
         quickViewButton.setSelected(true);
         quickViewButton.setRequestFocusEnabled(false);
-        quickViewButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                quickViewButtonActionPerformed(evt);
-            }
-        });
+        quickViewButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
@@ -349,11 +327,7 @@ public final class IndexSearch
 
         helpButton.setToolTipText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp_tooltip"));
         helpButton.setText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp"));
-        helpButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                helpButtonActionPerformed(evt);
-            }
-        });
+        helpButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -366,7 +340,39 @@ public final class IndexSearch
         gridBagConstraints.weightx = 1.0;
         add(jPanel1, gridBagConstraints);
 
-    }//GEN-END:initComponents
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == searchComboBox) {
+                IndexSearch.this.searchComboBoxActionPerformed(evt);
+            }
+            else if (evt.getSource() == searchButton) {
+                IndexSearch.this.searchButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == sourceButton) {
+                IndexSearch.this.showSource(evt);
+            }
+            else if (evt.getSource() == byNameButton) {
+                IndexSearch.this.sortButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == byReferenceButton) {
+                IndexSearch.this.sortButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == byTypeButton) {
+                IndexSearch.this.sortButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == quickViewButton) {
+                IndexSearch.this.quickViewButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == helpButton) {
+                IndexSearch.this.helpButtonActionPerformed(evt);
+            }
+        }
+    }
+    // </editor-fold>//GEN-END:initComponents
 
     private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
         Help help=(Help)Lookup.getDefault().lookup(Help.class);
@@ -497,12 +503,12 @@ public final class IndexSearch
                     oc.open();
                 }
                 else {
-                    NotifyDescriptor.Message nd = new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
+                    NotifyDescriptor.Message nd = new NotifyDescriptor.Message( NbBundle.getMessage(IndexSearch.class, "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
                     DialogDisplayer.getDefault().notify( nd );
                 }
             }
             else {
-                NotifyDescriptor.Message nd = new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
+                NotifyDescriptor.Message nd = new NotifyDescriptor.Message( NbBundle.getMessage(IndexSearch.class, "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
                 DialogDisplayer.getDefault().notify( nd );
             }
 
@@ -550,7 +556,7 @@ public final class IndexSearch
         javax.swing.SwingUtilities.invokeLater( new Runnable() {
                                                     public void run() {
                                                         searchButton.setText( STR_FIND );
-                                                        searchButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_ButtonFind_Mnemonic").charAt(0));  // NOI18N
+                                                        searchButton.setMnemonic(NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonFind_Mnemonic").charAt(0));  // NOI18N
                                                         if ( resultsList.getModel().getSize() > 0 ) {
                                                             resultsList.setSelectedIndex( 0 );
                                                             resultsList.grabFocus();
@@ -600,7 +606,7 @@ public final class IndexSearch
             indexSearch = new IndexSearch ();
             refIndexSearch = new SoftReference(indexSearch);
 
-            indexSearch.setName( ResourceUtils.getBundledString ("CTL_SEARCH_WindowTitle") );   //NOI18N
+            indexSearch.setName( NbBundle.getMessage(IndexSearch.class, "CTL_SEARCH_WindowTitle") );   //NOI18N
             indexSearch.setIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
         }
         return indexSearch;
@@ -679,7 +685,7 @@ public final class IndexSearch
         }
         
         searchButton.setText( STR_STOP );
-        searchButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_ButtonStop_Mnemonic").charAt(0));  // NOI18N
+        searchButton.setMnemonic(NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonStop_Mnemonic").charAt(0));  // NOI18N
     }
     
     private void mirrorMRUStrings() {

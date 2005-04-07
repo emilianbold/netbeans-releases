@@ -51,16 +51,16 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
 
                 // URL property
                 propertyDescriptors[ 0 ] = new PropertyDescriptor( HTTPFileSystem.PROP_URL, HTTPFileSystem.class, "getURL", "setURL" );	// NOI18N
-                propertyDescriptors[ 0 ].setDisplayName( ResourceUtils.getBundledString( "PROP_URLPropertyName" ) ); //NOI18N
-                propertyDescriptors[ 0 ].setShortDescription( ResourceUtils.getBundledString( "HINT_URLPropertyName" ) ); //NOI18N
+                propertyDescriptors[ 0 ].setDisplayName( NbBundle.getMessage(HTTPFileSystemBeanInfo.class, "PROP_URLPropertyName" ) ); //NOI18N
+                propertyDescriptors[ 0 ].setShortDescription( NbBundle.getMessage(HTTPFileSystemBeanInfo.class, "HINT_URLPropertyName" ) ); //NOI18N
                 propertyDescriptors[ 0 ].setBound( true );
                 propertyDescriptors[ 0 ].setConstrained( true );
                 propertyDescriptors[ 0 ].setPreferred( true );
 
                 // RefreshRate property
                 propertyDescriptors[ 1 ] = new PropertyDescriptor( HTTPFileSystem.PROP_REFRESH_RATE, HTTPFileSystem.class, "getRefreshRate", "setRefreshRate" );	// NOI18N
-                propertyDescriptors[ 1 ].setDisplayName( ResourceUtils.getBundledString( "PROP_RefreshRatePropertyName" ) ); //NOI18N
-                propertyDescriptors[ 1 ].setShortDescription( ResourceUtils.getBundledString( "HINT_RefreshRatePropertyName" ) ); //NOI18N
+                propertyDescriptors[ 1 ].setDisplayName( NbBundle.getMessage(HTTPFileSystemBeanInfo.class, "PROP_RefreshRatePropertyName" ) ); //NOI18N
+                propertyDescriptors[ 1 ].setShortDescription( NbBundle.getMessage(HTTPFileSystemBeanInfo.class, "HINT_RefreshRatePropertyName" ) ); //NOI18N
                 propertyDescriptors[ 1 ].setBound( true );
                 propertyDescriptors[ 1 ].setConstrained( true );
                 propertyDescriptors[ 1 ].setExpert( true );

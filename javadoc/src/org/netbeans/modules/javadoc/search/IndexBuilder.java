@@ -25,6 +25,7 @@ import javax.swing.text.html.parser.*;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
+import org.openide.util.NbBundle;
 
 import org.openide.util.RequestProcessor;
 
@@ -224,7 +225,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
                     title = st.getOverviewTitleBase(title);
                 }
                 if ("".equals(title)) { // NOI18N
-                    title = java.text.MessageFormat.format(ResourceUtils.getBundledString(
+                    title = java.text.MessageFormat.format(NbBundle.getMessage(IndexBuilder.class,
                             "FMT_NoOverviewTitle"), new Object[] { index.getPath(), // NOI18N
                                                                    fo.getName(),
                                                                    fo.getName() });

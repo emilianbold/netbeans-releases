@@ -25,6 +25,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -55,7 +56,7 @@ class RefreshAction
     public String getName(
     ) {
 
-        return ResourceUtils.getBundledString( "RefreshFS" );   // NOI18N
+        return NbBundle.getMessage(RefreshAction.class, "RefreshFS" );   // NOI18N
 
     }
 

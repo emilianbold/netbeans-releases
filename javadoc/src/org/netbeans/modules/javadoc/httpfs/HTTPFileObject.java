@@ -26,6 +26,7 @@ import javax.swing.text.html.*;
 import javax.swing.text.BadLocationException;
 
 import org.openide.filesystems.*;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -326,7 +327,7 @@ class HTTPFileObject extends FileObject {
             
         } else {
             
-            throw new FileStateInvalidException( ResourceUtils.getBundledString( "MSG_FilesystemNotFound" ) );  //NOI18N
+            throw new FileStateInvalidException( NbBundle.getMessage(HTTPFileObject.class, "MSG_FilesystemNotFound" ) );  //NOI18N
             
         }
     }

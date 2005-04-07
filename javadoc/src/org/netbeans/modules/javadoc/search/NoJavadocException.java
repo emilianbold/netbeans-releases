@@ -7,11 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.javadoc.search;
+
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -22,11 +24,11 @@ public class NoJavadocException extends Exception {
 
     /** Creates new NoJavadocException */
     public NoJavadocException() {
-        super(ResourceUtils.getBundledString( "MSG_NoDoc" )); // NOI18N
+        super(NbBundle.getMessage(NoJavadocException.class, "MSG_NoDoc" )); // NOI18N
     }
     
     /** Overrides toString() method */
     public String toString(){
-        return ResourceUtils.getBundledString( "MSG_NoDoc" ); // NOI18N
+        return NbBundle.getMessage(NoJavadocException.class, "MSG_NoDoc" ); // NOI18N
     }
 }
