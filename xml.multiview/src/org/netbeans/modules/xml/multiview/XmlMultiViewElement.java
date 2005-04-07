@@ -30,7 +30,6 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
     
     private TopComponent xmlTopComp;
     private XmlMultiViewDataObject dObj;
-    private transient UndoRedo undoRedo;
     private transient javax.swing.JComponent toolbar;
     
     /** Creates a new instance of XmlMultiviewElement */
@@ -100,7 +99,7 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
     }
 
     public org.openide.awt.UndoRedo getUndoRedo() {
-        return undoRedo;
+        return dObj.getEditorSupport().getUndoRedo0();
     }
 
     public javax.swing.JComponent getVisualRepresentation() {
@@ -111,7 +110,6 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
         if (dObj!=null) {
             XmlMultiViewEditorSupport support = dObj.getEditorSupport();
             if (support!=null) {
-                if (undoRedo==null) undoRedo = support.getUndoRedo0();
                 if (support.getMVTC() == null) {
                     support.setMVTC(callback.getTopComponent());
                 }

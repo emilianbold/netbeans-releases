@@ -119,7 +119,7 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     }
     
     public org.openide.awt.UndoRedo getUndoRedo() {
-        return null;
+        return dObj.getEditorSupport().getUndoRedo0();
     }
     
     public void setMultiViewCallback(MultiViewElementCallback callback) {
