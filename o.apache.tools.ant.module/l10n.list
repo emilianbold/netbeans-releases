@@ -3,3 +3,4 @@ ant/*/src/**/Bundle.properties
 ant/src-bridge/**/Bundle.properties
 ant/src/**/resources/**/*.html
 ant/*/src/**/resources/**/*.html
+exclude ant/debugger/**
