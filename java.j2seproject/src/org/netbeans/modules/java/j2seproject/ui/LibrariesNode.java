@@ -55,6 +55,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Project;
@@ -98,6 +99,7 @@ final class LibrariesNode extends AbstractNode {
      * Creates new LibrariesNode named displayName displaying classPathProperty classpath
      * and optionaly Java platform.
      * @param displayName the display name of the node
+     * @param project the project owning this node, the proejct is placed into LibrariesNode's lookup
      * @param eval {@link PropertyEvaluator} used for listening
      * @param helper {@link UpdateHelper} used for reading and updating project's metadata
      * @param refHelper {@link ReferenceHelper} used for destroying unused references
@@ -108,10 +110,10 @@ final class LibrariesNode extends AbstractNode {
      * if the platform should not be displayed
      * @param librariesNodeActions actions which should be available on the created node.
      */
-    LibrariesNode (String displayName, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
+    LibrariesNode (String displayName, Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty,
                    Action[] librariesNodeActions) {
-        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty));
+        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty), Lookups.singleton(project));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
     }
