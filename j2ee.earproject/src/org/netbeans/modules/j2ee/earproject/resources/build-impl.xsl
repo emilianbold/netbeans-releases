@@ -294,7 +294,7 @@ is divided into following sections:
             </xsl:call-template>
 
             <target name="pre-pre-compile">
-                <xsl:attribute name="depends">init,deps-jar,deps-j2ee-archive</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
                 <delete dir="${{build.dir}}"/>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
@@ -305,7 +305,7 @@ is divided into following sections:
             </target>
 
             <target name="do-compile">
-                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,pre-pre-compile,pre-compile,deps-jar,deps-j2ee-archive</xsl:attribute>
                 <earproject:javac xmlns:earproject="http://www.netbeans.org/ns/j2ee-earproject/1"/>
                 
                 <copy todir="${{build.dir}}/META-INF">
