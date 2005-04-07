@@ -166,6 +166,8 @@ implements org.openide.cookies.OpenCookie {
         }
             
         if (
+            c.isAssignableFrom(org.openide.cookies.EditCookie.class)
+            ||
             c.isAssignableFrom(org.openide.cookies.EditorCookie.Observable.class)
             ||
             c.isAssignableFrom (org.openide.cookies.PrintCookie.class)
