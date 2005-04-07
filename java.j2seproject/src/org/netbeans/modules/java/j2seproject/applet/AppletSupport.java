@@ -165,49 +165,65 @@ public class AppletSupport {
         }
         try {
             html = generateHtml(appletFile, buildDir, classesDir);
+            if (html!=null) {
+                return getHTMLPageURL(html, activePlatform);
+            }
+            else {
+                return null;
+            }
         } catch (IOException iex) {
-            ex = iex;
+            return null;
         }
-        URL url = null;
-        try {
-            if (ex == null) {
-                // JDK issue #6193279: Appletviewer does not accept encoded URLs
-                JavaPlatformManager pm = JavaPlatformManager.getDefault();
-                JavaPlatform platform = null;
-                if (activePlatform == null) {
-                    platform = pm.getDefaultPlatform();
-                }
-                else {
-                    JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
-                    for (int i=0; i<installedPlatforms.length; i++) {
-                        String antName = (String) installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
-                        if (antName != null && antName.equals(activePlatform)) {
-                            platform = installedPlatforms[i];
-                            break;
-                        }
-                    }
-                }
-
-                boolean workAround6193279 = platform != null    //In case of nonexisting platform don't use the workaround
-                        && platform.getSpecification().getVersion().compareTo(JDK_15)>=0; //JDK1.5 and higher
-                if (workAround6193279) {
-                    File f = FileUtil.toFile(html);
-                    try {
-                        String path = f.getAbsolutePath();
-                        if (File.separatorChar != '/') {    //NOI18N
-                            path = path.replace(File.separatorChar,'/');   //NOI18N
-                        }
-                        url = new URL ("file",null,path);
-                    } catch (MalformedURLException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                }
-                else {
-                    url = html.getURL();
+    }
+    
+    
+    /**
+     * Creates an URL of html page passed to the appletviewer. It workarounds a JDK 1.5 appletviewer
+     * bug. The appletviewer is not able to handle escaped URLs. 
+     * @param htmlFile html page
+     * @param activePlatform identifier of the platform used in the project
+     * @return URL of the html page or null
+     */
+    public static URL getHTMLPageURL (FileObject htmlFile, String activePlatform) {
+        assert htmlFile != null : "htmlFile cannot be null";    //NOI18N
+        // JDK issue #6193279: Appletviewer does not accept encoded URLs
+        JavaPlatformManager pm = JavaPlatformManager.getDefault();
+        JavaPlatform platform = null;
+        if (activePlatform == null) {
+            platform = pm.getDefaultPlatform();
+        }
+        else {
+            JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
+            for (int i=0; i<installedPlatforms.length; i++) {
+                String antName = (String) installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
+                if (antName != null && antName.equals(activePlatform)) {
+                    platform = installedPlatforms[i];
+                    break;
                 }
             }
-        } catch (FileStateInvalidException f) {
-            throw new FileStateInvalidException();
+        }
+
+        boolean workAround6193279 = platform != null    //In case of nonexisting platform don't use the workaround
+                && platform.getSpecification().getVersion().compareTo(JDK_15)>=0; //JDK1.5 and higher
+        URL url = null;
+        if (workAround6193279) {
+            File f = FileUtil.toFile(htmlFile);
+            try {
+                String path = f.getAbsolutePath();
+                if (File.separatorChar != '/') {    //NOI18N
+                    path = path.replace(File.separatorChar,'/');   //NOI18N
+                }
+                url = new URL ("file",null,path);
+            } catch (MalformedURLException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
+        else {
+            try {
+                url = htmlFile.getURL();
+            } catch (FileStateInvalidException f) {
+                ErrorManager.getDefault().notify(f);
+            }
         }
         return url;
     }

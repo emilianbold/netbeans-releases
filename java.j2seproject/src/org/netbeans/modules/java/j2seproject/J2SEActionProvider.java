@@ -630,9 +630,11 @@ class J2SEActionProvider implements ActionProvider {
                 existingFile.delete();
             }
             
-            htmlFile.copy(buildDir, file.getName(), ext).getURL();
-            if (htmlFile != null) {
-                url = htmlFile.getURL();
+            FileObject targetHtml = htmlFile.copy(buildDir, file.getName(), ext);
+            
+            if (targetHtml != null) {
+                String activePlatformName = project.evaluator().getProperty("platform.active"); //NOI18N
+                url = AppletSupport.getHTMLPageURL(targetHtml, activePlatformName);
             }
         } catch (FileStateInvalidException fe) {
             //ingore
