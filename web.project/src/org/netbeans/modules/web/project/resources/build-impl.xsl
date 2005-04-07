@@ -584,13 +584,6 @@ is divided into following sections:
             <target name="-do-compile">
                 <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, library-inclusion-in-archive,library-inclusion-in-manifest<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
 
-                <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
-                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment>
-                    <delete>
-                      <fileset dir="${{build.classes.dir.real}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
-                    </delete>
-                </xsl:if>
-
                 <webproject2:javac destdir="${{build.classes.dir.real}}"/>
 
                 <copy todir="${{build.classes.dir.real}}">

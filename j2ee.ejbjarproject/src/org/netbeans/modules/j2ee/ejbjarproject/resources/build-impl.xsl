@@ -638,12 +638,6 @@ is divided into following sections:
             
             <target name="-do-compile">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
-                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
-                    <delete> 
-                      <fileset dir="${{classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
-                    </delete>
-                </xsl:if>
                 <ejbjarproject2:javac destdir="${{classes.dir}}"/>
                 <copy todir="${{classes.dir}}">
                     <xsl:call-template name="createFilesets">
