@@ -104,19 +104,6 @@ public class RecaptureSchema {
                 System.out.println("[dbschema] c.getConnection()='" + c.getConnection() + "'");
             }
             
-            // OLD OLD OLD OLD OLD OLD OLD 
-            /*String packageName = fo.getPackageName('/'); //NOI18N
-            final String name;
-            if (packageName == null || packageName.equals("")) //NOI18N
-                name = target;
-            else
-                name = packageName + "." + target; //NOI18N
-             */
-            // END OLD END OLD END OLD END OLD 
-
-            
-//System.out.println("OLD name='" + name + "'");
-            
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run () {
                     try {
@@ -270,41 +257,33 @@ public class RecaptureSchema {
     
     public ConnectionProvider createConnectionProvider(DBSchemaWizardData data, String url) throws SQLException {
         
-        //try {
-            ConnectionNodeInfo cni = findConnectionNodeInfo(url);
-            if (cni == null) {
-                if (debug) {
-                    System.out.println("[dbschema-ccp] not found cni='" + cni+ "'");
-                }
-                return null;
-            }
+        ConnectionNodeInfo cni = findConnectionNodeInfo(url);
+        if (cni == null) {
             if (debug) {
-                System.out.println("[dbschema-ccp] found cni='" + cni.getDatabase() + "'");
+                System.out.println("[dbschema-ccp] not found cni='" + cni+ "'");
             }
-            data.setConnectionNodeInfo(cni);
-            ConnectionHandler ch = new ConnectionHandler(data);
-            if (ch.ensureConnection()) {
-                cni = data.getConnectionNodeInfo();
-                if (debug) {
-                    System.out.println("[dbschema-ccp] connection ensured ='" + cni.getDatabase() + "'"); 
-                }
-                ConnectionProvider connectionProvider = 
-                    new ConnectionProvider(cni.getConnection(), cni.getDriver());
-                connectionProvider.setSchema(cni.getSchema());
-                //String schemaName = cni.getName();
-                //schemaElementImpl.setName(DBIdentifier.create(schemaName));
-                return connectionProvider;
-            }
+            return null;
+        }
+        if (debug) {
+            System.out.println("[dbschema-ccp] found cni='" + cni.getDatabase() + "'");
+        }
+        data.setConnectionNodeInfo(cni);
+        ConnectionHandler ch = new ConnectionHandler(data);
+        if (ch.ensureConnection()) {
+            cni = data.getConnectionNodeInfo();
             if (debug) {
-                System.out.println("[dbschema-ccp] connection not ensured, returning null");
+                System.out.println("[dbschema-ccp] connection ensured ='" + cni.getDatabase() + "'"); 
             }
-        /*} catch (java.sql.SQLException sqle) {
-            NotifyDescriptor nd =
-                    new NotifyDescriptor.Message(
-                    NbBundle.getMessage(getClass(),"TXT_DatabaseError"),
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }*/
+            ConnectionProvider connectionProvider = 
+                new ConnectionProvider(cni.getConnection(), cni.getDriver());
+            connectionProvider.setSchema(cni.getSchema());
+            //String schemaName = cni.getName();
+            //schemaElementImpl.setName(DBIdentifier.create(schemaName));
+            return connectionProvider;
+        }
+        if (debug) {
+            System.out.println("[dbschema-ccp] connection not ensured, returning null");
+        }
         return null;
     }
     
