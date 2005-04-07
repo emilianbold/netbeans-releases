@@ -113,9 +113,9 @@ public class Actions extends JellyTestCase {
         MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:76.");
         Utilities.sleep(1000);
         EditorOperator ed = new EditorOperator("MemoryView.java");
-//        Object[] annotations = ed.getAnnotations(74);
-//        assertTrue("Call stack line annotation was not removed", annotations.length == 0);
-        Object[] annotations = ed.getAnnotations(76);
+        Object[] annotations = ed.getAnnotations(74);
+        assertTrue("Call stack line annotation was not removed", annotations.length == 0);
+        annotations = ed.getAnnotations(76);
         assertTrue("Program counter annotation is not displayed", "Current Program Counter".equals(ed.getAnnotationShortDescription(annotations[0])));
     }
     
