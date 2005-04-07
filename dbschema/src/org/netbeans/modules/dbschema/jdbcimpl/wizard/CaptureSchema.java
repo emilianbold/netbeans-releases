@@ -60,13 +60,6 @@ public class CaptureSchema {
             final FileObject fo = folder.getPrimaryFile();
             if (target == null || target.equals("")) //NOI18N
                 target = FileUtil.findFreeFileName(fo, defaultName, "dbschema"); //NOI18N
-
-            String packageName = fo.getPackageName('/'); //NOI18N
-            final String name;
-            if (packageName == null || packageName.equals("")) //NOI18N
-                name = target;
-            else
-                name = packageName + "." + target; //NOI18N
             
             final boolean conned = data.isConnected();
             final boolean ec = data.isExistingConn();
@@ -135,7 +128,7 @@ public class CaptureSchema {
                         
                         sei.propertySupport.addPropertyChangeListener(listener);
                         final SchemaElement se = new SchemaElement(sei);
-                        se.setName(DBIdentifier.create(name));
+                        se.setName(DBIdentifier.create(target1));
                         if (allTables)
                             sei.initTables(c, tables, views, true);
                         else

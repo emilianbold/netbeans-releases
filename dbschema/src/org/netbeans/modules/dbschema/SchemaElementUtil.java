@@ -145,23 +145,10 @@ public class SchemaElementUtil {
      */
     public static SchemaElement forName(FileObject fo) {
         schemaFO = fo;
-        SchemaElement se = forName(getPackageName(schemaFO, '/'), null);
+        SchemaElement se = forName(fo.getName(), null);
         schemaFO = null;
         
         return se;
-    }
-    /** Get fully-qualified filename, but without extension.
-    * Like {@link #getPackageNameExt} but omits the extension.
-    * @param separatorChar char to separate folders and files
-    * @return the fully-qualified filename
-    */
-    public static String getPackageName (FileObject fo, char separatorChar) {
-        StringBuffer sb = new StringBuffer ();        
-        if (fo.isRoot () || fo.getParent ().isRoot ())  
-            return (fo.isFolder ()) ? fo.getNameExt() : fo.getName ();        
-        constructName (fo.getParent (),sb, separatorChar);        
-        sb.append (separatorChar).append (fo.getName ());        
-        return sb.toString ();
     }
 
     /** Constructs path of file.
