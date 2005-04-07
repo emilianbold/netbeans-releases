@@ -36,6 +36,7 @@ public class Actions extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new Actions("setupActionsTests"));
         suite.addTest(new Actions("testOpenSource"));
+        suite.addTest(new Actions("testRemoveBreakpoint"));
         suite.addTest(new Actions("testRunToCursor"));
         suite.addTest(new Actions("testStepInto"));
         suite.addTest(new Actions("testStepOut"));
@@ -85,6 +86,15 @@ public class Actions extends JellyTestCase {
         Object[] annotations = ed.getAnnotations(110);
         assertTrue("Breakpoint annotation is not displayed", "Breakpoint".equals(ed.getAnnotationShortDescription(annotations[0])));
         assertTrue("Program counter annotation is not displayed", "Current Program Counter".equals(ed.getAnnotationShortDescription(annotations[1])));
+    }
+    
+    public void testRemoveBreakpoint() {
+        Utilities.toggleBreakpoint(110);
+        EditorOperator ed = new EditorOperator("MemoryView.java");
+        Object[] annotations = ed.getAnnotations(110);
+        if (annotations.length > 1)
+            fail("Breakpoint annotation was not removed");
+        assertTrue("Program counter annotation is not displayed", "Current Program Counter".equals(ed.getAnnotationShortDescription(annotations[0])));
     }
     
     public void testRunToCursor() {
