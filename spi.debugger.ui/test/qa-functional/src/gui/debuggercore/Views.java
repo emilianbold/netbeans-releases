@@ -33,9 +33,15 @@ public class Views extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new Views("testViewsOpen"));
+        suite.addTest(new Views("setupViewsTests"));
+        suite.addTest(new Views("testViewsDefaultOpen"));
         suite.addTest(new Views("testViewsCallStack"));
+        suite.addTest(new Views("testViewsClasses"));
         suite.addTest(new Views("testViewsThreads"));
+        suite.addTest(new Views("testViewsSessions"));
+        suite.addTest(new Views("testViewsSources"));
+        suite.addTest(new Views("testViewsClose"));
+        suite.addTest(new Views("finishViewsTests"));
         return suite;
     }
     
@@ -54,10 +60,7 @@ public class Views extends JellyTestCase {
     public void tearDown() {
     }
     
-    /**
-     *
-     */
-    public void testViewsOpen() {
+    public void setupViewsTests() {
         Node projectNode = new Node(new JTreeOperator(new ProjectsTabOperator()), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction(Utilities.setMainProjectAction);
@@ -65,42 +68,51 @@ public class Views extends JellyTestCase {
         javaNode.select();
         javaNode.performPopupAction(Utilities.openSourceAction);
         Utilities.sleep(2000);
-        
-        Utilities.showLocalVariablesView();
-        new TopComponentOperator(Utilities.localVarsViewTitle).close();
-        Utilities.showWatchesView();
-        new TopComponentOperator(Utilities.watchesViewTitle).close();
-        Utilities.showCallStackView();
-        new TopComponentOperator(Utilities.callStackViewTitle).close();
-        Utilities.showClassesView();
-        new TopComponentOperator(Utilities.classesViewTitle).close();
-        Utilities.showBreakpointsView();
-        new TopComponentOperator(Utilities.breakpointsViewTitle).close();
-        Utilities.showSessionsView();
-        new TopComponentOperator(Utilities.sessionsViewTitle).close();
-        Utilities.showThreadsView();
-        new TopComponentOperator(Utilities.threadsViewTitle).close();
-        Utilities.showSourcesView();
-        new TopComponentOperator(Utilities.sourcesViewTitle).close();
+    }
+    
+    public void testViewsDefaultOpen() {
+        Utilities.toggleBreakpoint(86);
+        Utilities.startDebugger("Breakpoint hit at line 86 in class examples.advanced.MemoryView by thread main.");
+        Utilities.sleep(1000);
+        assertNotNull("Local variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.localVarsViewTitle, 0));
+        assertNotNull("Call stack view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.callStackViewTitle, 0));
+        assertNotNull("Watches view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.watchesViewTitle, 0));
     }
     
     public void testViewsCallStack() {
-        Utilities.setCaret(96, 1);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
-        new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:96.");
         Utilities.showCallStackView();
         Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.callStackViewTitle));
         String value = Utilities.removeTags(jTableOperator.getValueAt(0,0).toString());
-        if (!("MemoryView.updateStatus:96".equals(value)))
-            assertTrue("Second level call stack is not MemoryView.updateStatus:96", false);
+        if (!("MemoryView.updateStatus:86".equals(value)))
+            assertTrue("Top level call stack is not MemoryView.updateStatus:86", false);
         value = Utilities.removeTags(jTableOperator.getValueAt(1,0).toString());
         if (!("MemoryView.updateConsumption:74".equals(value)))
             assertTrue("Second level call stack is not MemoryView.updateConsumption:74", false);
         value = Utilities.removeTags(jTableOperator.getValueAt(2,0).toString());
         if (!("MemoryView.main:110".equals(value)))
             assertTrue("Third level call stack is not MemoryView.main:110", false);
+    }
+    
+    public void testViewsClasses() {
+        Utilities.showClassesView();
+        Utilities.sleep(1000);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.classesViewTitle));        
+        TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
+        new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "System Class Loader").expand();
+        Utilities.sleep(100);
+        new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "Application Class Loader").expand();
+        Utilities.sleep(100);
+        new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "Application Class Loader|examples").expand();
+        Utilities.sleep(100);
+        new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "Application Class Loader|examples|advanced").expand();
+        Utilities.sleep(100);
+        new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "Application Class Loader|examples|advanced|MemoryView").expand();
+        Utilities.sleep(100);
+        String[] entries = {"System Class Loader", "java", "sun", "Application Class Loader", "examples", "advanced", "Helper", "MemoryView", "1"};
+        for (int i = 0; i < entries.length; i++) {
+            assertTrue("Node " + entries[i] + " not displayed in Classes view", entries[i].equals(Utilities.removeTags(treeTableOperator.getValueAt(i, 0).toString())));
+        }
     }
 
     public void testViewsThreads() {
@@ -110,17 +122,49 @@ public class Views extends JellyTestCase {
         TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "system").expand();
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "system|main").expand();
-        if (!("system".equals(Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()))))
-            assertTrue("Thread group system is not shown in threads view", false);
-        if (!("main".equals(Utilities.removeTags(jTableOperator.getValueAt(1,0).toString()))))
-            assertTrue("Thread group main is not shown in threads view", false);
-        if (!("main".equals(Utilities.removeTags(jTableOperator.getValueAt(2,0).toString()))))
-            assertTrue("Thread main is not shown in threads view", false);
-        if (!("Reference Handler".equals(Utilities.removeTags(jTableOperator.getValueAt(3,0).toString()))))
-            assertTrue("Thread Reference Handler is not shown in threads view", false);
-        if (!("Finalizer".equals(Utilities.removeTags(jTableOperator.getValueAt(4,0).toString()))))
-            assertTrue("Thread Finalizer is not shown in threads view", false);
-        if (!("Signal Dispatcher".equals(Utilities.removeTags(jTableOperator.getValueAt(5,0).toString()))))
-            assertTrue("Thread Signal Dispatcher is not shown in threads view", false);
+        assertTrue("Thread group system is not shown in threads view", "system".equals(Utilities.removeTags(jTableOperator.getValueAt(0,0).toString())));
+        assertTrue("Thread group main is not shown in threads view", "main".equals(Utilities.removeTags(jTableOperator.getValueAt(1,0).toString())));
+        assertTrue("Thread main is not shown in threads view", "main".equals(Utilities.removeTags(jTableOperator.getValueAt(2,0).toString())));
+        assertTrue("Thread Reference Handler is not shown in threads view", "Reference Handler".equals(Utilities.removeTags(jTableOperator.getValueAt(3,0).toString())));
+        assertTrue("Thread Finalizer is not shown in threads view", "Finalizer".equals(Utilities.removeTags(jTableOperator.getValueAt(4,0).toString())));
+        assertTrue("Thread Signal Dispatcher is not shown in threads view", "Signal Dispatcher".equals(Utilities.removeTags(jTableOperator.getValueAt(5,0).toString())));
+    }
+
+    public void testViewsSessions() {
+        Utilities.showSessionsView();
+        Utilities.sleep(1000);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.sessionsViewTitle));
+        assertTrue("Session is not shown in threads view", "examples.advanced.MemoryView".equals(Utilities.removeTags(jTableOperator.getValueAt(0,0).toString())));
+    }
+
+    public void testViewsSources() {
+        Utilities.showSourcesView();
+        Utilities.sleep(1000);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.sourcesViewTitle));
+        if (jTableOperator.getRowCount() > 2)
+            assertTrue("Too many sourceroots displayed.", false);
+        else {
+            String debugAppSource = "debugTestProject" + java.io.File.separator + "src (Project debugTestProject)";
+            if (jTableOperator.getRowCount() == 1)
+                assertTrue("MemoryView source root is not shown in threads view", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()).endsWith(debugAppSource));
+            else {
+                assertTrue("JDK source root is not shown in threads view", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()).endsWith("src.zip"));
+                assertTrue("MemoryView source root is not shown in threads view", Utilities.removeTags(jTableOperator.getValueAt(1,0).toString()).endsWith(debugAppSource));
+            }
+        }
+    }
+    
+    public void testViewsClose() {
+        new TopComponentOperator(Utilities.localVarsViewTitle).close();
+        new TopComponentOperator(Utilities.watchesViewTitle).close();
+        new TopComponentOperator(Utilities.callStackViewTitle).close();
+        new TopComponentOperator(Utilities.classesViewTitle).close();
+        new TopComponentOperator(Utilities.sessionsViewTitle).close();
+        new TopComponentOperator(Utilities.threadsViewTitle).close();
+        new TopComponentOperator(Utilities.sourcesViewTitle).close();
+    }
+    
+    public void finishViewsTests() {
+        Utilities.endSession();
     }
 }
