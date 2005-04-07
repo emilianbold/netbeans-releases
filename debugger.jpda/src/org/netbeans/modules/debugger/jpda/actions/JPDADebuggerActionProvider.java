@@ -35,6 +35,9 @@ import org.netbeans.spi.debugger.ActionsProviderSupport;
 */
 abstract class JPDADebuggerActionProvider extends ActionsProviderSupport 
 implements PropertyChangeListener {
+    
+    private static boolean verbose = 
+        System.getProperty ("netbeans.debugger.jdievents") != null;
 
     private JPDADebuggerImpl debugger;
     
@@ -66,7 +69,14 @@ implements PropertyChangeListener {
             VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
             if (vm == null) return;
             EventRequestManager erm = vm.eventRequestManager ();
-            erm.deleteEventRequests (new ArrayList (erm.stepRequests ()));
+            ArrayList l = new ArrayList (erm.stepRequests ());
+            if (verbose) {
+                Iterator it = l.iterator ();
+                while (it.hasNext ())
+                    System.out.println("  remove request " + it.next ());
+            }
+                
+            erm.deleteEventRequests (l);
         } catch (VMDisconnectedException e) {
         } catch (IllegalThreadStateException e) {
             e.printStackTrace();

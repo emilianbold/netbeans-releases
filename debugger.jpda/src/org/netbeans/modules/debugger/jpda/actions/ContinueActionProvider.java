@@ -12,10 +12,13 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequestManager;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 
@@ -25,19 +28,22 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.util.Operator;
+import org.openide.util.RequestProcessor;
 
 
 /**
  *
  * @author  Jan Jancura
  */
-public class ContinueActionProvider extends JPDADebuggerActionProvider {
+public class ContinueActionProvider extends JPDADebuggerActionProvider 
+implements Runnable {
     
     public ContinueActionProvider (ContextProvider lookupProvider) {
         super (
             (JPDADebuggerImpl) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class)
         );
+        RequestProcessor.getDefault ().post (this, 200);
     }
     
     public Set getActions () {
@@ -49,9 +55,39 @@ public class ContinueActionProvider extends JPDADebuggerActionProvider {
     }
     
     protected void checkEnabled (int debuggerState) {
+        VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
+        if (vm == null) {
+            setEnabled (
+                ActionsManager.ACTION_PAUSE,
+                false
+            );
+            return;
+        }
+        try {
+            List l = vm.allThreads ();
+            int i, k = l.size ();
+            for (i = 0; i < k; i++) {
+                ThreadReference tr = (ThreadReference) l.get (i);
+                if (tr.isSuspended ()) {
+                    setEnabled (
+                        ActionsManager.ACTION_CONTINUE,
+                        true
+                    );
+                    return;
+                }
+            }
+        } catch (VMDisconnectedException ex) {
+        }
         setEnabled (
             ActionsManager.ACTION_CONTINUE,
-            debuggerState == getDebuggerImpl ().STATE_STOPPED
+            false
         );
+    }
+    
+    public void run () {
+        if (getDebuggerImpl ().getState () == JPDADebugger.STATE_DISCONNECTED)
+            return;
+        checkEnabled (getDebuggerImpl ().getState ());
+        RequestProcessor.getDefault ().post (this, 200);
     }
 }

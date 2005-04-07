@@ -160,6 +160,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         ReferenceType referenceType,
         Value value
     ) {
+        //S ystem.out.println("BreakpointImpl.perform");
         boolean resume;
         
         //PATCH 48174
@@ -201,6 +202,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             DebuggerManager.getDebuggerManager().setCurrentSession(session);
             getDebugger ().setStoppedState (thread);
         }
+        //S ystem.out.println("BreakpointImpl.perform end");
         return resume; 
     }
 

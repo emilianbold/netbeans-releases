@@ -83,6 +83,21 @@ public class Operator {
                      EventSet eventSet = eventQueue.remove ();
                      boolean resume = true, startEventOnly = true;
                      EventIterator i = eventSet.eventIterator ();
+                     if (verbose)
+                         switch (eventSet.suspendPolicy ()) {
+                             case EventRequest.SUSPEND_ALL:
+                                 System.out.println("\nJDI new events (suspend all)=============================================");
+                                 break;
+                             case EventRequest.SUSPEND_EVENT_THREAD:
+                                 System.out.println("\nJDI new events (suspend one)=============================================");
+                                 break;
+                             case EventRequest.SUSPEND_NONE:
+                                 System.out.println("\nJDI new events (suspend none)=============================================");
+                                 break;
+                             default:
+                                 System.out.println("\nJDI new events (?????)=============================================");
+                                 break;
+                         }
                      while (i.hasNext ()) {
                          Event e = i.nextEvent ();
                          if ((e instanceof VMDeathEvent) ||
@@ -135,7 +150,7 @@ public class Operator {
                      } // while
                      //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
                      if (verbose)
-                         System.out.println("JDI resume " + (resume && (!startEventOnly)));
+                         System.out.println("JDI events dispatched (resume " + (resume && (!startEventOnly)) + ")");
                      if (resume && (!startEventOnly))
                          eventSet.resume ();
                  }// for

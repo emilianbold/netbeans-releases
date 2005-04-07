@@ -82,6 +82,7 @@ import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -89,7 +90,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 *
 * @author   Jan Jancura
 */
-public class JPDADebuggerImpl extends JPDADebugger {
+public class JPDADebuggerImpl extends JPDADebugger implements Runnable {
     
     private static final boolean startVerbose = 
         System.getProperty ("netbeans.debugger.start") != null;
@@ -571,6 +572,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void setStarting (Thread startingThread) {
         this.startingThread = startingThread;
         setState (STATE_STARTING);
+        RequestProcessor.getDefault ().post (this, 200);
     }
 
     public void setRunning (VirtualMachine vm, Operator o) {
@@ -687,20 +689,18 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public void suspend () {
         synchronized (LOCK) {
-            if (getState () == STATE_STOPPED) return;
-            if (virtualMachine != null) {
+            if (virtualMachine != null)
                 virtualMachine.suspend ();
-//                List l = virtualMachine.allThreads ();
-//                int i, k = l.size ();
-//                for (i = 0; i < k; i++) {
-//                    ThreadReference tr = (ThreadReference) l.get (i);
-//                    int p = tr.suspendCount ();
-////                    if (!tr.isSuspended ())
-////                        tr.suspend ();
-//                    System.out.println("  " + tr.name () + " : " + p + " : " + tr.suspendCount ());
-//                }
-            }
             setState (STATE_STOPPED);
+        }
+    }
+    
+    private void printThreads () {
+        List l = virtualMachine.allThreads ();
+        int i, k = l.size ();
+        for (i = 0; i < k; i++) {
+            ThreadReference tr = (ThreadReference) l.get (i);
+            System.out.println("  " + tr.name () + " : " + tr.suspendCount () + " : " + tr.isSuspended ());
         }
     }
 
@@ -709,21 +709,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public void resume () {
         synchronized (LOCK) {
-            if (getState () == STATE_RUNNING) return;
-            if (virtualMachine != null) {
+            if (virtualMachine != null)
                 virtualMachine.resume ();
-//                List l = virtualMachine.allThreads ();
-//                int i, k = l.size ();
-//                for (i = 0; i < k; i++) {
-//                    ThreadReference tr = (ThreadReference) l.get (i);
-//                    int count = tr.suspendCount ();
-//                    int p = count;
-////                    while (count > 0) {
-////                        tr.resume (); count--;
-////                    }
-//                    System.out.println("  " + tr.name () + " : " + p + " : " + tr.suspendCount ());
-//                }
-            }
             setState (STATE_RUNNING);
         }
     }
@@ -882,6 +869,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } catch (InvalidRequestStateException ex) {
                 // workaround for #51176
             }
+    }
+    
+    public void run () {
+        if (getState () == JPDADebugger.STATE_DISCONNECTED)
+            return;
+        JPDAThreadImpl t = (JPDAThreadImpl) getCurrentThread ();
+        if (t != null) {
+            if ( t.getThreadReference ().isSuspended () &&
+                 getState () == STATE_RUNNING
+            )
+                setState (STATE_STOPPED);
+        }
+        RequestProcessor.getDefault ().post (this, 200);
     }
 
     private void checkJSR45Languages (JPDAThread t) {

@@ -106,7 +106,7 @@ implements Executor {
     
     public void doAction (Object action) {
         synchronized (getDebuggerImpl ().LOCK) {
-            
+            //S ystem.out.println("\nStepAction.doAction");
             // 1) remove old request
             removeStepRequests ();
             
@@ -140,6 +140,7 @@ implements Executor {
             } catch (IncompatibleThreadStateException e) {
             } catch (VMDisconnectedException e) {
             }   
+            //S ystem.out.println("/nStepAction.do end");
         }
     }
     

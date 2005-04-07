@@ -271,7 +271,10 @@ public class JPDAThreadImpl implements JPDAThread {
     public void resume () {
         try {
             if (!isSuspended ()) return;
-            threadReference.resume ();
+            int count = threadReference.suspendCount ();
+            while (count > 0) {
+                threadReference.resume (); count--;
+            }
         } catch (ObjectCollectedException ex) {
         } catch (VMDisconnectedException ex) {
         }
