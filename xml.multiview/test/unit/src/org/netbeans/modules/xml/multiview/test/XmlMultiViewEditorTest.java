@@ -75,7 +75,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         
         // wait to see the changes in Design view
         try {
-            Thread.sleep(2000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex){}
         
         XmlMultiViewEditorSupport editor  = (XmlMultiViewEditorSupport)bookDO.getCookie(EditorCookie.class);
@@ -95,13 +95,18 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         }
         // wait to see the changes
         try {
-            Thread.sleep(2000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex){}
         
         // test if data object was modified
         SaveCookie cookie = (SaveCookie)bookDO.getCookie(SaveCookie.class);
         assertNotNull("Data Object Not Modified",cookie);
         cookie.save();
+        
+        // wait to save
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex){}
         
         // test to golden file
         File original = Helper.getBookFile(getDataDir());
@@ -118,7 +123,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         }
         // wait for saving file
         try {
-            Thread.sleep(2000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex){}
         
         try {
@@ -136,13 +141,18 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         ((EditCookie)bookDO.getCookie(EditCookie.class)).edit();
         // wait for see the changes
         try {
-            Thread.sleep(2000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex){}
         
         // test if data object was modified
         SaveCookie cookie = (SaveCookie)bookDO.getCookie(SaveCookie.class);
         assertNotNull("Data Object Not Modified",cookie);
         cookie.save();
+
+        // wait for save
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex){}
         
         // test to golden file
         File original = Helper.getBookFile(getDataDir());
@@ -176,7 +186,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
             throw new AssertionFailedErrorException("Lock problem : ",ex);
         }
         try {
-            Thread.sleep(2000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex){}
         
         XmlMultiViewEditorSupport editor  = (XmlMultiViewEditorSupport)bookDO.getCookie(EditorCookie.class);
