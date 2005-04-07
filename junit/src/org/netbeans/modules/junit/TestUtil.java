@@ -7,18 +7,12 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * TestUtil.java
- *
- * Created on October 17, 2000, 5:09 PM
  */
 package org.netbeans.modules.junit;
 
 import java.net.URL;
-import java.util.*;
 import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -40,6 +34,16 @@ import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.*;
 import org.openide.src.ClassElement;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import org.openide.util.Utilities;
 
 
@@ -51,7 +55,6 @@ import org.openide.util.Utilities;
  */
 public class TestUtil {
     static private final String JAVA_SOURCES_SUFFIX               = "java";
-    static private final String JAVA_SOURCES_FULL_SUFFIX          = "." + JAVA_SOURCES_SUFFIX;
     private static final String JAVA_MIME_TYPE = "text/x-java";         //NOI18N
 
     static private String getTestClassSuffix() {
@@ -74,14 +77,6 @@ public class TestUtil {
         return JUnitSettings.getDefault().getRootSuiteClassName();
     }
     
-    static private String getRootSuiteNameFullSuffix() {
-        return  getRootSuiteName() + JAVA_SOURCES_FULL_SUFFIX;
-    }    
-    
-    static private String getTestSuiteFullSuffix() {
-        return getTestSuiteSuffix() + JAVA_SOURCES_FULL_SUFFIX;
-    }
-
     //
     // test class names    
     //
