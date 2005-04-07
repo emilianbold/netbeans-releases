@@ -151,7 +151,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
     /** Actions.
     * @return array of actions for this node
     */
-    public SystemAction[] getActions () {
+    protected SystemAction[] createActions () {
         if (topStaticActions == null)
             topStaticActions = new SystemAction [] {
                                    SystemAction.get (FileSystemAction.class),

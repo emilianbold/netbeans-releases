@@ -193,7 +193,7 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
     /** Actions.
     * @return array of actions for this node
     */
-    public SystemAction[] getActions () {
+    protected SystemAction[] createActions () {
         if (isTopLevel()) {
             if (topStaticActions == null)
                 topStaticActions = new SystemAction [] {
