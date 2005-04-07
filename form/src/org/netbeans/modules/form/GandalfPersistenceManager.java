@@ -2279,17 +2279,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
             String varName = comp.getName(); // get the original name
             codeStructure.removeExpressionFromVariable(exp);
             codeStructure.createVariableForExpression(exp, varType, varName);
-            
-            // Default variable modifiers for form
-            if (comp == formModel.getTopRADComponent()) {
-                FormSettings settings = formModel.getSettings();
-                boolean local = settings.getVariablesLocal();
-                int modifiers = settings.getVariablesModifier();
-                int type = local ? (CodeVariable.LOCAL | (modifiers & CodeVariable.FINAL)
-                    | CodeVariable.EXPLICIT_DECLARATION) : modifiers | CodeVariable.FIELD;
-                formModel.getCodeStructure().setDefaultVariableType(type);
-            }
         }
+
+        // Default variable modifiers for form
+        if (comp == formModel.getTopRADComponent()) {
+            FormSettings settings = formModel.getSettings();
+            boolean local = settings.getVariablesLocal();
+            int modifiers = settings.getVariablesModifier();
+            int type = local ? (CodeVariable.LOCAL | (modifiers & CodeVariable.FINAL)
+                | CodeVariable.EXPLICIT_DECLARATION) : modifiers | CodeVariable.FIELD;
+            formModel.getCodeStructure().setDefaultVariableType(type);
+        }
+
     }
 
     // -----------
