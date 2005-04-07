@@ -16,8 +16,10 @@ package org.netbeans.modules.xml.multiview;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
+import org.openide.util.NbBundle;
 
 /**
  * XmlMultiviewElement.java
@@ -44,7 +46,13 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
     }
     
     public CloseOperationState canCloseElement() {
-        return CloseOperationState.STATE_OK;
+        // resolving problem with closing deserialized editor (issue 57483)
+        if (!dObj.canClose()) {
+            return MultiViewFactory.createUnsafeCloseState(NbBundle.getMessage(ToolBarMultiViewElement.class,
+                    "LBL_DataObjectModified"), null, null);
+        } else {
+            return CloseOperationState.STATE_OK;
+        }
     }
 
     public void componentOpened() {
