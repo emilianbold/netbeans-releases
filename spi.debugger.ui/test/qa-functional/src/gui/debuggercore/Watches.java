@@ -398,12 +398,11 @@ public class Watches extends JellyTestCase {
             if (!(name.equals(table.getValueAt(lineNumber,0).toString())))
                 assertTrue("Node " + name + " not displayed in Local Variables view", false);
             property = (org.openide.nodes.Node.Property)table.getValueAt(lineNumber,1);
-            System.out.println(property.getValue().toString());
-            string = Utilities.removeTags(property.getValue().toString());
+            string = property.getValue().toString();
             if ((type!= null)&&(!(type.equals(string))))
                 assertTrue("Node " + name + " has wrong type in Local Variables view (displayed: " + string + ", expected: " + type + ")", false);
             property = (org.openide.nodes.Node.Property)table.getValueAt(lineNumber,2);
-            string = Utilities.removeTags(property.getValue().toString());
+            string = property.getValue().toString();
             if ((value!= null)&&(!(value.equals(string))))
                 assertTrue("Node " + name + " has wrong value in Local Variables view (displayed: " + string + ", expected: " + value + ")", false);
         }
