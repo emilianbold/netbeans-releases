@@ -39,8 +39,7 @@ import org.openide.util.RequestProcessor;
 
 public class ServerInstance implements Node.Cookie {
     
-    private static final String EMPTY_STRING = ""; //NOI18N
-    private String state = EMPTY_STRING; 
+    private String state = ""; 
 
     private final String url;
     private final Server server;
