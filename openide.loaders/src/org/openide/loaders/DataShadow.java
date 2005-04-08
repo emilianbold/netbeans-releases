@@ -551,8 +551,13 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             /* Link isn't broken */            
             if (moved)
                 tryUpdate();
-            if (checkOriginal(original) != null)            
-                return;                
+            FileObject obj = checkOriginal(original);
+            if (obj != null) {
+                if (obj != this.original.getPrimaryFile ()) {
+                    this.setOriginal (DataObject.find (obj));
+                }
+                return;
+            }
         } catch (IOException e) {            
         }
         try {            
@@ -621,6 +626,8 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
 
                 if (newOrig != null) {
                     shadow.setOriginal (newOrig);
+                } else {
+                    checkValidity (new OperationEvent (shadow.original));
                 }
             }
         }, 100);
