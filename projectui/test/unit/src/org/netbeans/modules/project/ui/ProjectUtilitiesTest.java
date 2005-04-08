@@ -16,6 +16,7 @@ package org.netbeans.modules.project.ui;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -28,10 +29,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Element;
@@ -66,7 +65,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
         
         FileObject workDir = FileUtil.toFileObject (getWorkDir ());
     
-        Mode mode = WindowManager.getDefault ().createWorkspace ("TestHelper").createMode (CloneableEditorSupport.EDITOR_MODE, CloneableEditorSupport.EDITOR_MODE, null);
+        //Mode mode = WindowManager.getDefault ().createWorkspace ("TestHelper").createMode (CloneableEditorSupport.EDITOR_MODE, CloneableEditorSupport.EDITOR_MODE, null);
         
         FileObject p1 = TestSupport.createTestProject (workDir, "project1");
         FileObject f1_1 = p1.createData("f1_1.java");
@@ -88,9 +87,9 @@ public class ProjectUtilitiesTest extends NbTestCase {
         project2 = ProjectManager.getDefault ().findProject (p2);
         ((TestSupport.TestProject) project2).setLookup (Lookups.singleton (TestSupport.createAuxiliaryConfiguration ()));
         
-        mode.dockInto (new SimpleTopComponent (do1_1_open));
-        mode.dockInto (new SimpleTopComponent (do1_2_open));
-        mode.dockInto (new SimpleTopComponent (do2_1_open));
+        new SimpleTopComponent (do1_1_open).open ();
+        new SimpleTopComponent (do1_2_open).open ();
+        new SimpleTopComponent (do2_1_open).open ();
         
     }
 
@@ -145,18 +144,15 @@ public class ProjectUtilitiesTest extends NbTestCase {
 
         OpenProjectList.getDefault ().open (project1, false);
 
-        Mode editor = WindowManager.getDefault ().findMode (CloneableEditorSupport.EDITOR_MODE);
-        assertNotNull ("Editor mode found.", editor);
-        TopComponent[] tcs = editor.getTopComponents ();
-        assertNotNull ("Modes found.", tcs);
-        for (int i = 0; i < tcs.length; i++) {
-            assertTrue ("TopComponent has been closed successfully.", tcs[i].close ());
+        Iterator/*<TopComponent>*/ openTCs = WindowManager.getDefault ().getRegistry ().getOpened ().iterator ();
+        while (openTCs.hasNext ()) {
+            assertTrue ("TopComponent has been closed successfully.", ((TopComponent)openTCs.next ()).close ());
         }
         
         if (ProjectUtilities.closeAllDocuments (new Project[] {project1} )) {
             OpenProjectList.getDefault ().close (new Project[] {project1} );
         }
-        
+
         AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project1.getLookup ().lookup (AuxiliaryConfiguration.class);
         Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
         assertNull ("OPEN_FILES_ELEMENT not found in the private configuration.", openFilesEl);
@@ -168,6 +164,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
         private Object content;
         public SimpleTopComponent (Object obj) {
             this.content = obj;
+            setName (obj.toString ());
         }
         
         public Lookup getLookup () {

@@ -45,11 +45,9 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
@@ -95,16 +93,16 @@ public class ProjectUtilities {
             Set/*<DataObject>*/ openFiles = new HashSet ();
             Set/*<TopComponent>*/ tc2close = new HashSet ();
             Map/*<Project, SortedSet<String>>*/ urls4project = new HashMap ();
-            Mode editorMode = WindowManager.getDefault ().findMode (CloneableEditorSupport.EDITOR_MODE);
-            TopComponent[] openTCs = editorMode.getTopComponents ();
-            for (int i = 0; i < openTCs.length; i++) {
-                DataObject dobj = (DataObject) openTCs[i].getLookup ().lookup (DataObject.class);
+            Iterator/*<TopComponent>*/ openTCs = WindowManager.getDefault ().getRegistry ().getOpened ().iterator ();
+            while (openTCs.hasNext ()) {
+                TopComponent tc = (TopComponent) openTCs.next ();
+                DataObject dobj = (DataObject) tc.getLookup ().lookup (DataObject.class);
                 if (dobj != null) {
                   FileObject fobj = dobj.getPrimaryFile ();
                   Project owner = FileOwnerQuery.getOwner (fobj);
                   if (listOfProjects.contains (owner)) {
                       openFiles.add (dobj);
-                      tc2close.add (openTCs[i]);
+                      tc2close.add (tc);
                       if (!urls4project.containsKey (owner)) {
                           // add project
                           urls4project.put (owner, new TreeSet ());
