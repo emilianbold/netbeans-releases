@@ -334,7 +334,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         if (chooser.showOpenDialog(this)== JFileChooser.APPROVE_OPTION) {
             File file = chooser.getSelectedFile();
             if (file != null) {
-                this.projectLocation.setText (file.getAbsolutePath());
+                this.projectLocation.setText (FileUtil.normalizeFile(file).getAbsolutePath());
             }
         }
     }//GEN-LAST:event_browseProjectLocation

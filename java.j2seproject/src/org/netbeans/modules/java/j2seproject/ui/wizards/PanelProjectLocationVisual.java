@@ -162,7 +162,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             }
             if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
                 File projectDir = chooser.getSelectedFile();
-                projectLocationTextField.setText( projectDir.getAbsolutePath() );
+                projectLocationTextField.setText( FileUtil.normalizeFile(projectDir).getAbsolutePath() );
             }            
             panel.fireChangeEvent();
         }

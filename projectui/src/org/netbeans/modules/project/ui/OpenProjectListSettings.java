@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
 import javax.swing.filechooser.FileSystemView;
+import org.openide.filesystems.FileUtil;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
@@ -111,7 +112,7 @@ public class OpenProjectListSettings extends SystemOption {
         if (result == null) {            
             result = System.getProperty("user.home");   //NOI18N
         }
-        return new File(result);
+        return FileUtil.normalizeFile(new File(result));
     }
 
     public void setProjectsFolder (File folder) {
