@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
                 <xsd:element name="use-manifest" minOccurs="0"/>
                 <xsd:element name="web-module-libraries" type="webModuleLibrariesType"/>
                 <xsd:element name="web-module-additional-libraries" type="webModuleAdditionalLibrariesType"/>
-                <xsd:element name="web-services" type="webServicesType"/>
+                <xsd:element name="web-services" minOccurs="0" maxOccurs="1" type="webServicesType"/>
                 <xsd:element name="source-roots">
                     <xsd:complexType>
                         <xsd:sequence>
