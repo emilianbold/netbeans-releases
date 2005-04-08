@@ -48,7 +48,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Tomas Zezula
  */
-final class EjbJarSourceRootsUi {
+public final class EjbJarSourceRootsUi {
   
     public static DefaultTableModel createModel( SourceRoots roots ) {
         
@@ -103,6 +103,35 @@ final class EjbJarSourceRootsUi {
         rootsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         
         return em;
+    }
+    
+    /**
+     * Opens the standard dialog for warning an user about illegal source roots.
+     * @param roots the set of illegal source/test roots
+     */
+    public static void showIllegalRootsDialog (Set/*<File>*/ roots) {
+        JButton closeOption = new JButton (NbBundle.getMessage(EjbJarSourceRootsUi.class,"CTL_EjbJarSourceRootsUi_Close"));
+        closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(EjbJarSourceRootsUi.class,"AD_EjbJarSourceRootsUi_Close"));
+        JPanel warning = new WarningDlg (roots);
+        String message = NbBundle.getMessage(EjbJarSourceRootsUi.class,"MSG_InvalidRoot");
+        JOptionPane optionPane = new JOptionPane (new Object[] {message, warning},
+            JOptionPane.WARNING_MESSAGE,
+            0,
+            null,
+            new Object[0],
+            null);
+        optionPane.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(EjbJarSourceRootsUi.class,"AD_InvalidRootDlg"));
+        DialogDescriptor dd = new DialogDescriptor (optionPane,
+            NbBundle.getMessage(EjbJarSourceRootsUi.class,"TITLE_InvalidRoot"),
+            true,
+            new Object[] {
+                closeOption,
+            },
+            closeOption,
+            DialogDescriptor.DEFAULT_ALIGN,
+            null,
+            null);
+        DialogDisplayer.getDefault().notify(dd);
     }
         
     // Private innerclasses ----------------------------------------------------
@@ -290,29 +319,8 @@ final class EjbJarSourceRootsUi {
                 }
             }
             if (rootsFromOtherProjects.size() > 0 || rootsFromRelatedSourceRoots.size() > 0) {
-                JButton closeOption = new JButton (NbBundle.getMessage(EjbJarSourceRootsUi.class,"CTL_EjbJarSourceRootsUi_Close"));
-                closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(EjbJarSourceRootsUi.class,"AD_EjbJarSourceRootsUi_Close"));
                 rootsFromOtherProjects.addAll(rootsFromRelatedSourceRoots);
-                JPanel warning = new WarningDlg (rootsFromOtherProjects);                
-                String message = NbBundle.getMessage(EjbJarSourceRootsUi.class,"MSG_InvalidRoot");
-                JOptionPane optionPane = new JOptionPane (new Object[] {message, warning},
-                    JOptionPane.WARNING_MESSAGE,
-                    0, 
-                    null, 
-                    new Object[0], 
-                    null);
-                optionPane.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(EjbJarSourceRootsUi.class,"AD_InvalidRootDlg"));
-                DialogDescriptor dd = new DialogDescriptor (optionPane,
-                    NbBundle.getMessage(EjbJarSourceRootsUi.class,"TITLE_InvalidRoot"),
-                    true,
-                    new Object[] {
-                        closeOption,
-                    },
-                    closeOption,
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    null,
-                    null);                
-                DialogDisplayer.getDefault().notify(dd);
+                showIllegalRootsDialog (rootsFromOtherProjects);
             }
             // fireActionPerformed();
         }    

@@ -12,11 +12,12 @@
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
-
-import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
-import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
@@ -25,9 +26,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarSourceRootsUi;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+
 
 /**
  * List of source/test roots
@@ -41,6 +42,7 @@ public final class FolderList extends javax.swing.JPanel {
     private String fcMessage;
     private File projectFolder;
     private File lastUsedFolder;
+    private FolderList relatedFolderList;
 
     /** Creates new form FolderList */
     public FolderList (String label, char mnemonic, String accessibleDesc, String fcMessage,
@@ -70,6 +72,10 @@ public final class FolderList extends javax.swing.JPanel {
     public void setProjectFolder (File projectFolder) {
         this.projectFolder = projectFolder;
     }
+
+    public void setRelatedFolderList (FolderList relatedFolderList) {
+        this.relatedFolderList = relatedFolderList;
+    }    
 
     public File[] getFiles () {
         Object[] files = ((DefaultListModel)this.roots.getModel()).toArray();
@@ -195,10 +201,19 @@ public final class FolderList extends javax.swing.JPanel {
             File[] files = chooser.getSelectedFiles();
             int[] indecesToSelect = new int[files.length];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
+            Set invalidRoots = new HashSet ();
+            Set relatedFolders = this.relatedFolderList == null ?
+                Collections.EMPTY_SET : new HashSet(Arrays.asList (this.relatedFolderList.getFiles()));            
             for (int i=0, index=model.size(); i<files.length; i++, index++) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
                 int pos = model.indexOf (normalizedFile);
-                if (pos == -1) {
+                if (FileOwnerQuery.getOwner(normalizedFile.toURI())!=null) {
+                    invalidRoots.add (normalizedFile);
+                }
+                else if (relatedFolders.contains(normalizedFile)) {
+                    invalidRoots.add (normalizedFile);
+                } 
+                else if (pos == -1) {                
                     model.addElement (normalizedFile);
                     indecesToSelect[i] = index;
                 }
@@ -212,6 +227,9 @@ public final class FolderList extends javax.swing.JPanel {
             if (cd != null) {
                 this.setLastUsedDir(FileUtil.normalizeFile(cd));
             }
+            if (invalidRoots.size()>0) {
+                EjbJarSourceRootsUi.showIllegalRootsDialog(invalidRoots);
+            }            
         }
     }//GEN-LAST:event_addButtonActionPerformed
     
@@ -220,21 +238,7 @@ public final class FolderList extends javax.swing.JPanel {
             File f = (File) value;
             Project p = FileOwnerQuery.getOwner(f.toURI());
             String message = f.getAbsolutePath();
-            if (p != null) {
-                ProjectInformation info = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
-                if (info != null) {
-                    String projectName = info.getDisplayName();
-                    if (projectName != null) {
-                        message = MessageFormat.format (NbBundle.getMessage(FolderList.class,"TXT_RootOwnedByProject"), new Object[] {
-                            message,
-                            projectName});
-                    }
-                }
-            }
             Component result = super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
-            if (p!=null) {
-                result.setForeground (new Color(164,0,0));
-            }
             return result;
         }        
     }
