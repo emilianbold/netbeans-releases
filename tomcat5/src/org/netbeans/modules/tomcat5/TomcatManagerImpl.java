@@ -177,7 +177,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             this.tmId = new TomcatModule (t, ctxPath, docBase); //NOI18N
             tmpContextXml = createTempContextXml(docBase, ctx);
             if (tm.isTomcat55()) {
-                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + ctxPath; // NOI18N
+                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + tmId.getPath(); // NOI18N
             } else {
                 command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
             }
@@ -278,8 +278,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             Context ctx = Context.createGraph (in);
             tmpContextXml = createTempContextXml(docBase, ctx);
             if (tm.isTomcat55()) {
-                String ctxPath = ctx.getAttributeValue("path"); // NO18N
-                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + ctxPath; // NOI18N
+                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + tmId.getPath(); // NOI18N
             } else {
                 command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
             }
