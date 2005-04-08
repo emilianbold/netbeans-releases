@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
                 <xsd:element name="use-manifest" minOccurs="0"/>
                 <xsd:element name="explicit-platform" minOccurs="0"/>
                 <xsd:element name="included-library" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/> 
-                <xsd:element name="web-services" type="webServicesType"/>
+                <xsd:element name="web-services" minOccurs="0" maxOccurs="1" type="webServicesType"/>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
