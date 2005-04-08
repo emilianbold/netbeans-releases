@@ -101,11 +101,14 @@ public class EncodedReaderFactory {
         String ext = (endingIndex >= 0 && endingIndex < (name.length() - 1)) ? name.substring(endingIndex + 1) : "";
         if (!"java".equalsIgnoreCase(ext)) { // We read the encoding for Java files explicitely
             try {                            // If it's not defined, read with default encoding from stream (because of guarded blocks)
+                file = FileUtil.normalizeFile(file);
                 FileObject fo = FileUtil.toFileObject(file);
                 if (fo != null) {
                     r = getReaderFromEditorSupport(fo);
                 }
-            } catch (IllegalArgumentException iaex) {}
+            } catch (IllegalArgumentException iaex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iaex);
+            }
             if (r == null) {
                 r = getReaderFromKit(file, null, mimeType);
             }
@@ -228,7 +231,7 @@ public class EncodedReaderFactory {
             return new DocWriter(doc, fo, lock, null, kit, editorSupport, saveFromKitToStreamMethod);
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
     }
@@ -327,6 +330,7 @@ public class EncodedReaderFactory {
         String ext = (endingIndex >= 0 && endingIndex < (name.length() - 1)) ? name.substring(endingIndex + 1) : "";
         if (!"java".equalsIgnoreCase(ext)) { // We read the encoding for Java files explicitely
             try {                            // If it's not defined, read with default encoding from stream (because of guarded blocks)
+                file = FileUtil.normalizeFile(file);
                 FileObject fo = FileUtil.toFileObject(file);
                 if (fo != null) {
                     FileLock lock;
@@ -339,7 +343,9 @@ public class EncodedReaderFactory {
                     }
                     w = getWriterFromEditorSupport(fo, lock);
                 }
-            } catch (IllegalArgumentException iaex) {}
+            } catch (IllegalArgumentException iaex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iaex);
+            }
             if (w == null) {
                 w = getWriterFromKit(file, null, null, mimeType);
             }
@@ -409,6 +415,7 @@ public class EncodedReaderFactory {
         }
         Object encoding = null;
         try {
+            file = FileUtil.normalizeFile(file);
             FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
                 if ("java".equalsIgnoreCase(ext)) {
@@ -418,7 +425,9 @@ public class EncodedReaderFactory {
                     encoding = fo.getAttribute(CHAR_SET_ATTRIBUTE);
                 }
             }
-        } catch (IllegalArgumentException iaex) {} // Ignore
+        } catch (IllegalArgumentException iaex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iaex);
+        }
         if (encoding != null) {
             return encoding.toString();
         } else {
@@ -444,7 +453,7 @@ public class EncodedReaderFactory {
                     invoke(null, new Object[] {fo});
                 return encoding;
             } catch (Exception e) {
-                // Ignore
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
         return null;
