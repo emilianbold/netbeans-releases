@@ -489,7 +489,7 @@ public class StorageBuilderAction extends ProductAction {
                     //logEvent(this, Log.DBG,"going 2 updateProgressBar");
                     updateProgressBar();
 
-                    sleepTime = 10000;
+                    sleepTime = 2000;
                     Thread.currentThread().sleep(sleepTime);
                     if (isCanceled()) return;
                 } catch (InterruptedException ex) {
