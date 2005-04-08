@@ -90,7 +90,7 @@ public class EntityOverviewForm extends SectionNodeInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 6);
         add(primaryKeyFieldLabel, gridBagConstraints);
 
-        jLabel5.setText("Primary key class:");
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(EntityOverviewForm.class, "LBL_PrimaryKeyClass"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -98,7 +98,7 @@ public class EntityOverviewForm extends SectionNodeInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 6);
         add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText("Reentrant:");
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(EntityOverviewForm.class, "LBL_Reentrant"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
