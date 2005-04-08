@@ -160,26 +160,42 @@ public class EarProjectGenerator {
         if (null != earProject) {
             Application app = null;
             try {
-                FileObject backup, orig = earProject.getAppModule().getDeploymentDescriptor();
-                if (null != orig) {
-                    // make a backup copy of the application.xml
-                    backup = FileUtil.copyFile(orig, orig.getParent(), "original_application", "xml");
-                    if (null != backup) {
-                        app = DDProvider.getDefault().getDDRoot(orig);
-                        Module m[] = app.getModule();
-                        if (null != m && m.length > 0) {
-                            // notify the user here....
-                            DialogDisplayer.getDefault().notify(
-                                    new NotifyDescriptor.Message(NbBundle.getMessage(EarProjectGenerator.class, "MESSAGE_CheckContextRoots"),
-                                        NotifyDescriptor.WARNING_MESSAGE)); 
-                            // delete the modules
-                            for (int k = 0; k < m.length; k++) {
-                                app.removeModule(m[k]);
+                FileObject appXml = earProject.getAppModule().getDeploymentDescriptor();
+                FileObject fileBeingCopied = null;
+                if (null != appXml) {
+                    // make a backup copy of the application.xml and its siblings
+                    java.util.Enumeration filesToBackup =
+                            appXml.getParent().getChildren(false);
+                    while (null != filesToBackup &&
+                            filesToBackup.hasMoreElements()) {
+                        fileBeingCopied =
+                                (FileObject) filesToBackup.nextElement();
+                        if (fileBeingCopied.isData() &&
+                                fileBeingCopied.canRead()) {
+                            try {
+                                FileUtil.copyFile(fileBeingCopied,
+                                        appXml.getParent(),
+                                        "original_"+fileBeingCopied.getName(),
+                                        fileBeingCopied.getExt());
+                            } catch (java.io.IOException ioe) {
+                                // this is not fatal
                             }
                         }
-                //app.setDisplayName(name);
-                //kids.add(new Node[] { new LogicalViewNode(app) });
+                    }
+                    app = DDProvider.getDefault().getDDRoot(appXml);
+                    Module m[] = app.getModule();
+                    if (null != m && m.length > 0) {
+                        // make sure the config object has told us what to listen to...
+                        earProject.getAppModule().getConfigSupport().ensureConfigurationReady();
+                        // delete the modules
+                        for (int k = 0; k < m.length; k++) {
+                            app.removeModule(m[k]);
+                        }
                         app.write(earProject.getAppModule().getDeploymentDescriptor());
+                        // notify the user here....
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(NbBundle.getMessage(EarProjectGenerator.class, "MESSAGE_CheckContextRoots"),
+                                NotifyDescriptor.WARNING_MESSAGE));
                     }
                 }
             } catch (java.io.IOException ioe) {
@@ -263,7 +279,9 @@ public class EarProjectGenerator {
                 // XXX all web module URI-to-ContextRoot mapping should happen here
                 
         ProjectManager.getDefault().saveProject(p);
-            ((EarProject)p).getAppModule().getConfigSupport ().createInitialConfiguration();
+        
+        // this is moot most of the time... but there are cases it's necessary
+        earProject.getAppModule().getConfigSupport ().createInitialConfiguration();
             
         if (sourceLevel != null) {
             EarProjectGenerator.setPlatformSourceLevel(h, sourceLevel);
