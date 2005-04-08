@@ -495,4 +495,119 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         }
     }
     
+    public void testRegExSearch(){
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            editor = getDefaultSampleEditorOperator();
+            txtOper = editor.txtEditorPane();
+
+            //test whether the "Whole Words" and "Incremental Search" are disabled during regEx
+            final Find findRegEx = openFindDialog(null, REGULAR_EXPRESSIONS);
+            waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_FIND_OPERATION, new ValueResolver(){
+                public Object getValue(){
+                    return Boolean.valueOf(
+                            findRegEx.cbMatchWholeWordsOnly().isEnabled() && 
+                            findRegEx.cbIncrementalSearch().isEnabled());
+                }
+            }, Boolean.FALSE);
+            if (findRegEx.cbMatchWholeWordsOnly().isEnabled() || findRegEx.cbIncrementalSearch().isEnabled()){
+                fail("Items disabling failed. \"Whole Words\" and \"Incremental Search\" should be disabled during regEx!  " + //NOI18N
+                        "(\"Whole Words\" = "+findRegEx.cbMatchWholeWordsOnly().isEnabled()+ //NOI18N
+                        ", \"Incremental Search\" = "+findRegEx.cbIncrementalSearch().isEnabled()+")"); //NOI18N
+            }
+            findRegEx.close();
+
+            
+            find("teest", REGULAR_EXPRESSIONS, 309, 314, 0);
+            find("t.*st", REGULAR_EXPRESSIONS, 325, 337, 314);// find next teee...st
+            find("t.*st", REGULAR_EXPRESSIONS, 348, 356, 326);// find next Teee...st, caret is just behind t
+            find("T.*st", REGULAR_EXPRESSIONS | MATCH_CASE, 348, 356, 309);// find case sensitively Teee...st, skipping teee...st
+            find("t.*st", REGULAR_EXPRESSIONS | SEARCH_BACKWARDS, 348, 356, 356);
+            find("t.*st", REGULAR_EXPRESSIONS | SEARCH_BACKWARDS | MATCH_CASE, 325, 337, 356);
+            
+            // find one line strings + Wrap Search Testing
+            String lineStringsExp = "\"[^\"\\r\\n]*\"";
+            editor.setCaretPosition(225);
+            Find find = openFindDialog(lineStringsExp, REGULAR_EXPRESSIONS);
+            find.find();
+            checkSelection(txtOper, 267, 286, "Line string search failed.");
+            find.find();
+            checkSelection(txtOper, 417, 430, "Line string search failed.");
+            find.find();
+            checkSelection(txtOper, -1, -1, "Line string search failed.");
+            find.cbWrapSearch().setSelected(true);
+            find.find();
+            checkSelection(txtOper, 224, 237, "Line string wrap search failed.");
+            find.close();
+            
+            // find one line strings + Wrap Search Testing + BACKWARD
+            editor.setCaretPosition(429);
+            find = openFindDialog(lineStringsExp, REGULAR_EXPRESSIONS | SEARCH_BACKWARDS);
+            find.find();
+            checkSelection(txtOper, 267, 286, "Line string BWD search failed.");
+            find.find();
+            checkSelection(txtOper, 224, 237, "Line string BWV search failed.");
+            find.find();
+            checkSelection(txtOper, -1, -1, "Line string BWV search failed.");
+            find.cbWrapSearch().setSelected(true);
+            find.find();
+            checkSelection(txtOper, 417, 430, "Line string BWV wrap search failed.");
+            find.close();
+            
+            //multiline strings
+            find("\"[^\"]*\"", REGULAR_EXPRESSIONS, 456, 510, 432);
+            
+             // wrap around block forwardRegExSearch testing
+            find = openFindDialog(null, REGULAR_EXPRESSIONS); // reset find dialog checkboxes
+            find.close();
+            preselect(txtOper, 326, 389);
+            find = openFindDialog("T.*st", NO_OPERATION); // search selection should be checked automatically
+            find.find();
+            checkSelection(txtOper, 348, 356, "Wrap around block regEx testing failed!");
+            find.find();
+            checkSelection(txtOper, 367, 373, "Wrap around block regEx testing failed!");
+            find.find();
+            checkSelection(txtOper, -1, -1, "Wrap around block regEx testing failed!"); // should find, because wrap around is not checked yet
+            find.cbWrapSearch().setSelected(true);
+            find.find();
+            checkSelection(txtOper, 348, 356, "Wrap around block regEx testing failed!");
+            find.close();
+           
+             // wrap around block backward RegExSearch testing + match case
+            find = openFindDialog(null, REGULAR_EXPRESSIONS | SEARCH_BACKWARDS | MATCH_CASE); // reset find dialog checkboxes
+            find.close();
+            preselect(txtOper, 252, 369);
+            find = openFindDialog("t.*st", NO_OPERATION); // search selection should be checked automatically
+            find.find();
+            checkSelection(txtOper, 325, 337, "Wrap around block BWD regEx testing failed!");
+            find.find();
+            checkSelection(txtOper, 309, 314, "Wrap around block BWD regEx testing failed!");
+            find.find();
+            checkSelection(txtOper, -1, -1, "Wrap around block BWV regEx testing failed!"); // should find, because wrap around is not checked yet
+            find.cbWrapSearch().setSelected(true);
+            find.find();
+            checkSelection(txtOper, 325, 337, "Wrap around block BWV regEx testing failed!");
+            find.close();
+
+            // find end line whitespaces
+            String lineEndWhitespaces = "[ \\t]+$";
+            editor.setCaretPosition(1);
+            find = openFindDialog(lineEndWhitespaces, REGULAR_EXPRESSIONS);
+            find.find();
+            checkSelection(txtOper, 104, 108, "Find end line whitespaces testing failed!");
+            find.find();
+            checkSelection(txtOper, 443, 444, "Find end line whitespaces testing failed!");
+            find.find();
+            checkSelection(txtOper, 510, 511, "Find end line whitespaces testing failed!");
+            find.find();
+            checkSelection(txtOper, 599, 607, "Find end line whitespaces testing failed!");
+            find.close();
+            
+            
+        } finally {
+            closeFileWithDiscard();
+        }        
+    }
+    
 }
