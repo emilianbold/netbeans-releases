@@ -27,8 +27,19 @@ Microsystems, Inc. All Rights Reserved.
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:element>
+                <xsd:element name="explicit-platform" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:attribute name="explicit-source-supported" use="required">
+                            <xsd:simpleType>
+                                <xsd:restriction base="xsd:NMTOKEN">
+                                    <xsd:enumeration value="true"/>
+                                    <xsd:enumeration value="false"/>
+                                </xsd:restriction>
+                            </xsd:simpleType>
+                        </xsd:attribute>
+                    </xsd:complexType>
+                </xsd:element>
                 <xsd:element name="use-manifest" minOccurs="0"/>
-                <xsd:element name="explicit-platform" minOccurs="0"/>
                 <xsd:element name="included-library" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/> 
                 <xsd:element name="web-services" minOccurs="0" maxOccurs="1" type="webServicesType"/>
             </xsd:sequence>

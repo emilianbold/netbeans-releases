@@ -132,7 +132,9 @@ public class PlatformUiSupport {
                 switch (explicitPlatformNodes.getLength()) {
                     case 0:
                         explicitPlatform = root.getOwnerDocument().createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N                    
-                        root.appendChild(explicitPlatform);
+                        NodeList sourceRootNodes = root.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"minimum-ant-version");   //NOI18N
+                        assert sourceRootNodes.getLength() == 1 : "Broken project.xml file"; //NOI18N
+                        root.insertBefore(explicitPlatform, sourceRootNodes.item(0).getNextSibling());
                         changed = true;
                         break;
                     case 1:
