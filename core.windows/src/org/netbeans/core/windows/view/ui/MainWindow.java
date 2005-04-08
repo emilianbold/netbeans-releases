@@ -232,7 +232,7 @@ public final class MainWindow extends JFrame {
             return null;
         }
         Iterator/*<StatusLineElementProvider>*/ it = c.iterator ();
-        JPanel icons = new JPanel (new FlowLayout ());
+        JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 1, 1));
         boolean some = false;
         while (it.hasNext ()) {
             Object o = it.next ();
