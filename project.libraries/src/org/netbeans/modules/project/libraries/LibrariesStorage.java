@@ -207,10 +207,14 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
             out.println("<!DOCTYPE library PUBLIC \"-//NetBeans//DTD Library Declaration 1.0//EN\" \"http://www.netbeans.org/dtds/library-declaration-1_0.dtd\">"); //NOI18N
             out.println("<library version=\"1.0\">");       			//NOI18N
             out.println("\t<name>"+library.getName()+"</name>");        //NOI18N
-            out.println("\t<type>"+library.getType()+"</type>");
+            out.println("\t<type>"+library.getType()+"</type>");            
             String description = library.getDescription();
             if (description != null && description.length() > 0) {
                 out.println("\t<description>"+description+"</description>");   //NOI18N
+            }
+            String localizingBundle = library.getLocalizingBundle();
+            if (localizingBundle != null && localizingBundle.length() > 0) {
+                out.println("\t<localizing-bundle>"+localizingBundle+"</localizing-bundle>");   //NOI18N
             }
             String[] volumeTypes = libraryTypeProvider.getSupportedVolumeTypes ();
             for (int i = 0; i < volumeTypes.length; i++) {
