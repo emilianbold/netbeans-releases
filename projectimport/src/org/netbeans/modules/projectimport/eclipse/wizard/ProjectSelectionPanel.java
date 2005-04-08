@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
@@ -296,6 +297,11 @@ final class ProjectSelectionPanel extends JPanel {
         } catch (ProjectImporterException e) {
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_WorkspaceIsInvalid", workspaceDir)); // NOI18N
+            logger.fine("ProjectImporterException catched: " + e.getMessage());
+            if (logger.getLevel().intValue() <= Level.FINE.intValue()) {
+                logger.fine("   current stack trace follows:");
+                e.printStackTrace();
+            }
             return;
         }
         Set wsPrjs = new TreeSet(workspace.getProjects());

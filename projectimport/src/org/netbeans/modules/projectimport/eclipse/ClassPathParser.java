@@ -40,6 +40,7 @@ final class ClassPathParser extends DefaultHandler {
     // elements names
     private static final String CLASSPATH = "classpath";
     private static final String CLASSPATH_ENTRY = "classpathentry";
+    private static final String ATTRIBUTES = "attributes";
     
     // attributes names
     private static final String KIND_ATTR = "kind";
@@ -49,6 +50,7 @@ final class ClassPathParser extends DefaultHandler {
     private static final int POSITION_NONE = 0;
     private static final int POSITION_CLASSPATH = 1;
     private static final int POSITION_CLASSPATH_ENTRY = 2;
+    private static final int POSITION_ATTRIBUTES = 3;
     
     private int position = POSITION_NONE;
     private StringBuffer chars;
@@ -131,6 +133,13 @@ final class ClassPathParser extends DefaultHandler {
                     position = POSITION_CLASSPATH_ENTRY;
                 }
                 break;
+            case POSITION_CLASSPATH_ENTRY:
+                if (localName.equals(ATTRIBUTES)) {
+                    // ignored in the meantime - prepared for future 
+                    // (probably since elicpse 3.1M6 - see #57661)
+                    position = POSITION_ATTRIBUTES;
+                }
+                break;
             default:
                 throw (new SAXException("Unknown element reached: "
                         + localName));
@@ -146,6 +155,9 @@ final class ClassPathParser extends DefaultHandler {
                 break;
             case POSITION_CLASSPATH_ENTRY:
                 position = POSITION_CLASSPATH;
+                break;
+            case POSITION_ATTRIBUTES:
+                position = POSITION_CLASSPATH_ENTRY;
                 break;
             default:
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
