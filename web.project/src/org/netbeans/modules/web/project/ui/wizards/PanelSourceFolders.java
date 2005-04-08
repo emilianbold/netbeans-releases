@@ -60,6 +60,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelSourceFolders.class,"AD_PanelSourceFolders"));
         this.sourcePanel.addPropertyChangeListener (this);
         this.testsPanel.addPropertyChangeListener(this);
+        ((FolderList)this.sourcePanel).setRelatedFolderList((FolderList)this.testsPanel);
+        ((FolderList)this.testsPanel).setRelatedFolderList((FolderList)this.sourcePanel);        
     }
 
     public void initValues(FileObject fo) {        
@@ -161,25 +163,15 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             if (ploc.equals (sloc) || ploc.startsWith (sloc + File.separatorChar)) {
                 return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder");
             }
-            if (FileOwnerQuery.getOwner(sources[i].toURI())!=null) {
-                return MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_AlreadyContainedRoot"),
-                    new Object[] {sources[i].getAbsolutePath()});
-            }
         }
         for (int i=0; i<tests.length; i++) {
+            if (!tests[i].isDirectory() || !tests[i].canRead()) {
+                return MessageFormat.format(NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests"),
+                        new Object[] {sources[i].getAbsolutePath()});
+            }            
             String tloc = tests[i].getAbsolutePath();
             if (ploc.equals(tloc) || ploc.startsWith(tloc + File.separatorChar)) {
                 return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder");
-            }
-            for (int j=0; j<sources.length; j++) {
-                String sloc = sources[j].getAbsolutePath ();
-                if (tloc.equals(sloc) || tloc.startsWith(sloc + File.separatorChar) || sloc.startsWith(tloc + File.separatorChar)) {
-                    return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests");
-                }
-            }
-            if (FileOwnerQuery.getOwner(tests[i].toURI())!=null) {
-                return MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_AlreadyContainedRoot"),
-                    new Object[] {tests[i].getAbsolutePath()});
             }
         }
         return null;

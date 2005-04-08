@@ -46,7 +46,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Zezula, Radko Najman
  */
-final class WebSourceRootsUi {
+public final class WebSourceRootsUi {
   
     public static DefaultTableModel createModel( SourceRoots roots ) {
         
@@ -103,6 +103,35 @@ final class WebSourceRootsUi {
         return em;
     }
         
+    /**
+     * Opens the standard dialog for warning an user about illegal source roots.
+     * @param roots the set of illegal source/test roots
+     */
+    public static void showIllegalRootsDialog (Set/*<File>*/ roots) {
+        JButton closeOption = new JButton (NbBundle.getMessage(WebSourceRootsUi.class,"CTL_WebSourceRootsUi_Close"));
+        closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(WebSourceRootsUi.class,"AD_WebSourceRootsUi_Close"));
+        JPanel warning = new WarningDlg (roots);
+        String message = NbBundle.getMessage(WebSourceRootsUi.class,"MSG_InvalidRoot");
+        JOptionPane optionPane = new JOptionPane (new Object[] {message, warning},
+            JOptionPane.WARNING_MESSAGE,
+            0,
+            null,
+            new Object[0],
+            null);
+        optionPane.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(WebSourceRootsUi.class,"AD_InvalidRootDlg"));
+        DialogDescriptor dd = new DialogDescriptor (optionPane,
+            NbBundle.getMessage(WebSourceRootsUi.class,"TITLE_InvalidRoot"),
+            true,
+            new Object[] {
+                closeOption,
+            },
+            closeOption,
+            DialogDescriptor.DEFAULT_ALIGN,
+            null,
+            null);
+        DialogDisplayer.getDefault().notify(dd);
+    }
+ 
     // Private innerclasses ----------------------------------------------------
 
     public static class EditMediator implements ActionListener, ListSelectionListener, CellEditorListener {
@@ -288,29 +317,8 @@ final class WebSourceRootsUi {
                 }
             }
             if (rootsFromOtherProjects.size() > 0 || rootsFromRelatedSourceRoots.size() > 0) {
-                JButton closeOption = new JButton (NbBundle.getMessage(WebSourceRootsUi.class,"CTL_WebSourceRootsUi_Close")); //NOI18N
-                closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(WebSourceRootsUi.class,"AD_WebSourceRootsUi_Close")); //NOI18N
                 rootsFromOtherProjects.addAll(rootsFromRelatedSourceRoots);
-                JPanel warning = new WarningDlg (rootsFromOtherProjects);                
-                String message = NbBundle.getMessage(WebSourceRootsUi.class,"MSG_InvalidRoot"); //NOI18N
-                JOptionPane optionPane = new JOptionPane (new Object[] {message, warning},
-                    JOptionPane.WARNING_MESSAGE,
-                    0, 
-                    null, 
-                    new Object[0], 
-                    null);
-                optionPane.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(WebSourceRootsUi.class,"AD_InvalidRootDlg")); //NOI18N
-                DialogDescriptor dd = new DialogDescriptor (optionPane,
-                    NbBundle.getMessage(WebSourceRootsUi.class,"TITLE_InvalidRoot"), //NOI18N
-                    true,
-                    new Object[] {
-                        closeOption,
-                    },
-                    closeOption,
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    null,
-                    null);                
-                DialogDisplayer.getDefault().notify(dd);
+                showIllegalRootsDialog (rootsFromOtherProjects);
             }
             // fireActionPerformed();
         }    
