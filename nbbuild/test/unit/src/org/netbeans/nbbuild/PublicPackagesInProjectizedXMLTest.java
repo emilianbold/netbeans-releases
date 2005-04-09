@@ -7,20 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.nbbuild;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import junit.framework.*;
-
-import org.netbeans.junit.*;
-
+import junit.framework.AssertionFailedError;
+import org.netbeans.junit.NbTestCase;
 
 /** Check the behaviour of <public-packages> in project.xml modules.
  *
@@ -118,6 +112,7 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         execute ("GarbageUnderPackages.xml", new String[] { "-Dproject.file=" + f, "-Dexpected.public.packages=org.hello.**" });
     }
     
+    /* DISABLED because of fix for #52135:
     public void testSubpackagesDoNotWorkForJavadocNow () throws Exception {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -140,6 +135,7 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             // ok
         }
     }
+     */
 
     public void testSubpackagesDoNotWorkForJavadocNowButThisWorksWhenSpecifiedByHand () throws Exception {
         java.io.File f = extractString (
