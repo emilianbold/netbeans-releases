@@ -39,7 +39,13 @@ public class ValidateAllBySchema {
             schemaUris[i] = schemas[i].toURI().toString();
         }
         System.err.println("Validating against " + Arrays.asList(schemas));
-        SAXParserFactory f = (SAXParserFactory)Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
+        SAXParserFactory f;
+        // #46847: needs to work on both JDK 1.4 and 1.5.
+        try {
+            f = (SAXParserFactory)Class.forName("com.sun.org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
+        } catch (ClassNotFoundException e) {
+            f = (SAXParserFactory)Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
+        }
         f.setNamespaceAware(true);
         f.setValidating(true);
         SAXParser p = f.newSAXParser();
