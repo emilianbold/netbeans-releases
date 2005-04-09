@@ -1305,7 +1305,7 @@ public class TomcatManager implements DeploymentManager {
             String [] patternFrom = new String [] { 
                 null, 
                 null, 
-                "</Host>",   // NOI18N
+                null,
                 "</tomcat-users>",   // NOI18N
                 null,
                 "docBase=\"../server/webapps/admin\"",    // NOI18N For bundled tomcat 5.0.x 
@@ -1320,11 +1320,7 @@ public class TomcatManager implements DeploymentManager {
             String [] patternTo = new String [] { 
                 null, 
                 null, 
-                "<Context path=\"\" docBase=\""+new File (homeDir, "webapps/ROOT").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
-                // jsp/servlet examples can be created as sample projects now, so this doesn't need to be here anymore
-                //"<Context path=\"/jsp-examples\" docBase=\""+new File (homeDir, "webapps/jsp-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
-                //"<Context path=\"/servlets-examples\" docBase=\""+new File (homeDir, "webapps/servlets-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
-                "</Host>",   // NOI18N
+                null,
                 passwd != null ? "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager,admin\"/>\n</tomcat-users>" : null,   // NOI18N
                 null, 
                 "docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N For bundled tomcat 5.0.x
@@ -1373,7 +1369,12 @@ public class TomcatManager implements DeploymentManager {
                         }
                     }
                 }
-            }        
+            }
+            // deploy the ROOT context, if exists
+            if (new File(homeDir, "webapps/ROOT").exists()) { // NOI18N
+                writeToFile(new File(baseDir, "conf/Catalina/localhost/ROOT.xml"), // NOI18N
+                    "<Context path=\"\" docBase=\"${catalina.home}/webapps/ROOT\"/>\n"); // NOI18N
+            }
         } catch (java.io.IOException ioe) {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
             return null;
@@ -1382,6 +1383,19 @@ public class TomcatManager implements DeploymentManager {
             TomcatInstallUtil.patchBundledServerXml(new File(baseDir, "conf/server.xml")); // NOI18N
         }
         return baseDir;
+    }
+    
+    /**
+     * Create a file and fill it with the data.
+     */
+    private void writeToFile(File file, String data) throws IOException {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(file));
+            bw.write(data);
+        } finally {
+            if (bw != null) bw.close();
+        }
     }
     
     /** Copies server.xml file and patches appBase="webapps" to
