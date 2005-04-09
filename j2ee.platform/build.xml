@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,12 +8,13 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="j2ee/platform" default="netbeans" basedir=".">
-	<import file="../../nbbuild/templates/projectized.xml"/>
+
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="files-init" depends="basic-init">
       <patternset id="module.files">
@@ -24,37 +25,16 @@ Microsystems, Inc. All Rights Reserved.
       </patternset>
     </target>
 
-	<property name="external" value="../external"/>
-	
-	<target name="build-init" depends="projectized.build-init"/>
+    <property name="external" location="../external"/>
+    
+    <target name="j2ee-api-14-init" depends="build-init">
+        <ant dir="${external}" target="unscramble"/>
+    </target>
 
-	<echo message="j2ee-api-14 build"/>
-	
-	<target name="j2ee-api-14-init" depends="build-init">
-		<echo message="j2ee-api-14-init"/>
-		<ant dir="${external}" target="unscramble"/>
-	</target>
+    <target name="j2ee-api-14" depends="j2ee-api-14-init">
+        <copy file="${external}/j2eeri-1_4-doc-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+    </target>
+    
+    <target name="netbeans-extra" depends="j2ee-api-14"/>
 
-	<target name="j2ee-api-14" depends="j2ee-api-14-init">
-		<echo message="j2ee-api-14"/>
-		<!--
-		<mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
-		<copy file="${external}/j2ee-api-1.4.jar"
-			  tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext/j2ee-api-1.4.jar"/>
-		-->
-		<!-- javadoc -->
-		<copy file="${external}/j2eeri-1_4-doc-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
-		<!--
-		<copy todir="${netbeans.dest.dir}">
-			<fileset dir="../launcher"/>
-		</copy>
-		-->
-	</target>
-	
-	<target name="compile" depends="j2ee-api-14, projectized.compile"/>
-
-	<target name="clean" depends="projectized.clean">
-		<delete file="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/j2eeri-1_4-doc-api.zip"/>
-	</target>
 </project>
-
