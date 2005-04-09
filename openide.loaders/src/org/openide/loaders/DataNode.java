@@ -7,29 +7,45 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.awt.datatransfer.*;
-import java.beans.*;
-import java.io.*;
+import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
-
 import org.openide.ErrorManager;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem.HtmlStatus;
-import org.openide.util.datatransfer.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.nodes.*;
-import org.openide.util.Mutex;
+import org.openide.util.datatransfer.ExTransferable;
 
 /** Standard node representing a data object.
 *
@@ -143,8 +159,7 @@ public class DataNode extends AbstractNode {
             }
             
             RuntimeException e = new IllegalArgumentException();
-            ErrorManager.getDefault().copyAnnotation (e, ex);
-            ErrorManager.getDefault().annotate (e, ErrorManager.USER, null, msg, null, null);
+            ErrorManager.getDefault().annotate(e, ErrorManager.USER, null, msg, ex, null);
             throw e;
         }
     }
@@ -191,8 +206,8 @@ public class DataNode extends AbstractNode {
          try {
              FileSystem.Status stat = 
                  obj.getPrimaryFile().getFileSystem().getStatus();
-             if (stat instanceof HtmlStatus) {
-                 HtmlStatus hstat = (HtmlStatus) stat;
+             if (stat instanceof FileSystem.HtmlStatus) {
+                 FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
                  
                  String result = hstat.annotateNameHtml (
                      super.getDisplayName(), new LazyFilesSet());
@@ -293,6 +308,8 @@ public class DataNode extends AbstractNode {
     * then these actions will be preferred to the loader's ones.
     *
     * @return null
+     * @deprecated Use {@link #getActions(boolean)} or do nothing and let the
+     *             data loader specify actions.
     */
     protected SystemAction[] createActions () {
         return null;
@@ -387,7 +404,7 @@ public class DataNode extends AbstractNode {
         ss.put (p);
 
         FileObject fo = getDataObject().getPrimaryFile();
-        if (couldBeTemplate(fo) && !fo.isReadOnly()) {
+        if (couldBeTemplate(fo) && fo.canWrite()) {
             try {            
                 p = new PropertySupport.Reflection(obj, Boolean.TYPE, "isTemplate", "setTemplate"); // NOI18N
                 p.setName(DataObject.PROP_TEMPLATE);
@@ -617,7 +634,7 @@ public class DataNode extends AbstractNode {
     /** Handle for location of given data object.
     * @return handle that remembers the data object.
     */
-    public Handle getHandle () {
+    public Node.Handle getHandle () {
         return new ObjectHandle(obj, obj.isValid() ? (this != obj.getNodeDelegate()) : /* to be safe */ true);
     }
 
@@ -649,7 +666,7 @@ public class DataNode extends AbstractNode {
         
         if ( refresh ) {
             // refresh current nodes display name
-            RequestProcessor.postRequest(new Runnable () {
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run () { 
                     Iterator it = DataObjectPool.getPOOL().getActiveDataObjects();
                     while ( it.hasNext() ) {
@@ -745,7 +762,7 @@ public class DataNode extends AbstractNode {
                     if (post && !refreshNamesIconsRunning) {
                         refreshNamesIconsRunning = true;
                         if (refreshNamesIconsTask == null) {
-                            refreshNamesIconsTask = RequestProcessor.postRequest(this);
+                            refreshNamesIconsTask = RequestProcessor.getDefault().post(this);
                         } else {
                             // Should be OK even if it is running right now.
                             // (Cf. RequestProcessorTest.testScheduleWhileRunning.)
@@ -786,7 +803,7 @@ public class DataNode extends AbstractNode {
     }
 
     /** Handle for data object nodes */
-    private static class ObjectHandle extends Object implements Handle {
+    private static class ObjectHandle implements Node.Handle {
         private FileObject obj;
         private boolean clone;
 
