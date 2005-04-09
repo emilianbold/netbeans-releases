@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,11 +8,11 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="web_jspsyntax" default="netbeans" basedir=".">
+
   <import file="../../nbbuild/templates/projectized.xml"/>
 
   <target name="files-init" depends="basic-init">
@@ -26,48 +26,10 @@ Microsystems, Inc. All Rights Reserved.
       </patternset>
   </target>
 
-  <target name="jar-with-module-deps" if="module.dependencies">
-      <property file="../spec-vers.properties"/>
-      <property file="../../xml/spec-vers.properties"/>
-      <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-          <manifest>
-              <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
-              <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-              <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-              <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.modules.editor/3 > 1.18,
-  org.netbeans.modules.editor.lib/1, 
-  org.netbeans.modules.editor.plain/1,
-  org.netbeans.modules.editor.plain.lib/1,
-  org.netbeans.modules.java.editor/1,
-  org.netbeans.modules.java.editor.lib/1,
-  org.netbeans.modules.html.editor/1,
-  org.netbeans.modules.html.editor.lib/1,
-  org.netbeans.modules.servletapi24/1 > ${web.servletapi24.specification.version},
-  org.netbeans.modules.html/1,
-  org.netbeans.modules.editor.fold/1,
-  org.netbeans.modules.web.jspparser/2,
-  org.netbeans.modules.xml.text/2 = ${xml.common.impl.version},
-  org.openide.loaders > 4.11,
-  org.netbeans.api.java/1"/>
-          </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-
-    </target>
-    
     <target name="netbeans-extra">
         <copy file="../external/syntaxref20.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
         <copy file="../tlddoc/doc/jstl11-doc.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>    
         <copy file="../tlddoc/doc/jsf10-doc.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>    
     </target>
 
-    <!-- this task is not run as a part of the standard build --> 
-    <target name="parser-db">
-        <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../../nbbuild/nbantext.jar"/>
-        <mkdir dir="netbeans/system/ParserDB"/>
-        <makeparserdb db="release/system/ParserDB/servlet24" sources="e:/software/jakarta-tomcat-5.0.19-src/jakarta-servletapi-5/jsr154/src/share" nbroot="../.."/>
-        <makeparserdb db="release/system/ParserDB/jsp20"     sources="e:/software/jakarta-tomcat-5.0.19-src/jakarta-servletapi-5/jsr152/src/share" nbroot="../.."/>
-    </target>
-
 </project>
-

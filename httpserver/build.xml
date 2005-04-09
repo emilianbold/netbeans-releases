@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -13,6 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="httpserver" default="netbeans" basedir=".">
+
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <target name="files-init" depends="basic-init">
@@ -24,20 +25,6 @@ Microsystems, Inc. All Rights Reserved.
         </patternset>
     </target>
 
-    <target name="jar-with-module-deps" if="module.dependencies">
-        <property file="spec-vers.properties"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Specification-Version" value="${httpserver.spec.version}"/>
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${httpserver.impl.version}"/>
-                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
-            </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
@@ -45,4 +32,5 @@ Microsystems, Inc. All Rights Reserved.
             <fileset file="external/webserver.jar"/>
         </copy>
     </target>
+
 </project>

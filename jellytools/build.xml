@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
  
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="jellytools" default="jar-library" basedir=".">
@@ -57,21 +57,14 @@ Microsystems, Inc. All Rights Reserved.
         />
     </target>
     
-    <target name="jar-with-module-deps" if="module.dependencies">
+    <target name="jar" depends="init,compile,jar-prep">
         <property file="src/org/netbeans/jellytools/version_info"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" 
-             compress="${build.package.compress}" 
-             index="${build.package.index}" 
-             manifest="${manifest.mf}">
+        <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
+            <fileset dir="${build.classes.dir}" includes="**/modules/jellytools/*"/>
             <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
                 <attribute name="OpenIDE-Module-Specification-Version" value="${Jellytools-MajorVersion}.${Jellytools-MinorVersion}"/>
             </manifest>
-            <fileset dir="${build.classes.dir}" includes="**/modules/jellytools/*"/>
-        </jar>
+        </jarwithmoduleattributes>
     </target>
     
     <target name="netbeans-extra" depends="jar-library,javadoc,zipsrc">

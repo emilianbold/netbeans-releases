@@ -8,16 +8,16 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="j2seexamples" default="netbeans" basedir=".">
+
     <import file="../../nbbuild/templates/projectized.xml"/>
     
-    <target name="jar" depends="init,compile,jar-prep,zip-examples,jar-no-module-deps,jar-with-module-deps"/>
+    <target name="jar" depends="zip-examples,projectized.jar"/>
     
-    <target name="zip-examples">
+    <target name="zip-examples" depends="init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/java/examples/resources"/>
         <mkdir dir="${examples}"/>
         <zip basedir="anagrams" destfile="${examples}/anagrams.zip">

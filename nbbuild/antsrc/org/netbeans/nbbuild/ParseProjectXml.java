@@ -16,10 +16,10 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.jar.JarFile;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -36,7 +36,10 @@ import org.xml.sax.SAXException;
 public final class ParseProjectXml extends Task {
 
     private static final String PROJECT_NS = "http://www.netbeans.org/ns/project/1"; //NOI18N
-    private static final String NBM_NS = "http://www.netbeans.org/ns/nb-module-project/1"; //NOI18N
+    private static final String[] NBM_NS_1_AND_2 = {
+        "http://www.netbeans.org/ns/nb-module-project/1",
+        "http://www.netbeans.org/ns/nb-module-project/2",
+    };
 
     private File project;
     /**
@@ -154,6 +157,8 @@ public final class ParseProjectXml extends Task {
             if (getProjectFile() == null) {
                 throw new BuildException("You must set 'project' or 'projectfile'", getLocation());
             }
+            // XXX validate against nbm-project{,2}.xsd; does this require JDK 1.5?
+            // Cf.: ant/project/eg/ValidateAllBySchema.java
             Document pDoc = XMLUtil.parse(new InputSource(getProjectFile ().toURI().toString()),
                                           false, true, /*XXX*/null, null);
             if (publicPackagesProperty != null || javadocPackagesProperty != null) {
@@ -207,6 +212,10 @@ public final class ParseProjectXml extends Task {
                     }
                 }
             }
+            ModuleListParser modules = null;
+            if (moduleDependenciesProperty != null || moduleClassPathProperty != null) {
+                modules = new ModuleListParser(modulesXml);
+            }
             if (ideDependenciesProperty != null || moduleDependenciesProperty != null) {
                 Dep[] deps = getDeps(pDoc);
                 if (ideDependenciesProperty != null) {
@@ -218,7 +227,7 @@ public final class ParseProjectXml extends Task {
                         }
                     }
                     if (ide != null) {
-                        define(ideDependenciesProperty, ide.toString());
+                        define(ideDependenciesProperty, ide.toString(modules));
                     }
                 }
                 if (moduleDependenciesProperty != null) {
@@ -230,7 +239,7 @@ public final class ParseProjectXml extends Task {
                         if (b.length() > 0) {
                             b.append(", "); //NOI18N
                         }
-                        b.append(deps[i].toString());
+                        b.append(deps[i].toString(modules));
                     }
                     if (b.length() > 0) {
                         define(moduleDependenciesProperty, b.toString());
@@ -249,7 +258,7 @@ public final class ParseProjectXml extends Task {
                 if (modulesXml == null) {
                     throw new BuildException("You must set 'modulesxml'", getLocation());
                 }
-                String cp = computeClasspath(pDoc, modulesXml);
+                String cp = computeClasspath(pDoc, modules);
                 if (cp != null) {
                     define(moduleClassPathProperty, cp);
                 }
@@ -265,6 +274,8 @@ public final class ParseProjectXml extends Task {
                 }
                 define(domainProperty, domain);
             }
+        } catch (BuildException e) {
+            throw e;
         } catch (Exception e) {
             throw new BuildException(e, getLocation());
         }
@@ -276,7 +287,7 @@ public final class ParseProjectXml extends Task {
         if (c == null) {
             throw new BuildException("No <configuration>", getLocation());
         }
-        Element d = XMLUtil.findElement(c, "data", NBM_NS); //NOI18N
+        Element d = XMLUtil.findElement(c, "data", NBM_NS_1_AND_2); //NOI18N
         if (d == null) {
             throw new BuildException("No <data>", getLocation());
         }
@@ -295,7 +306,7 @@ public final class ParseProjectXml extends Task {
 
     private PublicPackage[] getPublicPackages(Document d) throws BuildException {
         Element cfg = getConfig(d);
-        Element pp = XMLUtil.findElement(cfg, "public-packages", NBM_NS); //NOI18N
+        Element pp = XMLUtil.findElement(cfg, "public-packages", NBM_NS_1_AND_2); //NOI18N
         if (pp == null) {
             throw new BuildException("No <public-packages>", getLocation());
         }
@@ -322,14 +333,13 @@ public final class ParseProjectXml extends Task {
         return pkgs;
     }
 
-    private static final class Dep {
+    private final class Dep {
         /** will be e.g. org.netbeans.modules.form or IDE */
         public String codenamebase;
         public String release = null;
         public String spec = null;
-        public String impl = null;
-        // XXX handle impl deps too
-        public String toString() {
+        public boolean impl = false;
+        public String toString(ModuleListParser modules) throws IOException, BuildException {
             StringBuffer b = new StringBuffer(codenamebase);
             if (release != null) {
                 b.append('/'); //NOI18N
@@ -338,18 +348,35 @@ public final class ParseProjectXml extends Task {
             if (spec != null) {
                 b.append(" > "); //NOI18N
                 b.append(spec);
+                assert !impl;
             }
-            if (impl != null) {
+            if (impl) {
                 b.append(" = "); // NO18N
-                b.append(impl);
+                String implVers = implementationVersionOf(modules, codenamebase);
+                if (implVers == null) {
+                    throw new BuildException("No OpenIDE-Module-Implementation-Version found in " + codenamebase);
+                }
+                b.append(implVers);
             }
             return b.toString();
+        }
+        private String implementationVersionOf(ModuleListParser modules, String cnb) throws IOException {
+            File jar = new File(computeClasspathModuleLocation(modules, cnb));
+            if (!jar.isFile()) {
+                throw new BuildException("No such classpath entry: " + jar, getLocation());
+            }
+            JarFile jarFile = new JarFile(jar, false);
+            try {
+                return jarFile.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version");
+            } finally {
+                jarFile.close();
+            }
         }
     }
 
     private Dep[] getDeps(Document pDoc) throws BuildException {
         Element cfg = getConfig(pDoc);
-        Element md = XMLUtil.findElement(cfg, "module-dependencies", NBM_NS); //NOI18N
+        Element md = XMLUtil.findElement(cfg, "module-dependencies", NBM_NS_1_AND_2); //NOI18N
         if (md == null) {
             throw new BuildException("No <module-dependencies>", getLocation());
         }
@@ -359,7 +386,7 @@ public final class ParseProjectXml extends Task {
         while (it.hasNext()) {
             Element dep = (Element)it.next();
             Dep d = new Dep();
-            Element cnb = XMLUtil.findElement(dep, "code-name-base", NBM_NS); //NOI18N
+            Element cnb = XMLUtil.findElement(dep, "code-name-base", NBM_NS_1_AND_2); //NOI18N
             if (cnb == null) {
                 throw new BuildException("No <code-name-base>", getLocation());
             }
@@ -371,9 +398,9 @@ public final class ParseProjectXml extends Task {
                 t = "IDE"; //NOI18N
             }
             d.codenamebase = t;
-            Element rd = XMLUtil.findElement(dep, "run-dependency", NBM_NS); //NOI18N
+            Element rd = XMLUtil.findElement(dep, "run-dependency", NBM_NS_1_AND_2); //NOI18N
             if (rd != null) {
-                Element rv = XMLUtil.findElement(rd, "release-version", NBM_NS);
+                Element rv = XMLUtil.findElement(rd, "release-version", NBM_NS_1_AND_2);
                 if (rv != null) {
                     t = XMLUtil.findText(rv);
                     if (t == null) {
@@ -381,7 +408,7 @@ public final class ParseProjectXml extends Task {
                     }
                     d.release = t;
                 }
-                Element sv = XMLUtil.findElement(rd, "specification-version", NBM_NS); //NOI18N
+                Element sv = XMLUtil.findElement(rd, "specification-version", NBM_NS_1_AND_2); //NOI18N
                 if (sv != null) {
                     t = XMLUtil.findText(sv);
                     if (t == null) {
@@ -389,13 +416,10 @@ public final class ParseProjectXml extends Task {
                     }
                     d.spec = t;
                 }
-                Element iv = XMLUtil.findElement(rd, "implementation-version", NBM_NS); //NOI18N
+                // <implementation-version> added in /2:
+                Element iv = XMLUtil.findElement(rd, "implementation-version", NBM_NS_1_AND_2[1]); //NOI18N
                 if (iv != null) {
-                    t = XMLUtil.findText(iv);
-                    if (t == null) {
-                        throw new BuildException("No text in <implementation-version>", getLocation());
-                    }
-                    d.impl = t;
+                    d.impl = true;
                 }
                 deps.add(d);
             }
@@ -405,7 +429,7 @@ public final class ParseProjectXml extends Task {
 
     private String getCodeNameBase(Document d) throws BuildException {
         Element data = getConfig(d);
-        Element name = XMLUtil.findElement(data, "code-name-base", NBM_NS); //NOI18N
+        Element name = XMLUtil.findElement(data, "code-name-base", NBM_NS_1_AND_2); //NOI18N
         if (name == null) {
             throw new BuildException("No <code-name-base>", getLocation());
         }
@@ -418,7 +442,7 @@ public final class ParseProjectXml extends Task {
 
     private String getPath(Document d) throws BuildException {
         Element data = getConfig(d);
-        Element path = XMLUtil.findElement(data, "path", NBM_NS); //NOI18N
+        Element path = XMLUtil.findElement(data, "path", NBM_NS_1_AND_2); //NOI18N
         if (path == null) {
             throw new BuildException("No <path>", getLocation());
         }
@@ -429,52 +453,52 @@ public final class ParseProjectXml extends Task {
         return t;
     }
 
-    private String computeClasspath(Document pDoc, File modulesXml) throws BuildException, IOException, SAXException {
-        ModuleListParser modules = new ModuleListParser(modulesXml);
+    private String computeClasspath(Document pDoc, ModuleListParser modules) throws BuildException, IOException, SAXException {
         Element data = getConfig(pDoc);
-        Element moduleDependencies = XMLUtil.findElement(data, "module-dependencies", NBM_NS); //NOI18N
+        Element moduleDependencies = XMLUtil.findElement(data, "module-dependencies", NBM_NS_1_AND_2); //NOI18N
         List/*<Element>*/ deps = XMLUtil.findSubElements(moduleDependencies);
         StringBuffer cp = new StringBuffer();
         Iterator it = deps.iterator();
         while (it.hasNext()) {
             Element dep = (Element)it.next();
-            if (XMLUtil.findElement(dep, "compile-dependency", NBM_NS) == null) { //NOI18N
+            if (XMLUtil.findElement(dep, "compile-dependency", NBM_NS_1_AND_2) == null) { //NOI18N
                 continue;
             }
             if (cp.length() > 0) {
                 cp.append(':');
             }
-            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", NBM_NS); //NOI18N
+            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", NBM_NS_1_AND_2); //NOI18N
             String cnb = XMLUtil.findText(cnbEl);
-            ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
-            if (module == null) {
-                throw new BuildException("No dependent module " + cnb, getLocation());
-            }
-            // XXX if that module is projectized, check its public
-            // packages; if it has none, halt the build, unless we are
-            // declaring an impl dependency
-            // Prototype: ${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar
-            // where: path=java/srcmodel jar = modules/autoload/java-src-model.jar
-            String topdirProp = module.getPath() + ".dir"; // "java/srcmodel.dir" //NOI18N
-            String topdirVal = getProject().getProperty(topdirProp);
-            if (topdirVal == null) {
-                throw new BuildException("Undefined: " + topdirProp + " (usually means you are missing a dependency in nbbuild/build.xml#all-*)", getLocation());
-            }
-            cp.append(topdirVal);
-            cp.append('/'); //NOI18N
-            String jar = module.getJar();
-            int slash = jar.lastIndexOf('/'); //NOI18N
-            String jarDir = jar.substring(0, slash); // "modules/autoload"
-            String jarDirProp = "nb." + jarDir + ".dir"; // "nb.modules/autoload.dir" //NOI18N
-            String jarDirVal = getProject().getProperty(jarDirProp);
-            if (jarDirVal == null) {
-                throw new BuildException("Undefined: " + jarDirProp);
-            }
-            cp.append(jarDirVal);
-            String slashPlusJar = jar.substring(slash); // "/java-src-model.jar"
-            cp.append(slashPlusJar);
+            cp.append(computeClasspathModuleLocation(modules, cnb));
         }
         return cp.toString();
+    }
+    
+    private String computeClasspathModuleLocation(ModuleListParser modules, String cnb) throws BuildException {
+        ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
+        if (module == null) {
+            throw new BuildException("No dependent module " + cnb, getLocation());
+        }
+        // XXX if that module is projectized, check its public
+        // packages; if it has none, halt the build, unless we are
+        // declaring an impl dependency
+        // Prototype: ${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar
+        // where: path=java/srcmodel jar = modules/autoload/java-src-model.jar
+        String topdirProp = module.getPath() + ".dir"; // "java/srcmodel.dir" //NOI18N
+        String topdirVal = getProject().getProperty(topdirProp);
+        if (topdirVal == null) {
+            throw new BuildException("Undefined: " + topdirProp + " (usually means you are missing a dependency in nbbuild/build.xml#all-*)", getLocation());
+        }
+        String jar = module.getJar();
+        int slash = jar.lastIndexOf('/'); //NOI18N
+        String jarDir = jar.substring(0, slash); // "modules/autoload"
+        String jarDirProp = "nb." + jarDir + ".dir"; // "nb.modules/autoload.dir" //NOI18N
+        String jarDirVal = getProject().getProperty(jarDirProp);
+        if (jarDirVal == null) {
+            throw new BuildException("Undefined: " + jarDirProp);
+        }
+        String slashPlusJar = jar.substring(slash); // "/java-src-model.jar"
+        return topdirVal + '/' + jarDirVal + slashPlusJar;
     }
 
 }

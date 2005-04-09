@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,25 +8,9 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="editor/errorstripe" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/>
-    
-    <target name="jar-with-module-deps" if="module.dependencies">
-        <property file="spec-ver.properties"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
-                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}" />
-            </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
-
 </project>
-

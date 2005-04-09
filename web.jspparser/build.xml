@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,19 +8,22 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="web_jspparser" default="netbeans" basedir=".">
     
     <import file="../../nbbuild/templates/projectized.xml"/>
+
     <property name="tomcat_version" value="5.5.7"/>
+
     <target name="files-init" depends="basic-init">
         <patternset id="module.files">
             <!--<include name="${nb.modules/autoload.dir}/jsp-parser.jar"/>
             <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>-->
             <include name="${module.jar}"/>
+            <!-- XXX these three are not in Class-Path, why? -->
+            <!-- XXX why using autoload/ext/ rather than just ext/? -->
             <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>
             <include name="${nb.modules/autoload.dir}/ext/jasper-compiler-${tomcat_version}.jar"/>
             <include name="${nb.modules/autoload.dir}/ext/jasper-runtime-${tomcat_version}.jar"/>
@@ -41,20 +44,13 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="netbeans-extra" depends="release, ext-jar"/>
     
-    <target name="jar-with-module-deps" if="module.dependencies" depends="ext-jar">
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
-                <!-- XXX make this conditional so can use OIDE-M-B-V instead -->
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
-            </manifest>
+    <target name="jar" depends="init,compile,jar-prep">
+        <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <fileset dir="${build.classes.dir}">
-              <include name="org/netbeans/modules/web/jspparser/"/>
-              <include name="org/netbeans/modules/web/jsps/"/>
+                <include name="org/netbeans/modules/web/jspparser/"/>
+                <include name="org/netbeans/modules/web/jsps/"/>
             </fileset>
-        </jar>
+        </jarwithmoduleattributes>
     </target>
 
     <target name="ext-jar">
@@ -67,5 +63,5 @@ Microsystems, Inc. All Rights Reserved.
             <include name="org/apache/jasper/"/>
         </jar>
     </target>
-</project>
 
+</project>

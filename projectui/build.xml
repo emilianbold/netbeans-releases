@@ -12,21 +12,5 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="projects/projectui">
-
     <import file="../../nbbuild/templates/projectized.xml"/>
-    
-    <target name="jar-with-module-deps" if="module.dependencies">
-        <property file="../projectuiapi/spec-vers.properties"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Specification-Version" value="1.4.${projectuiapi.impl.version}"/>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.core.ui/1, org.netbeans.core.execution/1, org.netbeans.modules.projectapi/1, org.netbeans.modules.projectuiapi/1 = ${projectuiapi.impl.version}, org.netbeans.modules.queries/1, org.netbeans.modules.xml.catalog/2 &gt; 1.5.3.999.4, org.openide.loaders, org.openidex.util/3, org.netbeans.modules.masterfs/1 &gt; 1.1"/>
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
-            </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
-    
 </project>

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,11 +38,11 @@ final class ModuleListParser {
         Iterator it = l.iterator();
         while (it.hasNext()) {
             Element el = (Element)it.next();
-            Element pathEl = XMLUtil.findElement(el, "path", null);
+            Element pathEl = XMLUtil.findElement(el, "path", (String) null);
             String path = XMLUtil.findText(pathEl);
-            Element cnbEl = XMLUtil.findElement(el, "cnb", null);
+            Element cnbEl = XMLUtil.findElement(el, "cnb", (String) null);
             String cnb = XMLUtil.findText(cnbEl);
-            Element jarEl = XMLUtil.findElement(el, "jar", null);
+            Element jarEl = XMLUtil.findElement(el, "jar", (String) null);
             String jar;
             if (jarEl != null) {
                 jar = XMLUtil.findText(jarEl);

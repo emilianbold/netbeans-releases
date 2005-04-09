@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,11 +8,12 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="j2ee/ddapi" default="netbeans" basedir=".">
+
   <import file="../../nbbuild/templates/projectized.xml"/>
 
   <property name="s2b_root_2_3" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_3"/>
@@ -98,16 +99,9 @@ Microsystems, Inc. All Rights Reserved.
 
   </target>
 
-  <target name="compile" depends="dd2beansgen, release, projectized.compile"/>
+  <target name="compile" depends="dd2beansgen,projectized.compile"/>
   
-  <target name="release">
-    <!--copy todir="${cdp.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}">
-      <fileset dir="release/modules/autoload"/>
-    </copy-->
-  </target>
-
-
-  <target name="clean" depends="projectized.build-init, clean-ddgen-src, clean-javadoc, projectized.clean"/>
+  <target name="clean" depends="projectized.build-init,clean-ddgen-src,projectized.clean"/>
 
   <target name="clean-ddgen-src">
         <mkdir dir="${s2b_root_2_3}"/>
@@ -161,20 +155,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${s2b_root_app_1_4}"/>
   </target>
   
-  <target name="jar-with-module-deps" if="module.dependencies">
-      <property file="spec-ver.properties"/>
-      <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-          <manifest>
-              <attribute name="OpenIDE-Module-Implementation-Version" value="${ddapi.impl.version}"/>
-              <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
-              <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-              <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-              <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
-          </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
-    
   <target name="javadoc" depends="projectized.javadoc, init-javadoc"/>
   
   <target name="init-javadoc">
@@ -184,8 +164,4 @@ Microsystems, Inc. All Rights Reserved.
       <copy file="doc/usage.html" todir="javadoc/J2EEDDAPI/arch"/>
   </target>
   
-    <target name="clean-javadoc">
-      <delete dir="javadoc"/>
-    </target>
 </project>
-

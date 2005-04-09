@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,10 +8,11 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="jemmy/idemodule" default="netbeans" basedir=".">
+
     <import file="../../nbbuild/templates/projectized.xml"/>
   
     <target name="files-init" depends="basic-init">
@@ -34,20 +35,15 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="javadoc/jemmy-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
     </target>
 
-     <!-- overriden because we need to read jemmy version from version_info -->
-    <target name="jar-no-module-deps" unless="module.dependencies">
+     <!-- overridden because we need to read jemmy version from version_info -->
+    <target name="jar" depends="init,compile,jar-prep">
         <property file="../src/org/netbeans/jemmy/version_info"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"
-             compress="${build.package.compress}"
-             index="${build.package.index}"
-             manifest="manifest.mf"
-             basedir="${build.classes.dir}">
+        <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
+            <fileset dir="${build.classes.dir}"/>
             <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
                 <attribute name="OpenIDE-Module-Specification-Version" value="${Jemmy-MajorVersion}.${Jemmy-MinorVersion}"/>
             </manifest>
-	</jar>
+	</jarwithmoduleattributes>
     </target>
     
     <target name="clean" depends="projectized.clean">
@@ -62,4 +58,5 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="../dist/javadoc"/>
         </copy>
     </target>
+
 </project>

@@ -1,8 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Layer: org/netbeans/modules/j2ee/earproject/ui/resource
- s/layer.xml
-OpenIDE-Module-Specification-Version: 1.1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/earproject
- /Bundle.properties
 OpenIDE-Module: org.netbeans.modules.j2ee.earproject
+OpenIDE-Module-Layer: org/netbeans/modules/j2ee/earproject/ui/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/earproject/Bundle.properties
 

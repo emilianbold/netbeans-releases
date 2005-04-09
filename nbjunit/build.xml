@@ -12,7 +12,8 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xtest/nbjunit" basedir="." default="netbeans">
-  <import file="../../nbbuild/templates/projectized.xml"/>
+
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="files-init" depends="basic-init">
         <patternset id="module.files">
@@ -38,21 +39,11 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="javadoc/nbjunit-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
     </target>
 
-    <target name="jar-with-module-deps" if="module.dependencies">
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" 
-             compress="${build.package.compress}" 
-             index="${build.package.index}" 
-             manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
-                <!-- XXX make this conditional so can use OIDE-M-B-V instead -->
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
-            </manifest>
+    <target name="jar" depends="init,compile,jar-prep">
+        <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <!-- includes only module resources because other classes are in library jars (target jar-nbjunit). -->
             <fileset dir="${build.classes.dir}" includes="**/resources/**"/>
-        </jar>
+        </jarwithmoduleattributes>
     </target>
 
     <!-- build nbjunit libraries -->
@@ -73,4 +64,5 @@ Microsystems, Inc. All Rights Reserved.
             includes="org/netbeans/junit/ide/**"
         />
     </target>
+
 </project>

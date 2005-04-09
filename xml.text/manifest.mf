@@ -3,14 +3,4 @@ OpenIDE-Module: org.netbeans.modules.xml.text/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/text/resources/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/xml/text/TextEditModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/xml/text/resources/mf-layer.xml
-OpenIDE-Module-Specification-Version: ${xml.text-edit.spec.version}
-OpenIDE-Module-Implementation-Version: ${xml.common.impl.version}
-OpenIDE-Module-Build-Version: ${buildnumber}
-OpenIDE-Module-Public-Packages: -
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.37
-OpenIDE-Module-Module-Dependencies: 
- org.netbeans.api.xml/1 > ${xml.api.spec.version},
- org.netbeans.modules.xml.core/2 = ${xml.common.impl.version},
- org.netbeans.modules.editor/3 > 1.7,
- org.netbeans.modules.editor.lib/1
 

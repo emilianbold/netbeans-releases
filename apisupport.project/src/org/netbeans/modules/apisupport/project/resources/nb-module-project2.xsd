@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!-- XXX publish to www/www/ns/ when finished -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.netbeans.org/ns/nb-module-project/2"
+            xmlns="http://www.netbeans.org/ns/nb-module-project/2"
+            elementFormDefault="qualified">
+    
+    <xsd:element name="data">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="code-name-base" type="javaPackageType"/>
+                <xsd:element name="path" type="pathType"/>
+                <xsd:element name="module-dependencies" type="moduleDependenciesType"/>
+                <xsd:element name="public-packages" type="publicPackagesType"/>
+                <xsd:element name="extra-compilation-unit" minOccurs="0" maxOccurs="unbounded" type="compilation-unit"/>
+                <xsd:element name="javadoc" minOccurs="0"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:simpleType name="pathType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[a-zA-Z0-9_.\-][a-zA-Z0-9_.\-]*(/[a-zA-Z0-9_.\-][a-zA-Z0-9_.\-]*)*"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:complexType name="moduleDependenciesType">
+        <xsd:sequence>
+            <xsd:element name="dependency" type="moduleDependencyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="moduleDependencyType">
+        <xsd:sequence>
+            <xsd:element name="code-name-base" type="javaPackageType"/>
+            <!-- location in source tree is derived from code-name-base -->
+            <!-- It is senseless to have *none* of the following. -->
+            <!-- compile-dependency implies build-prerequisite. -->
+            <xsd:element name="build-prerequisite" minOccurs="0"/>
+            <xsd:element name="compile-dependency" minOccurs="0"/>
+            <xsd:element name="run-dependency" minOccurs="0" type="runDependencyType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="runDependencyType">
+        <xsd:sequence>
+            <xsd:element name="release-version" type="releaseVersionType" minOccurs="0"/>
+            <xsd:choice minOccurs="0">
+                <xsd:element name="specification-version" type="specificationVersionType"/>
+                <!-- Empty; actual impl version to use determined during the build -->
+                <xsd:element name="implementation-version"/>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:simpleType name="javaPackageType">
+        <xsd:restriction base="xsd:NCName">
+            <!-- XXX should also handle Unicode I suppose -->
+            <xsd:pattern value="[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)*"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="releaseVersionType">
+        <xsd:union memberTypes="xsd:nonNegativeInteger">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:NMTOKEN">
+                    <xsd:pattern value="(0|[1-9][0-9]*)-[1-9][0-9]*"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:union>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="specificationVersionType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:pattern value="(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))*"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:complexType name="publicPackagesType">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="package" type="javaPackageType"/>
+                <xsd:element name="subpackages" type="javaPackageType"/>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <!-- Loosely borrowed from ant/freeform: -->
+    
+    <!-- Some text that might be substituted with Ant property references. -->
+    <xsd:simpleType name="substitutable-text">
+        <xsd:restriction base="xsd:string">
+            <!-- XXX limit by regexp, perhaps -->
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:complexType name="compilation-unit">
+        <xsd:sequence>
+            <xsd:element name="package-root" type="substitutable-text"/>
+            <xsd:element name="classpath" type="substitutable-text"/>
+            <xsd:element name="built-to" minOccurs="0" maxOccurs="unbounded" type="substitutable-text"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+</xsd:schema>

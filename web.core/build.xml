@@ -8,10 +8,11 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="web/core">
+
     <import file="../../nbbuild/templates/projectized.xml"/>
     
     <property name="s2b_root" location="src/org/netbeans/modules/web/taglib/model"/>
@@ -52,41 +53,4 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${s2b_root}"/>
     </target>
   
-    <target name="jar-with-module-deps" if="module.dependencies">
-        <property file="../ddapi/spec-ver.properties"/>
-        <property file="../../xml/spec-vers.properties"/>
-        <property file="../spec-vers.properties"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="-"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.modules.java/1,
-  org.netbeans.modules.j2eeserver/3,
-  org.netbeans.modules.schema2beans/1,
-  org.netbeans.modules.html/1,
-  org.netbeans.api.xml/1,
-  org.netbeans.modules.xml.core/2 = ${xml.common.impl.version},
-  org.netbeans.modules.xml.catalog/2 > 0.9,
-  org.openide.src > 1.3,
-  org.openide.io > 1.0,
-  org.netbeans.core/1 > 1.0,
-  org.netbeans.modules.web.jspparser/2,
-  org.netbeans.modules.web.core.syntax/1,
-  org.netbeans.api.web.webmodule > 1.0,
-  org.netbeans.api.java/1,
-  org.netbeans.modules.java.project/1,
-  org.netbeans.modules.j2ee.dd/1 = 1.0,
-  org.netbeans.modules.projectapi/1,
-  org.netbeans.modules.projectuiapi/1,
-  org.apache.tools.ant.module/3,
-  org.netbeans.core.multiview/1,
-  org.netbeans.modules.xml.multiview/1 = 1.0-release41,
-  org.netbeans.libs.xerces/1"/>
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${web.core.impl.version}"/>
-                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
-            </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
-    
 </project>

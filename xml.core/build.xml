@@ -84,20 +84,4 @@ Microsystems, Inc. All Rights Reserved.
         </javadoc>                
     </target>
 
-  <target name="jar-with-module-deps" if="module.dependencies">
-      <property file="../spec-vers.properties"/>
-      <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-          <manifest>
-              <attribute name="OpenIDE-Module-Specification-Version" value="${xml.core.spec.version}"/>
-              <attribute name="OpenIDE-Module-Implementation-Version" value="${xml.common.impl.version}"/>
-              <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
-              <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-              <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-              <attribute name="OpenIDE-Module-Module-Dependencies" value="org.openide.io > 1.0,
-  org.netbeans.api.xml/1 > ${xml.api.spec.version}"/>
-          </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
-
 </project>

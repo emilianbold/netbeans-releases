@@ -13,19 +13,4 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="java/j2seproject">
     <import file="../../nbbuild/templates/projectized.xml"/>
-    
-    <target name="jar-with-module-deps" if="module.dependencies">
-        <property file="spec-ver.properties"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="org.apache.tools.ant.module/3 > 3.9, org.netbeans.api.java/1, org.netbeans.modules.ant.browsetask, org.netbeans.modules.debugger.jpda.ant, org.netbeans.modules.java.platform/1, org.netbeans.modules.java.project/1, org.netbeans.modules.junit/2, org.netbeans.modules.project.ant/1, org.netbeans.modules.projectapi/1, org.netbeans.modules.project.libraries/1, org.netbeans.modules.projectuiapi/1, org.netbeans.modules.queries/1, org.openide.src, org.openide.loaders, org.openide.execution > 1.2, org.netbeans.modules.javacore/1, org.netbeans.jmi.javamodel/1, org.netbeans.api.mdr/1"/>
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${java.j2seproject.impl.version}"/>
-                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
-            </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
-    
 </project>

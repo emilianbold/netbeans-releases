@@ -1,16 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.xml.tools/2
+OpenIDE-Module-Implementation-Version: 4
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/tools/resources/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/xml/tools/resources/mf-layer.xml
-OpenIDE-Module-Specification-Version: ${xml.tools.spec.version}
-OpenIDE-Module-Implementation-Version: ${xml.common.impl.version}
-OpenIDE-Module-Build-Version: ${buildnumber}
-OpenIDE-Module-Public-Packages: -
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
-OpenIDE-Module-Module-Dependencies: 
- org.netbeans.api.xml/1 > ${xml.api.spec.version}, 
- org.netbeans.modules.xml.tax/2 = ${xml.common.impl.version},
- org.netbeans.modules.xml.core/2 = ${xml.common.impl.version}, 
- org.netbeans.api.java/1,
- org.openide.src > 1.0
 

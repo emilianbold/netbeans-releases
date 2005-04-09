@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../default.xml"/>
 
     <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="jarwithmoduleattributes" classname="org.netbeans.nbbuild.JarWithModuleAttributes" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
     <target name="init" depends="basic-init,files-init,build-init"/>
 
@@ -168,37 +169,16 @@ Microsystems, Inc. All Rights Reserved.
         </tstamp>
     </target>
 
-    <target name="jar-no-module-deps" unless="module.dependencies">
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
-            <!-- XXX it seems that using <manifest> forces the JAR to be recreated each time -->
-            <!-- (presumably due to the variable OIDE-M-I-V) -->
-            <!-- so might have to use e.g. <manifest> task (created in build/ somewhere)? -->
-            <!-- Cf: http://issues.apache.org/bugzilla/show_bug.cgi?id=29085 -->
-            <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <!-- XXX make this conditional so can use OIDE-M-B-V instead -->
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
-            </manifest>
+    <target name="jar" depends="init,compile,jar-prep">
+        <!-- XXX it seems that using <manifest> forces the JAR to be recreated each time -->
+        <!-- (presumably due to the variable OIDE-M-I-V) -->
+        <!-- so might have to use e.g. <manifest> task (created in build/ somewhere)? -->
+        <!-- Cf: http://issues.apache.org/bugzilla/show_bug.cgi?id=29085 -->
+        <!-- This task adds some or all of: -Public-Packages, -IDE-Dependencies, -Module-Dependencies, -Specification-Version, -Implementation-Version, -Build-Version -->
+        <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <fileset dir="${build.classes.dir}"/>
-        </jar>
+        </jarwithmoduleattributes>
     </target>
-
-    <target name="jar-with-module-deps" if="module.dependencies">
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
-                <!-- XXX make this conditional so can use OIDE-M-B-V instead -->
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
-            </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
-
-    <!-- XXX need to actually use 4 targets, I guess, depending on whether or not ${ide.dependencies} is defined: -->
-    <target name="jar" depends="init,compile,jar-prep,jar-no-module-deps,jar-with-module-deps"/>
     
     <target name="reload" depends="init,jar">
         <fail unless="netbeans.home">Reloading modules works only inside the NetBeans IDE</fail>

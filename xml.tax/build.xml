@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -48,7 +48,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="jars" depends="compile">
         <for-each locations="lib"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
-        <property file="${xml_root}/spec-vers.properties"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf">
             <filterchain>
                 <expandproperties/>

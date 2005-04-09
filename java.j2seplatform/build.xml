@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="java/j2seplatform">
@@ -33,19 +33,5 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans-extra" depends="probe"/>
-
-    <target name="jar-with-module-deps" if="module.dependencies">
-        <property file="spec-ver.properties"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.api.java/1, org.netbeans.modules.project.libraries/1, org.netbeans.modules.java.platform/1 , org.netbeans.modules.project.ant/1, org.netbeans.modules.projectapi/1, org.openide.loaders, org.netbeans.modules.classfile/1"/>
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${java.j2seplatform.impl.version}"/>
-                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
-            </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
 
 </project>
