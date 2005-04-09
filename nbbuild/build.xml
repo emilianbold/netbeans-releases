@@ -57,12 +57,35 @@ ToDo:
         <include name="nbbuild/external/jhall*.jar"/>
       </fileset>
     </path>
-    <javac srcdir="antsrc" destdir="antsrc" deprecation="true" debug="${build.compiler.debug}" source="1.4">
+    <!-- Sanity check: -->
+    <pathconvert pathsep=":" property="class.files.in.antsrc">
+        <path>
+            <fileset dir="antsrc">
+                <include name="**/*.class"/>
+            </fileset>
+        </path>
+    </pathconvert>
+    <fail>
+        <condition>
+            <not>
+                <equals arg1="${class.files.in.antsrc}" arg2=""/>
+            </not>
+        </condition>
+        You have stray *.class files in ${basedir}/antsrc which you must remove.
+        Probably you failed to clean your sources before updating them from CVS.
+    </fail>
+    <!-- OK, continue: -->
+    <mkdir dir="build/antclasses"/>
+    <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.4">
       <classpath refid="bootstrap-cp"/>
     </javac>
-    <jar jarfile="nbantext.jar" basedir="antsrc">
-      <exclude name="**/*.java"/>
-      <exclude name="package-list"/>
+    <jar jarfile="nbantext.jar">
+      <fileset dir="build/antclasses"/>
+      <fileset dir="antsrc">
+        <exclude name="**/*.java"/>
+        <exclude name="**/package.html"/>
+        <exclude name="package-list"/>
+      </fileset>
     </jar>
   </target>
 
@@ -961,8 +984,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
    <ant dir="../junit" target="netbeans"/>
   </target>
-  <target name="all-jarpackager">
-  </target>
   <target name="all-java" depends="init,all-java/api,all-java/srcmodel,all-java/javacore">
     <echo message="Building module java..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -992,17 +1013,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../javadoc" target="netbeans"/>
   </target>
-  <!--
-  <target name="all-javaembeddedserver" depends="all-jarpackager,all-form">
-    <echo message="Building module javaembeddedserver..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../javaembeddedserver" target="netbeans"/>
-  </target>
-  -->
   <target name="all-jellytools" depends="init,all-jemmy/idemodule,all-xtest/nbjunit">
     <echo message="Building module jellytools..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -1807,15 +1817,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../web/jspdebug" target="netbeans"/>
-  </target>
-  <target name="all-web/taglibed" depends="init,all-web/core,all-jarpackager,all-xml/core,all-java/srcmodel">
-    <echo message="Building module web/taglibed..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../web/taglibed" target="netbeans"/>
   </target>
   <target name="all-externaleditor" depends="init,all-editor">
     <echo message="Building module externaleditor..."/>
@@ -3202,11 +3203,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <!-- This step must be last: -->
     <echo message="Cleaning NetBeans-specific Ant extensions..."/>
     <delete file="nbantext.jar" quiet="true"/>
-    <delete>
-      <fileset dir="antsrc">
-        <include name="**/*.class"/>
-      </fileset>
-    </delete>
+    <delete dir="build/antclasses"/>
   </target>
   
   <target name="ant-clean">
