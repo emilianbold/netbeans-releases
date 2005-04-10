@@ -100,7 +100,9 @@ public class SectionNodePanel extends SectionPanel {
         super.openInnerPanel();
         Node[] childNodes = ((SectionNode) getNode()).getChildren().getNodes();
         if (childNodes != null && childNodes.length > 0) {
-            ((SectionNode) childNodes[0]).getSectionNodePanel().openInnerPanel();
+            final SectionNodePanel panel = ((SectionNode) childNodes[0]).getSectionNodePanel();
+            panel.getFoldButton().setSelected(true);
+            panel.openInnerPanel();
         }
     }
 
