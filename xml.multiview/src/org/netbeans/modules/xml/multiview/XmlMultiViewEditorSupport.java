@@ -39,6 +39,11 @@ import javax.swing.text.StyledDocument;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.OutputStream;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.util.Set;
+import java.util.Iterator;
+import java.util.Enumeration;
 
 /**
  * XmlMultiviewEditorSupport.java
@@ -55,6 +60,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private TopComponent mvtc, xmlTC;
     private int lastOpenView=0;
     private StyledDocument document;
+    private TopComponentsListener topComponentsListener;
 
     public XmlMultiViewEditorSupport() {
         super(null, null);
@@ -138,6 +144,10 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     protected void notifyClosed() {
         xmlTC = null;
         mvtc = null;
+        if (topComponentsListener != null) {
+            TopComponent.getRegistry().removePropertyChangeListener(topComponentsListener);
+            topComponentsListener = null;
+        }
         super.notifyClosed();
     }
     
@@ -249,13 +259,17 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             return "multiview_xml"; //NOI18N
         }
     }
-    
+
     public TopComponent getMVTC() {
         return mvtc;
     }
     
     void setMVTC(TopComponent mvtc) {
-        this.mvtc=mvtc;
+        this.mvtc = mvtc;
+        if (topComponentsListener == null) {
+            topComponentsListener = new TopComponentsListener();
+            TopComponent.getRegistry().addPropertyChangeListener(topComponentsListener);
+        }
     }
     
     void setXmlTC(TopComponent xmlTC) {
@@ -383,5 +397,31 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     // Accessibility for ToolBarMultiViewElement:  
     protected String messageName() {
         return super.messageName();
+    }
+
+    private class TopComponentsListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName())) {
+                // Check closed top components
+                Set closed = ((Set) evt.getOldValue());
+                closed.removeAll((Set) evt.getNewValue());
+                for (Iterator iterator = closed.iterator(); iterator.hasNext();) {
+                    Object o = iterator.next();
+                    if (o instanceof CloneableTopComponent) {
+                        final CloneableTopComponent topComponent = (CloneableTopComponent) o;
+                        Enumeration en = topComponent.getReference().getComponents();
+                        if (mvtc == topComponent) {
+                            if (en.hasMoreElements()) {
+                                // Remember next cloned top component
+                                mvtc = (CloneableTopComponent) en.nextElement();
+                            } else {
+                                // All cloned top components are closed
+                                notifyClosed();
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
