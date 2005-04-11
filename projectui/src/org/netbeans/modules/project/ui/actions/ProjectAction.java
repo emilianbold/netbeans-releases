@@ -131,11 +131,8 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
             if (!Boolean.TRUE.equals( getValue( "noIconInMenu" ) ) ) { 
                 icon = (Icon)getValue( Action.SMALL_ICON );
             }
-            if ( icon == null ) {
-                icon = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/empty.gif" ) ); // NOI18N
-            }
-            Mnemonics.setLocalizedText( menuPresenter, presenterName );
             menuPresenter.setIcon( icon );
+            Mnemonics.setLocalizedText( menuPresenter, presenterName );
         }
         return menuPresenter;        
     }

@@ -163,7 +163,6 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
 
         if (!menuInitialized){
             Mnemonics.setLocalizedText(presenter, getMenuItemText());
-            //presenter.setIcon(BLANK_ICON);
             menuInitialized = true;
         }
         
@@ -272,8 +271,18 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
 
         public GoToSourceAction(){
             super();
-            GOTO_SOURCE_MENU = new JMenuItem(getMenuItemText(), BLANK_ICON);        
+            GOTO_SOURCE_MENU = new JMenuItem(getMenuItemText());
             setMenu();
+        }
+        
+        /** Overriden to keep BLANK_ICON, which is reseted by superclass
+         * setMenu impl
+         */
+        protected void setMenu () {
+            super.setMenu();
+            if (!BLANK_ICON.equals(GOTO_SOURCE_MENU.getIcon())) {
+                GOTO_SOURCE_MENU.setIcon(BLANK_ICON);
+            }
         }
         
         protected String getMenuItemText(){
@@ -292,6 +301,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         protected KeyStroke getDefaultAccelerator(){
             return KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_MASK);
         }
+        
     }
 
     
@@ -301,8 +311,18 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
 
         public GoToSuperAction(){
             super();
-            GOTO_SUPER_MENU = new JMenuItem(getMenuItemText(), BLANK_ICON);  
+            GOTO_SUPER_MENU = new JMenuItem(getMenuItemText());
             setMenu();
+        }
+        
+        /** Overriden to keep BLANK_ICON, which is reseted by superclass
+         * setMenu impl
+         */
+        protected void setMenu () {
+            super.setMenu();
+            if (!BLANK_ICON.equals(GOTO_SUPER_MENU.getIcon())) {
+                GOTO_SUPER_MENU.setIcon(BLANK_ICON);
+            }
         }
         
         protected String getMenuItemText(){
@@ -330,8 +350,18 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
 
         public GoToDeclarationAction(){
             super();
-            GOTO_DECL_MENU = new JMenuItem(getMenuItemText(), BLANK_ICON);        
+            GOTO_DECL_MENU = new JMenuItem(getMenuItemText());
             setMenu();
+        }
+        
+        /** Overriden to keep BLANK_ICON, which is reseted by superclass
+         * setMenu impl
+         */
+        protected void setMenu () {
+            super.setMenu();
+            if (!BLANK_ICON.equals(GOTO_DECL_MENU.getIcon())) {
+                GOTO_DECL_MENU.setIcon(BLANK_ICON);
+            }
         }
         
         protected String getMenuItemText(){
