@@ -339,7 +339,7 @@ public class WebProjectProperties {
             //prevent deadlock reported in the issue #54643
             //cp and serverId values are read in setNewContextPathValue() method which is called from storeProperties() before this code
             //it is easier to preset them instead of reading them here again
-            if (cp != null && cp.length() != 0) {
+            if (cp != null) {
                 ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
                 String oldCP = wm.getContextPath(serverId);
                 if (!cp.equals(oldCP))
@@ -703,7 +703,7 @@ public class WebProjectProperties {
     }
     
     private static void setNewContextPathValue(String contextPath, Project project, EditableProperties projectProps, EditableProperties privateProps) {
-        if (contextPath == null || contextPath.length() == 0)
+        if (contextPath == null)
             return;
 
         cp = contextPath;    
