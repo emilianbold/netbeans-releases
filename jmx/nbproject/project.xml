@@ -143,6 +143,13 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
              </module-dependencies> 
+             <!-- <public-packages>
+                <package>org.netbeans.modules.jmx.spi</package>
+            </public-packages> -->
+            <javadoc/>
+             <!-- <public-packages>
+                <package>com.sun.management.jmx.modules.spi</package>
+             </public-packages> -->
         </data>
     </configuration>
 </project>
