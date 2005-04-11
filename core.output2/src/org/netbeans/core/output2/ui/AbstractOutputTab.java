@@ -36,6 +36,8 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
     private InputPanel input = null;
     private AbstractOutputPane outputPane;
     
+    private Component toFocus;
+    
     public AbstractOutputTab() {
         outputPane = createOutputPane();
         add (outputPane);
@@ -46,7 +48,22 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
         outputPane.setDocument(doc);
     }
 
+    /**
+     * on mouse click the specialized component is marked, and activation is requested.
+     * activation results in request focus on the tab -> the marked component gets focus.
+     */
+    public void setToFocus(Component foc) {
+        toFocus = foc;
+    }
+    
     public void requestFocus() {
+    // on mouse click the specialized component is marked, and activation is requested.
+    // activation results in request focus on the tab -> the marked component gets focus.
+        if (toFocus != null) {
+            toFocus.requestFocus();
+            toFocus = null;
+            return;
+        }
         if (isInputVisible()) {
             input.requestFocus();
         } else {

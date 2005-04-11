@@ -150,6 +150,8 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
                 }
             }
         }
+        //Refine possibly to focus just what is important..
+        findOutputTab().setToFocus((Component)e.getSource());
         findOutputTab().requestActive();
     }
 

@@ -176,9 +176,12 @@ public class OutputWindow extends AbstractOutputWindow {
     }
     
     public void requestActive() {
+        boolean activated = isActivated();
         if (Controller.log) Controller.log("Request active");
         super.requestActive();
-        requestFocus();
+        if (!activated) {
+            requestFocus();
+        }
     }  
     
     private boolean activated = false;
