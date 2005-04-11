@@ -25,6 +25,7 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.xml.EntityCatalog;
 import org.openide.filesystems.*;
+import org.openide.xml.XMLUtil;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXException;
 import org.xml.sax.InputSource;
@@ -214,7 +215,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
             }
             String localizingBundle = library.getLocalizingBundle();
             if (localizingBundle != null && localizingBundle.length() > 0) {
-                out.println("\t<localizing-bundle>"+localizingBundle+"</localizing-bundle>");   //NOI18N
+                out.println("\t<localizing-bundle>"+XMLUtil.toElementContent(localizingBundle)+"</localizing-bundle>");   //NOI18N
             }
             String[] volumeTypes = libraryTypeProvider.getSupportedVolumeTypes ();
             for (int i = 0; i < volumeTypes.length; i++) {
@@ -225,7 +226,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                     //If null -> broken library, repair it.
                     for (Iterator eit = volume.iterator(); eit.hasNext();) {
                         URL url = (URL) eit.next ();
-                        out.println("\t\t<resource>"+org.openide.xml.XMLUtil.toElementContent(url.toExternalForm())+"</resource>"); //NOI18N
+                        out.println("\t\t<resource>"+XMLUtil.toElementContent(url.toExternalForm())+"</resource>"); //NOI18N
                     }
                 }
                 out.println("\t</volume>");     //NOI18N
