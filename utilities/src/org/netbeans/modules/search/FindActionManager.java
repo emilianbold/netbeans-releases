@@ -16,16 +16,17 @@ package org.netbeans.modules.search;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Iterator;
-import java.util.Set;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import org.openide.ErrorManager;
 
 import org.openide.actions.FindAction;
 import org.openide.text.CloneableEditor;
 import org.openide.util.SharedClassObject;
 import org.openide.util.WeakSet;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.Mutex;
 import org.openide.windows.TopComponent;
 
@@ -40,6 +41,10 @@ import org.openide.windows.TopComponent;
  * @see org.openide.windows.TopComponent.Registry
  */
 final class FindActionManager implements PropertyChangeListener, Runnable {
+    
+    /** */
+    private static final String MAPPED_FIND_ACTION
+            = FindActionManager.class.getName() + " - FindActionImpl";  //NOI18N
 
     /**
      */
@@ -47,7 +52,7 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
     /** Search perfomer. */
     private final SearchPerformer performer;
     /** holds set of windows for which their ActionMap was modified */
-    private final Set activatedOnWindows = new WeakSet(8);
+    private final WeakSet activatedOnWindows = new WeakSet(8);
     
     /** */
     private Object findActionMapKey;
@@ -108,13 +113,40 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
     /**
      */
     private void cleanupWindowRegistry() {
+        //System.out.println("Utilities: Cleaning window registry");
+        final Object findActionKey = getFindActionMapKey();
+        
         for (Iterator i = activatedOnWindows.iterator(); i.hasNext(); ) {
             TopComponent tc = (TopComponent) i.next();
-            ActionMap tcActionMap = tc.getActionMap();
-            Action mappedAction = tcActionMap.get(findActionMapKey);
-            if (mappedAction.getClass() == SearchPerformer.class) {
-                //System.out.println("removed mapping for window " + tc.getDisplayName());
-                tcActionMap.put(findActionMapKey, null);
+            //System.out.println("     ** " + tc.getName());
+            
+            Action origFindAction = null, currFindAction = null;
+            
+            Object origFindActionRef = tc.getClientProperty(MAPPED_FIND_ACTION);
+            if (origFindActionRef instanceof Reference) {
+                Object origFindActionObj = ((Reference)origFindActionRef).get();
+                if (origFindActionObj instanceof Action) {
+                    origFindAction = (Action) origFindActionObj;
+                }
+            }
+            
+            if (origFindAction != null) {
+                currFindAction = tc.getActionMap().get(findActionKey);
+            }
+            
+            if ((currFindAction != null) && (currFindAction == origFindAction)){
+                tc.getActionMap().put(findActionKey, null);
+                //System.out.println("         - successfully cleared");
+            } else {
+                //System.out.println("         - DID NOT MATCH");
+                ErrorManager.getDefault().log(
+                        ErrorManager.WARNING,
+                        "ActionMap mapping of FindAction changed" +     //NOI18N
+                                " for window " + tc.getName());         //NOI18N
+            }
+            
+            if (origFindActionRef != null) {
+                tc.putClientProperty(MAPPED_FIND_ACTION, null);
             }
         }
         activatedOnWindows.clear();
@@ -123,24 +155,23 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
     /**
      */
     private void someoneActivated() {
-        //System.out.println("someoneActivated");
         TopComponent window = TopComponent.getRegistry().getActivated();
 
-        if ((window != null)
-                && checkIsApplicableOnWindow(window)
-                && activatedOnWindows.add(window)) {
-            window.getActionMap().put(
-                    getFindActionMapKey(),
-                    performer.createContextAwareInstance(window.getLookup()));
-            //System.out.println("added mapping for window " + window.getDisplayName());
+        if ((window == null) || (window instanceof CloneableEditor)) {
+            return;
         }
-    }
-    
-    /**
-     * Checks whether the Find action is applicable on the given window.
-     */
-    private boolean checkIsApplicableOnWindow(TopComponent window) {
-        return !(window instanceof CloneableEditor);
+            
+        Object key = getFindActionMapKey();
+        ActionMap actionMap = window.getActionMap();
+
+        if ((actionMap.get(key) == null) && activatedOnWindows.add(window)) {
+            //System.out.println("Utilities: Registered window " + window.getName());
+            
+            Action a = performer.createContextAwareInstance(window.getLookup());
+
+            actionMap.put(key, a);
+            window.putClientProperty(MAPPED_FIND_ACTION, new WeakReference(a));
+        }
     }
     
     /** Implements <code>PropertyChangeListener</code>. Be interested in current_nodes property change. */

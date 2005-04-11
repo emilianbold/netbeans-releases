@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,7 +32,6 @@ import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -40,14 +39,14 @@ import org.openide.util.WeakListeners;
 
 
 /**
- * FindPerformer is ActionPerformer on FindAction which is invoked on Resource Bundles table view component.
+ * FindPerformer is a performer of the FindAction which is invoked on Resource Bundles table view component.
  * Does actual dirty job, search on the actual activated table and sets the results as highlighted text on particular cell.
  *
  * @author  Peter Zavadsky
  * @author  Marian Petras
  */
 public class FindPerformer extends javax.swing.AbstractAction
-                           implements ActionPerformer, PropertyChangeListener {
+                           implements PropertyChangeListener {
 
     /** Table on which perform the search. */
     private JTable table;
@@ -234,13 +233,6 @@ public class FindPerformer extends javax.swing.AbstractAction
 
     /* implements interface javax.swing.Action */
     public void actionPerformed(java.awt.event.ActionEvent e) {
-        performAction(null);
-    }
-
-    // ActionPerformer implementation.
-    
-    /** Implementation of ActionPerformer. */
-    public void performAction(SystemAction action) {
         if(findDialog == null)
             createFindDialog();
         else {
