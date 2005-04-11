@@ -290,11 +290,14 @@ public class JPDADebuggerImpl extends JPDADebugger implements Runnable {
             } catch (AbsentInformationException ex) {
                 return;
             }
-            if (!frame.isObsolete ()) return;
-            frame.popFrame ();
-            setState (STATE_RUNNING);
-            updateCurrentCallStackFrame (t);
-            setState (STATE_STOPPED);
+            
+            //PATCH #52209
+            if (frame.isObsolete ()) {
+                frame.popFrame ();
+                setState (STATE_RUNNING);
+                updateCurrentCallStackFrame (t);
+                setState (STATE_STOPPED);
+            }
             
             // update breakpoints
             Session s = (Session) 
