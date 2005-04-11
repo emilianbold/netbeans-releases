@@ -1667,6 +1667,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../vcsgeneric/profiles/clearcase" target="netbeans"/>
   </target>
 
+  <target name="all-vcsgeneric/profiles/teamware" depends="init,all-vcsgeneric">
+    <echo message="Building module vcsgeneric/profiles/teamware"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../vcsgeneric/profiles/teamware" target="netbeans"/>
+  </target>
+
   <target name="all-vcsgeneric/profiles/pvcs" depends="init,all-vcsgeneric">
     <echo message="Building module vcsgeneric/profiles/pvcs"/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
