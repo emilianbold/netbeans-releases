@@ -49,6 +49,9 @@ public class ProgressUI extends JPanel {
     private Dialog dialog;
     private JFrame frame;
     
+    private static final int ERROR_LINES = 3;//maximum number of lines in error label
+    private Component lastError = null;
+    
     /** Creates new form ProgressObject */
     public ProgressUI() {
 	this (true);
@@ -56,6 +59,9 @@ public class ProgressUI extends JPanel {
 
     public ProgressUI(boolean modal) {
         initComponents ();
+//        errorText.setVisible(false);//hide label
+        errorMsg.setVisible(false);//hide scroll pane
+        jScrollPane1.setVisible(false);
 	changeFontSize = true;
 	wasCancelled = false;        
 	this.modal = modal;
@@ -231,31 +237,38 @@ public class ProgressUI extends JPanel {
     }
  
     /**
-     * Adjustment of height of dialog window dependent on errorText label.
-     * Maximum window height is restricted to double of preferred height.
-     * Error messages, that cannot fit are not completely displayed.
+     * @return number of lines in label errText or -1 if resizing is not needed.
      */
-    private void adjustWindowHeight() {
-        if (this.modal && (this.dialog == null)) {
-            return;
-        } else if (!this.modal && (this.frame == null)) {
-            return;
-        }
+    private int numberOfTextLines() {
         FontMetrics fm = errorText.getFontMetrics(errorText.getFont());
         int textWidth = fm.bytesWidth(errorText.getText().getBytes(), 0, errorText.getText().getBytes().length);
         int labelWidth = errorText.getWidth();
         int textLines = 0;
-        if (labelWidth == 0) {
-            return;
-        }
+        if (labelWidth == 0)
+            return -1;
+        
         textLines = textWidth / labelWidth;
         textLines += (textWidth % labelWidth) > 0 ? 1 : 0;
+        
+        return textLines;
+    }
+    
+    private int deltaWindow(int textLines) {
+        FontMetrics fm = errorText.getFontMetrics(errorText.getFont());
         int delta = textLines * fm.getHeight() - errorText.getHeight();
-        if (delta == 0) {
-            return;
-        } else if (delta < 0) {
+        if (delta < 0)
             delta++;
-        }
+        
+        return delta;
+    }
+    
+    /**
+     * Adjustment of height of dialog window dependent on errorText label.
+     * Maximum window height is restricted to double of preferred height.
+     * Error messages, that cannot fit are not completely displayed.
+     * @return number of lines for errorText label
+     */
+    private void adjustWindowHeight(int delta) {
         Window window = null;
         if (frame != null) {
             window = frame;
@@ -273,8 +286,41 @@ public class ProgressUI extends JPanel {
     public void addError (final String msg) {
 	SwingUtilities.invokeLater (new Runnable () {
 	    public void run () {
-	  	errorText.setText ("<html>" + msg.replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "</html>"); // NOI18N
-                adjustWindowHeight();
+                
+                if (modal && dialog == null || !modal && frame == null)
+                    return;
+                
+                errorText.setText ("<html>" + msg.replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "</html>"); // NOI18N
+                int textLines = numberOfTextLines();
+                if (textLines >=0 && textLines <= ERROR_LINES) {
+                    int delta = deltaWindow(textLines);
+                    if (lastError == errorMsg || lastError == null) {
+                        errorMsg.setVisible(false);//hide scroll pane
+                        jScrollPane1.setVisible(false);
+                        errorText.setVisible(true);//show label
+                        delta -= jScrollPane1.getHeight();//substract scroll pane height
+                        if (lastError == errorMsg)
+                            delta += errorText.getHeight();//add label height in case of switch
+                        lastError = errorText;//remember label
+                    }
+                    adjustWindowHeight(delta);
+                }
+                else if (textLines > ERROR_LINES) {
+                    errorMsg.setText(msg);
+                    jScrollPane1.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
+                    if (lastError == errorText || lastError == null) {
+                        errorText.setVisible(false);//hide label
+                        errorMsg.setVisible(true);//show scroll pane
+                        jScrollPane1.setVisible(true);
+                        int delta = -errorText.getHeight();//substract label height
+                        int height = jScrollPane1.getHeight();//add scroll pane height in case of switch
+                        if (height <= 0)
+                            height = (int)jScrollPane1.getPreferredSize().getHeight();
+                        delta += height;
+                        adjustWindowHeight(delta);
+                        lastError = errorMsg;//remember scroll pane
+                    }
+                }
 	    }
 	});
     }	
@@ -351,7 +397,8 @@ public class ProgressUI extends JPanel {
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    private void initComponents() {//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         taskTitle = new javax.swing.JLabel();
@@ -359,9 +406,13 @@ public class ProgressUI extends JPanel {
         myMonitor = new javax.swing.JProgressBar();
         errorText = new javax.swing.JLabel();
         autoCloseCheck = new javax.swing.JCheckBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        errorMsg = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
+        setMinimumSize(new java.awt.Dimension(448, 180));
+        setPreferredSize(new java.awt.Dimension(448, 180));
         taskTitle.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -398,14 +449,15 @@ public class ProgressUI extends JPanel {
         errorText.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 24, 12, 24);
         add(errorText, gridBagConstraints);
 
-        autoCloseCheck.setText(NbBundle.getMessage(ProgressUI.class, "LBL_Close_When_Finished"));
+        autoCloseCheck.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/deployment/impl/ui/Bundle").getString("LBL_Close_When_Finished"));
         autoCloseCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 autoCloseCheckActionPerformed(evt);
@@ -414,13 +466,37 @@ public class ProgressUI extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 24, 12, 24);
         add(autoCloseCheck, gridBagConstraints);
 
-    }//GEN-END:initComponents
+        jScrollPane1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0)));
+        jScrollPane1.setAutoscrolls(true);
+        jScrollPane1.setFocusCycleRoot(true);
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(100, 50));
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(100, 50));
+        errorMsg.setEditable(false);
+        errorMsg.setForeground(java.awt.Color.red);
+        errorMsg.setLineWrap(true);
+        errorMsg.setWrapStyleWord(true);
+        errorMsg.setBorder(null);
+        errorMsg.setOpaque(false);
+        jScrollPane1.setViewportView(errorMsg);
+        errorMsg.getAccessibleContext().setAccessibleParent(jScrollPane1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 24, 12, 24);
+        add(jScrollPane1, gridBagConstraints);
+
+    }
+    // </editor-fold>//GEN-END:initComponents
 
     private void autoCloseCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoCloseCheckActionPerformed
         // Add your handling code here:
@@ -431,7 +507,9 @@ public class ProgressUI extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox autoCloseCheck;
+    private javax.swing.JTextArea errorMsg;
     private javax.swing.JLabel errorText;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel msgText;
     private javax.swing.JProgressBar myMonitor;
     private javax.swing.JLabel taskTitle;
