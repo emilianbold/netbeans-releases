@@ -71,8 +71,9 @@
 # vncdisplayargs="-SecurityTypes=none"
 # extra arguments to pass to VNC, depending on which version you run
 #
-# vncvieweropts="-ViewOnly"
-# extra arguments to pass to the VNC viewer
+# vncviewer="vncviewer -ViewOnly"
+# command and arguments to run the VNC viewer.  For XOrg, use
+# "xf4vncviewer -viewonly"
 #
 # spawnwm="mwm"
 # the X window manager to use, such as mwm, metacity, etc.
@@ -152,6 +153,11 @@ then
     vncdisplayargs="-SecurityTypes=none"
 fi
 
+if [ -z "$vncviewer" ]
+then
+    vncviewer="vncviewer -ViewOnly"
+fi
+
 if [ -z "spawnwm" ]
 then
     spawnwm="mwm"
@@ -220,7 +226,7 @@ then
         message='Testing X server...use Ctrl-Alt-F7/8 to toggle screens.'
     else
         message="Close/minimize this window if you want. [vncviewer $display]"
-        XAUTHORITY=$origxauthority vncviewer $vncvieweropts -display $origdisplay $display &
+        XAUTHORITY=$origxauthority $vncviewer -display $origdisplay $display &
         vncviewerpid=$!
         trapcmd_vnc="kill $vncviewerpid > /dev/null 2>&1;"
     fi
