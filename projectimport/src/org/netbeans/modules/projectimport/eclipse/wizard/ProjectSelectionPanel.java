@@ -140,8 +140,6 @@ final class ProjectSelectionPanel extends JPanel {
     /** Error message displayed by wizard. */
     private String errorMessage;
     
-    private String workspaceDir;
-    
     private class ProjectTableModel extends AbstractTableModel {
         public Object getValueAt(int rowIndex, int columnIndex) {
             EclipseProject project = projects[rowIndex];

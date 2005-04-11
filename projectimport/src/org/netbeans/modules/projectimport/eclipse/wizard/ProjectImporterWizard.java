@@ -66,7 +66,6 @@ public final class ProjectImporterWizard {
     }
     
     private void showAdditionalInfo(Set projects) {
-        Set names = new HashSet();
         StringBuffer messages = null;
         for (Iterator it = projects.iterator(); it.hasNext(); ) {
             EclipseProject prj = (EclipseProject) it.next();
