@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.openide.util.enum/1
+X-COMMENT: XXX WRONG!
+OpenIDE-Module-Localizing-Bundle: org/openide/Bundle.properties
+OpenIDE-Module-Specification-Version: @SPEC_VERS_SUBST@
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+

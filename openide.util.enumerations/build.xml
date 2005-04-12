@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="openide/util/enum" default="netbeans" basedir=".">
+  <import file="../../../nbbuild/default.xml"/>
+
+  <property name="nbroot" location="${nb_all}" />
+
+  <path id="classpath"/>
+  
+  <target name="compile" depends="init">
+    <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
+      <property name="destdir" location="build/classes"/>
+      <!-- <property name="localdir" location="src" /> -->
+      <property name="selector" value="openide.util.enum" />
+    </ant>
+  </target>
+  
+  <target name="jars" depends="compile">
+    <mkdir dir="build/netbeans/lib"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="build/manifest-subst.mf" filtering="on"/>
+    <jar jarfile="build/netbeans/lib/openide-util-enum.jar" manifest="build/manifest-subst.mf" compress="false">
+      <fileset dir="build/classes"/>
+    </jar>
+  </target>
+
+  <target name="netbeans" depends="jars"/>
+
+  <target name="javadoc">
+    <ant dir=".." target="do-lib-javadoc" inheritRefs="true" >
+      <property name="localdir" location="src" />
+      <property name="selector" value="openide.util.enum" />
+      
+      <property name="javadoc.base" location="."/>
+      <property name="javadoc.name" value="OldEnumerationAPI"/>
+      <property name="javadoc.title" value="Old Enumeration API"/>
+      <!-- <property name="javadoc.apichanges" location="../api/doc/changes/apichanges.xml"/> -->
+      <!-- <property name="javadoc.arch" location="../arch/arch-openide-utilities.xml"/> -->
+      <!-- <property name="javadoc.docfiles" location="api/doc"/> -->
+      <!-- <property name="javadoc.overview" location="api/doc/overview.html"/> -->
+    </ant>
+  </target>
+  
+
+  <target name="clean">
+    <delete dir="build"/>
+    <delete dir="javadoc"/>
+  </target>
+
+</project>

@@ -136,6 +136,11 @@ Microsystems, Inc. All Rights Reserved.
         <!-- <filename name="**/openide/resources/actions/empty.gif" /> -->
     </or>
   </selector>
+  
+  <selector id="openide.util.enum" >
+    <filename name="**/openide/util/enum/*" />
+  </selector>
+           
   <selector id="openide.util" >
      <and>
         <or>
@@ -156,6 +161,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <none>
           <selector refid="openide.compat" />
+          <selector refid="openide.util.enum" />
           <selector refid="openide.actions" />
           <selector refid="openide.nodes" />
         </none>
@@ -305,6 +311,7 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="options/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="text/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="util/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="util/enum/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="modules/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="windows/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="compat/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
@@ -324,6 +331,7 @@ Microsystems, Inc. All Rights Reserved.
     lib-options,
     lib-text,
     lib-util,
+    lib-util-enum,
     lib-windows,
     lib-awt,
     lib-compat" />
@@ -339,6 +347,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="options" target="clean" />
         <ant dir="text" target="clean" />
         <ant dir="util" target="clean" />
+        <ant dir="util/enum" target="clean" />
         <ant dir="windows" target="clean" />
         <ant dir="compat" target="clean" />
   </target>
@@ -382,6 +391,10 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="lib-util">
         <ant dir="util" />
+  </target>
+  
+  <target name="lib-util-enum">
+        <ant dir="util/enum" />
   </target>        
   
   <target name="lib-windows" depends="lib-nodes" >
