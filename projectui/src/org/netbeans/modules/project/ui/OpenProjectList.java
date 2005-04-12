@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
@@ -137,6 +138,8 @@ public final class OpenProjectList {
         
         boolean recentProjectsChanged = false;
         
+        Collection projectsOpened = new LinkedHashSet(); // Collects all project opened by the call
+                                                       
         synchronized ( this ) {
             for (int i=0; i<projects.length; i++) {
                 assert projects[i] != null : "Projects can't be null";
@@ -144,14 +147,11 @@ public final class OpenProjectList {
                 if ( !openProjects.contains( projects[i] ) ) {
                     openProjects.add( projects[i] );
                     recentProjectsChanged = recentProjects.remove( projects[i] );
-                    notifyOpened(projects[i]);
-                    
-                    // open project files
-                    ProjectUtilities.openProjectFiles (projects[i]);
+                    projectsOpened.add( projects[i] );
                     
                 }
                 if ( openSubprojects ) {
-                    recentProjectsChanged |= openSubprojects( projects[i] );
+                    recentProjectsChanged |= openSubprojects( projects[i], projectsOpened );
                 }
             }
             saveProjectList( openProjects );
@@ -159,6 +159,17 @@ public final class OpenProjectList {
                 recentProjects.save();
             }
         }
+        
+        // Notify projects opened
+        for( Iterator it = projectsOpened.iterator(); it.hasNext(); ) {
+            notifyOpened( (Project)it.next() );
+        }
+        
+        // Open project files
+        for( Iterator it = projectsOpened.iterator(); it.hasNext(); ) {
+            ProjectUtilities.openProjectFiles( (Project)it.next() );
+        }
+        
         pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, null, null );
         if ( recentProjectsChanged ) {
             pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
@@ -411,9 +422,7 @@ public final class OpenProjectList {
     /** Will recursively open subprojects of given project.
      * @return True if the recent projects list has changed
      */
-    private synchronized boolean openSubprojects( Project p ) {
-        
-        
+    private synchronized boolean openSubprojects( Project p, Collection projectsOpened ) {
         
         SubprojectProvider spp = (SubprojectProvider)p.getLookup().lookup( SubprojectProvider.class );
         
@@ -428,11 +437,9 @@ public final class OpenProjectList {
             if ( !openProjects.contains( sp ) ) {
                 openProjects.add( sp );
                 recentProjectsChanged |= recentProjects.remove( sp );
-                // bugfix #56454: open saved files also in subprojects
-                ProjectUtilities.openProjectFiles (sp);
-                notifyOpened(sp);
+                projectsOpened.add( sp );
             }
-            recentProjectsChanged |= openSubprojects( sp );            
+            recentProjectsChanged |= openSubprojects( sp, projectsOpened );            
         }
         
         return recentProjectsChanged;
