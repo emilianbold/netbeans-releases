@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,8 +28,7 @@ import org.netbeans.junit.NbTestSuite;
  * Performance test of application main menu.</p>
  * <p>Each test method reads the label of tested menu and pushes it (using mouse).
  * The menu is then close using escape key.
- * @author mmirilovic@netbeans.org
- * @author Radim Kubacki
+ * @author Radim Kubacki, mmirilovic@netbeans.org
  */
 public class MainSubMenus extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
@@ -48,7 +47,6 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     /** Creates a new instance of MainSubMenus */
     public MainSubMenus(String testName, String performanceDataName) {
         this(testName);
-        repeat = 1; // only first use is interesting
         expectedTime = 250;
         WAIT_AFTER_OPEN = 500;
         setTestCaseName(testName, performanceDataName);
@@ -123,19 +121,17 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     private void testSubMenu(String mainMenu, String subMenu){
         mainMenuPath = mainMenu;
         subMenuPath = subMenu;
+        repeat = 1; // only first use is interesting
         doMeasurement();
+        repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue(); // initialize original value
     }
     
     private void testSubMenu(String bundle, String mainMenu, String subMenu) {
-        mainMenuPath = getFromBundle(bundle,"Menu/"+mainMenu);
-        subMenuPath = subMenu;
-        doMeasurement();
+        testSubMenu(getFromBundle(bundle,"Menu/"+mainMenu),subMenu);
     }
     
     private void testSubMenu(String bundle, String mainMenu, String bundle_2, String subMenu) {
-        mainMenuPath = getFromBundle(bundle,"Menu/"+mainMenu);
-        subMenuPath = getFromBundle(bundle_2,subMenu);
-        doMeasurement();
+        testSubMenu(getFromBundle(bundle,"Menu/"+mainMenu),getFromBundle(bundle_2,subMenu));
     }
     
     private String getFromBundle(String bundle, String key){
