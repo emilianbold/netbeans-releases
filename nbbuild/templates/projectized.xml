@@ -52,11 +52,12 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="files-init" depends="basic-init">
-        <patternset id="module.files">
+        <patternset id="module.files" includes="${extra.module.files}">
             <include name="${module.jar}"/>
             <include name="${javahelp.jar}" if="has.javahelp"/>
             <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
             <include name="${nb.system.dir}/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
+            <include name="ant/nblib/${code.name.base.dashes}.jar"/>
         </patternset>
     </target>
 

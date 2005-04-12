@@ -17,16 +17,6 @@ Microsystems, Inc. All Rights Reserved.
         
 	<property name="runtimejars.file" value="websvc_runtimejars.xml"/>
 
-        <target name="files-init" depends="basic-init">
-            <patternset id="module.files">
-                <include name="${module.jar}"/>
-                <include name="${javahelp.jar}" if="has.javahelp"/>
-                <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
-                <include name="config/WebServices/${runtimejars.file}"/>
-                <include name="modules/ext/websvcregistry.jar"/>
-            </patternset>
-        </target> 
-
     <!-- XXX this should be done in a 'release' target from 'netbeans-extra' instead: -->
 	<target name="build-init" depends="projectized.build-init">
 		<property name="websvc/jax-qname.dir" value="${netbeans.dest.dir}/${cluster.dir}"/>

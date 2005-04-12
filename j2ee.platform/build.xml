@@ -11,19 +11,9 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="j2ee/platform" default="netbeans" basedir=".">
 
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="files-init" depends="basic-init">
-      <patternset id="module.files">
-          <include name="${module.jar}"/>
-          <include name="${javahelp.jar}" if="has.javahelp"/>
-          <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
-          <include name="${nb.docs.dir}/j2eeri-1_4-doc-api.zip"/>
-      </patternset>
-    </target>
 
     <property name="external" location="../external"/>
     

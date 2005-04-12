@@ -15,18 +15,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <target name="files-init" depends="basic-init">
-        <patternset id="module.files">
-            <!-- All files created for NBM -->
-            <include name="${module.jar}" />
-            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml" />
-            <include name="${nb.docs.dir}/nbjunit-api.zip"/>
-            <include name="${nb.modules.dir}/ext/nbjunit.jar"/>
-            <include name="${nb.modules.dir}/ext/nbjunit-ide.jar"/>
-            <include name="${nb.modules.dir}/ext/insanelib.jar"/>
-        </patternset>
-    </target>
-
     <target name="compile" depends="init">
         <!-- unscramble ../external/junit-3.8.1.jar and ../external/insanelib.jar used in cp.extra -->
         <ant dir="../external" target="unscramble"/>

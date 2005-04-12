@@ -9,10 +9,9 @@ http://www.sun.com/
 
 The Original Code is NetBeans.
 The Initial Developer of the Original Code is Sun Microsystems, Inc.
-Portions Copyright 1997-2003 Sun Microsystems, Inc. All Rights Reserved.
+Portions Copyright 1997-2005 Sun Microsystems, Inc. All Rights Reserved.
 Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 -->
-
 <project basedir="." default="netbeans" name="ide/branding">
 
   <property name="nbroot" location="../.."/>
@@ -35,6 +34,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       <include name="netbeans.icns" />
       <include name="netbeans.png" />
       <include name="shortcuts.pdf" />
+      <include name="CREDITS.html"/>
     </patternset>
   
   

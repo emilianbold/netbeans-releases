@@ -15,22 +15,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <property name="tomcat_version" value="5.5.7"/>
-
-    <target name="files-init" depends="basic-init">
-        <patternset id="module.files">
-            <!--<include name="${nb.modules/autoload.dir}/jsp-parser.jar"/>
-            <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>-->
-            <include name="${module.jar}"/>
-            <!-- XXX these three are not in Class-Path, why? -->
-            <!-- XXX why using autoload/ext/ rather than just ext/? -->
-            <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>
-            <include name="${nb.modules/autoload.dir}/ext/jasper-compiler-${tomcat_version}.jar"/>
-            <include name="${nb.modules/autoload.dir}/ext/jasper-runtime-${tomcat_version}.jar"/>
-            <include name="${nb.modules/autoload.dir}/ext/commons-el.jar"/>
-        </patternset>
-    </target>
-    
     <target name="release" depends="init">
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
@@ -47,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="jar" depends="init,compile,jar-prep">
         <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <fileset dir="${build.classes.dir}">
+                <!-- XXX should rather be handled by a separate source root, probably: -->
                 <include name="org/netbeans/modules/web/jspparser/"/>
                 <include name="org/netbeans/modules/web/jsps/"/>
             </fileset>
@@ -59,6 +44,7 @@ Microsystems, Inc. All Rights Reserved.
          basedir="${build.classes.dir}"
          excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
          compress="false">
+            <!-- XXX see above: -->
             <include name="org/netbeans/modules/web/jspparser_ext/"/>
             <include name="org/apache/jasper/"/>
         </jar>

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -16,54 +16,10 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../nbbuild/templates/projectized.xml"/> 
 
-    <target name="files-init" depends="basic-init">
-        <patternset id="main.module.files">
-            <include name="${module.jar}"/>
-            <include name="${nb.lib.dir}/ide.ks"/>
-            <include name="${nb.system.dir}/ModuleAutoDeps/${code.name.base.dashes}.xml"/>
-            <include name="CREDITS.html"/>
-        </patternset>
-        <patternset id="module.files">
-            <patternset refid="main.module.files"/>
-        </patternset>
-    </target>
-
-    <target name="clean" depends="files-init">
-        <delete dir="build"/>
-        <delete dir="javadoc"/>
-        <delete>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-                <patternset refid="main.module.files"/>
-            </fileset>
-        </delete>
-        <delete file="${netbeans.dest.dir}/${cluster.dir}/update_tracking/${code.name.base.dashes}.xml"/>
-    </target>
-
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <!-- copy file="launcher/security.policy" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" / -->
-        <!-- copy file="release/lib/ide.ks" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/keystore.ks" / -->
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" includeEmptyDirs="false">
-            <fileset dir="release/bin" excludesfile="../nbbuild/standard-jar-excludes.txt">
-                <!-- These do not currently work anyway: -->
-                <exclude name="unsupported/nbscript*"/>
-                <exclude name="**/runide*" />
-                <exclude name="**/ide.policy" />
-                <exclude name="**/ide.ks" />
-            </fileset>
-        </copy>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}" includeEmptyDirs="false">
-            <fileset dir="release/lib" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-        </copy>
-        <fixcrlf srcdir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" eol="crlf">
-            <include name="**/*.bat"/>
-            <include name="**/*.cmd"/>
-        </fixcrlf>
-        <fixcrlf srcdir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" eol="lf">
-            <include name="**/*.sh"/>
-            <include name="**/ide.cfg"/>
-        </fixcrlf>
+        <copy file="release/lib/ide.ks" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}"/>
     </target>
 
 <!-- XXX may be obsolete:
