@@ -243,6 +243,10 @@ final class NbModuleProject implements Project {
         ModuleList.Entry thisEntry = ml.getEntry(getCodeNameBase());
         if (thisEntry != null) {
             stock.put("cluster.dir", thisEntry.getCluster()); // NOI18N
+        } else {
+            // Won't help e.g. classpath for unit tests be computed correctly in case
+            // modules.xml has no entry (cf. #57731), but maybe make other things correct.
+            stock.put("cluster.dir", "extra"); // NOI18N
         }
         Map/*<String,String>*/ defaults = new HashMap();
         defaults.put("code.name.base.dashes", getCodeNameBase().replace('.', '-')); // NOI18N
