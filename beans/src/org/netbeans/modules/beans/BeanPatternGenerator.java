@@ -744,19 +744,19 @@ final class BeanPatternGenerator extends Object {
         }
         else if ( implementation == 2 ) {
             if ( usesConstructorParameters( eventClass, passEvent ) ) {
-                body.append( TAB + eventType.toString() ).append( " e = null;\n "); // NOI18N
+                body.append( TAB + eventType.getName() ).append( " e = null;\n "); // NOI18N
             }
             body.append( TAB + "if (" + listenerList + " == null) return;\n"); // NOI18N
             body.append( TAB + "Object[] listeners = ").append(listenerList).append(".getListenerList ();\n" ); // NOI18N
             body.append( TAB + "for (int i = listeners.length - 2; i >= 0; i -= 2) {\n"); // NOI18N
-            body.append( TABx2 + "if (listeners[i]==" ).append( type.toString()).append( ".class) {\n" ); // NOI18N
+            body.append( TABx2 + "if (listeners[i]==" ).append( type.getName()).append( ".class) {\n" ); // NOI18N
             if ( usesConstructorParameters( eventClass, passEvent ) ) {
                 body.append( TABx3 + "if (e == null)\n" ); // NOI18N
-                body.append( TABx2 + TABx2 + "e = new ").append( eventType.toString() ).append( " (" ); // NOI18N
+                body.append( TABx2 + TABx2 + "e = new ").append( eventType.getName() ).append( " (" ); // NOI18N
                 body.append( fireParameterstoString( newMethodParams ) );
                 body.append( ");\n" ); // NOI18N
             }
-            body.append( TABx3 + "((").append(type.toString()).append(")listeners[i+1]).").append(method.getName()); // NOI18N
+            body.append( TABx3 + "((").append(type.getName()).append(")listeners[i+1]).").append(method.getName()); // NOI18N
             body.append(" ("); // NOI18N
             if ( usesConstructorParameters( eventClass, passEvent ) ) {
                 body.append( "e" ); // the created event // NOI18N
