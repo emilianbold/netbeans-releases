@@ -251,7 +251,7 @@ final class ProjectSelectionPanel extends JPanel {
     private void recursionDetected(EclipseProject start) {
         int where = solved.search(start);
         assert where != -1 : "Cannot find start of the cycle."; // NOI18N
-        EclipseProject rootOfCycle = 
+        EclipseProject rootOfCycle =
                 (EclipseProject) solved.get(solved.size() - where);
         StringBuffer cycle = new StringBuffer();
         for (Iterator it = solved.iterator(); it.hasNext(); ) {
@@ -297,7 +297,7 @@ final class ProjectSelectionPanel extends JPanel {
                     "MSG_WorkspaceIsInvalid", workspaceDir)); // NOI18N
             logger.fine("ProjectImporterException catched: " + e.getMessage());
             if (logger.getLevel().intValue() <= Level.FINE.intValue()) {
-                logger.fine("   current stack trace follows:");
+                logger.fine("   current stack trace follows:"); // NOI18N
                 e.printStackTrace();
             }
             return;
@@ -429,8 +429,8 @@ final class ProjectSelectionPanel extends JPanel {
         add(projectPanel, java.awt.BorderLayout.CENTER);
 
     }
-    // </editor-fold>//GEN-END:initComponents
-    
+    // </editor-fold>                        
+//GEN-END:initComponents
     private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDestButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -450,6 +450,6 @@ final class ProjectSelectionPanel extends JPanel {
     private javax.swing.JPanel projectPanel;
     private javax.swing.JTable projectTable;
     private javax.swing.JScrollPane projectTableSP;
-    // End of variables declaration//GEN-END:variables
-    
+    // End of variables declaration                   
+//GEN-END:variables
 }

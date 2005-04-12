@@ -58,19 +58,19 @@ final class SelectionPanel extends JPanel {
     
     /** Returns workspace directory choosed by user. */
     String getWorkspaceDir() {
-        return workspaceDir.getText();
+        return workspaceDir.getText().trim();
     }
     
     private void workspaceChanged() {
-        String workspace = workspaceDir.getText();
-        if ("".equals(workspace.trim())) {
+        String workspace = getWorkspaceDir().trim();
+        if ("".equals(workspace)) {
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ChooseWorkspace")); // NOI18N
             return;
         }
-        boolean wsValid = EclipseUtils.isRegularWorkSpace(workspaceDir.getText());
+        boolean wsValid = EclipseUtils.isRegularWorkSpace(getWorkspaceDir());
         setErrorMessage(wsValid ? null : ProjectImporterWizard.getMessage(
-                "MSG_NotRegularWorkspace", workspaceDir.getText())); // NOI18N
+                "MSG_NotRegularWorkspace", getWorkspaceDir())); // NOI18N
     }
     
     private void projectChanged() {
@@ -121,7 +121,7 @@ final class SelectionPanel extends JPanel {
         return projectDir.getText();
     }
     
-    /** Returns destination directory for single-selected project. */    
+    /** Returns destination directory for single-selected project. */
     public String getProjectDestinationDir() {
         return projectDestDir.getText();
     }
@@ -336,8 +336,8 @@ final class SelectionPanel extends JPanel {
         add(note, gridBagConstraints);
 
     }
-    // </editor-fold>//GEN-END:initComponents
-    
+    // </editor-fold>                        
+//GEN-END:initComponents
     private void projectDestBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectDestBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(projectDestDir.getText());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -393,7 +393,7 @@ final class SelectionPanel extends JPanel {
     }//GEN-LAST:event_projectBrowseActionPerformed
     
     private void worskpaceBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_worskpaceBrowseActionPerformed
-        JFileChooser chooser = new JFileChooser(workspaceDir.getText());
+        JFileChooser chooser = new JFileChooser(getWorkspaceDir());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
