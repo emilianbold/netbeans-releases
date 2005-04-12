@@ -34,6 +34,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.project.ant.UserQuestionHandler;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -252,63 +253,87 @@ public final class GeneratedFilesHelper {
                             } catch (TransformerException e) {
                                 throw (IOException)new IOException(e.toString()).initCause(e);
                             }
+                            // Update genfiles.properties too.
+                            final EditableProperties p = new EditableProperties();
+                            FileObject genfiles = dir.getFileObject(GENFILES_PROPERTIES_PATH);
+                            if (genfiles != null && genfiles.isVirtual()) {
+                                // #55164: deleted from CVS?
+                                genfiles = null;
+                            }
+                            if (genfiles != null) {
+                                is = genfiles.getInputStream();
+                                try {
+                                    p.load(is);
+                                } finally {
+                                    is.close();
+                                }
+                            }
+                            p.setProperty(path + KEY_SUFFIX_DATA_CRC,
+                                getCrc32(new ByteArrayInputStream(projectXmlData), projectXml));
+                            if (genfiles == null) {
+                                // New file, set a comment on it. XXX this puts comment in middle if write build-impl.xml before build.xml
+                                p.setComment(path + KEY_SUFFIX_DATA_CRC, new String[] {
+                                    "# " + NbBundle.getMessage(GeneratedFilesHelper.class, "COMMENT_genfiles.properties_1"), // NOI18N
+                                    "# " + NbBundle.getMessage(GeneratedFilesHelper.class, "COMMENT_genfiles.properties_2"), // NOI18N
+                                }, false);
+                            }
+                            p.setProperty(path + KEY_SUFFIX_STYLESHEET_CRC,
+                                getCrc32(new ByteArrayInputStream(stylesheetData), stylesheet));
+                            p.setProperty(path + KEY_SUFFIX_SCRIPT_CRC,
+                                computeCrc32(new ByteArrayInputStream(resultData)));
+                            if (genfiles == null) {
+                                genfiles = FileUtil.createData(dir, GENFILES_PROPERTIES_PATH);
+                            }
+                            final FileObject _genfiles = genfiles;
+                            final FileSystem.AtomicAction body = new FileSystem.AtomicAction() {
+                                public void run() throws IOException {
+                                    // Try to acquire both locks together, since we need them both written.
+                                    FileLock lock1 = buildScriptXml.lock();
+                                    try {
+                                        FileLock lock2 = _genfiles.lock();
+                                        try {
+                                            OutputStream os1 = new EolFilterOutputStream(buildScriptXml.getOutputStream(lock1));
+                                            try {
+                                                OutputStream os2 = _genfiles.getOutputStream(lock2);
+                                                try {
+                                                    os1.write(resultData);
+                                                    p.store(os2);
+                                                } finally {
+                                                    os2.close();
+                                                }
+                                            } finally {
+                                                os1.close();
+                                            }
+                                        } finally {
+                                            lock2.releaseLock();
+                                        }
+                                    } finally {
+                                        lock1.releaseLock();
+                                    }
+                                }
+                            };
                             try {
-                                FileLock lock = buildScriptXml.lock();
-                                try {
-                                    OutputStream os = new EolFilterOutputStream(buildScriptXml.getOutputStream(lock));
-                                    try {
-                                        os.write(resultData);
-                                    } finally {
-                                        os.close();
-                                    }
-                                } finally {
-                                    lock.releaseLock();
-                                }
-                                // Update genfiles.properties too.
-                                EditableProperties p = new EditableProperties();
-                                FileObject genfiles = dir.getFileObject(GENFILES_PROPERTIES_PATH);
-                                if (genfiles != null && genfiles.isVirtual()) {
-                                    // #55164: deleted from CVS?
-                                    genfiles = null;
-                                }
-                                if (genfiles != null) {
-                                    is = genfiles.getInputStream();
-                                    try {
-                                        p.load(is);
-                                    } finally {
-                                        is.close();
-                                    }
-                                }
-                                p.setProperty(path + KEY_SUFFIX_DATA_CRC,
-                                    getCrc32(new ByteArrayInputStream(projectXmlData), projectXml));
-                                if (genfiles == null) {
-                                    // New file, set a comment on it. XXX this puts comment in middle if write build-impl.xml before build.xml
-                                    p.setComment(path + KEY_SUFFIX_DATA_CRC, new String[] {
-                                        "# " + NbBundle.getMessage(GeneratedFilesHelper.class, "COMMENT_genfiles.properties_1"), // NOI18N
-                                        "# " + NbBundle.getMessage(GeneratedFilesHelper.class, "COMMENT_genfiles.properties_2"), // NOI18N
-                                    }, false);
-                                }
-                                p.setProperty(path + KEY_SUFFIX_STYLESHEET_CRC,
-                                    getCrc32(new ByteArrayInputStream(stylesheetData), stylesheet));
-                                p.setProperty(path + KEY_SUFFIX_SCRIPT_CRC,
-                                    computeCrc32(new ByteArrayInputStream(resultData)));
-                                if (genfiles == null) {
-                                    genfiles = FileUtil.createData(dir, GENFILES_PROPERTIES_PATH);
-                                }
-                                lock = genfiles.lock();
-                                try {
-                                    OutputStream os = genfiles.getOutputStream(lock);
-                                    try {
-                                        p.store(os);
-                                    } finally {
-                                        os.close();
-                                    }
-                                } finally {
-                                    lock.releaseLock();
-                                }
+                                body.run();
                             } catch (UserQuestionException uqe) {
-                                // Don't bother asking to lock it; not important enough.
-                                // Cf. #46089.
+                                // #57480: need to regenerate build-impl.xml.
+                                UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
+                                    public void accepted() {
+                                        // Try again.
+                                        try {
+                                            body.run();
+                                        } catch (IOException e) {
+                                            // Oh well.
+                                            ErrorManager.getDefault().notify(e);
+                                        }
+                                    }
+                                    public void denied() {
+                                        // OK, skip it.
+                                    }
+                                    public void error(IOException e) {
+                                        ErrorManager.getDefault().notify(e);
+                                        // Never mind.
+                                    }
+                                });
                             }
                         }
                     });
