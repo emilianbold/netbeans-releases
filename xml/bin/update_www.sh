@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # 
 #                 Sun Public License Notice
 # 
@@ -9,9 +8,8 @@
 # http://www.sun.com/
 # 
 # The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+# Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 # Microsystems, Inc. All Rights Reserved.
-# 
 
 #set -x
 
@@ -35,15 +33,6 @@ DATE_STAMP=`date +%Y.%m.%d-%H:%M`
 
 ### DEBUG
 set > $CVS_ROOT/"${DATE_STAMP}__0.set.txt"
-
-
-#
-# update nbbuild/plans
-#
-cd $CVS_ROOT/nb_all/nbbuild/plans
-echo "##########################" >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
-echo "# cvs update nbbuild/plans" >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
-cvs update -A -d -P 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
 
 
 #
