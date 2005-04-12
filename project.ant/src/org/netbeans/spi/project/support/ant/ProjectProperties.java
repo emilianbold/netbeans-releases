@@ -15,6 +15,7 @@ package org.netbeans.spi.project.support.ant;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,9 +104,9 @@ final class ProjectProperties {
      * @param the project-relative path
      * @throws IOException if the file could not be written
      */
-    public void write(String path) throws IOException {
+    public FileLock write(String path) throws IOException {
         assert properties.containsKey(path);
-        getPP(path).write();
+        return getPP(path).write();
     }
     
     /**
@@ -187,10 +188,11 @@ final class ProjectProperties {
             return modifying;
         }
         
-        public void write() throws IOException {
+        public FileLock write() throws IOException {
             assert loaded;
             final FileObject f = dir().getFileObject(path);
             assert !writing;
+            final FileLock[] _lock = new FileLock[1];
             writing = true;
             try {
                 if (properties != null) {
@@ -207,33 +209,43 @@ final class ProjectProperties {
                             } else {
                                 _f = f;
                             }
-                            final FileSystem.AtomicAction body = new FileSystem.AtomicAction() {
-                                public void run() throws IOException {
-                                    FileLock lock = _f.lock();
-                                    try {
-                                        OutputStream os = _f.getOutputStream(lock);
-                                        try {
-                                            properties.store(os);
-                                        } finally {
-                                            os.close();
-                                        }
-                                    } finally {
-                                        lock.releaseLock();
-                                    }
-                                }
-                            };
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            properties.store(baos);
+                            final byte[] data = baos.toByteArray();
                             try {
-                                body.run();
+                                _lock[0] = _f.lock(); // released by {@link AntProjectHelper#save}
+                                OutputStream os = _f.getOutputStream(_lock[0]);
+                                try {
+                                    os.write(data);
+                                } finally {
+                                    os.close();
+                                }
                             } catch (UserQuestionException uqe) { // #46089
+                                helper.needPendingHook();
                                 UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
                                     public void accepted() {
                                         // Try again.
+                                        assert !writing;
+                                        writing = true;
                                         try {
-                                            body.run();
+                                            FileLock lock = _f.lock();
+                                            try {
+                                                OutputStream os = _f.getOutputStream(lock);
+                                                try {
+                                                    os.write(data);
+                                                } finally {
+                                                    os.close();
+                                                }
+                                            } finally {
+                                                lock.releaseLock();
+                                            }
+                                            helper.maybeCallPendingHook();
                                         } catch (IOException e) {
                                             // Oh well.
                                             ErrorManager.getDefault().notify(e);
                                             reload();
+                                        } finally {
+                                            writing = false;
                                         }
                                     }
                                     public void denied() {
@@ -244,6 +256,7 @@ final class ProjectProperties {
                                         reload();
                                     }
                                     private void reload() {
+                                        helper.cancelPendingHook();
                                         // Revert the save.
                                         diskChange();
                                     }
@@ -260,6 +273,7 @@ final class ProjectProperties {
             } finally {
                 writing = false;
             }
+            return _lock[0];
         }
         
         public Map getProperties() {

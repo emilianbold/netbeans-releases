@@ -13,6 +13,7 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,6 +45,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.xml.XMLUtil;
@@ -155,6 +157,17 @@ public final class AntProjectHelper {
     /** True if currently saving XML files. */
     private boolean writingXML = false;
     
+    /**
+     * Hook waiting to be called. See issue #57794.
+     */
+    private ProjectXmlSavedHook pendingHook;
+    /**
+     * Number of metadata files remaining to be written before {@link #pendingHook} can be called.
+     * Javadoc for {@link ProjectXmlSavedHook} only guarantees that project.xml will be written,
+     * but best to be safe and make sure also private.xml and *.properties are too.
+     */
+    private int pendingHookCount;
+    
     // XXX lock any loaded XML files while the project is modified, to prevent manual editing,
     // and reload any modified files if the project is unmodified
     
@@ -251,44 +264,54 @@ public final class AntProjectHelper {
      * Save an XML config file to a named path.
      * If the file does not yet exist, it is created.
      */
-    private void saveXml(final Document doc, final String path) throws IOException {
+    private FileLock saveXml(final Document doc, final String path) throws IOException {
         assert ProjectManager.mutex().isWriteAccess();
         assert !writingXML;
         assert Thread.holdsLock(modifiedMetadataPaths);
+        final FileLock[] _lock = new FileLock[1];
         writingXML = true;
         try {
             dir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
+                    // Keep a copy of xml *while holding modifiedMetadataPaths monitor*.
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
+                    final byte[] data = baos.toByteArray();
                     final FileObject xml = FileUtil.createData(dir, path);
-                    final FileSystem.AtomicAction body = new FileSystem.AtomicAction() {
-                        public void run() throws IOException {
-                            FileLock lock = xml.lock();
-                            try {
-                                OutputStream os = xml.getOutputStream(lock);
-                                try {
-                                    XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-                                } finally {
-                                    os.close();
-                                }
-                            } finally {
-                                lock.releaseLock();
-                            }
-                        }
-                    };
                     try {
-                        body.run();
+                        _lock[0] = xml.lock(); // unlocked by {@link #save}
+                        OutputStream os = xml.getOutputStream(_lock[0]);
+                        try {
+                            os.write(data);
+                        } finally {
+                            os.close();
+                        }
                     } catch (UserQuestionException uqe) { // #46089
+                        needPendingHook();
                         UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
                             public void accepted() {
                                 // Try again.
+                                assert !writingXML;
+                                writingXML = true;
                                 try {
-                                    synchronized (modifiedMetadataPaths) {
-                                        body.run();
+                                    FileLock lock = xml.lock();
+                                    try {
+                                        OutputStream os = xml.getOutputStream(lock);
+                                        try {
+                                            os.write(data);
+                                        } finally {
+                                            os.close();
+                                        }
+                                    } finally {
+                                        lock.releaseLock();
                                     }
+                                    maybeCallPendingHook();
                                 } catch (IOException e) {
                                     // Oh well.
                                     ErrorManager.getDefault().notify(e);
                                     reload();
+                                } finally {
+                                    writingXML = false;
                                 }
                             }
                             public void denied() {
@@ -311,6 +334,7 @@ public final class AntProjectHelper {
                                     }
                                 }
                                 fireExternalChange(path);
+                                cancelPendingHook();
                             }
                         });
                     }
@@ -319,6 +343,7 @@ public final class AntProjectHelper {
         } finally {
             writingXML = false;
         }
+        return _lock[0];
     }
     
     /**
@@ -475,41 +500,90 @@ public final class AntProjectHelper {
      */
     private void save() throws IOException {
         assert ProjectManager.mutex().isWriteAccess();
-        synchronized (modifiedMetadataPaths) {
-            assert !modifiedMetadataPaths.isEmpty();
-            ProjectXmlSavedHook hook = null;
-            if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
-                // Saving project.xml so look for that hook.
-                Project p = AntBasedProjectFactorySingleton.getProjectFor(this);
-                hook = (ProjectXmlSavedHook)p.getLookup().lookup(ProjectXmlSavedHook.class);
-                // might still be null
+        Set/*<FileLock>*/ locks = new HashSet();
+        try {
+            synchronized (modifiedMetadataPaths) {
+                assert !modifiedMetadataPaths.isEmpty();
+                assert pendingHook == null;
+                if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
+                    // Saving project.xml so look for that hook.
+                    Project p = AntBasedProjectFactorySingleton.getProjectFor(this);
+                    pendingHook = (ProjectXmlSavedHook)p.getLookup().lookup(ProjectXmlSavedHook.class);
+                    // might still be null
+                }
+                Iterator it = modifiedMetadataPaths.iterator();
+                while (it.hasNext()) {
+                    String path = (String)it.next();
+                    if (path.equals(PROJECT_XML_PATH)) {
+                        assert projectXml != null;
+                        locks.add(saveXml(projectXml, path));
+                    } else if (path.equals(PRIVATE_XML_PATH)) {
+                        assert privateXml != null;
+                        locks.add(saveXml(privateXml, path));
+                    } else {
+                        // All else is assumed to be a properties file.
+                        locks.add(properties.write(path));
+                    }
+                    // As metadata files are saved, take them off the modified list.
+                    it.remove();
+                }
+                if (pendingHook != null && pendingHookCount == 0) {
+                    try {
+                        pendingHook.projectXmlSaved();
+                    } catch (IOException e) {
+                        // Treat it as still modified.
+                        modifiedMetadataPaths.add(PROJECT_XML_PATH);
+                        throw e;
+                    }
+                }
             }
-            Iterator it = modifiedMetadataPaths.iterator();
+        } finally {
+            // #57791: release locks outside synchronized block.
+            locks.remove(null);
+            Iterator it = locks.iterator();
             while (it.hasNext()) {
-                String path = (String)it.next();
-                if (path.equals(PROJECT_XML_PATH)) {
-                    assert projectXml != null;
-                    saveXml(projectXml, path);
-                } else if (path.equals(PRIVATE_XML_PATH)) {
-                    assert privateXml != null;
-                    saveXml(privateXml, path);
-                } else {
-                    // All else is assumed to be a properties file.
-                    properties.write(path);
-                }
-                // As metadata files are saved, take them off the modified list.
-                it.remove();
+                ((FileLock) it.next()).releaseLock();
             }
-            if (hook != null) {
-                try {
-                    hook.projectXmlSaved();
-                } catch (IOException e) {
-                    // Treat it as still modified.
-                    modifiedMetadataPaths.add(PROJECT_XML_PATH);
-                    throw e;
-                }
+            // More #57794.
+            if (pendingHookCount == 0) {
+                pendingHook = null;
             }
         }
+    }
+    
+    /** See issue #57794. */
+    void maybeCallPendingHook() {
+        // XXX synchronization of this method?
+        assert pendingHookCount > 0;
+        assert pendingHook != null;
+        pendingHookCount--;
+        if (pendingHookCount == 0) {
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                    public Object run() throws IOException {
+                        pendingHook.projectXmlSaved();
+                        return null;
+                    }
+                });
+            } catch (MutexException e) {
+                // XXX mark project modified again??
+                ErrorManager.getDefault().notify(e);
+            } finally {
+                pendingHook = null;
+            }
+        }
+    }
+    void cancelPendingHook() {
+        assert pendingHookCount > 0;
+        assert pendingHook != null;
+        pendingHookCount--;
+        if (pendingHookCount == 0) {
+            pendingHook = null;
+        }
+    }
+    void needPendingHook() {
+        assert pendingHook != null;
+        pendingHookCount++;
     }
     
     /**
