@@ -264,9 +264,14 @@ final class Importer {
         JavaPlatform nbPlf = null;
         for (int i = 0; i < nbPlfs.length; i++) {
             JavaPlatform current = nbPlfs[i];
+            Collection instFolders = current.getInstallFolders();
+            if (instFolders.isEmpty()) {
+                logger.fine("Java platform \"" + current.getDisplayName() + // NOI18N
+                        "\" is not valid. Skipping..."); // NOI18N
+                continue;
+            }
             File nbPlfDir = FileUtil.toFile(
-                    (FileObject) current.getInstallFolders().toArray()[0]);
-            
+                    (FileObject) instFolders.toArray()[0]);
             if (nbPlfDir.equals(eclPlfFile)) {
                 nbPlf = nbPlfs[i];
                 // found
