@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="ide_command_line_suffix">
         <!--  Repeat performance test more than once -->
-        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
     </target>
     
     
@@ -107,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path refid="performance.testutilities.path"/>
             </classpath>
             
-            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dperf.refactoring.test=true"/>
+            <property name="xtest.ide.commandline.suffix" value="-J-Dperf.refactoring.test=true"/>
             
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.timeout" value="3600000" />
@@ -157,9 +157,9 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.ide.reuse.userdir" value="true" />
             <property name="xtest.timeout" value="5400000" />
             
-            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
             
-<!--            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dorg.netbeans.mdr.persistence.btreeimpl.btreestorage.MDRCache.threshhold=1000 -J-Dorg.netbeans.javacore.ASTCache.size=16"/>
+<!--            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dorg.netbeans.mdr.persistence.btreeimpl.btreestorage.MDRCache.threshhold=1000 -J-Dorg.netbeans.javacore.ASTCache.size=16"/>
 -->
         </executeTests>
         
