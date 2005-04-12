@@ -285,6 +285,9 @@ public final class GeneratedFilesHelper {
                                 genfiles = FileUtil.createData(dir, GENFILES_PROPERTIES_PATH);
                             }
                             final FileObject _genfiles = genfiles;
+                            // You get the Spaghetti Code Award if you can follow the control flow in this method!
+                            // Now is the time when you wish Java implemented call/cc.
+                            // If you didn't understand that last comment, you don't get the Spaghetti Code Award.
                             final FileSystem.AtomicAction body = new FileSystem.AtomicAction() {
                                 public void run() throws IOException {
                                     // Try to acquire both locks together, since we need them both written.
@@ -315,12 +318,27 @@ public final class GeneratedFilesHelper {
                             try {
                                 body.run();
                             } catch (UserQuestionException uqe) {
-                                // #57480: need to regenerate build-impl.xml.
+                                // #57480: need to regenerate build-impl.xml, really.
                                 UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
                                     public void accepted() {
                                         // Try again.
                                         try {
                                             body.run();
+                                        } catch (UserQuestionException uqe2) {
+                                            // Need to try one more time - may have locked bSX but not yet gf.
+                                            UserQuestionHandler.handle(uqe2, new UserQuestionHandler.Callback() {
+                                                public void accepted() {
+                                                    try {
+                                                        body.run();
+                                                    } catch (IOException e) {
+                                                        ErrorManager.getDefault().notify(e);
+                                                    }
+                                                }
+                                                public void denied() {}
+                                                public void error(IOException e) {
+                                                    ErrorManager.getDefault().notify(e);
+                                                }
+                                            });
                                         } catch (IOException e) {
                                             // Oh well.
                                             ErrorManager.getDefault().notify(e);
