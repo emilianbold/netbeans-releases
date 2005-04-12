@@ -449,7 +449,7 @@ public final class IdxPropertyPattern extends PropertyPattern {
         String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
         
         //will search for line containing property support or field
-        String oldVarLine = oldType.toString() + " old" + Pattern.capitalizeFirstLetter( name ) + " = " + propertyStyle + name; // NOI18N
+        String oldVarLine = oldType.getName() + " old" + Pattern.capitalizeFirstLetter( name ) + " = " + propertyStyle + name; // NOI18N
         if( (first = methodBody.indexOf( oldVarLine )) == -1 )
             return null;
 
@@ -462,7 +462,7 @@ public final class IdxPropertyPattern extends PropertyPattern {
             return null;
         
         StringBuffer newBody = new StringBuffer(100);
-        newBody.append( type.toString() );
+        newBody.append( type.getName() );
         newBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
         newBody.append( " = " ).append( propertyStyle ).append( name ); // NOI18N            
 

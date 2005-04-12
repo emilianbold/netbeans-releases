@@ -505,9 +505,9 @@ public class PropertyPattern extends Pattern {
         }
         else{
             String oldVarLine = " old" + Pattern.capitalizeFirstLetter( name ) + " = " + propertyStyle + name; // NOI18N
-            if( (first = methodBody.indexOf( (oldType.toString() + oldVarLine  + ";") )) == -1 ) {   //non indexed // NOI18N
-                if( (first = methodBody.indexOf( (oldType.toString() + oldVarLine  + "[index];") )) == -1 ) {  //indexed // NOI18N
-                    if( (first = methodBody.indexOf( (oldType.toString() + "[]" + oldVarLine  + ";") )) == -1 ) {  //indexed // NOI18N
+            if( (first = methodBody.indexOf( (oldType.getName() + oldVarLine  + ";") )) == -1 ) {   //non indexed // NOI18N
+                if( (first = methodBody.indexOf( (oldType.getName() + oldVarLine  + "[index];") )) == -1 ) {  //indexed // NOI18N
+                    if( (first = methodBody.indexOf( (oldType.getName() + "[]" + oldVarLine  + ";") )) == -1 ) {  //indexed // NOI18N
                         return null;
                     }
                     else 
@@ -543,7 +543,7 @@ public class PropertyPattern extends Pattern {
             }
         }
         else{
-            newBody.append( type.toString() );
+            newBody.append( type.getName() );
             //if( pre_index ){
             //    newBody.append( "[]" );
             //}
