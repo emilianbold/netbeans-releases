@@ -95,7 +95,12 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             Element webservices = null;
             if(nodes.getLength() == 0){
                 webservices = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICES); //NOI18N
-                data.appendChild(webservices);
+                NodeList insertBefore = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_CLIENTS);
+                if (insertBefore.getLength() <= 0) {
+                    insertBefore = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots"); // NOI18N
+                    assert insertBefore.getLength() == 1 : "Invalid project.xml file."; // NOI18N
+                }
+                data.insertBefore(webservices, insertBefore.item(0));
             }
             else{
                 webservices = (Element)nodes.item(0);
@@ -547,7 +552,9 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             // 'needsSave' deliberately left false here because this is a trival change
             // that only should be saved if additional changes are also made below.
             clientElements = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_CLIENTS);
-            data.appendChild(clientElements);
+            NodeList srcRoots = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots"); // NOI18N
+            assert srcRoots.getLength() == 1 : "Invalid project.xml."; // NOI18N
+            data.insertBefore(clientElements, srcRoots.item(0));
         } else {
             clientElements = (Element) nodes.item(0);
         }
