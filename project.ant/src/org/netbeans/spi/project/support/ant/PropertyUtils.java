@@ -599,6 +599,12 @@ public class PropertyUtils {
             }
             l.add(s);
         }
+        if (dosHack != '\0') {
+            //the dosHack was the last letter in the input string (not followed by the ':')
+            //so obviously not a drive letter.
+            //Fix for issue #57304
+            l.add(Character.toString(dosHack));
+        }
         return (String[])l.toArray(new String[l.size()]);
     }
 

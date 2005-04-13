@@ -190,6 +190,12 @@ public class PropertyUtilsTest extends NbTestCase {
             assertEquals("effectively empty path handled",
                 Collections.EMPTY_LIST,
                 Arrays.asList(PropertyUtils.tokenizePath(":;:;")));
+            assertEquals("one letter directories handled",
+                Arrays.asList(new String[] {"c:/foo/c", "/foo/c/bar", "c", "/foo/c", "/bar"}),
+                Arrays.asList(PropertyUtils.tokenizePath("c:/foo/c;/foo/c/bar;c;/foo/c:/bar")));
+            assertEquals("one letter directories handled2",
+                Arrays.asList(new String[] {"c"}),
+                Arrays.asList(PropertyUtils.tokenizePath("c")));
     }
     
     public void testRelativizeFile() throws Exception {
