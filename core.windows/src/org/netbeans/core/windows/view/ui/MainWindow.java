@@ -166,7 +166,7 @@ public final class MainWindow extends JFrame {
                 
                 // status line should add some pixels on the left side
                 statusLinePanel.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createEmptyBorder (1, shiftToRight, 0, magicConstant), 
+                        BorderFactory.createEmptyBorder (0, shiftToRight, 0, magicConstant), 
                         statusLinePanel.getBorder ()));
                 
                 statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
@@ -238,6 +238,7 @@ public final class MainWindow extends JFrame {
         }
         Iterator/*<StatusLineElementProvider>*/ it = c.iterator ();
         JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 0, 0));
+        icons.setBorder (BorderFactory.createEmptyBorder (1, 0, 0, 0));
         boolean some = false;
         while (it.hasNext ()) {
             Object o = it.next ();
