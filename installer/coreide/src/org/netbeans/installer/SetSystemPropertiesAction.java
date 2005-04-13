@@ -13,6 +13,8 @@
 
 package org.netbeans.installer;
 
+import com.installshield.product.SoftwareObjectKey;
+import com.installshield.product.SoftwareVersion;
 import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
 import com.installshield.wizard.WizardAction;
@@ -35,6 +37,7 @@ public class SetSystemPropertiesAction extends WizardAction {
     }
     
     public void execute(WizardBeanEvent evt) {
+        resolveProductBeanProperties();
         checkStorageBuilder();
         setDesktopIconName();
     }
@@ -71,6 +74,132 @@ public class SetSystemPropertiesAction extends WizardAction {
                 Util.logStackTrace(this,ex);
             }
         }
+    }
+    
+    private void resolveProductBeanProperties () {
+        try {
+            ProductService service = (ProductService) getService(ProductService.NAME);
+            String prop;
+            String resolvedProp;
+            
+            prop = (String) service.getProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "name");
+            resolvedProp = resolveString(prop);
+            logEvent(this, Log.DBG,"prop: " + prop + " resolvedProp: " + resolvedProp);
+            service.setRetainedProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "name", resolvedProp);
+
+            prop = (String) service.getProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "description");
+            resolvedProp = resolveString(prop);
+            logEvent(this, Log.DBG,"prop: " + prop + " resolvedProp: " + resolvedProp);
+            service.setRetainedProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "description", resolvedProp);
+            
+            prop = (String) service.getProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "productNumber");
+            resolvedProp = resolveString(prop);
+            logEvent(this, Log.DBG,"prop: " + prop + " resolvedProp: " + resolvedProp);
+            service.setRetainedProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "productNumber", resolvedProp);
+            
+            prop = (String) service.getProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "vendor");
+            resolvedProp = resolveString(prop);
+            logEvent(this, Log.DBG,"prop: " + prop + " resolvedProp: " + resolvedProp);
+            service.setRetainedProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "vendor", resolvedProp);
+            
+            prop = (String) service.getProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "vendorWebsite");
+            resolvedProp = resolveString(prop);
+            logEvent(this, Log.DBG,"prop: " + prop + " resolvedProp: " + resolvedProp);
+            service.setRetainedProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "vendorWebsite", resolvedProp);
+            
+            SoftwareObjectKey keyObject;
+            SoftwareVersion version;
+            String major, minor, maintenance, key;
+
+            // ---------------------- Product ---------------------------
+            keyObject = (SoftwareObjectKey) service.getProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "key");
+            key = resolveString("$L(org.netbeans.installer.Bundle,Product.UID)");
+            logEvent(this, Log.DBG,"Product UID: " + key);
+            keyObject.setUID(key);
+            
+            major = resolveString("$L(org.netbeans.installer.Bundle,Product.major)");
+            minor = resolveString("$L(org.netbeans.installer.Bundle,Product.minor)");
+            maintenance = resolveString("$L(org.netbeans.installer.Bundle,Product.maintenance)");
+            
+            version = new SoftwareVersion();
+            version.setMajor(major);
+            version.setMinor(minor);
+            version.setMaintenance(maintenance);
+            logEvent(this, Log.DBG,"Product version: " + getStringForm(version));
+            keyObject.setVersion(version);
+            
+            service.setRetainedProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "key", keyObject);
+            
+            // ------------------ Core IDE -----------------------------
+            keyObject = (SoftwareObjectKey) service.getProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "coreide", "key");
+            key = resolveString("$L(org.netbeans.installer.Bundle,CoreIDE.UID)");
+            logEvent(this, Log.DBG,"Core IDE UID: " + key);
+            keyObject.setUID(key);
+            
+            version = new SoftwareVersion();
+            version.setMajor(major);
+            version.setMinor(minor);
+            version.setMaintenance(maintenance);
+            logEvent(this, Log.DBG,"Core IDE version: " + getStringForm(version));
+            keyObject.setVersion(version);
+            
+            service.setRetainedProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "coreide", "key", keyObject);
+            
+            // ----------------- Storage Builder ------------------------
+            keyObject = (SoftwareObjectKey) service.getProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "storageBuilder", "key");
+            key = resolveString("$L(org.netbeans.installer.Bundle,StorageBuilder.UID)");
+            logEvent(this, Log.DBG,"Storage Builder UID: " + key);
+            keyObject.setUID(key);
+            
+            version = new SoftwareVersion();
+            version.setMajor(major);
+            version.setMinor(minor);
+            version.setMaintenance(maintenance);
+            logEvent(this, Log.DBG,"Storage Builder version: " + getStringForm(version));
+            keyObject.setVersion(version);
+            
+            service.setRetainedProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "storageBuilder", "key", keyObject);
+        } catch (ServiceException ex) {
+            ex.printStackTrace();
+            Util.logStackTrace(this,ex);
+        }
+    }
+    
+    /** Simplified conversion of SoftwareVersion instance to String. Just for logging. */
+    private String getStringForm (SoftwareVersion version) {
+        String ret = "";
+        if (version.getMajor().length() == 0) {
+            return ret;
+        } else {
+            ret = version.getMajor();
+        }
+        if (version.getMinor().length() == 0) {
+            return ret;
+        } else {
+            ret += "." + version.getMinor();
+        }
+        if (version.getMaintenance().length() == 0) {
+            return ret;
+        } else {
+            ret += "." + version.getMaintenance();
+        }
+        return ret;
     }
     
 }
