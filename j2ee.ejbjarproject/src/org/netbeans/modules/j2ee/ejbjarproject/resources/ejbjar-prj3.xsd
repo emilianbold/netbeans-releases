@@ -87,6 +87,7 @@ Microsystems, Inc. All Rights Reserved.
    <xsd:complexType name="webServiceType">
      <xsd:sequence>
         <xsd:element name="web-service-name" type="xsd:string"/>
+        <xsd:element name="from-wsdl" minOccurs="0"/>
      </xsd:sequence>
    </xsd:complexType>
 </xsd:schema>
