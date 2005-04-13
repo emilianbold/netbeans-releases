@@ -203,11 +203,11 @@ public final class Workspace {
      * projectDirName.
      */
     String getJDKDirectory(String jreContainer) {
-        if (!DEFAULT_JRE_CONTAINER.equals(jreContainer)) {
-            // JRE name seems to be after the last slash
-            jreContainer = jreContainer.substring(jreContainer.lastIndexOf('/') + 1);
-        }
         if (jreContainer != null) {
+            if (!DEFAULT_JRE_CONTAINER.equals(jreContainer)) {
+                // JRE name seems to be after the last slash
+                jreContainer = jreContainer.substring(jreContainer.lastIndexOf('/') + 1);
+            }
             for (Iterator it = jreContainers.entrySet().iterator(); it.hasNext(); ) {
                 Map.Entry entry = (Map.Entry) it.next();
                 if (entry.getKey().equals(jreContainer)) {

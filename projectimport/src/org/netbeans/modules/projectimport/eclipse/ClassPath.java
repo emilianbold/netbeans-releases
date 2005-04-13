@@ -181,7 +181,7 @@ final class ClassPath {
             }
             if (jreContainer == null) {
                 logger.fine("jreContainer wasn't found in classpath entries!"); // NOI18N
-                logger.fine("Classpath entries" + this.getEntries()); // NOI18N
+                logger.fine("Classpath entries: " + this.getEntries()); // NOI18N
             }
         }
         return jreContainer;
