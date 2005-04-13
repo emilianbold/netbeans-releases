@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.progress/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/progress/module/resources/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/progress/module/resources/layer.xml
 OpenIDE-Module-Specification-Version: 1.0
 
