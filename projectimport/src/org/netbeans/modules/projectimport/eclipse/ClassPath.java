@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.LoggerFactory;
 
 /**
  * Represents classpath for an Eclipse project (.classpath file content)
@@ -24,6 +26,13 @@ import java.util.Collection;
  * @author mkrauskopf
  */
 final class ClassPath {
+    
+    /**
+     * Logger for this class
+     */
+    private static final Logger logger =
+            LoggerFactory.getDefault().createLogger(ClassPath.class);
+    
     
     /** Represents link in Eclipse project's classpath. */
     static class Link {
@@ -166,8 +175,13 @@ final class ClassPath {
                 ClassPathEntry cpe = (ClassPathEntry) it.next();
                 if (cpe.getRawPath().startsWith(Workspace.DEFAULT_JRE_CONTAINER)) {
                     jreContainer = cpe.getRawPath();
+                    logger.finest("jreContainer found: " + jreContainer); // NOI18N
                     break;
                 }
+            }
+            if (jreContainer == null) {
+                logger.fine("jreContainer wasn't found in classpath entries!"); // NOI18N
+                logger.fine("Classpath entries" + this.getEntries()); // NOI18N
             }
         }
         return jreContainer;

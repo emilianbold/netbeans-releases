@@ -154,6 +154,7 @@ public final class EclipseProject implements Comparable {
      */
     public String getJDKDirectory() {
         if (jdkDirectory == null && workspace != null) {
+            logger.finest("Getting JDK directory for project " + this.getName()); // NOI18N                    
             jdkDirectory = workspace.getJDKDirectory(cp.getJREContainer());
             // jdkDirectory = workspace.getJDKDirectory(projectDir.getName());
         }

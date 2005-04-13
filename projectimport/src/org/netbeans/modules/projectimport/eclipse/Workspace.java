@@ -203,7 +203,7 @@ public final class Workspace {
      * projectDirName.
      */
     String getJDKDirectory(String jreContainer) {
-        if (!jreContainer.equals(DEFAULT_JRE_CONTAINER)) {
+        if (!DEFAULT_JRE_CONTAINER.equals(jreContainer)) {
             // JRE name seems to be after the last slash
             jreContainer = jreContainer.substring(jreContainer.lastIndexOf('/') + 1);
         }

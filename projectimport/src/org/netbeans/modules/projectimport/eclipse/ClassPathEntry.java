@@ -108,8 +108,8 @@ public final class ClassPathEntry {
     }
     
     public String toString() {
-        return type.desc + " = " + rawPath + 
-                ", absolutePath: " + absolutePath;
+        return type + " = \"" + rawPath + "\"" +
+                " (absolutePath: " + absolutePath + ")";
     }
 }
 
