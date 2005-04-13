@@ -124,6 +124,14 @@ public class DiffAction extends NodeAction {
      * This is expected not to be called in AWT thread.
      */
     public static void performAction(FileObject fo1, FileObject fo2) {
+        performAction(fo1, fo2, null);
+    }
+    /**
+     * Shows the diff between two FileObject objects.
+     * This is expected not to be called in AWT thread.
+     * @param type Use the type of that FileObject to load both files.
+     */
+    static void performAction(FileObject fo1, FileObject fo2, FileObject type) {
         //System.out.println("performAction("+fo1+", "+fo2+")");
         //doDiff(fo1, fo2);
         Diff diff = Diff.getDefault();
@@ -135,17 +143,35 @@ public class DiffAction extends NodeAction {
             return ;
         }
         Component tp;
+        Reader r1 = null;
+        Reader r2 = null;
         try {
             EncodedReaderFactory rf = EncodedReaderFactory.getDefault();
-            Reader r1 = rf.getReader(fo1, rf.getEncoding(fo1));
-            Reader r2 = rf.getReader(fo2, rf.getEncoding(fo2));
+            if (type != null) {
+                r1 = rf.getReader(fo1, rf.getEncoding(type), type);
+                r2 = rf.getReader(fo2, rf.getEncoding(type), type);
+            } else {
+                r1 = rf.getReader(fo1, rf.getEncoding(fo1), fo2.getExt());
+                r2 = rf.getReader(fo2, rf.getEncoding(fo2), fo1.getExt());
+            }
+            String mimeType;
+            if (type != null) {
+                mimeType = type.getMIMEType();
+            } else {
+                mimeType = fo1.getMIMEType();
+            }
             tp = diff.createDiff(fo1.getNameExt(), FileUtil.getFileDisplayName(fo1),
                                  r1,
                                  fo2.getNameExt(), FileUtil.getFileDisplayName(fo2),
-                                 r2, fo1.getMIMEType());
+                                 r2, mimeType);
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return ;
+        } finally {
+            try {
+                if (r1 != null) r1.close();
+                if (r2 != null) r2.close();
+            } catch (IOException ioex) {}
         }
         //System.out.println("tp = "+tp);
         if (tp != null) {

@@ -246,11 +246,11 @@ public class PatchAction extends NodeAction {
         } catch (IOException ioex) {
             return null;
         } finally {
-            if (lock != null) lock.releaseLock();
             try {
                 if (in != null) in.close();
                 if (out != null) out.close();
             } catch (IOException ioex) {}
+            if (lock != null) lock.releaseLock();
         }
     }
 
@@ -268,7 +268,7 @@ public class PatchAction extends NodeAction {
         OutputStream out = null;
         try {
             Reader patched = Patch.apply(diffs, new InputStreamReader(fo.getInputStream(), PATCHING_IO_ENCODING));
-            FileUtil.copy(in = new ReaderInputStream(patched), out = new FileOutputStream(tmp));
+            FileUtil.copy(in = new ReaderInputStream(patched, PATCHING_IO_ENCODING), out = new FileOutputStream(tmp));
         } catch (IOException ioex) {
 //            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
 //                NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage(), fo.getNameExt())));
@@ -311,7 +311,7 @@ public class PatchAction extends NodeAction {
         for (int i = 0; i < files.size(); i++) {
             FileObject file = (FileObject) files.get(i);
             FileObject backup = (FileObject) backups.get(file);
-            DiffAction.performAction(backup, file);
+            DiffAction.performAction(backup, file, file);
         }
     }
 

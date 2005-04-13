@@ -104,7 +104,7 @@ public class EncodedReaderFactory {
                 file = FileUtil.normalizeFile(file);
                 FileObject fo = FileUtil.toFileObject(file);
                 if (fo != null) {
-                    r = getReaderFromEditorSupport(fo);
+                    r = getReaderFromEditorSupport(fo, fo);
                 }
             } catch (IllegalArgumentException iaex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iaex);
@@ -121,6 +121,18 @@ public class EncodedReaderFactory {
     }
     
     public Reader getReader(FileObject fo, String encoding) throws FileNotFoundException {
+        return getReader(fo, encoding, fo.getExt());
+    }
+    
+    public Reader getReader(FileObject fo, String encoding, String secondFileExt) throws FileNotFoundException {
+        return getReader(fo, encoding, fo, secondFileExt);
+    }
+    
+    public Reader getReader(FileObject fo, String encoding, FileObject type) throws FileNotFoundException {
+        return getReader(fo, encoding, type, type.getExt());
+    }
+    
+    private Reader getReader(FileObject fo, String encoding, FileObject type, String secondFileExt) throws FileNotFoundException {
         if (encoding != null) {
             try {
                 return new InputStreamReader(fo.getInputStream(), encoding);
@@ -129,12 +141,14 @@ public class EncodedReaderFactory {
             }
         }
         Reader r = null;
-        String ext = fo.getExt();
-        if (!"java".equalsIgnoreCase(ext)) {// We read the encoding for Java files explicitely
+        String ext = type.getExt();
+        if (!"java".equalsIgnoreCase(ext) || !ext.equals(secondFileExt)) {// We read the encoding for Java files explicitely
                                             // If it's not defined, read with default encoding from stream (because of guarded blocks)
-            r = getReaderFromEditorSupport(fo);
+                                            // But when the extensions of the two files are different (comparing Java files with something else),
+                                            // we have to use the Document approach for both due to possible different line-endings.
+            r = getReaderFromEditorSupport(fo, type);
             if (r == null) {
-                r = getReaderFromKit(null, fo, fo.getMIMEType());
+                r = getReaderFromKit(null, fo, type.getMIMEType());
             }
         }
         if (r == null) {
@@ -145,15 +159,15 @@ public class EncodedReaderFactory {
     }
     
     /** @return The reader or <code>null</code>. */
-    private Reader getReaderFromEditorSupport(FileObject fo) throws FileNotFoundException {
+    private Reader getReaderFromEditorSupport(FileObject fo, FileObject type) throws FileNotFoundException {
         //System.out.println("getReaderFromEditorSupport("+fo+")");
         DataObject dobj;
         try {
-            dobj = DataObject.find(fo);
+            dobj = DataObject.find(type);
         } catch (DataObjectNotFoundException donfex) {
             return null;
         }
-        if (!fo.equals(dobj.getPrimaryFile())) {
+        if (!type.equals(dobj.getPrimaryFile())) {
             return null;
         }
         EditCookie edit = (EditCookie) dobj.getCookie(EditCookie.class);
