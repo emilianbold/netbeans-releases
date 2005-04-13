@@ -38,6 +38,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
+import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -96,6 +97,10 @@ public class ProjectUtilities {
             Iterator/*<TopComponent>*/ openTCs = WindowManager.getDefault ().getRegistry ().getOpened ().iterator ();
             while (openTCs.hasNext ()) {
                 TopComponent tc = (TopComponent) openTCs.next ();
+                // #57621: check if the closed top component isn't instance of ExplorerManager.Provider e.g. Projects/Files tab, if yes then do skip this loop
+                if (tc instanceof ExplorerManager.Provider) {
+                    continue;
+                }
                 DataObject dobj = (DataObject) tc.getLookup ().lookup (DataObject.class);
                 if (dobj != null) {
                   FileObject fobj = dobj.getPrimaryFile ();
