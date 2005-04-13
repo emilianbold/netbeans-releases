@@ -14,10 +14,13 @@
 package org.netbeans.spi.project.support.ant.ui;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.ButtonModel;
 import javax.swing.JToggleButton;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
@@ -58,13 +61,32 @@ public class StoreGroup {
      * 2) String model (not used)
      */
     private Map /*<String,Object[]|Document>*/ models;
+    private Set /*Document*/ modifiedDocuments;
 
     private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+    
+    
+    private DocumentListener documentListener = new DocumentListener () {
+        
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+            documentModified (e.getDocument());
+        }
+
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+            documentModified (e.getDocument());
+        }
+
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            documentModified (e.getDocument());
+        }
+        
+    };
 
     public StoreGroup() {
         models = new HashMap();
+        modifiedDocuments = new HashSet ();
     }
 
     // Public methods ------------------------------------------------------
@@ -88,7 +110,7 @@ public class StoreGroup {
                 }
                 editableProperties.setProperty( key, encodeBoolean( value, (Integer)params[1] ) );
             }
-            else if ( params[0] instanceof Document ) {
+            else if ( params[0] instanceof Document && modifiedDocuments.contains(params[0])) {
                 Document doc = (Document)params[0];
                 String txt;
                 try {
@@ -160,7 +182,8 @@ public class StoreGroup {
             Document d = new PlainDocument();
             d.remove(0, d.getLength());
             d.insertString(0, value, null);
-            models.put( propertyName, new Object[] { d } );
+            d.addDocumentListener (documentListener);
+            models.put( propertyName, new Object[] { d } );            
             return d;
         }
         catch ( BadLocationException e ) {
@@ -221,6 +244,10 @@ public class StoreGroup {
         else {
             return value ? "true" : "false"; // NOI18N
         }
+    }
+    
+    private void documentModified (Document d) {
+        this.modifiedDocuments.add (d);
     }
 
 }

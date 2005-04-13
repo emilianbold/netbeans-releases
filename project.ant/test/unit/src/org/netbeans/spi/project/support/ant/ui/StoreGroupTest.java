@@ -173,6 +173,35 @@ public class StoreGroupTest extends NbTestCase {
         
     }
     
+    /**
+     *#57797:dist.jar changed to hardcode 'dist' rather than '${dist.dir}'
+     */
+    public void testIssue57797 () throws Exception {
+        String PROP_NAME_A = "propertyA";
+        String PROP_NAME_B = "propertyB";
+        String ORIGINAL_A_VALUE = "original_A_Value";
+        String ORIGINAL_B_VALUE = "original_B_Value";
+        String NEW_A_VALUE = "new_A_Value";
+        
+        EditableProperties ep = new EditableProperties();
+        PropertyEvaluator evaluator = new PlainPropertyEvaluator( ep );
+        StoreGroup sg = new StoreGroup();
+
+        ep.setProperty( PROP_NAME_A, ORIGINAL_A_VALUE );
+        ep.setProperty( PROP_NAME_B, ORIGINAL_B_VALUE );
+        Document doc1 = sg.createStringDocument( evaluator, PROP_NAME_A );
+        Document doc2 = sg.createStringDocument( evaluator, PROP_NAME_B );
+        JTextField jtf1 = new JTextField ();        
+        jtf1.setDocument ( doc1 );        
+        JTextField jtf2 = new JTextField ();
+        jtf2.setDocument ( doc2 );               
+        jtf1.setText( NEW_A_VALUE );     
+        EditableProperties newEp = new EditableProperties ();
+        sg.store( newEp );        
+        assertEquals( "Expected one new propery", 1, newEp.size());
+        assertEquals( "Value has to be set into the properties", NEW_A_VALUE, newEp.getProperty( PROP_NAME_A ) );
+    }
+    
     
     // Innerclasses ------------------------------------------------------------
 
