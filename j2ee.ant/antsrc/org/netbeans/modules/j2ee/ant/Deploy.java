@@ -63,22 +63,24 @@ public class Deploy extends Task implements Deployment.Logger {
             if (clientUrl != null) {
                 getProject().setProperty("client.url", clientUrl);
             }
-
-            ServerDebugInfo sdi = jmp.getServerDebugInfo ();
-            String h = sdi.getHost();
-            String transport = sdi.getTransport();
-            String address = "";                                                //NOI18N
             
-            if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                address = sdi.getShmemName();
-            } else {
-                address = Integer.toString(sdi.getPort());
+            ServerDebugInfo sdi = jmp.getServerDebugInfo();
+            
+            if (sdi != null) { //fix for bug 57854, this can be null
+                String h = sdi.getHost();
+                String transport = sdi.getTransport();
+                String address = "";   //NOI18N
+                
+                if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                    address = sdi.getShmemName();
+                } else {
+                    address = Integer.toString(sdi.getPort());
+                }
+                
+                getProject().setProperty("jpda.transport", transport);
+                getProject().setProperty("jpda.host", h);
+                getProject().setProperty("jpda.address", address);
             }
-            
-            getProject().setProperty("jpda.transport", transport);
-            getProject().setProperty("jpda.host", h);
-            getProject().setProperty("jpda.address", address);
-
         } catch (Exception ex) {
             throw new BuildException(ex);
         }
