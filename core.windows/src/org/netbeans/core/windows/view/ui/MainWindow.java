@@ -156,14 +156,19 @@ public final class MainWindow extends JFrame {
                 status.setPreferredSize(new Dimension(0, status.getPreferredSize().height));
 
                 JPanel statusLinePanel = new JPanel(new BorderLayout());
+                int magicConstant = 0;
+                int shiftToRight = 4;
                 if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                     // on mac there is window resize component in the right most bottom area.
                     // it paints over our icons..
-                    statusLinePanel.setBorder(BorderFactory.createCompoundBorder(
-                            // 12 is a magic constant
-                            BorderFactory.createEmptyBorder(0, 0, 0, 12), 
-                            statusLinePanel.getBorder()));
+                    magicConstant = 12;
                 }
+                
+                // status line should add some pixels on the left side
+                statusLinePanel.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createEmptyBorder (1, shiftToRight, 0, magicConstant), 
+                        statusLinePanel.getBorder ()));
+                
                 statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
                 statusLinePanel.add(status, BorderLayout.CENTER);
                 
@@ -232,7 +237,7 @@ public final class MainWindow extends JFrame {
             return null;
         }
         Iterator/*<StatusLineElementProvider>*/ it = c.iterator ();
-        JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 1, 1));
+        JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 0, 0));
         boolean some = false;
         while (it.hasNext ()) {
             Object o = it.next ();
