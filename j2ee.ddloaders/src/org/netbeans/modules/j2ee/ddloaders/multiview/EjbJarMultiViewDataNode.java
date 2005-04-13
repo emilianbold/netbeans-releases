@@ -56,8 +56,8 @@ public class EjbJarMultiViewDataNode extends DataNode {
     public EjbJarMultiViewDataNode(EjbJarMultiViewDataObject obj, Children ch) {
         super(obj, ch);
         dataObject = obj;
-        setIconBase(dataObject.getIconBaseForValidDocument());
         initListeners();
+        setIconBase(dataObject.getSaxError() == null);
     }
 
     /**
@@ -76,12 +76,7 @@ public class EjbJarMultiViewDataNode extends DataNode {
                 } else if (DataObject.PROP_VALID.equals(propertyName) && Boolean.TRUE.equals(newValue)) {
                     removePropertyChangeListener(EjbJarMultiViewDataNode.this.ddListener);
                 } else if (XmlMultiViewDataObject.PROP_DOCUMENT_VALID.equals(propertyName)) {
-                    if (Boolean.TRUE.equals(newValue)) {
-                        setIconBase(dataObject.getIconBaseForValidDocument());
-                    } else {
-                        setIconBase(dataObject.getIconBaseForInvalidDocument());
-                    }
-                    fireIconChange();
+                    setIconBase(Boolean.TRUE.equals(newValue));
                 } else if (Node.PROP_PROPERTY_SETS.equals(propertyName)) {
                     firePropertySetsChange(null, null);
                 } else if (XmlMultiViewDataObject.PROP_SAX_ERROR.equals(propertyName)) {
@@ -91,6 +86,15 @@ public class EjbJarMultiViewDataNode extends DataNode {
 
         };
         getDataObject().addPropertyChangeListener(ddListener);
+    }
+
+    private void setIconBase(final boolean valid) {
+        if (valid) {
+            setIconBase(dataObject.getIconBaseForValidDocument());
+        } else {
+            setIconBase(dataObject.getIconBaseForInvalidDocument());
+        }
+        fireIconChange();
     }
 
     protected Sheet createSheet() {
