@@ -119,6 +119,34 @@ public class DataEditorSupportTest extends NbTestCase {
         return (DES)cookie;
     }
     
+    /** holds the instance of the object so insane is able to find the reference */
+    private DataObject obj;
+    public void testItCanBeGCedIssue57565 () throws Exception {
+        DES sup = support ();
+        assertFalse ("It is closed now", support ().isDocumentLoaded ());
+        
+        Lookup lkp = sup.getLookup ();
+        obj = (DataObject)lkp.lookup (DataObject.class);
+        assertNotNull ("DataObject found", obj);
+        
+        sup.openDocument ();
+        assertTrue ("It is open now", support ().isDocumentLoaded ());
+        
+        assertTrue ("Closed ok", sup.close ());
+        
+        java.lang.ref.WeakReference refLkp = new java.lang.ref.WeakReference (lkp);
+        lkp = null;
+    
+        java.lang.ref.WeakReference ref = new java.lang.ref.WeakReference (sup);
+        sup = null;
+        
+        assertGC ("Can disappear", ref);
+        assertGC ("And its lookup as well", refLkp);
+        
+        
+        
+    }
+    
     public void testGetOpenedPanesWorksAfterDeserialization () throws Exception {
         doGetOpenedPanesWorksAfterDeserialization (-1);
     }
@@ -368,15 +396,18 @@ public class DataEditorSupportTest extends NbTestCase {
             return new org.openide.loaders.FileEntry (obj, primaryFile);
         }
     }
-    public static final class MyDataObject extends MultiDataObject {
-        public DES des;
-        
+    public static final class MyDataObject extends MultiDataObject 
+    implements CookieSet.Factory {
         public MyDataObject(MyLoader l, FileObject folder) throws DataObjectExistsException {
             super(folder, l);
-            
-            des = new DES (this, new MyEnv (this));
-            getCookieSet ().add (des);
+            getCookieSet ().add (OpenCookie.class, this);
         }
+
+        public org.openide.nodes.Node.Cookie createCookie (Class klass) {
+            return new DES (this, new MyEnv (this)); 
+        }
+        
+        
         
     }
     
