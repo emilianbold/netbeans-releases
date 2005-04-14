@@ -21,6 +21,7 @@ import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  * @author David Konecny
@@ -49,13 +50,17 @@ public class UtilTest extends NbTestCase {
     }
     
     public void testRelativizeLocation() throws Exception {
-        assertEquals("foo/bar", Util.relativizeLocation(new File("/src/app"), new File("/src/app"), new File("/src/app/foo/bar")));
-        assertEquals("${project.dir}/foo/bar", Util.relativizeLocation(new File("/src/app"), new File("/proj/app"), new File("/src/app/foo/bar")));
-        assertEquals("/other/foo/bar", Util.relativizeLocation(new File("/src/app"), new File("/src/app"), new File("/other/foo/bar")));
-        assertEquals("/other/foo/bar", Util.relativizeLocation(new File("/src/app"), new File("/proj/app"), new File("/other/foo/bar")));
+        File srcApp = Utilities.isWindows() ? new File("c:\\src\\app") : new File("/src/app");
+        File srcAppFooBar = new File(srcApp, "foo" + File.separatorChar + "bar");
+        File projApp = Utilities.isWindows() ? new File("c:\\proj\\app") : new File("/proj/app");
+        File otherFooBar = Utilities.isWindows() ? new File("c:\\other\\foo\\bar") : new File("/other/foo/bar");
+        assertEquals("foo/bar", Util.relativizeLocation(srcApp, srcApp, srcAppFooBar));
+        assertEquals("${project.dir}/foo/bar", Util.relativizeLocation(srcApp, projApp, srcAppFooBar));
+        assertEquals(otherFooBar.getAbsolutePath(), Util.relativizeLocation(srcApp, srcApp, otherFooBar));
+        assertEquals(otherFooBar.getAbsolutePath(), Util.relativizeLocation(srcApp, projApp, otherFooBar));
         // Mentioned incidentally in #54428:
-        assertEquals(".", Util.relativizeLocation(new File("/src/app"), new File("/src/app"), new File("/src/app")));
-        assertEquals("${project.dir}", Util.relativizeLocation(new File("/src/app"), new File("/proj/app"), new File("/src/app")));
+        assertEquals(".", Util.relativizeLocation(srcApp, srcApp, srcApp));
+        assertEquals("${project.dir}", Util.relativizeLocation(srcApp, projApp, srcApp));
     }
 
 }
