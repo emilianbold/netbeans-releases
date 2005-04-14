@@ -45,8 +45,6 @@ import org.openide.filesystems.URLMapper;
 
 public class RecentProjects extends AbstractAction implements Presenter.Menu, Presenter.Popup, PropertyChangeListener, PopupMenuListener {
     
-    private static final String ICON = "org/netbeans/modules/project/ui/resources/empty.gif"; //NOI18N    
-    
     /** Key for remembering project in JMenuItem
      */
     private static final String PROJECT_URL_KEY = "org.netbeans.modules.project.ui.RecentProjectItem.Project_URL"; // NOI18N
@@ -57,8 +55,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     private boolean recreate;
     
     public RecentProjects() {
-        super( NbBundle.getMessage(RecentProjects.class, "LBL_RecentProjectsAction_Name"), // NOI18N
-              new ImageIcon(Utilities.loadImage(ICON)));
+        super( NbBundle.getMessage(RecentProjects.class, "LBL_RecentProjectsAction_Name")); // NOI18N
         OpenProjectList.getDefault().addPropertyChangeListener( this );
         recreate = true;
     }

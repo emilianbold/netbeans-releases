@@ -34,8 +34,6 @@ import org.openide.util.actions.Presenter;
 
 public class SetMainProject extends ProjectAction implements Presenter.Menu, PropertyChangeListener {
     
-    private static final String ICON = "org/netbeans/modules/project/ui/resources/empty.gif"; //NOI18N    
-    
     private static final String namePattern = NbBundle.getMessage( SetMainProject.class, "LBL_SetAsMainProjectAction_Name" ); // NOI18N
         
     /** Key for remembering project in JMenuItem
@@ -108,7 +106,6 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
             String label = NbBundle.getMessage( SetMainProject.class, "LBL_SetMainProjectAction_Name" ); // NOI18N
             subMenu = new JMenu( label );
             subMenu.setMnemonic (NbBundle.getMessage (SetMainProject.class, "MNE_SetMainProjectAction_Name").charAt (0)); // NOI18N
-            subMenu.setIcon( new ImageIcon( Utilities.loadImage( ICON ) ) );
         }
         
         subMenu.removeAll();
