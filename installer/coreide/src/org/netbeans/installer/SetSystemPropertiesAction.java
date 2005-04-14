@@ -83,39 +83,39 @@ public class SetSystemPropertiesAction extends WizardAction {
             String resolvedProp;
             
             prop = (String) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "name");
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "name");
             resolvedProp = resolveString(prop);
             logEvent(this, Log.DBG,"prop: " + prop + " resolvedProp: " + resolvedProp);
             service.setRetainedProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "name", resolvedProp);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "name", resolvedProp);
 
             prop = (String) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "description");
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "description");
             resolvedProp = resolveString(prop);
             logEvent(this, Log.DBG,"prop: " + prop + " resolvedProp: " + resolvedProp);
             service.setRetainedProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "description", resolvedProp);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "description", resolvedProp);
             
             prop = (String) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "productNumber");
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "productNumber");
             resolvedProp = resolveString(prop);
             logEvent(this, Log.DBG,"prop: " + prop + " resolvedProp: " + resolvedProp);
             service.setRetainedProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "productNumber", resolvedProp);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "productNumber", resolvedProp);
             
             prop = (String) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "vendor");
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "vendor");
             resolvedProp = resolveString(prop);
             logEvent(this, Log.DBG,"prop: " + prop + " resolvedProp: " + resolvedProp);
             service.setRetainedProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "vendor", resolvedProp);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "vendor", resolvedProp);
             
             prop = (String) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "vendorWebsite");
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "vendorWebsite");
             resolvedProp = resolveString(prop);
             logEvent(this, Log.DBG,"prop: " + prop + " resolvedProp: " + resolvedProp);
             service.setRetainedProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "vendorWebsite", resolvedProp);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "vendorWebsite", resolvedProp);
             
             SoftwareObjectKey keyObject;
             SoftwareVersion version;
@@ -123,7 +123,7 @@ public class SetSystemPropertiesAction extends WizardAction {
 
             // ---------------------- Product ---------------------------
             keyObject = (SoftwareObjectKey) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "key");
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "key");
             key = resolveString("$L(org.netbeans.installer.Bundle,Product.UID)");
             logEvent(this, Log.DBG,"Product UID: " + key);
             keyObject.setUID(key);
@@ -140,7 +140,7 @@ public class SetSystemPropertiesAction extends WizardAction {
             keyObject.setVersion(version);
             
             service.setRetainedProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "product", "key", keyObject);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.PRODUCT_ROOT_ID, "key", keyObject);
             
             // ------------------ Core IDE -----------------------------
             keyObject = (SoftwareObjectKey) service.getProductBeanProperty
