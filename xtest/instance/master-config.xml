@@ -108,6 +108,7 @@ Microsystems, Inc. All Rights Reserved.
   <config name="qa-web-performance">
  	<module name="web"   testtypes="qa-performance"  attributes="measure_ui"/>  
  	<module name="j2ee"   testtypes="qa-performance"  attributes="measure_all"/>  
+ 	<module name="performance"   testtypes="qa-functional"  attributes=""/>  
   </config>
   
   
