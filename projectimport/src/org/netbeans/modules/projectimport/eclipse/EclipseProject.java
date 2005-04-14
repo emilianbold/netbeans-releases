@@ -63,6 +63,7 @@ public final class EclipseProject implements Comparable {
      */
     static EclipseProject createProject(File projectDir) {
         if (!EclipseUtils.isRegularProject(projectDir)) {
+            logger.fine(projectDir + " doesn't contain regular Eclipse project."); // NOI18N
             return null;
         }
         EclipseProject project = new EclipseProject(projectDir);
