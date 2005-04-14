@@ -234,7 +234,16 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                         }
                     }
                 }
-            }
+                //Issue: #57840: Broken platform 'default_platform'
+                if (ErrorManager.getDefault().isLoggable(ErrorManager.INFORMATIONAL) && platformCache == null) {
+                    StringBuffer message = new StringBuffer ("RequestedPlatform: "+platformSystemName+" not found.\nInstalled Platforms:\n");    //NOI18N
+                    JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+                    for (int i=0; i<platforms.length; i++) {
+                        message.append ("Name: "+platforms[i].getProperties().get("platform.ant.name")+" Broken: "+ (platforms[i].getInstallFolders().size() == 0) + "\n");  //NOI18N
+                    }
+                    ErrorManager.getDefault().log (ErrorManager.INFORMATIONAL, message.toString());
+                }
+            }            
             return platformCache;
         }
         
