@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.util.HashSet;
 import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.openide.filesystems.FileLock;
@@ -22,6 +23,7 @@ import org.openide.util.Enumerations;
 import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Set;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 
 /**
@@ -125,19 +127,18 @@ final class FileObj extends BaseFileObj {
     }
 
     protected void setValid(boolean valid) {
-        if (!valid) {
+        if (valid) {
+            //I can't make valid fileobject when it was one invalidated
+            assert isValid() : this.toString();
+        } else {
             //0 - because java.io.File.lastModififed returns 0 for not existing files
             lastModified = 0;
-        } else {
-            
-            if (!isValid()) setLastModified(System.currentTimeMillis());
-        }
+        }        
     }
 
     public final boolean isFolder() {
         return false;
     }
-
 
     public final void refresh(final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
@@ -150,8 +151,10 @@ final class FileObj extends BaseFileObj {
                 fireFileChangedEvent(expected);
             }
             
-            setValid(getFileName().getFile().exists());        
-            if (!isValid()) {
+            boolean validityFlag = getFileName().getFile().exists();                    
+            if (!validityFlag) {
+                //fileobject is invalidated
+                setValid(false);
                 fireFileDeletedEvent(expected);    
             }            
         }                 

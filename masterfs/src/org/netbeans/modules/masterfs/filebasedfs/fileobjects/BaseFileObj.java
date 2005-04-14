@@ -60,12 +60,10 @@ public abstract class BaseFileObj extends FileObject {
 
     protected BaseFileObj(final File file) {
         this.fileName = NamingFactory.fromFile(file);
-        setValid(true);
     }
     
     protected BaseFileObj(final File file, final FileNaming name) {
         this.fileName = name;
-        setValid(true);
     }
 
     public final String toString() {
@@ -278,9 +276,11 @@ public abstract class BaseFileObj extends FileObject {
         final BaseFileObj parent = getExistingParent();
         Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
         
+        assert this.isValid() : this.toString();
         fireFileDataCreatedEvent(getListeners(), new FileEvent(this, this, expected));
         
         if (parent != null && pListeners != null) {
+            assert parent.isValid() : parent.toString();
             parent.fireFileDataCreatedEvent(pListeners, new FileEvent(parent, this, expected));
         }
         stopWatch.stop();

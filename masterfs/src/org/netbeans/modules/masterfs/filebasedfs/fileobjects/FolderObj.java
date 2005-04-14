@@ -37,7 +37,7 @@ public final class FolderObj extends BaseFileObj {
     private static final Mutex mutex = new Mutex(FolderObj.mp);
 
     private final FolderChildrenCache folderChildren = new FolderChildrenCache();
-    boolean valid;
+    boolean valid = true;
 
 
     /**
@@ -45,7 +45,7 @@ public final class FolderObj extends BaseFileObj {
      */
     public FolderObj(final File file, final FileNaming name) {
         super(file, name);
-        valid = true;
+        //valid = true;
     }
 
     public final boolean isFolder() {
@@ -249,10 +249,10 @@ public final class FolderObj extends BaseFileObj {
                 final FileName child = (FileName) entry.getKey();
                 final Integer operationId = (Integer) entry.getValue();
 
-                BaseFileObj newChild = factory.get(child.getFile());
+                BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? (BaseFileObj)
+                    factory.findFileObject(new FileInfo(child.getFile())): factory.get(child.getFile());
                 newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
                 if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
-                    newChild.setValid(true);
 
                     if (newChild.isFolder()) {
                         isFileCreatedFired = true;
@@ -280,6 +280,7 @@ public final class FolderObj extends BaseFileObj {
                                 fakeInvalid = new FolderObj(f, child);                            
                             }
 
+                            fakeInvalid.setValid(false);
                             fakeInvalid.fireFileDeletedEvent(expected);
                         }
                     }
@@ -289,9 +290,10 @@ public final class FolderObj extends BaseFileObj {
                 }
 
             }
-            
-            setValid(getFileName().getFile().exists());        
-            if (!isValid()) {
+            boolean validityFlag = getFileName().getFile().exists();                                
+            if (!validityFlag) {
+                //fileobject is invalidated                
+                setValid(false);                       
                 fireFileDeletedEvent(expected);    
             }
         }         
@@ -341,8 +343,14 @@ public final class FolderObj extends BaseFileObj {
         return true;
     }
 
-    protected void setValid(boolean valid) {
-        this.valid = valid; 
+    protected void setValid(final boolean valid) {
+        if (valid) {
+            //I can't make valid fileobject when it was one invalidated
+            assert isValid() : this.toString();
+        } else {
+            this.valid = false;
+        }        
+        
     }
 
     public boolean isValid() {

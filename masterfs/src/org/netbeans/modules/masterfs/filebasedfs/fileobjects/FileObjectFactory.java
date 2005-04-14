@@ -21,6 +21,7 @@ import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -49,13 +50,7 @@ public final class FileObjectFactory {
         
         synchronized (allInstances) {
             retVal = this.get(f);
-            if (retVal != null) {
-                if (!fInfo.exists()) {
-                    retVal = null;
-                } else {
-                    ((BaseFileObj)retVal).setValid(true);
-                }
-            } else {
+            if (retVal == null || !retVal.isValid()) {
                 final File parent = f.getParentFile();
                 if (parent != null) {
                     retVal = this.create(fInfo);
@@ -64,7 +59,8 @@ public final class FileObjectFactory {
                 }
                 
             }
-            
+     
+            assert retVal == null || retVal.isValid() : retVal.toString();
             return retVal;
         }
     }
@@ -85,6 +81,7 @@ public final class FileObjectFactory {
         
         if (name == null) return null;
 
+        
         if (name.isFile()) {
             final FileObj realRoot = new FileObj(file, name);
             return putInCache(realRoot, realRoot.getFileName().getId());
@@ -221,31 +218,30 @@ public final class FileObjectFactory {
     }
 
 
-    private BaseFileObj putInCache(final BaseFileObj realRoot, final Integer id) {
+    private BaseFileObj putInCache(final BaseFileObj newValue, final Integer id) {
         synchronized (allInstances) {
-            final WeakReference value = new WeakReference(realRoot);
-            final Object instanceInCache = allInstances.put(id, value);
+            final WeakReference newRef = new WeakReference(newValue);
+            final Object listOrReference = allInstances.put(id, newRef);
 
-            final boolean isList = (instanceInCache instanceof List);
-            if (instanceInCache != null) {
-                if (!isList) {
-                    assert (instanceInCache instanceof WeakReference);
-                    final Reference ref = (Reference) ((instanceInCache instanceof WeakReference) ? instanceInCache : null);
-                    final boolean keepRef = (ref != null && ref.get() == null);
-                    if (!keepRef) {
-                        final List l = new ArrayList();
-                        l.add(instanceInCache);
-                        l.add(value);
-                        allInstances.put(id, l);
-                    }
+            if (listOrReference != null) {                
+                if (listOrReference instanceof List) {
+                    ((List) listOrReference).add(newRef);                    
+                    allInstances.put(id, listOrReference);
                 } else {
-                    ((List) instanceInCache).add(value);
+                    assert (listOrReference instanceof WeakReference);
+                    final Reference oldRef = (Reference) listOrReference;
+                    BaseFileObj oldValue = (oldRef != null) ? (BaseFileObj)oldRef.get() : null;
+                    
+                    if (oldValue != null && !newValue.getFileName().equals(oldValue.getFileName())) {
+                        final List l = new ArrayList();
+                        l.add(oldRef);
+                        l.add(newRef);
+                        allInstances.put(id, l);
+                    }                    
                 }
             }
         }
 
-        return realRoot;
+        return newValue;
     }
-
-
 }

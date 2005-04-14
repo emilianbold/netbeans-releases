@@ -23,18 +23,13 @@ import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-
-import javax.swing.filechooser.FileSystemView;
 import java.util.*;
-
-import org.netbeans.junit.MemoryFilter;
-import org.netbeans.modules.masterfs.filebasedfs.naming.FolderName;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.LocalFileSystem;
+
 
 /**
  * FolderObjTest.java
@@ -839,6 +834,31 @@ public class FolderObjTest extends NbTestCase {
         assertTrue(!l.isEmpty());
     }*/
 
+    public void testFileTypeChanged() throws Exception {
+        String newFileName = "test";
+        File f = new File(testFile, "testFileTypeNotRemembered/");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.mkdirs() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(testFile);
+        FileObject parent = fs.findFileObject(testFile);
+        
+        assertNotNull(parent);
+        assertTrue(parent.isFolder());
+        FileObject fo = parent.getFileObject("testFileTypeNotRemembered");
+        assertTrue(fo.isFolder());
+        
+        fo.delete();
+        FileObject fo2 = parent.createFolder("testFileTypeNotRemembered");
+        assertNotNull(fo);
+        assertTrue(fo != fo2);
+        
+        fo2 = fs.findFileObject(f);
+        assertNotNull(fo);
+        assertTrue(fo != fo2);
+    }
+    
     public void testRefresh2 () throws Exception {
         String childName = "refreshtest.txt";
         FileSystem fs = FileBasedFileSystem.getInstance(testFile);
