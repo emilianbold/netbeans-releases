@@ -169,6 +169,11 @@ Microsystems, Inc. All Rights Reserved.
     <ant antfile="../lib/build.xml" target="jar" inheritAll="false"/>
   </target>
 
+  <!-- Clean library -->
+  <target name="clean-library" description="clean shared library">
+    <ant antfile="../lib/build.xml" target="clean" inheritAll="false"/>
+  </target>
+
   <target name="run" depends="init" description="run the installer">
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${basedir}/dist/${installer.basename}-win.exe" failonerror="yes"/>
     <exec os="Linux"  executable="${basedir}/dist/${installer.basename}-linux.bin" failonerror="yes"/>
@@ -184,7 +189,7 @@ Microsystems, Inc. All Rights Reserved.
     </java>
   </target>
   
-  <target name="clean" depends="init" description="Clean all build products and temp/backup files.">
+  <target name="clean" depends="init, clean-library" description="Clean all build products and temp/backup files.">
     <delete>
       <fileset dir=".">
         <include name="**/*~"/>
