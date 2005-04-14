@@ -89,7 +89,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     public void installUI (JComponent c) {
         super.installUI(c);
         initColors();
-        c.setBackground(UIManager.getColor("nb_workplace_fill")); //NOI18N
+//        c.setBackground(UIManager.getColor("nb_workplace_fill")); //NOI18N
         c.setOpaque(true);
     }
 

@@ -230,6 +230,8 @@ public final class TabDisplayer extends JComponent implements Accessible {
         initialized = true;
         updateUI();
         setFocusable(false);
+//        Color fillC = (Color)UIManager.get("nb_workplace_fill"); //NOI18N
+//        if (fillC != null) setBackground (fillC);
     }
 
     public final TabDisplayerUI getUI() {

@@ -168,9 +168,9 @@ public class EditorView extends ViewElement {
             setLayout(new BorderLayout());
             // special background for XP style
             String lfID = UIManager.getLookAndFeel().getID();
-            if (lfID.equals("Windows")) {
-                setBackground((Color)UIManager.get("nb_workplace_fill"));
-            }
+//            if (lfID.equals("Windows")) {
+//                setBackground((Color)UIManager.get("nb_workplace_fill"));
+//            }
             
             // PENDING Adding image into empty area.
             String imageSource = Constants.SWITCH_IMAGE_SOURCE; // NOI18N

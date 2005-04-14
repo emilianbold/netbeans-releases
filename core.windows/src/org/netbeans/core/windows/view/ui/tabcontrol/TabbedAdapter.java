@@ -73,6 +73,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
                 }
             }
         });
+//        Color fillC = (Color)UIManager.get("nb_workplace_fill"); //NOI18N
+//        if (fillC != null) setBackground (fillC);
     }
     
     public void addTopComponent(String name, javax.swing.Icon icon, TopComponent tc, String toolTip) {
