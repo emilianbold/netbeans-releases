@@ -284,7 +284,9 @@ public class JPDADebuggerImpl extends JPDADebugger implements Runnable {
             JPDAThread t = getCurrentThread ();
             if (t == null) return;
             CallStackFrame frame = getCurrentCallStackFrame ();
-            if (t.getStackDepth () < 2) return;
+            
+            //PATCH #52209
+            if (t.getStackDepth () < 2 && frame.isObsolete()) return;
             try {
                 if (!frame.equals (t.getCallStack (0, 1) [0])) return;
             } catch (AbsentInformationException ex) {
