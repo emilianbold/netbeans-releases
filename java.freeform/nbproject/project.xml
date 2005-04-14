@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.java.freeform</code-name-base>
             <path>java/freeform</path>
             <module-dependencies>
@@ -99,10 +99,12 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency/>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>
+                <friend>org.netbeans.modules.web.freeform</friend>
                 <package>org.netbeans.modules.java.freeform.spi</package>
                 <package>org.netbeans.modules.java.freeform.spi.support</package>
-            </public-packages>
+            </friend-packages>
             <javadoc/>
         </data>
     </configuration>

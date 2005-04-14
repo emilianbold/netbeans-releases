@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<?xml-stylesheet type="text/xml" href="../../nbbuild/javadoctools/apichanges.xsl"?>
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+<apichanges>
+    <apidefs>
+        <apidef name="general">General</apidef>
+    </apidefs>
+    <changes>
+
+        <change id="friend-packages">
+            <summary>Declare SPI packages for friends only</summary>
+            <version major="1" minor="2"/>
+            <date day="14" month="4" year="2005"/>
+            <author login="jglick"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="compatible">
+                Only permitted clients can now use this SPI, and they were all updated.
+            </compatibility>
+            <description>
+                <p>
+                    Use of this SPI was restricted to known client modules.
+                </p>
+            </description>
+        </change>
+
+    </changes>
+    <htmlcontents>
+<!--
+
+                            NO NO NO NO NO!
+
+         ==============>    DO NOT EDIT ME!  <==============
+
+          AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
+
+                SEE java/freeform/apichanges.xml
+
+-->
+    <head>
+      <title>Change History for the Java Freeform SPI</title>
+      <link rel="stylesheet" href="prose.css" type="text/css"/>
+    </head>
+    <body>
+
+<p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
+
+<h1>Introduction</h1>
+
+<p>This document lists changes made to the <a href="http://projects.netbeans.org/">Java Freeform SPI</a>.</p>
+
+<!-- The actual lists of changes, as summaries and details: -->
+      <hr/>
+      <standard-changelists module-code-name="org.netbeans.modules.java.freeform/1"/>
+
+      <hr/><p>@FOOTER@</p>
+
+    </body>
+  </htmlcontents>
+
+</apichanges>
