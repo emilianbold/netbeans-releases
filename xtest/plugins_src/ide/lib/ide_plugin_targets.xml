@@ -37,8 +37,8 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- there should be some better userdir than this -->
         <property name="xtest.userdir" location="${xtest.workdir}/sys/ide"/>
-        
-        
+
+
         <property name="xtest.ide.commandline.suffix" value=""/>
         <property name="xtest.ide.jvmargs" value=""/>
         <property name="junit.properties.file" value=""/>
@@ -64,6 +64,9 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Use prebuilt JDK mdr storage at specified location. It sets 
              IDE option -J-Dprebuilt.storage.dir -->
         <property name="xtest.ide.mdrstorage" location="${jdkhome}/mdrstorage"/>
+        <!-- #52385 - added property java.io.tmpdir.default which points to original system value of java.io.tmpdir property. 
+             It has to be translated through location to strip ending backslash. -->
+        <property name="java.io.tmpdir.default" location="${java.io.tmpdir}"/>
         
         <property name="xtest.ide.use.classloader" value=""/>
         
@@ -217,7 +220,7 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dxtest.workdir=&quot;${xtest.workdir}&quot;
 -J-Dxtest.data=&quot;${xtest.data}&quot;
 -J-Dxtest.tmpdir=&quot;${xtest.tmpdir}&quot;
--J-Djava.io.tmpdir.default=&quot;${java.io.tmpdir}&quot;
+-J-Djava.io.tmpdir.default=&quot;${java.io.tmpdir.default}&quot;
 -J-Djava.io.tmpdir=&quot;${xtest.tmpdir}&quot;
 -J-Dxtest.sketchpad=&quot;${xtest.sketchpad}&quot;
 -J-Dnbjunit.workdir=&quot;${xtest.workdir}/user&quot;
