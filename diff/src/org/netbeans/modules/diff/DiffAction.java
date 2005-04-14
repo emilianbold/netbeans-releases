@@ -170,6 +170,8 @@ public class DiffAction extends NodeAction {
         } finally {
             try {
                 if (r1 != null) r1.close();
+            } catch (IOException ioex) {}
+            try {
                 if (r2 != null) r2.close();
             } catch (IOException ioex) {}
         }
