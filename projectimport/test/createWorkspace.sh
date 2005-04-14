@@ -4,28 +4,56 @@
 #
 # Convenient script for generating workspace with metadat we needs for tests.
 #
+# Usage:   ./createWorkspace.sh -w workspace -p "projects_separated_by_:"
+# Example: ./createWorkspace.sh -w ~/workspace-3.0 -p "p1:p2:p3"
+#
 # cDate: 2004/12/14
-# mDate: 2004/12/14
+# mDate: 2005/04/15
 #
 # Author: martin.krauskopf (martin.krauskopf at sun.com)
 # Editor: VIM - Vi IMproved 6.3 (2004 June 7, compiled Jun 26 2004 15:03:59)
-
-# =================== You can customize variables ==================== #
-
-# workspace
-WORKSPACE="$HOME/workspace-3.0.1"
-# space separated project list
-PROJECTS="projectInWorkspace projectInWorkspaceWeDependOn"
-
 
 # ==================================================================== #
 # =================== Don't need to tuch following =================== #
 # ==================================================================== #
 
+function processParams()
+{
+  while [ $# != 0 ]; do
+    case "$1" in
+      --workspace|-w)
+        # workspace
+        WORKSPACE="$2"
+        shift
+        ;;
+      --projects|-p)
+        # projects
+        PROJECTS="`echo $2 | sed 's/:/ /g'`"
+        echo "Projects: \"$PROJECTS\""
+        shift
+        ;;
+      *)
+        echo -e "\nERROR: \"$1\": invalid argument"
+        exit 1
+        ;;
+    esac
+    shift
+  done
+}
+
 function fail {
   echo "SCRIPT_FAILED: $1"
-  exit 1
+  exit 2
 }
+
+# ==================================================================== #
+
+processParams $@
+
+if [ -z "$WORKSPACE" -o -z "$PROJECTS" ]; then
+  echo "Workspace and projects must be defined."
+  exit 3
+fi
 
 [ -d "$WORKSPACE" ] || fail "$WORKSPACE must exist"
 WORKSPACE_PLUGINS=".metadata/.plugins"
