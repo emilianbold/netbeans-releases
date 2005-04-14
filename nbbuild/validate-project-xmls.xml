@@ -14,12 +14,13 @@ Microsystems, Inc. All Rights Reserved.
 <project basedir="." default="validate" name="nbbuild/validate-project-xmls">
     <target name="init">
         <property name="nbroot" location=".."/>
+        <property name="validroot" location="${nbroot}"/>
         <ant dir="${nbroot}/ant/project/eg" antfile="create-sample.xml" target="validate-compile"/>
     </target>
     <target name="find-xmls" depends="init">
         <pathconvert property="xmls" pathsep=",">
             <path>
-                <fileset dir="${nbroot}">
+                <fileset dir="${validroot}">
                     <include name="**/nbproject/project.xml"/>
                     <include name="**/nbproject/private/private.xml"/>
                     <exclude name="**/test/results/"/>
