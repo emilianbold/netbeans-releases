@@ -154,10 +154,11 @@ public final class MainWindow extends JFrame {
                 // XXX #19910 Not to squeeze status line.
                 status.setText(" "); // NOI18N
                 status.setPreferredSize(new Dimension(0, status.getPreferredSize().height));
+                // text in line should be shifted for 4pix.
+                status.setBorder (BorderFactory.createEmptyBorder (0, 4, 0, 0));
 
                 JPanel statusLinePanel = new JPanel(new BorderLayout());
                 int magicConstant = 0;
-                int shiftToRight = 4;
                 if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                     // on mac there is window resize component in the right most bottom area.
                     // it paints over our icons..
@@ -166,7 +167,7 @@ public final class MainWindow extends JFrame {
                 
                 // status line should add some pixels on the left side
                 statusLinePanel.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createEmptyBorder (0, shiftToRight, 0, magicConstant), 
+                        BorderFactory.createEmptyBorder (0, 0, 0, magicConstant), 
                         statusLinePanel.getBorder ()));
                 
                 statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
