@@ -616,6 +616,9 @@ public final class AntProjectHelper {
      * if and when the project is saved.
      * If the old value is the same as the new, nothing is done.
      * Otherwise an expected properties change event is fired.
+     * <p>Acquires write access from {@link ProjectManager#mutex}. However, you are well
+     * advised to explicitly enclose a <em>complete</em> operation within write access,
+     * starting with {@link #getProperties}, to prevent race conditions.
      * @param path a relative URI in the project directory, e.g.
      *             {@link #PROJECT_PROPERTIES_PATH} or {@link #PRIVATE_PROPERTIES_PATH}
      * @param props a set of properties to store, or null to delete any existing properties file there
@@ -694,6 +697,9 @@ public final class AntProjectHelper {
      * The project may save this document fragment to set custom information
      * in <code>nbproject/project.xml</code> and <code>nbproject/private/private.xml</code>.
      * The fragment will be cloned and so further modifications will have no effect.
+     * <p>Acquires write access from {@link ProjectManager#mutex}. However, you are well
+     * advised to explicitly enclose a <em>complete</em> operation within write access,
+     * starting with {@link #getPrimaryConfigurationData}, to prevent race conditions.
      * @param data the desired new configuration data
      * @param shared if true, refers to <code>project.xml</code>, else refers to
      *               <code>private.xml</code>

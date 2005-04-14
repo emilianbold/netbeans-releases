@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -59,6 +59,11 @@ public interface AuxiliaryConfiguration {
      * <p>
      * If a fragment with the same name already exists, it is overwritten with the
      * new fragment.
+     * <p>Implementations ought to acquires write access from
+     * {@link org.netbeans.api.project.ProjectManager#mutex}.
+     * However, from client code you are well advised to explicitly enclose a
+     * <em>complete</em> operation within write access, starting with
+     * {@link #getConfigurationFragment}, to prevent race conditions.
      * @param fragment a DOM tree fragment; the root element must have a defined namespace
      * @param shared true to save in a sharable settings area, false to save in a private
      *               settings area
