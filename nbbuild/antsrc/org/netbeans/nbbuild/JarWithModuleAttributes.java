@@ -49,6 +49,10 @@ public class JarWithModuleAttributes extends Jar {
                 throw new BuildException("Must have defined 'public.packages'", getLocation());
             }
             added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Public-Packages", pubPkgs));
+            String friends = getProject().getProperty("friends");
+            if (friends != null) {
+                added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Friends", friends));
+            }
             String ideDeps = getProject().getProperty("ide.dependencies");
             if (ideDeps != null) {
                 added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-IDE-Dependencies", ideDeps));

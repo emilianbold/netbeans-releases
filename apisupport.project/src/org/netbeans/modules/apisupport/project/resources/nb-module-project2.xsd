@@ -23,7 +23,10 @@ Microsystems, Inc. All Rights Reserved.
                 <xsd:element name="code-name-base" type="javaPackageType"/>
                 <xsd:element name="path" type="pathType"/>
                 <xsd:element name="module-dependencies" type="moduleDependenciesType"/>
-                <xsd:element name="public-packages" type="publicPackagesType"/>
+                <xsd:choice>
+                    <xsd:element name="public-packages" type="publicPackagesType"/>
+                    <xsd:element name="friend-packages" type="friendPackagesType"/>
+                </xsd:choice>
                 <xsd:element name="extra-compilation-unit" minOccurs="0" maxOccurs="unbounded" type="compilation-unit"/>
                 <xsd:element name="javadoc" minOccurs="0"/>
             </xsd:sequence>
@@ -93,6 +96,17 @@ Microsystems, Inc. All Rights Reserved.
             <xsd:choice minOccurs="0" maxOccurs="unbounded">
                 <xsd:element name="package" type="javaPackageType"/>
                 <xsd:element name="subpackages" type="javaPackageType"/>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="friendPackagesType">
+        <xsd:sequence>
+            <xsd:choice minOccurs="1" maxOccurs="unbounded">
+                <xsd:element name="friend" type="javaPackageType"/>
+            </xsd:choice>
+            <xsd:choice minOccurs="1" maxOccurs="unbounded">
+                <xsd:element name="package" type="javaPackageType"/>
             </xsd:choice>
         </xsd:sequence>
     </xsd:complexType>

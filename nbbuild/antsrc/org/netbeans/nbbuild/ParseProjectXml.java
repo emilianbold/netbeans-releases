@@ -78,6 +78,15 @@ public final class ParseProjectXml extends Task {
     public void setPublicPackagesProperty(String s) {
         publicPackagesProperty = s;
     }
+    
+    private String friendsProperty;
+    /**
+     * Set the property to set a list of
+     * OpenIDE-Module-Friends to.
+     */
+    public void setFriendsProperty(String s) {
+        friendsProperty = s;
+    }
 
     private String javadocPackagesProperty;
     /**
@@ -212,6 +221,19 @@ public final class ParseProjectXml extends Task {
                     }
                 }
             }
+            if (friendsProperty != null) {
+                String[] friends = getFriends(pDoc);
+                if (friends != null) {
+                    StringBuffer b = new StringBuffer();
+                    for (int i = 0; i < friends.length; i++) {
+                        if (i > 0) {
+                            b.append(", ");
+                        }
+                        b.append(friends[i]);
+                    }
+                    define(friendsProperty, b.toString());
+                }
+            }
             ModuleListParser modules = null;
             if (moduleDependenciesProperty != null || moduleClassPathProperty != null) {
                 modules = new ModuleListParser(modulesXml);
@@ -308,15 +330,20 @@ public final class ParseProjectXml extends Task {
         Element cfg = getConfig(d);
         Element pp = XMLUtil.findElement(cfg, "public-packages", NBM_NS_1_AND_2); //NOI18N
         if (pp == null) {
+            pp = XMLUtil.findElement(cfg, "friend-packages", NBM_NS_1_AND_2[1]); // NOI18N
+        }
+        if (pp == null) {
             throw new BuildException("No <public-packages>", getLocation());
         }
         List/*<Element>*/ l = XMLUtil.findSubElements(pp);
-        PublicPackage[] pkgs = new PublicPackage[l.size()];
+        List/*<PublicPackage>*/ pkgs = new ArrayList();
         Iterator it = l.iterator();
-        int i = 0;
         while (it.hasNext()) {
             Element p = (Element)it.next();
             boolean sub = false;
+            if ("friend".equals(p.getNodeName())) { // NOI18N
+                continue;
+            }
             if (!"package".equals (p.getNodeName ())) { //NOI18N
                 if (!("subpackages".equals (p.getNodeName ()))) { //NOI18N
                     throw new BuildException ("Strange element name, should be package or subpackages: " + p.getNodeName (), getLocation ());
@@ -328,9 +355,40 @@ public final class ParseProjectXml extends Task {
             if (t == null) {
                 throw new BuildException("No text in <package>", getLocation());
             }
-            pkgs[i++] = new PublicPackage (t, sub);
+            pkgs.add(new PublicPackage(t, sub));
         }
-        return pkgs;
+        return (PublicPackage[]) pkgs.toArray(new PublicPackage[pkgs.size()]);
+    }
+    
+    private String[] getFriends(Document d) throws BuildException {
+        Element cfg = getConfig(d);
+        Element pp = XMLUtil.findElement(cfg, "friend-packages", NBM_NS_1_AND_2[1]); // NOI18N
+        if (pp == null) {
+            return null;
+        }
+        List/*<String>*/ friends = new ArrayList();
+        List/*<Element>*/ l = XMLUtil.findSubElements(pp);
+        Iterator it = l.iterator();
+        boolean other = false;
+        while (it.hasNext()) {
+            Element p = (Element) it.next();
+            if ("friend".equals(p.getNodeName())) { // NOI18N
+                String t = XMLUtil.findText(p);
+                if (t == null) {
+                    throw new BuildException("No text in <friend>", getLocation());
+                }
+                friends.add(t);
+            } else {
+                other = true;
+            }
+        }
+        if (friends.isEmpty()) {
+            throw new BuildException("Must have at least one <friend> in <friend-packages>", getLocation());
+        }
+        if (!other) {
+            throw new BuildException("Must have at least one <package> in <friend-packages>", getLocation());
+        }
+        return (String[]) friends.toArray(new String[friends.size()]);
     }
 
     private final class Dep {
