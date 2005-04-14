@@ -31,6 +31,7 @@ import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
 import org.openide.loaders.*;
 import org.openide.util.Mutex;
+import org.openide.util.WeakListeners;
 import org.openide.windows.*;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
@@ -636,20 +637,28 @@ public class DataEditorSupport extends CloneableEditorSupport {
     private static Lookup createLookup(final DataObject dobj) {
 	final InstanceContent ic = new InstanceContent();
 	Lookup l = new AbstractLookup(ic);
-	dobj.addPropertyChangeListener(new PropertyChangeListener() {
-	    public void propertyChange(PropertyChangeEvent ev) {
-		String propName = ev.getPropertyName();
-		if (propName == null || propName == DataObject.PROP_PRIMARY_FILE) {
-		    updateLookup(dobj, ic);
-		}
-	    }
-	});
+	dobj.addPropertyChangeListener(WeakListeners.propertyChange(new UpdateLookupPropertyChangeListener(dobj, ic), null));
 	updateLookup(dobj,ic);
 	return l;
     }
     
     private static void updateLookup(DataObject d, InstanceContent ic) {
 	ic.set(Arrays.asList(new Object[] { d, d.getPrimaryFile() }), null);
+    }
+    
+    private static class UpdateLookupPropertyChangeListener implements PropertyChangeListener {
+        private InstanceContent ic;
+        private DataObject dobj;
+        public UpdateLookupPropertyChangeListener(DataObject dobj, InstanceContent ic) {
+            this.dobj = dobj;
+            this.ic = ic;
+        }
+        public void propertyChange(PropertyChangeEvent ev) {
+            String propName = ev.getPropertyName();
+            if (propName == null || propName == DataObject.PROP_PRIMARY_FILE) {
+                DataEditorSupport.updateLookup(dobj, ic);
+            }
+        }
     }
     
 }
