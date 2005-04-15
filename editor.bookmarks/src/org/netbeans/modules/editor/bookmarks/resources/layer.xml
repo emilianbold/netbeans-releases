@@ -18,16 +18,13 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Actions">
         <folder name="Edit">
             <file name="bookmark-next.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction.createNext"/>
+                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$Next"/>
             </file>
             <file name="bookmark-previous.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction.createPrevious"/>
+                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$Previous"/>
             </file>
             <file name="bookmark-toggle.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction.createToggle"/>
+                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$Toggle"/>
             </file>
         </folder>
     </folder>

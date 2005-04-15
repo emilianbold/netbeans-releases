@@ -33,19 +33,6 @@ import org.openide.util.actions.NodeAction;
 
 public class WrapperBookmarkAction extends NodeAction {
     
-    public static Action createNext() {
-        // Extra classes for each action otherwise SharedClassObject issues warning
-        return new Next();
-    }
-    
-    public static Action createPrevious() {
-        return new Previous();
-    }
-    
-    public static Action createToggle() {
-        return new Toggle();
-    }
-
     static final long serialVersionUID = 0L;
     
     private Action originalAction;
@@ -93,25 +80,25 @@ public class WrapperBookmarkAction extends NodeAction {
         return (String)originalAction.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
     }
 
-    private static final class Next extends WrapperBookmarkAction {
+    public static final class Next extends WrapperBookmarkAction {
         
-        Next() {
+        public Next() {
             super(GotoBookmarkAction.createNext());
         }
 
     }
 
-    private static final class Previous extends WrapperBookmarkAction {
+    public static final class Previous extends WrapperBookmarkAction {
         
-        Previous() {
+        public Previous() {
             super(GotoBookmarkAction.createPrevious());
         }
 
     }
 
-    private static final class Toggle extends WrapperBookmarkAction {
+    public static final class Toggle extends WrapperBookmarkAction {
         
-        Toggle() {
+        public Toggle() {
             super(new ToggleBookmarkAction());
         }
 

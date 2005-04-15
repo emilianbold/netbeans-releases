@@ -266,6 +266,15 @@ public final class BookmarkList {
         return bookmark;
     }
     
+    /** Removes all bookmarks */
+    public void removeAllBookmarks(){
+        for (int i = 0; i<bookmarks.size(); i++){
+            Bookmark bookmark = (Bookmark)bookmarks.get(i);
+            bookmark.release();
+        }
+        bookmarks.clear();
+    }
+    
     /**
      * Get manager of this bookmark list. Used by SPI accessor.
      */

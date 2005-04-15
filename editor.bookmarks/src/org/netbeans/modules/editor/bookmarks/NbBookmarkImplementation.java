@@ -33,7 +33,7 @@ import org.openide.util.NbBundle;
 public final class NbBookmarkImplementation extends Annotation
 implements BookmarkImplementation {
 
-    private static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark"; // NOI18N
+    static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark"; // NOI18N
 
     private final NbBookmarkManager manager;
     

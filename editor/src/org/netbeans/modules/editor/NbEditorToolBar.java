@@ -22,6 +22,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,6 +62,9 @@ import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -101,6 +105,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     static final String BASE_MIME_TYPE = "text/base"; // NOI18N
     
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
+    
+    FileChangeListener moduleRegListener;
 
     /** Runnable for returning the focus back to the last active text component. */
     private static final Runnable returnFocusRunnable
@@ -168,8 +174,36 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         addMouseListener(sharedMouseListener);
         Settings.addSettingsChangeListener(this);
         settingsChange(null);
+
+        installModulesInstallationListener();
     }
 
+    /** See issue #57773 for details. Toolbar should be updated with possible changes after
+       module install/uninstall */
+    private void installModulesInstallationListener(){
+        moduleRegListener = new FileChangeAdapter() {
+            public void fileChanged(FileEvent fe){
+                //some module installed/uninstalled. Refresh toolbar content
+                Runnable r = new Runnable() {
+                        public void run() {
+                            if (AllOptionsFolder.getDefault().isToolbarVisible()){
+                                checkPresentersRemoved();
+                                checkPresentersAdded();                                
+                            }
+                        }
+                     };
+                Utilities.runInEventDispatchThread(r);
+            }
+        };
+
+        FileObject moduleRegistry = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); //NOI18N
+
+        if (moduleRegistry !=null){
+            moduleRegistry.addFileChangeListener(
+                FileUtil.weakFileChangeListener(moduleRegListener, moduleRegistry));
+        }
+    }
+    
     public String getUIClassID() {
         //For GTK and Aqua look and feels, we provide a custom toolbar UI -
         //but we cannot override this globally or it will cause problems for
@@ -224,6 +258,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             presentersAdded = true;
             DataFolder baseFolder = getToolBarFolder(BASE_MIME_TYPE, false);
             DataFolder mimeFolder = getToolBarFolder(getMimeType(), false);
+            
             addPresenters(baseFolder, mimeFolder);
         }
     }

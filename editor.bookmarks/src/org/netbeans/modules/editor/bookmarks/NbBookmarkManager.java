@@ -13,12 +13,17 @@
 
 package org.netbeans.modules.editor.bookmarks;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import org.netbeans.lib.editor.bookmarks.api.Bookmark;
+import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.netbeans.lib.editor.bookmarks.spi.BookmarkImplementation;
 import org.netbeans.lib.editor.bookmarks.spi.BookmarkManager;
 import org.netbeans.lib.editor.bookmarks.spi.BookmarkManagerFactory;
 import org.netbeans.lib.editor.bookmarks.spi.BookmarkManagerSupport;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -36,9 +41,17 @@ public final class NbBookmarkManager implements BookmarkManager {
     public NbBookmarkManager() {
     }
 
+    private transient ChangeListener bookmarksModuleListener = new ChangeListener() {
+        public void stateChanged(ChangeEvent ev) {
+            BookmarkList bl = support.getBookmarkList();
+            bl.getDocument().putProperty(BookmarkList.class, null);
+            bl.removeAllBookmarks();
+        }
+    };
+    
     public void init(BookmarkManagerSupport support) {
         this.support = support;
-        
+        EditorBookmarksModule.getListenerSupport().addChangeListener(WeakListeners.change(bookmarksModuleListener, EditorBookmarksModule.getListenerSupport()));
         PersistentBookmarks.loadBookmarks(this);
     }
     
