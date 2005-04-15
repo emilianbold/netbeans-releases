@@ -125,9 +125,13 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
         
         // 5) set root node for given model
         currentTreeModelRoot = new TreeModelRoot (model, this);
-        getExplorerManager ().setRootContext (
-            currentTreeModelRoot.getRootNode ()
-        );
+        TreeModelNode.getRequestProcessor ().post (new Runnable () {
+            public void run () {
+                getExplorerManager ().setRootContext (
+                    currentTreeModelRoot.getRootNode ()
+                );
+            }
+        });
         
         // 6) update column widths & expanded nodes
         updateColumnWidths ();
