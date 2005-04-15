@@ -14,7 +14,6 @@
 package org.netbeans.modules.projectimport.eclipse.wizard;
 
 import java.awt.Dialog;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;

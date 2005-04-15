@@ -13,11 +13,7 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
-import java.io.File;
-import junit.framework.TestCase;
 import org.netbeans.junit.NbTestCase;
-
-import org.netbeans.modules.projectimport.eclipse.*;
 
 /**
  * Tests equal and hashCode methods.
