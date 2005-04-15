@@ -27,11 +27,15 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.schema2beans.BaseBean;
+import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
+import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
+import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -106,14 +110,18 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
             } catch (ClassNotFoundException ex){}
          }
          
-         if(helper.addReference(target)) {
-                EditableProperties ep =
-                    antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                String s = ep.getProperty(WebProjectProperties.JAVAC_CLASSPATH);
-                s += File.pathSeparatorChar + helper.createForeignFileReference(target);
-		ep.setProperty(WebProjectProperties.JAVAC_CLASSPATH, s);
-                antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                ProjectManager.getDefault().saveProject(webProject);
+        WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) webProject.getLookup().lookup(WebProjectClassPathExtender.class);
+        if (cpExtender != null) {
+            try {
+                AntArtifactChooser.ArtifactItem artifactItems[] = new AntArtifactChooser.ArtifactItem [1];
+                artifactItems[0] = new AntArtifactChooser.ArtifactItem (target, target.getArtifactLocation());
+                cpExtender.addAntArtifacts(WebProjectProperties.JAVAC_CLASSPATH, artifactItems, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            }
+        }
+        else {
+            ErrorManager.getDefault().log ("WebProjectClassPathExtender not found in the project lookup of project: "+webProject.getProjectDirectory().getPath());    //NOI18N
         }
          
         writeDD();
