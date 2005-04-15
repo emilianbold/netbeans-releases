@@ -26,20 +26,17 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
-import org.netbeans.modules.j2ee.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.j2ee.earproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.earproject.ui.EarCustomizerProvider;
 import org.netbeans.modules.j2ee.earproject.ui.LogicalViewProvider;
-import org.netbeans.modules.j2ee.common.ui.J2eeArchiveLogicalViewProvider;
-import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
-import org.netbeans.modules.j2ee.common.J2eeArchiveActionProvider;
-import org.netbeans.modules.j2ee.common.J2eeProject;
-
-import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.j2ee.earproject.ui.J2eeArchiveLogicalViewProvider;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.ArchiveProjectProperties;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.earproject.ui.BrokenServerSupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -68,7 +65,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import org.netbeans.modules.j2ee.common.ui.IconBaseProvider;
+import org.netbeans.modules.j2ee.earproject.ui.IconBaseProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 
@@ -82,7 +79,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
  * @author vince kraemer
  * @see WebProject
  */
-public final class EarProject implements J2eeProject, Project, AntProjectListener, FileChangeListener, ProjectPropertyProvider {
+public final class EarProject implements Project, AntProjectListener, FileChangeListener, ProjectPropertyProvider {
     
     private static final Icon EAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif")); // NOI18N
     
@@ -151,7 +148,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
             spp,
             new ProjectEarProvider (),
             appModule, //implements J2eeModuleProvider
-            new J2eeArchiveActionProvider( this, updateHelper, refHelper, abpt),
+            new EarActionProvider( this, updateHelper, refHelper, abpt),
             new LogicalViewProvider(this, updateHelper, evaluator (), spp, refHelper, abpt),
             new MyIconBaseProvider(),
             new EarCustomizerProvider( this, helper, refHelper, abpt ),
@@ -473,7 +470,8 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
     public String getJ2eePlatformVersion () {
         return  helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_PLATFORM);
     }
-    public ArchiveProjectProperties getProjectProperties() {
+    
+    public EarProjectProperties getProjectProperties() {
         return new EarProjectProperties(this, updateHelper,eval, refHelper, abpt);
     }
     

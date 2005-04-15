@@ -20,8 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JButton;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
-import org.netbeans.modules.j2ee.common.ui.customizer.UpdateHelperType;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.ArchiveProjectProperties;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.customizer.ClassPathUiSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -56,7 +55,7 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
  * "http://www.netbeans.org/ns/web-project/1" to "http://www.netbeans.org/ns/web-project/2".
  * In future it should define plugable SPI.
  */
-public class UpdateHelper implements UpdateHelperType {
+public class UpdateHelper  {
 
     private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("webproject.transparentUpdate"); //NOI18N
     private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N

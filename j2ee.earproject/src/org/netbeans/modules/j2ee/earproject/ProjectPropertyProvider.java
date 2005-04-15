@@ -6,7 +6,7 @@
 
 package org.netbeans.modules.j2ee.earproject;
 
-import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.ArchiveProjectProperties;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 
 /**
@@ -15,5 +15,5 @@ import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
  */
 public interface ProjectPropertyProvider {
     
-    public ArchiveProjectProperties getProjectProperties(); 
+    public EarProjectProperties getProjectProperties(); 
 }

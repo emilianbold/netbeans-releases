@@ -15,6 +15,9 @@ Microsystems, Inc. All Rights Reserved.
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Services">
+        <file name="org-netbeans-modules-j2ee-earproject-ui-FoldersList.settings" url="foldersList.settings"/>
+    </folder>
     <folder name="Templates">    
         <folder name="Project">
             <attr name="Standard/J2EE" boolvalue="true"/>

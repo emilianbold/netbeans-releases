@@ -18,7 +18,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 
 import org.netbeans.modules.j2ee.earproject.ui.ModuleNode;
 

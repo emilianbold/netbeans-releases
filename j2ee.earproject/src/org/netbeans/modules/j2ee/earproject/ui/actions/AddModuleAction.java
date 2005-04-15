@@ -36,7 +36,7 @@ import org.openide.util.actions.CookieAction;
 import org.openide.util.lookup.Lookups;
 
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import java.util.Arrays;

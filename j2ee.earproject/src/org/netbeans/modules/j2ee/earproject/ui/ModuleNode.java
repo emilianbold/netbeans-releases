@@ -28,13 +28,12 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.Utilities;
 import org.netbeans.api.project.Project;
 
-import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.ui.actions.OpenModuleProjectAction;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.j2ee.earproject.ProjectPropertyProvider;
-import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
 import org.netbeans.api.project.FileOwnerQuery;
 
 /**
@@ -92,7 +91,7 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
         Project p = FileOwnerQuery.getOwner(helper.getProjectDirectory());
         ProjectPropertyProvider ppp =
                 (ProjectPropertyProvider) p.getLookup().lookup(ProjectPropertyProvider.class);
-        ArchiveProjectProperties epp = ppp.getProjectProperties();
+        EarProjectProperties epp = ppp.getProjectProperties();
        Object t = epp.get(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
         if (!(t instanceof List)) {
             assert false : "jar content isn't a List???";

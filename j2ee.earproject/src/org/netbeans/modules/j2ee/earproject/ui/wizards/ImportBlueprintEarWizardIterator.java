@@ -38,7 +38,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.j2ee.common.ui.wizards.WizardProperties;
+import org.netbeans.modules.j2ee.earproject.ui.wizards.WizardProperties;
 import org.openide.util.HelpCtx;
 
 /**
@@ -56,7 +56,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Instan
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new org.netbeans.modules.j2ee.common.ui.wizards.PanelConfigureProject(PROP_NAME_INDEX, NbBundle.getBundle(NewEarProjectWizardIterator.class),
+            new org.netbeans.modules.j2ee.earproject.ui.wizards.PanelConfigureProject(PROP_NAME_INDEX, NbBundle.getBundle(NewEarProjectWizardIterator.class),
                 new HelpCtx(this.getClass()), true),
         };
     }

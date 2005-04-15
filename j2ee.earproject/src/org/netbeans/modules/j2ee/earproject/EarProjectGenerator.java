@@ -15,7 +15,7 @@ package org.netbeans.modules.j2ee.earproject;
 
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.ArchiveProjectProperties;
 
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;

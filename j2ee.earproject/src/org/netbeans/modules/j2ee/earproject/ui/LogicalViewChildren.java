@@ -23,7 +23,7 @@ import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.dd.api.application.*;
 
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 
 
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -37,7 +37,6 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 
 
 import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
 import org.netbeans.api.project.FileOwnerQuery;
 /**
  * List of children of a containing node.
@@ -69,8 +68,8 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
 
         Project p = FileOwnerQuery.getOwner(model.getProjectDirectory());
         EarProject ep = (EarProject) p.getLookup().lookup(EarProject.class);
-        ArchiveProjectProperties epp = ep.getProjectProperties();
-        Object t = epp.get(ArchiveProjectProperties.JAR_CONTENT_ADDITIONAL);
+        EarProjectProperties epp = ep.getProjectProperties();
+        Object t = epp.get(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
         if (!(t instanceof List)) {
             assert false : "jar content isn't a List???";
             return;
