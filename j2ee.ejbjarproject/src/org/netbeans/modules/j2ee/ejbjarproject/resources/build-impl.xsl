@@ -902,7 +902,7 @@ is divided into following sections:
                             </xsl:if>
                             <arg value="-windowtitle"/>
                             <arg value="${{javadoc.windowtitle}}"/>
-                            <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}}"/>
+                            <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}} ${{javadoc.additionalparam}}"/>
                             <arg value="-classpath"/>
                             <arg value="${{javadoc.classpath.opt}}"/>
                             <arg value="-sourcepath"/>
