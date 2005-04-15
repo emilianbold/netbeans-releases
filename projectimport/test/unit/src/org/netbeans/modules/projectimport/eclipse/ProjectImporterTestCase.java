@@ -38,7 +38,7 @@ class ProjectImporterTestCase extends NbTestCase {
      * If true a lot of information about parsed project will be written to a
      * console.
      */
-    private boolean verbose;
+    private static boolean verbose;
     
     private File jars;
     private File workDir;
@@ -63,7 +63,7 @@ class ProjectImporterTestCase extends NbTestCase {
     }
     
     protected void setVerbose(boolean verbose) {
-        this.verbose = verbose;
+        ProjectImporterTestCase.verbose = verbose;
     }
     
     /*
@@ -100,7 +100,7 @@ class ProjectImporterTestCase extends NbTestCase {
         return new File(workDir, jarFile.substring(0, jarFile.length() - 4));
     }
     
-    protected void printMessage(String message, boolean newLine) {
+    protected static void printMessage(String message, boolean newLine) {
         if (verbose) {
             if (newLine) {
                 System.out.println(message);
@@ -110,11 +110,11 @@ class ProjectImporterTestCase extends NbTestCase {
         }
     }
     
-    protected void printMessage(String message) {
+    protected static void printMessage(String message) {
         printMessage(message, true);
     }
     
-    protected void printCollection(String name, Collection col) {
+    protected static void printCollection(String name, Collection col) {
         if (col != null && !col.isEmpty()) {
             printMessage("  " + name + ":");
             for (Iterator it = col.iterator(); it.hasNext(); ) {
