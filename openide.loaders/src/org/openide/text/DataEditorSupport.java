@@ -54,7 +54,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     * @param env environment to pass to 
     */
     public DataEditorSupport (DataObject obj, CloneableEditorSupport.Env env) {
-        super (env, createLookup(obj));
+        super (env, new DOEnvLookup (obj));
         this.obj = obj;
     }
     
@@ -629,34 +629,36 @@ public class DataEditorSupport extends CloneableEditorSupport {
         }
         
     } // end of DataNodeListener
-    
-    /* Create a special lookup implementation that contains a DataObject and its
-     * primary fileobject. If the file is moved, the FileObject is replaced,
-     * while the DataObject keeps the identity.
+
+    /** Lookup that holds DataObject, its primary file and updates if that
+     * changes.
      */
-    private static Lookup createLookup(final DataObject dobj) {
-	final InstanceContent ic = new InstanceContent();
-	Lookup l = new AbstractLookup(ic);
-	dobj.addPropertyChangeListener(WeakListeners.propertyChange(new UpdateLookupPropertyChangeListener(dobj, ic), null));
-	updateLookup(dobj,ic);
-	return l;
-    }
-    
-    private static void updateLookup(DataObject d, InstanceContent ic) {
-	ic.set(Arrays.asList(new Object[] { d, d.getPrimaryFile() }), null);
-    }
-    
-    private static class UpdateLookupPropertyChangeListener implements PropertyChangeListener {
-        private InstanceContent ic;
+    private static class DOEnvLookup extends AbstractLookup 
+    implements PropertyChangeListener {
         private DataObject dobj;
-        public UpdateLookupPropertyChangeListener(DataObject dobj, InstanceContent ic) {
-            this.dobj = dobj;
-            this.ic = ic;
+        private InstanceContent ic;
+        
+        public DOEnvLookup (DataObject dobj) {
+            this (dobj, new InstanceContent ());
         }
+        
+        private DOEnvLookup (DataObject dobj, InstanceContent ic) {
+            super (ic);
+            this.ic = ic;
+            this.dobj = dobj;
+        	dobj.addPropertyChangeListener(WeakListeners.propertyChange(this, dobj));
+     
+            updateLookup ();
+        }
+        
+        private void updateLookup() {
+            ic.set(Arrays.asList(new Object[] { dobj, dobj.getPrimaryFile() }), null);
+        }
+        
         public void propertyChange(PropertyChangeEvent ev) {
             String propName = ev.getPropertyName();
             if (propName == null || propName == DataObject.PROP_PRIMARY_FILE) {
-                DataEditorSupport.updateLookup(dobj, ic);
+                updateLookup();
             }
         }
     }
