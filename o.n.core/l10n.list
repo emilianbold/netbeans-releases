@@ -13,7 +13,7 @@ core/ide/src/**/*.png
 core/javahelp/src/**/Bundle.properties
 core/javahelp/src/**/*.gif
 core/javahelp/src/**/*.png
-core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpPage.html
+core/javahelp/src/org/netbeans/modules/javahelp/resources/*.html
 core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpSet.xml
 core/output2/src/**/Bundle.properties
 core/output2/src/**/*.gif
