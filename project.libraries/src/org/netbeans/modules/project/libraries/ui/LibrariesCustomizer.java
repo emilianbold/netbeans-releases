@@ -226,10 +226,16 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         }
         this.libraryName.setEnabled(false);
         this.libraryName.setText("");   //NOI18N
+        this.jLabel1.setVisible(false);
+        this.libraryName.setVisible(false);
+        this.properties.setVisible(false);
         this.deleteButton.setEnabled(false);        
         if (nodes.length != 1 || !(nodes[0] instanceof LibraryNode)) {            
             return;
         }
+        this.jLabel1.setVisible(true);
+        this.libraryName.setVisible(true);
+        this.properties.setVisible(true);
         LibraryNode lnode = (LibraryNode) nodes[0];
         LibraryImplementation impl = lnode.getLibrary ();
         boolean editable = model.isLibraryEditable (impl);
@@ -267,6 +273,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
 
         jLabel1 = new javax.swing.JLabel();
         libraryName = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
         properties = new javax.swing.JTabbedPane();
         createButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
@@ -289,6 +296,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.6;
@@ -296,7 +304,13 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         add(libraryName, gridBagConstraints);
         libraryName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AD_LibraryName"));
 
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
         properties.setPreferredSize(new java.awt.Dimension(400, 300));
+        jPanel1.add(properties, java.awt.BorderLayout.CENTER);
+        properties.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AN_LibrariesCustomizerProperties"));
+        properties.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AD_LibrariesCustomizerProperties"));
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -306,9 +320,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 12);
-        add(properties, gridBagConstraints);
-        properties.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AN_LibrariesCustomizerProperties"));
-        properties.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AD_LibrariesCustomizerProperties"));
+        add(jPanel1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(createButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("CTL_NewLibrary"));
         createButton.addActionListener(new java.awt.event.ActionListener() {
@@ -492,6 +504,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     private javax.swing.JButton deleteButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField libraryName;
     private javax.swing.JPanel libsPanel;
     private javax.swing.JTabbedPane properties;
