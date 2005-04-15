@@ -87,7 +87,7 @@ public final class JavaAntLogger extends AntLogger {
      * that specificies java executable.
      * Hack to find JDK used for execution.
      */
-    private static final Pattern JAVA_EXECUTABLE = Pattern.compile("^Executing '(.*)' with arguments:$"); // NOI18N
+    private static final Pattern JAVA_EXECUTABLE = Pattern.compile("^Executing '(.*)' with arguments:$", Pattern.MULTILINE); // NOI18N
     
     /**
      * Ant task names we will pay attention to.
