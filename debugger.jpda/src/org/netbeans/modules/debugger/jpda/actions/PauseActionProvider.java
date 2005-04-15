@@ -66,13 +66,19 @@ implements Runnable {
         try {
             List l = vm.allThreads ();
             int i, k = l.size ();
+            boolean susp;
             for (i = 0; i < k; i++) {
                 ThreadReference tr = (ThreadReference) l.get (i);
-                if (!tr.isSuspended ()) {
+                susp = true; //workaround for #57931
+                try {
+                    susp = tr.isSuspended();
+                } catch (com.sun.jdi.ObjectCollectedException e) {} 
+                if (! susp) {
                     setEnabled (
                         ActionsManager.ACTION_PAUSE,
                         true
                     );
+                
                     return;
                 }
             }
