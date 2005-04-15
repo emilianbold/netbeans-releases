@@ -2,3 +2,5 @@ utilities/src/**/Bundle*.properties
 utilities/src/**/*.gif
 utilities/src/**/*.png
 utilities/src/**/*.url
+utilities/project/src/**/Bundle*.properties
+utilities/project/src/**/*.gif
