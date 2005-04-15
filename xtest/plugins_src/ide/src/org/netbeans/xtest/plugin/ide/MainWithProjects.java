@@ -7,11 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.xtest.plugin.ide;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.openide.ErrorManager;
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +28,7 @@ import org.openide.util.Mutex;
  * Portion of Main that needs to run with access to Projects API & impl.
  * @author Jan Chalupa, Jesse Glick, Jiri Skrivanek
  */
-public class MainWithProjects implements Main.MainWithProjectsInterface {
+public class MainWithProjects implements Main.MainWithProjectsInterface, PropertyChangeListener {
     
     /** Opens project on specified path.
      * @param projectPath path to a directory with project to open
@@ -35,6 +37,16 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
         openProject(new File(projectPath));
     }
     
+    /** Listen for property which changes when project is hopefully opened. */
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(OpenProjectList.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+            projectOpened = true;
+        }
+    }
+    
+    /** Signal that project was opened. */
+    boolean projectOpened = false;
+    
     /** Opens project in specified directory.
      * @param projectDir a directory with project to open
      */
@@ -42,9 +54,11 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
         try {
             // open project
             final Project project = OpenProjectList.fileToProject(projectDir);
+            final MainWithProjects instance = this;
             // posting the to AWT event thread
             Mutex.EVENT.writeAccess(new Runnable() {
                 public void run() {
+                    OpenProjectList.getDefault().addPropertyChangeListener(instance);
                     OpenProjectList.getDefault().open(project);
                     // Set main? Probably user should do this if he wants.
                     // OpenProjectList.getDefault().setMainProject(project);
@@ -56,14 +70,11 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
             // too early and finishes immediatelly.
             Thread waitThread = new Thread(new Runnable() {
                 public void run() {
-                    boolean projectOpened = false;
                     while(!projectOpened) {
-                        Project[] projects = OpenProjectList.getDefault().getOpenProjects();
-                        for(int i=0;i<projects.length;i++) {
-                            if(projects[i] == project) {
-                                projectOpened = true;
-                                break;
-                            }
+                        try {
+                            Thread.sleep(50);
+                        } catch (Exception e) {
+                            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
                         }
                     }
                 }
@@ -85,7 +96,9 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
             ((JMManager)JMManager.getManager()).waitScanFinished();
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-        }        
+        } finally {
+            OpenProjectList.getDefault().removePropertyChangeListener(this);
+        }
     }
     
     /** Creates an empty Java project in specified directory and opens it. 
