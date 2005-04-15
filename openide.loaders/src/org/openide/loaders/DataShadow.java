@@ -159,6 +159,8 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                     // shadows with such original
                     return;
                 }
+                // to prevent modifications
+                shadows = new HashSet (shadows);
             }
         }
         
