@@ -7,31 +7,24 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.xml.tools.actions;
 
-import java.util.*;
-
-import org.openide.*;
-import org.openide.nodes.*;
+import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.modules.xml.core.actions.CollectXMLAction;
+import org.netbeans.modules.xml.core.actions.InputOutputReporter;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
-import org.openide.loaders.*;
-
-import org.netbeans.tax.*;
-import org.netbeans.modules.xml.core.*;
-import org.netbeans.modules.xml.core.actions.*;
-
-import org.netbeans.api.xml.cookies.*;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.CookieAction;
 
 /**
  * Validates XML file sending results to output window.
  *
  * @author  Petr Kuzel
- * @version 1.0
  */
 public class ValidateAction extends CookieAction implements CollectXMLAction.XMLAction {
 

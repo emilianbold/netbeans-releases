@@ -7,31 +7,52 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.xml.tools.generator;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URL;
-
-import org.openide.xml.XMLUtil;
-import org.openide.filesystems.*;
-import org.openide.loaders.DataObject;
-import org.openide.util.UserCancelException;
-
-import org.netbeans.tax.TreeUtilities;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.Vector;
+import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.core.XMLDataObject;
 import org.netbeans.modules.xml.core.lib.GuiUtil;
-import org.netbeans.api.xml.services.UserCatalog;
-import org.xml.sax.*;
+import org.netbeans.tax.TreeUtilities;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.loaders.DataObject;
+import org.openide.util.UserCancelException;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 
 /**
  * GenerateDTDSupport class generate a DTD by guessing it from
  * XML document.
  * <p>
- * It's alreafy prepared for plugging in XMLSchema generator.
+ * It's already prepared for plugging in XMLSchema generator.
  *
  * @author   Libor Kramolis
  * @author   Petr Kuzel, rewritten to SAX
