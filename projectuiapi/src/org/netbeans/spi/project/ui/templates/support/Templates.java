@@ -32,18 +32,36 @@ public class Templates {
     
     private Templates() {}
     
-    /** Method to communicate current choice of project to a custom WizardIteartor
-     * associated with particular template
+    /**
+     * Find the project selected for a custom template wizard iterator.
+     * <p class="nonnormative">
+     * If the user selects File | New File, this will be the project chosen in the first panel.
+     * If the user selects New from {@link org.netbeans.modules.project.ui.actions.Actions#newFileAction}, this will
+     * be the project on which the context menu was invoked.
+     * </p>
+     * @param wizardDescriptor the wizard as passed to {@link WizardDescriptor.InstantiatingIterator#initialize}
+     *                         or {@link TemplateWizard.Iterator#initialize}
+     * @return the project into which the user has requested this iterator create a file (or null if not set)
      */
     public static Project getProject( WizardDescriptor wizardDescriptor ) {
         return (Project) wizardDescriptor.getProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT );
     }
     
-    /** Method to communicate current choice of template to a custom 
-     * {@link WizardDescriptor.InstantiatingIterator} associated with particular template.
+    /**
+     * Find the template with which a custom template wizard iterator is associated.
+     * <p class="nonnormative">
+     * If the user selects File | New File, this will be the template chosen in the first panel.
+     * If the user selects New from {@link org.netbeans.modules.project.ui.actions.Actions#newFileAction}, this will
+     * be the template selected from the context submenu.
+     * </p>
+     * @param wizardDescriptor the wizard as passed to {@link WizardDescriptor.InstantiatingIterator#initialize}
+     *                         or {@link TemplateWizard.Iterator#initialize}
+     * @return the corresponding template marker file (or null if not set)
      */
     public static FileObject getTemplate( WizardDescriptor wizardDescriptor ) {
-        assert wizardDescriptor != null : "wizardDescriptor cannot be null.";
+        if (wizardDescriptor == null) {
+            throw new IllegalArgumentException("Cannot pass a null wizardDescriptor"); // NOI18N
+        }
         if ( wizardDescriptor instanceof TemplateWizard ) {
             DataObject template = ((TemplateWizard)wizardDescriptor).getTemplate();
             if (template != null) {
@@ -53,8 +71,18 @@ public class Templates {
         return (FileObject) wizardDescriptor.getProperty( ProjectChooserFactory.WIZARD_KEY_TEMPLATE );
     }
     
-    /** Method to communicate current choice of target folder to a custom 
-     * {@link WizardDescriptor.InstantiatingIterator} associated with particular template.
+    /**
+     * Find the target folder selected for a custom template wizard iterator.
+     * <p class="nonnormative">
+     * If the user selects File | New File
+     * this may not be set, unless you have called {@link #setTargetFolder}
+     * in an earlier panel (such as that created by {@link #createSimpleTargetChooser(Project,SourceGroup[])}).
+     * It may however have a preselected folder, e.g. if the user invoked New from
+     * the context menu of a folder.
+     * </p>
+     * @param wizardDescriptor the wizard as passed to {@link WizardDescriptor.InstantiatingIterator#initialize}
+     *                         or {@link TemplateWizard.Iterator#initialize}
+     * @return the folder into which the user has requested this iterator create a file (or null if not set)
      */
     public static FileObject getTargetFolder( WizardDescriptor wizardDescriptor ) {
         
@@ -71,8 +99,10 @@ public class Templates {
         }
     }
     
-    /** Sets the target folder for given WizardDescriptor to be used from
-     * custom target choosers
+    /**
+     * Stores a target folder so that it can be remembered later using {@link #getTargetFolder}.
+     * @param wizardDescriptor a template wizard
+     * @param folder a target folder to remember
      */    
     public static void setTargetFolder( WizardDescriptor wizardDescriptor, FileObject folder ) {
         
@@ -87,6 +117,7 @@ public class Templates {
 
     /** Method to communicate current choice of target name to a custom 
      * {@link WizardDescriptor.InstantiatingIterator} associated with particular template.
+     * <p>XXX why is this public? only used from NewFileIterator in projectui?
      */
     public static String getTargetName( WizardDescriptor wizardDescriptor ) {
         if ( wizardDescriptor instanceof TemplateWizard ) {
@@ -99,6 +130,7 @@ public class Templates {
     
     /** Sets the target name for given WizardDescriptor to be used from
      * custom target choosers
+     * <p>XXX why is this public? only used from SimpleTargetChooserPanel in projectui?
      */
     public static void setTargetName( WizardDescriptor wizardDescriptor, String targetName ) {
         if ( wizardDescriptor instanceof TemplateWizard ) {                        
@@ -112,7 +144,7 @@ public class Templates {
     /**
      * Create a basic target chooser suitable for many kinds of templates.
      * The user is prompted to choose a location for the new file and a (base) name.
-     * Instantiation is handled by {@link org.openide.loaders.DataObject#createFromTemplate}.
+     * Instantiation is handled by {@link DataObject#createFromTemplate}.
      * @param project The project to work on.
      * @param folders a list of possible roots to create the new file in
      * @return a wizard panel(s) prompting the user to choose a name and location
@@ -124,7 +156,7 @@ public class Templates {
     /**
      * Create a basic target chooser suitable for many kinds of templates.
      * The user is prompted to choose a location for the new file and a (base) name.
-     * Instantiation is handled by {@link org.openide.loaders.DataObject#createFromTemplate}.
+     * Instantiation is handled by {@link DataObject#createFromTemplate}.
      * Resulting panel can be decorated with additional panel placed below the standard target 
      * chooser.
      * @param project The project to work on.
