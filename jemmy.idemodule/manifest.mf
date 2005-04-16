@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.jemmy.idemodule/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jemmy/idemodule/Bundle.properties
-Class-Path: ext/jemmy.jar
 OpenIDE-Module-Layer: org/netbeans/modules/jemmy/idemodule/mf-layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.21
+

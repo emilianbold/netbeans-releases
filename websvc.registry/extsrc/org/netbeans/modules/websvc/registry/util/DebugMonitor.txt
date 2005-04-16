@@ -1,0 +1,101 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.websvc.registry.util;
+
+
+import org.openide.windows.*;
+
+/**
+ * Debug class, facilitates printing debug messages to the IDE's output window
+ * probably should not be included in the released product
+ * @author  octav
+ */
+public class DebugMonitor {
+
+    private static OutputWriter writer = null;
+    private static InputOutput io = null;
+    private static final String dbDebug = "dbdebug"; // NOI18N
+
+    /**
+     * Default constructor
+     */
+    public DebugMonitor() {
+    }
+
+    public static void println(String s) {
+        if (System.getProperty(dbDebug) == null)
+            return;
+
+        if (io == null) {
+            IOProvider iop = IOProvider.getDefault();
+
+            io = iop.getIO("DEBUG", false);
+            if(io == null)
+                io = iop.getIO("DEBUG", true);
+
+            io.select();
+            writer = io.getOut();
+            try {
+                writer.reset();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (System.getProperty(dbDebug) != null) {
+
+            // write to output window tab created above
+            try {
+                writer.println(s, null /*listener */);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // Also write to standard out in case output window is malfunctioning
+            System.out.println(s);
+        }
+
+    }
+
+    /**
+     * Another way of doing the same thing as above
+     */
+    public void createOutputTab(String msg){
+        OutputWriter writer = null;
+        InputOutput io = null;
+        if (io == null) {
+            IOProvider iop = IOProvider.getDefault();
+            if (iop != null){
+                io = iop.getIO("TestOutputTab", false);
+                if (io == null) io = iop.getIO("TestOutputTab", true);
+                io.select();
+            } else {
+                System.err.println("Error - could not create trace/debug tab");
+            }
+        }
+
+        if (io != null){
+            writer = io.getOut();
+            try {
+                writer.reset();
+                writer.println(msg, null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else{
+            System.err.println("Could not get Tab for output");
+        }
+    }
+
+}

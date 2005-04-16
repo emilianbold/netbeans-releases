@@ -5,7 +5,6 @@ OpenIDE-Module-Specification-Version: 1.17
 OpenIDE-Module-Install: org/netbeans/modules/form/FormEditorModule.class
 OpenIDE-Module-Requires: org.openide.modules.InstalledFileLocator
 OpenIDE-Module-Layer: org/netbeans/modules/form/resources/layer.xml
-Class-Path: ext/AbsoluteLayout.jar
 
 Name: org/netbeans/modules/form/FormDataLoader.class
 OpenIDE-Module-Class: Loader

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,87 +8,39 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
+<project name="httpserver/servletapi" basedir="." default="netbeans">
 
-<project name="servletapi" basedir="." default="netbeans">
-  <import file="../../nbbuild/default.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
-  <target name="init" depends="default.init">
-    <patternset id="httpserver/servletapi.files">
-      <include name="${nb.modules/autoload.dir}/servletapi.jar"/>
-      <include name="${nb.modules/autoload.dir}/ext/servlet-2.2.jar"/>
-    </patternset>
-    <ant dir="../external" target="unscramble"/>
-    <path id="cp">
-    </path>
-  </target>
+    <target name="netbeans-extra" depends="release"/>
 
-  <target name="jars" depends="init">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/servletapi.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-         excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
-         compress="false">
-      <include name="org/netbeans/modules/servletapi/"/>
-    </jar>
-  </target>
+    <target name="release" depends="init">
+        <ant dir="../external" target="unscramble"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <copy file="../external/servlet-2.2.jar" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/servlet-2.2.jar"/>
+    </target>
 
-  <target name="release" depends="init">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
-    <copy file="../external/servlet-2.2.jar"
-          tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext/servlet-2.2.jar"/>
-  </target>
-
-  <target name="netbeans" depends="jars,release" description="Builds the module">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/servletapi.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="httpserver/servletapi.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans" description="Prepare the module for distribution via Auto Update.">
-    <makenbm file="servletapi.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules/autoload.dir}/servletapi.jar"
-             homepage="http://httpserver.${homepage.base}/"
-             distribution="http://${dist.base}/servletapi.nbm">
-      <license name="servletapi-license.txt">
-        <text>For the integration module:</text>
-        <file location="${license.file}"/>
-        <text>For the Servlet API:</text>
-        <file location="../external/servlet-2.2-license.txt"/>
-      </license>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean" depends="init" description="Clean all build products.">
-        <delete>
-            <fileset dir="../src">
-                <include name="org/netbeans/modules/servletapi/**/*.class"/>
-            </fileset>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-                <patternset refID="httpserver/servletapi.files"/>
-            </fileset>
-        </delete>
-        <delete file="manifest-subst.mf"/>
-        <delete file="servletapi.nbm"/>
-  </target>
-
-  <target name="javadoc">
-    <delete dir="javadoc" />
-    <mkdir dir="javadoc" />
-    <!-- PENDING -->
-    <genjavadoc destdir="javadoc" modules="openide">
-      <topdir path="${nb_root}" />
-    </genjavadoc>
-  </target>
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
+                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 module="${module.jar}"
+                 homepage="${nbm.homepage}"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}"
+                 releasedate="${nbm.release.date}"
+		 moduleauthor="${nbm.module.author}">
+            <license name="servletapi-license.txt">
+                <text>For the integration module:</text>
+                <file location="${license.file}"/>
+                <text>For the Servlet API:</text>
+                <file location="../external/servlet-2.2-license.txt"/>
+            </license>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
 
 </project>
-

@@ -14,40 +14,37 @@ Microsystems, Inc. All Rights Reserved.
 <project basedir="." default="netbeans" name="websvc/registry">
 
     <import file="../../nbbuild/templates/projectized.xml"/>
-        
-	<property name="runtimejars.file" value="websvc_runtimejars.xml"/>
 
-    <!-- XXX this should be done in a 'release' target from 'netbeans-extra' instead: -->
-	<target name="build-init" depends="projectized.build-init">
-		<property name="websvc/jax-qname.dir" value="${netbeans.dest.dir}/${cluster.dir}"/>
-                <property name="j2ee/external" value="../../j2ee/external"/>
-		<property name="runtimejars.path" value="${netbeans.dest.dir}/${cluster.dir}/config/WebServices"/>
-		<copy file="${runtimejars.file}"
-			  tofile="${runtimejars.path}/${runtimejars.file}"
-			  filtering="on">
-			<filterset>
-				<filter value="${cluster.dir}" token="CLUSTER_DIR"/>
-			</filterset>
-		</copy>
-	</target>
+    <target name="netbeans-extra" depends="release,ext-jar"/>
 
-    <target name="jar" depends="init,compile,jar-prep">
-        <!-- XXX this should be using a separate source root instead: -->
-        <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
-            <fileset dir="${build.classes.dir}">
-                <include name="META-INF/**"/>
-                <include name="org/netbeans/modules/websvc/registry/netbeans/**"/>
-                <include name="org/netbeans/modules/websvc/registry/resources/**"/>
-                <include name="org/netbeans/modules/websvc/api/**"/>
-            </fileset>
-        </jarwithmoduleattributes>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/websvcregistry.jar" compress="false" >
-            <fileset dir="${build.classes.dir}">
-                <exclude name="META-INF/**"/>
-                <exclude name="org/netbeans/modules/websvc/registry/netbeans/**"/>
-                <exclude name="org/netbeans/modules/websvc/api/**"/>
-            </fileset>
+    <target name="release" depends="build-init">
+        <property name="runtimejars.file" value="websvc_runtimejars.xml"/>
+        <property name="runtimejars.path" value="${netbeans.dest.dir}/${cluster.dir}/config/WebServices"/>
+        <copy file="${runtimejars.file}" tofile="${runtimejars.path}/${runtimejars.file}" filtering="on">
+            <filterset>
+                <filter token="CLUSTER_DIR" value="${cluster.dir}"/>
+            </filterset>
+        </copy>
+    </target>
+
+    <target name="ext-compile" depends="build-init">
+        <mkdir dir="build/extclasses"/>
+        <javac srcdir="extsrc" destdir="build/extclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+            <classpath>
+                <path path="${module.classpath}"/>
+                <path location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+                <path path="${extsrc.cp.extra}"/>
+            </classpath>
+        </javac>
+        <copy todir="build/extclasses">
+          <fileset dir="extsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+    </target>
+
+    <target name="ext-jar" depends="ext-compile">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/websvcregistry.jar" compress="false" >
+            <fileset dir="build/extclasses"/>
         </jar>
     </target>
 

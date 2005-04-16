@@ -13,13 +13,19 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarFile;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -41,6 +47,8 @@ public final class ParseProjectXml extends Task {
         "http://www.netbeans.org/ns/nb-module-project/2",
     };
 
+    private static final String CLASS_PATH_EXTENSIONS_FILE = "build" + File.separatorChar + "class-path-extensions.txt";
+
     private File project;
     /**
      * Set the NetBeans module project to work on.
@@ -49,12 +57,13 @@ public final class ParseProjectXml extends Task {
         project = f;
     }
     private File projectFile;
-    /** Another option is to directly point to project file.
+    /**
+     * Another option is to directly point to project file.
+     * Used only in unit testing.
      */
     public void setProjectFile (File f) {
         projectFile = f;
     }
-    
     private File getProjectFile () {
         if (projectFile != null) {
             return projectFile;
@@ -150,6 +159,14 @@ public final class ParseProjectXml extends Task {
      */
     public void setModuleClassPathProperty(String s) {
         moduleClassPathProperty = s;
+    }
+    
+    private String classPathExtensionsProperty;
+    /**
+     * Set the property to set the declared Class-Path attribute to.
+     */
+    public void setClassPathExtensionsProperty(String s) {
+        classPathExtensionsProperty = s;
     }
 
     private void define(String prop, String val) {
@@ -295,6 +312,12 @@ public final class ParseProjectXml extends Task {
                     domain = path.substring(0, index);
                 }
                 define(domainProperty, domain);
+            }
+            if (classPathExtensionsProperty != null) {
+                String val = computeClassPathExtensions(pDoc);
+                if (val != null) {
+                    define(classPathExtensionsProperty, val);
+                }
             }
         } catch (BuildException e) {
             throw e;
@@ -528,6 +551,72 @@ public final class ParseProjectXml extends Task {
             Element cnbEl = XMLUtil.findElement(dep, "code-name-base", NBM_NS_1_AND_2); //NOI18N
             String cnb = XMLUtil.findText(cnbEl);
             cp.append(computeClasspathModuleLocation(modules, cnb));
+            // #52354: look for <class-path-extension>s in dependent modules.
+            ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
+            if (entry != null) {
+                File subproject = new File(modulesXml.getParentFile().getParentFile().getParentFile(),
+                                           entry.getPath().replace('/', File.separatorChar));
+                File record = new File(subproject, CLASS_PATH_EXTENSIONS_FILE);
+                if (record.isFile()) {
+                    InputStream is = new FileInputStream(record);
+                    try {
+                        byte[] buf = new byte[1024];
+                        int len;
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        while ((len = is.read(buf)) != -1) {
+                            baos.write(buf, 0, len);
+                        }
+                        cp.append(baos.toString("UTF-8"));
+                    } finally {
+                        is.close();
+                    }
+                }
+            }
+        }
+        // Also look for <class-path-extension>s for myself and put them in my own classpath.
+        // Also record the classpath addition in a place where it can be quickly and easily read
+        // by modules which depend on me (see above).
+        StringBuffer cpextra = null;
+        List/*<Element>*/ exts = XMLUtil.findSubElements(data);
+        it = exts.iterator();
+        while (it.hasNext()) {
+            Element ext = (Element) it.next();
+            if (!ext.getLocalName().equals("class-path-extension")) {
+                continue;
+            }
+            Element binaryOrigin = XMLUtil.findElement(ext, "binary-origin", NBM_NS_1_AND_2[1]);
+            String text;
+            if (binaryOrigin != null) {
+                text = XMLUtil.findText(binaryOrigin);
+            } else {
+                Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", NBM_NS_1_AND_2[1]);
+                if (runtimeRelativePath == null) {
+                    throw new BuildException("Have malformed <class-path-extension> in " + getProjectFile(), getLocation());
+                }
+                String reltext = XMLUtil.findText(runtimeRelativePath);
+                // XXX assumes that module.jar.dir=${nb.modules.dir} was not overridden!
+                text = "${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/" + reltext;
+            }
+            String eval = getProject().replaceProperties(text);
+            File binary = getProject().resolveFile(eval);
+            if (cpextra == null) {
+                cpextra = new StringBuffer();
+            }
+            cpextra.append(':');
+            cpextra.append(binary.getAbsolutePath());
+        }
+        if (cpextra != null) {
+            cp.append(cpextra);
+            File record = new File(project, CLASS_PATH_EXTENSIONS_FILE);
+            record.getParentFile().mkdirs();
+            OutputStream os = new FileOutputStream(record);
+            try {
+                Writer w = new OutputStreamWriter(os, "UTF-8");
+                w.write(cpextra.toString());
+                w.flush();
+            } finally {
+                os.close();
+            }
         }
         return cp.toString();
     }
@@ -557,6 +646,31 @@ public final class ParseProjectXml extends Task {
         }
         String slashPlusJar = jar.substring(slash); // "/java-src-model.jar"
         return topdirVal + '/' + jarDirVal + slashPlusJar;
+    }
+    
+    private String computeClassPathExtensions(Document pDoc) {
+        Element data = getConfig(pDoc);
+        StringBuffer list = null;
+        List/*<Element>*/ exts = XMLUtil.findSubElements(data);
+        Iterator it = exts.iterator();
+        while (it.hasNext()) {
+            Element ext = (Element) it.next();
+            if (!ext.getLocalName().equals("class-path-extension")) {
+                continue;
+            }
+            Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", NBM_NS_1_AND_2[1]);
+            if (runtimeRelativePath == null) {
+                throw new BuildException("Have malformed <class-path-extension> in " + getProjectFile(), getLocation());
+            }
+            String reltext = XMLUtil.findText(runtimeRelativePath);
+            if (list == null) {
+                list = new StringBuffer();
+            } else {
+                list.append(' ');
+            }
+            list.append(reltext);
+        }
+        return list != null ? list.toString() : null;
     }
 
 }

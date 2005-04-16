@@ -5,6 +5,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/httpserver/Bundle.propert
 OpenIDE-Module-Install: org/netbeans/modules/httpserver/HttpServerModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/httpserver/layer.xml
 OpenIDE-Module-Provides: org.openide.util.HttpServer$Impl
-OpenIDE-Module-Package-Dependencies: [org.apache.tomcat.core.Context]
-Class-Path: ext/webserver.jar
 

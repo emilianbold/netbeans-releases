@@ -8,13 +8,13 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.javahelp</code-name-base>
             <path>core/javahelp</path>
             <module-dependencies>
@@ -35,7 +35,12 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.api.javahelp</package>
+                <subpackages>javax.help</subpackages>
             </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jh-2.0_02.jar</runtime-relative-path>
+                <binary-origin>../external/jh-2.0_02.jar</binary-origin>
+            </class-path-extension>
             <javadoc/>
         </data>
     </configuration>

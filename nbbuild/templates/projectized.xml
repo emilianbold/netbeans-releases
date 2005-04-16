@@ -44,6 +44,9 @@ Microsystems, Inc. All Rights Reserved.
         <property name="javahelp.jar.dir" value="${nb.modules/docs.dir}"/>
         <property name="javahelp.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="javahelp.jar" value="${javahelp.jar.dir}/${javahelp.jar.basename}"/>
+        <condition property="javahelp.class.path.extension" value="docs/${javahelp.jar.basename}">
+            <isset property="has.javahelp"/>
+        </condition>
 	<property name="javac.source" value="1.4"/>
         <property name="module.auto.deps.xml" location="module-auto-deps.xml"/>
         <condition property="has.module.auto.deps">
@@ -62,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="build-init" depends="basic-init">
-        <parseprojectxml project="." modulesxml="${modulesxml.file}" publicpackagesproperty="public.packages" friendsproperty="friends" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" domainproperty="nbm.domain"/>
+        <parseprojectxml project="." modulesxml="${modulesxml.file}" publicpackagesproperty="public.packages" friendsproperty="friends" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" domainproperty="nbm.domain" classpathextensionsproperty="class.path.extensions"/>
         <condition property="is.regular">
             <not>
                 <or>
@@ -175,7 +178,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- (presumably due to the variable OIDE-M-I-V) -->
         <!-- so might have to use e.g. <manifest> task (created in build/ somewhere)? -->
         <!-- Cf: http://issues.apache.org/bugzilla/show_bug.cgi?id=29085 -->
-        <!-- This task adds some or all of: -Public-Packages, -Friends, -IDE-Dependencies, -Module-Dependencies, -Specification-Version, -Implementation-Version, -Build-Version -->
+        <!-- This task adds some or all of: -Public-Packages, -Friends, Class-Path, -IDE-Dependencies, -Module-Dependencies, -Specification-Version, -Implementation-Version, -Build-Version -->
         <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <fileset dir="${build.classes.dir}"/>
         </jarwithmoduleattributes>
@@ -412,7 +415,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/modules/usersguide/ide.css"/>
             </fileset>
         </jar>
-        <!-- XXX would be good to also add a Class-Path entry to the main module manifest automatically -->
     </target>
 
     <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors." if="has.javahelp">

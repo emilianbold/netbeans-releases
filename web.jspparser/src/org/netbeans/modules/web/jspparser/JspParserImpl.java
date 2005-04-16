@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,16 +32,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
-
-/**
- *
- * @author Petr Jiricka
- * @version 
- */
-
 // PENDING - need to call reinitOptions when something changes (taglib, jar, web.xml)
 // PENDING - separate to two classes, have a per-application instance of one of them
 
+/**
+ * @author Petr Jiricka
+ */
 public class JspParserImpl implements JspParserAPI {
     
     private HashMap parseSupports;
@@ -62,11 +58,11 @@ public class JspParserImpl implements JspParserAPI {
 // ext/jasper-runtime-5.0.19.jar ext/jasper-compiler-5.0.19.jar ext/commons-logging-api.jar ext/commons-el.jar            
             File files[] = new File[6];
             files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false);
-            files[1] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.5.7.jar", null, false);
-            files[2] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.5.7.jar", null, false);
+            files[1] = InstalledFileLocator.getDefault().locate("modules/ext/jasper-runtime-5.5.7.jar", null, false);
+            files[2] = InstalledFileLocator.getDefault().locate("modules/ext/jasper-compiler-5.5.7.jar", null, false);
             files[3] = InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false);
-            files[4] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false);
-            files[5] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-parser-ext.jar", null, false);
+            files[4] = InstalledFileLocator.getDefault().locate("modules/ext/commons-el.jar", null, false);
+            files[5] = InstalledFileLocator.getDefault().locate("modules/ext/jsp-parser-ext.jar", null, false);
 
             try {
                 URL urls[] = new URL[files.length];

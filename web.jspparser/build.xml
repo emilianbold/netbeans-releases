@@ -11,43 +11,43 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="web_jspparser" default="netbeans" basedir=".">
+<project name="web/jspparser" default="netbeans" basedir=".">
     
     <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="release" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
-          <fileset dir="../external">
-            <include name="jasper-compiler-${tomcat_version}.jar"/>
-            <include name="jasper-runtime-${tomcat_version}.jar"/>
-            <include name="commons-el.jar"/>
-          </fileset>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
+            <fileset dir="../external">
+                <include name="jasper-compiler-${tomcat_version}.jar"/>
+                <include name="jasper-runtime-${tomcat_version}.jar"/>
+                <!-- Presumably this is used in the classpath of one of jasper-*.jar? -->
+                <include name="commons-el.jar"/>
+            </fileset>
         </copy>
     </target>
     
-    <target name="netbeans-extra" depends="release, ext-jar"/>
-    
-    <target name="jar" depends="init,compile,jar-prep">
-        <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
-            <fileset dir="${build.classes.dir}">
-                <!-- XXX should rather be handled by a separate source root, probably: -->
-                <include name="org/netbeans/modules/web/jspparser/"/>
-                <include name="org/netbeans/modules/web/jsps/"/>
-            </fileset>
-        </jarwithmoduleattributes>
+    <target name="ext-compile">
+        <mkdir dir="build/extclasses"/>
+        <javac srcdir="extsrc" destdir="build/extclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+            <classpath>
+                <path path="${module.classpath}"/>
+                <path location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+                <path path="${extsrc.cp.extra}"/>
+            </classpath>
+        </javac>
+        <copy todir="build/extclasses">
+          <fileset dir="extsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </copy>
     </target>
-
-    <target name="ext-jar">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"
-         basedir="${build.classes.dir}"
-         excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
-         compress="false">
-            <!-- XXX see above: -->
-            <include name="org/netbeans/modules/web/jspparser_ext/"/>
-            <include name="org/apache/jasper/"/>
+    
+    <target name="ext-jar" depends="ext-compile">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/jsp-parser-ext.jar" compress="false">
+            <fileset dir="build/extclasses"/>
         </jar>
     </target>
+
+    <target name="netbeans-extra" depends="release,ext-jar"/>
 
 </project>

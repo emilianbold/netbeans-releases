@@ -8,16 +8,24 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.jemmy.idemodule</code-name-base>
             <path>jemmy/idemodule</path>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.openide</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>3.21</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <public-packages>
                 <package>org.netbeans.jemmy</package>
                 <package>org.netbeans.jemmy.accessibility</package>
@@ -28,7 +36,9 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.jemmy.operators</package>
                 <package>org.netbeans.jemmy.util</package>
             </public-packages>
-
+            <class-path-extension>
+                <runtime-relative-path>ext/jemmy.jar</runtime-relative-path>
+            </class-path-extension>
             <extra-compilation-unit>
                 <package-root>../src</package-root>
                 <classpath/>

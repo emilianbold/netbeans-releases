@@ -3,7 +3,6 @@ OpenIDE-Module: org.netbeans.modules.dbschema/1
 OpenIDE-Module-Implementation-Version: 2
 OpenIDE-Module-Layer: org/netbeans/modules/dbschema/jdbcimpl/resources/mf-layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dbschema/resources/Bundle.properties
-Class-Path: docs/org-netbeans-modules-dbschema.jar
 
 Name: org/netbeans/modules/dbschema/jdbcimpl/DBschemaDataLoader.class
 OpenIDE-Module-Class: Loader

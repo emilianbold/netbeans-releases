@@ -53,6 +53,26 @@ public class JarWithModuleAttributes extends Jar {
             if (friends != null) {
                 added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Friends", friends));
             }
+            // #52354: define Class-Path in the manifest automatically.
+            String javahelpClassPathExtension = getProject().getProperty("javahelp.class.path.extension");
+            String classPathExtensions = getProject().getProperty("class.path.extensions");
+            String cp;
+            if (javahelpClassPathExtension != null) {
+                if (classPathExtensions != null) {
+                    cp = classPathExtensions + " " + javahelpClassPathExtension;
+                } else {
+                    cp = javahelpClassPathExtension;
+                }
+            } else {
+                if (classPathExtensions != null) {
+                    cp = classPathExtensions;
+                } else {
+                    cp = null;
+                }
+            }
+            if (cp != null) {
+                added.addConfiguredAttribute(new Manifest.Attribute("Class-Path", cp));
+            }
             String ideDeps = getProject().getProperty("ide.dependencies");
             if (ideDeps != null) {
                 added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-IDE-Dependencies", ideDeps));

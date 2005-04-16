@@ -55,6 +55,10 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.netbeans.modules.xml.catalog.spi</package>
             </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/resolver-1_1_nb.jar</runtime-relative-path>
+                <binary-origin>${nb_all}/xml/external/resolver-1_1_nb.jar</binary-origin>
+            </class-path-extension>
             <javadoc/>
         </data>
     </configuration>

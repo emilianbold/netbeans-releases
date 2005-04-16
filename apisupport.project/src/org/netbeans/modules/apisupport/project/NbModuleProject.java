@@ -75,7 +75,8 @@ final class NbModuleProject implements Project {
         }
         File nbroot = helper.resolveFile(getNbrootRel());
         moduleList = ModuleList.getModuleList(nbroot);
-        eval = createEvaluator();
+        ClassPathExtensionsProvider cpext = new ClassPathExtensionsProvider();
+        eval = createEvaluator(cpext);
         FileBuiltQueryImplementation fileBuilt;
         // XXX could add globs for other package roots too
         if (supportsUnitTests()) {
@@ -144,6 +145,7 @@ final class NbModuleProject implements Project {
             }
         });
         lookup = Lookups.fixed(new Object[] {
+            cpext,
             new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
@@ -227,7 +229,7 @@ final class NbModuleProject implements Project {
      * Create a property evaluator: private project props, shared project props, various defaults.
      * Synch with nbbuild/templates/projectized.xml.
      */
-    private PropertyEvaluator createEvaluator() {
+    private PropertyEvaluator createEvaluator(ClassPathExtensionsProvider cpext) {
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         Map/*<String,String>*/ stock = new HashMap();
         stock.put("nb_all", getNbrootRel()); // NOI18N
@@ -259,7 +261,13 @@ final class NbModuleProject implements Project {
         defaults.put("test.unit.src.dir", "test/unit/src"); // NOI18N
         defaults.put("test.qa-functional.src.dir", "test/qa-functional/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
-        defaults.put("module.classpath", computeModuleClasspath());
+        PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, new PropertyProvider[] {
+            PropertyUtils.fixedPropertyProvider(stock),
+            helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+            helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
+            PropertyUtils.fixedPropertyProvider(defaults),
+        });
+        defaults.put("module.classpath", computeModuleClasspath(cpext, baseEval));
         defaults.put("javac.source", "1.4");
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
         return PropertyUtils.sequentialPropertyEvaluator(predefs, new PropertyProvider[] {
@@ -273,7 +281,7 @@ final class NbModuleProject implements Project {
     /**
      * Should be similar to impl in ParseProjectXml.
      */
-    private String computeModuleClasspath() {
+    private String computeModuleClasspath(ClassPathExtensionsProvider cpext, PropertyEvaluator baseEval) {
         Element data = getPrimarySharedConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACES_SHARED); // NOI18N
@@ -304,14 +312,9 @@ final class NbModuleProject implements Project {
                 cp.append(File.pathSeparatorChar);
             }
             cp.append(moduleJar.getAbsolutePath());
-            /* Really necessary? Probably not.
-            File[] classPathExtensions = module.getClassPathExtensions(nbroot);
-            for (int i = 0; i < classPathExtensions.length; i++) {
-                cp.append(File.pathSeparatorChar);
-                cp.append(classPathExtensions[i].getAbsolutePath());
-            }
-             */
+            cp.append(module.getClassPathExtensions());
         }
+        cp.append(cpext.getClassPathExtensions(baseEval));
         return cp.toString();
     }
     
@@ -603,6 +606,52 @@ final class NbModuleProject implements Project {
             boot = null;
             source = null;
             compile = null;
+        }
+        
+    }
+    
+    /** See #52354. */
+    final class ClassPathExtensionsProvider {
+        
+        public ClassPathExtensionsProvider() {}
+        
+        public String getClassPathExtensions() {
+            return getClassPathExtensions(evaluator());
+        }
+        
+        String getClassPathExtensions(PropertyEvaluator evaluator) {
+            // Cf. ParseProjectXml.computeClasspath:
+            StringBuffer cpextra = new StringBuffer();
+            Element data = getPrimarySharedConfigurationData();
+            Iterator/*<Element>*/ exts = Util.findSubElements(data).iterator();
+            while (exts.hasNext()) {
+                Element ext = (Element) exts.next();
+                if (!ext.getLocalName().equals("class-path-extension")) { // NOI18N
+                    continue;
+                }
+                Element binaryOrigin = Util.findElement(ext, "binary-origin", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
+                String text;
+                if (binaryOrigin != null) {
+                    text = Util.findText(binaryOrigin);
+                } else {
+                    Element runtimeRelativePath = Util.findElement(ext, "runtime-relative-path", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
+                    assert runtimeRelativePath != null : "Malformed <class-path-extension> in " + getProjectDirectory();
+                    String reltext = Util.findText(runtimeRelativePath);
+                    // XXX assumes that module.jar is not overridden independently of module.jar.dir:
+                    text = "${netbeans.dest.dir}/${cluster.dir}/${module.jar.dir}/" + reltext;
+                }
+                String eval = evaluator.evaluate(text);
+                if (eval == null) {
+                    continue;
+                }
+                File binary = getHelper().resolveFile(eval);
+                if (cpextra == null) {
+                    cpextra = new StringBuffer();
+                }
+                cpextra.append(':');
+                cpextra.append(binary.getAbsolutePath());
+            }
+            return cpextra.toString();
         }
         
     }

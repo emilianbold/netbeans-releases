@@ -72,6 +72,12 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.netbeans.modules.websvc.api.registry</package>
             </public-packages>
+            <extra-compilation-unit>
+                <package-root>extsrc</package-root>
+                <classpath>${module.classpath}:${netbeans.dest.dir}/${cluster.dir}/${module.jar}:${extsrc.cp.extra}</classpath>
+                <built-to>build/extclasses</built-to>
+                <built-to>${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/websvcregistry.jar</built-to>
+            </extra-compilation-unit>
             <javadoc/>
         </data>
     </configuration>
