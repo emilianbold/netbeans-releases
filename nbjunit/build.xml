@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="javadoc/nbjunit-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
     </target>
 
+    <!-- XXX this is a mess; should use separate source roots for main module, nbjunit.jar, and nbjunit-ide.jar -->
     <target name="jar" depends="init,compile,jar-prep">
         <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <!-- includes only module resources because other classes are in library jars (target jar-nbjunit). -->
