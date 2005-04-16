@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="validate-compile" name="ant/project/eg">
     <target name="validate-compile">
-        <javac srcdir="." destdir=".">
+        <javac srcdir="." destdir="." source="1.4">
             <include name="ValidateAllBySchema.java"/>
         </javac>
     </target>
