@@ -40,11 +40,15 @@ public class TestMarkProvider extends MarkProvider {
     }
     
     public void setMarks(List/*<Mark>*/ marks) {
+        setMarks(marks, true, true);
+    }
+    
+    public void setMarks(List/*<Mark>*/ marks, boolean fireOld, boolean fireNue) {
         List old = this.marks;
         
         this.marks = marks;
         
-        firePropertyChange(PROP_MARKS, old, this.marks);
+        firePropertyChange(PROP_MARKS, fireOld ? old : null, fireNue ? this.marks : null);
     }
     
     public void setUpToDate(int upToDate) {

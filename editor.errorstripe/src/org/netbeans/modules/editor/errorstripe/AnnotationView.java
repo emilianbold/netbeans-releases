@@ -828,27 +828,36 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             synchronized (this) {
                 Collection nue = (Collection) evt.getNewValue();
                 Collection old = (Collection) evt.getOldValue();
-                List added = new ArrayList(nue);
-                List removed = new ArrayList(old);
                 
-                added.removeAll(old);
-                removed.removeAll(nue);
+                if (nue == null && evt.getSource() instanceof MarkProvider)
+                    nue = ((MarkProvider) evt.getSource()).getMarks();
                 
-                if (marksMap != null) {
-                    for (Iterator i = removed.iterator(); i.hasNext(); ) {
-                        unregisterMark((Mark) i.next());
+                if (old != null && nue != null) {
+                    List added = new ArrayList(nue);
+                    List removed = new ArrayList(old);
+                    
+                    added.removeAll(old);
+                    removed.removeAll(nue);
+                    
+                    if (marksMap != null) {
+                        for (Iterator i = removed.iterator(); i.hasNext(); ) {
+                            unregisterMark((Mark) i.next());
+                        }
+                        
+                        for (Iterator i = added.iterator(); i.hasNext(); ) {
+                            registerMark((Mark) i.next());
+                        }
                     }
                     
-                    for (Iterator i = added.iterator(); i.hasNext(); ) {
-                        registerMark((Mark) i.next());
+                    if (currentMarks != null) {
+                        currentMarks.removeAll(removed);
+                        currentMarks.addAll(added);
                     }
-                }
-                
-                fullRepaint();
-                
-                if (currentMarks != null) {
-                    currentMarks.removeAll(removed);
-                    currentMarks.addAll(added);
+                    
+                    fullRepaint(false);
+                } else {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "For performance reasons, the providers should fill both old and new value in property changes. Problematic event: " + evt);
+                    fullRepaint(true);
                 }
                 return ;
             }
