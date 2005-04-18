@@ -77,6 +77,14 @@ class OutWriter extends PrintWriter {
      * instances will use HeapStorage in this case */
     static boolean lowDiskSpace = false;
 
+    
+    /**
+     * Need to remember the line start and lenght over multiple calls to
+     * write(ByteBuffer), needed to facilitate other calls than println()
+     */
+    private int lineStart;
+    private int lineLength;
+
     /** Creates a new instance of OutWriter */
     OutWriter(NbIO owner) {
         this();
@@ -88,6 +96,8 @@ class OutWriter extends PrintWriter {
      */
     OutWriter() {
         super (new DummyWriter());
+        lineStart = -1;
+        lineLength = 0;
     }
 
     Storage getStorage() {
@@ -152,7 +162,7 @@ class OutWriter extends PrintWriter {
                     buf = getStorage().getWriteBuffer(AbstractLines.toByteIndex(s.length()));
                     buf.asCharBuffer().put(s);
                     buf.position (buf.position() + AbstractLines.toByteIndex(s.length()));
-                    write (buf);
+                    write (buf, true);
                 }
             }
             return result;
@@ -188,16 +198,16 @@ class OutWriter extends PrintWriter {
      * @param bb
      * @throws IOException
      */
-    public synchronized void write(ByteBuffer bb) throws IOException {
+    public synchronized void write(ByteBuffer bb, boolean completeLine) throws IOException {
         if (checkError() || terminated) {
             return;
         }
         lines.markDirty();
-        int lineLength = bb.limit();
+        int length = bb.limit();
         closed = false;
         int start = -1;
         try {
-            start = getStorage().write(bb);
+            start = getStorage().write(bb, completeLine);
         } catch (java.nio.channels.ClosedByInterruptException cbie) {
             //Execution termination has sent ThreadDeath to the process in the
             //middle of a write
@@ -225,15 +235,35 @@ class OutWriter extends PrintWriter {
                 threadDeathClose();
             }
         }
-        if (start >= 0 && !terminated && lines != null) {
-            if (Controller.verbose) Controller.log (this + ": Wrote " +
-                    ((ByteBuffer)bb.flip()).asCharBuffer() + " at " + start);
-
-            lines.lineWritten (start, lineLength);
-
-            if (owner != null && owner.hasStreamClosed()) {
-                owner.setStreamClosed(false);
-                lines.fire();
+        boolean startedNow = false;
+        if (start >= 0 && lineStart == -1) {
+            lineStart = start;
+            lineLength = lineLength + length;
+            startedNow = true;
+        }
+        if (completeLine) {
+            if (lineStart >= 0 && !terminated && lines != null) {
+                if (Controller.verbose) Controller.log (this + ": Wrote " +
+                        ((ByteBuffer)bb.flip()).asCharBuffer() + " at " + start);
+                if (startedNow) {
+                    lines.lineWritten (lineStart, lineLength);
+                } else {
+                    lines.lineFinished(lineLength);
+                }
+                lineStart = -1;
+                lineLength = 0;
+                if (owner != null && owner.hasStreamClosed()) {
+                    owner.setStreamClosed(false);
+                    lines.fire();
+                }
+            }
+        } else {
+            if (startedNow && lineStart >= 0 && !terminated && lines != null) {
+                lines.lineStarted(lineStart);
+                if (owner != null && owner.hasStreamClosed()) {
+                    owner.setStreamClosed(false);
+                    lines.fire();
+                }
             }
         }
     }
@@ -374,11 +404,10 @@ class OutWriter extends PrintWriter {
                 return;
             }
             try {
-                ByteBuffer buf = getStorage().getWriteBuffer(1);
+                ByteBuffer buf = getStorage().getWriteBuffer(AbstractLines.toByteIndex(1));
+                buf.asCharBuffer().put((char)c);
                 buf.position (buf.position() + AbstractLines.toByteIndex(1));
-                if (c == '\n') {
-                    write(buf);
-                }
+                write (buf, false);
             } catch (IOException ioe) {
                 handleException (ioe);
             }
@@ -393,29 +422,55 @@ class OutWriter extends PrintWriter {
                 //at least have some width.  Note this does affect output
                 //written with save-as
                 StringBuffer sb = new StringBuffer(data.length + 10);
+                int cnt = 0;
                 for (int i=0; i < data.length; i++) {
                     if (data[i] == '\t') {
                         sb.append("        "); // NOI18N
+                        cnt = cnt + 1;
                     } else {
                         sb.append (data[i]);
                     }
                 }
+                data = sb.toString().toCharArray();
+                len = len + (cnt * 4);
             }
             
             int count = off;
             int start = off;
             while (count < len + off) {
                 char curr = data[count];
-                if (count == (off + len) -1 || curr == '\n') { //NOI18N
+                if (curr == '\n') { //NOI18N
+                    //TODO we can optimize the array writing a bit by not delegating to the 
+                    //println metod which perform a physical write on each line, 
+                    // but to write just once, when everything is processed.
                     println (new String(data, start, (count + 1 - start)));
-                    start = count;
+                    start = count + 1;
+                    if (start >= len + off) {
+                        return;
+                    }
                 }
                 count++;
+            }
+            try {
+                synchronized (this) {
+                    int lenght = count - (start);
+                    ByteBuffer buf = getStorage().getWriteBuffer(AbstractLines.toByteIndex(lenght));
+                    buf.asCharBuffer().put(data, start, lenght);
+                    buf.position(buf.position() + AbstractLines.toByteIndex(lenght));
+                    write(buf, false);
+                }
+            } catch (IOException ioe) {
+                handleException(ioe);
+                return;
             }
         }
 
         public synchronized void write(char data[]) {
             write (data, 0, data.length);
+        }
+        
+        public synchronized void println() {
+            doPrintln("");
         }
 
         /**

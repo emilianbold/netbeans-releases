@@ -77,7 +77,7 @@ public class StorageTest extends TestCase {
         assertTrue (storage.isClosed());
         
         String test = "Hello world";
-        storage.write(ByteBuffer.wrap(test.getBytes()));
+        storage.write(ByteBuffer.wrap(test.getBytes()), true);
         
         assertFalse (storage.isClosed());
         
@@ -91,24 +91,16 @@ public class StorageTest extends TestCase {
         assertTrue (storage.isClosed());
         
     }
-    
+                        
     private int write (Storage storage, String s) throws Exception {
         ByteBuffer buf = storage.getWriteBuffer(AbstractLines.toByteIndex(s.length()));
         buf.asCharBuffer().put(s);
         buf.position (buf.position() + AbstractLines.toByteIndex(s.length()));
-        int result = storage.write(buf);
+        int result = storage.write(buf, true);
         storage.flush();
         return result;
     }
     
-    public void testWrites() throws Exception {
-        doTestWrites (heap);
-        doTestWrites (filemap);
-    }
-    
-    private void doTestWrites (Storage storage) throws Exception {
-        System.out.println("testWrites " + storage.getClass());
-    }
     
     public void testIdenticalBehaviors() throws Exception {
         String[] s = new String[10];

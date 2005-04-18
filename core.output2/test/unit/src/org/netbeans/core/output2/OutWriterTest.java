@@ -404,6 +404,96 @@ public class OutWriterTest extends TestCase {
 
     public void testWrite() {
         System.out.println("testWrite");
+        try {
+            OutWriter ow = new OutWriter ();
+
+            ow.write('x');
+            ow.write('y');
+            ow.write('z');
+            ow.println();
+            ow.flush();
+            assertEquals(1, ow.getLines().getLineCount());
+            String firstReceived = ow.getLines().getLine(0);
+            assertEquals ("xyz\n", firstReceived);
+        
+            ow = new OutWriter();
+            ow.println("firstline");
+            ow.write('x');
+            ow.println("yz");
+            ow.flush();
+            assertEquals(2, ow.getLines().getLineCount());
+            firstReceived = ow.getLines().getLine(1);
+            assertEquals ("xyz\n", firstReceived);
+            
+            ow = new OutWriter();
+            ow.println("firstline");
+            ow.write(new char[] {'x', 'y', 'z'});
+            ow.write(new char[] {'x', 'y', 'z'});
+            ow.println("-end");
+            ow.flush();
+            assertEquals(2, ow.getLines().getLineCount());
+            firstReceived = ow.getLines().getLine(1);
+            assertEquals ("xyzxyz-end\n", firstReceived);
+            
+            ow = new OutWriter();
+            ow.write(new char[] {'x', 'y', '\n', 'z', 'z', 'z', '\n', 'A'});
+            ow.println();
+            ow.flush();
+            assertEquals(3, ow.getLines().getLineCount());
+            assertEquals("xy\n", ow.getLines().getLine(0));
+            assertEquals("zzz\n", ow.getLines().getLine(1));
+            System.out.println("last=" + ow.getLines().getLine(2));
+            assertEquals("A\n", ow.getLines().getLine(2));
+            
+            ow = new OutWriter();
+            ow.write(new char[] {'x', 'y', '\n', 'z', 'z', 'z', '\n'});
+            ow.flush();
+            assertEquals(2, ow.getLines().getLineCount());
+            assertEquals("xy\n", ow.getLines().getLine(0));
+            assertEquals("zzz\n", ow.getLines().getLine(1));
+            
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail (e.getMessage());
+        }
+    }
+    
+    public void testWritePartial() {
+        System.out.println("testWritePartial");
+        try {
+            OutWriter ow = new OutWriter ();
+
+            ow.write('x');
+            assertEquals(1, ow.getLines().getLineCount());
+            assertEquals ("x", ow.getLines().getLine(0));
+            ow.write('y');
+            assertEquals ("xy", ow.getLines().getLine(0));
+            ow.write('z');
+            assertEquals ("xyz", ow.getLines().getLine(0));
+            ow.println();
+            assertEquals ("xyz\n", ow.getLines().getLine(0));
+            ow.write('a');
+            assertEquals(2, ow.getLines().getLineCount());
+            assertEquals ("a", ow.getLines().getLine(1));
+            
+            
+            ow = new OutWriter();
+            ow.write(new char[] { 'x', 'y', 'z', '\n', 'A'});
+            assertEquals(2, ow.getLines().getLineCount());
+            assertEquals ("xyz\n", ow.getLines().getLine(0));
+            assertEquals ("A", ow.getLines().getLine(1));
+            ow.write('B');
+            assertEquals(2, ow.getLines().getLineCount());
+            assertEquals ("AB", ow.getLines().getLine(1));
+            ow.println("CD");
+            assertEquals(2, ow.getLines().getLineCount());
+            assertEquals ("ABCD\n", ow.getLines().getLine(1));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail (e.getMessage());
+        }
         
     }
     

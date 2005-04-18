@@ -54,10 +54,11 @@ interface Storage {
      * additional capacity.
      *
      * @param buf A ByteBuffer with data to write
+     * @param addNewLine true if the storage should append a newline after writing the buffer
      * @return The byte position of the <strong>start</strong> of data written
      * @throws IOException if there is a problem writing the data
      */
-    public int write (ByteBuffer buf) throws IOException;
+    public int write (ByteBuffer buf, boolean addNewLine) throws IOException;
 
     /**
      * Dispose of this storage, deleting all associated resources, files, data storage, etc.  This should only

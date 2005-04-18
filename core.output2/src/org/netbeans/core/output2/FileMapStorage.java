@@ -192,7 +192,7 @@ class FileMapStorage implements Storage {
      * Dispose of a ByteBuffer which has been acquired for writing by one of
      * the write methods, writing its contents to the file.
      */
-    public int write (ByteBuffer bb) throws IOException {
+    public int write (ByteBuffer bb, boolean addNewLine) throws IOException {
         synchronized (this) {
             if (bb == buffer) {
                 buffer = null;
@@ -203,9 +203,11 @@ class FileMapStorage implements Storage {
         bb.flip();
         if (writeChannel().isOpen()) { //If a thread was terminated while writing, it will be closed
             writeChannel().write (bb);
-            writeChannel().write(ByteBuffer.wrap(OutWriter.lineSepBytes));
+            if (addNewLine) {
+                writeChannel().write(ByteBuffer.wrap(OutWriter.lineSepBytes));
+            }
             synchronized (this) {
-                bytesWritten += byteCount + OutWriter.lineSepBytes.length;
+                bytesWritten += byteCount +  (addNewLine ? OutWriter.lineSepBytes.length : 0);
                 outstandingBufferCount--;
             }
         }
@@ -289,7 +291,7 @@ class FileMapStorage implements Storage {
                 }
             }
             if (start - mappedStart > cont.limit() - byteCount) {
-                cont.position(cont.limit() - byteCount);
+                cont.position(Math.max(0, cont.limit() - byteCount));
             } else {
                 cont.position((int) (start - mappedStart));
             }
@@ -312,7 +314,7 @@ class FileMapStorage implements Storage {
     public void flush() throws IOException {
         if (buffer != null) {
             if (Controller.log) Controller.log("FILEMAP STORAGE flush(): " + outstandingBufferCount);
-            write (buffer);
+            write (buffer, false);
             writeChannel.force(false);
             buffer = null;
         }

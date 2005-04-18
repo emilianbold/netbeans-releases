@@ -650,48 +650,85 @@ abstract class AbstractLines implements Lines, Runnable {
         dirty = true;
     }
 
-    public void lineWritten(int start, int lineLength) {
-        if (Controller.verbose) Controller.log ("AbstractLines.lineWritten " + start + " length:" + lineLength); //NOI18N
+    public void lineStarted(int start) {
+        if (Controller.verbose) Controller.log("AbstractLines.lineStarted " + start); //NOI18N
         int lineCount = 0;
         synchronized (readLock()) {
             setLastWrappedLineCount(-1);
             setLastCharCountForWrapAboveCalculation(-1);
-            longestLine = Math.max (longestLine, lineLength);
-            lineStartList.add (start);
+            lineStartList.add(start);
             matcher = null;
-
             lineCount = lineStartList.size();
-            //If we already have enough lines that we need to cache logical getLine
-            //lengths, update the cache - rebuilding it is very expensive
-            if (knownLogicalLineCounts != null) {
-                //This is the index of the getLine we just added
-                int lastline = lineCount-1;
-                //Get the length of the getLine
-                int len = length(lastline);
-
-                //We only need to add if it will wrap - SparseIntList's get()
-                //semantics takes care of non-wrapped lines
-                if (len > knownCharCount) {
-                    int aboveLineCount;
-                    if (knownLogicalLineCounts.lastIndex() != -1) {
-                        //If the cache already has some entries, calculate the
-                        //values from the last entry - this is less expensive
-                        //than looking it up
-                        aboveLineCount = (lastline - (knownLogicalLineCounts.lastIndex() + 1)) + knownLogicalLineCounts.lastAdded();
-                    } else {
-                        //Otherwise, it's just the number of lines above this
-                        //one - it's the first entry
-                        aboveLineCount = Math.max(0, lastline-1);
-                    }
-                    //Add in the number of times this getLine will wrap
-                    aboveLineCount += (len / knownCharCount) + 1;
-                    knownLogicalLineCounts.add(aboveLineCount, lastline);
-                }
-            }
         }
         if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
             //Fire again after the first 20 lines
-            if (Controller.log) Controller.log ("Firing initial write event");
+            if (Controller.log) Controller.log("Firing initial write event");
+            fire();
+        }
+    }
+    
+    public void lineFinished(int lineLength) {
+        synchronized (readLock()) {
+            setLastWrappedLineCount(-1);
+            setLastCharCountForWrapAboveCalculation(-1);
+            longestLine = Math.max(longestLine, lineLength);
+            matcher = null;
+            
+            int lineCount = lineStartList.size();
+            //This is the index of the getLine we just added
+            int lastline = lineCount-1;
+            checkLogicalLineCount(lastline);
+        }
+    }
+    
+    private void checkLogicalLineCount(int lastline) {
+        //If we already have enough lines that we need to cache logical getLine
+        //lengths, update the cache - rebuilding it is very expensive
+        if (knownLogicalLineCounts != null) {
+            //Get the length of the getLine
+            int len = length(lastline);
+            
+            //We only need to add if it will wrap - SparseIntList's get()
+            //semantics takes care of non-wrapped lines
+            if (len > knownCharCount) {
+                int aboveLineCount;
+                if (knownLogicalLineCounts.lastIndex() != -1) {
+                    //If the cache already has some entries, calculate the
+                    //values from the last entry - this is less expensive
+                    //than looking it up
+                    aboveLineCount = (lastline - (knownLogicalLineCounts.lastIndex() + 1)) + knownLogicalLineCounts.lastAdded();
+                } else {
+                    //Otherwise, it's just the number of lines above this
+                    //one - it's the first entry
+                    aboveLineCount = Math.max(0, lastline-1);
+                }
+                //Add in the number of times this getLine will wrap
+                aboveLineCount += (len / knownCharCount) + 1;
+                knownLogicalLineCounts.add(aboveLineCount, lastline);
+            }
+        }
+
+    }
+    
+    public void lineWritten(int start, int lineLength) {
+        if (Controller.verbose) Controller.log("AbstractLines.lineWritten " + start + " length:" + lineLength); //NOI18N
+        int lineCount = 0;
+        synchronized (readLock()) {
+            setLastWrappedLineCount(-1);
+            setLastCharCountForWrapAboveCalculation(-1);
+            longestLine = Math.max(longestLine, lineLength);
+            lineStartList.add(start);
+            matcher = null;
+            
+            lineCount = lineStartList.size();
+            //This is the index of the getLine we just added
+            int lastline = lineCount-1;
+            checkLogicalLineCount(lastline);
+            
+        }
+        if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
+            //Fire again after the first 20 lines
+            if (Controller.log) Controller.log("Firing initial write event");
             fire();
         }
     }

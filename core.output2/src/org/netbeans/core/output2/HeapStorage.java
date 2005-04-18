@@ -26,7 +26,7 @@ class HeapStorage implements Storage {
 
     public Storage toFileMapStorage() throws IOException {
         FileMapStorage result = new FileMapStorage();
-        result.write(getReadBuffer(0, size));
+        result.write(getReadBuffer(0, size), false);
         return result;
     }
 
@@ -38,10 +38,10 @@ class HeapStorage implements Storage {
         return ByteBuffer.allocate(length);
     }
 
-    public synchronized int write(ByteBuffer buf) throws IOException {
+    public synchronized int write(ByteBuffer buf, boolean addNewLine) throws IOException {
         closed = false;
         int oldSize = size;
-        size += buf.limit() + 2;
+        size += buf.limit() + ( addNewLine ? 2 : 0);
         if (size > bytes.length) {
             byte[] oldBytes = bytes;
             bytes = new byte[Math.max (oldSize * 2, (buf.limit() * 2) + oldSize)]; 
@@ -49,8 +49,9 @@ class HeapStorage implements Storage {
         }
         buf.flip();
         buf.get(bytes, oldSize, buf.limit());
-        
-        bytes[size-1] = '\n'; //NOI18N
+        if (addNewLine) {
+            bytes[size-1] = '\n'; //NOI18N
+        }
         return oldSize;
     }
 
