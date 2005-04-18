@@ -59,7 +59,6 @@ public class EarActionProvider implements ActionProvider {
         COMMAND_REBUILD, 
         COMMAND_RUN, 
         COMMAND_DEBUG, 
-        J2eeProjectConstants.COMMAND_DEPLOY, 
         J2eeProjectConstants.COMMAND_REDEPLOY,
         COMMAND_VERIFY,
     };
@@ -88,8 +87,6 @@ public class EarActionProvider implements ActionProvider {
             commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-            commands.put(J2eeProjectConstants.COMMAND_DEPLOY, new String[] {"run-deploy"}); // NOI18N
-            //commands.put(COMMAND_RUN_SINGLE, new String[] {"run"}); // NOI18N
             commands.put(J2eeProjectConstants.COMMAND_REDEPLOY, new String[] {"run-deploy"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
             commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
@@ -114,7 +111,7 @@ public class EarActionProvider implements ActionProvider {
         Properties p;
         String[] targetNames = (String[])commands.get(command);
         //EXECUTION PART
-        if (command.equals (J2eeProjectConstants.COMMAND_DEPLOY) || command.equals (COMMAND_RUN) || command.equals (J2eeProjectConstants.COMMAND_REDEPLOY)) { //  || command.equals (COMMAND_DEBUG)) {
+        if (command.equals (COMMAND_RUN) || command.equals (J2eeProjectConstants.COMMAND_REDEPLOY)) { //  || command.equals (COMMAND_DEBUG)) {
             if (!isSelectedServer ()) {
                 return;
             }
