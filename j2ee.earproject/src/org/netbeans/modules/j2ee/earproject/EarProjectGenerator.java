@@ -31,7 +31,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 
 import org.w3c.dom.Document;

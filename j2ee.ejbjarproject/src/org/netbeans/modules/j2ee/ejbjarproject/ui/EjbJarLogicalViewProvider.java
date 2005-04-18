@@ -57,7 +57,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.lookup.Lookups;
 
 
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 

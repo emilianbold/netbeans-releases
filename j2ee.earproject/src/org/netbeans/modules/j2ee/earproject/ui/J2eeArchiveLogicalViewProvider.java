@@ -40,7 +40,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 
 import org.netbeans.modules.j2ee.earproject.UpdateHelper;
 import org.openide.loaders.DataFolder;

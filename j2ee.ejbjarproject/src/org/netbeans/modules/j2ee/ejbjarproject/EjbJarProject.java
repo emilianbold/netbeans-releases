@@ -31,6 +31,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
@@ -64,7 +65,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
@@ -788,8 +788,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", helper.getStandardPropertyEvaluator(), "dist", "clean"), // NOI18N
-                helper.createSimpleAntArtifact(EjbProjectConstants.ARTIFACT_TYPE_EJBJAR, "dist.jar", helper.getStandardPropertyEvaluator(), "dist", "clean"), // NOI18N
-                helper.createSimpleAntArtifact(EjbProjectConstants.ARTIFACT_TYPE_EJBJAR_EAR_ARCHIVE, "dist.ear.jar", helper.getStandardPropertyEvaluator(), "dist-ear", "clean-ear") // NOI18N
+                helper.createSimpleAntArtifact(J2eeProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_JAR, "dist.jar", helper.getStandardPropertyEvaluator(), "dist", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(J2eeProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE, "dist.ear.jar", helper.getStandardPropertyEvaluator(), "dist-ear", "clean-ear") // NOI18N
             };
         }
     }

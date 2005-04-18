@@ -45,7 +45,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;

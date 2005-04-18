@@ -13,7 +13,7 @@ import junit.framework.*;
 import junit.framework.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

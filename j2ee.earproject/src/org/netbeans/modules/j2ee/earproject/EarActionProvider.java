@@ -39,7 +39,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 
 
 

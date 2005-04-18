@@ -40,7 +40,7 @@ import org.openide.*;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.ProjectInformation;
 
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 
 
 /** Action provider of the Web project. This is the place where to do

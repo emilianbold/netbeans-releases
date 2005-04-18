@@ -37,9 +37,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 
 /** Handles adding and removing of additional war content.
  */
@@ -310,7 +309,7 @@ final class VisualArchiveIncludesSupport {
                 // XXX this is hardcoded
                 AntArtifact artifacts[] = AntArtifactChooser.showDialog(master,
                     new String[] { 
-                        EjbProjectConstants.ARTIFACT_TYPE_EJBJAR_EAR_ARCHIVE,
+                        J2eeProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE,
                         WebProjectConstants.ARTIFACT_TYPE_WAR_EAR_ARCHIVE,
                         JavaProjectConstants.ARTIFACT_TYPE_JAR });
          //                AntArtifact artifacts[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, master);
