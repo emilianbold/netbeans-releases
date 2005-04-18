@@ -80,6 +80,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="J2eeModule-J2EE15-constant">
+            <api name="j2eeserver"/>
+            <summary>Added setServerInstanceID method into J2eeModuleProvider.</summary>
+            <version major="1" minor="6"/>
+            <date day="18" month="4" year="2005"/>
+            <author login="pbuzek"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Add a constant for J2EE 1.5 specification level.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+        </change>
         <change id="J2eeModuleProvider-setServerInstanceID">
             <api name="j2eeserver"/>
             <summary>Added setServerInstanceID method into J2eeModuleProvider.</summary>

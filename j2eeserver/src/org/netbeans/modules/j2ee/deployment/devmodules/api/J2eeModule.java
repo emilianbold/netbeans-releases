@@ -52,7 +52,12 @@ public interface J2eeModule {
      * @since 1.5
      */
     public static final String J2EE_14 = "1.4"; //NOI18N
-
+    /** 
+     * J2EE specification version 1.5
+     * @since 1.6
+     */
+    public static final String J2EE_15 = "1.5"; //NOI18N
+    
     public static final String APP_XML = "META-INF/application.xml";
     public static final String WEB_XML = "WEB-INF/web.xml";
     public static final String WEBSERVICES_XML = "WEB-INF/webservices.xml";
