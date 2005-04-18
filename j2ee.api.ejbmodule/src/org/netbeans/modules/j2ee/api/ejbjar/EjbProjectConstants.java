@@ -13,13 +13,15 @@
 
 package org.netbeans.modules.j2ee.api.ejbjar;
 
-/** Constants useful for ejb projects. This class is not used in ejb project anymore and should be removed.
- * It was replaced by org.netbeans.modules.j2ee.common.J2eeProjectConstants.
+/** Constants useful for ejb projects. 
  *
  * @author Chris Webster
  *  
  *
  */
+
+//TO-DO: This class is not used in ejb project anymore and should be removed. It was replaced by org.netbeans.modules.j2ee.common.J2eeProjectConstants.
+
 public class EjbProjectConstants {
     
     private EjbProjectConstants() {
