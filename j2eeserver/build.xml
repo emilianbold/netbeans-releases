@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="s2binit" depends="build-init">
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
-		<pathelement path="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
+		<pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
 		<pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
 		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
 	  </classpath>
@@ -48,10 +48,10 @@ Microsystems, Inc. All Rights Reserved.
      <echo message="Generated schema2beans from ${dtdfile}"/>
      <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">
        <classpath>
-          <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
+          <pathelement location="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
           <pathelement location="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
-          <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-          <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+          <pathelement location="${openide.dir}/core/openide.jar"/>
+          <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
        </classpath>
        <arg line= "-f ${dtdfile}" />
        <arg line= "-p ${dtdpackage}" />

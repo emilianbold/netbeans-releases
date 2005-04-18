@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -19,23 +19,23 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ================== -->
 
     <path id="compiletest.classpath">
-        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
-        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
+        <pathelement location="${core.dir}/core/core.jar"/>
+        <pathelement location="${core.dir}/lib/boot.jar"/>
+        <pathelement location="${openide.dir}/core/openide.jar"/>
+        <pathelement location="${core.dir}/core/org-netbeans-swing-plaf.jar"/>
+        <pathelement location="${core.dir}/modules/org-netbeans-swing-tabcontrol.jar"/>
         <!-- XXX -->
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
     </path>
     <path id="codetest.classpath">
-	<pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
-        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
+	<pathelement location="${core.dir}/core/core.jar"/>
+        <pathelement location="${core.dir}/lib/boot.jar"/>
+        <pathelement location="${openide.dir}/core/openide.jar"/>
+        <pathelement location="${core.dir}/core/org-netbeans-swing-plaf.jar"/>
+        <pathelement location="${core.dir}/modules/org-netbeans-swing-tabcontrol.jar"/>
         <!-- XXX -->
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        <pathelement location="${core/settings.dir}/${nb.modules.dir}/org-netbeans-modules-settings.jar"/>
+        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+        <pathelement location="${core/settings.dir}/modules/org-netbeans-modules-settings.jar"/>
     </path>
     
     <!-- ========= -->

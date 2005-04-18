@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -20,21 +20,21 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile">
         <path id="basecp">
-            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar" />
-            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar" />
-            <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-            <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-            <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
-            <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
-            <pathelement location="${core/execution.dir}/${nb.modules.dir}/org-netbeans-core-execution.jar"/>
+            <pathelement location="${openide.dir}/core/openide.jar" />
+            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar" />
+            <pathelement location="${core.dir}/core/core.jar"/>
+            <pathelement location="${core.dir}/lib/boot.jar"/>
+            <pathelement location="${openide/execution.dir}/modules/org-openide-execution.jar"/>
+            <pathelement location="${openide/io.dir}/modules/org-openide-io.jar"/>
+            <pathelement location="${core/execution.dir}/modules/org-netbeans-core-execution.jar"/>
             <!-- project support classpath -->
-            <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
-            <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
-            <pathelement location="${java/j2seproject.dir}/${nb.modules.dir}/org-netbeans-modules-java-j2seproject.jar"/>
-            <pathelement location="${ant/project.dir}/${nb.modules.dir}/org-netbeans-modules-project-ant.jar"/>
+            <pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
+            <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
+            <pathelement location="${java/j2seproject.dir}/modules/org-netbeans-modules-java-j2seproject.jar"/>
+            <pathelement location="${ant/project.dir}/modules/org-netbeans-modules-project-ant.jar"/>
             <!-- metadata repository support classpath -->
-            <pathelement location="${java/javacore.dir}/${nb.modules.dir}/org-netbeans-modules-javacore.jar"/>
-            <pathelement location="${mdr/nbjmiutils.dir}/${nb.modules.dir}/ext/jmiutils.jar"/>
+            <pathelement location="${java/javacore.dir}/modules/org-netbeans-modules-javacore.jar"/>
+            <pathelement location="${mdr/nbjmiutils.dir}/modules/ext/jmiutils.jar"/>
             <!-- use junit with already compiled extensions -->        
             <pathelement location="../../lib/xtest.jar"/>
             <pathelement location="../../lib/xtest-junit-testrunner.jar"/>

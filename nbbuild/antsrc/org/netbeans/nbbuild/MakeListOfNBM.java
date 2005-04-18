@@ -98,11 +98,7 @@ public class MakeListOfNBM extends Task {
         
         UpdateTracking.Version version = track.addNewModuleVersion( codename, versionSpecNum );
 
-        String systemDir = this.getProject().getProperty("nb.system.dir"); //NOI18N
-        if (systemDir == null)
-            throw new BuildException( "Can't read nb.system.dir property");
-        log("Property nb.system.dir has got value \""+systemDir+"\"",Project.MSG_DEBUG);
-        fs.createInclude().setName(systemDir + File.separator + "Modules" + File.separator + track.getTrackingFileName()); //NOI18N
+        fs.createInclude().setName("config" + File.separator + "Modules" + File.separator + track.getTrackingFileName()); //NOI18N
         
         DirectoryScanner ds = fs.getDirectoryScanner( this.getProject() );
         ds.scan();
@@ -185,7 +181,7 @@ public class MakeListOfNBM extends Task {
         String[] inc = new String[include.length+2];
         for (int i=0; i < include.length; i++)
             inc[i] = include[i];
-        inc[include.length] = systemDir + File.separator + "Modules" + File.separator + track.getTrackingFileName(); // NOI18N
+        inc[include.length] = "config" + File.separator + "Modules" + File.separator + track.getTrackingFileName(); // NOI18N
         inc[include.length+1] = UpdateTracking.TRACKING_DIRECTORY + File.separator + track.getTrackingFileName();
         ModuleTracking moduleTracking = new ModuleTracking( outputPath );
         String nbmfilename = this.getProject().getProperty("nbm"); // NOI18N

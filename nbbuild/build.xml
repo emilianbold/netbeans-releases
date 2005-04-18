@@ -2654,19 +2654,18 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <taskdef name="createmodulexml" classname="org.netbeans.nbbuild.CreateModuleXML" classpath="nbantext.jar"/>
     <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
-    <loadproperties srcFile="directories.properties" />
     <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
     
-    <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.system.dir}/Modules"/>
-    <createmodulexml xmldir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.system.dir}/Modules">
+    <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/config/Modules"/>
+    <createmodulexml xmldir="${netbeans.dest.dir}/${one.cluster.dir}/config/Modules">
       <enabled dir="${netbeans.dest.dir}/${one.cluster.dir}">
-        <include name="${nb.modules.dir}/*.jar"/>
+        <include name="modules/*.jar"/>
       </enabled>
       <autoload dir="${netbeans.dest.dir}/${one.cluster.dir}">
-        <include name="${nb.modules/autoload.dir}/*.jar"/>
+        <include name="modules/autoload/*.jar"/>
       </autoload>
       <eager dir="${netbeans.dest.dir}/${one.cluster.dir}">
-        <include name="${nb.modules/eager.dir}/*.jar"/>
+        <include name="modules/eager/*.jar"/>
       </eager>
     </createmodulexml>
   </target>
@@ -2692,15 +2691,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <mkdir dir="${netbeans.dest.dir}/etc" />
     <copy file="../ide/launcher/netbeans.conf" todir="${netbeans.dest.dir}/etc" />
 
-    <echo message="${netbeans.dest.dir}/${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" />
+    <echo message="${netbeans.dest.dir}/${nb.cluster.platform.dir}/lib/nbexec" />
     <fixcrlf eol="lf" srcdir="${netbeans.dest.dir}" >
       <include name="etc/netbeans.conf" />
       <include name="bin/netbeans" />      
-      <include name="${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" />      
+      <include name="${nb.cluster.platform.dir}/lib/nbexec" />      
     </fixcrlf>
     <fixcrlf eol="crlf" srcdir="${netbeans.dest.dir}" >
       <include name="bin/netbeans.cmd" />      
-      <include name="${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec.cmd" />      
+      <include name="${nb.cluster.platform.dir}/lib/nbexec.cmd" />      
     </fixcrlf>
 
     <echo file="${netbeans.dest.dir}/build_info">NetBeans dev build
@@ -2723,7 +2722,7 @@ Tag:
     <!-- package the zip file -->
     <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset file="${netbeans.dest.dir}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
-      <zipfileset file="${netbeans.dest.dir}/${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/${nb.bin.dir}"/>
+      <zipfileset file="${netbeans.dest.dir}/${nb.cluster.platform.dir}/lib/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/lib"/>
       <zipfileset dir="${netbeans.dest.dir}/${nb.cluster.ide.dir}/ant/bin" filemode="755" prefix="${netbeans.dest}/${nb.cluster.ide.dir}/ant/bin">
         <exclude name="*.bat"/>
         <exclude name="*.cmd"/>
@@ -2878,7 +2877,7 @@ the ${netbeans.dest}/bin/ directory.
     <resolve name="zipcluster.file" value="${one.cluster.name}.pkg.filename"/>
     <zip destfile="${netbeans.build.dir}/zips/${clusters.prefix}-${zipcluster.file}-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset dir="${netbeans.dest.dir}" filemode="755">
-        <include name="${one.cluster.dir}/${nb.bin.dir}/nbexec"/>
+        <include name="${one.cluster.dir}/lib/nbexec"/>
       </zipfileset>
       <zipfileset dir="${netbeans.dest.dir}" filemode="755">
         <include name="${one.cluster.dir}/ant/bin/*"/>
@@ -2900,7 +2899,6 @@ the ${netbeans.dest}/bin/ directory.
     <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
     <loadproperties srcFile="cluster-description.properties" />
-    <loadproperties srcFile="directories.properties" />
     <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
     <mkdir dir="${netbeans.build.dir}/rpms"/>
     
@@ -2952,7 +2950,6 @@ ${pkg.rpm.map}/${one.cluster.dir}</echo>
     <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
     <loadproperties srcFile="cluster-description.properties" />
-    <loadproperties srcFile="directories.properties" />
     <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
     <mkdir dir="${netbeans.build.dir}/svr4s"/>
     

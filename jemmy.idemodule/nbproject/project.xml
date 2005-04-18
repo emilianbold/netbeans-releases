@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>../src</package-root>
                 <classpath/>
 		<built-to>../build/classes</built-to>
-		<built-to>${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/jemmy.jar</built-to>
+		<built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/jemmy.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${lexerroot}/external">
           <include name="antlr*.jar"/>
         </fileset>
-        <pathelement location="${lexer.dir}/${nb.modules.dir}/org-netbeans-modules-lexer.jar"/>
+        <pathelement location="${lexer.dir}/modules/org-netbeans-modules-lexer.jar"/>
       </classpath>
     </javac>
 
@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${lexerroot}/external">
           <include name="antlr*.jar"/>
         </fileset>
-        <pathelement location="${lexer.dir}/${nb.modules.dir}/org-netbeans-modules-lexer.jar"/>
+        <pathelement location="${lexer.dir}/modules/org-netbeans-modules-lexer.jar"/>
         <pathelement location="../../ant/external/lib/ant.jar"/>
 	<pathelement location="src" />
       </classpath>

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
@@ -128,7 +128,7 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages/>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
-                <classpath>${ant.home}/lib/ant.jar:${openide.dir}/${nb.lib.dir}/openide.jar</classpath>
+                <classpath>${ant.home}/lib/ant.jar:${openide.dir}/core/openide.jar</classpath>
                 <built-to>build/antclasses</built-to>
             </extra-compilation-unit>
         </data>

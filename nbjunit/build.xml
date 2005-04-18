@@ -18,13 +18,13 @@ Microsystems, Inc. All Rights Reserved.
     <target name="compile" depends="init">
         <!-- unscramble ../external/junit-3.8.1.jar and ../external/insanelib.jar used in cp.extra -->
         <ant dir="../external" target="unscramble"/>
-        <copy file="../external/insanelib.jar" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <copy file="../external/insanelib.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <antcall target="projectized.compile"/>
     </target>
     
     <!-- Called after jar target and before module-* targets in projectized.xml -->
     <target name="netbeans-extra" depends="jar-nbjunit,javadoc">
-        <copy file="javadoc/nbjunit-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+        <copy file="javadoc/nbjunit-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
     </target>
 
     <!-- XXX this is a mess; should use separate source roots for main module, nbjunit.jar, and nbjunit-ide.jar -->
@@ -37,8 +37,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- build nbjunit libraries -->
     <target name="jar-nbjunit" depends="compile">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit.jar"
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/nbjunit.jar"
             basedir="${build.classes.dir}"
             excludesfile="../../nbbuild/standard-jar-excludes.txt"
             compress="true"
@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
             excludes="org/netbeans/junit/ide/**,org/netbeans/junit/resources/**"
         />
         <!-- Project support available in test cases -->
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit-ide.jar"
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/nbjunit-ide.jar"
             basedir="${build.classes.dir}"
             excludesfile="../../nbbuild/standard-jar-excludes.txt"
             compress="true"

@@ -50,9 +50,9 @@ Microsystems, Inc. All Rights Reserved.
             </class-path-extension>
             <extra-compilation-unit>
                 <package-root>libsrc</package-root>
-                <classpath>${openide.dir}/${nb.lib.dir}/openide.jar</classpath>
+                <classpath>${openide.dir}/core/openide.jar</classpath>
                 <built-to>build/lib-classes</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/ddl.jar</built-to>
+                <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/ddl.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

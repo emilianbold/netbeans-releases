@@ -42,8 +42,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="ext-jar" depends="ext-compile">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/websvcregistry.jar" compress="false" >
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/websvcregistry.jar" compress="false" >
             <fileset dir="build/extclasses"/>
         </jar>
     </target>

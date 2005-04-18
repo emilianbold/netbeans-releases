@@ -240,7 +240,6 @@ final class NbModuleProject implements Project {
             // #48449: intern these; number is (size of modules.xml) * (# of loaded module projects)
             stock.put((e.getPath() + ".dir").intern(), e.getClusterDirectory().getAbsolutePath().intern()); // NOI18N
         }
-        stock.putAll(ml.getDirectoriesProperties());
         stock.put("netbeans.dest.dir", ml.getDestDirPath()); // NOI18N
         ModuleList.Entry thisEntry = ml.getEntry(getCodeNameBase());
         if (thisEntry != null) {
@@ -252,7 +251,7 @@ final class NbModuleProject implements Project {
         }
         Map/*<String,String>*/ defaults = new HashMap();
         defaults.put("code.name.base.dashes", getCodeNameBase().replace('.', '-')); // NOI18N
-        defaults.put("module.jar.dir", "${nb.modules.dir}"); // NOI18N
+        defaults.put("module.jar.dir", "modules"); // NOI18N
         defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
         defaults.put("manifest.mf", "manifest.mf"); // NOI18N

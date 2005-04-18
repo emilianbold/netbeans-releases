@@ -58,9 +58,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="netbeans-extra" depends="jar-library,javadoc,zipsrc">
-        <copy file="jelly2-nb.jar" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-        <copy file="javadoc/jelly2-nb-javadoc.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/jelly2-nb-javadoc.zip"/>
-        <copy file="jelly2-nb-src.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.sources.dir}/jelly2-nb-src.zip"/>
+        <copy file="jelly2-nb.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy file="javadoc/jelly2-nb-javadoc.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/jelly2-nb-javadoc.zip"/>
+        <copy file="jelly2-nb-src.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/sources/jelly2-nb-src.zip"/>
     </target>
     
     <target name="javadocWithJemmy" description="Javadoc for Jellytools and Jemmy">

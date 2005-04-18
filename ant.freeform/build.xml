@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="ant/freeform">
@@ -29,9 +29,9 @@ Microsystems, Inc. All Rights Reserved.
                 <path refid="cp"/>
                 <pathelement location="${build.classes.dir}"/>
                 <!-- Need real DialogDisplayer, not just openide version: -->
-                <pathelement location="${core/windows.dir}/${nb.modules.dir}/org-netbeans-core-windows.jar"/>
-                <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-                <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
+                <pathelement location="${core/windows.dir}/modules/org-netbeans-core-windows.jar"/>
+                <pathelement location="${core.dir}/core/core.jar"/>
+                <pathelement location="${core.dir}/lib/boot.jar"/>
             </classpath>
         </java>
     </target>

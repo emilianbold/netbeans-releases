@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -165,7 +165,6 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.home}/modules/org-netbeans-modules-debugger-jpda.jar"/>
             <pathelement location="${netbeans.home}/modules/org-netbeans-modules-debugger-core.jar"/>
             <pathelement location="${netbeans.home}/modules/org-openide-debugger.jar"/>
-            <pathelement location="${netbeans.home}/modules/autoload/openide-deprecated.jar"/>
             <pathelement location="${netbeans.home}/modules/org-openide-execution.jar"/>
             <pathelement location="${netbeans.home}/modules/org-openide-src.jar"/>
 	</path>
@@ -199,7 +198,6 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.home}/modules/org-netbeans-modules-debugger-jpda.jar"/>
             <pathelement location="${netbeans.home}/modules/org-netbeans-modules-debugger-core.jar"/>
             <pathelement location="${netbeans.home}/modules/org-openide-debugger.jar"/>
-            <pathelement location="${netbeans.home}/modules/autoload/openide-deprecated.jar"/>
             <pathelement location="${netbeans.home}/modules/org-openide-execution.jar"/>
             <pathelement location="${netbeans.home}/modules/org-openide-src.jar"/>
 	    <!-- <pathelement location=""/> -->

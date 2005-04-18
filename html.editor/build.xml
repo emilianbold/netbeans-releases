@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="netbeans-extra">
-        <copy file="../external/html40.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+        <copy file="../external/html40.zip" todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
     </target>
     
 </project>

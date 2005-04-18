@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,28 +32,24 @@ public class CreateModuleXML extends Task {
     private final List eager = new ArrayList(1); // List<FileSet>
     
     /** Add a set of module JARs that should be enabled.
-     * Should be .jar files from the modules/ directory.
      */
     public void addEnabled(FileSet fs) {
         enabled.add(fs);
     }
     
     /** Add a set of module JARs that should be disabled.
-     * Should be .jar files from the modules/ directory.
      */
     public void addDisabled(FileSet fs) {
         disabled.add(fs);
     }
     
     /** Add a set of module JARs that should be autoloads.
-     * Should be .jar files from the modules/autoload/ directory.
      */
     public void addAutoload(FileSet fs) {
         autoload.add(fs);
     }
     
     /** Add a set of module JARs that should be eager modules.
-     * Should be .jar files from the modules/eager/ directory.
      */
     public void addEager(FileSet fs) {
         eager.add(fs);

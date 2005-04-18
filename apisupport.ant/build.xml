@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="javadoc-check-timestamps" depends="init,nbantext-src">
-        <uptodate property="javadoc.up.to.date" targetfile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/NetBeansAntTasks.zip">
+        <uptodate property="javadoc.up.to.date" targetfile="${netbeans.dest.dir}/${cluster.dir}/docs/NetBeansAntTasks.zip">
             <srcfiles dir="build/nbantext-src">
                 <include name="**/*.java"/>
                 <include name="**/*.html"/>
@@ -101,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
             <link href="http://nagoya.apache.org/gump/javadoc/ant/build/javadocs" offline="true" packagelistloc="../../nbbuild/antsrc"/>
         </javadoc>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
-        <zip zipfile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/NetBeansAntTasks.zip" compress="true">
+        <zip zipfile="${netbeans.dest.dir}/${cluster.dir}/docs/NetBeansAntTasks.zip" compress="true">
             <fileset dir="build/nbantext-javadoc"/>
         </zip>
     </target>

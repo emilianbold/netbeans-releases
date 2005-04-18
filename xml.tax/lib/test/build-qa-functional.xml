@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -186,11 +186,11 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.home}/modules/css.jar"/>
             <pathelement location="${netbeans.home}/modules/autoload/ext/tax.jar"/>
             <pathelement location="${netbeans.home}/modules/autoload/xml-tax.jar"/>
-            <pathelement location="${netbeans.home}/modules/xml-catalog.jar"/>
+            <pathelement location="${netbeans.home}/modules/org-netbeans-modules-xml-catalog.jar"/>
             <pathelement location="${netbeans.home}/modules/autoload/xml-core.jar"/>
             <pathelement location="${netbeans.home}/modules/xml-syntax.jar"/>
-            <pathelement location="${netbeans.home}/modules/xml-text-edit.jar"/>
-            <pathelement location="${netbeans.home}/modules/xml-tools.jar"/>
+            <pathelement location="${netbeans.home}/modules/org-netbeans-modules-xml-text.jar"/>
+            <pathelement location="${netbeans.home}/modules/org-netbeans-modules-xml-tools.jar"/>
             <pathelement location="${netbeans.home}/modules/xml-tree-edit.jar"/>                      
             <pathelement location="${netbeans.home}/modules/editor.jar"/>                      
             <pathelement location="${netbeans.home}/modules/editor-lib.jar"/>                      

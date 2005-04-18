@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -40,16 +40,16 @@ Microsystems, Inc. All Rights Reserved.
 	<buildTests srcDir="unit/src"  compileExcludes="**/data/**">
             <classpath>
                 <path refid="jspparser_test_cp"/>  
-                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-                <pathelement location="${web/core.dir}/${nb.modules.dir}/jsp.jar"/>
-                <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-api-web-webmodule.jar"/>
-		<pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-modules-web-core.jar"/>
-                <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-modules-web-jspparser.jar"/>
-                <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
+                <pathelement location="${openide.dir}/core/openide.jar"/>
+                <pathelement location="${web/core.dir}/modules/jsp.jar"/>
+                <pathelement location="${web/webapi.dir}/modules/org-netbeans-api-web-webmodule.jar"/>
+		<pathelement location="${web/webapi.dir}/modules/org-netbeans-modules-web-core.jar"/>
+                <pathelement location="${web/webapi.dir}/modules/org-netbeans-modules-web-jspparser.jar"/>
+                <pathelement location="${java/api.dir}/modules/org-netbeans-api-java.jar"/>
                 <pathelement location="../../external/servlet-api-2.4.jar"/>
                 <pathelement location="../../external/jsp-api-2.0.jar"/>
-                <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
-                <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
+                <pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
+                <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
             </classpath>
         </buildTests>        
     </target>

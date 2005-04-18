@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -80,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
         <classpath>
           <pathelement path="${lexer.module.root}/gen/antsrc"/>
           <pathelement location="${lexer.module.root}/gen/src"/>
-          <pathelement location="${lexer.dir}/${nb.modules.dir}/org-netbeans-modules-lexer.jar"/>
+          <pathelement location="${lexer.dir}/modules/org-netbeans-modules-lexer.jar"/>
           <pathelement location="${grammar.root}"/>
           <pathelement location="${xml-apis}"/>
         </classpath>
@@ -107,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
              debug="${build.compiler.debug}">
         <classpath>
           <pathelement location="${xml-apis}"/>
-          <pathelement location="${lexer.dir}/${nb.modules.dir}/org-netbeans-modules-lexer.jar"/>
+          <pathelement location="${lexer.dir}/modules/org-netbeans-modules-lexer.jar"/>
           <pathelement location="${grammar.root}"/>
         </classpath>
       </javac>

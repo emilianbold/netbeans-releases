@@ -206,23 +206,23 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compiler for testing classpath scan on NB4.0 -->
     
     <path id="compiletest.classpath.40">        
-        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        <pathelement location="${core.dir}/core/core.jar"/>
+        <pathelement location="${openide.dir}/core/openide.jar"/>
         
-        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
-        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
+        <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
+        <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
         
-        <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
+        <pathelement location="${java.dir}/modules/org-netbeans-modules-java.jar"/>
         
         <pathelement location="${nball.dir}/xtest/lib/junit.jar"/>
         <pathelement location="${nball.dir}/xtest/lib/nbjunit.jar"/>
         <pathelement location="${nball.dir}/xtest/lib/nbjunit-ide.jar"/>
 <!-- 4.0 
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
+        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+        <pathelement location="${openide/execution.dir}/modules/org-openide-execution.jar"/>
             
-        <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
-        <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
+        <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
+        <pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
 -->                
     </path>
     

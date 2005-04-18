@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="all" name="unit Test Type Script">
@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
     	<!-- this classpath will be used for compiling tests against jars -->
 	<path id="compiletest.classpath">        
 	    <pathelement location="${netbeans.home}/modules/httpserver.jar"/>
-	    <pathelement location="${netbeans.home}/modules/autoload/ext/servlet-2.2.jar"/>
+	    <pathelement location="${netbeans.home}/modules/ext/servlet-2.2.jar"/>
 	        <fileset dir="${netbeans.home}/lib">
                     <include name="openide*.jar"/>
                 </fileset>

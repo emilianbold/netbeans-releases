@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Do not try to set module.classpath here, in particular: -->
         <!-- during a clean, the ${foo/bar.dir} properties may not be set. -->
         <parseprojectxml project="." modulesxml="${modulesxml.file}" codenamebasedashesproperty="code.name.base.dashes" codenamebaseslashesproperty="code.name.base.slashes"/>
-        <property name="module.jar.dir" value="${nb.modules.dir}"/>
+        <property name="module.jar.dir" value="modules"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
         <condition property="has.javahelp">
@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
                 <not><available file="javahelp/manifest.mf"/></not>
             </and>
         </condition>
-        <property name="javahelp.jar.dir" value="${nb.modules/docs.dir}"/>
+        <property name="javahelp.jar.dir" value="modules/docs"/>
         <property name="javahelp.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="javahelp.jar" value="${javahelp.jar.dir}/${javahelp.jar.basename}"/>
         <condition property="javahelp.class.path.extension" value="docs/${javahelp.jar.basename}">
@@ -58,8 +58,8 @@ Microsystems, Inc. All Rights Reserved.
         <patternset id="module.files" includes="${extra.module.files}">
             <include name="${module.jar}"/>
             <include name="${javahelp.jar}" if="has.javahelp"/>
-            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
-            <include name="${nb.system.dir}/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
+            <include name="config/Modules/${code.name.base.dashes}.xml"/>
+            <include name="config/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
         </patternset>
     </target>
@@ -71,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
                 <or>
                     <isset property="is.autoload"/>
                     <isset property="is.eager"/>
-                    <equals arg1="${module.jar.dir}" arg2="${nb.lib.dir}"/>
+                    <equals arg1="${module.jar.dir}" arg2="core"/>
                     <equals arg1="${module.jar.dir}" arg2="lib"/>
                 </or>
             </not>
@@ -194,8 +194,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra"/>
 
     <target name="module-xml-regular" if="is.regular">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules"/>
-        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/config/Modules"/>
+        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/config/Modules">
             <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
                 <include name="${module.jar}"/>
             </enabled>
@@ -203,8 +203,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="module-xml-autoload" if="is.autoload">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules"/>
-        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/config/Modules"/>
+        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/config/Modules">
             <autoload dir="${netbeans.dest.dir}/${cluster.dir}">
                 <include name="${module.jar}"/>
             </autoload>
@@ -212,8 +212,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="module-xml-eager" if="is.eager">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules"/>
-        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/config/Modules"/>
+        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/config/Modules">
             <eager dir="${netbeans.dest.dir}/${cluster.dir}">
                 <include name="${module.jar}"/>
             </eager>
@@ -221,8 +221,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="module-auto-deps" depends="basic-init" if="has.module.auto.deps">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ModuleAutoDeps"/>
-        <copy file="${module.auto.deps.xml}" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ModuleAutoDeps/${code.name.base.dashes}.xml"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/config/ModuleAutoDeps"/>
+        <copy file="${module.auto.deps.xml}" tofile="${netbeans.dest.dir}/${cluster.dir}/config/ModuleAutoDeps/${code.name.base.dashes}.xml"/>
     </target>
 
     <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp,module-auto-deps">

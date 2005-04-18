@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -200,7 +200,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="../../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
             <pathelement location="../../../openide/compiler/modules/autoload/openide-compiler.jar"/>
             <pathelement location="../../../j2eeserver/netbeans/modules/autoload/ext/javax77.jar"/>
-            <pathelement location="../../../j2eeserver/netbeans/modules/autoload/ext/jsr88javax.jar"/>
+            <pathelement location="../../../j2eeserver/netbeans/modules/ext/jsr88javax.jar"/>
             <pathelement location="../../../ant/netbeans/modules/ant.jar"/>
             <pathelement location="gensrc"/> <!-- patched projects-core.jar and filesets.jar -->
             <!--<pathelement location="../../../debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>-->
@@ -243,7 +243,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.home}/modules/autoload/openide-compiler.jar"/>
 	    <pathelement location="${netbeans.home}/modules/autoload/openide-debugger.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/ext/javax77.jar"/>    
-	    <pathelement location="${netbeans.home}/modules/autoload/ext/jsr88javax.jar"/>    
+	    <pathelement location="${netbeans.home}/modules/ext/jsr88javax.jar"/>    
             <pathelement location="${netbeans.home}/modules/ant.jar"/>
 	    <pathelement location="${netbeans.home}/modules/autoload/debuggerCore.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/tomcat5.jar"/>    
@@ -289,7 +289,7 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
             
 	    <pathelement location="../../../libs/xerces/netbeans/modules/autoload/ext/xerces-2.0.2-1.jar"/>    
-	    <pathelement location="../../../libs/xerces/netbeans/modules/autoload/ext/xml-commons-dom-ranges-1.0.b2.jar"/>    
+	    <pathelement location="../../../libs/xerces/netbeans/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"/>    
             <pathelement location="../../../openide/io/netbeans/modules/org-openide-io.jar"/>
             <pathelement location="../../../core/execution/netbeans/modules/autoload/core-execution.jar"/>
             <pathelement location="../../../core/output/netbeans/modules/autoload/core-output.jar"/>
@@ -332,11 +332,11 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.home}/modules/autoload/openide-debugger.jar"/>
 	    <pathelement location="${netbeans.home}/modules/org-openide-io.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/ext/javax77.jar"/>    
-	    <pathelement location="${netbeans.home}/modules/autoload/ext/jsr88javax.jar"/>    
+	    <pathelement location="${netbeans.home}/modules/ext/jsr88javax.jar"/>    
             <pathelement location="${netbeans.home}/modules/ant.jar"/>
 	    <pathelement location="${netbeans.home}/modules/autoload/debuggerCore.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/ext/xerces-2.0.2-1.jar"/>    
-	    <pathelement location="${netbeans.home}/modules/autoload/ext/xml-commons-dom-ranges-1.0.b2.jar"/>    
+	    <pathelement location="${netbeans.home}/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"/>    
             <pathelement location="${netbeans.home}/modules/tomcat5.jar"/>
     	</path>
     </target>

@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
         
     <target name="init" depends="init-parse-project-xml,init-read-property-files">
-        <property name="module.jar.dir" value="${nb.modules.dir}"/>
+        <property name="module.jar.dir" value="modules"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
         <property name="build.compiler.debug" value="true"/>

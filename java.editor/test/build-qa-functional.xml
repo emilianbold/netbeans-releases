@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -33,17 +33,17 @@ Microsystems, Inc. All Rights Reserved.
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**,org/netbeans/test/editor/app/**">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
-                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-		<pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar" />
-		<pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar" />
-		<pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar" />
-                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar" />
-		<pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
+                <pathelement location="${openide.dir}/core/openide.jar"/>
+		<pathelement location="${openide/loaders.dir}/core/openide-loaders.jar" />
+		<pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar" />
+		<pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar" />
+                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar" />
+		<pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
 		<pathelement location="../../../libs/external/xerces-2.6.0.jar"/>
                 <pathelement location="../../../editor/build/test/qa-functional/classes" />
-		<pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
-		<pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
-		<pathelement location="${projects/projectuiapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectuiapi.jar"/>
+		<pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
+		<pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
+		<pathelement location="${projects/projectuiapi.dir}/modules/org-netbeans-modules-projectuiapi.jar"/>
             </classpath>
         </buildTests>
     </target>
@@ -52,17 +52,17 @@ Microsystems, Inc. All Rights Reserved.
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**,org/netbeans/test/editor/app/**">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
-                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-		<pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar" />
-		<pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar" />
-		<pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar" />
-                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar" />
-		<pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
+                <pathelement location="${openide.dir}/core/openide.jar"/>
+		<pathelement location="${openide/loaders.dir}/core/openide-loaders.jar" />
+		<pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar" />
+		<pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar" />
+                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar" />
+		<pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
 		<pathelement location="../../../libs/external/xerces-2.6.0.jar"/>
                 <pathelement location="../../../editor/build/test/qa-functional/classes" />
-		<pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
-		<pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
-		<pathelement location="${projects/projectuiapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectuiapi.jar"/>
+		<pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
+		<pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
+		<pathelement location="${projects/projectuiapi.dir}/modules/org-netbeans-modules-projectuiapi.jar"/>
             </classpath>
         </buildTests>
     </target>

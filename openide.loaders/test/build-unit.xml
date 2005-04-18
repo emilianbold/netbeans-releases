@@ -2,30 +2,29 @@
 
 <project basedir="." default="all" name="build-unit">
     <import file="../../../nbbuild/default.xml"/>
-    <property file="../../../nbbuild/directories.properties"/>
 
     <path id="compiletest.classpath">   
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+        <pathelement location="${openide.dir}/core/openide.jar"/>
+        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
     </path>
     
     <path id="codetest.classpath">
 <!--        
-        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
-        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
-        <pathelement location="${core/windows.dir}/${nb.modules.dir}/org-netbeans-core-windows.jar"/>
-        <pathelement location="${core/settings.dir}/${nb.modules.dir}/org-netbeans-modules-settings.jar"/>
-        <fileset dir="${libs/xerces.dir}/${nb.modules/autoload.dir}/ext">
+        <pathelement location="${core.dir}/core/org-netbeans-swing-plaf.jar"/>
+        <pathelement location="${core.dir}/modules/org-netbeans-swing-tabcontrol.jar"/>
+        <pathelement location="${core/windows.dir}/modules/org-netbeans-core-windows.jar"/>
+        <pathelement location="${core/settings.dir}/modules/org-netbeans-modules-settings.jar"/>
+        <fileset dir="${libs/xerces.dir}/modules/ext">
             <include name="xerces-*.jar"/>
             <include name="xml-commons-dom-ranges-*.jar"/>
         </fileset>
 -->        
 				
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+        <pathelement location="${openide.dir}/core/openide.jar"/>
+        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
         
-        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
+        <pathelement location="${core.dir}/core/core.jar"/>
+        <pathelement location="${core.dir}/lib/boot.jar"/>
     </path>
     
     <!-- ========= -->

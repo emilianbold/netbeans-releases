@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
        <buildTests srcdir="unit/src" compileexcludes="**/data/**">
             <classpath>
                 <path refid="test.unit.compile.cp"/>
-                <!--pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-vcs-advanced.jar"/>
+                <!--pathelement location="${netbeans.dest.dir}/${cluster.dir}/modules/org-netbeans-modules-vcs-advanced.jar"/>
                 <pathelement location="../../vcsgeneric/test/unit/testprofile/src"/-->
             </classpath>
         </buildTests>
@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
         <executeTests pluginname="jvm">
             <classpath>
                 <path refid="test.unit.run.cp"/>
-                <!--pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-vcs-advanced.jar"/>
+                <!--pathelement location="${netbeans.dest.dir}/${cluster.dir}/modules/org-netbeans-modules-vcs-advanced.jar"/>
                 <pathelement location="../../vcsgeneric/test/unit/testprofile/src"/-->
             </classpath>
         </executeTests>

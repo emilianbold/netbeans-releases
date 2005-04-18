@@ -32,14 +32,12 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="nbjunit" target="jar-nbjunit" inheritAll="false"/>
     <!-- Need to initialize ${xtest/nbjunit.dir} property -->
     <property file="${moduleCluster.file}"/>
-    <copy file="${xtest/nbjunit.dir}/${nb.modules.dir}/ext/nbjunit.jar" todir="lib"/>
-    <copy file="${xtest/nbjunit.dir}/${nb.modules.dir}/ext/nbjunit-ide.jar" todir="lib"/>
+    <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit.jar" todir="lib"/>
+    <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit-ide.jar" todir="lib"/>
   </target>
 
   <target name="init" depends="default.init">
       <ant dir="external" target="unscramble"/>
-      <!-- Copy directories.properties because it is not guaranteed it is in IDE build. -->
-      <copy file="${nb_all}/nbbuild/directories.properties" todir="lib" overwrite="true"/>
   </target>
   
   <target name="compile" depends="init,prepare-nbjunit">
@@ -122,7 +120,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/insanelib.jar"/>
     <delete dir="build"/>
     <delete file="module-manifest-subst.mf"/>
-    <delete file="lib/directories.properties"/>
     <delete dir="lib/patches"/>
     <delete file="lib/xtest.jar"/>
     <delete file="lib/junit.jar"/>

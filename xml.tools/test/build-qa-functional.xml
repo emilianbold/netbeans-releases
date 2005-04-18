@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -21,20 +21,20 @@ Microsystems, Inc. All Rights Reserved.
     <property name="test.qa-functional.run.cp.extra" value="../../test/qa-lib/xml-test-lib.jar"/>
     
     <property name="test.qa-functional.cp.extra" value="../../test/qa-lib/xml-test-lib.jar:
-            ${openide.dir}/${nb.lib.dir}/openide.jar:
-            ${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar:
-            ${core.dir}/${nb.lib.dir}/core.jar:
-            ${xml/css.dir}/${nb.modules.dir}/css.jar:
-            ${xml/tax.dir}/${nb.modules/autoload.dir}/ext/tax.jar:
-            ${xml/api.dir}/${nb.modules/autoload.dir}/xml-api.jar:
-            ${xml/tax.dir}/${nb.modules/autoload.dir}/xml-tax.jar:
-	    ${openidex.dir}/${nb.modules.dir}/org-openide-src.jar:
-            ${xml/catalog.dir}/${nb.modules.dir}/xml-catalog.jar:
-            ${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar:
-            ${xml/text-edit.dir}/${nb.modules.dir}/xml-text-edit.jar:
-            ${xml/tools.dir}/${nb.modules.dir}/xml-tools.jar:
-            ${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar:
-            ${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
+            ${openide.dir}/core/openide.jar:
+            ${openide/loaders.dir}/core/openide-loaders.jar:
+            ${core.dir}/core/core.jar:
+            ${xml/css.dir}/modules/css.jar:
+            ${xml/tax.dir}/modules/autoload/ext/tax.jar:
+            ${xml/api.dir}/modules/autoload/xml-api.jar:
+            ${xml/tax.dir}/modules/autoload/xml-tax.jar:
+	    ${openidex.dir}/modules/org-openide-src.jar:
+            ${xml/catalog.dir}/modules/org-netbeans-modules-xml-catalog.jar:
+            ${xml/core.dir}/modules/autoload/xml-core.jar:
+            ${xml/text-edit.dir}/modules/org-netbeans-modules-xml-text.jar:
+            ${xml/tools.dir}/modules/org-netbeans-modules-xml-tools.jar:
+            ${editor.dir}/modules/org-netbeans-modules-editor.jar:
+            ${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
 
     <target name="qa-functional-compiler" depends="init,init-cp">
         <!-- <echo message="FFFFFFFFFFFFF  ${test.qa-functional.cp.extra}"/> -->

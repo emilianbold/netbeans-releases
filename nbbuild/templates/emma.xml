@@ -25,7 +25,6 @@ TODO:
     <property name="xtest.home" location="${nb_all}/xtest"/>
     <property name="netbeans.dest.dir" location="${nb_all}/nbbuild/netbeans"/>
     
-    <property file="${xtest.home}/lib/directories.properties"/>
     <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
     
     <property name="xtest.workdir" location="work"/>
@@ -88,7 +87,7 @@ TODO:
     <target name="emma-init" depends="buildtests,emma-init-parse-project-xml,emma-init-read-property-files,emma-init-coverage-path,emma-init-coverage-source-path"/>
     
     <target name="emma-init-coverage-path">
-        <property name="module.jar.dir" value="${nb.modules.dir}"/>
+        <property name="module.jar.dir" value="modules"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
         <property name="coverage.path" location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>

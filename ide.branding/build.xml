@@ -28,8 +28,8 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 
     <patternset id="ide/branding.files">
       <include name="**/*_nb.jar"/>
-      <include name="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar" />
-      <include name="${nb.system.dir}/Modules/org-netbeans-modules-ide-branding.xml" />
+      <include name="modules/org-netbeans-modules-ide-branding.jar" />
+      <include name="config/Modules/org-netbeans-modules-ide-branding.xml" />
       <include name="nbos2icons.zip" />
       <include name="netbeans.icns" />
       <include name="netbeans.png" />
@@ -65,7 +65,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   <target name="netbeans" depends="init,release,jars">
     <genlist 
       outputfiledir="${netbeans.dest.dir}/${cluster.dir}" 
-      module="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar"
+      module="modules/org-netbeans-modules-ide-branding.jar"
     >
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="ide/branding.files"/>
@@ -95,31 +95,31 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 
     <mkdir  dir="build/org/netbeans/modules/ide/branding" />
     <copy file="Bundle.properties" tofile="build/org/netbeans/modules/ide/branding/Bundle.properties" />
-    <mkdir  dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}" />
+    <mkdir  dir="${netbeans.dest.dir}/${cluster.dir}/modules" />
     <!-- core (main core) -->
     <jar basedir="." 
       excludes="**/*"
       manifest="manifest.mf"
-      jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-ide-branding.jar" 
+      jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/org-netbeans-modules-ide-branding.jar" 
     >
         <fileset dir="build" >
             <include name="org/netbeans/modules/ide/branding/Bundle.properties" />
         </fileset>
     </jar>
-    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/config/Modules">
       <autoload dir="${netbeans.dest.dir}/${cluster.dir}">
-        <include name="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar"/>
+        <include name="modules/org-netbeans-modules-ide-branding.jar"/>
       </autoload>
     </createmodulexml>
     
     <locjar 
       basedir="core/src"
-      jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/core.jar"
+      jarfile="${netbeans.dest.dir}/${cluster.dir}/core/core.jar"
     />
 
     <locjar 
       basedir="core/windows/src"
-      jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-core-windows.jar"
+      jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/org-netbeans-core-windows.jar"
     />
   </target>
 
@@ -130,7 +130,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
        productdir="${netbeans.dest.dir}/${cluster.dir}"
 	     homepage="http://ide.${homepage.base}/"
 	     distribution="http://${dist.base}/org-netbeans-modules-ide-branding.nbm"
-       module="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar"
+       module="modules/org-netbeans-modules-ide-branding.jar"
     >
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>

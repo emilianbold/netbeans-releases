@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -74,39 +74,6 @@ public class J2SESampleProjectGenerator {
             } catch (Exception e) {
                 throw new IOException(e.toString());
             }
-            
-//            //update private/project.properties
-//            try {
-//                File props = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-//                InputStream is = new FileInputStream(props);
-//                EditableProperties ep = new EditableProperties();
-//                ep.load(is);
-//
-//                // JSPC classpath
-//                StringBuffer sb = new StringBuffer();
-//                // Ant is needed in classpath if we are forking JspC into another process
-//                sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false)); //NOI18N
-//                sb.append(":"); // NOI18N
-//                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/servlet-api-2.4.jar", null, false)); //NOI18N
-//                sb.append(":"); // NOI18N
-//                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-api-2.0.jar", null, false));   //NOI18N
-//                sb.append(":"); // NOI18N
-//                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.27.jar", null, false));    //NOI18N
-//                sb.append(":"); // NOI18N
-//                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.27.jar", null, false));     //NOI18N
-//                sb.append(":"); // NOI18N
-//                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));    //NOI18N
-//                sb.append(":"); // NOI18N
-//                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-logging-api.jar", null, false));   //NOI18N
-//                ep.setProperty(JSPC_CLASSPATH, sb.toString());
-//
-//                OutputStream os = new FileOutputStream(props);
-//                ep.store(os);
-//
-//            } catch (Exception e) {
-//                throw new IOException(e.toString());
-//            }
-        
             prjLoc.refresh(false);
         }
         return prjLoc;

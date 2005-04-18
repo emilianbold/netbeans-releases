@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -27,33 +27,33 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="default.init">
       <patternset id="testtools.files">
         <!-- All files created for NBM -->
-        <include name="${nb.system.dir}/Modules/org-netbeans-modules-testtools.xml"/>
-        <include name="${nb.modules.dir}/org-netbeans-modules-testtools.jar"/>
-        <include name="${nb.modules/docs.dir}/testtools.jar"/>
+        <include name="config/Modules/org-netbeans-modules-testtools.xml"/>
+        <include name="modules/org-netbeans-modules-testtools.jar"/>
+        <include name="modules/docs/testtools.jar"/>
       </patternset>
     </target>
     
   <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar" />
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar" />
-        <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar" />
-        <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar" />
-        <pathelement location="${openide/execution/deprecated.dir}/${nb.modules.dir}/org-openide-execution-deprecated.jar" />
+        <pathelement location="${openide.dir}/core/openide.jar" />
+        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar" />
+        <pathelement location="${openide/compiler.dir}/modules/autoload/openide-compiler.jar" />
+        <pathelement location="${openide/execution.dir}/modules/org-openide-execution.jar" />
+        <pathelement location="${openide/execution/deprecated.dir}/modules/org-openide-execution-deprecated.jar" />
         
-        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar" />
-        <pathelement location="${core/windows.dir}/${nb.modules.dir}/org-netbeans-core-windows.jar" />
-        <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar" />
-        <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar" />
-        <pathelement location="${ant.dir}/${nb.modules.dir}/org-apache-tools-ant-module.jar" />
+        <pathelement location="${core.dir}/core/core.jar" />
+        <pathelement location="${core/windows.dir}/modules/org-netbeans-core-windows.jar" />
+        <pathelement location="${java.dir}/modules/org-netbeans-modules-java.jar" />
+        <pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar" />
+        <pathelement location="${ant.dir}/modules/org-apache-tools-ant-module.jar" />
 	<fileset dir="${nbroot}/ant/external">
           <!-- For 1.6: -->
           <include name="lib/ant.jar"/>
 	</fileset>
         <pathelement location="${nbroot}/jemmy/jemmy.jar" />
         <pathelement location="${nbroot}/jellytools/jelly2-nb.jar" />
-        <pathelement location="${jemmysupport.dir}/${nb.modules.dir}/org-netbeans-modules-jemmysupport.jar" />
+        <pathelement location="${jemmysupport.dir}/modules/org-netbeans-modules-jemmysupport.jar" />
         <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
         <fileset dir="${nbroot}/libs/external">
@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars" depends="compile,timestamp">
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-testtools.jar"
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/org-netbeans-modules-testtools.jar"
          manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
@@ -84,12 +84,12 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars,javahelp">
-    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/config/Modules">
       <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
-        <include name="${nb.modules.dir}/org-netbeans-modules-testtools.jar"/>
+        <include name="modules/org-netbeans-modules-testtools.jar"/>
       </enabled>
     </createmodulexml>
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-testtools.jar">
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="modules/org-netbeans-modules-testtools.jar">
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="testtools.files"/>
       </fileset>
@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="testtools.nbm"
              productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/org-netbeans-modules-testtools.jar"
+             module="modules/org-netbeans-modules-testtools.jar"
              homepage="http://testtools.${homepage.base}"
 	         distribution="http://${dist.base}/testtools.nbm">
       <license file="${license.file}"/>
@@ -169,8 +169,8 @@ Microsystems, Inc. All Rights Reserved.
     </jhindexer>
     <mkdir dir="javahelp/org/netbeans/modules/usersguide"/>
     <copy file="${nbroot}/usersguide/javahelp/org/netbeans/modules/usersguide/ide.css" tofile="javahelp/org/netbeans/modules/usersguide/ide.css"/>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/testtools.jar" compress="true">
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/docs"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/docs/testtools.jar" compress="true">
         <fileset dir="javahelp" excludesfile="${nbext}/standard-jar-excludes.txt" excludes="org/netbeans/modules/usersguide/"/>
     </jar>
   </target>

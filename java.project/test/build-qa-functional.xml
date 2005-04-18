@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -23,8 +23,8 @@ Microsystems, Inc. All Rights Reserved.
         <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
             <classpath>
 		<path refid="test.qa-functional.compile.cp"/>
-                <pathelement location="${projects/libraries.dir}/${nb.modules.dir}/org-netbeans-modules-project-libraries.jar"/>
-                <pathelement location="${java/platform.dir}/${nb.modules.dir}/org-netbeans-modules-java-platform.jar"/>
+                <pathelement location="${projects/libraries.dir}/modules/org-netbeans-modules-project-libraries.jar"/>
+                <pathelement location="${java/platform.dir}/modules/org-netbeans-modules-java-platform.jar"/>
             </classpath>
         </buildTests>
     </target>

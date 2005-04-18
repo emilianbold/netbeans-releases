@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>extsrc</package-root>
                 <classpath>${module.classpath}:${netbeans.dest.dir}/${cluster.dir}/${module.jar}:${extsrc.cp.extra}</classpath>
                 <built-to>build/extclasses</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/websvcregistry.jar</built-to>
+                <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/websvcregistry.jar</built-to>
             </extra-compilation-unit>
             <javadoc/>
         </data>

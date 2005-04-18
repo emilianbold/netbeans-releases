@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
      <instances property="xtest.instance.postfixes"/>
      <echo message="Found following instances: ${xtest.instance.postfixes}"/>
 
-     <buildinfo ideLibDir="${openide.dir}/${nb.lib.dir}" buildNumberProperty="xtest.ide.build.name"
+     <buildinfo ideLibDir="${openide.dir}/core" buildNumberProperty="xtest.ide.build.name"
                 buildProjectNameProperty="xtest.tested.project" buildTimestampProperty="ide.timestamp"/>
      <property name="ide.timestamp" value=""/>
 
@@ -135,7 +135,7 @@ Microsystems, Inc. All Rights Reserved.
    </target>
    
    <target name="pack-results2" if="xtest.ship.results.to">
-         <buildinfo ideLibDir="${openide.dir}/${nb.lib.dir}" buildNumberProperty="ide.build"
+         <buildinfo ideLibDir="${openide.dir}/core" buildNumberProperty="ide.build"
                 buildProjectNameProperty="xtest.tested.project" />
          <echo message="Shipping results for build ${ide.build}"/>
          <property name="ide.build" value="unknown"/>
@@ -294,13 +294,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>   
   
   <target name="install-from-dir" depends="check-ide-param" if="ide.install.type.dir">
-     <!-- Read moduleCluster.properties and directories.properties from netbeans.dest.dir -->
+     <!-- Read moduleCluster.properties from netbeans.dest.dir -->
      <property name="netbeans.dest.dir" location="${ide.install.path}/netbeans"/>
-     <property file="${ide.install.path}/directories.properties"/>
-      <!-- Try to read directories.properties also from xtest/lib because it is not guaranteed it is in IDE zip. -->
-     <property file="${xtest.home}/lib/directories.properties"/>
      <property file="${ide.install.path}/netbeans/moduleCluster.properties"/>
-     <available file="${openide.dir}/${nb.lib.dir}/openide.jar" type="file" property="ide.home" value="${ide.install.path}"/>
+     <available file="${openide.dir}/core/openide.jar" type="file" property="ide.home" value="${ide.install.path}"/>
      <antcall target="find-existing-ide"/>
   </target>   
   
@@ -309,17 +306,14 @@ Microsystems, Inc. All Rights Reserved.
   </target>    
       
   <target name="find-installed-ide" depends="install-from" unless="ide.home">
-     <!-- Read moduleCluster.properties and directories.properties from netbeans.dest.dir -->
+     <!-- Read moduleCluster.properties from netbeans.dest.dir -->
      <property name="netbeans.dest.dir" location="${ide.installto}/netbeans"/>
-     <property file="${ide.installto}/directories.properties"/>
-      <!-- Try to read directories.properties also from xtest/lib because it is not guaranteed it is in IDE zip. -->
-     <property file="${xtest.home}/lib/directories.properties"/>
      <property file="${ide.installto}/netbeans/moduleCluster.properties"/>
-     <available file="${openide.dir}/${nb.lib.dir}/openide.jar" type="file" property="ide.home" value="${ide.installto}"/>
+     <available file="${openide.dir}/core/openide.jar" type="file" property="ide.home" value="${ide.installto}"/>
   </target>
   
   <target name="check-installed-ide" depends="find-installed-ide,actionlist" unless="ide.home" if="xtest.execute_actions.install-ide">
-     <fail message="IDE wasn't properly installed. Can't find ${openide.dir}/${nb.lib.dir}/openide.jar."/>
+     <fail message="IDE wasn't properly installed. Can't find ${openide.dir}/core/openide.jar."/>
   </target>
 
   <target name="install-type-fail" unless="ide.install.type.ok">

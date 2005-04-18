@@ -23,16 +23,16 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="init" depends="default.init">
       <patternset id="xml/tax.files">
-        <include name="${nb.modules/autoload.dir}/xml-tax.jar"/>
-        <include name="${nb.modules/autoload.dir}/ext/tax.jar"/>
-        <!--<include name="${nb.modules/autoload.dir}/ext/xerces2.jar"/>-->
+        <include name="modules/autoload/xml-tax.jar"/>
+        <include name="modules/autoload/ext/tax.jar"/>
+        <!--<include name="modules/autoload/ext/xerces2.jar"/>-->
       </patternset>
       <path id="cp">
-         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+         <pathelement location="${openide.dir}/core/openide.jar"/>
+         <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
          <pathelement location="${lib_root}/src"/>
-         <pathelement location="${xml/api.dir}/${nb.modules.dir}/org-netbeans-api-xml.jar"/>
-         <pathelement location="${xml/core.dir}/${nb.modules.dir}/org-netbeans-modules-xml-core.jar"/>
+         <pathelement location="${xml/api.dir}/modules/org-netbeans-api-xml.jar"/>
+         <pathelement location="${xml/core.dir}/modules/org-netbeans-modules-xml-core.jar"/>
       </path>
     </target>
 
@@ -47,20 +47,20 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="jars" depends="compile">
         <for-each locations="lib"/>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/autoload"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf">
             <filterchain>
                 <expandproperties/>
             </filterchain>
         </copy>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/xml-tax.jar"
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/autoload/xml-tax.jar"
              manifest="manifest-subst.mf"
              compress="false">
             <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </jar>
         <!-- XXX temporary, until this module is projectized, for use by others (cf. #52354): -->
         <mkdir dir="build"/>
-        <echo file="build/class-path-extensions.txt">:${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext/tax.jar</echo>
+        <echo file="build/class-path-extensions.txt">:${netbeans.dest.dir}/${cluster.dir}/modules/autoload/ext/tax.jar</echo>
     </target>
 
     <target name="release">
@@ -69,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="netbeans" depends="jars,release">
        <for-each locations="lib"/>
-       <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/xml-tax.jar">
+       <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="modules/autoload/xml-tax.jar">
           <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
              <patternset refID="xml/tax.files"/>
           </fileset>
@@ -92,7 +92,7 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="xml-tax.nbm"
                  productdir="${netbeans.dest.dir}/${cluster.dir}"
                  needsrestart="false"
-                 module="${nb.modules/autoload.dir}/xml-tax.jar"
+                 module="modules/autoload/xml-tax.jar"
                  homepage="http://xml.${homepage.base}/tax/"
                  distribution="http://${dist.base}/xml-tax.nbm">
              <license name="xml-tax-license.txt">

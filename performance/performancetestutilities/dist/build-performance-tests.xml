@@ -33,18 +33,18 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- compilation classpath -->
     <path id="compiletest.classpath">        
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        <pathelement location="${openide.dir}/core/openide.jar"/>
         
-        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
-        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
-        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
-        <pathelement location="${editor/plain.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain.jar"/>
+        <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
+        <pathelement location="${editor.dir}/modules/org-netbeans-modules-java-editor.jar"/>
+        <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
+        <pathelement location="${editor/plain.dir}/modules/org-netbeans-modules-editor-plain.jar"/>
         
-        <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
+        <pathelement location="${java.dir}/modules/org-netbeans-modules-java.jar"/>
         
-        <pathelement location="${web/jspsyntax.dir}/${nb.modules.dir}/org-netbeans-modules-web-core-syntax.jar"/>
+        <pathelement location="${web/jspsyntax.dir}/modules/org-netbeans-modules-web-core-syntax.jar"/>
         
-        <pathelement location="${xml/text-edit.dir}/${nb.modules.dir}/xml-text-edit.jar"/>
+        <pathelement location="${xml/text-edit.dir}/modules/xml-text-edit.jar"/>
                 
         <pathelement location="${nball.dir}/xtest/lib/junit.jar"/>
         <pathelement location="${nball.dir}/xtest/lib/nbjunit.jar"/>

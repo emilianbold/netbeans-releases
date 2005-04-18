@@ -594,8 +594,8 @@ public final class ParseProjectXml extends Task {
                     throw new BuildException("Have malformed <class-path-extension> in " + getProjectFile(), getLocation());
                 }
                 String reltext = XMLUtil.findText(runtimeRelativePath);
-                // XXX assumes that module.jar.dir=${nb.modules.dir} was not overridden!
-                text = "${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/" + reltext;
+                // XXX assumes that module.jar.dir=modules was not overridden!
+                text = "${netbeans.dest.dir}/${cluster.dir}/modules/" + reltext;
             }
             String eval = getProject().replaceProperties(text);
             File binary = getProject().resolveFile(eval);
@@ -629,23 +629,14 @@ public final class ParseProjectXml extends Task {
         // XXX if that module is projectized, check its public
         // packages; if it has none, halt the build, unless we are
         // declaring an impl dependency
-        // Prototype: ${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar
-        // where: path=java/srcmodel jar = modules/autoload/java-src-model.jar
+        // Prototype: ${java/srcmodel.dir}/modules/org-openide-src.jar
+        // where: path=java/srcmodel jar = modules/org-openide-src.jar
         String topdirProp = module.getPath() + ".dir"; // "java/srcmodel.dir" //NOI18N
         String topdirVal = getProject().getProperty(topdirProp);
         if (topdirVal == null) {
             throw new BuildException("Undefined: " + topdirProp + " (usually means you are missing a dependency in nbbuild/build.xml#all-*)", getLocation());
         }
-        String jar = module.getJar();
-        int slash = jar.lastIndexOf('/'); //NOI18N
-        String jarDir = jar.substring(0, slash); // "modules/autoload"
-        String jarDirProp = "nb." + jarDir + ".dir"; // "nb.modules/autoload.dir" //NOI18N
-        String jarDirVal = getProject().getProperty(jarDirProp);
-        if (jarDirVal == null) {
-            throw new BuildException("Undefined: " + jarDirProp);
-        }
-        String slashPlusJar = jar.substring(slash); // "/java-src-model.jar"
-        return topdirVal + '/' + jarDirVal + slashPlusJar;
+        return topdirVal + '/' + module.getJar();
     }
     
     private String computeClassPathExtensions(Document pDoc) {

@@ -17,9 +17,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- before netbeans projectized.xml hook. -->
     <target name="netbeans-extra" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy file="../external/resolver-1_1_nb.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/resolver-1_1_nb.jar"/>
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/resolver-1_1_nb.jar"/>
     </target>
     
     <!-- Need to unscramble the libs before continuing-->

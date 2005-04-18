@@ -16,8 +16,8 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="release" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext">
             <fileset dir="../external">
                 <include name="jasper-compiler-${tomcat_version}.jar"/>
                 <include name="jasper-runtime-${tomcat_version}.jar"/>
@@ -42,8 +42,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="ext-jar" depends="ext-compile">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/jsp-parser-ext.jar" compress="false">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsp-parser-ext.jar" compress="false">
             <fileset dir="build/extclasses"/>
         </jar>
     </target>

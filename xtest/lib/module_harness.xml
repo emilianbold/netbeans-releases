@@ -164,12 +164,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Init cluster properties  -->
     <!-- ======================== -->
     <target name="init_cluster_properties">
-         <!-- Read moduleCluster.properties and directories.properties from netbeans.dest.dir -->
-         <property file="${netbeans.dest.dir}/directories.properties"/>
-         <!-- read from second location -->
-         <property file="${netbeans.dest.dir}/../directories.properties"/>
-         <!-- Try to read directories.properties also from xtest/lib because it is not guaranteed it is in IDE zip. -->
-         <property file="${xtest.home}/lib/directories.properties"/>
+         <!-- Read moduleCluster.properties from netbeans.dest.dir -->
          <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
          <!-- read also from this location -->
          <property file="${netbeans.dest.dir}/netbeans/moduleCluster.properties"/>

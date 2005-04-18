@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -17,51 +17,51 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init">
     
         <path id="compiletest.classpath">
-            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
-            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
-            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
-            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
+            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
+            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
+            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
+            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
 
-            <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-            <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-            <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
-            <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
-            <pathelement location="${java/editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar" />       
-            <pathelement location="${java/editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor-lib.jar" /> 
+            <pathelement location="${core.dir}/core/core.jar"/>
+            <pathelement location="${core.dir}/lib/boot.jar"/>
+            <pathelement location="${openide.dir}/core/openide.jar"/>
+            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+            <pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
+            <pathelement location="${java/api.dir}/modules/org-netbeans-api-java.jar"/>
+            <pathelement location="${java/editor.dir}/modules/org-netbeans-modules-java-editor.jar" />       
+            <pathelement location="${java/editor.dir}/modules/org-netbeans-modules-java-editor-lib.jar" /> 
             <pathelement location="../../../editor/build/test/unit/classes" />
-<!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/> -->
-            <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>
+<!--            <pathelement location="${debuggercore/oldapi.dir}/modules/org-openide-debugger.jar"/> -->
+            <pathelement location="${projects/queries.dir}/modules/org-netbeans-modules-queries.jar"/>
 <!--            <pathelement path="${junit.path}"/> -->
             <pathelement path="${xerces.path}"/>
         </path>
     
         <path id="codetest.classpath">
-            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
-            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
-            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
-            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
+            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
+            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
+            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
+            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
 
-            <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-            <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-            <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
-            <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
-<!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/> -->
-            <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
-            <pathelement location="${openide/execution/deprecated.dir}/${nb.modules.dir}/org-openide-execution-deprecated.jar"/>
-            <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
-            <pathelement location="${core/output2.dir}/${nb.modules.dir}/org-netbeans-core-output2.jar"/>
-            <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
-            <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-javacore.jar"/>
-            <pathelement location="${classfile.dir}/${nb.modules/autoload.dir}/classfile.jar"/>
-            <pathelement location="${clazz.dir}/${nb.modules.dir}/org-netbeans-modules-clazz.jar"/>
-            <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>
-            <pathelement location="${java/platform.dir}/${nb.modules.dir}/org-netbeans-modules-java-platform.jar"/>
-            <pathelement location="${java/editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar" />       
-            <pathelement location="${java/editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor-lib.jar" /> 
+            <pathelement location="${core.dir}/core/core.jar"/>
+            <pathelement location="${core.dir}/lib/boot.jar"/>
+            <pathelement location="${openide.dir}/core/openide.jar"/>
+            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+            <pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
+            <pathelement location="${java/api.dir}/modules/org-netbeans-api-java.jar"/>
+<!--            <pathelement location="${debuggercore/oldapi.dir}/modules/org-openide-debugger.jar"/> -->
+            <pathelement location="${openide/execution.dir}/modules/org-openide-execution.jar"/>
+            <pathelement location="${openide/execution/deprecated.dir}/modules/org-openide-execution-deprecated.jar"/>
+            <pathelement location="${openide/io.dir}/modules/org-openide-io.jar"/>
+            <pathelement location="${core/output2.dir}/modules/org-netbeans-core-output2.jar"/>
+            <pathelement location="${java.dir}/modules/org-netbeans-modules-java.jar"/>
+            <pathelement location="${java.dir}/modules/org-netbeans-modules-javacore.jar"/>
+            <pathelement location="${classfile.dir}/modules/org-netbeans-modules-classfile.jar"/>
+            <pathelement location="${clazz.dir}/modules/org-netbeans-modules-clazz.jar"/>
+            <pathelement location="${projects/queries.dir}/modules/org-netbeans-modules-queries.jar"/>
+            <pathelement location="${java/platform.dir}/modules/org-netbeans-modules-java-platform.jar"/>
+            <pathelement location="${java/editor.dir}/modules/org-netbeans-modules-java-editor.jar" />       
+            <pathelement location="${java/editor.dir}/modules/org-netbeans-modules-java-editor-lib.jar" /> 
             <pathelement location="../../../editor/build/test/unit/classes" />
 
 <!--            <pathelement path="${junit.path}"/> -->

@@ -18,8 +18,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-        <copy file="../external/jsr88javax.jar" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy file="../external/jsr88javax.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
     </target>
 
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">

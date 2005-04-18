@@ -8,15 +8,15 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="projects test setup" basedir="." default="build">
 
     <target name="build" description="Build stuff for projects tests">
 	<path id="openide">
-            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+            <pathelement location="${openide.dir}/core/openide.jar"/>
+            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
         </path>
         <antcall target="create-jar">
             <param name="name" value="sfs-attr-test"/>

@@ -9,13 +9,15 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="j2eeserver/test-unit" basedir="." default="all">
+
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
-    <property name="test.unit.cp.extra" value="../../nbbuild/netbeans/ide5/modules/autoload/ext/xerces-2.6.2.jar:../../nbbuild/netbeans/enterprise1/modules/autoload/ext/jsr88javax.jar"/>
-    <property name="test.unit.run.cp.extra" value="../../nbbuild/netbeans/ide5/modules/autoload/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
+
+    <property name="test.unit.cp.extra" value="../../nbbuild/netbeans/ide5/modules/ext/xerces-2.6.2.jar:../../nbbuild/netbeans/enterprise1/modules/ext/jsr88javax.jar"/>
+    <property name="test.unit.run.cp.extra" value="../../nbbuild/netbeans/ide5/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
     
     <target name="runidetest">
         <executeTests  pluginName="ide">

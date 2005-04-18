@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <copy file="release/lib/ide.ks" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}"/>
+        <copy file="release/lib/ide.ks" todir="${netbeans.dest.dir}/${cluster.dir}/core"/>
     </target>
 
 <!-- XXX may be obsolete:

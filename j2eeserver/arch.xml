@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -488,7 +488,7 @@ JRE is enough.
         </question>
 -->
 <answer id="deploy-jar">
-The module deploys the following jar files into <code>modules/autoload/</code> folder:
+The module deploys the following jar files into <code>modules/</code> folder: (XXX names are out of date)
 <ul>
 <li>j2eeapis.jar - a modules that represents the APIs (ejb, jsr88, jsr77, jmxri)</li>
 <li>j2eeeditor.jar - an external library with the editor for server specific configuration files</li>

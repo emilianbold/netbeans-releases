@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -16,15 +16,15 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="init">
         <path id="compiletest.classpath">
-            <pathelement location="${editor/util.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
-            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+            <pathelement location="${editor/util.dir}/modules/org-netbeans-modules-editor-util.jar"/>
+            <pathelement location="${openide.dir}/core/openide.jar"/>
+            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
         </path>
     
         <path id="codetest.classpath">
-            <pathelement location="${editor/util.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
-            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+            <pathelement location="${editor/util.dir}/modules/org-netbeans-modules-editor-util.jar"/>
+            <pathelement location="${openide.dir}/core/openide.jar"/>
+            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
         </path>
     
     </target>
