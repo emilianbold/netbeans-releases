@@ -364,39 +364,6 @@ public class WebProjectProperties {
         storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
         storeRoots( project.getTestSourceRoots(), TEST_ROOTS_MODEL );
 
-        //test whether user wants to update his project to newest version
-        if(needsUpdate) {
-            //remove servlet24 and jsp20 libraries (they are not used in 4.1)
-            ClassPathUiSupport.ClassPathTableModel cptm = getJavaClassPathModel();
-
-            ArrayList cpItemsToRemove = new ArrayList();
-            for(int i = 0; i < cptm.getRowCount(); i++) {
-                Object item = cptm.getValueAt(i,0);
-                if (item instanceof ClassPathSupport.Item) {
-                    ClassPathSupport.Item cpti = (ClassPathSupport.Item)item;
-                    String propertyName = cpti.getReference();
-                    if(propertyName != null) {
-                        String libname = propertyName.substring("${libs.".length());
-                        if(libname != null && libname.indexOf(".classpath}") != -1) libname = libname.substring(0, libname.indexOf(".classpath}"));
-                                
-                        if("servlet24".equals(libname) || "jsp20".equals(libname)) { //NOI18N
-                            cpItemsToRemove.add(cpti);
-                        }
-                    }
-                }
-            } 
-            
-            //remove selected libraries
-            Iterator remove = cpItemsToRemove.iterator();
-            while(remove.hasNext()) {
-                ClassPathSupport.Item cpti = (ClassPathSupport.Item)remove.next();
-                cptm.getDefaultListModel().removeElement(cpti);
-            }
-            
-            //commented out, one more check follows
-            //needsUpdate = false;
-        }
-        
         // Encode all paths (this may change the project properties)
         String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES  );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( JAVAC_TEST_CLASSPATH_MODEL ), null );

@@ -298,9 +298,6 @@ public class UpdateHelper {
             this.isCurrent = Boolean.TRUE;
         } 
         
-        //fire project updated
-        projectUpdateListener.projectUpdated();
-        
         //create conf dir if doesn't exist and copy default manifest inside
         try {
             //I cannot use ${conf.dir} since the PE doesn't know about it
