@@ -42,6 +42,7 @@ public class WebProjectConstants {
      * Standard command for redeploying a web project.
      * @see ActionProvider
      */
+    //TO-DO: should be got from org.netbeans.modules.j2ee.common.J2eeProjectConstants 
     public static final String COMMAND_REDEPLOY = "redeploy" ; //NOI18N
     
     /**
@@ -55,6 +56,7 @@ public class WebProjectConstants {
      * Web module into a J2EE Application (ear project).
      * @see org.netbeans.api.project.ant.AntArtifact
      */
+    //TO-DO: should be got from org.netbeans.modules.j2ee.common.J2eeProjectConstants 
     public static final String ARTIFACT_TYPE_WAR_EAR_ARCHIVE = "j2ee_ear_archive"; //NOI18N
     
 }

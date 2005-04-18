@@ -44,6 +44,7 @@ import org.openide.util.Lookup;
  */
 public final class WebModule {
     
+    //TO-DO: the J2EE_13_LEVEL and J2EE_14_LEVEL constants should be got from org.netbeans.modules.j2ee.common.J2eeProjectConstants 
     public static final String J2EE_13_LEVEL = "1.3"; //NOI18N
     public static final String J2EE_14_LEVEL = "1.4"; //NOI18N
     
