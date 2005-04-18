@@ -245,8 +245,15 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             }
             lock = plan.lock();
             out = plan.getOutputStream(lock);
-            getStorage().getDeploymentConfiguration().save(out);
-            return FileUtil.toFile(plan);
+            ConfigurationStorage s = getStorage();
+            if (s != null) {
+                DeploymentConfiguration conf = s.getDeploymentConfiguration();
+                if (conf != null) {
+                    conf.save(out);
+                    return FileUtil.toFile(plan);
+                }
+            }
+            return null;
         } finally {
             if (lock != null) lock.releaseLock();
             try {
