@@ -47,6 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-win.jar"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>    
   </target>
 
@@ -63,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux.jar"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
   </target>
 
@@ -80,6 +81,7 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solsparc.jar"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
   </target>
 
@@ -96,6 +98,7 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solx86.jar"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
   
