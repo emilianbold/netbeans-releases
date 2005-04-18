@@ -205,14 +205,14 @@ class ActionFilterNode extends FilterNode {
                 URL[] urls = JavadocForBinaryQuery.findJavadoc(cpRoot.getURL()).getRoots();
                 URL pageURL;
                 if (relativeName.length()==0) {
-                    pageURL = ShowJavadocAction.findJavadoc ("/overview-summary.html",urls); //NOI18N
+                    pageURL = ShowJavadocAction.findJavadoc ("overview-summary.html",urls); //NOI18N
                     if (pageURL == null) {
-                        pageURL = ShowJavadocAction.findJavadoc ("/index.html",urls); //NOI18N
+                        pageURL = ShowJavadocAction.findJavadoc ("index.html",urls); //NOI18N
                     }                    
                 }
                 else if (resource.isFolder()) {
                     //XXX Are the names the same also in the localized javadoc?                    
-                    pageURL = ShowJavadocAction.findJavadoc ("/package-summary.html",urls); //NOI18N
+                    pageURL = ShowJavadocAction.findJavadoc ("package-summary.html",urls); //NOI18N
                 }
                 else {
                     String javadocFileName = relativeName.substring(0,relativeName.lastIndexOf('.'))+".html"; //NOI18Ns

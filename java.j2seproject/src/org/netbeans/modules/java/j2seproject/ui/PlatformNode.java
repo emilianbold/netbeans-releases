@@ -305,9 +305,9 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             JavaPlatform platform = platformProvider.getPlatform();            
             if (platform != null) {                            
                 URL[] javadocRoots = getJavadocRoots(platform);
-                URL pageURL = ShowJavadocAction.findJavadoc("/overview-summary.html",javadocRoots);
+                URL pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",javadocRoots);
                 if (pageURL == null) {
-                    pageURL = ShowJavadocAction.findJavadoc("/index.html",javadocRoots);
+                    pageURL = ShowJavadocAction.findJavadoc("index.html",javadocRoots);
                 }
                 ShowJavadocAction.showJavaDoc(pageURL, platform.getDisplayName());
             }
