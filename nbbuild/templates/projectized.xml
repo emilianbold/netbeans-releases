@@ -90,6 +90,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="nbm.module.author" value=""/>
         <property name="nbm.release.date" value=""/>
         <property name="nbm.needs.restart" value="false"/>
+        <property name="nbm.is.global" value=""/>
         <path id="cp">
             <pathelement path="${module.classpath}"/>
             <pathelement path="${cp.extra}"/>
@@ -240,6 +241,7 @@ Microsystems, Inc. All Rights Reserved.
                  homepage="${nbm.homepage}"
                  distribution="http://${dist.base}/${nbm}"
                  needsrestart="${nbm.needs.restart}"
+                 global="${nbm.is.global}"
                  releasedate="${nbm.release.date}"
 		 moduleauthor="${nbm.module.author}">
             <license file="${license.file}"/>
