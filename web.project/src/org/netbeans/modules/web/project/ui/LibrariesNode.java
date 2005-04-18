@@ -78,6 +78,7 @@ import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.customizer.LibrariesChooser;
+import org.openide.util.lookup.Lookups;
 
 /**
  * LibrariesNode displays the content of classpath and optionaly Java platform.
@@ -108,10 +109,10 @@ final class LibrariesNode extends AbstractNode {
      * if the platform should not be displayed
      * @param librariesNodeActions actions which should be available on the created node.
      */
-    LibrariesNode (String displayName, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
+    LibrariesNode (String displayName, Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty,
                    Action[] librariesNodeActions, String webModuleElementName) {
-        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty, j2eePlatformProperty, webModuleElementName));
+        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty, j2eePlatformProperty, webModuleElementName), Lookups.singleton(project));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
     }

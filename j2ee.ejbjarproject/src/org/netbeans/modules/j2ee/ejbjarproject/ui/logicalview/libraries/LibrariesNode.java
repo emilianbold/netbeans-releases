@@ -78,6 +78,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarClassPathUi;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.LibrariesChooser;
+import org.openide.util.lookup.Lookups;
 
 
 
@@ -111,10 +112,10 @@ public final class LibrariesNode extends AbstractNode {
      * if the platform should not be displayed
      * @param librariesNodeActions actions which should be available on the created node.
      */
-    public LibrariesNode (String displayName, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
+    public LibrariesNode (String displayName, Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty,
                    Action[] librariesNodeActions, String includedLibrariesElement) {
-        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty, j2eePlatformProperty, includedLibrariesElement));
+        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty, j2eePlatformProperty, includedLibrariesElement), Lookups.singleton(project));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
     }
