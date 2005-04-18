@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -67,11 +67,11 @@ public class WebProjectModule extends ModuleInstall {
                             // Ant is needed in classpath if we are forking JspC into another process
                             sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false))
                             .append(":${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}:") // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.5.7.jar", null, false))
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/jasper-compiler-5.5.7.jar", null, false))
                             .append(":") // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.5.7.jar", null, false))
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/jasper-runtime-5.5.7.jar", null, false))
                             .append(":") // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false))
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-el.jar", null, false))
                             .append(":") // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false));
                             String jspc_cp_old = ep.getProperty(JSPC_CLASSPATH);
