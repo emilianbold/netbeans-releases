@@ -151,7 +151,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         EarProjectProperties.DEBUG_CLASSPATH,
         EarProjectProperties.JAR_CONTENT_ADDITIONAL,
         EarProjectProperties.SRC_DIR,
-//        EarProjectProperties.WEB_DOCBASE_DIR
     };
 
     public static boolean hasBrokenLinks(AntProjectHelper helper, ReferenceHelper resolver) {
@@ -259,8 +258,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     CommonProjectActions.closeProjectAction(),
                     null,
                     SystemAction.get( org.openide.actions.FindAction.class ),
-//                    null,
-//                    SystemAction.get( org.openide.actions.ToolsAction.class ),
                     null,
             }));
             if (brokenLinksAction != null) {
@@ -270,58 +267,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 actions.add(brokenServerAction);
             }
             actions.add(CommonProjectActions.customizeProjectAction());
-            //actions.
             return (Action[])actions.toArray(new Action[actions.size()]);
-//                return new Action[] {
-//                    //CommonProjectActions.newFileAction(),
-//                    ProjectSensitiveActions.projectCommandAction("add"
-//                    null,                
-//                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( "verify", bundle.getString( "LBL_VerifyAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( JavaProjectConstants.COMMAND_JAVADOC, bundle.getString( "LBL_JavadocAction_Name" ), null ), // NOI18N                
-//                    null,
-//                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
-//                    null,
-//                    CommonProjectActions.setAsMainProjectAction(),
-//                    CommonProjectActions.openSubprojectsAction(),
-//                    CommonProjectActions.closeProjectAction(),
-//                    null,
-//                    SystemAction.get( org.openide.actions.FindAction.class ),
-//                    null,
-//                    SystemAction.get( org.openide.actions.ToolsAction.class ),
-//                    null,
-//                    brokenLinksAction,
-//                    CommonProjectActions.customizeProjectAction(),
-//                };
-//            } else {
-//                return new Action[] {
-//                    //CommonProjectActions.newFileAction(),
-//                    null,                
-//                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( JavaProjectConstants.COMMAND_JAVADOC, bundle.getString( "LBL_JavadocAction_Name" ), null ), // NOI18N                
-//                    null,
-//                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
-//                    ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
-//                    null,
-//                    CommonProjectActions.setAsMainProjectAction(),
-//                    CommonProjectActions.openSubprojectsAction(),
-//                    CommonProjectActions.closeProjectAction(),
-//                    null,
-//                    SystemAction.get( org.openide.actions.FindAction.class ),
-//                    null,
-//                    SystemAction.get( org.openide.actions.ToolsAction.class ),
-//                    null,
-//                    brokenLinksAction,
-//                    CommonProjectActions.customizeProjectAction(),
-//                };
-//            }
         }
         
         /** This action is created only when project has broken references.
@@ -343,9 +289,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             public void actionPerformed(ActionEvent e) {
                 BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, BREAKABLE_PROPERTIES, new String[]{ EarProjectProperties.JAVA_PLATFORM}); 
                 run();
-//                if (!hasBrokenLinks(helper, resolver)) {
-//                    disable();
-//                }
             }
 
             public void propertyChange(PropertyChangeEvent evt) {
@@ -356,14 +299,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     task = RequestProcessor.getDefault().create(this);
                 }
                 task.schedule(100);
-//                if (!broken) {
-//                    disable();
-//                    return;
-//                }
-//                broken = hasBrokenLinks(helper, resolver);
-//                if (!broken) {
-//                    disable();
-//                }
             }
 
             public synchronized void run() {
@@ -376,14 +311,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     fireDisplayNameChange(null, null);
                 }
             }
-
-//            private void disable() {
-//                broken = false;
-//                setEnabled(false);
-//                evaluator.removePropertyChangeListener(this);
-//                fireIconChange();
-//                fireOpenedIconChange();
-//            }
 
         }
         
