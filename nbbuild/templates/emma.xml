@@ -36,7 +36,6 @@ TODO:
         <pathelement location="${emma.dir}/emma_ant.jar"/>
     </path>
     
-    
     <property name="coverage.dir" location="coverage"/>
     <property name="coverage.filter" location="coverage.filter"/>
     <property name="coverage.properties" location="coverage.properties"/>
@@ -154,12 +153,13 @@ TODO:
     -->
     
     <target name="coverage-runtests">
-      <antcall target="runtests">
+        <property name="xtest.ide.commandline.suffix" value=""/>
+        <antcall target="runtests">
             <param name="coverage.lib.path" location="${emma.dir}/emma.jar"/>
             <param name="coverage.jvm.args" value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
             <param name="xtest.ide.commandline.suffix" 
-               value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
-       </antcall>
+               value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma ${xtest.ide.commandline.suffix}"/>
+        </antcall>
     </target>
     
     <target name="cleancoverage">
