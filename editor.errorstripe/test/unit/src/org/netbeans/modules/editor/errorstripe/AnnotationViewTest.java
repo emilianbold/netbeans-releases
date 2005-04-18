@@ -31,6 +31,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.errorstripe.spi.Mark;
 import org.netbeans.modules.editor.errorstripe.spi.MarkProvider;
 import org.netbeans.modules.editor.errorstripe.spi.MarkProviderCreator;
+import org.netbeans.modules.editor.errorstripe.spi.UpToDateStatus;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.editor.errorstripe.spi.Status;
@@ -210,12 +211,12 @@ public class AnnotationViewTest extends TestCase {
         
         editor.setEditorKit(BaseKit.getKit(PlainKit.class));
         
-        TestMark mark1 = new TestMark(new Status(Status.STATUS_ERROR), null, null, new int[] {6, 6});
-        TestMark mark2 = new TestMark(new Status(Status.STATUS_OK), null, null, new int[] {6, 6});
+        TestMark mark1 = new TestMark(Status.STATUS_ERROR, null, null, new int[] {6, 6});
+        TestMark mark2 = new TestMark(Status.STATUS_OK, null, null, new int[] {6, 6});
         
         List marks = Arrays.asList(new Mark[]{mark1, mark2});
         
-        TestMarkProvider provider = new TestMarkProvider(Collections.EMPTY_LIST, MarkProvider.UP_TO_DATE_OK);
+        TestMarkProvider provider = new TestMarkProvider(Collections.EMPTY_LIST, UpToDateStatus.UP_TO_DATE_OK);
         TestMarkProviderCreator creator = new TestMarkProviderCreator(provider);
         
         AnnotationView aView = new AnnotationView(editor, Arrays.asList(new MarkProviderCreator[] {creator}));
@@ -270,9 +271,9 @@ public class AnnotationViewTest extends TestCase {
         
         bd.insertString(0, "\n\n\n\n\n\n\n\n\n\n", null);
         
-        TestMark mark1 = new TestMark(new Status(Status.STATUS_ERROR), null, null, new int[] {2, 2});
-        TestMark mark2 = new TestMark(new Status(Status.STATUS_OK), null, null, new int[] {2, 2});
-        TestMark mark3 = new TestMark(new Status(Status.STATUS_WARNING), null, null, new int[] {2, 4});
+        TestMark mark1 = new TestMark(Status.STATUS_ERROR, null, null, new int[] {2, 2});
+        TestMark mark2 = new TestMark(Status.STATUS_OK, null, null, new int[] {2, 2});
+        TestMark mark3 = new TestMark(Status.STATUS_WARNING, null, null, new int[] {2, 4});
         
         List marks1 = Arrays.asList(new Mark[]{mark1, mark2, mark3});
         List marks2 = Arrays.asList(new Mark[]{mark1, mark3});
@@ -280,7 +281,7 @@ public class AnnotationViewTest extends TestCase {
         List marks4 = Arrays.asList(new Mark[]{mark1, mark2});
         List marks5 = Arrays.asList(new Mark[]{mark3});
         
-        TestMarkProvider provider = new TestMarkProvider(marks1, MarkProvider.UP_TO_DATE_OK);
+        TestMarkProvider provider = new TestMarkProvider(marks1, UpToDateStatus.UP_TO_DATE_OK);
         TestMarkProviderCreator creator = new TestMarkProviderCreator(provider);
         
         AnnotationView aView = new AnnotationView(editor, Arrays.asList(new MarkProviderCreator[] {creator}));
@@ -395,16 +396,16 @@ public class AnnotationViewTest extends TestCase {
     public void testMarkUpdates() {
         JEditorPane editor = new JEditorPane();
         
-        TestMark mark1 = new TestMark(new Status(Status.STATUS_ERROR), null, null, new int[] {2, 2});
-        TestMark mark2 = new TestMark(new Status(Status.STATUS_OK), null, null, new int[] {2, 2});
-        TestMark mark3 = new TestMark(new Status(Status.STATUS_OK), null, null, new int[] {4, 6});
+        TestMark mark1 = new TestMark(Status.STATUS_ERROR, null, null, new int[] {2, 2});
+        TestMark mark2 = new TestMark(Status.STATUS_OK, null, null, new int[] {2, 2});
+        TestMark mark3 = new TestMark(Status.STATUS_OK, null, null, new int[] {4, 6});
         
         List marks = Arrays.asList(new Mark[]{mark1, mark2});
         List marksOnlyFirst = Arrays.asList(new Mark[]{mark1});
         List marksOnlySecond = Arrays.asList(new Mark[]{mark2});
         List marksFirstAndThird = Arrays.asList(new Mark[]{mark1, mark3});
         
-        TestMarkProvider provider = new TestMarkProvider(marks, MarkProvider.UP_TO_DATE_OK);
+        TestMarkProvider provider = new TestMarkProvider(marks, UpToDateStatus.UP_TO_DATE_OK);
         TestMarkProviderCreator creator = new TestMarkProviderCreator(provider);
         
         AnnotationView aView = new AnnotationView(editor, Arrays.asList(new MarkProviderCreator[] {creator}));

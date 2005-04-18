@@ -56,4 +56,8 @@ public class TestMark implements Mark {
         return TYPE_ERROR_LIKE;
     }
     
+    public int getPriority() {
+        return PRIORITY_DEFAULT;
+    }
+    
 }

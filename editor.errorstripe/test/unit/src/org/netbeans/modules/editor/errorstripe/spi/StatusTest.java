@@ -81,45 +81,6 @@ public class StatusTest extends TestCase {
         assertEquals(Status.STATUS_OK, Status.getCompoundStatus(Status.STATUS_OK, Status.STATUS_OK));
         assertEquals(Status.STATUS_WARNING, Status.getCompoundStatus(Status.STATUS_WARNING, Status.STATUS_WARNING));
         assertEquals(Status.STATUS_ERROR, Status.getCompoundStatus(Status.STATUS_ERROR, Status.STATUS_ERROR));
-        
-        //exception tests:
-        boolean wasException;
-        
-        try {
-            Status.getCompoundStatus(Status.STATUS_OK, 3);
-            wasException = false;
-        } catch (IllegalArgumentException ex) {
-            wasException = true;
-        }
-        
-        assertTrue(wasException);
-        
-        try {
-            Status.getCompoundStatus(3, Status.STATUS_OK);
-            wasException = false;
-        } catch (IllegalArgumentException ex) {
-            wasException = true;
-        }
-        
-        assertTrue(wasException);
-        
-        try {
-            Status.getCompoundStatus(Status.STATUS_OK, -1);
-            wasException = false;
-        } catch (IllegalArgumentException ex) {
-            wasException = true;
-        }
-        
-        assertTrue(wasException);
-        
-        try {
-            Status.getCompoundStatus(-1, Status.STATUS_OK);
-            wasException = false;
-        } catch (IllegalArgumentException ex) {
-            wasException = true;
-        }
-        
-        assertTrue(wasException);
     }
 
 }

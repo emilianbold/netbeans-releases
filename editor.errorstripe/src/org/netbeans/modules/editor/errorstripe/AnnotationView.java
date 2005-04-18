@@ -53,6 +53,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.errorstripe.spi.Mark;
 import org.netbeans.modules.editor.errorstripe.spi.MarkProvider;
 import org.netbeans.modules.editor.errorstripe.spi.MarkProviderCreator;
+import org.netbeans.modules.editor.errorstripe.spi.UpToDateStatus;
 import org.openide.ErrorManager;
 import org.netbeans.modules.editor.errorstripe.spi.Status;
 import org.openide.filesystems.FileObject;
@@ -313,29 +314,25 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
     
     private void drawGlobalStatus(Graphics g) {
-        int type = computeTotalStatusType();
+        UpToDateStatus type = computeTotalStatusType();
         Color resultingColor;
         
-        switch (type) {
-            case MarkProvider.UP_TO_DATE_DIRTY:
+        if (type == UpToDateStatus.UP_TO_DATE_DIRTY) {
                 drawOneColorGlobalStatus(g, Color.GRAY);
-                break;
-            case MarkProvider.UP_TO_DATE_PROCESSING:
-                {
+        } else {
+            if (type == UpToDateStatus.UP_TO_DATE_PROCESSING) {
+                Status totalStatus = computeTotalStatus();
+                
+                drawInProgressGlobalStatus(g, Status.getDefaultColor(totalStatus));
+            } else {
+                if (type == UpToDateStatus.UP_TO_DATE_OK) {
                     Status totalStatus = computeTotalStatus();
-
-                    drawInProgressGlobalStatus(g, Status.getDefaultColor(totalStatus));
-                    break;
-                }
-            case MarkProvider.UP_TO_DATE_OK:
-                {
-                    Status totalStatus = computeTotalStatus();
-
+                    
                     drawOneColorGlobalStatus(g, Status.getDefaultColor(totalStatus));
-                    break;
+                } else {
+                    throw new IllegalStateException("Unknown up-to-date type: " + type);
                 }
-            default:
-                throw new IllegalStateException();
+            }
         }
     }
     
@@ -471,27 +468,27 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
     
     /*package private for tests*/Status computeTotalStatus() {
-        int targetStatus = Status.STATUS_OK;
+        Status targetStatus = Status.STATUS_OK;
         Collection/*<Mark>*/ marks = getMergedMarks();
         
         for (Iterator m = marks.iterator(); m.hasNext(); ) {
             Mark mark = (Mark) m.next();
             Status s = mark.getStatus();
             
-            targetStatus = Status.getCompoundStatus(s.getStatus(), targetStatus);
+            targetStatus = Status.getCompoundStatus(s, targetStatus);
         }
         
-        return new Status(targetStatus);
+        return targetStatus;
     }
     
-    /*package private for tests*/int computeTotalStatusType() {
-        int statusType = MarkProvider.UP_TO_DATE_OK;
+    /*package private for tests*/UpToDateStatus computeTotalStatusType() {
+        UpToDateStatus statusType = UpToDateStatus.UP_TO_DATE_OK;
         
         for (Iterator p = providers.iterator(); p.hasNext(); ) {
             MarkProvider provider = (MarkProvider) p.next();
-            int newType = provider.getUpToDate();
+            UpToDateStatus newType = provider.getUpToDate();
             
-            if (newType > statusType) {
+            if (newType.compareTo(statusType) > 0) {
                 statusType = newType;
             }
         }
@@ -776,8 +773,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                 Mark mark = (Mark) m.next();
                 Status s = mark.getStatus();
                     
-                errors += s.getStatus() == Status.STATUS_ERROR ? 1 : 0;
-                warnings += s.getStatus() == Status.STATUS_WARNING ? 1 : 0;
+                errors += s == Status.STATUS_ERROR ? 1 : 0;
+                warnings += s == Status.STATUS_WARNING ? 1 : 0;
             }
             
             if (errors == 0 && warnings == 0) {

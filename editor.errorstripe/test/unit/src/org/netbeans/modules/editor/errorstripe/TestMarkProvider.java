@@ -15,6 +15,7 @@ package org.netbeans.modules.editor.errorstripe;
 
 import java.util.List;
 import org.netbeans.modules.editor.errorstripe.spi.MarkProvider;
+import org.netbeans.modules.editor.errorstripe.spi.UpToDateStatus;
 
 /**
  *
@@ -23,15 +24,15 @@ import org.netbeans.modules.editor.errorstripe.spi.MarkProvider;
 public class TestMarkProvider extends MarkProvider {
     
     private List/*<Mark>*/ marks;
-    private int upToDate;
+    private UpToDateStatus upToDate;
     
     /** Creates a new instance of TestMarkProvider */
-    public TestMarkProvider(List/*<Mark>*/ marks, int upToDate) {
+    public TestMarkProvider(List/*<Mark>*/ marks, UpToDateStatus upToDate) {
         this.marks = marks;
         this.upToDate = upToDate;
     }
 
-    public int getUpToDate() {
+    public UpToDateStatus getUpToDate() {
         return upToDate;
     }
 
@@ -51,11 +52,11 @@ public class TestMarkProvider extends MarkProvider {
         firePropertyChange(PROP_MARKS, fireOld ? old : null, fireNue ? this.marks : null);
     }
     
-    public void setUpToDate(int upToDate) {
-        int old = this.upToDate;
+    public void setUpToDate(UpToDateStatus upToDate) {
+        UpToDateStatus old = this.upToDate;
         
         this.upToDate = upToDate;
         
-        firePropertyChange(PROP_UP_TO_DATE, new Integer(old), new Integer(upToDate));
+        firePropertyChange(PROP_UP_TO_DATE, old, upToDate);
     }
 }
