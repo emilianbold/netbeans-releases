@@ -252,7 +252,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             String sbDestination = nbInstallDir + File.separator + "_uninst" + File.separator + "storagebuilder";
             logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
             service.setRetainedProductBeanProperty(productURL,
-            "storageBuilder", "installLocation", sbDestination);
+            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
 	} catch (ServiceException e) {
 	    logEvent(this, Log.ERROR, e);
 	}

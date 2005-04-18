@@ -17,7 +17,9 @@ package org.netbeans.installer;
  * Used for bean ID and property name constants.
  */
 public class Names {
+    //Product bean IDs
     public static final String PRODUCT_ROOT_ID = "beanProduct";
+    public static final String STORAGE_BUILDER_ID = "beanStorageBuilder";
     
     /** Creates a new instance of Names */
     private Names() {

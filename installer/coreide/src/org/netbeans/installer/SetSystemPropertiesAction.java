@@ -47,8 +47,8 @@ public class SetSystemPropertiesAction extends WizardAction {
             try {
                 logEvent(this, Log.DBG,"Disable Storage Builder for Win95, Win98, WinME.");
                 ProductService service = (ProductService) getService(ProductService.NAME);
-                service.setRetainedProductBeanProperty
-                (ProductService.DEFAULT_PRODUCT_SOURCE, "storageBuilder", "active", Boolean.FALSE);
+                service.setRetainedProductBeanProperty(ProductService.DEFAULT_PRODUCT_SOURCE,
+                Names.STORAGE_BUILDER_ID, "active", Boolean.FALSE);
             } catch(ServiceException ex) {
                 ex.printStackTrace();
                 Util.logStackTrace(this,ex);
@@ -161,7 +161,7 @@ public class SetSystemPropertiesAction extends WizardAction {
             
             // ----------------- Storage Builder ------------------------
             keyObject = (SoftwareObjectKey) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "storageBuilder", "key");
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.STORAGE_BUILDER_ID, "key");
             key = resolveString("$L(org.netbeans.installer.Bundle,StorageBuilder.UID)");
             logEvent(this, Log.DBG,"Storage Builder UID: " + key);
             keyObject.setUID(key);
@@ -174,7 +174,7 @@ public class SetSystemPropertiesAction extends WizardAction {
             keyObject.setVersion(version);
             
             service.setRetainedProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "storageBuilder", "key", keyObject);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.STORAGE_BUILDER_ID, "key", keyObject);
         } catch (ServiceException ex) {
             ex.printStackTrace();
             Util.logStackTrace(this,ex);

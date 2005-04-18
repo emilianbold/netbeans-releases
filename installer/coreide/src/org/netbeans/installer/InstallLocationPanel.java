@@ -58,7 +58,7 @@ public class InstallLocationPanel extends DestinationPanel
             logEvent(this, Log.DBG, "exited productDestination: " + productDestination);
             logEvent(this, Log.DBG, "exited sbDestination: " + sbDestination);
             service.setRetainedProductBeanProperty(ProductService.DEFAULT_PRODUCT_SOURCE,
-            "storageBuilder", "installLocation", sbDestination);
+            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
         } catch (ServiceException e) {
             logEvent(this, Log.ERROR, e);
         }

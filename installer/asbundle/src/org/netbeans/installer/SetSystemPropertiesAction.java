@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -54,8 +54,8 @@ public class SetSystemPropertiesAction extends WizardAction {
             try {
                 logEvent(this, Log.DBG,"Disable Storage Builder for Win95, Win98, WinME.");
                 ProductService service = (ProductService) getService(ProductService.NAME);
-                service.setRetainedProductBeanProperty
-                (ProductService.DEFAULT_PRODUCT_SOURCE, "storageBuilder", "active", Boolean.FALSE);
+                service.setRetainedProductBeanProperty(ProductService.DEFAULT_PRODUCT_SOURCE,
+                Names.STORAGE_BUILDER_ID, "active", Boolean.FALSE);
             } catch(ServiceException ex) {
                 ex.printStackTrace();
                 Util.logStackTrace(this,ex);
