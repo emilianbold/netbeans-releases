@@ -177,6 +177,24 @@ public class PlatformUiSupport {
         return platforms.length == 0 ? null : platforms[0];
     }
     
+    
+    /** 
+     * Returns a {@link JavaPlatform} for an item obtained from the ComboBoxModel created by
+     * the {@link PlatformUiSupport#createComboBoxModel} method
+     * @param platformKey an item obtained from ComboBoxModel created by {@link PlatformUiSupport#createComboBoxModel}
+     * @return JavaPlatform or null in case when platform is broken
+     * @exception {@link IllegalArgumentException} is thrown in case when parameter in not an object created by
+     * platform combobox model.
+     */
+    public static JavaPlatform getPlatform (Object platformKey) {
+       if (platformKey instanceof PlatformKey) {
+           return getPlatform ((PlatformKey)platformKey);
+       }
+       else {
+           throw new IllegalArgumentException ();
+       }
+    }
+    
     /**
      * Creates {@link ComboBoxModel} of source levels for active platform.
      * The model listens on the platform's {@link ComboBoxModel} and update its
