@@ -32,9 +32,10 @@ if [ -f "$progdir"/../etc/netbeans.conf ] ; then
     . "$progdir"/../etc/netbeans.conf
 fi
 
-if [ -f /etc/netbeans.conf ] ; then
-    . /etc/netbeans.conf
-fi
+# following should be done just in RPM or Solaris Launcher
+# if [ -f /etc/netbeans.conf ] ; then
+#     . /etc/netbeans.conf
+# fi
 
 args="$@"
 
