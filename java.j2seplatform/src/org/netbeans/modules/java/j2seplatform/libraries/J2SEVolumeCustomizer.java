@@ -30,6 +30,7 @@ import javax.swing.event.*;
 import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
@@ -448,15 +449,19 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             String toolTip = null;
             
             if (value instanceof URL) {
-                URL url = (URL) value;
-                displayName = url.toExternalForm();
+                URL url = (URL) value;                
                 if ("jar".equals(url.getProtocol())) {   //NOI18N
                     url = FileUtil.getArchiveFile (url);
                 }
-                if (URLMapper.findFileObject (url) == null) {
+                FileObject fo = URLMapper.findFileObject (url);
+                if (fo == null) {
+                    displayName = url.toExternalForm();
                     color = new Color (164,0,0);
-                    toolTip = NbBundle.getMessage (J2SEVolumeCustomizer.class,"TXT_BrokenFile");
-                }                
+                    toolTip = NbBundle.getMessage (J2SEVolumeCustomizer.class,"TXT_BrokenFile");                    
+                }
+                else {
+                    displayName = FileUtil.getFileDisplayName(fo);
+                }
             }
             Component c = super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
             if (c instanceof JComponent) {
