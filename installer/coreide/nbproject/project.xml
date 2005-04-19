@@ -35,10 +35,6 @@
             </ide-actions>
             <view>
                 <items>
-                    <source-folder style="packages">
-                        <label>src</label>
-                        <location>src</location>
-                    </source-folder>
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
@@ -48,6 +44,10 @@
                     <source-file>
                         <location>ProgrammingNotes.txt</location>
                     </source-file>
+                    <source-folder style="packages">
+                        <label>src</label>
+                        <location>src</location>
+                    </source-folder>
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
