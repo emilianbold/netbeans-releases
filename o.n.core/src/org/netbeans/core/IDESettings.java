@@ -129,6 +129,7 @@ public class IDESettings extends SystemOption {
         super.initialize ();
         System.setProperty (KEY_PROXY_HOST, getProxyHost ());
         System.setProperty (KEY_PROXY_PORT, getProxyPort ());
+        System.setProperty (KEY_NON_PROXY_HOSTS, getDefaultNonProxyHosts());
         putProperty(PROP_WWWBROWSER, "", false);
     }
             
@@ -213,7 +214,7 @@ public class IDESettings extends SystemOption {
     public void setHomePage (String homePage) {
         HtmlBrowser.setHomePage (homePage);
     }
-
+     
     /** Getter for proxy set flag.
      * @deprecated Use <code>getProxyType()</code>
     */
@@ -272,6 +273,7 @@ public class IDESettings extends SystemOption {
             }
             System.setProperty (KEY_PROXY_HOST, getProxyHost ());
             System.setProperty (KEY_PROXY_PORT, getProxyPort ());
+            System.setProperty (KEY_NON_PROXY_HOSTS, getDefaultNonProxyHosts());
         }
     }
 
@@ -530,11 +532,27 @@ public class IDESettings extends SystemOption {
      * @return sensible default for non-proxy hosts, including 'localhost'
      */
     private String getDefaultNonProxyHosts() {
-        String nonProxy = "localhost"; // NOI18N
+        String nonProxy = "localhost|127.0.0.1"; // NOI18N
+        String localhost = ""; // NOI18N
         try {
-            String localhost = InetAddress.getLocalHost().getHostName();
+            localhost = InetAddress.getLocalHost().getHostName();
             if (!localhost.equals("localhost")) { // NOI18N
                 nonProxy = nonProxy + "|" + localhost; // NOI18N
+            } else {
+                // Avoid this error when hostname == localhost:
+                // Error in http.nonProxyHosts system property:  sun.misc.REException: localhost is a duplicate
+            }
+        }
+        catch (UnknownHostException e) {
+            // OK. Sometimes a hostname is assigned by DNS, but a computer
+            // is later pulled off the network. It may then produce a bogus
+            // name for itself which can't actually be resolved. Normally
+            // "localhost" is aliased to 127.0.0.1 anyway.
+        }
+        try {
+            String localhost2 = InetAddress.getLocalHost().getCanonicalHostName();
+            if (!localhost2.equals("localhost") && !localhost2.equals(localhost)) { // NOI18N
+                nonProxy = nonProxy + "|" + localhost2; // NOI18N
             } else {
                 // Avoid this error when hostname == localhost:
                 // Error in http.nonProxyHosts system property:  sun.misc.REException: localhost is a duplicate
