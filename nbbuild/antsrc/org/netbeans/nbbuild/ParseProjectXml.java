@@ -226,9 +226,11 @@ public final class ParseProjectXml extends Task {
                         for (int i = 0; i < pkgs.length; i++) {
                             b.append(sep);
                             if (pkgs[i].subpackages) {
-                                String msg = javadocPackagesProperty + " cannot be set as <subpackages> does not work for Javadoc (see <subpackages>" + pkgs[i].name + "</subpackages> tag in " + getProjectFile () + "). Set the property in project.properties if you want to build Javadoc.";
-                                // #52135: do not halt the build, just leave it.
-                                getProject().log("Warning: " + msg, Project.MSG_WARN);
+                                if (getProject().getProperty(javadocPackagesProperty) == null) {
+                                    String msg = javadocPackagesProperty + " cannot be set as <subpackages> does not work for Javadoc (see <subpackages>" + pkgs[i].name + "</subpackages> tag in " + getProjectFile () + "). Set the property in project.properties if you want to build Javadoc.";
+                                    // #52135: do not halt the build, just leave it.
+                                    getProject().log("Warning: " + msg, Project.MSG_WARN);
+                                }
                                 break NO_JAVA_DOC_PROPERTY_SET;
                             }
                             b.append(pkgs[i].name);
