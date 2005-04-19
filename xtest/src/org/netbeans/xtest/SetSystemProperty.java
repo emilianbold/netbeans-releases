@@ -1,15 +1,17 @@
 /*
- * SetSystemProperty.java
+ *                 Sun Public License Notice
  *
- * Created on January 9, 2002, 8:14 PM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.xtest;
-
-// IMPORTANT! You may need to mount ant.jar before this class will
-// compile. So mount the JAR modules/ext/ant.jar (NOT modules/ant.jar)
-// from your IDE installation directory in your Filesystems before
-// continuing to ensure that it is in your classpath.
 
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;

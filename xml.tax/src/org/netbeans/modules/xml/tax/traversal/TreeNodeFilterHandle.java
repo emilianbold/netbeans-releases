@@ -1,14 +1,16 @@
 /*
- * TreeNodeFilter.java -- synopsis.
+ *                 Sun Public License Notice
  *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
  *
- * SUN PROPRIETARY/CONFIDENTIAL:  INTERNAL USE ONLY.
- *
- * {START_JAVA_COPYRIGHT_NOTICE
- * Copyright 2001 Sun Microsystems, Inc. All rights reserved.
- * Use is subject to license terms.
- * END_COPYRIGHT_NOTICE}
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.xml.tax.traversal;
 
 import java.io.*;
@@ -17,9 +19,7 @@ import java.util.ArrayList;
 import org.netbeans.tax.traversal.TreeNodeFilter;
 
 /**
- *
  * @author Libor Kramolis
- * @version 0.1
  */
 public final class TreeNodeFilterHandle implements Serializable {
     private static final long serialVersionUID = -571598256778542088L;

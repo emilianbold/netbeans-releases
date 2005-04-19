@@ -1,7 +1,14 @@
 /*
- * TargetModuleConverter.java
+ *                 Sun Public License Notice
  *
- * Created on August 21, 2003, 7:13 AM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.deployment.impl;
@@ -21,7 +28,6 @@ import java.util.ArrayList;
 import java.io.*;
 
 /**
- *
  * @author  nn136682
  */
 public class TargetModuleConverter extends DOMConvertor {

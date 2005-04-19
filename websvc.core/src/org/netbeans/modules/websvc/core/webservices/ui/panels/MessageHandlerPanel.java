@@ -1,7 +1,14 @@
 /*
- * MessageHandlerPanel.java
+ *                 Sun Public License Notice
  *
- * Created on December 7, 2004, 3:13 PM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.websvc.core.webservices.ui.panels;
@@ -31,8 +38,8 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.loaders.DataObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.common.Util;
+
 /**
- *
  * @author  rico
  */
 public class MessageHandlerPanel extends JPanel{
