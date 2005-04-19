@@ -7,17 +7,27 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.nbbuild;
 
-import java.io.*;
-import java.util.*;
-
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.EnumeratedAttribute;
+import org.apache.tools.ant.types.FileSet;
 
 /** A special fileset permitting exclusions based on CVS characteristics.
  * @author Jesse Glick
@@ -103,7 +113,9 @@ public class CvsFileSet extends FileSet {
                         try {
                             BufferedReader buf = new BufferedReader(r);
                             String line;
+                            int lineNumber = 0;
                             while ((line = buf.readLine()) != null) {
+                                lineNumber++;
                                 if (line.startsWith("/")) {
                                     line = line.substring(1);
                                     int idx = line.indexOf('/');
@@ -117,7 +129,11 @@ public class CvsFileSet extends FileSet {
                                     } else if (subst.equals("-kb")) {
                                         tb[1].add(name);
                                     } else {
-                                        throw new BuildException("Strange key subst mode in " + efile + ": " + subst);
+                                        getProject().log(efile + ":" + lineNumber + ": warning: strange key subst mode: " + subst, Project.MSG_WARN);
+                                        if (subst.equals("-ko")) {
+                                            // Treat it like -kkv.
+                                            tb[0].add(name);
+                                        }
                                     }
                                 }
                             }
