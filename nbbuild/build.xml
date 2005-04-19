@@ -2878,7 +2878,6 @@ the ${netbeans.dest}/bin/ directory.
     <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
     <loadproperties srcFile="${clusters.list.file}" />
     <loadproperties srcFile="cluster-description.properties" />
-    <loadproperties srcFile="${directoryList.file}" />
     <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
     
     <setclusterpatternset cluster="${one.cluster.name}" name="${one.cluster.name}.files" trackingpath="${netbeans.dest.dir}" clusterdir="${one.cluster.dir}"/>
