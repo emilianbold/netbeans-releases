@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -104,6 +104,7 @@ an exception can be made for your code so you do not get further mail about it.
         <exclude name="apisupport/lite/src/org/netbeans/modules/apisupport/lite/resources/*-Bundle.properties"/>
         <exclude name="editor/demosrc/properties-addon/org/netbeans/editor/example/res/template.properties"/>
         <exclude name="**/tojar/"/>
+        <exclude name="contrib/docbook/src/org/netbeans/modules/docbook/*-template.xml"/>
         <!-- Similar for things copied to distro and minor examples: -->
         <exclude name="**/release/"/>
         <exclude name="xtest/examples/"/>
@@ -136,6 +137,8 @@ an exception can be made for your code so you do not get further mail about it.
         <exclude name="jndi/src/org/netbeans/modules/jndi/resources/providers/*.impl"/>
         <!-- Minor runtime objects which need to be fast to parse: -->
         <exclude name="**/*.settings"/>
+        <exclude name="**/*etting*.xml"/>
+        <exclude name="**/antlib.xml"/>
         <exclude name="**/META-INF/"/>
         <exclude name="**/*.ws*"/>
         <exclude name="editor/src/org/netbeans/modules/editor/resources/AnnotationTypes/bookmark.xml"/>
@@ -144,17 +147,22 @@ an exception can be made for your code so you do not get further mail about it.
         <exclude name="**/.nbattrs"/>
         <exclude name="**/*l10n.list*"/>
         <exclude name="**/sub.locale.xml"/>
+        <exclude name="installer/"/>
+        <exclude name="ide/launcher/macosx/NetBeansLauncher/"/>
         <!-- From beyond: -->
         <exclude name="core/javahelp/src/org/netbeans/modules/javahelp/resources/*.dtd"/>
         <exclude name="editor/src/org/netbeans/modules/editor/resources/DTDs/"/>
         <exclude name="**/external/"/>
         <exclude name="contrib/**/external/"/>
+        <external name="web/examples/"/>
       </cvsfileset>
     </checklicense>
     <echo message="Now looking for copyrighted documentation..."/>
     <checklicense fragment="Copyright">
       <cvsfileset dir=".." mode="text">
         <include name="**/javahelp/"/>
+        <exclude name="core/javahelp/manifest.mf"/>
+        <exclude name="core/javahelp/src/META-INF/services/"/>
         <include name="**/api/doc/"/>
         <!-- Generally no IP: -->
         <exclude name="**/*.txt"/>
