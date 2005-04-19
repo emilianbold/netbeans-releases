@@ -16,8 +16,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
 
-    <property name="test.unit.cp.extra" value="../../nbbuild/netbeans/ide5/modules/ext/xerces-2.6.2.jar:../../nbbuild/netbeans/enterprise1/modules/ext/jsr88javax.jar"/>
-    <property name="test.unit.run.cp.extra" value="../../nbbuild/netbeans/ide5/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
+    <property name="test.unit.cp.extra" value="${netbeans.dest.dir}/ide5/modules/ext/xerces-2.6.2.jar:${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsr88javax.jar"/>
+    <property name="test.unit.run.cp.extra" value="${netbeans.dest.dir}/ide5/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
     
     <target name="runidetest">
         <executeTests  pluginName="ide">
