@@ -21,6 +21,7 @@ public class Names {
     public static final String PRODUCT_ROOT_ID = "beanProduct";
     public static final String CORE_IDE_ID = "beanCoreIDE";
     public static final String STORAGE_BUILDER_ID = "beanStorageBuilder";
+    public static final String APP_SERVER_ID = "beanAppServer";
     
     /** Creates a new instance of Names */
     private Names() {
