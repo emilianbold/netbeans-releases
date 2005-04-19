@@ -729,8 +729,13 @@ is divided into following sections:
                                     <xsl:with-param name="locations" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
                                 </xsl:call-template>
                             </sourcepath>
+                            <xsl:call-template name="createPackagesets">
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
+                                    <xsl:with-param name="includes">*/**</xsl:with-param>
+                           </xsl:call-template>
                             <xsl:call-template name="createFilesets">
                                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
+                                    <xsl:with-param name="includes">*.java</xsl:with-param>
                            </xsl:call-template>
                         </javadoc>
                     </xsl:otherwise>
@@ -1117,21 +1122,38 @@ is divided into following sections:
     </xsl:template>
 
     <xsl:template name="createFilesets">
-		<xsl:param name="roots"/>
+        <xsl:param name="roots"/>
         <xsl:param name="includes"/>
         <xsl:param name="excludes"/>
         <xsl:for-each select="$roots/j2seproject2:root">
             <xsl:element name="fileset">
-			    <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+                <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
                 <xsl:if test="$includes">
                     <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
                 </xsl:if>
                 <xsl:if test="$excludes">
-			        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
+                    <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
                 </xsl:if>
-		    </xsl:element>
+            </xsl:element>
         </xsl:for-each>
-	</xsl:template>
+    </xsl:template>
+    
+    <xsl:template name="createPackagesets">
+        <xsl:param name="roots"/>
+        <xsl:param name="includes"/>
+        <xsl:param name="excludes"/>
+        <xsl:for-each select="$roots/j2seproject2:root">
+            <xsl:element name="packageset">
+                <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+                <xsl:if test="$includes">
+                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                </xsl:if>
+                <xsl:if test="$excludes">
+                    <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
+                </xsl:if>
+            </xsl:element>
+        </xsl:for-each>
+    </xsl:template>        
 
     <xsl:template name="createPathElements">
         <xsl:param name="locations"/>
