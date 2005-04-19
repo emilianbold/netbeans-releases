@@ -298,6 +298,9 @@ public class UpdateHelper {
             this.isCurrent = Boolean.TRUE;
         } 
         
+        //fire project updated
+        if(projectUpdateListener != null) projectUpdateListener.projectUpdated();
+        
         //create conf dir if doesn't exist and copy default manifest inside
         try {
             //I cannot use ${conf.dir} since the PE doesn't know about it
@@ -470,7 +473,7 @@ public class UpdateHelper {
         public boolean canUpdate ();
     }
     
-    private ProjectUpdateListener projectUpdateListener;
+    private ProjectUpdateListener projectUpdateListener = null;
     
     public void setProjectUpdateListener(ProjectUpdateListener l) {
         this.projectUpdateListener = l;
