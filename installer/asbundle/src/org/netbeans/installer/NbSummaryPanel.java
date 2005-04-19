@@ -56,7 +56,7 @@ public class NbSummaryPanel extends TextDisplayPanel
             ProductService service = (ProductService) getService(ProductService.NAME);
             String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
             nbInstallDir = (String) service.getProductBeanProperty
-            (productURL, "beanNB", "installLocation");
+            (productURL, Names.CORE_IDE_ID, "installLocation");
             j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
             jreInstallDir = (String) System.getProperties().get("jreInstallDir");
             logEvent(this, Log.DBG, "queryEnter nbInstallDir: " + nbInstallDir);
@@ -246,7 +246,7 @@ public class NbSummaryPanel extends TextDisplayPanel
         try {
             ProductService service = (ProductService)getService(ProductService.NAME);
             String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
-            table = service.getRequiredBytes(productURL,"beanNB"); //NOI18N
+            table = service.getRequiredBytes(productURL,Names.CORE_IDE_ID);
             size = table.getBytes(nbInstallDir) >> 20;
             logEvent(this, Log.DBG, "Size of NetBeans: " + size);
             

@@ -144,7 +144,7 @@ public class SetSystemPropertiesAction extends WizardAction {
             
             // ------------------ Core IDE -----------------------------
             keyObject = (SoftwareObjectKey) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "coreide", "key");
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.CORE_IDE_ID, "key");
             key = resolveString("$L(org.netbeans.installer.Bundle,CoreIDE.UID)");
             logEvent(this, Log.DBG,"Core IDE UID: " + key);
             keyObject.setUID(key);
@@ -157,7 +157,7 @@ public class SetSystemPropertiesAction extends WizardAction {
             keyObject.setVersion(version);
             
             service.setRetainedProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "coreide", "key", keyObject);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.CORE_IDE_ID, "key", keyObject);
             
             // ----------------- Storage Builder ------------------------
             keyObject = (SoftwareObjectKey) service.getProductBeanProperty
