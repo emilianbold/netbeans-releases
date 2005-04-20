@@ -346,12 +346,6 @@ public class ServerInstance implements Node.Cookie {
         return isRunning;
     }
     
-    public boolean isDebuggable() {
-        StartServer ss = getStartServer();
-        Target target = getDeploymentManager().getTargets()[0];
-        return ss != null && ss.isAlsoTargetServer(target) && ss.isDebuggable(target);
-    }
-    
     public boolean isDebuggable(Target target) {
         StartServer ss = getStartServer();
         return ss != null && ss.isDebuggable(target);
@@ -454,6 +448,19 @@ public class ServerInstance implements Node.Cookie {
         }
 
         return false;
+    }
+    
+    /**
+     * Can be this server started in the debug mode? Currently the only case when
+     * the server cannot be started in the debugged is when the admin server is 
+     * not also the target server.
+     *
+     * @return <code>true</code> if the server can be started in the debug mode, 
+     *         <code>false/code> otherwise.
+     */
+    public boolean isDebugSupported() {
+        StartServer ss = getStartServer();
+        return ss.isAlsoTargetServer(null);
     }
     
     public boolean startedByIde() {
