@@ -325,6 +325,8 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     fireIconChange();
                     fireOpenedIconChange();
                     fireDisplayNameChange(null, null);
+                    //to refresh library references in private.properties
+                    new EjbJarProjectProperties (project, updateHelper, evaluator, resolver).save();
                 }
             }
             
