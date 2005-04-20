@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
+        <ant dir="../external" target="unscramble"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy file="../external/jsr88javax.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
     </target>
