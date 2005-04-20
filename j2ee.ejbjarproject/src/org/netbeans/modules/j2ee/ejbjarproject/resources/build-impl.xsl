@@ -107,6 +107,7 @@ is divided into following sections:
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
                 <property name="default.javac.source" value="1.4"/>
                 <property name="default.javac.target" value="1.4"/>
+                <property name="runmain.jvmargs" value=""/>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
                 </xsl:if>
@@ -274,6 +275,36 @@ is divided into following sections:
                 </macrodef>
             </target>
 
+            <target name="-init-macrodef-java">
+                <macrodef>
+                    <xsl:attribute name="name">java</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classname</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <java fork="true" classname="@{{classname}}">
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <jvmarg line="${{runmain.jvmargs}}"/>
+                            <classpath>
+                                <path path="${{build.classes.dir}}:${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
+                            </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="run-sys-prop."/>
+                                <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <customize/>
+                        </java>
+                    </sequential>
+                </macrodef>
+            </target>
 
             <target name="-init-macrodef-nbjpda">
                 <macrodef>
@@ -353,7 +384,7 @@ is divided into following sections:
             </target>
             
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -787,6 +818,12 @@ is divided into following sections:
     <target name="verify">
         <xsl:attribute name="depends">dist</xsl:attribute>
         <nbverify file="${{dist.jar}}"/>
+    </target>
+    
+    <target name="run-main">
+        <xsl:attribute name="depends">init,compile-single</xsl:attribute>
+        <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
+        <ejbjarproject3:java classname="${{run.class}}"/>
     </target>
     
     <xsl:comment>

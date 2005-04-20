@@ -804,6 +804,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             "web-services",         // NOI18N
             "j2ee-types",           // NOI18N
             "java-beans",           // NOI18N
+            "java-main-class",      // NOI18N
             "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
             "ant-script",           // NOI18N

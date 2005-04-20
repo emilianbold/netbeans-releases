@@ -14,13 +14,20 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Parameter;
+import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -60,6 +67,7 @@ class EjbJarActionProvider implements ActionProvider {
         COMMAND_REBUILD, 
         COMMAND_COMPILE_SINGLE, 
         COMMAND_RUN, 
+        COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
         J2eeProjectConstants.COMMAND_REDEPLOY,
         JavaProjectConstants.COMMAND_JAVADOC, 
@@ -88,6 +96,7 @@ class EjbJarActionProvider implements ActionProvider {
         commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
         commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
         commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
+        commands.put(COMMAND_RUN_SINGLE, new String[] {"run-main"}); // NOI18N
         commands.put(J2eeProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
@@ -115,7 +124,34 @@ class EjbJarActionProvider implements ActionProvider {
         Properties p;
         String[] targetNames = (String[])commands.get(command);
         //EXECUTION PART
-        if (command.equals (COMMAND_RUN) || command.equals (J2eeProjectConstants.COMMAND_REDEPLOY)) {
+        if (command.equals(COMMAND_RUN_SINGLE)) {
+            // run Java
+            FileObject[] javaFiles = findJavaSources(context);
+            if ((javaFiles != null) && (javaFiles.length>0)) {
+                FileObject file = javaFiles[0];
+                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
+                p = new Properties();
+                p.setProperty("javac.includes", clazz); // NOI18N
+                // Convert foo/FooTest.java -> foo.FooTest
+                if (clazz.endsWith(".java")) { // NOI18N
+                    clazz = clazz.substring(0, clazz.length() - 5);
+                }
+                clazz = clazz.replace('/','.');
+                System.out.println("class name:" + clazz);
+
+                if (hasMainMethod(file)) {
+
+                    p.setProperty("run.class", clazz); // NOI18N
+                    targetNames = (String[]) commands.get(COMMAND_RUN_SINGLE);
+                } else {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                    return;
+                }
+            } else {
+                return;
+            }
+        } else if (command.equals (COMMAND_RUN) || command.equals (J2eeProjectConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer ()) {
                 return;
             }
@@ -209,6 +245,79 @@ class EjbJarActionProvider implements ActionProvider {
         return new String[] {"debug-test"}; // NOI18N
     }
     
+    // THIS METHOD IS (almost) COPIED FROM org.netbeans.modules.java.j2seproject.J2SEProjectUtil
+    /** Checks if given file object contains the main method.
+     *
+     * @param classFO file object represents java 
+     * @return false if parameter is null or doesn't contain SourceCookie
+     * or SourceCookie doesn't contain the main method
+     */    
+    final public static boolean hasMainMethod (FileObject fo) {
+        // support for unit testing
+        /*if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
+        }
+        */
+        if (fo == null) {
+            // ??? maybe better should be thrown IAE
+            return false;
+        }
+        Resource res = JavaModel.getResource (fo);
+        assert res != null : "Resource found for FileObject " + fo;
+        return hasMainMethod (res);
+    }
+    
+    // copied from JavaNode.hasMain
+    private static boolean hasMainMethod (Resource res) {
+        if (res != null && res.containsIdentifier ("main")) { //NOI18N
+            for (Iterator i = res.getClassifiers ().iterator (); i.hasNext (); ) {
+                JavaClass clazz = (JavaClass) i.next ();
+                // now it is only important top-level class with the same 
+                // name as file. Continue if the file name differs
+                // from top level class name.
+                if (!clazz.getSimpleName ().equals (JavaModel.getFileObject (res).getName ()))
+                    continue;
+
+                for (Iterator j = clazz.getFeatures ().iterator(); j.hasNext ();) {
+                    Object o = j.next ();
+                    // if it is not a method, continue with next feature
+                    if (!(o instanceof Method))
+                        continue;
+
+                    Method m = (Method) o;
+                    int correctMods = (Modifier.PUBLIC | Modifier.STATIC);
+                    // check that method is named 'main' and has set public 
+                    // and static modifiers! Method has to also return
+                    // void type.
+                    if (!"main".equals (m.getName()) || // NOI18N
+                       ((m.getModifiers () & correctMods) != correctMods) ||
+                       (!"void".equals (m.getType().getName ())))
+                       continue;
+
+                    // check parameters - it has to be one of type String[]
+                    // or String...
+                    if (m.getParameters ().size ()==1) {
+                        Parameter par = ((Parameter) m.getParameters ().get (0));
+                        String typeName = par.getType ().getName ();
+                        if (par.isVarArg () && ("java.lang.String".equals (typeName) || "String".equals (typeName))) { // NOI18N
+                            // Main methods written with variable arguments parameter:
+                            // public static main(String... args) {
+                            // }
+                            return true; 
+                        } else if (typeName.equals ("String[]") || typeName.equals ("java.lang.String[]")) { // NOI18N
+                            // Main method written with array parameter:
+                            // public static main(String[] args) {
+                            // }
+                            return true;
+                        }
+
+                    } // end if parameters
+                } // end features cycle
+            }
+        }
+        return false;
+    }
+    
     public boolean isActionEnabled( String command, Lookup context ) {
         
         if ( findBuildXml() == null ) {
@@ -219,6 +328,10 @@ class EjbJarActionProvider implements ActionProvider {
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return true; // findJavaSources( context ) != null || findJsps (context) != null;
+        }
+        if ( command.equals( COMMAND_RUN_SINGLE ) ) {
+            FileObject files[] = findJavaSources(context);
+            return files != null && files.length == 1;
         }
         else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             return findTestSourcesForSources(context) != null;
