@@ -1,8 +1,19 @@
-db/libsrc/org/netbeans/lib/ddl/resources/Bundle.properties
-db/src/org/netbeans/modules/db/resources/Bundle.properties
+db/libsrc/**/Bundle*.properties
+exclude db/libsrc/**/Bundle_noi18n.properties
+db/src/**/Bundle*.properties
+exclude db/src/**/Bundle_noi18n.properties
 db/javahelp/org/netbeans/modules/db/docs/**/*.html
 db/javahelp/org/netbeans/modules/db/docs/**/*.hs
 db/javahelp/org/netbeans/modules/db/docs/**/*.jhm
 db/javahelp/org/netbeans/modules/db/docs/**/*.xml
 db/javahelp/org/netbeans/modules/db/docs/**/*.css
 db/javahelp/org/netbeans/modules/db/docs/**/*.gif
+db/model/src/**/Bundle*.properties
+exclude db/model/src/**/Bundle_noi18n.properties
+db/model/src/**/*.html
+db/model/javahelp/**/*.html
+db/model/javahelp/**/*.hs
+db/model/javahelp/**/*.jhm
+db/model/javahelp/**/*.xml
+db/model/javahelp/**/*.css
+db/model/javahelp/**/*.gif
