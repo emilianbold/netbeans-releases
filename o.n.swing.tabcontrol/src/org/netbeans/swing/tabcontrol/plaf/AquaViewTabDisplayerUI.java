@@ -167,11 +167,13 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                     pinButtonRect.setBounds(0, 0, 0, 0);
                 } else {
                     Icon ic = pinButton.getIcon();
-                    pinButtonRect.setBounds(iconX - space4Pin, iconY - 4, 
-                        ic.getIconWidth(), ic.getIconHeight());
 
                     if (ic != null) {
+                        pinButtonRect.setBounds(iconX - space4Pin, iconY - 4, 
+                                ic.getIconWidth(), ic.getIconHeight());
                         ic.paintIcon(displayer, g, pinButtonRect.x, pinButtonRect.y);
+                    } else {
+                        pinButtonRect.setBounds(0, 0, 0, 0);
                     }
                 }
                 
