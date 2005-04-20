@@ -286,6 +286,7 @@ public class TreeModelNode extends AbstractNode {
                 setIconBase (iconBase);
             else
                 setIconBase ("org/openide/resources/actions/empty");
+            firePropertyChange(null, null, null);
         } catch (UnknownTypeException e) {
             if (object instanceof String) {
                 String name = (String) object;
