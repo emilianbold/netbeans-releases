@@ -14,6 +14,7 @@
 package org.netbeans.modules.projectimport.eclipse;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Collection;
@@ -98,7 +99,7 @@ final class ClassPath {
     private static final int USER_LIBRARY_PREFIX_LENGTH = USER_LIBRARY_PREFIX.length();
     
     private ClassPathEntry output;
-    private Collection pathEntries;
+    private Collection pathEntries = Collections.EMPTY_LIST;
     
     private String jreContainer;
     private Collection sourceRoots;
@@ -124,7 +125,7 @@ final class ClassPath {
     }
     
     private void addSource(ClassPathEntry path) {
-        if (pathEntries == null) {
+        if (pathEntries == Collections.EMPTY_LIST) {
             pathEntries = new ArrayList();
         }
         pathEntries.add(path);
@@ -156,7 +157,7 @@ final class ClassPath {
      */
     Collection getSourceRoots() {
         // lazy initialization
-        if (sourceRoots == null && pathEntries != null) {
+        if (sourceRoots == null) {
             sourceRoots = getEntriesByType(ClassPathEntry.TYPE_SOURCE);
         }
         return sourceRoots;
@@ -169,7 +170,7 @@ final class ClassPath {
      */
     String getJREContainer() {
         // lazy initialization
-        if (jreContainer == null && pathEntries != null) {
+        if (jreContainer == null) {
             Collection col = getEntriesByType(ClassPathEntry.TYPE_CONTAINER);
             for (Iterator it = col.iterator(); it.hasNext(); ) {
                 ClassPathEntry cpe = (ClassPathEntry) it.next();
@@ -194,7 +195,7 @@ final class ClassPath {
      */
     Collection getExternalSourceRoots() {
         // lazy initialization
-        if (externalSourceRoots == null && pathEntries != null) {
+        if (externalSourceRoots == null) {
             externalSourceRoots = getEntriesByType(ClassPathEntry.TYPE_LINK);
         }
         return externalSourceRoots;
@@ -207,7 +208,7 @@ final class ClassPath {
      */
     Collection getLibraries() {
         // lazy initialization
-        if (libraries == null && pathEntries != null) {
+        if (libraries == null) {
             libraries = getEntriesByType(ClassPathEntry.TYPE_LIBRARY);
         }
         return libraries;
@@ -220,7 +221,7 @@ final class ClassPath {
      */
     Collection getExternalLibraries() {
         // lazy initialization
-        if (externalLibraries == null && pathEntries != null) {
+        if (externalLibraries == null) {
             externalLibraries = getEntriesByType(ClassPathEntry.TYPE_EXTERNAL_LIBRARY);
         }
         return externalLibraries;
@@ -231,7 +232,7 @@ final class ClassPath {
      */
     Collection getUserLibraries() {
         // lazy initialization
-        if (userLibraries == null && pathEntries != null) {
+        if (userLibraries == null) {
             Collection col = getEntriesByType(ClassPathEntry.TYPE_CONTAINER);
             userLibraries = new HashSet();
             for (Iterator it = col.iterator(); it.hasNext(); ) {
@@ -252,7 +253,7 @@ final class ClassPath {
      */
     Collection getProjects() {
         // lazy initialization
-        if (projects == null && pathEntries != null) {
+        if (projects == null) {
             projects = getEntriesByType(ClassPathEntry.TYPE_PROJECT);
         }
         return projects;
@@ -265,7 +266,7 @@ final class ClassPath {
      */
     Collection getVariables() {
         // lazy initialization
-        if (variables == null && pathEntries != null) {
+        if (variables == null) {
             variables = getEntriesByType(ClassPathEntry.TYPE_VARIABLE);
         }
         return variables;
