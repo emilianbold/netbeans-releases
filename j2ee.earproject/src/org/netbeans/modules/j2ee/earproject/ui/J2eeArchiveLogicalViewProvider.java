@@ -21,6 +21,7 @@ import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -309,6 +310,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     fireIconChange();
                     fireOpenedIconChange();
                     fireDisplayNameChange(null, null);
+                    ((EarProject)project).getProjectProperties().store();
                 }
             }
 

@@ -787,13 +787,16 @@ public class EarProjectProperties {
                     for (Iterator it = properties.values().iterator(); it.hasNext();) {
                         PropertyInfo pi = (PropertyInfo) it.next();
                         PropertyDescriptor pd = pi.getPropertyDescriptor();
-                        if(JAR_CONTENT_ADDITIONAL.equals(pd.name)
-                                && pi.newValue != null) {
-                            //add an entry into private properties
-                            Iterator newItems  = ((ArrayList)pi.newValue).iterator();
-                            Iterator oldItems = ((ArrayList)pi.value).iterator();
-                            storeLibrariesLocations(newItems, oldItems, (EditableProperties)eProps.get(PRIVATE));
-                            break;
+                        if(JAR_CONTENT_ADDITIONAL.equals(pd.name)) {
+                            //FIX of #58079 - newValue is null when the store() is called from resolve references dialog
+                            Object piValue = (pi.newValue != null ? pi.newValue : pd.parser.decode(pi.evaluatedValue, antProjectHelper, refHelper ));
+                            if(piValue != null) {
+                                //add an entry into private properties
+                                Iterator newItems  = ((ArrayList)piValue).iterator();
+                                Iterator oldItems = ((ArrayList)pi.value).iterator();
+                                storeLibrariesLocations(newItems, oldItems, (EditableProperties)eProps.get(PRIVATE));
+                                break;
+                            }
                         }
                     }
                     
