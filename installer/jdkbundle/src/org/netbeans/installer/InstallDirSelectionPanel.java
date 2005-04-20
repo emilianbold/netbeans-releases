@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -401,7 +401,8 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
             try {
                 ProductService service = (ProductService)getService(ProductService.NAME);
-                service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "active", Boolean.FALSE);
+                service.setRetainedProductBeanProperty(productURL,
+                Names.J2SE_ID, "active", Boolean.FALSE);
             }catch(ServiceException ex) {
                 ex.printStackTrace();
                 Util.logStackTrace(this,ex);
@@ -428,9 +429,11 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             try {
                 ProductService service = (ProductService)getService(ProductService.NAME);
                 if (Util.isWindowsOS()) {
-                    service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "installLocation", nbInstallDir);
+                    service.setRetainedProductBeanProperty(productURL,
+                    Names.J2SE_ID, "installLocation", nbInstallDir);
                 } else {
-                    service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "installLocation", j2seInstallDir);
+                    service.setRetainedProductBeanProperty(productURL,
+                    Names.J2SE_ID, "installLocation", j2seInstallDir);
                 }
             } catch (ServiceException e) {
                 logEvent(this, Log.ERROR, e);
