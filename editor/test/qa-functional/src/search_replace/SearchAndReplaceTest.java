@@ -259,6 +259,20 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             selectionStart = -1;
         }
         if (selectionStart != startEtalon || selectionEnd != endEtalon){
+            log("--------------------------------------------------");
+            log("Find operation failed. Selected text: "+selectionStart+" - "+selectionEnd+" >>> Expected values: "+startEtalon+" - "+endEtalon);
+            log("find dialog find what combo value:"+find.cboFindWhat().getEditor().getItem());
+            log("checkboxes:"+
+                    "\n   cbBackwardSearch:"+find.cbBackwardSearch().isSelected()+
+                    "\n   cbBlockSearch:"+find.cbBlockSearch().isSelected()+
+                    "\n   cbHighlightSearch:"+find.cbHighlightSearch().isSelected()+
+                    "\n   cbIncrementalSearch:"+find.cbIncrementalSearch().isSelected()+
+                    "\n   cbMatchCase:"+find.cbMatchCase().isSelected()+
+                    "\n   cbMatchWholeWordsOnly:"+find.cbMatchWholeWordsOnly().isSelected()+
+                    "\n   cbRegularExpressions:"+find.cbRegularExpressions().isSelected()+
+                    "\n   cbWrapSearch:"+find.cbWrapSearch().isSelected()
+                    );
+            log("--------------------------------------------------");
             fail("Find operation failed. Selected text: "+selectionStart+" - "+selectionEnd+" >>> Expected values: "+startEtalon+" - "+endEtalon); //NOI18N
             find.close();            
             return false;
@@ -475,6 +489,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
+            find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
             pasteViaStrokes(find, KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK, null);
             find.find();
             find.close();
@@ -485,6 +500,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
+            find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
             pasteViaStrokes(find, KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK, null);
             find.find();
             find.close();
