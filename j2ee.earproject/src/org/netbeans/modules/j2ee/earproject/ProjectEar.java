@@ -328,6 +328,7 @@ public final class ProjectEar extends J2eeAppProvider
         }
         J2eeModule jm = jmp.getJ2eeModule();
         fireRemoveModule(jm);
+        mods.remove(uri);
     }
     
     private List modListeners = new ArrayList();
