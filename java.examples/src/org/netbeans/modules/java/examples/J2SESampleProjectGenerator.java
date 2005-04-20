@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -52,9 +53,9 @@ public class J2SESampleProjectGenerator {
     public static FileObject createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
         FileObject prjLoc = null;
         if (template.getExt().endsWith("zip")) {  //NOI18N
-            unzip(template.getInputStream(), projectLocation);
-            // update project.xml
+            unzip(template.getInputStream(), projectLocation);            
             try {
+                // update project.xml
                 prjLoc = FileUtil.toFileObject(projectLocation);
                 File projXml = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH));
                 Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
@@ -69,8 +70,20 @@ public class J2SESampleProjectGenerator {
                         
                         replaceText(e, name);
                     }
-                    saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
-                }
+                    saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);                    
+                    //update private properties
+                    File privateProperties = createPrivateProperties (prjLoc);
+                    //No need to load the properties the file is empty
+                    Properties p = new Properties ();                    
+                    p.put ("javadoc.preview","true");   //NOI18N
+                    FileOutputStream out = new FileOutputStream (privateProperties);
+                    try {
+                        p.store(out,null);                    
+                    } finally {
+                        out.close ();
+                    }
+                }                
+                
             } catch (Exception e) {
                 throw new IOException(e.toString());
             }
@@ -101,6 +114,19 @@ public class J2SESampleProjectGenerator {
         } finally {
             zip.close();
         }
+    }
+    
+    private static File createPrivateProperties (FileObject fo) throws IOException {
+        String[] nameElements = AntProjectHelper.PRIVATE_PROPERTIES_PATH.split("/");
+        for (int i=0; i<nameElements.length-1; i++) {
+            FileObject tmp = fo.getFileObject (nameElements[i]);
+            if (tmp == null) {
+                tmp = fo.createFolder(nameElements[i]);
+            }
+            fo = tmp;
+        }
+        fo = fo.createData(nameElements[nameElements.length-1]);
+        return FileUtil.toFile(fo);
     }
 
     /**
