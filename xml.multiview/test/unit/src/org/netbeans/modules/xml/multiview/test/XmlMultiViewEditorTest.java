@@ -79,7 +79,16 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         } catch (InterruptedException ex){}
         
         XmlMultiViewEditorSupport editor  = (XmlMultiViewEditorSupport)bookDO.getCookie(EditorCookie.class);
-        javax.swing.text.Document doc = editor.getDocument();
+        javax.swing.text.Document doc = null;
+        int i=0;
+        while (doc==null && i<5) {
+            doc = editor.getDocument();
+            System.out.println("Attempt "+i+"; doc = "+doc);
+            i++;
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException ex){}
+        }
         assertTrue("The document is empty :",doc.getLength()>0);
     }
     
