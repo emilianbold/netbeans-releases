@@ -45,7 +45,7 @@ import org.xml.sax.InputSource;
  */
 public class J2SESampleProjectGenerator {
 
-    private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/1";   //NOI18N
+    private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/2";   //NOI18N
 
     private J2SESampleProjectGenerator() {}
 
