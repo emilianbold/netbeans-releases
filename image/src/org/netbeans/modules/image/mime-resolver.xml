@@ -22,6 +22,8 @@ Microsystems, Inc. All Rights Reserved.
     <file>
         <ext name="jpg"/>
         <ext name="JPG"/>
+        <ext name="jpe"/>
+        <ext name="JPE"/>
         <ext name="jpeg"/>
         <ext name="JPEG"/>
         <resolver mime="image/jpeg"/>
