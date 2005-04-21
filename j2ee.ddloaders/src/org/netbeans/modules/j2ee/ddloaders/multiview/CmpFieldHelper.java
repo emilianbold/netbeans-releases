@@ -19,6 +19,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CMPFiel
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.src.ClassElement;
 import org.openide.src.FieldElement;
 import org.openide.src.Identifier;
@@ -245,6 +246,11 @@ public class CmpFieldHelper {
 
     public void setFieldName(String newName) {
         //todo: launch refactoring instead of following code
+        final IllegalArgumentException ex = FieldCustomizer.validateFieldName(newName);
+        if (ex != null) {
+            ErrorManager.getDefault().notify(ex);
+            return;
+        }
         if (isPrimary()) {
             entityHelper.setPrimkeyFieldName(newName);
         }
