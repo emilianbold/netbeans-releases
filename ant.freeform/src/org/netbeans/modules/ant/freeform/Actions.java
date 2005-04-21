@@ -16,6 +16,7 @@ package org.netbeans.modules.ant.freeform;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,7 +40,9 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
@@ -260,6 +263,10 @@ public final class Actions implements ActionProvider {
         String scriptLocation = project.evaluator().evaluate(script);
         FileObject scriptFile = project.helper().resolveFileObject(scriptLocation);
         if (scriptFile == null) {
+            //#57011: if the script does not exist, show a warning:
+            NotifyDescriptor nd = new NotifyDescriptor.Message(MessageFormat.format(NbBundle.getMessage(Actions.class, "LBL_ScriptFileNotFoundError"), new Object[] {scriptLocation}), NotifyDescriptor.ERROR_MESSAGE);
+            
+            DialogDisplayer.getDefault().notify(nd);
             return;
         }
         List/*<Element>*/ targets = Util.findSubElements(actionEl);
