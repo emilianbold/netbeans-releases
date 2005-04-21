@@ -37,7 +37,7 @@ public class Helper {
         meth.setAccessible(true);
         ToolBarMultiViewElement mvEl = (ToolBarMultiViewElement)meth.invoke(dObj, new Object[]{});
         meth.setAccessible(false);
-        if (mvEl==null) return null;
+        if (mvEl==null) throw new IllegalAccessException("Problem with invoking getActiveMultiViewElement()");
         javax.swing.JPanel sectionPanel = mvEl.getSectionView().findSectionPanel(chapter).getInnerPanel();
         if (sectionPanel==null) return null;
         java.awt.Component[] children = sectionPanel.getComponents();
