@@ -2874,7 +2874,11 @@ Tag:
       <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${netbeans.dest}">
         <include name="**/*.sh"/>
       </zipfileset>
-      <zipfileset dir="${netbeans.dest.dir}" prefix="${netbeans.dest}" excludes="${nb-extra-files}"/>
+      <zipfileset dir="${netbeans.dest.dir}" prefix="${netbeans.dest}" excludes="${nb-extra-files}">
+        <!-- XXX exclude the temporary cluster for parts of openide -->
+        <exclude name="tmp" />
+        <exclude name="tmp/**/*" />
+      </zipfileset>
     </zip>
     
     <!-- package the zip file with extra files not to be included in regular product package-->
