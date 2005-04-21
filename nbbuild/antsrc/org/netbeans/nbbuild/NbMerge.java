@@ -188,7 +188,12 @@ public class NbMerge extends Task {
             if ( builttargets.indexOf(targetname) < 0 ) {
                 // XXX poor replacement for Project.fireTargetStarted etc.
                 System.out.println(""); System.out.println(targetname + ":");
-                nexttargit.execute();
+                try {
+                    nexttargit.execute();
+                } catch (BuildException ex) {
+                    log("Failed to build target: " + targetname, Project.MSG_ERR);
+                    throw ex;
+                }
                 builttargets.addElement(targetname);
             }
         }

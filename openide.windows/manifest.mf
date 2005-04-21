@@ -1,9 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.openide.windows/1
-X-COMMENT: XXX WRONG!
-OpenIDE-Module-Localizing-Bundle: org/openide/Bundle.properties
-OpenIDE-Module-Module-Dependencies: org.openide.util/1 > 1.0, org.openide.nodes/1 > 1.0, org.openide.dialogs/1 > 1.0, org.openide.awt/1 > 1.0
-OpenIDE-Module-Specification-Version: @SPEC_VERS_SUBST@
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Public-Packages: org.openide.**
+OpenIDE-Module: org.openide.windows
+OpenIDE-Module-Specification-Version: 6.2
+OpenIDE-Module-Localizing-Bundle: org/openide/windows/Bundle.properties
 

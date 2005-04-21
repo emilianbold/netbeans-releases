@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- projects.netbeans.org -->
            <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
            <title>NetBeans API List</title>
-            <link rel="stylesheet" href="OpenAPIs/netbeans.css" type="text/css"/>
+            <link rel="stylesheet" href="netbeans.css" type="text/css"/>
 
           <link REL="icon" href="http://www.netbeans.org/favicon.ico" type="image/ico" />
           <link REL="shortcut icon" href="http://www.netbeans.org/favicon.ico" />

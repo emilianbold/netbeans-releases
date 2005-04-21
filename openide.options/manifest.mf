@@ -1,8 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.openide.options/1
-OpenIDE-Module-Module-Dependencies: org.openide.util/1
-X-COMMENT: XXX WRONG!
-OpenIDE-Module-Localizing-Bundle: org/openide/Bundle.properties
-OpenIDE-Module-Specification-Version: @SPEC_VERS_SUBST@
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module: org.openide.options
+OpenIDE-Module-Specification-Version: 6.2
+OpenIDE-Module-Localizing-Bundle: org/openide/options/Bundle.properties
 

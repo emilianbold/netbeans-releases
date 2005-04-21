@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -12,45 +12,8 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="openide/compat" default="netbeans" basedir=".">
-  <import file="../../nbbuild/default.xml"/>
+<project name="openide/windows" default="netbeans" basedir=".">
 
-  <property name="nbroot" location="${nb_all}" />
-
-  <path id="classpath" >
-    <pathelement location="${nbroot}/openide/util/build/netbeans/lib/openide-util.jar" />
-    <pathelement location="${nbroot}/openide/fs/build/netbeans/lib/openide-fs.jar" />
-    <pathelement location="${nbroot}/openide/nodes/build/netbeans/lib/openide-nodes.jar" />
-    <pathelement location="${nbroot}/openide/windows/build/netbeans/lib/openide-windows.jar" />
-    <pathelement location="${nbroot}/openide/explorer/build/netbeans/lib/openide-explorer.jar" />
-    <pathelement location="${nbroot}/openide/dialogs/build/netbeans/lib/openide-dialogs.jar" />
-    <pathelement location="${nbroot}/openide/actions/build/netbeans/lib/openide-actions.jar" />
-    <pathelement location="${nbroot}/openide/awt/build/netbeans/lib/openide-awt.jar" />
-  </path>
-  
-  <target name="compile" depends="init">
-    <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
-      <property name="destdir" location="build/classes"/>
-      <property name="selector" value="openide.compat" />
-    </ant>
-  </target>
-  
-  <target name="jars" depends="compile">
-    <mkdir dir="build/netbeans/lib"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="build/manifest-subst.mf" filtering="on"/>
-    <jar jarfile="build/netbeans/lib/openide-compat.jar" manifest="build/manifest-subst.mf" compress="false">
-      <fileset dir="build/classes"/>
-      <fileset dir="../src">
-        <include name="META-INF/netbeans/translate.names"/>
-      </fileset>
-    </jar>
-  </target>
-
-  <target name="netbeans" depends="jars"/>
-
-  <target name="clean">
-    <delete dir="build"/>
-  </target>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
 </project>

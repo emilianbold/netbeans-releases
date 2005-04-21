@@ -148,9 +148,143 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <property name="sanitystart.args" value="-J-Dnetbeans.close=true ${sanitystart.args.additional}"/>
 
   </target>
+  
+  
+  <!-- New openide parts -->
 
+  
+  <target name="all-openide/actions" depends="init,all-openide/util,all-openide/nodes,all-openide/windows,all-openide/text,all-openide/explorer,all-openide/fs" >
+    <echo message="Building openide/actions..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/actions" target="netbeans"/>
+  </target>        
+  
+  <target name="all-openide/awt" depends="init,all-openide/util" >
+    <echo message="Building openide/awt..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/awt" target="netbeans"/>
+  </target>        
+
+  <target name="all-openide/dialogs" depends="init,all-openide/util,all-openide/awt" >
+    <echo message="Building openide/dialogs..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/dialogs" target="netbeans"/>
+  </target>        
+  
+  <target name="all-openide/explorer" depends="init,all-openide/nodes" >
+    <echo message="Building openide/explorer..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/explorer" target="netbeans"/>
+  </target>        
+  
+  <target name="all-openide/fs" depends="init,all-openide/util" >
+    <echo message="Building openide/fs..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/fs" target="netbeans"/>
+  </target>
+
+  <target name="all-openide/nodes" depends="init,all-openide/util,all-openide/dialogs" >
+    <echo message="Building openide/nodes..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/nodes" target="netbeans"/>
+  </target>        
+
+  <target name="all-openide/modules" depends="init,all-openide/util" >
+    <echo message="Building openide/modules..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/modules" target="netbeans"/>
+  </target>        
+  
+  <target name="all-openide/options" depends="init,all-openide/util" >
+    <echo message="Building openide/options..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/options" target="netbeans"/>
+  </target>        
+
+  <target name="all-openide/text" depends="init,all-openide/windows,all-openide/options" >
+    <echo message="Building openide/text..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/text" target="netbeans"/>
+  </target>        
+
+  <target name="all-openide/util" depends="init" >
+    <echo message="Building openide/util..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/util" target="netbeans"/>
+  </target>
+  
+  <target name="all-openide/util/enum" depends="init" >
+    <echo message="Building openide/util/enum..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/util/enum" target="netbeans"/>
+  </target>        
+  
+  <target name="all-openide/windows" depends="init,all-openide/nodes" >
+    <echo message="Building openide/windows..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/windows" target="netbeans"/>
+  </target>        
+  
+  <target name="all-openide/compat" depends="init,all-openide/awt,all-openide/util,all-openide/nodes,all-openide/windows,all-openide/text,all-openide/explorer,all-openide/fs,all-openide/actions" >
+    <echo message="Building openide/compat..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../openide/compat" target="netbeans"/>
+  </target>        
+  
   <!-- Platform modules: -->
-  <target name="all-openide" depends="init">
+  <target name="all-openide" depends="init,all-openide/awt,all-openide/util,all-openide/nodes,all-openide/windows,all-openide/text,all-openide/explorer,all-openide/fs,all-openide/actions,all-openide/compat,all-openide/util/enum,all-openide/modules">
     <echo message="Building Open APIs..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -2638,6 +2772,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
         </packageslist>
     </javadoc-index>
     
+    <copy file="javadoctools/netbeans.css" tofile="modules_javadoc/netbeans.css" />
 
     <!-- at the end geneate the index.html so people know where to start -->      
       <style 

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -13,54 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="openide/windows" default="netbeans" basedir=".">
-  <import file="../../nbbuild/default.xml"/>
 
-  <property name="nbroot" location="../.." />
-
-  <path id="classpath" >
-       <pathelement location="${nbroot}/openide/util/build/netbeans/lib/openide-util.jar"/>
-       <pathelement location="${nbroot}/openide/nodes/build/netbeans/lib/openide-nodes.jar"/>
-       <pathelement location="${nbroot}/openide/awt/build/netbeans/lib/openide-awt.jar"/>
-       <pathelement location="${nbroot}/openide/dialogs/build/netbeans/lib/openide-dialogs.jar"/>
-  </path>
-  
-  <target name="compile" depends="init">
-    <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
-      <property name="destdir" location="build/classes"/>
-      <property name="localdir" location="src" />
-      <property name="selector" value="openide.windows" />
-    </ant>
-  </target>
-
-  <target name="jars" depends="compile">
-    <mkdir dir="build/netbeans/lib"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="build/manifest-subst.mf" filtering="on"/>
-    <jar jarfile="build/netbeans/lib/openide-windows.jar" manifest="build/manifest-subst.mf" compress="false">
-      <fileset dir="build/classes"/>
-    </jar>
-  </target>
-
-  <target name="netbeans" depends="jars"/>
-
-  <target name="javadoc">
-    <ant dir=".." target="do-lib-javadoc" inheritRefs="true" >
-      <property name="localdir" location="src" />
-      <property name="selector" value="openide.windows" />
-      
-      <property name="javadoc.base" location="."/>
-      <property name="javadoc.name" value="WindowsAPI"/>
-      <property name="javadoc.title" value="Windows API"/>
-      <!-- <property name="javadoc.apichanges" location="../api/doc/changes/apichanges.xml"/> -->
-      <property name="javadoc.arch" location="../arch/arch-openide-windowsystem.xml"/>
-      <!-- <property name="javadoc.docfiles" location="api/doc"/> -->
-      <!-- <property name="javadoc.overview" location="api/doc/overview.html"/> -->
-    </ant>
-  </target>
-
-  <target name="clean">
-    <delete dir="build"/>
-    <delete dir="javadoc"/>
-  </target>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
 </project>

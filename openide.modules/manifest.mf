@@ -1,20 +1,5 @@
 Manifest-Version: 1.0
-X-Comment: CAREFUL; Specification-Title, Specification-Version, and Implementation-Version should not be changed gratuitously (they are used by Modules API!)
-Specification-Title: IDE/1
-X-Comment-2: change specification version in openide-spec-vers.properties
-Specification-Version: @SPEC_VERS_SUBST@
-Specification-Vendor: NetBeans
-Implementation-Title: NetBeans Modules API
-Implementation-Version: @BUILD_NUMBER_SUBST@
-Implementation-Vendor: NetBeans
-OpenIDE-Module: org.openide.modules/1
-OpenIDE-Module-Module-Dependencies: org.openide.util/1
-X-Comment-3: XXX WRONG!
-OpenIDE-Module-Localizing-Bundle: org/openide/Bundle.properties
-OpenIDE-Module-Specification-Version: @SPEC_VERS_SUBST@
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-
-Name: /org/openide/modules/
-Package-Title: org.openide.modules
-X-Comment-4: also needs to be left here so Package.getPackage("org.openide.modules") works
+OpenIDE-Module: org.openide.modules
+OpenIDE-Module-Specification-Version: 6.2
+OpenIDE-Module-Localizing-Bundle: org/openide/modules/Bundle.properties
 

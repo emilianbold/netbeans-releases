@@ -1,8 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.openide.compat/1
-OpenIDE-Module-Module-Dependencies: org.openide.util/1 > 1.0, org.openide.nodes/1 > 1.0, org.openide.dialogs/1 > 1.0, org.openide.explorer/1 > 1.0, org.openide.windows/1 > 1.0, org.openide.text/1 > 1.0, org.openide.filesystems/1 > 1.0, org.openide.options/1 > 1.0, org.openide.awt/1 > 1.0, org.openide.actions/1 > 1.0
-X-COMMENT: XXX WRONG!
-OpenIDE-Module-Localizing-Bundle: org/openide/Bundle.properties
-OpenIDE-Module-Specification-Version: @SPEC_VERS_SUBST@
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module: org.openide.compat
+OpenIDE-Module-Specification-Version: 6.2
+JST-PENDING_OpenIDE-Module-Localizing-Bundle: org/openide/compat/Bundle.properties
 

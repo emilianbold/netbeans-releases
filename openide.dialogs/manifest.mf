@@ -1,8 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.openide.dialogs/1
-OpenIDE-Module-Module-Dependencies: org.openide.util/1 > 1.0, org.openide.awt/1 > 1.0
-X-COMMENT: XXX WRONG!
+OpenIDE-Module: org.openide.dialogs
+OpenIDE-Module-Specification-Version: 6.2
 OpenIDE-Module-Localizing-Bundle: org/openide/Bundle.properties
-OpenIDE-Module-Specification-Version: @SPEC_VERS_SUBST@
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 

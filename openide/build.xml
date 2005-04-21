@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="init,jars-from-libs,release,libs" description="Build everything needed for inclusion in the IDE.">
+  <target name="netbeans" depends="init,jar-from-submodules,release" description="Build everything needed for inclusion in the IDE.">
     <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="core/openide.jar">
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="openide.files"/>
@@ -230,58 +230,61 @@ Microsystems, Inc. All Rights Reserved.
   <!-- compiles one of the sets of above defines files into 
     provided directory
   -->
-  <target name="do-lib-javac-localdir" if="localdir">
+  <target name="do-move-sources" >
     <mkdir dir="${destdir}"/>
-    <javac sourcepath="" destdir="${destdir}" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <src path="src" />
-      <src path="${localdir}" />
-      <selector>
-        <or>
-          <selector refid="${selector}" />
-          <filename name="${include}" />
-          <filename name="org/netbeans/modules/openide/**/*.java" />
-        </or>
-      </selector>
-      <classpath refid="classpath" />
-    </javac>
-    <!-- copy non-java files into new direction -->
-    <copy todir="${destdir}" >
+    <mkdir dir="${localdir}"/>
+    
+    <taskdef name="jalopy"
+         classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
+      <classpath>
+        <fileset dir="/usr/share/java/">
+          <include name="*.jar" />
+        </fileset>
+      </classpath>
+    </taskdef>
+    
+    <copy todir="${localdir}" >
       <fileset dir="src" >
         <selector refid="${selector}" />
-        <exclude name="**/*.java" />
         <exclude name="**/*.class" />
-      </fileset>
-    </copy>
-    <copy todir="${destdir}">
-      <fileset dir="${localdir}">
-        <excludesfile name="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
-      </fileset>
-    </copy>
-  </target>
-  <target name="do-lib-javac-nolocaldir" unless="localdir">
-    <mkdir dir="${destdir}"/>
-    <javac sourcepath="" destdir="${destdir}" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <src path="src" />
-      <selector>
-        <or>
-          <selector refid="${selector}" />
-          <filename name="${include}" />
-          <filename name="org/netbeans/modules/openide/**/*.java" />
-        </or>
-      </selector>
-      <classpath refid="classpath" />
-    </javac>
-    <!-- copy non-java files into new direction -->
-    <copy todir="${destdir}" >
-      <fileset dir="src" >
-        <selector refid="${selector}" />
         <exclude name="**/*.java" />
-        <exclude name="**/*.class" />
       </fileset>
     </copy>
-  </target>
-  <target name="do-lib-javac" depends="do-lib-javac-localdir,do-lib-javac-nolocaldir"/>
 
+    <!--
+    
+   <jalopy fileformat="unix"
+            convention="http://www.foo.com/myConvention.xml"
+            history="file"
+            historymethod="adler32"
+            loglevel="info"
+            threads="2"
+            destdir="${localdir}"
+            classpathref="classpath">
+    
+    -->
+    
+    <property name="netbeans.jalopy.convention" location="convention-netbeans.xml" />
+    
+   <jalopy fileformat="unix"
+            convention="${netbeans.jalopy.convention}"
+            history="file"
+            historymethod="adler32"
+            loglevel="info"
+            threads="2"
+            destdir="${localdir}"
+            classpathref="classpath">
+      <fileset dir="src" >
+        <selector>
+            <and>
+                <selector refid="${selector}" />
+                <filename name="**/*.java" />
+            </and>
+        </selector>
+      </fileset>
+    </jalopy>  
+  </target>
+  
   <target name="do-lib-javadoc" >
     <ant dir="${nbroot}/nbbuild/javadoctools" antfile="template.xml" target="javadoc" inheritRefs="true" >
       <property name="javadoc.base" location="${localdir}/.."/>
@@ -296,7 +299,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <!-- Build whole openide.jar from separate libraries -->
-  <target name="jars-from-libs" depends="init,libs,vers-prep" description="Create JAR files from copied directories." unless="no-openide.jar">
+  <target name="jar-from-submodules" depends="init,vers-prep" description="Create JAR files from copied directories." unless="no-openide.jar">
     <property name="openide.jar" value="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar" />
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/core"/>
     <copy file="manifest.mf" tofile="build/manifest-subst.mf" filtering="on"/>
@@ -321,88 +324,157 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- Build separate libraries for the IDE -->
   
-  <target name="libs" depends="
-    lib-actions, 
-    lib-dialogs,
-    lib-explorer,
-    lib-fs,
-    lib-nodes,
-    lib-modules,
-    lib-options,
-    lib-text,
-    lib-util,
-    lib-util-enum,
-    lib-windows,
-    lib-awt,
-    lib-compat" />
+  <target name="sources" depends="
+    move-to-actions, 
+    move-to-dialogs,
+    move-to-explorer,
+    move-to-fs,
+    move-to-nodes,
+    move-to-modules,
+    move-to-options,
+    move-to-text,
+    move-to-util,
+    move-to-util-enum,
+    move-to-windows,
+    move-to-awt,
+    move-to-compat" />
     
-  <target name="libs-clean" >
-        <ant dir="awt" target="clean" />
-        <ant dir="actions" target="clean" />
-        <ant dir="dialogs" target="clean" />
-        <ant dir="explorer" target="clean" />
-        <ant dir="fs" target="clean" />
-        <ant dir="nodes" target="clean" />
-        <ant dir="modules" target="clean" />
-        <ant dir="options" target="clean" />
-        <ant dir="text" target="clean" />
-        <ant dir="util" target="clean" />
-        <ant dir="util/enum" target="clean" />
-        <ant dir="windows" target="clean" />
-        <ant dir="compat" target="clean" />
-  </target>
+  <target name="sources-clean" >
+     <delete dir="${nbroot}/openide/util/build/classes/"/>
+     <delete dir="${nbroot}/openide/nodes/build/classes/"/>
+     <delete dir="${nbroot}/openide/windows/build/classes/"/>
+     <delete dir="${nbroot}/openide/awt/build/classes/"/>
+     <delete dir="${nbroot}/openide/dialogs/build/classes/"/>
+     <delete dir="${nbroot}/openide/text/build/classes/"/>
+     <delete dir="${nbroot}/openide/options/build/classes/"/>
+     <delete dir="${nbroot}/openide/explorer/build/classes/"/>
+     <delete dir="${nbroot}/openide/fs/build/classes/"/>
+     <delete dir="${nbroot}/openide/actions/build/classes/"/>
+     <delete dir="${nbroot}/openide/compat/build/classes/"/>
+     <delete dir="${nbroot}/openide/modules/build/classes/"/>
+     <delete dir="${nbroot}/openide/util/enum/build/classes/"/>
+    </target>
     
+  <property name="nbroot" location="${nb_all}" />
+  <path id="classpath" >
+     <pathelement location="${nbroot}/openide/util/build/classes/"/>
+     <pathelement location="${nbroot}/openide/nodes/build/classes/"/>
+     <pathelement location="${nbroot}/openide/windows/build/classes/"/>
+     <pathelement location="${nbroot}/openide/awt/build/classes/"/>
+     <pathelement location="${nbroot}/openide/dialogs/build/classes/"/>
+     <pathelement location="${nbroot}/openide/text/build/classes/"/>
+     <pathelement location="${nbroot}/openide/options/build/classes/"/>
+     <pathelement location="${nbroot}/openide/explorer/build/classes/"/>
+     <pathelement location="${nbroot}/openide/fs/build/classes/"/>
+     <pathelement location="${nbroot}/openide/actions/build/classes/"/>
+     <pathelement location="${nbroot}/openide/compat/build/classes/"/>
+     <pathelement location="${nbroot}/openide/modules/build/classes/"/>
+     <pathelement location="${nbroot}/openide/util/enum/build/classes/"/>
+  </path>
   
-  <target name="lib-actions" depends="lib-util,lib-nodes,lib-windows,lib-text,lib-explorer,lib-fs" >
-        <ant dir="actions" />
-  </target>        
+    <target name="move-to-actions" depends="move-to-util,move-to-nodes,move-to-windows,move-to-text,move-to-explorer,move-to-fs" >
+      <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+          <property name="localdir" location="actions/src" />
+          <property name="destdir" location="actions/build/classes"/>
+          <property name="selector" value="openide.actions" />
+        </ant>
+    </target>        
   
-  <target name="lib-awt" depends="lib-util" >
-        <ant dir="awt" />
+  <target name="move-to-awt" depends="move-to-util" >
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="destdir" location="awt/build/classes"/>
+      <property name="localdir" location="awt/src" />
+      <property name="selector" value="openide.awt" />
+    </ant>
   </target>        
 
-  <target name="lib-dialogs" depends="lib-util,lib-awt" >
-        <ant dir="dialogs" />
+  <target name="move-to-dialogs" depends="move-to-util,move-to-awt" >
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="localdir" location="dialogs/src" />
+      <property name="destdir" location="dialogs/build/classes"/>
+      <property name="selector" value="openide.dialogs" />
+    </ant>
   </target>        
   
-  <target name="lib-explorer" depends="lib-nodes" >
-        <ant dir="explorer" />
+  <target name="move-to-explorer" depends="move-to-nodes" >
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="destdir" location="explorer/build/classes"/>
+      <property name="localdir" location="explorer/src" />
+      <property name="selector" value="openide.explorer" />
+    </ant>
   </target>        
   
-  <target name="lib-fs" depends="lib-util" >
-        <ant dir="fs" />
+  <target name="move-to-fs" depends="move-to-util" >
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="localdir" location="fs/src" />
+      <property name="destdir" location="fs/build/classes"/>
+      <property name="selector" value="openide.fs" />
+    </ant>
   </target>
 
-  <target name="lib-nodes" depends="lib-util,lib-dialogs" >
-        <ant dir="nodes" />
+  <target name="move-to-nodes" depends="move-to-util,move-to-dialogs" >
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="localdir" location="nodes/src" />
+      <property name="destdir" location="nodes/build/classes"/>
+      <property name="selector" value="openide.nodes" />
+    </ant>
   </target>        
 
-  <target name="lib-modules" depends="lib-util" >
-        <ant dir="modules" />
+  <target name="move-to-modules" depends="move-to-util" >
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="localdir" location="modules/src" />
+      <property name="destdir" location="modules/build/classes"/>
+      <property name="selector" value="openide.modules" />
+    </ant>
   </target>        
   
-  <target name="lib-options" depends="lib-util" >
-        <ant dir="options" />
+  <target name="move-to-options" depends="move-to-util" >
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="localdir" location="options/src" />
+      <property name="destdir" location="options/build/classes"/>
+      <property name="selector" value="openide.options" />
+    </ant>
   </target>        
 
-  <target name="lib-text" depends="lib-windows,lib-options" > <!-- JST-PENDING: Remove somehow dependency on options -->
-        <ant dir="text" />
+  <target name="move-to-text" depends="move-to-windows,move-to-options" > 
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="localdir" location="text/src" />
+      <property name="destdir" location="text/build/classes"/>
+      <property name="selector" value="openide.text" />
+    </ant>
   </target>        
 
-  <target name="lib-util">
-        <ant dir="util" />
+  <target name="move-to-util">
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="destdir" location="util/build/classes"/>
+      <property name="localdir" location="util/src" />
+      <property name="selector" value="openide.util" />
+    </ant>
   </target>
   
-  <target name="lib-util-enum">
-        <ant dir="util/enum" />
+  <target name="move-to-util-enum">
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="localdir" location="util/enum/src" />
+      <property name="destdir" location="util/enum/build/classes"/>
+      <property name="selector" value="openide.util.enum" />
+    </ant>
   </target>        
   
-  <target name="lib-windows" depends="lib-nodes" >
-        <ant dir="windows" />
+  <target name="move-to-windows" depends="move-to-nodes" >
+    <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+      <property name="destdir" location="windows/build/classes"/>
+      <property name="localdir" location="windows/src" />
+      <property name="selector" value="openide.windows" />
+    </ant>
   </target>        
   
-  <target name="lib-compat" depends="lib-awt,lib-util,lib-nodes,lib-windows,lib-text,lib-explorer,lib-fs,lib-actions" >
-        <ant dir="compat" />
+  <target name="move-to-compat" depends="move-to-awt,move-to-util,move-to-nodes,move-to-windows,move-to-text,move-to-explorer,move-to-fs,move-to-actions" >
+
+        <ant dir="${nbroot}/openide" target="do-move-sources" inheritRefs="true" >
+          <property name="localdir" location="compat/src" />
+          <property name="destdir" location="compat/build/classes"/>
+          <property name="selector" value="openide.compat" />
+        </ant>
   </target>        
   
   
@@ -605,7 +677,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       </fileset>
     </copy>
     <!-- To make sure the XHTML DTDs are available for validation: -->
-    <ant dir="../libs/external" target="unscramble"/>
+    <ant dir="../lib/external" target="unscramble"/>
     <xmlvalidate file="api/doc/changes/apichanges.xml" failonerror="true"/>
     <style in="api/doc/changes/apichanges.xml" out="javadoc/OpenAPIs/apichanges.html" style="../nbbuild/javadoctools/apichanges.xsl"/>
     <mkdir dir="javadoc/OpenAPIs/arch"/>
@@ -732,7 +804,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     </zip>
   </target>
 
-  <target name="clean" description="Remove all build products." depends="init,libs-clean">
+  <target name="clean" description="Remove all build products." depends="init,sources-clean">
     <delete dir="build"/>
     <delete>
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
@@ -760,7 +832,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
         </zip>
     </target>
 
-    <target name="standalone-fs-prepare" depends="lib-util,lib-fs">
+    <target name="standalone-fs-prepare" depends="move-to-util,move-to-fs">
         <mkdir dir="build/standalone"/>
         <echo file="build/standalone/README-FS.txt"><![CDATA[Filesystems Library
 ===================
