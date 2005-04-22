@@ -512,7 +512,7 @@ public class JavaActionsTest extends TestBase {
         doc.appendChild(doc.importNode(el, true));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(doc, baos, "UTF-8");
-        return baos.toString("UTF-8").replaceAll("<!--([^-]|-[^-])*-->", "<!---->");
+        return baos.toString("UTF-8").replaceAll("<!--([^-]|-[^-])*-->", "<!---->").replaceAll(System.getProperty("line.separator"), "\n");
     }
     
 }

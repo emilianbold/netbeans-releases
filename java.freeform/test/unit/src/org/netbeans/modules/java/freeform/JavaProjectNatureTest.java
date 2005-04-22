@@ -48,7 +48,7 @@ public class JavaProjectNatureTest extends NbTestCase {
         doc2.appendChild(doc2.importNode(el2, true));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(doc2, baos, "UTF-8");
-        String xml2actual = baos.toString("UTF-8");
+        String xml2actual = baos.toString("UTF-8").replaceAll(System.getProperty("line.separator"), "\n");
         assertEquals("Correct upgrade result", xml2expected, xml2actual);
     }
     
