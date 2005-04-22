@@ -677,7 +677,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       </fileset>
     </copy>
     <!-- To make sure the XHTML DTDs are available for validation: -->
-    <ant dir="../lib/external" target="unscramble"/>
+    <ant dir="../libs/external" target="unscramble"/>
     <xmlvalidate file="api/doc/changes/apichanges.xml" failonerror="true"/>
     <style in="api/doc/changes/apichanges.xml" out="javadoc/OpenAPIs/apichanges.html" style="../nbbuild/javadoctools/apichanges.xsl"/>
     <mkdir dir="javadoc/OpenAPIs/arch"/>
