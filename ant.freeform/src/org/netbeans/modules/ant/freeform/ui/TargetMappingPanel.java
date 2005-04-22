@@ -741,7 +741,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements java.awt.e
         public boolean isCellEditable(int row, int column) {
             if (column == 0) {
                 FreeformProjectGenerator.CustomTarget ct = getItem(row);
-                if (ct.targets.size() > 1) {
+                if (ct.targets != null && ct.targets.size() > 1) {
                     return false;
                 }
                 if ((antScript == null && ct.script == null) ||
