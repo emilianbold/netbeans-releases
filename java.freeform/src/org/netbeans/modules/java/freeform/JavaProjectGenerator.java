@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
@@ -511,7 +512,7 @@ public class JavaProjectGenerator {
     /**
      * Try to guess project's exports. See issue #49221 for more details.
      */
-    public static List/*<Export>*/ guessExports(PropertyEvaluator evaluator,
+    public static List/*<Export>*/ guessExports(PropertyEvaluator evaluator, File baseFolder,
             List/*<TargetMapping>*/ targetMappings, List/*<JavaCompilationUnit>*/ javaCompilationUnits) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List/*<Export>*/ exports = new ArrayList();
@@ -542,7 +543,15 @@ public class JavaProjectGenerator {
                     String output2 = evaluator.evaluate(output);
                     if (output2.endsWith(".jar")) { // NOI18N
                         Export e = new Export();
-                        e.type = "jar"; // NOI18N
+                        e.type = JavaProjectConstants.ARTIFACT_TYPE_JAR;
+                        e.location = output;
+                        e.script = scriptName;
+                        e.buildTarget = targetName;
+                        exports.add(e);
+                    }
+                    else if (isFolder(evaluator, baseFolder, output2)) {
+                        Export e = new Export();
+                        e.type = JavaProjectConstants.ARTIFACT_TYPE_FOLDER;
                         e.location = output;
                         e.script = scriptName;
                         e.buildTarget = targetName;
@@ -845,6 +854,17 @@ public class JavaProjectGenerator {
             list.add(tm);
         }
         return list;
+    }
+    
+    
+    private static boolean isFolder (PropertyEvaluator eval, File baseFolder, String folder) {
+        File f = Util.resolveFile(eval, baseFolder, folder);
+        if (f != null && f.isDirectory()) {
+            return true;
+        }
+        int dotIndex = folder.lastIndexOf('.');    //NOI18N
+        int slashIndex = folder.lastIndexOf('/');  //NOI18N
+        return dotIndex == -1 || (dotIndex < slashIndex) ;
     }
     
     /**

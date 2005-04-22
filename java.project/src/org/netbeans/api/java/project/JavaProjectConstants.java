@@ -33,6 +33,15 @@ public class JavaProjectConstants {
      * @see org.netbeans.api.project.ant.AntArtifact
      */
     public static final String ARTIFACT_TYPE_JAR = "jar"; // NOI18N
+    
+    
+    /**
+     * Standard artifact type representing a folder containing classes, presumably
+     * used as a Java library of some kind.
+     * @see org.netbeans.api.project.ant.AntArtifact
+     * @since org.netbeans.modules.java.project/1 1.4
+     */
+    public static final String ARTIFACT_TYPE_FOLDER = "folder"; //NOI18N
 
     /**
      * Standard command for running Javadoc on a project.

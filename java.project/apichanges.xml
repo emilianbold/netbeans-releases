@@ -77,7 +77,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-    
+        <change id="JavaProjectConstants">
+            <api name="general"/>
+            <summary>Added artifact type representing folder</summary>
+            <version major="1" minor="4"/>
+            <date day="20" month="4" year="2005"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                The freeform project may have as its output a folder rather than a jar archive.
+                The JavaProjectConstants was extended by the ARTIFACT_TYPE_FOLDER constant to represent such an output.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.project" name="JavaProjectConstants"/>
+            <issue number="57733"/>
+        </change>
         <change id="JavaTemplates.factory.package-required">
             <api name="ui"/>
             <summary>Added a new factory method for creating the name/package chooser wizard panel into the templates SPI.</summary>

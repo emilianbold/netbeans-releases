@@ -26,6 +26,7 @@ import java.util.jar.JarOutputStream;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -164,7 +165,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         folders.add(sf);
         List exports = new ArrayList();
         JavaProjectGenerator.Export e = new JavaProjectGenerator.Export();
-        e.type = "jar";
+        e.type = JavaProjectConstants.ARTIFACT_TYPE_JAR;
         e.location = "folder/output.jar";
         e.buildTarget = "target";
         exports.add(e);
@@ -895,65 +896,70 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
             PropertyUtils.fixedPropertyProvider(m)});
         
-        List exports = JavaProjectGenerator.guessExports(evaluator, targets, units);
+        List exports = JavaProjectGenerator.guessExports(evaluator, getWorkDir(), targets, units);
         assertEquals("one export was created even though build script is not in project folder", 1, exports.size());
         // XXX test stuff about that export
         
         m.put("ant", "etc/antScript");
         evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
             PropertyUtils.fixedPropertyProvider(m)});
-        exports = JavaProjectGenerator.guessExports(evaluator, targets, units);
+        exports = JavaProjectGenerator.guessExports(evaluator, getWorkDir(), targets, units);
         assertEquals("one export was created", 1, exports.size());
         
         tm.script = null;
-        exports = JavaProjectGenerator.guessExports(evaluator, targets, units);
+        exports = JavaProjectGenerator.guessExports(evaluator, getWorkDir(), targets, units);
         assertEquals("one export was created", 1, exports.size());
         JavaProjectGenerator.Export e = (JavaProjectGenerator.Export)exports.get(0);
-        assertEquals("export is properly configured", "jar", e.type);
+        assertEquals("export is properly configured", JavaProjectConstants.ARTIFACT_TYPE_JAR, e.type);
         assertEquals("export is properly configured", "${outputfile}", e.location);
         assertEquals("export is properly configured", null, e.script);
         assertEquals("export is properly configured", "target-1", e.buildTarget);
         
         tm.targets.add("target-2");
-        exports = JavaProjectGenerator.guessExports(evaluator, targets, units);
+        exports = JavaProjectGenerator.guessExports(evaluator, getWorkDir(), targets, units);
         assertEquals("no export was created when there are two targets", 0, exports.size());
         
         tm.targets.remove("target-2");
-        exports = JavaProjectGenerator.guessExports(evaluator, targets, units);
+        exports = JavaProjectGenerator.guessExports(evaluator, getWorkDir(), targets, units);
         assertEquals("one export was created", 1, exports.size());
         
         tm.name = "buildXX";
-        exports = JavaProjectGenerator.guessExports(evaluator, targets, units);
+        exports = JavaProjectGenerator.guessExports(evaluator, getWorkDir(), targets, units);
         assertEquals("no export was created when there is no action with build name", 0, exports.size());
         
         tm.name = "build";
-        exports = JavaProjectGenerator.guessExports(evaluator, targets, units);
+        exports = JavaProjectGenerator.guessExports(evaluator, getWorkDir(), targets, units);
         assertEquals("one export was created", 1, exports.size());
 
         JavaProjectGenerator.JavaCompilationUnit cu2 = new JavaProjectGenerator.JavaCompilationUnit();
         cu2.output = new ArrayList();
         cu2.output.add("build/classes");
         units.add(cu2);
-        exports = JavaProjectGenerator.guessExports(evaluator, targets, units);
-        assertEquals("one export was created", 1, exports.size());
+        exports = JavaProjectGenerator.guessExports(evaluator, getWorkDir(), targets, units);
+        assertEquals("two exports was created", 2, exports.size());
         
         cu2.output.add("dist/proj.jar");
         cu2.output.add("dist/proj2.jar");
         tm.script = "antScript";
-        exports = JavaProjectGenerator.guessExports(evaluator, targets, units);
-        assertEquals("two exports were created", 3, exports.size());
+        exports = JavaProjectGenerator.guessExports(evaluator, getWorkDir(), targets, units);
+        assertEquals("four exports were created", 4, exports.size());
         e = (JavaProjectGenerator.Export)exports.get(0);
-        assertEquals("export is properly configured", "jar", e.type);
+        assertEquals("export is properly configured", JavaProjectConstants.ARTIFACT_TYPE_JAR, e.type);
         assertEquals("export is properly configured", "${outputfile}", e.location);
         assertEquals("export is properly configured", "antScript", e.script);
         assertEquals("export is properly configured", "target-1", e.buildTarget);
         e = (JavaProjectGenerator.Export)exports.get(1);
-        assertEquals("export is properly configured", "jar", e.type);
-        assertEquals("export is properly configured", "dist/proj.jar", e.location);
+        assertEquals("export is properly configured", JavaProjectConstants.ARTIFACT_TYPE_FOLDER, e.type);
+        assertEquals("export is properly configured", "build/classes", e.location);
         assertEquals("export is properly configured", "antScript", e.script);
         assertEquals("export is properly configured", "target-1", e.buildTarget);
         e = (JavaProjectGenerator.Export)exports.get(2);
-        assertEquals("export is properly configured", "jar", e.type);
+        assertEquals("export is properly configured", JavaProjectConstants.ARTIFACT_TYPE_JAR, e.type);
+        assertEquals("export is properly configured", "dist/proj.jar", e.location);
+        assertEquals("export is properly configured", "antScript", e.script);
+        assertEquals("export is properly configured", "target-1", e.buildTarget);
+        e = (JavaProjectGenerator.Export)exports.get(3);
+        assertEquals("export is properly configured", JavaProjectConstants.ARTIFACT_TYPE_JAR, e.type);
         assertEquals("export is properly configured", "dist/proj2.jar", e.location);
         assertEquals("export is properly configured", "antScript", e.script);
         assertEquals("export is properly configured", "target-1", e.buildTarget);
@@ -970,14 +976,14 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         
         List exports = new ArrayList();
         JavaProjectGenerator.Export e = new JavaProjectGenerator.Export();
-        e.type = "jar";
+        e.type = JavaProjectConstants.ARTIFACT_TYPE_JAR;
         e.location = "path/smth.jar";
         e.script = "someScript";
         e.buildTarget = "build_target";
         e.cleanTarget = "clean_target";
         exports.add(e);
         e = new JavaProjectGenerator.Export();
-        e.type = "jar";
+        e.type = JavaProjectConstants.ARTIFACT_TYPE_JAR;
         e.location = "something/else.jar";
         e.buildTarget = "bldtrg";
         exports.add(e);
@@ -986,26 +992,28 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         Element el = helper.getPrimaryConfigurationData(true);
         List subElements = Util.findSubElements(el);
         // 4, i.e. name, two exports and one view of build.xml file
-        assertEquals(4, subElements.size());
+        assertEquals(5, subElements.size());
         // compare first compilation unit
         Element el2 = (Element)subElements.get(0);
         assertElement(el2, "name", null);
         el2 = (Element)subElements.get(1);
+        assertElement(el2, "properties", null);
+        el2 = (Element)subElements.get(2);
         assertElement(el2, "export", null);
         List l1 = Util.findSubElements(el2);
         assertEquals(5, l1.size());
         assertElementArray(l1, 
             new String[]{"type", "location", "script", "build-target", "clean-target"}, 
-            new String[]{"jar", "path/smth.jar", "someScript", "build_target", "clean_target"});
+            new String[]{JavaProjectConstants.ARTIFACT_TYPE_JAR, "path/smth.jar", "someScript", "build_target", "clean_target"});
         // compare second compilation unit
-        el2 = (Element)subElements.get(2);
+        el2 = (Element)subElements.get(3);
         assertElement(el2, "export", null);
         l1 = Util.findSubElements(el2);
         assertEquals(3, l1.size());
         assertElementArray(l1, 
             new String[]{"type", "location", "build-target"}, 
-            new String[]{"jar", "something/else.jar", "bldtrg"});
-        el2 = (Element)subElements.get(3);
+            new String[]{JavaProjectConstants.ARTIFACT_TYPE_JAR, "something/else.jar", "bldtrg"});
+        el2 = (Element)subElements.get(4);
         assertElement(el2, "view", null);
         // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
@@ -1015,7 +1023,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         
         exports = new ArrayList();
         e = new JavaProjectGenerator.Export();
-        e.type = "jar";
+        e.type = JavaProjectConstants.ARTIFACT_TYPE_JAR;
         e.location = "aaa/bbb.jar";
         e.buildTarget = "ccc";
         exports.add(e);
@@ -1024,18 +1032,20 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         el = helper.getPrimaryConfigurationData(true);
         subElements = Util.findSubElements(el);
         // 3, i.e. name, export and one view of build.xml file
-        assertEquals(3, subElements.size());
+        assertEquals(4, subElements.size());
         // compare first compilation unit
         el2 = (Element)subElements.get(0);
         assertElement(el2, "name", null);
         el2 = (Element)subElements.get(1);
+        assertElement(el2, "properties", null);
+        el2 = (Element)subElements.get(2);
         assertElement(el2, "export", null);
         l1 = Util.findSubElements(el2);
         assertEquals(3, l1.size());
         assertElementArray(l1, 
             new String[]{"type", "location", "build-target"}, 
-            new String[]{"jar", "aaa/bbb.jar", "ccc"});
-        el2 = (Element)subElements.get(2);
+            new String[]{JavaProjectConstants.ARTIFACT_TYPE_JAR, "aaa/bbb.jar", "ccc"});
+        el2 = (Element)subElements.get(3);
         assertElement(el2, "view", null);
         // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
@@ -1051,7 +1061,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
         ArrayList exports = new ArrayList();
         JavaProjectGenerator.Export e = new JavaProjectGenerator.Export();
-        e.type = "jar";
+        e.type = JavaProjectConstants.ARTIFACT_TYPE_JAR;
         e.location = "libs/some.jar"; // this jar is created in createEmptyProject() so let's use it as export
         e.buildTarget = "build_target";
         exports.add(e);
