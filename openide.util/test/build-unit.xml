@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
+
                 Sun Public License Notice
 
 The contents of this file are subject to the Sun Public License
@@ -8,9 +9,10 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project basedir="." default="all" name="build-unit">
-    <import file="../../../nbbuild/default.xml"/>
+
+<project name="openide/util/test-unit" basedir="." default="all">
+    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
 </project>
