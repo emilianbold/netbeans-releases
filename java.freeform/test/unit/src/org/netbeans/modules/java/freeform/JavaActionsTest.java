@@ -421,7 +421,7 @@ public class JavaActionsTest extends TestBase {
             "</project>\n";
         assertEquals("Correct code generated for ${external.xml}", expectedXml, xmlToString(root));
         root = XMLUtil.createDocument("project", null, null, null).getDocumentElement();
-        ja.ensureImports(root, "${subtestdir}/external.xml");
+        ja.ensureImports(root, "${subtestdir}" + File.separator + "external.xml");
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<project basedir=\"" + testdir.getAbsolutePath() + "\">\n" +
@@ -429,7 +429,7 @@ public class JavaActionsTest extends TestBase {
             "</project>\n";
         assertEquals("Correct code generated for ${subtestdir}/external.xml", expectedXml, xmlToString(root));
         root = XMLUtil.createDocument("project", null, null, null).getDocumentElement();
-        ja.ensureImports(root, "${testdir}/sub/external.xml");
+        ja.ensureImports(root, "${testdir}" + File.separator + "sub" +File.separator + "external.xml");
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<project basedir=\"" + testdir.getAbsolutePath() + "\">\n" +
