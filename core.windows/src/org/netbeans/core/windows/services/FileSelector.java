@@ -42,7 +42,7 @@ import java.util.ResourceBundle;
  * @author Ales Novak, Jaroslav Tulach, Ian Formanek, Petr Hamernik, Jan Jancura
  * @version 0.13, Jun 07, 1998
  */
-final class FileSelector extends CoronaDialog implements PropertyChangeListener {
+final class FileSelector extends JPanel implements PropertyChangeListener {
     //XXX AFAIK nothing in NetBeans uses NodeOperation.select().  Probably this class can be deleted and NodeOperation.select deprecated. - Tim
 
     /** generated Serialized Version UID */
@@ -51,17 +51,12 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
     private ExplorerManager manager;
     /** tree */
     private BeanTreeView tree;
-    /** selected nodes */
-    private Node[] nodes;
-    /** flag for cancel */
-    public boolean cancelFlag;
-    /** instead of enable button */
-    private boolean accepted;
 
     /** The OK Button */
-    private ButtonBarButton okButton;
+    private JButton okButton;
     /** The Cancel Button */
-    private ButtonBarButton cancelButton;
+    private JButton cancelButton;
+    private JButton[] buttons;
 
     /** aceptor */
     private NodeAcceptor acceptor;
@@ -77,63 +72,27 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
      * @param top is a <code>Component</code> we just place on the top of the dialog
      * it can be <code>null</code>
      */
-    public FileSelector (String title, String rootLabel, Node root, final NodeAcceptor acceptor, Component top) {
-        super (null);
+    public FileSelector ( String rootLabel, Node root, final NodeAcceptor acceptor, Component top) {
+        super ();
 
         this.acceptor = acceptor;
         
         ResourceBundle bundle = NbBundle.getBundle(FileSelector.class);
 
         ExplorerPanel ep = new ExplorerPanel ();
-        getCustomPane ().setLayout (new BorderLayout());
-        getCustomPane ().add(ep, BorderLayout.CENTER);
+        setLayout (new BorderLayout());
+        add(ep, BorderLayout.CENTER);
         ep.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_FileSelectorExplorerPanel"));
         ep.getAccessibleContext ().setAccessibleName (bundle.getString ("ACSN_FileSelectorExplorerPanel"));
         manager = ep.getExplorerManager ();
 
 
-        setDefaultCloseOperation (JDialog.DO_NOTHING_ON_CLOSE);
-        addWindowListener (new WindowAdapter () {
-                               public void windowClosing (WindowEvent evt) {
-                                   cancelFlag = true;
-                                   setVisible (false);
-                               }
-                           }
-                          );
-
-        // attach cancel also to Escape key
-        getRootPane().registerKeyboardAction(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    buttonPressed (1);
-                }
-            },
-            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
-            JComponent.WHEN_IN_FOCUSED_WINDOW
-        );
-
-        // attach cancel also to Escape key
-/*        getRootPane().registerKeyboardAction(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    buttonPressed (0);
-                }
-            },
-            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
-            JComponent.WHEN_IN_FOCUSED_WINDOW
-        );
- */
-
-        okButton = new ButtonBarButton(bundle.getString("CTL_FileSelectorOkButton"));
-        cancelButton = new ButtonBarButton(bundle.getString("CTL_FileSelectorCancelButton"));
+        okButton = new JButton(bundle.getString("CTL_FileSelectorOkButton"));
+        cancelButton = new JButton(bundle.getString("CTL_FileSelectorCancelButton"));
         okButton.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_FileSelectorOkButton"));
         cancelButton.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_FileSelectorCancelButton"));
-        getButtonBar().setButtons(
-            new ButtonBarButton[0],
-            new ButtonBarButton[] { okButton, cancelButton }
-        );
-        getRootPane().setDefaultButton(okButton);
-        setTitle (title);
+        buttons = new JButton[] { okButton, cancelButton };
+        
 
         manager.setRootContext (root);//s[0]);
         // CustomPane
@@ -198,13 +157,9 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
             ep.add(top, BorderLayout.SOUTH);
         }
 
-        cancelFlag = false;
-        accepted = true;
         manager.addPropertyChangeListener (this);
 
-        center();
-
-        if (top != null) top.requestFocus ();
+//        if (top != null) top.requestFocus ();
 
         if (acceptor.acceptNodes (manager.getSelectedNodes())) {
             enableButton ();
@@ -213,6 +168,16 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
         }
 
     }
+    
+    Object[] getOptions() {
+        return buttons;
+    }
+    
+    Object getSelectOption() {
+        return okButton;
+    }
+    
+    
 
     /** Changing properties. Implements <code>PropertyChangeListener</code>. */
     public void propertyChange (PropertyChangeEvent ev) {
@@ -225,11 +190,6 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
         }
     }
 
-    /* * activates hack * /
-    public void show() {
-      hack.activated();
-      super.show();
-} */
 
     /** Gets preferred size. Overrides superclass method. Height is adjusted
      * to 1/2 screen. */
@@ -243,45 +203,17 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
     * @return selected nodes
     */
     public Node[] getNodes() {
-        return nodes;
+        return manager.getSelectedNodes();
     }
 
     /** enables ok button */
     void enableButton () {
-        accepted = true;
         okButton.setEnabled(true);
     }
 
     /** disables ok button */
     void disableButton () {
-        accepted = false;
         okButton.setEnabled(false);
-    }
-
-    /** Called when user presses a button on the ButtonBar.
-    * @param evt The ButtonBarEvent.
-    */
-    protected void buttonPressed(ButtonBar.ButtonBarEvent evt) {
-        int index = getButtonBar().getButtonIndex(evt.getButton());
-        buttonPressed (index);
-    }
-
-    /** Button pressed with index.
-    */
-    private void buttonPressed (int index) {
-        switch (index) {
-        case 0 :
-            if (accepted) nodes = manager.getSelectedNodes ();
-            else {
-                // do not do dispose
-                return;
-            }
-            break;
-        case 1 :
-            cancelFlag = true;
-            break;
-        }
-        dispose();
     }
 
 

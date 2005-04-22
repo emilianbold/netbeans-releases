@@ -20,6 +20,8 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbSheet;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
@@ -205,15 +207,15 @@ public final class NodeOperationImpl extends NodeOperation {
     */
     public Node[] select (String title, String rootTitle, Node root, NodeAcceptor acceptor, Component top)
     throws UserCancelException {
-        final FileSelector selector = new FileSelector (title, rootTitle, root, acceptor, top);
-        Mutex.EVENT.readAccess (new Mutex.Action () {
-                public Object run () {
-                    selector.show();
-                    return null;
-                }
-            });
-        if (selector.cancelFlag)
+        final FileSelector selector = new FileSelector(rootTitle, root, acceptor, top);
+        DialogDescriptor dd = new DialogDescriptor(selector, title, true, 
+                                                   selector.getOptions(), 
+                                                   selector.getSelectOption(), DialogDescriptor.DEFAULT_ALIGN,
+                                                   HelpCtx.DEFAULT_HELP, null);
+        Object ret = DialogDisplayer.getDefault().notify(dd);
+        if (ret != selector.getSelectOption()) {
             throw new UserCancelException ();
+        }
         return selector.getNodes ();
     }
 
