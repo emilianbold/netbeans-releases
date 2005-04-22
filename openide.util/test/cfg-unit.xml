@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!-- 
+  These classes are excluded by default (defined in build.xml):
+    "**/*Suite.class"
+    "**/*$$*.class"
+    "**/data/**"
+    "**/hidden/**"
+    "**/*Hidden.*"
+    "**/*Hid.*"
+-->
+
+<mconfig name="openide/util unit test config">
+
+    <!-- Tests which should be run before commit to validate IDE. -->
+   
+    
+    <testbag testattribs="stable" executor="code" name="all openide/util code unit tests">
+        <testset dir="">
+            <patternset>
+                <include name="org/openide/**/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    
+    <!--<executor name="code" antfile="build.xml" target="runcodetest"/>
+    <executor name="ide" antfile="build.xml" target="runidetest"/>-->
+    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
+    
+    <!--<compiler name="unit-compiler" antfile="build.xml" target="unit-compiler" default="true"/>-->
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    
+</mconfig>
