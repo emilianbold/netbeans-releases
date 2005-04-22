@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="testInstanceDefinitions">
+        <file name="a.instance">
+            <attr name="instanceClass" stringvalue="org.openide.loaders.InstanceDataObjectTest$TestDefinitions"/>
+        </file>
+        <file name="b.instance">
+            <attr name="instanceClass" stringvalue="org.openide.loaders.InstanceDataObjectTest$TestDefinitions"/>
+            <attr name="instanceOf" stringvalue="java.lang.Runnable, org.openide.loaders.InstanceDataObjectTest$TestDefinitions"/>
+        </file>
+        <file name="c.instance">
+            <attr name="instanceCreate" methodvalue="org.openide.loaders.InstanceDataObjectTest$TestDefinitions.create"/>
+            <attr name="instanceOf" stringvalue="java.lang.Runnable,org.openide.loaders.InstanceDataObjectTest$TestDefinitions"/>
+        </file>
+        <file name="d.instance">
+            <attr name="instanceCreate" newvalue="org.openide.loaders.InstanceDataObjectTest$TestDefinitions"/>
+            <attr name="instanceOf" stringvalue="java.lang.Runnable,org.openide.loaders.InstanceDataObjectTest$TestDefinitions"/>
+        </file>
+        <!--not recommended-->
+        <file name="e.instance">
+            <attr name="instanceCreate" methodvalue="org.openide.loaders.InstanceDataObjectTest$TestDefinitions.create"/>
+        </file>
+        <file name="org-openide-loaders-InstanceDataObjectTest$TestDefinitions.instance"/>
+        <!--deprecated-->
+        <file name="hu[org-openide-loaders-InstanceDataObjectTest$TestDefinitions].instance"/>
+    </folder>
+</filesystem>

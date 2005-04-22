@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
     </path>
     
     <path id="codetest.classpath">
-<!--        
         <pathelement location="${core.dir}/core/org-netbeans-swing-plaf.jar"/>
         <pathelement location="${core.dir}/modules/org-netbeans-swing-tabcontrol.jar"/>
         <pathelement location="${core/windows.dir}/modules/org-netbeans-core-windows.jar"/>
@@ -29,7 +28,6 @@ Microsystems, Inc. All Rights Reserved.
             <include name="xerces-*.jar"/>
             <include name="xml-commons-dom-ranges-*.jar"/>
         </fileset>
--->        
 				
         <pathelement location="${openide.dir}/core/openide.jar"/>
         <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
