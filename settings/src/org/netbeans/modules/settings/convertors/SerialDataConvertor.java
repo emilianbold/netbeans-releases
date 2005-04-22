@@ -31,6 +31,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.AbstractLookup;
 
@@ -602,28 +603,36 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
          * to be notified about its changes.
          */
         private void registerPropertyChangeListener(Object inst) {
-            // add propertyChangeListener
-            try {
-                java.lang.reflect.Method method = inst.getClass().getMethod(
-                    "addPropertyChangeListener", // NOI18N
-                    new Class[] {PropertyChangeListener.class});
-                method.invoke(inst, new Object[] {this});
-            } catch (NoSuchMethodException ex) {
-                // just changes done through gui will be saved
-                ErrorManager err = ErrorManager.getDefault();
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log(ErrorManager.INFORMATIONAL,
-                    "NoSuchMethodException: " + // NOI18N
-                    inst.getClass().getName() + ".addPropertyChangeListener"); // NOI18N
+            if (inst instanceof SharedClassObject) {
+                ((SharedClassObject)inst).addPropertyChangeListener(this);
+            }
+            else if (inst instanceof javax.swing.JComponent) {
+                ((javax.swing.JComponent)inst).addPropertyChangeListener(this);
+            }
+            else {
+                // add propertyChangeListener
+                try {
+                    java.lang.reflect.Method method = inst.getClass().getMethod(
+                        "addPropertyChangeListener", // NOI18N
+                        new Class[] {PropertyChangeListener.class});
+                    method.invoke(inst, new Object[] {this});
+                } catch (NoSuchMethodException ex) {
+                    // just changes done through gui will be saved
+                    ErrorManager err = ErrorManager.getDefault();
+                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                        err.log(ErrorManager.INFORMATIONAL,
+                        "NoSuchMethodException: " + // NOI18N
+                        inst.getClass().getName() + ".addPropertyChangeListener"); // NOI18N
+                    }
+                } catch (IllegalAccessException ex) {
+                    // just changes done through gui will be saved
+                    ErrorManager err = ErrorManager.getDefault();
+                    err.annotate(ex, "Instance: " + inst); // NOI18N
+                    err.notify(ex);
+                } catch (java.lang.reflect.InvocationTargetException ex) {
+                    // just changes done through gui will be saved
+                    ErrorManager.getDefault().notify(ex.getTargetException());
                 }
-            } catch (IllegalAccessException ex) {
-                // just changes done through gui will be saved
-                ErrorManager err = ErrorManager.getDefault();
-                err.annotate(ex, "Instance: " + inst); // NOI18N
-                err.notify(ex);
-            } catch (java.lang.reflect.InvocationTargetException ex) {
-                // just changes done through gui will be saved
-                ErrorManager.getDefault().notify(ex.getTargetException());
             }
         }
         
