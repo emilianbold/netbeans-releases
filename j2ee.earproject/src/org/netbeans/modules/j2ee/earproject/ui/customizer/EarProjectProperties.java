@@ -1519,6 +1519,10 @@ public class EarProjectProperties {
         }
         while (classpath.hasNext()) {
             VisualClassPathItem item = (VisualClassPathItem)classpath.next();
+            //do not update anything if the classpath element is null
+            //this may happen when the library is broken or removed
+            if(item.getObject() == null) continue; 
+            
             ArrayList /*File*/ files = new ArrayList ();
             ArrayList /*File*/ dirs = new ArrayList ();
             getFilesForItem (item, files, dirs);
