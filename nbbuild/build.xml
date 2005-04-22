@@ -3523,6 +3523,17 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
   
   <target 
+    name="unit-validation" 
+    description="Invokes all existing unit tests in all IDE modules.
+ Useful when one wants to deeply verify that his changes
+ work"
+  >
+    <ant dir="../xtest/instance" target="runtests" >
+      <property name="xtest.config" value="unit-nb" />
+    </ant>
+  </target>
+  
+  <target 
     name="commit-validation" 
     depends="commit-verification,commitValidation,no-commit-validation" 
     description="Runs tests to validate IDE before commit."

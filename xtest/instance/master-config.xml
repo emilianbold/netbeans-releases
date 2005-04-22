@@ -22,6 +22,11 @@ Microsystems, Inc. All Rights Reserved.
         <module name="core" testtypes="unit" attributes="stable"/>
         <module name="openide" testtypes="unit" attributes="stable"/>
         <module name="openide/masterfs" testtypes="unit" attributes="stable"/>
+        <module name="openide/util" testtypes="unit" attributes="stable"/>
+        <module name="openide/nodes" testtypes="unit" attributes="stable"/>
+        <module name="openide/loaders" testtypes="unit" attributes="stable"/>
+        <module name="openide/options" testtypes="unit" attributes="stable"/>
+        <module name="openide/text" testtypes="unit" attributes="stable"/>
         <!-- Needs to be early since many other tests compile against it: -->
         <!-- (in general, check using: 'fgrep /build/test/unit/classes */{,*/}nbproject/project.properties') -->
         <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
