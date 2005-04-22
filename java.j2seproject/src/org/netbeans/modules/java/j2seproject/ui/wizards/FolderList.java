@@ -207,25 +207,23 @@ public final class FolderList extends javax.swing.JPanel {
             int[] indecesToSelect = new int[files.length];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
             Set invalidRoots = new HashSet ();
-            Set relatedFolders = this.relatedFolderList == null ? 
-                Collections.EMPTY_SET : new HashSet(Arrays.asList (this.relatedFolderList.getFiles()));
+            File[] relatedFolders = this.relatedFolderList == null ? 
+                new File[0] : this.relatedFolderList.getFiles();
             for (int i=0, index=model.size(); i<files.length; i++, index++) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
-                int pos = model.indexOf (normalizedFile);
-                if (FileOwnerQuery.getOwner(normalizedFile.toURI())!=null) {
+                if (!isValidRoot(normalizedFile, relatedFolders)) {
                     invalidRoots.add (normalizedFile);
-                }                
-                else if (relatedFolders.contains(normalizedFile)) {
-                    invalidRoots.add (normalizedFile);
-                }
-                else if (pos == -1) {
-                    model.addElement (normalizedFile);
-                    indecesToSelect[i] = index;
                 }
                 else {
-                    indecesToSelect[i] = pos;
+                    int pos = model.indexOf (normalizedFile);                
+                    if (pos == -1) {
+                        model.addElement (normalizedFile);
+                        indecesToSelect[i] = index;
+                    }
+                    else {
+                        indecesToSelect[i] = pos;
+                    }
                 }
-
             }
             this.roots.setSelectedIndices(indecesToSelect);
             this.firePropertyChange(PROP_FILES, null, null);
@@ -239,6 +237,27 @@ public final class FolderList extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_addButtonActionPerformed
     
+    
+    static boolean isValidRoot (File file, File[] relatedRoots) {        
+        if (FileOwnerQuery.getOwner(file.toURI())!=null) {
+            return false;
+        }                
+        else if (contains (file, relatedRoots)) {
+            return false;
+        }
+        return true;
+    }
+    
+    private static boolean contains (File folder, File[] roots) {
+        String path = folder.getAbsolutePath ();
+        for (int i=0; i<roots.length; i++) {
+            String rootPath = roots[i].getAbsolutePath();
+            if (rootPath.equals (path) || path.startsWith (rootPath + File.separatorChar)) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     private static class Renderer extends DefaultListCellRenderer {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
