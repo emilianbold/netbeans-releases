@@ -465,7 +465,7 @@ is divided into following sections:
                 <path path="${{debug.classpath}}"/>
             </classpath>
             <sourcepath>
-                <path path="${{web.docbase.dir}}"/>
+                <path path="${{ear.docbase.dirs}}"/>
             </sourcepath>
             <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
             <bootclasspath>

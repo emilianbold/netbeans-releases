@@ -41,6 +41,11 @@ import org.openide.NotifyDescriptor;
 
 import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 
+import org.openide.filesystems.FileUtil;
+import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 
 /** Action provider of the Eae project. This is the place where to do
@@ -156,6 +161,26 @@ public class EarActionProvider implements ActionProvider {
 
             p = new Properties();
             
+            SubprojectProvider spp = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
+            if (null != spp) {
+                StringBuffer edbd = new StringBuffer();
+                final java.util.Set s = spp.getSubprojects();
+                java.util.Iterator iter = s.iterator();
+                while (iter.hasNext()) {
+                    Project proj = (Project) iter.next();
+                    WebModuleProvider wmp = (WebModuleProvider) proj.getLookup().lookup(WebModuleProvider.class);
+                    if (null != wmp) {
+                        WebModule wm = wmp.findWebModule(proj.getProjectDirectory());
+                        if (null != wm) {
+                            FileObject fo = wm.getDocumentBase();
+			    if (null != fo) {
+                                edbd.append(FileUtil.toFile(fo).getAbsolutePath()+":"); //NOI18N
+			    }
+                        }
+                    }
+                }
+                p.setProperty("ear.docbase.dirs", edbd.toString());
+            }
         //COMPILATION PART
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] files = findJavaSources( context );
