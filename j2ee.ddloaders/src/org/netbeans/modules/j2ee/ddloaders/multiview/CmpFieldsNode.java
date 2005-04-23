@@ -17,9 +17,12 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 
+import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * @author pfiala
@@ -56,6 +59,20 @@ class CmpFieldsNode extends EjbSectionNode {
                 }
             }
         };
+        cmpFields.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt != null && CmpFieldHelper.PROPERTY_FIELD_ROW_CHANGED.equals(evt.getPropertyName())) {
+                    final ListSelectionModel selectionModel = innerTablePanel.getTable().getSelectionModel();
+                    final int selectedRow = selectionModel.getLeadSelectionIndex();
+                    model.refreshView();
+                    final int oldRow = ((Integer)evt.getOldValue()).intValue();
+                    final int newRow = ((Integer)evt.getNewValue()).intValue();
+                    if (selectedRow == oldRow) {
+                        selectionModel.setSelectionInterval(newRow, newRow);
+                    }
+                }
+            }
+        });
         return innerTablePanel;
 
     }

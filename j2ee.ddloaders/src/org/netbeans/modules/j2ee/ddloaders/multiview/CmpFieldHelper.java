@@ -31,6 +31,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import java.io.IOException;
+import java.beans.PropertyChangeEvent;
 
 /**
  * @author pfiala
@@ -41,6 +42,7 @@ public class CmpFieldHelper {
     private MethodElement setterMethod;
     private EntityHelper entityHelper;
     private CmpField field;
+    public static final String PROPERTY_FIELD_ROW_CHANGED = "FIELD_ROW_CHANGED"; // NOI18N
 
     public CmpFieldHelper(EntityHelper entityHelper, CmpField field) {
         this.entityHelper = entityHelper;
@@ -251,9 +253,6 @@ public class CmpFieldHelper {
             ErrorManager.getDefault().notify(ex);
             return;
         }
-        if (isPrimary()) {
-            entityHelper.setPrimkeyFieldName(newName);
-        }
         String fieldName = getFieldName();
         MethodElement[] methods = entityHelper.beanClass.getMethods();
         for (int i = 0; i < methods.length; i++) {
@@ -275,6 +274,10 @@ public class CmpFieldHelper {
                 }
             }
         }
+        if (isPrimary()) {
+            entityHelper.setPrimkeyFieldName(newName);
+        }
+        final int oldFieldRow = entityHelper.cmpFields.getFieldRow(field);
         ClassElement localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
         MethodElement localGetter = getBusinessMethod(localBusinessInterfaceClass, getterMethod);
         MethodElement localSetter = getBusinessMethod(localBusinessInterfaceClass, setterMethod);
@@ -290,6 +293,11 @@ public class CmpFieldHelper {
         Utils.renameMethod(localSetter, setterName);
         Utils.renameMethod(remoteGetter, getterName);
         Utils.renameMethod(remoteSetter, setterName);
+        final int newFieldRow = entityHelper.cmpFields.getFieldRow(field);
+        if (oldFieldRow != newFieldRow) {
+            entityHelper.cmpFields.firePropertyChange(new PropertyChangeEvent(entityHelper.cmpFields,
+                    PROPERTY_FIELD_ROW_CHANGED, new Integer(oldFieldRow), new Integer(newFieldRow)));
+        }
         modelUpdatedFromUI();
     }
 
