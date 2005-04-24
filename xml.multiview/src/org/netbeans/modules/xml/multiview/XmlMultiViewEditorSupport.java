@@ -57,7 +57,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private XmlMultiViewDataObject dObj;
     private XmlDocumentListener xmlDocListener;
     private int xmlMultiViewIndex;
-    private TopComponent mvtc, xmlTC;
+    private TopComponent mvtc;
     private int lastOpenView=0;
     private StyledDocument document;
     private TopComponentsListener topComponentsListener;
@@ -83,8 +83,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     
     protected CloneableTopComponent createCloneableTopComponent() {
         MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
-        getXmlTopComponent();
-        MultiViewDescription xmlDesc = new XmlViewDesc (xmlTC, dObj);
+        MultiViewDescription xmlDesc = new XmlViewDesc (dObj);
         MultiViewDescription[] descs = new MultiViewDescription[customDesc.length+1];
         for (int i=0;i<customDesc.length;i++) descs[i]=customDesc[i];
         descs[customDesc.length]=xmlDesc;
@@ -142,7 +141,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
      *  (issue 57483)
      */
     protected void notifyClosed() {
-        xmlTC = null;
         mvtc = null;
         if (topComponentsListener != null) {
             TopComponent.getRegistry().removePropertyChangeListener(topComponentsListener);
@@ -163,7 +161,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                     String displayName = messageName();
                     if (!displayName.equals(mvtc.getDisplayName())) {
                         mvtc.setDisplayName(displayName);
-                        getXmlTopComponent().setDisplayName(displayName);
                     }
                     mvtc.setToolTipText(dObj.getPrimaryFile().getPath());
                 }
@@ -224,19 +221,17 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private static class XmlViewDesc implements MultiViewDescription, java.io.Serializable  {
 
         private static final long serialVersionUID = 8085725367398466167L;
-        TopComponent tc;
         XmlMultiViewDataObject dObj;
 
         XmlViewDesc() {
         }
         
-        XmlViewDesc(TopComponent tc, XmlMultiViewDataObject dObj) {
-            this.tc=tc;
+        XmlViewDesc(XmlMultiViewDataObject dObj) {
             this.dObj=dObj;
         }
 
         public MultiViewElement createElement() {
-            return new XmlMultiViewElement(tc, dObj);
+            return new XmlMultiViewElement(dObj);
         }
         
         public String getDisplayName() {
@@ -272,17 +267,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         }
     }
     
-    void setXmlTC(TopComponent xmlTC) {
-        this.xmlTC = xmlTC;
-    }
-
-    TopComponent getXmlTopComponent() {
-        if (xmlTC == null) {
-            xmlTC = super.createCloneableTopComponent();
-        }
-        return xmlTC;
-    }
-
     void setLastOpenView(int index) {
         lastOpenView=index;
     }

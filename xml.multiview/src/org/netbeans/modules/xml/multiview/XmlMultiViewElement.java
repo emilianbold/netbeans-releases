@@ -13,13 +13,9 @@
 
 package org.netbeans.modules.xml.multiview;
 
-import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
-import org.openide.util.NbBundle;
+
+import javax.swing.*;
 
 /**
  * XmlMultiviewElement.java
@@ -27,32 +23,19 @@ import org.openide.util.NbBundle;
  * Created on October 5, 2004, 1:35 PM
  * @author  mkuchtiak
  */
-public class XmlMultiViewElement implements MultiViewElement, java.io.Serializable {
+public class XmlMultiViewElement extends AbstractMultiViewElement implements java.io.Serializable {
     static final long serialVersionUID = -326467724916080580L;
     
-    private TopComponent xmlTopComp;
-    private XmlMultiViewDataObject dObj;
+    transient private TopComponent xmlTopComp;
     private transient javax.swing.JComponent toolbar;
-    
+
     /** Creates a new instance of XmlMultiviewElement */
     public XmlMultiViewElement() {
     }
     
     /** Creates a new instance of XmlMultiviewElement */
-    public XmlMultiViewElement(TopComponent xmlTopComp, XmlMultiViewDataObject dObj) {
-        this();
-        this.dObj=dObj;
-        this.xmlTopComp=xmlTopComp;
-    }
-    
-    public CloseOperationState canCloseElement() {
-        // resolving problem with closing deserialized editor (issue 57483)
-        if (!dObj.canClose()) {
-            return MultiViewFactory.createUnsafeCloseState(NbBundle.getMessage(ToolBarMultiViewElement.class,
-                    "LBL_DataObjectModified"), null, null);
-        } else {
-            return CloseOperationState.STATE_OK;
-        }
+    public XmlMultiViewElement(XmlMultiViewDataObject dObj) {
+        super(dObj);
     }
 
     public void componentOpened() {
@@ -76,51 +59,37 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
 
     public void componentShowing() {
     }
-    
-    public javax.swing.Action[] getActions() {
-        return xmlTopComp.getActions();
-    }
-    
+
     public org.openide.util.Lookup getLookup() {
-        if (xmlTopComp!=null) 
+        if (xmlTopComp != null) {
             return xmlTopComp.getLookup();
-        else 
+        } else {
             return null;
+        }
     }
 
     public javax.swing.JComponent getToolbarRepresentation() {
-            if (toolbar == null) {
-                XmlMultiViewEditorSupport support = dObj.getEditorSupport(); ;
-                javax.swing.JEditorPane pane = support.getOpenedPanes()[0];
-                if (pane != null) {
-                    javax.swing.text.Document doc = pane.getDocument();
-                    if (doc instanceof org.openide.text.NbDocument.CustomToolbar) {
-                        toolbar = ((org.openide.text.NbDocument.CustomToolbar)doc).createToolbar(pane);
-                    }
-                }
-                if (toolbar == null) {
-                    // attempt to create own toolbar??
-                    toolbar = new javax.swing.JPanel();
+        if (toolbar == null) {
+            XmlMultiViewEditorSupport support = dObj.getEditorSupport();
+            final JEditorPane[] panes = support.getOpenedPanes();
+            if (panes!= null && panes[0] != null) {
+                javax.swing.text.Document doc = panes[0].getDocument();
+                if (doc instanceof org.openide.text.NbDocument.CustomToolbar) {
+                    toolbar = ((org.openide.text.NbDocument.CustomToolbar) doc).createToolbar(panes[0]);
                 }
             }
-            return toolbar;
-    }
-
-    public org.openide.awt.UndoRedo getUndoRedo() {
-        return dObj.getEditorSupport().getUndoRedo0();
+            if (toolbar == null) {
+                // attempt to create own toolbar??
+                toolbar = new javax.swing.JPanel();
+            }
+        }
+        return toolbar;
     }
 
     public javax.swing.JComponent getVisualRepresentation() {
-        return xmlTopComp;
-    }
-
-    public void setMultiViewCallback(MultiViewElementCallback callback) {
-        if (dObj!=null) {
-            XmlMultiViewEditorSupport support = dObj.getEditorSupport();
-            if (support!=null) {
-                support.setMVTC(callback.getTopComponent());
-                support.updateDisplayName();
-            }
+        if (xmlTopComp == null) {
+            xmlTopComp = dObj.getEditorSupport().createCloneableTopComponent();
         }
+        return xmlTopComp;
     }
 }

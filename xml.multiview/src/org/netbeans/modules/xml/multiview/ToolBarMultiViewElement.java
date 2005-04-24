@@ -14,13 +14,10 @@
 package org.netbeans.modules.xml.multiview;
 
 import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -34,25 +31,18 @@ import java.beans.PropertyVetoException;
  * Created on October 5, 2004, 1:35 PM
  * @author  mkuchtiak
  */
-public abstract class ToolBarMultiViewElement implements MultiViewElement {
-    MultiViewElementCallback observer;
+public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
     private ToolBarDesignEditor editor;
-    private XmlMultiViewDataObject dObj;
     private PropertyChangeListener listener;
 
-    public ToolBarMultiViewElement(XmlMultiViewDataObject dObj, ToolBarDesignEditor editor) {
-        this(dObj);
-        this.editor = editor;
-    }
-    
     public ToolBarMultiViewElement(final XmlMultiViewDataObject dObj) {
-        this.dObj=dObj;
+        super(dObj);
         listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
                     Utils.runInAwtDispatchThread(new Runnable() {
                         public void run() {
-                            observer.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
+                            callback.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
                         }
                     });
                 }
@@ -71,12 +61,7 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
         } catch (PropertyVetoException e) {
             return MultiViewFactory.createUnsafeCloseState(ToolBarDesignEditor.PROPERTY_FLUSH_DATA, null, null);
         }
-        if (!dObj.canClose()) {
-            return MultiViewFactory.createUnsafeCloseState(NbBundle.getMessage(ToolBarMultiViewElement.class,
-                    "LBL_DataObjectModified"), null, null);
-        } else {
-            return CloseOperationState.STATE_OK;
-        }
+        return super.canCloseElement();
     }
     
     public void componentActivated() {
@@ -104,10 +89,6 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
         dObj.setActiveMultiViewElement(this);
     }
     
-    public javax.swing.Action[] getActions() {
-        return dObj.getEditorSupport().getXmlTopComponent().getActions();
-    }
-    
     public org.openide.util.Lookup getLookup() {
         return new ProxyLookup(new org.openide.util.Lookup[] {
             dObj.getNodeDelegate().getLookup()
@@ -118,21 +99,6 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
         return editor.getStructureView();
     }
     
-    public org.openide.awt.UndoRedo getUndoRedo() {
-        return dObj.getEditorSupport().getUndoRedo0();
-    }
-    
-    public void setMultiViewCallback(MultiViewElementCallback callback) {
-        observer=callback;
-        if (dObj!=null) {
-            XmlMultiViewEditorSupport support = dObj.getEditorSupport();
-            if (support!=null) {
-                support.setMVTC(callback.getTopComponent());
-                support.updateDisplayName();
-            }
-        }
-    }
-
     public javax.swing.JComponent getVisualRepresentation() {
         return editor;
     }
