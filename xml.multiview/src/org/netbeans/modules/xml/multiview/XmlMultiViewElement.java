@@ -88,7 +88,7 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
 
     public javax.swing.JComponent getVisualRepresentation() {
         if (xmlTopComp == null) {
-            xmlTopComp = dObj.getEditorSupport().createCloneableTopComponent();
+            xmlTopComp = dObj.getEditorSupport().createSuperCloneableComponent();
         }
         return xmlTopComp;
     }

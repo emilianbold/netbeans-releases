@@ -81,7 +81,14 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         return super.getUndoRedo();
     }
     
+    /** method enabled to create super Cloneable TC 
+     */
+    CloneableTopComponent createSuperCloneableComponent() {
+        return super.createCloneableEditor();
+    }
+    
     protected CloneableTopComponent createCloneableTopComponent() {
+        if (mvtc!=null) return (CloneableTopComponent)mvtc;
         MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
         MultiViewDescription xmlDesc = new XmlViewDesc (dObj);
         MultiViewDescription[] descs = new MultiViewDescription[customDesc.length+1];

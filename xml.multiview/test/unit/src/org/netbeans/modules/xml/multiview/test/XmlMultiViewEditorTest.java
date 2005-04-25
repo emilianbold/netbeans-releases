@@ -73,22 +73,13 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         bookDO = (BookDataObject)dObj;
         ((EditCookie)bookDO.getCookie(EditCookie.class)).edit();
         
-        // wait to see the changes in Design view
+        // wait to open the document
         try {
-            Thread.sleep(3000);
+            Thread.sleep(1000);
         } catch (InterruptedException ex){}
         
         XmlMultiViewEditorSupport editor  = (XmlMultiViewEditorSupport)bookDO.getCookie(EditorCookie.class);
-        javax.swing.text.Document doc = null;
-        int i=0;
-        while (doc==null && i<5) {
-            doc = editor.getDocument();
-            System.out.println("Attempt "+i+"; doc = "+doc);
-            i++;
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException ex){}
-        }
+        javax.swing.text.Document doc = editor.getDocument();
         assertTrue("The document is empty :",doc.getLength()>0);
     }
     
@@ -104,7 +95,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         }
         // wait to see the changes
         try {
-            Thread.sleep(3000);
+            Thread.sleep(6000);
         } catch (InterruptedException ex){}
         
         // test if data object was modified
@@ -114,7 +105,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         
         // wait to save
         try {
-            Thread.sleep(3000);
+            Thread.sleep(1000);
         } catch (InterruptedException ex){}
         
         // test to golden file
@@ -132,7 +123,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         }
         // wait for saving file
         try {
-            Thread.sleep(3000);
+            Thread.sleep(2000);
         } catch (InterruptedException ex){}
         
         try {
@@ -143,7 +134,6 @@ public class XmlMultiViewEditorTest extends NbTestCase {
             titleTF.getDocument().insertString(0,"The garden full of beans",null);
             Thread.sleep(300);
         } catch (Exception ex) {
-            System.out.println("ex="+ex);
             throw new AssertionFailedErrorException("Failed to set the title for Chapter: ",ex);
         }
         // open XML View
@@ -160,7 +150,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
 
         // wait for save
         try {
-            Thread.sleep(3000);
+            Thread.sleep(1000);
         } catch (InterruptedException ex){}
         
         // test to golden file
