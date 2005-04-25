@@ -61,7 +61,8 @@ Microsystems, Inc. All Rights Reserved.
         <module name="html" testtypes="unit" attributes="stable"/>
         <module name="xml/multiview" testtypes="unit" attributes="stable"/>
         <module name="debuggerjpda" testtypes="unit" attributes="stable"/>
-
+        <module name="web/core" testtypes="unit" attributes="stable"/>
+        
         <!-- removed (not runnable): html, schema2beans -->
         <!-- hangs: core/execution -->
         <!-- does not run: core/multiview -->
