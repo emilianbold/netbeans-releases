@@ -66,57 +66,53 @@ Microsystems, Inc. All Rights Reserved.
   <target name="set-installer.basename" unless="unstaller.basename" depends="set-buildnumber">
     <property name="installer.basename" value="NetBeans-dev-${buildnumber}"/>
   </target>
-
+  
+  <macrodef name="transform-platform">
+    <attribute name="ismp.project.suffix"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="${ismp.project}" />
+        <arg value="-xsl" />
+        <arg value="@{ismp.project.suffix}.xsl"/>
+        <arg value="-saveas"/>
+        <arg value="build/${ismp.project}-@{ismp.project.suffix}"/>
+        <classpath>
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
+  
   <target name="xsl-win32" depends="init">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="${ismp.project}" />
-      <arg value="-xsl" />
-      <arg value="win32.xsl"/>
-      <arg value="-saveas"/>
-      <arg value="build/${ismp.project}-win32"/>
-      <classpath>
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <transform-platform ismp.project.suffix="win32"/>
   </target>
-
+  
   <target name="xsl-unix" depends="init">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="${ismp.project}" />
-      <arg value="-xsl" />
-      <arg value="unix.xsl"/>
-      <arg value="-saveas"/>
-      <arg value="build/${ismp.project}-unix"/>
-      <classpath>
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <transform-platform ismp.project.suffix="unix"/>
   </target>
-
-  <target name="xsl-win32-ml" depends="init">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="build/${ismp.project}-win32" />
-      <arg value="-xsl" />
-      <arg value="../lib/ml.xsl"/>
-      <arg value="-saveas"/>
-      <arg value="build/${ismp.project}-win32-ml"/>
-      <classpath>
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
-  </target>
+  
+  <macrodef name="transform-ml">
+    <attribute name="input.ismp.project"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="@{input.ismp.project}" />
+        <arg value="-xsl" />
+        <arg value="../lib/ml.xsl"/>
+        <arg value="-saveas"/>
+        <arg value="@{input.ismp.project}-ml"/>
+        <classpath>
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
 
   <target name="xsl-unix-ml" depends="init">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="build/${ismp.project}-unix" />
-      <arg value="-xsl" />
-      <arg value="../lib/ml.xsl"/>
-      <arg value="-saveas"/>
-      <arg value="build/${ismp.project}-unix-ml"/>
-      <classpath>
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <transform-ml input.ismp.project="build/${ismp.project}-unix"/>
+  </target>
+  
+  <target name="xsl-win32-ml" depends="init">
+    <transform-ml input.ismp.project="build/${ismp.project}-win32"/>
   </target>
 
   <macrodef name="build-installer">
