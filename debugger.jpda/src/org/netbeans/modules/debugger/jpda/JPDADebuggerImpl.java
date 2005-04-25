@@ -82,7 +82,6 @@ import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -90,7 +89,7 @@ import org.openide.util.RequestProcessor;
 *
 * @author   Jan Jancura
 */
-public class JPDADebuggerImpl extends JPDADebugger implements Runnable {
+public class JPDADebuggerImpl extends JPDADebugger {
     
     private static final boolean startVerbose = 
         System.getProperty ("netbeans.debugger.start") != null;
@@ -577,7 +576,6 @@ public class JPDADebuggerImpl extends JPDADebugger implements Runnable {
     public void setStarting (Thread startingThread) {
         this.startingThread = startingThread;
         setState (STATE_STARTING);
-        RequestProcessor.getDefault ().post (this, 200);
     }
 
     public void setRunning (VirtualMachine vm, Operator o) {
@@ -714,6 +712,7 @@ public class JPDADebuggerImpl extends JPDADebugger implements Runnable {
      */
     public void resume () {
         synchronized (LOCK) {
+            JPDAThreadImpl t = (JPDAThreadImpl) getCurrentThread ();
             if (virtualMachine != null)
                 virtualMachine.resume ();
             setState (STATE_RUNNING);
@@ -874,19 +873,6 @@ public class JPDADebuggerImpl extends JPDADebugger implements Runnable {
             } catch (InvalidRequestStateException ex) {
                 // workaround for #51176
             }
-    }
-    
-    public void run () {
-        if (getState () == JPDADebugger.STATE_DISCONNECTED)
-            return;
-        JPDAThreadImpl t = (JPDAThreadImpl) getCurrentThread ();
-        if (t != null) {
-            if ( t.getThreadReference ().isSuspended () &&
-                 getState () == STATE_RUNNING
-            )
-                setState (STATE_STOPPED);
-        }
-        RequestProcessor.getDefault ().post (this, 200);
     }
 
     private void checkJSR45Languages (JPDAThread t) {

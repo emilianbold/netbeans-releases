@@ -13,11 +13,13 @@
 
 package org.netbeans.modules.debugger.jpda.actions;
 
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.InvalidRequestStateException;
+import com.sun.jdi.request.StepRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -60,23 +62,24 @@ implements PropertyChangeListener {
     JPDADebuggerImpl getDebuggerImpl () {
         return debugger;
     }
-
-    /**
-    * Removes last step request.
-    */
-    void removeStepRequests () {
+    
+    void removeStepRequests (ThreadReference tr) {
+        //S ystem.out.println ("removeStepRequests");
         try {
             VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
             if (vm == null) return;
             EventRequestManager erm = vm.eventRequestManager ();
             ArrayList l = new ArrayList (erm.stepRequests ());
-            if (verbose) {
-                Iterator it = l.iterator ();
-                while (it.hasNext ())
-                    System.out.println("  remove request " + it.next ());
+            Iterator it = l.iterator ();
+            while (it.hasNext ()) {
+                StepRequest stepRequest = (StepRequest) it.next ();
+                if (stepRequest.thread ().equals (tr)) {
+                    //S ystem.out.println("  remove request " + stepRequest);
+                    erm.deleteEventRequest (stepRequest);
+                    break;
+                }
+                //S ystem.out.println("  do not remove " + stepRequest + " : " + stepRequest.thread ());
             }
-                
-            erm.deleteEventRequests (l);
         } catch (VMDisconnectedException e) {
         } catch (IllegalThreadStateException e) {
             e.printStackTrace();

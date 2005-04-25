@@ -18,6 +18,7 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 
@@ -38,11 +39,17 @@ import org.openide.util.RequestProcessor;
 public class PauseActionProvider extends JPDADebuggerActionProvider 
 implements Runnable {
     
-    public PauseActionProvider (ContextProvider lookupProvider) {
+    private boolean j2meDebugger = false;
+    
+    
+    public PauseActionProvider (ContextProvider contextProvider) {
         super (
-            (JPDADebuggerImpl) lookupProvider.lookupFirst 
+            (JPDADebuggerImpl) contextProvider.lookupFirst 
                 (null, JPDADebugger.class)
         );
+        Map properties = (Map) contextProvider.lookupFirst (null, Map.class);
+        if (properties != null)
+            j2meDebugger = properties.containsKey ("J2ME_DEBUGGER");
         RequestProcessor.getDefault ().post (this, 200);
     }
     
@@ -55,6 +62,13 @@ implements Runnable {
     }
     
     protected void checkEnabled (int debuggerState) {
+        if (j2meDebugger) {
+            setEnabled (
+                ActionsManager.ACTION_PAUSE,
+                debuggerState == JPDADebugger.STATE_RUNNING
+            );
+            return;
+        }
         VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
         if (vm == null) {
             setEnabled (

@@ -17,6 +17,7 @@ import com.sun.jdi.Location;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.MethodEntryEvent;
@@ -107,13 +108,12 @@ implements Executor {
     public void doAction (Object action) {
         synchronized (getDebuggerImpl ().LOCK) {
             //S ystem.out.println("\nStepAction.doAction");
-            // 1) remove old request
-            removeStepRequests ();
-            
             try {
-                // 2) init info about current state
+                // 1) init info about current state & remove old
+                //    requests in the current thread
                 ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
                     getCurrentThread ()).getThreadReference ();
+                removeStepRequests (tr);
                 StackFrame sf;
                 try {
                     sf = tr.frame (0);
@@ -121,7 +121,8 @@ implements Executor {
                     return; //No frame -> step after thread breakpoint; PATCH 56540
                 }
                 Location l = sf.location ();
-                // 3) create new step request
+                
+                // 2) create new step request
                 stepRequest = getDebuggerImpl ().getVirtualMachine ().
                     eventRequestManager ().createStepRequest (
                         tr,
@@ -135,12 +136,12 @@ implements Executor {
                 if (verbose)
                     System.out.println("JDI Request: " + stepRequest);
                 
-                // 4) resume JVM
+                // 3) resume JVM
                 getDebuggerImpl ().resume ();
             } catch (IncompatibleThreadStateException e) {
             } catch (VMDisconnectedException e) {
             }   
-            //S ystem.out.println("/nStepAction.do end");
+            //S ystem.out.println("/nStepAction.doAction end");
         }
     }
     
@@ -164,9 +165,10 @@ implements Executor {
     public boolean exec (Event ev) {
         // TODO: fetch current engine from the Event
         synchronized (getDebuggerImpl ().LOCK) {
+            System.out.println("/nStepAction.exec");
 
             // 1) remove step request
-            removeStepRequests ();
+            removeStepRequests (((LocatableEvent) ev).thread ());
             
             // 2) init info about current state
             LocatableEvent event = (LocatableEvent) ev;
@@ -174,7 +176,17 @@ implements Executor {
             ThreadReference tr = event.thread ();
             JPDAThread t = getDebuggerImpl ().getThread (tr);
             
-            // 3) stop execution here?
+            // 3) ignore step events in not current threads
+            JPDAThreadImpl ct = (JPDAThreadImpl) getDebuggerImpl ().
+                getCurrentThread ();
+            if (ct != null &&
+                !ct.getThreadReference ().equals (tr)
+            ) {
+                // step finished in different thread => ignore
+                return true; // resume debugging
+            }
+            
+            // 4) stop execution here?
             boolean fsh = getSmartSteppingFilterImpl ().stopHere (className);
             if (ssverbose)
                 System.out.println("SS  SmartSteppingFilter.stopHere (" + 
@@ -186,6 +198,7 @@ implements Executor {
             ) {
                 // YES!
                 getDebuggerImpl ().setStoppedState (tr);
+                System.out.println("/nStepAction.exec end - do not resume");
                 return false; // do not resume
             }
 
@@ -196,8 +209,8 @@ implements Executor {
                             StepRequest.STEP_INTO;
             getStepIntoActionProvider ().doAction 
                 (ActionsManager.ACTION_STEP_INTO);
+            System.out.println("/nStepAction.exec end - resume");
             return true; // resume
-
         }
     }
 

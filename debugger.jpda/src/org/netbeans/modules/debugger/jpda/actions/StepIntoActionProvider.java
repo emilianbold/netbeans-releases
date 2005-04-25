@@ -114,7 +114,9 @@ implements Executor, PropertyChangeListener {
                 if (ssverbose) {
                     System.out.println("\nSS:  exclusion patterns removed");
                 }
-                removeStepRequests ();
+                ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
+                    getCurrentThread ()).getThreadReference ();
+                removeStepRequests (tr);
             } else {
                 if (ssverbose) {
                     if (stepRequest == null)
@@ -132,7 +134,9 @@ implements Executor, PropertyChangeListener {
         if (ev.getPropertyName () == SourcePathProvider.PROP_SOURCE_ROOTS) {
             if (ssverbose)
                 System.out.println("\nSS:  source roots changed");
-            removeStepRequests ();
+            ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
+                getCurrentThread ()).getThreadReference ();
+            removeStepRequests (tr);
         } else
         super.propertyChange (ev);
     }
@@ -157,7 +161,7 @@ implements Executor, PropertyChangeListener {
                        getCompoundSmartSteppingListener ().stopHere 
                            (contextProvider, t, getSmartSteppingFilterImpl ());
         if (stop) {
-            removeStepRequests ();
+            removeStepRequests (le.thread ());
             getDebuggerImpl ().setStoppedState (tr);
         } else {
             if (ssverbose)
@@ -196,17 +200,17 @@ implements Executor, PropertyChangeListener {
 
     // other methods ...........................................................
     
-    void removeStepRequests () {
-        super.removeStepRequests ();
+    void removeStepRequests (ThreadReference tr) {
+        super.removeStepRequests (tr);
         stepRequest = null;
         if (ssverbose)
             System.out.println("SS:    remove all patterns");
     }
     
     private void setStepRequest () {
-        removeStepRequests ();
         ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
             getCurrentThread ()).getThreadReference ();
+        removeStepRequests (tr);
         stepRequest = getDebuggerImpl ().getVirtualMachine ().
         eventRequestManager ().createStepRequest (
             tr,
