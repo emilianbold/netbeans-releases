@@ -182,7 +182,11 @@ public final class SourceRoots {
                             if (prop != null) {
                                 File f = helper.getAntProjectHelper().resolveFile(prop);
                                 try {                                    
-                                    result.add(J2SEProjectUtil.getRootURL(f,null));
+                                    URL url = f.toURI().toURL();
+                                    if (!f.exists()) {
+                                        url = new URL(url.toExternalForm() + "/"); // NOI18N
+                                    }
+                                    result.add(url);
                                 } catch (MalformedURLException e) {
                                     ErrorManager.getDefault().notify(e);
                                 }
