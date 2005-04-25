@@ -22,6 +22,14 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+    <testbag testattribs="stable" executor="unit-executor" name="Debugger JPDA API">
+        <testset dir="unit/src">
+            <patternset>
+                 <include name="**/JspLineBreakpointTest.class"/>
+           </patternset>
+        </testset>
+    </testbag>
+    
     <compiler name="default-compiler" antfile="build-unit.xml"
         target="default-compiler" default="true"/>
 
