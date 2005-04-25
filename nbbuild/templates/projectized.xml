@@ -250,11 +250,11 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="javadoc" depends="init">
-        <fail unless="javadoc.name">Must set javadoc.name</fail>
         <fail unless="javadoc.title">Must set javadoc.title</fail>
         <!-- This should become an import at some point, perhaps: -->
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
+            <property name="javadoc.name" value="${code.name.base.dashes}" />
             <property name="javadoc.packages" value="${module.javadoc.packages}"/>
             <property name="javadoc.classpath" refid="cp"/>
             <property name="javadoc.manifest" location="${manifest.mf}"/>

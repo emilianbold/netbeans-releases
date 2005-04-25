@@ -12,6 +12,12 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!DOCTYPE someant  [
+  <!ENTITY links SYSTEM "links.xml">
+  <!ENTITY properties SYSTEM "properties.xml">
+  <!ENTITY replaces SYSTEM "replaces.xml">
+]>
+
 <project name="template" default="die" basedir=".">
 
     <description><![CDATA[
@@ -19,7 +25,7 @@ Templated targets:
 
 ------------------------------ javadoc ------------------------
 ${javadoc.base}       top dir of module, e.g. "${nb_all}/foo" ("." from your build script)
-${javadoc.name}       name of docs folder, e.g. "FooAPI"
+${javadoc.name}       name of docs folder, e.g. "org-netbeans-modules-foo"
 ${javadoc.title}      display title of docs, e.g. "Foo API"
 ${javadoc.packages}   list of packages to build, e.g. "org.netbeans.api.foo,org.netbeans.spi.foo"
 ${javadoc.classpath}  classpath for source files (probably same as what you use for <javac>)
@@ -48,6 +54,7 @@ cause it to fail.
     <!-- javadoc -->
     
     <target name="javadoc-init" >
+    
         <!-- Output dir (will create ${javadoc.name}/ and ${javadoc.name}.zip beneath this): -->
         <property name="javadoc.out" location="${javadoc.base}/javadoc"/>
         <property name="javadoc.out.dir" location="${javadoc.out}/${javadoc.name}"/>
@@ -59,29 +66,12 @@ cause it to fail.
         <property name="javadoc.overview" location="overview-generic.html"/>
         <property name="javadoc.apichanges" location="apichanges-empty.xml"/>
         <property name="javadoc.arch" location="arch-empty.xml"/>
+        
+        
         <!-- Docs to link to: -->
+        <property name="javadoc.web.root" value="http://root/"/>
         <property name="javadoc.docs.jdk" value="http://java.sun.com/j2se/1.4.2/docs/api"/>
-        <property name="javadoc.web.root" value="http://www.netbeans.org/download/dev/javadoc"/>
-        <property name="javadoc.docs.openide" value="${javadoc.web.root}/OpenAPIs"/>
-        <property name="javadoc.docs.openide/loaders" value="${javadoc.web.root}/LoadersAPI"/>
-        <property name="javadoc.docs.openide/io" value="${javadoc.web.root}/InputOutputAPI"/>
-        <property name="javadoc.docs.openide/execution" value="${javadoc.web.root}/ExecutionAPI"/>
-        <property name="javadoc.docs.openide/compiler" value="${javadoc.web.root}/CompilerAPI"/>
-        <property name="javadoc.docs.openide/deprecated" value="${javadoc.web.root}/DeprecatedAPIs"/>
-        <property name="javadoc.docs.core/javahelp" value="${javadoc.web.root}/JavaHelpAPI"/>
-        <property name="javadoc.docs.core/term" value="${javadoc.web.root}/UnsupportedAPIs/TerminalEmulatorAPI"/>
-        <property name="javadoc.docs.java/api" value="${javadoc.web.root}/JavaSupportAPIs"/>
-        <property name="javadoc.docs.java/srcmodel" value="${javadoc.web.root}/JavaHierarchyAPI"/>
-        <property name="javadoc.docs.openide/registry" value="${javadoc.web.root}/RegistryAPI"/>
-        <property name="javadoc.docs.openide/convertor" value="${javadoc.web.root}/ConvertorAPI"/>
-        <property name="javadoc.docs.openide/looks" value="${javadoc.web.root}/LooksAPI"/>
-        <property name="javadoc.docs.projects/queries" value="${javadoc.web.root}/GeneralQueriesAPI"/>
-        <property name="javadoc.docs.projects/projectapi" value="${javadoc.web.root}/ProjectAPI"/>
-        <property name="javadoc.docs.projects/projectuiapi" value="${javadoc.web.root}/ProjectUIAPI"/>
-        <property name="javadoc.docs.projects/libraries" value="${javadoc.web.root}/ProjectLibrariesAPI"/>
-        <property name="javadoc.docs.ant/project" value="${javadoc.web.root}/AntProjectAPI"/>
-        <property name="javadoc.docs.java/platform" value="${javadoc.web.root}/JavaPlatformAPI"/>
-        <property name="javadoc.docs.java/project" value="${javadoc.web.root}/JavaProjectAPI"/>
+        &properties;
         <!-- add more here as needed... -->
         <property name="javadoc.css.dir" location="."/>
         <property name="javadoc.css.main" location="${javadoc.css.dir}/javadoc.css"/>
@@ -103,7 +93,23 @@ cause it to fail.
         <property name="javadoc.files" value="all-java-files" />
         
         <property file="../build.properties" />
+
+        <condition property="javadoc.reference.generated" >
+            <isset property="javadoc.docs.${javadoc.name}" />
+        </condition>
+    </target>
+    
+    <target name="javadoc-generate-references" depends="javadoc-init" unless="javadoc.reference.generated" >
+        <!-- Add these files to the generated ones -->
+        <concat append="true" destfile="properties.xml" ><![CDATA[<property name="javadoc.docs.${javadoc.name}" value="$${javadoc.web.root}/${javadoc.name}"/>]]>
+</concat>
+        <concat append="true" destfile="links.xml" ><![CDATA[<link href="$${javadoc.docs.${javadoc.name}}" offline="true" packagelistloc="${javadoc.out.dir}"/>]]>
+</concat>
+        <concat append="true" destfile="replaces.xml" ><![CDATA[<replacefilter token="@${javadoc.name}@" value="$${javadoc.docs.${javadoc.name}}"/>]]>
+</concat>
         
+        <!-- set the property for use in this script -->
+        <property name="javadoc.docs.${javadoc.name}" value="${javadoc.web.root}/${javadoc.name}" />
     </target>
 
     <target name="javadoc-check-timestamps" depends="javadoc-init">
@@ -168,7 +174,7 @@ cause it to fail.
         </condition>
     </target>
     
-    <target name="javadoc-exec-packages" depends="javadoc-init,javadoc-exec-condition,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title,javadoc-exec-condition" unless="javadoc.exec.packages" >
+    <target name="javadoc-exec-packages" depends="javadoc-init,javadoc-generate-references,javadoc-exec-condition,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title,javadoc-exec-condition" unless="javadoc.exec.packages" >
         <tstamp/>
         <property name="javadoc.footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2005 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
         <javadoc source="1.4" author="false" destdir="${javadoc.out.dir}" packagenames="${javadoc.packages}" stylesheetfile="${javadoc.css.main}" windowtitle="NetBeans ${javadoc.title}" overview="${javadoc.overview}" splitindex="true" use="true" version="false">
@@ -182,32 +188,14 @@ cause it to fail.
                 <title>${javadoc.hyperlinked.title}</title>
             </group>
             <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="../../openide/api/doc"/>
-            <link href="${javadoc.docs.openide}" offline="true" packagelistloc="../../openide/javadoc/OpenAPIs"/>
-            <link href="${javadoc.docs.openide/loaders}" offline="true" packagelistloc="../../openide/loaders/javadoc/LoadersAPI"/>
-            <link href="${javadoc.docs.openide/io}" offline="true" packagelistloc="../../openide/io/javadoc/InputOutputAPI"/>
-            <link href="${javadoc.docs.openide/execution}" offline="true" packagelistloc="../../openide/execution/javadoc/ExecutionAPI"/>
-            <link href="${javadoc.docs.openide/compiler}" offline="true" packagelistloc="../../openide/compiler/javadoc/CompilerAPI"/>
-            <link href="${javadoc.docs.core/javahelp}" offline="true" packagelistloc="../../core/javahelp/javadoc/JavaHelpAPI"/>
-            <link href="${javadoc.docs.core/term}" offline="true" packagelistloc="../../core/term/javadoc/TerminalEmulatorAPI"/>
-            <link href="${javadoc.docs.java/api}" offline="true" packagelistloc="../../java/api/javadoc/JavaSupportAPIs"/>
-            <link href="${javadoc.docs.java/srcmodel}" offline="true" packagelistloc="../../java/srcmodel/javadoc/JavaHierarchyAPI"/>
-            <link href="${javadoc.docs.openide/registry}" offline="true" packagelistloc="../../openide/registry/javadoc/RegistryAPI"/>
-            <link href="${javadoc.docs.openide/convertor}" offline="true" packagelistloc="../../openide/convertor/javadoc/ConvertorAPI"/>
-            <link href="${javadoc.docs.openide/looks}" offline="true" packagelistloc="../../openide/looks/javadoc/LooksAPI"/>
-            <link href="${javadoc.docs.projects/queries}" offline="true" packagelistloc="../../projects/queries/javadoc/GeneralQueriesAPI"/>
-            <link href="${javadoc.docs.projects/projectapi}" offline="true" packagelistloc="../../projects/projectapi/javadoc/ProjectAPI"/>
-            <link href="${javadoc.docs.projects/projectuiapi}" offline="true" packagelistloc="../../projects/projectuiapi/javadoc/ProjectUIAPI"/>
-            <link href="${javadoc.docs.projects/libraries}" offline="true" packagelistloc="../../projects/libraries/javadoc/ProjectLibrariesAPI"/>
-            <link href="${javadoc.docs.ant/project}" offline="true" packagelistloc="../../ant/project/javadoc/AntProjectAPI"/>
-            <link href="${javadoc.docs.java/platform}" offline="true" packagelistloc="../../java/platform/javadoc/JavaPlatformAPI"/>
-            <link href="${javadoc.docs.java/project}" offline="true" packagelistloc="../../java/project/javadoc/JavaProjectAPI"/>
+            &links;
             <doctitle>NetBeans ${javadoc.title}</doctitle>
             <header>${javadoc.header}</header>
             <bottom>${javadoc.footer}</bottom>
         </javadoc>
     </target>
     
-    <target name="javadoc-exec-files" depends="javadoc-init,javadoc-exec-condition,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title" if="javadoc.files.provided" unless="javadoc.up.to.date" >
+    <target name="javadoc-exec-files" depends="javadoc-init,javadoc-generate-references,javadoc-exec-condition,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title" if="javadoc.files.provided" unless="javadoc.up.to.date" >
         <tstamp/>
         <property name="javadoc.footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2005 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
         <javadoc source="1.4" author="false" destdir="${javadoc.out.dir}" packagenames="${javadoc.packages}" stylesheetfile="${javadoc.css.main}" windowtitle="NetBeans ${javadoc.title}" overview="${javadoc.overview}" splitindex="true" use="true" version="false" useexternalfile="true" >
@@ -224,21 +212,7 @@ cause it to fail.
                 <title>${javadoc.hyperlinked.title}</title>
             </group>
             <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="../../openide/api/doc"/>
-            <link href="${javadoc.docs.openide}" offline="true" packagelistloc="../../openide/javadoc/OpenAPIs"/>
-            <link href="${javadoc.docs.openide/loaders}" offline="true" packagelistloc="../../openide/loaders/javadoc/LoadersAPI"/>
-            <link href="${javadoc.docs.openide/io}" offline="true" packagelistloc="../../openide/io/javadoc/InputOutputAPI"/>
-            <link href="${javadoc.docs.openide/execution}" offline="true" packagelistloc="../../openide/execution/javadoc/ExecutionAPI"/>
-            <link href="${javadoc.docs.openide/compiler}" offline="true" packagelistloc="../../openide/compiler/javadoc/CompilerAPI"/>
-            <link href="${javadoc.docs.core/javahelp}" offline="true" packagelistloc="../../core/javahelp/javadoc/JavaHelpAPI"/>
-            <link href="${javadoc.docs.core/term}" offline="true" packagelistloc="../../core/term/javadoc/TerminalEmulatorAPI"/>
-            <link href="${javadoc.docs.java/api}" offline="true" packagelistloc="../../java/api/javadoc/JavaSupportAPIs"/>
-            <link href="${javadoc.docs.projects/queries}" offline="true" packagelistloc="../../projects/queries/javadoc/GeneralQueriesAPI"/>
-            <link href="${javadoc.docs.projects/projectapi}" offline="true" packagelistloc="../../projects/projectapi/javadoc/ProjectAPI"/>
-            <link href="${javadoc.docs.projects/projectuiapi}" offline="true" packagelistloc="../../projects/projectuiapi/javadoc/ProjectUIAPI"/>
-            <link href="${javadoc.docs.projects/libraries}" offline="true" packagelistloc="../../projects/libraries/javadoc/ProjectLibrariesAPI"/>
-            <link href="${javadoc.docs.ant/project}" offline="true" packagelistloc="../../ant/project/javadoc/AntProjectAPI"/>
-            <link href="${javadoc.docs.java/platform}" offline="true" packagelistloc="../../java/platform/javadoc/JavaPlatformAPI"/>
-            <link href="${javadoc.docs.java/project}" offline="true" packagelistloc="../../java/project/javadoc/JavaProjectAPI"/>
+            &links;
             <doctitle>NetBeans ${javadoc.title}</doctitle>
             <header>${javadoc.header}</header>
             <bottom>${javadoc.footer}</bottom>
@@ -310,31 +284,16 @@ cause it to fail.
         <replace file="${export.interfaces}/${javadoc.name}" token="@SPECIFICATION-VERSION@" value="${OpenIDE-Module-Specification-Version}"/>
     </target>
     
-    <target name="javadoc-stage-replace" depends="javadoc-stage-main,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-arch-replace,javadoc-stage-export-interfaces,javadoc-stage-export-interfaces-replace" unless="javadoc.up.to.date">
+    <target name="javadoc-stage-replace" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-arch-replace,javadoc-stage-export-interfaces,javadoc-stage-export-interfaces-replace" unless="javadoc.up.to.date">
         <replace dir="${javadoc.out.dir}">
             <include name="**/*.html"/>
             <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
-            <replacefilter token="@OPENIDE@" value="${javadoc.docs.openide}"/>
-            <replacefilter token="@OPENIDE/LOADERS@" value="${javadoc.docs.openide/loaders}"/>
-            <replacefilter token="@OPENIDE/IO@" value="${javadoc.docs.openide/io}"/>
-            <replacefilter token="@OPENIDE/EXECUTION@" value="${javadoc.docs.openide/execution}"/>
-            <replacefilter token="@OPENIDE/COMPILER@" value="${javadoc.docs.openide/compiler}"/>
-            <replacefilter token="@OPENIDE/DEPRECATED@" value="${javadoc.docs.openide/deprecated}"/>
-            <replacefilter token="@CORE/JAVAHELP@" value="${javadoc.docs.core/javahelp}"/>
-            <replacefilter token="@CORE/TERM@" value="${javadoc.docs.core/term}"/>
-            <replacefilter token="@JAVA/API@" value="${javadoc.docs.java/api}"/>
-            <replacefilter token="@JAVA/SRCMODEL@" value="${javadoc.docs.java/srcmodel}"/>
-            <replacefilter token="@OPENIDE/REGISTRY@" value="${javadoc.docs.openide/registry}"/>
-            <replacefilter token="@OPENIDE/CONVERTOR@" value="${javadoc.docs.openide/convertor}"/>
-            <replacefilter token="@OPENIDE/LOOKS@" value="${javadoc.docs.openide/looks}"/>
-            <replacefilter token="@PROJECTS/QUERIES@" value="${javadoc.docs.projects/queries}"/>
-            <replacefilter token="@PROJECTS/PROJECTAPI@" value="${javadoc.docs.projects/projectapi}"/>
-            <replacefilter token="@PROJECTS/PROJECTUIAPI@" value="${javadoc.docs.projects/projectuiapi}"/>
-            <replacefilter token="@PROJECTS/LIBRARIES@" value="${javadoc.docs.projects/libraries}"/>
-            <replacefilter token="@ANT/PROJECT@" value="${javadoc.docs.ant/project}"/>
-            <replacefilter token="@JAVA/PLATFORM@" value="${javadoc.docs.java/platform}"/>
-            <replacefilter token="@JAVA/PROJECT@" value="${javadoc.docs.java/project}"/>
+            &replaces;
             <replacefilter token="@FOOTER@" value="${javadoc.footer}"/>
+        </replace>
+        <replace dir="${javadoc.out.dir}">
+            <include name="**/*.html"/>
+            <replacefilter token="http://root/" value="@TOP@.." />
         </replace>
         <replace dir="${javadoc.out.dir}" token="@TOP@" value="">
             <include name="*.html"/>
@@ -380,9 +339,8 @@ cause it to fail.
         </checklinks>
         <!-- XXX run doctorj (doctorj.sf.net) if it is installed? -->
     </target>
-    
+
     <target name="javadoc" depends="javadoc-stage-check" unless="javadoc.up.to.date" description="Build Javadoc and associated documentation for a module.">
         <zip zipfile="${javadoc.out.zip}" basedir="${javadoc.out.dir}"/>
     </target>
-
 </project>

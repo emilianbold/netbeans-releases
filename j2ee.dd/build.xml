@@ -158,10 +158,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="javadoc" depends="projectized.javadoc, init-javadoc"/>
   
   <target name="init-javadoc">
-      <mkdir dir="javadoc/J2EEDDAPI/arch"/>
-      <copy file="doc/ddapi_architecture.html" todir="javadoc/J2EEDDAPI/arch"/>
-      <copy file="doc/dd_api_schema.jpg" todir="javadoc/J2EEDDAPI/arch"/>
-      <copy file="doc/usage.html" todir="javadoc/J2EEDDAPI/arch"/>
+      <mkdir dir="javadoc/org-netbeans-modules-j2ee-dd/arch"/>
+      <copy file="doc/ddapi_architecture.html" todir="javadoc/org-netbeans-modules-j2ee-dd/arch"/>
+      <copy file="doc/dd_api_schema.jpg" todir="javadoc/org-netbeans-modules-j2ee-dd/arch"/>
+      <copy file="doc/usage.html" todir="javadoc/org-netbeans-modules-j2ee-dd/arch"/>
   </target>
   
 </project>
