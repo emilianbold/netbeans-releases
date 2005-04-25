@@ -75,7 +75,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         
         // wait to open the document
         try {
-            Thread.sleep(1000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex){}
         
         XmlMultiViewEditorSupport editor  = (XmlMultiViewEditorSupport)bookDO.getCookie(EditorCookie.class);
@@ -95,7 +95,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         }
         // wait to see the changes
         try {
-            Thread.sleep(6000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex){}
         
         // test if data object was modified
