@@ -133,6 +133,7 @@ public class JavaProjectNature implements ProjectNature {
             new PrivilegedTemplatesImpl(), // PrivilegedTemplates
             new JavaActions(project, projectHelper, projectEvaluator, aux), // ActionProvider
             new LookupMergerImpl(), // LookupMerger
+            new JavaFreeformFileBuiltQuery(project, projectHelper, projectEvaluator, aux), // FileBuiltQueryImplementation
         });
     }
     

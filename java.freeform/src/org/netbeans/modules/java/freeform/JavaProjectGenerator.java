@@ -857,7 +857,7 @@ public class JavaProjectGenerator {
     }
     
     
-    private static boolean isFolder (PropertyEvaluator eval, File baseFolder, String folder) {
+    /*package private*/ static boolean isFolder (PropertyEvaluator eval, File baseFolder, String folder) {
         File f = Util.resolveFile(eval, baseFolder, folder);
         if (f != null && f.isDirectory()) {
             return true;
