@@ -31,6 +31,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.ErrorManager;
 
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -110,9 +111,8 @@ public class TreeModelNode extends AbstractNode {
                 new TreeModelChildren (model, treeModelRoot, object);
         } catch (UnknownTypeException e) {
             if (!(object instanceof String)) {
-                e.printStackTrace ();
-                System.out.println (model);
-                System.out.println ();
+                Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
             }
             return Children.LEAF;
         }
@@ -127,9 +127,8 @@ public class TreeModelNode extends AbstractNode {
                         setShortDescription (shortDescription);
                     } catch (UnknownTypeException e) {
                         if (!(object instanceof String)) {
-                            e.printStackTrace ();
-                            System.out.println (model);
-                            System.out.println ();
+                            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
                         }
                     }
                 }
@@ -206,9 +205,8 @@ public class TreeModelNode extends AbstractNode {
                 }
             }
         } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            System.out.println (model);
-            System.out.println ();
+            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
         }
     }
 
@@ -275,11 +273,14 @@ public class TreeModelNode extends AbstractNode {
     private void refreshNode () {
         try {
             String name = model.getDisplayName (object);
-            if (name == null) 
-                new NullPointerException (
-                    "Model: " + model + ".getDisplayName (" + object + 
-                    ") = null!"
-                ).printStackTrace ();
+            if (name == null) {
+                Throwable t = 
+                    new NullPointerException (
+                        "Model: " + model + ".getDisplayName (" + object + 
+                        ") = null!"
+                    );
+                ErrorManager.getDefault().notify(t);
+            }
             setName (name, false);
             String iconBase = model.getIconBase (object);
             if (iconBase != null)
@@ -292,9 +293,8 @@ public class TreeModelNode extends AbstractNode {
                 String name = (String) object;
                 setName (name, false);
             } else {
-                e.printStackTrace ();
-                System.out.println (model);
-                System.out.println ();
+                Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
             }
         }
     }
@@ -374,9 +374,8 @@ public class TreeModelNode extends AbstractNode {
                         refreshChildren (model.getChildrenCount (object));
                     } catch (UnknownTypeException e) {
                         if (!(object instanceof String)) {
-                            e.printStackTrace ();
-                            System.out.println (model);
-                            System.out.println ();
+                            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
                         }
                         setKeys (new Object [0]);
                         return;
@@ -396,9 +395,9 @@ public class TreeModelNode extends AbstractNode {
                 WeakHashMap newObjectToNode = new WeakHashMap ();
                 for (i = 0; i < k; i++) {
                     if (ch [i] == null) {
-                        System.out.println("model: " + model);
-                        System.out.println("parent: " + object);
-                        throw new NullPointerException ();
+                        throw (NullPointerException) ErrorManager.getDefault().annotate(
+                                new NullPointerException(),
+                                "model: " + model + "\nparent: " + object);
                     }
                     WeakReference wr = (WeakReference) objectToNode.get 
                         (ch [i]);
@@ -425,9 +424,8 @@ public class TreeModelNode extends AbstractNode {
             } catch (UnknownTypeException e) {
                 setKeys (new Object [0]);
                 if (!(object instanceof String)) {
-                    e.printStackTrace ();
-                    System.out.println (model);
-                    System.out.println ();
+                    Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
                 }
             }
         }
@@ -492,10 +490,8 @@ public class TreeModelNode extends AbstractNode {
                 return !model.isReadOnly (object, columnModel.getID ());
             } catch (UnknownTypeException e) {
                 if (!(object instanceof String)) {
-                    e.printStackTrace ();
-                    System.out.println("  Column id:" + columnModel.getID ());
-                    System.out.println (model);
-                    System.out.println ();
+                    Throwable t = ErrorManager.getDefault().annotate(e, "Column id:" + columnModel.getID ()+"\nModel: "+model);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
                 }
                 return false;
             }
@@ -532,13 +528,9 @@ public class TreeModelNode extends AbstractNode {
                         firePropertyChange (id, null, value);
                     } catch (UnknownTypeException e) {
                         if (!(object instanceof String)) {
-                            e.printStackTrace ();
-                            System.out.println("  Column id:" + columnModel.getID ());
-                            System.out.println (model);
-                            System.out.println ();
+                            Throwable t = ErrorManager.getDefault().annotate(e, "Column id:" + columnModel.getID ()+"\nModel: "+model);
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
                         }
-                    } catch (Throwable t) {
-                        t.printStackTrace();
                     }
                 }
             });
@@ -562,10 +554,8 @@ public class TreeModelNode extends AbstractNode {
                 properties.put (id, v);
                 firePropertyChange (id, null, null);
             } catch (UnknownTypeException e) {
-                e.printStackTrace ();
-                System.out.println("  Column id:" + columnModel.getID ());
-                System.out.println (model);
-                System.out.println ();
+                Throwable t = ErrorManager.getDefault().annotate(e, "Column id:" + columnModel.getID ()+"\nModel: "+model);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
             }
         }
         
