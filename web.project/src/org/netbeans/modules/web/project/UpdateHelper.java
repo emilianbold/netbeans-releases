@@ -67,6 +67,7 @@ public class UpdateHelper {
     private final Notifier notifier;
     private boolean alreadyAskedInWriteAccess;
     private Boolean isCurrent;
+    private EditableProperties cachedProperties;
     private Element cachedElement;
     private static final String TAG_FILE = "file"; //NOI18N
     private static final String TAG_LIBRARY = "library"; //NOI18N
@@ -95,9 +96,18 @@ public class UpdateHelper {
      * @param path a relative URI in the project directory.
      * @return a set of properties
      */
-    public EditableProperties getProperties (String path) {
+    public EditableProperties getProperties (final String path) {
         //Properties are the same in both webproject/1 and webproject/2
-        return this.helper.getProperties(path);
+        return (EditableProperties) ProjectManager.mutex().readAccess(new Mutex.Action (){
+            public Object run() {
+                if (!isCurrent() && AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) { //Only project properties were changed
+                    return getUpdatedProjectProperties ();
+                }
+                else {
+                    return helper.getProperties(path);                    
+                }
+            }
+        });
     }
 
     /**
@@ -389,6 +399,17 @@ public class UpdateHelper {
         return cachedElement;
     }
 
+    private synchronized EditableProperties getUpdatedProjectProperties () {
+        if (cachedProperties == null) {
+            cachedProperties = this.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            //The javadoc.additionalparam was not in NB 4.0
+            if (cachedProperties.get (WebProjectProperties.JAVADOC_ADDITIONALPARAM)==null) {
+                cachedProperties.put (WebProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
+            }
+        }
+        return this.cachedProperties;
+    }
+    
     private static void copyDocument (Document doc, Element from, Element to) {
         NodeList nl = from.getChildNodes();
         int length = nl.getLength();
