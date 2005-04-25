@@ -229,7 +229,6 @@ public class UpdateHelper {
     private void saveUpdate () throws IOException {
         this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(),true);
         this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true); //NOI18N
-        EditableProperties ep = this.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);        
         ProjectManager.getDefault().saveProject (this.project);
         synchronized(this) {
             this.isCurrent = Boolean.TRUE;
