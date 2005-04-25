@@ -18,12 +18,16 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.util.NbBundle;
 
+import java.io.Serializable;
+
 /**
  * @author pfiala
  */
-public abstract class AbstractMultiViewElement implements MultiViewElement{
+public abstract class AbstractMultiViewElement implements MultiViewElement, Serializable {
+    static final long serialVersionUID = -1161218720923844459L;
+
     protected XmlMultiViewDataObject dObj;
-    protected MultiViewElementCallback callback;
+    protected transient MultiViewElementCallback callback;
 
     protected AbstractMultiViewElement() {
     }
@@ -44,7 +48,9 @@ public abstract class AbstractMultiViewElement implements MultiViewElement{
     }
 
     public CloseOperationState canCloseElement() {
-        if (!dObj.canClose()) {
+        if (dObj == null) {
+            return CloseOperationState.STATE_OK;
+        } else if (!dObj.canClose()) {
             return MultiViewFactory.createUnsafeCloseState(NbBundle.getMessage(AbstractMultiViewElement.class,
                     "LBL_DataObjectModified"), null, null);
         } else {
@@ -57,6 +63,9 @@ public abstract class AbstractMultiViewElement implements MultiViewElement{
     }
 
     public org.openide.awt.UndoRedo getUndoRedo() {
+        if (dObj == null) {
+            return null;
+        }
         return dObj.getEditorSupport().getUndoRedo0();
     }
 }

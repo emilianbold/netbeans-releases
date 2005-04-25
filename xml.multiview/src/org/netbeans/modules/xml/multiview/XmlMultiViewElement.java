@@ -26,7 +26,7 @@ import javax.swing.*;
 public class XmlMultiViewElement extends AbstractMultiViewElement implements java.io.Serializable {
     static final long serialVersionUID = -326467724916080580L;
     
-    transient private TopComponent xmlTopComp;
+    private TopComponent xmlTopComp;
     private transient javax.swing.JComponent toolbar;
 
     /** Creates a new instance of XmlMultiviewElement */
@@ -34,8 +34,9 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
     }
     
     /** Creates a new instance of XmlMultiviewElement */
-    public XmlMultiViewElement(XmlMultiViewDataObject dObj) {
+    public XmlMultiViewElement(TopComponent xmlTopComponent, XmlMultiViewDataObject dObj) {
         super(dObj);
+        this.xmlTopComp = xmlTopComponent;
     }
 
     public void componentOpened() {
