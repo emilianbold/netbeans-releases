@@ -165,7 +165,7 @@ implements Executor {
     public boolean exec (Event ev) {
         // TODO: fetch current engine from the Event
         synchronized (getDebuggerImpl ().LOCK) {
-            System.out.println("/nStepAction.exec");
+            //S ystem.out.println("/nStepAction.exec");
 
             // 1) remove step request
             removeStepRequests (((LocatableEvent) ev).thread ());
@@ -198,7 +198,7 @@ implements Executor {
             ) {
                 // YES!
                 getDebuggerImpl ().setStoppedState (tr);
-                System.out.println("/nStepAction.exec end - do not resume");
+                //S ystem.out.println("/nStepAction.exec end - do not resume");
                 return false; // do not resume
             }
 
@@ -209,7 +209,7 @@ implements Executor {
                             StepRequest.STEP_INTO;
             getStepIntoActionProvider ().doAction 
                 (ActionsManager.ACTION_STEP_INTO);
-            System.out.println("/nStepAction.exec end - resume");
+            //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume
         }
     }
