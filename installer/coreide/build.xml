@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -29,7 +29,11 @@ Microsystems, Inc. All Rights Reserved.
   <target name="init" depends="set-buildnumber, set-installer.basename" unless="inited">
     <property name="inited" value="true" />
   </target>
-  
+
+  <target name="init-ml" depends="init, copy-localized-data" unless="inited-ml">
+    <property name="inited-ml" value="true" />
+  </target>
+
   <target name="copy-localized-data">
      <copy todir="." failonerror="false">
          <fileset dir="../../translatedfiles/src/installer/coreide"/>
@@ -89,31 +93,74 @@ Microsystems, Inc. All Rights Reserved.
     </java>
   </target>
 
+  <target name="xsl-win32-ml" depends="init">
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="build/${ismp.project}-win32" />
+      <arg value="-xsl" />
+      <arg value="../lib/ml.xsl"/>
+      <arg value="-saveas"/>
+      <arg value="build/${ismp.project}-win32-ml"/>
+      <classpath>
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="xsl-unix-ml" depends="init">
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="build/${ismp.project}-unix" />
+      <arg value="-xsl" />
+      <arg value="../lib/ml.xsl"/>
+      <arg value="-saveas"/>
+      <arg value="build/${ismp.project}-unix-ml"/>
+      <classpath>
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+  </target>
+
+  <macrodef name="build-installer">
+    <attribute name="input.ismp.project"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="@{input.ismp.project}" />
+        <arg value="-build" />
+        <arg value="-alias"/>
+        <arg value="basedir=${basedir}"/>
+        <arg value="-alias"/>
+        <arg value="nb.dir=${nb.dir}"/>
+        <arg value="-alias"/>
+        <arg value="ismp.home=${ismp.home}"/>
+        <arg value="-alias"/>
+        <arg value="storage.builder=${storage.builder}"/>
+        <arg value="-alias"/>
+        <arg value="scripts.dir=build/storagebuilder"/>
+        <classpath>
+          <pathelement path="build/classes" />
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
+
   <target name="build-win32" depends="init, compile, xsl-win32">
     <copy file="../lib/scripts/run-storage-builder-windows.template"
           tofile="build/storagebuilder/run-storage-builder-windows.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="build/${ismp.project}-win32" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="ismp.home=${ismp.home}"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />      
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="build/${ismp.project}-win32"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
+  </target>
+
+  <target name="build-win32-ml" depends="init-ml, compile, xsl-win32, xsl-win32-ml">
+    <copy file="../lib/scripts/run-storage-builder-windows.template"
+          tofile="build/storagebuilder/run-storage-builder-windows.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <build-installer input.ismp.project="build/${ismp.project}-win32-ml"/>
+    <delete dir="build/storagebuilder"/>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
   </target>
 
   <target name="build-unix" depends="init, compile, xsl-unix">
@@ -121,32 +168,31 @@ Microsystems, Inc. All Rights Reserved.
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="build/${ismp.project}-unix" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="ismp.home=${ismp.home}"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />      
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="build/${ismp.project}-unix"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
     <move file="build/disk1/setupsolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
     <move file="build/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
+
+  <target name="build-unix-ml" depends="init-ml, compile, xsl-unix, xsl-unix-ml">
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <build-installer input.ismp.project="build/${ismp.project}-unix-ml"/>
+    <delete dir="build/storagebuilder"/>
+    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
+    <move file="build/disk1/setupsolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
+    <move file="build/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
+  </target>
   
   <target name="build" depends="init, build-win32, build-unix" description="build the installers">
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
+  </target>
+
+  <target name="build-ml" depends="init, build-win32-ml, build-unix-ml" description="build the multilanguage installers">
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
   </target>
 
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">

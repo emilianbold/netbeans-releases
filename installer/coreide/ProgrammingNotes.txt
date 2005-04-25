@@ -1,10 +1,26 @@
 Prerequisites
    
  - InstallShield MultiPlatform 5 (SP3)
- - Apache Ant 1.6.1
- - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
+ - Apache Ant 1.6.2
+ - JDK 1.4.2_X (not JDK 1.5 which uses an incompatible classfile format)
  - external unzip utility on $PATH
  - Unix
+
+Default target is 'build'.
+
+Target 'build' builds installers for 4 supported platforms with language 
+support for English (en).
+
+Target 'build-ml' builds installers for 4 supported platforms with language
+support for English (an), Japanese (ja) and Simplified Chinese (zh).
+Suffix '-ml' is added to installer.basename.
+
+Supported platforms are:
+1.Linux (including 64bit Linux + 64bit JDK on AMD). Suffix '-linux' is added
+to installer.basename.
+2.Solaris Sparc. Suffix '-solsparc' is added.
+3.Solaris X86. Suffix '-solx86' is added.
+4.Windows. Suffix '-win' is added.
 
 To build from command line run ant as usual with
 
