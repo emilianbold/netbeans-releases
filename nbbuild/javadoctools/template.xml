@@ -56,7 +56,7 @@ cause it to fail.
     <target name="javadoc-init" >
     
         <!-- Output dir (will create ${javadoc.name}/ and ${javadoc.name}.zip beneath this): -->
-        <property name="javadoc.out" location="${javadoc.base}/javadoc"/>
+        <property name="javadoc.out" location="${netbeans.javadoc.dir}"/>
         <property name="javadoc.out.dir" location="${javadoc.out}/${javadoc.name}"/>
         <property name="javadoc.out.zip" location="${javadoc.out}/${javadoc.name}.zip"/>
         <!-- Source files: -->

@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="clusters.list.file" location="${nb_all}/nbbuild/cluster.properties"/>
   <property name="netbeans.dest.dir" location="${nb_all}/nbbuild/netbeans"/>
   <property name="netbeans.build.dir" location="${nb_all}/nbbuild/build"/>
+  <property name="netbeans.javadoc.dir" location="${netbeans.build.dir}/javadoc"/>
   <property name="moduleCluster.file" location="${netbeans.dest.dir}/moduleCluster.properties"/>
   <property name="modulesxml.file" location="${nb_all}/nbbuild/templates/modules.xml"/>
 

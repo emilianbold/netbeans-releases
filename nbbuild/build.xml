@@ -2702,8 +2702,8 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <!-- build javadoc for unsupported APIs -->
       <for-each startdir=".." target="javadoc" locations="${modules}"/>
       <taskdef name="simplemerge" classname="org.netbeans.nbbuild.SimpleMerge" classpath="nbantext.jar"/>
-      <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${fixedmodules}"/>
-      <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${modules}"/>
+      <simplemerge topdir=".." subdir="javadoc" dest="${netbeans.javadoc.dir}" modules="${fixedmodules}"/>
+      <simplemerge topdir=".." subdir="javadoc" dest="${netbeans.javadoc.dir}" modules="${modules}"/>
       
       <echo file="build/APIChanges/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;changes&gt;
@@ -2713,7 +2713,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
         &lt;/changes&gt;
       </echo>
       
-      <concat destfile="modules_javadoc/apichanges.xml" >
+      <concat destfile="${netbeans.javadoc.dir}/apichanges.xml" >
           <fileset dir="build/APIChanges" includes="header.gen" />
           <fileset dir="build/APIChanges" includes="*" excludes="*.gen" />
           <fileset dir="build/APIChanges" includes="footer.gen" />
@@ -2728,7 +2728,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
         &lt;/apis&gt;
       </echo>
       
-      <concat destfile="modules_javadoc/index.xml" >
+      <concat destfile="${netbeans.javadoc.dir}/index.xml" >
           <fileset dir="build/ModulesExportedInterfaces" includes="header.gen" />
           <fileset dir="build/ModulesExportedInterfaces" includes="*" excludes="*.gen" />
           <fileset dir="build/ModulesExportedInterfaces" includes="footer.gen" />
@@ -2739,16 +2739,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       </tstamp>
       
       <style 
-        in="modules_javadoc/index.xml" 
-        out="modules_javadoc/usecases.html" 
+        in="${netbeans.javadoc.dir}/index.xml" 
+        out="${netbeans.javadoc.dir}/usecases.html" 
         style="javadoctools/export2usecases.xsl"
       >
         <param name="date" expression="${modules-javadoc-date}"/>
       </style>
       
       <style 
-        in="modules_javadoc/apichanges.xml" 
-        out="modules_javadoc/apichanges.html" 
+        in="${netbeans.javadoc.dir}/apichanges.xml" 
+        out="${netbeans.javadoc.dir}/apichanges.html" 
         style="javadoctools/export2apichanges.xsl"
       >
         <param name="date" expression="${modules-javadoc-date}"/>
@@ -2766,18 +2766,18 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     />
 
         
-    <javadoc-index target="modules_javadoc/allclasses.html" > 
-        <packageslist dir="modules_javadoc" >
+    <javadoc-index target="${netbeans.javadoc.dir}/allclasses.html" > 
+        <packageslist dir="${netbeans.javadoc.dir}" >
             <include name="**/allclasses-noframe.html" />
         </packageslist>
     </javadoc-index>
     
-    <copy file="javadoctools/netbeans.css" tofile="modules_javadoc/netbeans.css" />
+    <copy file="javadoctools/netbeans.css" tofile="${netbeans.javadoc.dir}/netbeans.css" />
 
     <!-- at the end geneate the index.html so people know where to start -->      
       <style 
-        in="modules_javadoc/index.xml" 
-        out="modules_javadoc/index.html" 
+        in="${netbeans.javadoc.dir}/index.xml" 
+        out="${netbeans.javadoc.dir}/index.html" 
         style="javadoctools/export2html.xsl"
       >
         <param name="date" expression="${modules-javadoc-date}"/>
@@ -3379,7 +3379,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
   <target name="localclean" depends="clean-cluster-flags,init">
     <delete dir="${test.user.dir}"/>
-    <delete dir="modules_javadoc"/>
+    <delete dir="build"/>
     <delete file="moduledefs-tmp.properties"/>
     <delete dir="nbms" />
     <delete dir="modules_exported_interfaces"/>

@@ -1,0 +1,88 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+   this file lists all currently known modules that produce
+   javadoc. If there is new javadoc being build for certain
+   module, the nbbuild/javadoctools/template.xml adds new 
+   entry at the end of this file, it is then on the author
+   to decide whether such change shall be commited to CVS
+   or not
+-->
+
+<property name="javadoc.docs.org-openide-util-enum" value="${javadoc.web.root}/org-openide-util-enum"/>
+<property name="javadoc.docs.org-openide-util" value="${javadoc.web.root}/org-openide-util"/>
+<property name="javadoc.docs.org-netbeans-api-web-webmodule" value="${javadoc.web.root}/org-netbeans-api-web-webmodule"/>
+<property name="javadoc.docs.org-netbeans-modules-nbjunit" value="${javadoc.web.root}/org-netbeans-modules-nbjunit"/>
+<property name="javadoc.docs.org-netbeans-modules-jellytools" value="${javadoc.web.root}/org-netbeans-modules-jellytools"/>
+<property name="javadoc.docs.org-openide-actions" value="${javadoc.web.root}/org-openide-actions"/>
+<property name="javadoc.docs.org-openide-options" value="${javadoc.web.root}/org-openide-options"/>
+<property name="javadoc.docs.org-openide-compat" value="${javadoc.web.root}/org-openide-compat"/>
+<property name="javadoc.docs.org-openide-awt" value="${javadoc.web.root}/org-openide-awt"/>
+<property name="javadoc.docs.org-openide-dialogs" value="${javadoc.web.root}/org-openide-dialogs"/>
+<property name="javadoc.docs.org-openide-nodes" value="${javadoc.web.root}/org-openide-nodes"/>
+<property name="javadoc.docs.org-openide-explorer" value="${javadoc.web.root}/org-openide-explorer"/>
+<property name="javadoc.docs.org-openide-fs" value="${javadoc.web.root}/org-openide-fs"/>
+<property name="javadoc.docs.org-openide-modules" value="${javadoc.web.root}/org-openide-modules"/>
+<property name="javadoc.docs.org-openide-text" value="${javadoc.web.root}/org-openide-text"/>
+<property name="javadoc.docs.org-openide-windows" value="${javadoc.web.root}/org-openide-windows"/>
+<property name="javadoc.docs.org-openide-loaders" value="${javadoc.web.root}/org-openide-loaders"/>
+<property name="javadoc.docs.org-openide-io" value="${javadoc.web.root}/org-openide-io"/>
+<property name="javadoc.docs.org-openide-execution" value="${javadoc.web.root}/org-openide-execution"/>
+<property name="javadoc.docs.org-openidex-util" value="${javadoc.web.root}/org-openidex-util"/>
+<property name="javadoc.docs.org-apache-tools-ant-module" value="${javadoc.web.root}/org-apache-tools-ant-module"/>
+<property name="javadoc.docs.org-netbeans-modules-javahelp" value="${javadoc.web.root}/org-netbeans-modules-javahelp"/>
+<property name="javadoc.docs.org-netbeans-modules-settings" value="${javadoc.web.root}/org-netbeans-modules-settings"/>
+<property name="javadoc.docs.org-netbeans-core-multiview" value="${javadoc.web.root}/org-netbeans-core-multiview"/>
+<property name="javadoc.docs.org-netbeans-modules-diff" value="${javadoc.web.root}/org-netbeans-modules-diff"/>
+<property name="javadoc.docs.org-openide-src" value="${javadoc.web.root}/org-openide-src"/>
+<property name="javadoc.docs.org-netbeans-modules-queries" value="${javadoc.web.root}/org-netbeans-modules-queries"/>
+<property name="javadoc.docs.org-netbeans-modules-projectapi" value="${javadoc.web.root}/org-netbeans-modules-projectapi"/>
+<property name="javadoc.docs.org-netbeans-modules-projectuiapi" value="${javadoc.web.root}/org-netbeans-modules-projectuiapi"/>
+<property name="javadoc.docs.org-netbeans-modules-project-libraries" value="${javadoc.web.root}/org-netbeans-modules-project-libraries"/>
+<property name="javadoc.docs.org-netbeans-api-debugger" value="${javadoc.web.root}/org-netbeans-api-debugger"/>
+<property name="javadoc.docs.org-netbeans-spi-viewmodel" value="${javadoc.web.root}/org-netbeans-spi-viewmodel"/>
+<property name="javadoc.docs.org-netbeans-spi-debugger-ui" value="${javadoc.web.root}/org-netbeans-spi-debugger-ui"/>
+<property name="javadoc.docs.org-netbeans-api-debugger-jpda" value="${javadoc.web.root}/org-netbeans-api-debugger-jpda"/>
+<property name="javadoc.docs.org-netbeans-modules-project-ant" value="${javadoc.web.root}/org-netbeans-modules-project-ant"/>
+<property name="javadoc.docs.org-netbeans-modules-j2eeserver" value="${javadoc.web.root}/org-netbeans-modules-j2eeserver"/>
+<property name="javadoc.docs.org-netbeans-api-java" value="${javadoc.web.root}/org-netbeans-api-java"/>
+<property name="javadoc.docs.org-netbeans-modules-javacore" value="${javadoc.web.root}/org-netbeans-modules-javacore"/>
+<property name="javadoc.docs.org-netbeans-jmi-javamodel" value="${javadoc.web.root}/org-netbeans-jmi-javamodel"/>
+<property name="javadoc.docs.org-netbeans-modules-java-platform" value="${javadoc.web.root}/org-netbeans-modules-java-platform"/>
+<property name="javadoc.docs.org-netbeans-modules-java-project" value="${javadoc.web.root}/org-netbeans-modules-java-project"/>
+<property name="javadoc.docs.org-netbeans-modules-lexer" value="${javadoc.web.root}/org-netbeans-modules-lexer"/>
+<property name="javadoc.docs.org-netbeans-modules-refactoring" value="${javadoc.web.root}/org-netbeans-modules-refactoring"/>
+<property name="javadoc.docs.org-netbeans-modules-vcscore" value="${javadoc.web.root}/org-netbeans-modules-vcscore"/>
+<property name="javadoc.docs.org-netbeans-api-xml" value="${javadoc.web.root}/org-netbeans-api-xml"/>
+<property name="javadoc.docs.org-netbeans-api-web-dd" value="${javadoc.web.root}/org-netbeans-api-web-dd"/>
+<property name="javadoc.docs.org-netbeans-modules-j2ee-dd" value="${javadoc.web.root}/org-netbeans-modules-j2ee-dd"/>
+<property name="javadoc.docs.org-netbeans-modules-j2ee-api-ejbmodule" value="${javadoc.web.root}/org-netbeans-modules-j2ee-api-ejbmodule"/>
+<property name="javadoc.docs.org-netbeans-modules-j2ee-common" value="${javadoc.web.root}/org-netbeans-modules-j2ee-common"/>
+<property name="javadoc.docs.org-netbeans-modules-j2ee-dd-webservice" value="${javadoc.web.root}/org-netbeans-modules-j2ee-dd-webservice"/>
+<property name="javadoc.docs.org-netbeans-modules-websvc-websvcapi" value="${javadoc.web.root}/org-netbeans-modules-websvc-websvcapi"/>
+<property name="javadoc.docs.org-netbeans-modules-websvc-registry" value="${javadoc.web.root}/org-netbeans-modules-websvc-registry"/>
+<property name="javadoc.docs.org-netbeans-modules-websvc-core" value="${javadoc.web.root}/org-netbeans-modules-websvc-core"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-fold" value="${javadoc.web.root}/org-netbeans-modules-editor-fold"/>
+<property name="javadoc.docs.org-netbeans-modules-classfile" value="${javadoc.web.root}/org-netbeans-modules-classfile"/>
+<property name="javadoc.docs.org-netbeans-modules-registry" value="${javadoc.web.root}/org-netbeans-modules-registry"/>
+<property name="javadoc.docs.org-netbeans-core-registry" value="${javadoc.web.root}/org-netbeans-core-registry"/>
+<property name="javadoc.docs.org-netbeans-modules-convertor" value="${javadoc.web.root}/org-netbeans-modules-convertor"/>
+<property name="javadoc.docs.org-netbeans-modules-masterfs" value="${javadoc.web.root}/org-netbeans-modules-masterfs"/>
+<property name="javadoc.docs.org-netbeans-modules-looks" value="${javadoc.web.root}/org-netbeans-modules-looks"/>
+<property name="javadoc.docs.org-netbeans-lib-terminalemulator" value="${javadoc.web.root}/org-netbeans-lib-terminalemulator"/>
+<property name="javadoc.docs.org-netbeans-swing-tabcontrol" value="${javadoc.web.root}/org-netbeans-swing-tabcontrol"/>
+<property name="javadoc.docs.org-netbeans-swing-plaf" value="${javadoc.web.root}/org-netbeans-swing-plaf"/>
+<property name="javadoc.docs.org-netbeans-modules-autoupdate" value="${javadoc.web.root}/org-netbeans-modules-autoupdate"/>
+<property name="javadoc.docs.org-netbeans-api-mdr" value="${javadoc.web.root}/org-netbeans-api-mdr"/>
+<property name="javadoc.docs.org-netbeans-modules-editor" value="${javadoc.web.root}/org-netbeans-modules-editor"/>

@@ -1,0 +1,88 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+   this file lists all currently known modules that produce
+   javadoc. If there is new javadoc being build for certain
+   module, the nbbuild/javadoctools/template.xml adds new 
+   entry at the end of this file, it is then on the author
+   to decide whether such change shall be commited to CVS
+   or not
+-->
+
+<replacefilter token="@org-openide-util-enum@" value="${javadoc.docs.org-openide-util-enum}"/>
+<replacefilter token="@org-openide-util@" value="${javadoc.docs.org-openide-util}"/>
+<replacefilter token="@org-netbeans-api-web-webmodule@" value="${javadoc.docs.org-netbeans-api-web-webmodule}"/>
+<replacefilter token="@org-netbeans-modules-nbjunit@" value="${javadoc.docs.org-netbeans-modules-nbjunit}"/>
+<replacefilter token="@org-netbeans-modules-jellytools@" value="${javadoc.docs.org-netbeans-modules-jellytools}"/>
+<replacefilter token="@org-openide-actions@" value="${javadoc.docs.org-openide-actions}"/>
+<replacefilter token="@org-openide-options@" value="${javadoc.docs.org-openide-options}"/>
+<replacefilter token="@org-openide-compat@" value="${javadoc.docs.org-openide-compat}"/>
+<replacefilter token="@org-openide-awt@" value="${javadoc.docs.org-openide-awt}"/>
+<replacefilter token="@org-openide-dialogs@" value="${javadoc.docs.org-openide-dialogs}"/>
+<replacefilter token="@org-openide-nodes@" value="${javadoc.docs.org-openide-nodes}"/>
+<replacefilter token="@org-openide-explorer@" value="${javadoc.docs.org-openide-explorer}"/>
+<replacefilter token="@org-openide-fs@" value="${javadoc.docs.org-openide-fs}"/>
+<replacefilter token="@org-openide-modules@" value="${javadoc.docs.org-openide-modules}"/>
+<replacefilter token="@org-openide-text@" value="${javadoc.docs.org-openide-text}"/>
+<replacefilter token="@org-openide-windows@" value="${javadoc.docs.org-openide-windows}"/>
+<replacefilter token="@org-openide-loaders@" value="${javadoc.docs.org-openide-loaders}"/>
+<replacefilter token="@org-openide-io@" value="${javadoc.docs.org-openide-io}"/>
+<replacefilter token="@org-openide-execution@" value="${javadoc.docs.org-openide-execution}"/>
+<replacefilter token="@org-openidex-util@" value="${javadoc.docs.org-openidex-util}"/>
+<replacefilter token="@org-apache-tools-ant-module@" value="${javadoc.docs.org-apache-tools-ant-module}"/>
+<replacefilter token="@org-netbeans-modules-javahelp@" value="${javadoc.docs.org-netbeans-modules-javahelp}"/>
+<replacefilter token="@org-netbeans-modules-settings@" value="${javadoc.docs.org-netbeans-modules-settings}"/>
+<replacefilter token="@org-netbeans-core-multiview@" value="${javadoc.docs.org-netbeans-core-multiview}"/>
+<replacefilter token="@org-netbeans-modules-diff@" value="${javadoc.docs.org-netbeans-modules-diff}"/>
+<replacefilter token="@org-openide-src@" value="${javadoc.docs.org-openide-src}"/>
+<replacefilter token="@org-netbeans-modules-queries@" value="${javadoc.docs.org-netbeans-modules-queries}"/>
+<replacefilter token="@org-netbeans-modules-projectapi@" value="${javadoc.docs.org-netbeans-modules-projectapi}"/>
+<replacefilter token="@org-netbeans-modules-projectuiapi@" value="${javadoc.docs.org-netbeans-modules-projectuiapi}"/>
+<replacefilter token="@org-netbeans-modules-project-libraries@" value="${javadoc.docs.org-netbeans-modules-project-libraries}"/>
+<replacefilter token="@org-netbeans-api-debugger@" value="${javadoc.docs.org-netbeans-api-debugger}"/>
+<replacefilter token="@org-netbeans-spi-viewmodel@" value="${javadoc.docs.org-netbeans-spi-viewmodel}"/>
+<replacefilter token="@org-netbeans-spi-debugger-ui@" value="${javadoc.docs.org-netbeans-spi-debugger-ui}"/>
+<replacefilter token="@org-netbeans-api-debugger-jpda@" value="${javadoc.docs.org-netbeans-api-debugger-jpda}"/>
+<replacefilter token="@org-netbeans-modules-project-ant@" value="${javadoc.docs.org-netbeans-modules-project-ant}"/>
+<replacefilter token="@org-netbeans-modules-j2eeserver@" value="${javadoc.docs.org-netbeans-modules-j2eeserver}"/>
+<replacefilter token="@org-netbeans-api-java@" value="${javadoc.docs.org-netbeans-api-java}"/>
+<replacefilter token="@org-netbeans-modules-javacore@" value="${javadoc.docs.org-netbeans-modules-javacore}"/>
+<replacefilter token="@org-netbeans-jmi-javamodel@" value="${javadoc.docs.org-netbeans-jmi-javamodel}"/>
+<replacefilter token="@org-netbeans-modules-java-platform@" value="${javadoc.docs.org-netbeans-modules-java-platform}"/>
+<replacefilter token="@org-netbeans-modules-java-project@" value="${javadoc.docs.org-netbeans-modules-java-project}"/>
+<replacefilter token="@org-netbeans-modules-lexer@" value="${javadoc.docs.org-netbeans-modules-lexer}"/>
+<replacefilter token="@org-netbeans-modules-refactoring@" value="${javadoc.docs.org-netbeans-modules-refactoring}"/>
+<replacefilter token="@org-netbeans-modules-vcscore@" value="${javadoc.docs.org-netbeans-modules-vcscore}"/>
+<replacefilter token="@org-netbeans-api-xml@" value="${javadoc.docs.org-netbeans-api-xml}"/>
+<replacefilter token="@org-netbeans-api-web-dd@" value="${javadoc.docs.org-netbeans-api-web-dd}"/>
+<replacefilter token="@org-netbeans-modules-j2ee-dd@" value="${javadoc.docs.org-netbeans-modules-j2ee-dd}"/>
+<replacefilter token="@org-netbeans-modules-j2ee-api-ejbmodule@" value="${javadoc.docs.org-netbeans-modules-j2ee-api-ejbmodule}"/>
+<replacefilter token="@org-netbeans-modules-j2ee-common@" value="${javadoc.docs.org-netbeans-modules-j2ee-common}"/>
+<replacefilter token="@org-netbeans-modules-j2ee-dd-webservice@" value="${javadoc.docs.org-netbeans-modules-j2ee-dd-webservice}"/>
+<replacefilter token="@org-netbeans-modules-websvc-websvcapi@" value="${javadoc.docs.org-netbeans-modules-websvc-websvcapi}"/>
+<replacefilter token="@org-netbeans-modules-websvc-registry@" value="${javadoc.docs.org-netbeans-modules-websvc-registry}"/>
+<replacefilter token="@org-netbeans-modules-websvc-core@" value="${javadoc.docs.org-netbeans-modules-websvc-core}"/>
+<replacefilter token="@org-netbeans-modules-editor-fold@" value="${javadoc.docs.org-netbeans-modules-editor-fold}"/>
+<replacefilter token="@org-netbeans-modules-classfile@" value="${javadoc.docs.org-netbeans-modules-classfile}"/>
+<replacefilter token="@org-netbeans-modules-registry@" value="${javadoc.docs.org-netbeans-modules-registry}"/>
+<replacefilter token="@org-netbeans-core-registry@" value="${javadoc.docs.org-netbeans-core-registry}"/>
+<replacefilter token="@org-netbeans-modules-convertor@" value="${javadoc.docs.org-netbeans-modules-convertor}"/>
+<replacefilter token="@org-netbeans-modules-masterfs@" value="${javadoc.docs.org-netbeans-modules-masterfs}"/>
+<replacefilter token="@org-netbeans-modules-looks@" value="${javadoc.docs.org-netbeans-modules-looks}"/>
+<replacefilter token="@org-netbeans-lib-terminalemulator@" value="${javadoc.docs.org-netbeans-lib-terminalemulator}"/>
+<replacefilter token="@org-netbeans-swing-tabcontrol@" value="${javadoc.docs.org-netbeans-swing-tabcontrol}"/>
+<replacefilter token="@org-netbeans-swing-plaf@" value="${javadoc.docs.org-netbeans-swing-plaf}"/>
+<replacefilter token="@org-netbeans-modules-autoupdate@" value="${javadoc.docs.org-netbeans-modules-autoupdate}"/>
+<replacefilter token="@org-netbeans-api-mdr@" value="${javadoc.docs.org-netbeans-api-mdr}"/>
+<replacefilter token="@org-netbeans-modules-editor@" value="${javadoc.docs.org-netbeans-modules-editor}"/>
