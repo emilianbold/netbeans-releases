@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- create javadoc -->
         <antcall target="javadoc"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
-        <copy file="javadoc/jemmy-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
+        <copy file="javadoc/org-netbeans-jemmy.zip" todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
     </target>
 
      <!-- overridden because we need to read jemmy version from version_info -->
