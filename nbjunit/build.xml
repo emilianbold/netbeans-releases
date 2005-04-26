@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Called after jar target and before module-* targets in projectized.xml -->
     <target name="netbeans-extra" depends="jar-nbjunit,javadoc">
-        <copy file="javadoc/org-netbeans-modules-nbjunit.zip" todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
+        <copy file="${netbeans.javadoc.dir}/org-netbeans-modules-nbjunit.zip" todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
     </target>
 
     <!-- XXX this is a mess; should use separate source roots for main module, nbjunit.jar, and nbjunit-ide.jar -->
