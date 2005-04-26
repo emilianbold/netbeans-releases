@@ -19,10 +19,7 @@ Microsystems, Inc. All Rights Reserved.
    to decide whether such change shall be commited to CVS
    or not
 -->
-
-<replacefilter token="@org-openide-util-enum@" value="${javadoc.docs.org-openide-util-enum}"/>
 <replacefilter token="@org-openide-util@" value="${javadoc.docs.org-openide-util}"/>
-<replacefilter token="@org-netbeans-api-web-webmodule@" value="${javadoc.docs.org-netbeans-api-web-webmodule}"/>
 <replacefilter token="@org-netbeans-modules-nbjunit@" value="${javadoc.docs.org-netbeans-modules-nbjunit}"/>
 <replacefilter token="@org-netbeans-modules-jellytools@" value="${javadoc.docs.org-netbeans-modules-jellytools}"/>
 <replacefilter token="@org-openide-actions@" value="${javadoc.docs.org-openide-actions}"/>
@@ -35,6 +32,7 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-openide-fs@" value="${javadoc.docs.org-openide-fs}"/>
 <replacefilter token="@org-openide-modules@" value="${javadoc.docs.org-openide-modules}"/>
 <replacefilter token="@org-openide-text@" value="${javadoc.docs.org-openide-text}"/>
+<replacefilter token="@org-openide-util-enum@" value="${javadoc.docs.org-openide-util-enum}"/>
 <replacefilter token="@org-openide-windows@" value="${javadoc.docs.org-openide-windows}"/>
 <replacefilter token="@org-openide-loaders@" value="${javadoc.docs.org-openide-loaders}"/>
 <replacefilter token="@org-openide-io@" value="${javadoc.docs.org-openide-io}"/>
@@ -73,6 +71,7 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-websvc-websvcapi@" value="${javadoc.docs.org-netbeans-modules-websvc-websvcapi}"/>
 <replacefilter token="@org-netbeans-modules-websvc-registry@" value="${javadoc.docs.org-netbeans-modules-websvc-registry}"/>
 <replacefilter token="@org-netbeans-modules-websvc-core@" value="${javadoc.docs.org-netbeans-modules-websvc-core}"/>
+<replacefilter token="@org-netbeans-modules-editor@" value="${javadoc.docs.org-netbeans-modules-editor}"/>
 <replacefilter token="@org-netbeans-modules-editor-fold@" value="${javadoc.docs.org-netbeans-modules-editor-fold}"/>
 <replacefilter token="@org-netbeans-modules-classfile@" value="${javadoc.docs.org-netbeans-modules-classfile}"/>
 <replacefilter token="@org-netbeans-modules-registry@" value="${javadoc.docs.org-netbeans-modules-registry}"/>
@@ -85,4 +84,3 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-swing-plaf@" value="${javadoc.docs.org-netbeans-swing-plaf}"/>
 <replacefilter token="@org-netbeans-modules-autoupdate@" value="${javadoc.docs.org-netbeans-modules-autoupdate}"/>
 <replacefilter token="@org-netbeans-api-mdr@" value="${javadoc.docs.org-netbeans-api-mdr}"/>
-<replacefilter token="@org-netbeans-modules-editor@" value="${javadoc.docs.org-netbeans-modules-editor}"/>
