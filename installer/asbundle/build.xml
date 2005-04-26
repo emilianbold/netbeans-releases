@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -29,8 +29,12 @@ Microsystems, Inc. All Rights Reserved.
   <property name="build.dir" value="build"/>
   <!-- End -->
   
-  <target name="init" depends="set-buildnumber, set-installer.basename, copy-localized-data" unless="inited">
+  <target name="init" depends="set-buildnumber, set-installer.basename" unless="inited">
     <property name="inited" value="true" />
+  </target>
+  
+  <target name="init-ml" depends="init, copy-localized-data" unless="inited-ml">
+    <property name="inited-ml" value="true" />
   </target>
   
   <target name="copy-localized-data">
@@ -55,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
-
+  
   <target name="set-buildnumber" unless="buildnumber">
     <tstamp>
     	<format property="buildnumber" pattern="yyMMdd"/>
@@ -65,6 +69,69 @@ Microsystems, Inc. All Rights Reserved.
   <target name="set-installer.basename" unless="installer.basename" depends="set-buildnumber">
     <property name="installer.basename" value="NetBeans-dev-${buildnumber}"/>
   </target>
+  
+  <macrodef name="transform-ml">
+    <attribute name="input.ismp.project"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="@{input.ismp.project}" />
+        <arg value="-xsl" />
+        <arg value="../lib/ml.xsl"/>
+        <arg value="-saveas"/>
+        <arg value="@{input.ismp.project}-ml"/>
+        <classpath>
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
+  
+  <target name="xsl-linux-ml" depends="init">
+    <transform-ml input.ismp.project="as-linux.xml"/>
+  </target>
+  
+  <target name="xsl-solaris-sparc-ml" depends="init">
+    <transform-ml input.ismp.project="as-solaris-sparc.xml"/>
+  </target>
+  
+  <target name="xsl-solaris-x86-ml" depends="init">
+    <transform-ml input.ismp.project="as-solaris-x86.xml"/>
+  </target>
+  
+  <target name="xsl-windows-ml" depends="init">
+    <transform-ml input.ismp.project="as-windows.xml"/>
+  </target>
+  
+  <target name="xsl-macosx-ml" depends="init">
+    <transform-ml input.ismp.project="as-macosx.xml"/>
+  </target>
+  
+  <macrodef name="build-installer">
+    <attribute name="input.ismp.project"/>
+    <attribute name="input.nb.dir" default="${nb.dir}"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="@{input.ismp.project}" />
+        <arg value="-build" />
+        <arg value="-alias"/>
+        <arg value="basedir=${basedir}"/>
+        <arg value="-alias"/>
+        <arg value="nb.dir=@{input.nb.dir}"/>
+        <arg value="-alias"/>
+        <arg value="as.installer=${as.installer}"/>
+        <arg value="-alias"/>
+        <arg value="as.scripts.dir=build/scripts"/>
+        <arg value="-alias"/>
+        <arg value="storage.builder=${storage.builder}"/>
+        <arg value="-alias"/>
+        <arg value="sb.scripts.dir=build/storagebuilder"/>
+        <classpath>
+          <pathelement path="build/classes" />
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
 
   <target name="build-linux" depends="init, clean-build, compile, create-statefile">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
@@ -73,27 +140,20 @@ Microsystems, Inc. All Rights Reserved.
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="as-linux.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="as.installer=${as.installer}"/>
-      <arg value="-alias"/>
-      <arg value="as.scripts.dir=build/scripts"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="sb.scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />      
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="as-linux.xml"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
+  </target>
+  
+  <target name="build-linux-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-linux-ml">
+    <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
+    <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <build-installer input.ismp.project="as-linux.xml-ml"/>
+    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
+    <delete file="as-linux.xml-ml"/>
   </target>
 
   <target name="build-solaris-sparc" depends="init, clean-build, compile, create-statefile">
@@ -103,27 +163,20 @@ Microsystems, Inc. All Rights Reserved.
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="as-solaris-sparc.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="as.installer=${as.installer}"/>
-      <arg value="-alias"/>
-      <arg value="as.scripts.dir=build/scripts"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="sb.scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="as-solaris-sparc.xml"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
+  </target>
+  
+  <target name="build-solaris-sparc-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-solaris-sparc-ml">
+    <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
+    <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <build-installer input.ismp.project="as-solaris-sparc.xml-ml"/>
+    <delete file="as-solaris-sparc.xml-ml"/>
+    <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
   </target>
 
   <target name="build-solaris-x86" depends="init, clean-build, compile, create-statefile">
@@ -133,27 +186,20 @@ Microsystems, Inc. All Rights Reserved.
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="as-solaris-x86.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="as.installer=${as.installer}"/>
-      <arg value="-alias"/>
-      <arg value="as.scripts.dir=build/scripts"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="sb.scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="as-solaris-x86.xml"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
+  </target>
+  
+  <target name="build-solaris-x86-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-solaris-x86-ml">
+    <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
+    <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <build-installer input.ismp.project="as-solaris-x86.xml-ml"/>
+    <delete file="as-solaris-x86.xml-ml"/>
+    <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
   </target>
 
   <target name="build-windows" depends="init, clean-build, compile, create-statefile">
@@ -170,25 +216,27 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
     <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
     <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="as-windows.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="as.scripts.dir=build/scripts"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="sb.scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="as-windows.xml"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
+  </target>
+  
+  <target name="build-windows-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-windows-ml">
+    <mkdir dir="build/scripts/as_setup"/>
+    <copy file="scripts/as-win-install.template" tofile="build/scripts/as_setup/as-win-install.template"/>
+    <copy file="scripts/as-win-uninstall.template" tofile="build/scripts/as-win-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-windows.template"
+          tofile="build/storagebuilder/run-storage-builder-windows.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <move file="build/scripts/statefile" todir="build/scripts/as_setup"/>
+    <exec os="Linux SunOS" executable="unzip">
+      <arg line="${as.installer} -d build/scripts/as_setup"/>
+    </exec>
+    <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
+    <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
+    <build-installer input.ismp.project="as-windows.xml-ml"/>
+    <delete file="as-windows.xml-ml"/>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
   </target>
 
   <target name="build-macosx" depends="init, clean-build, compile, create-statefile, create-app">
@@ -205,26 +253,29 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
     <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
     <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="as-macosx.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${build.dir}/${app.dir}"/>
-      <arg value="-alias"/>
-      <arg value="as.scripts.dir=build/scripts"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="sb.scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="as-macosx.xml" input.nb.dir="${build.dir}/${app.dir}"/>
     <!--<move file="build/disk1/setupMac.command" tofile="dist/${installer.basename}-macosx.command"/>-->
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-macosx.jar"/>
+  </target>
+  
+  <target name="build-macosx-ml" depends="init-ml, clean-build, compile, create-statefile, create-app, xsl-macosx-ml">
+    <mkdir dir="build/scripts/as_setup"/>
+    <copy file="scripts/as-macosx-install.template" tofile="build/scripts/as_setup/as-macosx-install.template"/>
+    <copy file="scripts/as-macosx-uninstall.template" tofile="build/scripts/as-macosx-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <move file="build/scripts/statefile" todir="build/scripts/as_setup"/>
+    <exec os="Linux SunOS" executable="unzip">
+      <arg line="${as.installer} -d build/scripts/as_setup"/>
+    </exec>
+    <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
+    <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
+    <build-installer input.ismp.project="as-macosx.xml-ml" input.nb.dir="${build.dir}/${app.dir}"/>
+    <delete file="as-macosx.xml-ml"/>
+    <!--<move file="build/disk1/setupMac.command" tofile="dist/${installer.basename}-macosx.command"/>-->
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-macosx-ml.jar"/>
   </target>
  
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">

@@ -1,7 +1,7 @@
 Prerequisites
    
  - InstallShield MultiPlatform 5 (SP3)
- - Apache Ant 1.6.1
+ - Apache Ant 1.6.2
  - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
  - external unzip utility on $PATH
  - Unix
@@ -22,8 +22,22 @@ Property storage.builder contains location of storage builder jar file.
 Property preparse.files contains location of text file with list of classes to
 be parsed by storage builder. Colon ':' is used as list separator.
 
-Build targets for supported platforms are as follows: build-linux,
-build-solaris-sparc, build-solaris-x86, build-windows, build-macosx.
+Build targets to build English (en) installers for supported platforms are
+as follows:
+build-linux - Linux - suffix '-linux' is appended to installer.basename
+build-solaris-sparc - Solaris Sparc - suffix '-solsparc'
+build-solaris-x86 - Solaris X86 - suffix '-solx86'
+build-windows - Windows - suffix '-win'
+build-macosx - Mac OSX - suffix '-macosx'
+
+Build targets for ML installers (Language support for Japanese (ja) and
+Simplified Chinese (zh) is added to English support ie. en,ja,zh support is
+present):
+build-linux-ml - Linux - suffix '-linux-ml' is appended to installer.basename
+build-solaris-sparc-ml - Solaris Sparc - suffix '-solsparc-ml'
+build-solaris-x86-ml - Solaris X86 - suffix '-solx86-ml'
+build-windows-ml - Windows - suffix '-win-ml'
+build-macosx-ml - Mac OSX - suffix '-macosx-ml'
 
 As there is different command line option for every platform it must be run
 separately for every platform.
