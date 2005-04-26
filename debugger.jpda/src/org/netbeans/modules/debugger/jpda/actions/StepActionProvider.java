@@ -56,6 +56,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ThreadsTreeModel;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
+import org.openide.ErrorManager;
 
 
 /**
@@ -139,7 +140,9 @@ implements Executor {
                 // 3) resume JVM
                 getDebuggerImpl ().resume ();
             } catch (IncompatibleThreadStateException e) {
+                ErrorManager.getDefault().notify(e);
             } catch (VMDisconnectedException e) {
+                ErrorManager.getDefault().notify(e);
             }   
             //S ystem.out.println("/nStepAction.doAction end");
         }
