@@ -1,0 +1,1361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+--><!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+<apidefs>
+<apidef name="filesystems">Filesystems API</apidef>
+</apidefs>
+<changes>
+<change id="not-final-method-getFileObject">
+      <api name="filesystems"/>
+      <summary>
+<code>FileObject.getFileObject </code> made not final.</summary>
+      <version major="5" minor="3"/>
+      <date day="7" month="1" year="2005"/>
+      <author login="rmatous"/>
+      <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no" modification="no"/>
+      <description>
+        <p>Method <code>public final FileObject getFileObject (String relativePath)</code> 
+	in class <code>FileObject</code> isn't final anymore to let more freedom for implemetations.
+        </p>
+      </description>
+      <class package="org.openide.filesystems" name="FileObject"/>
+      <issue number="51551"/>
+    </change>
+<change id="FileUtil-archive-handling">
+      <api name="filesystems"/>
+      <summary>Easier to work with ZIP/JAR archives</summary>
+      <version major="4" minor="48"/>
+      <date day="7" month="5" year="2004"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <p>
+          There are now various methods in <code>FileUtil</code> that let you
+          easily convert between archive files themselves and their entries. It
+          is no longer necessary (or advisable) to explicitly construct
+          <code>JarFileSystem</code>s to work with archives. A standard
+          <code>URLMapper</code> implementation is present which handles
+          <code>jar</code>-protocol URLs correctly.
+        </p>
+      </description>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+    </change>
+<change id="FileUtil.normalizeFile">
+      <api name="filesystems"/>
+      <summary>
+<code>FileUtil.normalizeFile</code> added</summary>
+      <version major="4" minor="48"/>
+      <date day="7" month="5" year="2004"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <p>
+          The method <code>FileUtil.normalizeFile(File)</code> was added as a
+          refinement of <code>File.getCanonicalFile</code> that does not traverse
+          symlinks on Unix. Used throughout the NetBeans 4.0 project system.
+        </p>
+      </description>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+      <issue number="40410"/>
+    </change>
+<change id="FileObject.setImportant">
+      <api name="filesystems"/>
+      <summary>
+<code>FileObject.setImportant</code> deprecated</summary>
+      <version major="4" minor="48"/>
+      <date day="7" month="5" year="2004"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="compatible" semantic="incompatible" deprecation="yes" addition="no" deletion="no" modification="no">
+        <p>
+          There is no direct replacement. Code using this method should be
+          reëvaluated in the light of other changes in NetBeans 4.0.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          In NetBeans 3.x, normally “compilation” or similar build
+          steps would produce generated files kept in the user’s
+          development folder alongside source files, and picked up as secondary
+          files by a <code>MultiFileLoader</code>. To ensure that the VCS
+          integration did not offer to version such files,
+          <code>FileObject.setImportant</code> could be used to mark them as
+          disposable.
+        </p>
+        <p>
+          In NetBeans 4.0, such disposable files should not be placed in a source
+          folder. They should always be built to a separate build directory,
+          typically defined by the containing project. In this case marking an
+          individual file as unimportant is unnecessary, since the entire build
+          tree is known to be disposable. Instead, the project (not data loaders)
+          can use <code>SharabilityQueryImplementation</code> to indicate which
+          subtrees contain build products.
+        </p>
+      </description>
+      <class package="org.openide.filesystems" name="FileObject"/>
+    </change>
+<change id="filesystems-deprecations">
+      <api name="filesystems"/>
+      <summary>Deprecation of various Filesystems API methods and classes</summary>
+      <version major="4" minor="48"/>
+      <date day="7" month="5" year="2004"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="compatible" semantic="incompatible" deprecation="yes" addition="no" deletion="no" modification="no">
+        <p>
+          In general, attempts to call the old methods will yield well-defined
+          but useless results in NetBeans 4.0.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Various parts of the Filesystems API which are no longer useful in
+          NetBeans 4.0 were deprecated. The assumptions which are now invalid
+          were:
+        </p>
+        <ul>
+          <li>
+            <p>
+              The root of a filesystem corresponds to a Java classpath root (if
+              the appropriate capabilities were set). Now handled by the
+              Classpath API.
+            </p>
+          </li>
+          <li>
+            <p>
+              The user explicitly mounts and unmounts filesystems, either to
+              control the classpath, for version control purposes, or simply to
+              access some area of the disk; and so filesystem metadata is
+              relevant to the GUI. Now obsoleted by the Classpath API and
+              MasterFS.
+            </p>
+          </li>
+          <li>
+            <p>
+              The IDE internally managed a list of mounted filesystems. Now only
+              the default system filesystem is “mounted”; MasterFS
+              transparently manages all “user-space” files.
+            </p>
+          </li>
+          <li>
+            <p>
+              File objects are persisted by saving a reference to the containing
+              filesystem, plus the relative path within the filesystem. Now done
+              using URLs.
+            </p>
+          </li>
+        </ul>
+        <p>
+          Specific deprecations:
+        </p>
+        <ol>
+          <li>
+            <code>FileSystem.Environment</code> and
+            <code>EnvironmentNotSupportedException</code>
+          </li>
+          <li>
+            <code>FileSystemCapability</code> (and its constants and subclasses),
+            <code>FileSystem.getCapability</code> and <code>setCapability</code>,
+            constructors taking <code>FileSystemCapability</code>
+          </li>
+          <li>
+            <code>FileSystem.PROP_HIDDEN</code>, <code>isHidden</code>, and
+            <code>setHidden</code>
+          </li>
+          <li>
+            <code>FileSystem.PROP_SYSTEM_NAME</code>, <code>getSystemName</code>,
+            and <code>setSystemName</code>
+          </li>
+          <li>
+            <code>FileSystem.find</code>
+          </li>
+          <li>
+            <code>FileObject</code> methods such as <code>getPackageName</code>
+          </li>
+          <li>
+            <code>FileSystem.isPersistent</code>
+          </li>
+        </ol>
+        <p>
+          See also <a href="#Repository-deprecations" shape="rect">deprecations in
+          <code>Repository</code>
+</a>.
+        </p>
+      </description>
+      <class package="org.openide.filesystems" name="EnvironmentNotSupportedException"/>
+      <class package="org.openide.filesystems" name="FileObject"/>
+      <class package="org.openide.filesystems" name="FileSystem"/>
+      <class package="org.openide.filesystems" name="FileSystemCapability"/>
+    </change>
+<change id="FileObject.getPath-III">
+      <api name="filesystems"/>
+      <summary>
+<code>FileObject.toString()</code> not to be used for specific purposes</summary>
+      <version major="4" minor="48"/>
+      <date day="7" month="5" year="2004"/>
+      <author login="jglick"/>
+      <compatibility source="compatible" semantic="incompatible" modification="yes" binary="compatible" deprecation="no" addition="no" deletion="no">
+        <p>
+          Older Filesystems API clients which assumed that
+          <code>FileObject.toString()</code> and
+          <code>FileObject.getPath()</code> do the same thing will be broken.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          <code>FileObject.toString()</code> no longer returns a predictable
+          value; in particular, it will not be the same as
+          <code>getPath()</code>. The new value is suitable for logging and
+          debugging but otherwise cannot be relied upon.
+        </p>
+        <p>
+          There are two benefits to this change:
+        </p>
+        <ol>
+          <li>
+            <p>
+              The new <code>toString()</code> is more useful for logging than the
+              previous value. It is no longer necessary to separately include
+              <code>fileObject.getFileSystem().toString()</code>, which was
+              cumbersome (and required an extra catch clause).
+            </p>
+          </li>
+          <li>
+            <p>
+              Clients which were incorrectly using <code>toString()</code> to get
+              a Java resource path will now be predictably broken, so they can be
+              fixed to use <code>ClassPath</code>. (The paths would not have been
+              usable in NetBeans 4.0 anyway.) Just deprecating
+              <code>toString()</code> was not possible because it overrides a
+              nondeprecated <code>Object</code> method, and is also inserted into
+              code by the compiler without emitting any deprecation warning.
+            </p>
+          </li>
+        </ol>
+      </description>
+      <class package="org.openide.filesystems" name="FileObject"/>
+      <issue number="27640"/>
+    </change>
+<change id="FileUtil.createMemoryFileSystem">
+        <api name="filesystems"/>
+        <summary>Added new method <code>FileUtil.createMemoryFileSystem ()</code>
+</summary>
+        <version major="4" minor="43"/>
+        <date day="4" month="8" year="2004"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            There is a new factory method <code>FileUtil.createMemoryFileSystem ()</code> 
+            to create an empty, writeable instance of a <code>FileSystem</code> 
+            with content completely stored in memory. This filesystem is the 
+            one that is by default returned from <code>Repository.getDefaultFileSystem()</code>
+            so since now the standalone applications may expect the default file system
+            to be writeable.
+        </description>
+        <class package="org.openide.filesystems" name="FileUtil"/>
+        <issue number="46701"/>
+    </change>
+<change id="FileUtil.preventFileChooserSymlinkTraversal">
+        <api name="filesystems"/>
+        <summary>Added <code>FileUtil.preventFileChooserSymlinkTraversal(...)</code>
+</summary>
+        <version major="4" minor="42"/>
+        <date day="30" month="7" year="2004"/>
+        <author login="jglick"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Added a new method <code>FileUtil.preventFileChooserSymlinkTraversal(...)</code>
+            to help work around problems with symbolic links and <code>JFileChooser</code>.
+        </description>
+        <class package="org.openide.filesystems" name="FileUtil"/>
+        <issue number="46459"/>
+    </change>
+<change>
+        <api name="filesystems"/>
+        <summary>Added FileUtil.getFileDisplayName</summary>
+        <version major="4" minor="39"/>
+        <date day="9" month="6" year="2004"/>
+        <author login="rmatous"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Get an appropriate display name for a file object.
+            If the file corresponds to a path on disk, this will be the disk path.
+            Otherwise the name will mention the filesystem name or archiv name in case 
+            the file comes from archiv and relative path. Relative path will be mentioned 
+            just in case that passed
+            <code>FileObject</code> isn't root.
+        </description>
+        <class package="org.openide.filesystems" name="FileUtil"/>
+        <issue number="37549"/>
+    </change>
+<change id="Repository-deprecations">
+    <api name="filesystems"/>
+    <summary>Almost all methods of Repository were deprecated.</summary>
+    <version major="4" minor="36"/>
+    <date day="1" month="6" year="2004"/>
+    <author login="rmatous"/>
+    <compatibility deprecation="yes" semantic="incompatible" binary="compatible" source="compatible" addition="no" deletion="no" modification="no"/>
+    <description>
+        All methods were deprecated except:
+        <ul>
+            <li>
+<code>getDefault ()</code>
+</li>
+            <li>
+<code>getDefaultFileSystem ()</code>
+</li>            
+        </ul>        
+        
+        The previous semantics of Repository is broken. Replacement:                   
+        <ul>
+            <li>ClassPath API</li>
+            <li>
+<code>URLMapper</code> for providing <code>FileObjects</code>
+</li>            
+        </ul>        
+    </description>
+    <class package="org.openide.filesystems" name="Repository"/>
+    <issue number="42273"/>
+    </change>
+<change>
+    <api name="filesystems"/>
+    <summary>Reused DefaultAttributes can use different name than .nbattrs </summary>
+    <version major="4" minor="35"/>
+    <date day="28" month="5" year="2004"/>
+    <author login="rmatous"/>
+    <compatibility addition="yes" semantic="compatible" binary="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Added new constructor to DefaultAttributes that takes file name as next additional parameter.
+    </description>
+    <class package="org.openide.filesystems" name="DefaultAttributes"/>
+    <issue number="43180"/>
+    </change>
+<change>
+    <api name="filesystems"/>
+    <summary>There should exist just one FileObject for one resource (java.io.File or URL).  </summary>
+    <version major="4" minor="29"/>
+    <date day="13" month="4" year="2004"/>
+    <author login="rmatous"/>
+    <compatibility addition="yes" modification="yes" deprecation="yes" semantic="compatible" binary="compatible" source="compatible" deletion="no"/>
+    <description>
+        <ul>
+            <li>Added method FileUtil.toFileObject as replacement for current method FileUtil.fromFile which was deprecated.</li>
+            <li>Added method URLMapper.findFileObject as replacement for current method URLMapper.findFileObjects which was deprecated .</li>
+        </ul>
+    </description>
+    <class package="org.openide.filesystems" name="FileUtil"/>
+    <class package="org.openide.filesystems" name="URLMapper"/>
+    <issue number="41506"/>
+    </change>
+<change>
+        <api name="filesystems"/>
+        <summary>Added API for finding file relatively to another file</summary>
+        <version major="4" minor="16"/>
+        <date day="9" month="12" year="2003"/>
+        <author login="rmatous"/>
+        <compatibility addition="yes" modification="yes" semantic="compatible" binary="compatible" source="compatible" deprecation="no" deletion="no"/>          
+        <description>
+            <ul>
+                <li>Added method FileUtil.getRelativePath which gets a relative resource path between folder and fo in folder's tree.</li>
+                <li>Slightly modified semantic of FileObject.getFileObject in compatible way. This method retrieves file 
+                    or folder relative to a current folder, with a given relative path.
+                </li>
+            </ul>                    
+        </description>
+        <class package="org.openide.filesystems" name="FileUtil"/>
+        <class package="org.openide.filesystems" name="FileObject"/>
+        <issue number="37445"/>  
+       </change>
+<change>
+     <api name="filesystems"/>
+     <summary>Added FileUtil.isParentOf</summary>
+     <version major="3" minor="16"/>
+     <date day="22" month="10" year="2002"/>
+     <author login="vstejskal"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+         FileUtil.isParentOf provides simple recursive check whether the FileObject is
+         underneath some folder.
+     </description>
+     <class package="org.openide.filesystems" name="FileUtil"/>
+    </change>
+<change id="FileObject.getPath-II">
+      <api name="filesystems"/>
+      <summary>Changed javadoc to warn about improper use of methods</summary>
+      <date day="1" month="10" year="2002"/>
+      <author login="pzavadsky"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+          Changed Javadoc to warn about improper usage
+          of the <code>FileObject.toString</code> (it was used
+          as full path format), which is replaced by
+          <code>FileObject.getPath</code> now. Explained correct purpose
+           of that method. Also added those warnings to 
+           <code>findResource</code> and <code>findAllResource</code>
+           of <code>Repository</code> class.
+      </description>
+      <class package="org.openide.filesystems" name="FileObject"/>
+      <issue number="27640"/>
+      <issue number="27687"/>
+    </change>
+<change id="repository-not-final">
+        <api name="filesystems"/>
+        <summary>Repository is not final</summary>
+        <version major="3" minor="3"/>
+        <date day="22" month="7" year="2002"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+          Repository is not final anymore, so there can be subclasses of it. But all its methods
+          has been made final. This was done in order to create Repositories that will follow the
+          javabeans pattern (have public default constructor).
+        </description>
+        <class package="org.openide.filesystems" name="Repository"/>
+    </change>
+<change id="issue-19443-1">
+      <summary>API separation, phase I</summary>
+      <version major="3" minor="14"/>
+      <date day="15" month="10" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" deprecation="yes" semantic="compatible" addition="no" deletion="no" modification="no">
+        <p>
+          The deprecated classes continue to be available in the module
+          <code>org.openide.deprecated</code> which you may depend on it you
+          cannot remove uses of the deprecated APIs. In order for
+          <code>TopManager.getDefault()</code> to work, you must also require the
+          token <code>org.openide.TopManager</code>, which is provided by an
+          unspecified module. The deprecated API module and its implementation
+          module are autoloads, meaning they will not be loaded unless some
+          module still requires them.
+        </p>
+        <p>
+          Similarly, the Java Hierarchy API was moved to the module
+          <code>org.openide.src</code> which you should depend on in order to use
+          this API.
+        </p>
+        <p>
+          For compatibility, the above three dependencies are added to your module
+          <em>automatically</em> in case it either requests no specific API
+          version at all, or requests an API version prior to 3.14. Modules
+          requesting APIs 3.14 or higher must declare these dependencies
+          explicitly if they in fact need them.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Many classes were moved to a separate module,
+          <samp>openide-deprecated.jar</samp>, not available to modules by
+          default. Uses of these classes in modules should be cleaned up whenever
+          possible.
+        </p>
+        <p>
+          Additionally, the entire contents of <code>org.openide.src.*</code> and
+          <code>org.openide.src.nodes.*</code>, as well as
+          <code>org.openide.cookies.SourceCookie</code> and some associated
+          property editors, were moved to a separate module.
+        </p>
+        <p>
+          The most common apparent symptom for module authors will be the absence
+          of <code>TopManager</code>. Most methods in this class have been
+          replaced by newer utility classes in a straightforward manner. See the
+          Upgrade Guide.
+        </p>
+      </description>
+      <class package="org.openide" name="DialogDisplayer"/>
+      <class package="org.openide" name="LifecycleManager"/>
+      <class package="org.openide" name="Places"/>
+      <class package="org.openide" name="TopManager"/>
+      <class package="org.openide.actions" name="AddWatchAction"/>
+      <class package="org.openide.actions" name="BuildProjectAction"/>
+      <class package="org.openide.actions" name="CompileProjectAction"/>
+      <class package="org.openide.actions" name="DebugProjectAction"/>
+      <class package="org.openide.actions" name="ExecuteProjectAction"/>
+      <class package="org.openide.actions" name="FinishDebuggerAction"/>
+      <class package="org.openide.actions" name="GoAction"/>
+      <class package="org.openide.actions" name="GoToCursorAction"/>
+      <class package="org.openide.actions" name="HelpAction"/>
+      <class package="org.openide.actions" name="OpenProjectAction"/>
+      <class package="org.openide.actions" name="SaveProjectAction"/>
+      <class package="org.openide.actions" name="StartDebuggerAction"/>
+      <class package="org.openide.actions" name="StepOutAction"/>
+      <class package="org.openide.actions" name="ToggleBreakpointAction"/>
+      <class package="org.openide.actions" name="TraceIntoAction"/>
+      <class package="org.openide.actions" name="TraceOverAction"/>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+      <class package="org.openide.awt" name="StatusDisplayer"/>
+      <class package="org.openide.cookies" name="DebuggerCookie"/>
+      <class package="org.openide.cookies" name="ElementCookie"/>
+      <class package="org.openide.cookies" name="ProjectCookie"/>
+      <class package="org.openide.cookies" name="SourceCookie"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ChoicePropertyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="DirectoryOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ElementFormatEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ExternalCompiler"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IconEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IdentifierArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="MethodParameterArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ModifierEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomizable"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="TypeEditor"/>
+      <class package="org.openide.loaders" name="DataObjectFilter"/>
+      <class package="org.openide.loaders" name="ExecSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.loaders" name="ExtensionListEditor"/>
+      <class package="org.openide.loaders" name="RepositoryNodeFactory"/>
+      <class package="org.openide.modules" name="IllegalModuleException"/>
+      <class package="org.openide.modules" name="ManifestSection"/>
+      <class package="org.openide.modules" name="ModuleDescription"/>
+      <class package="org.openide.nodes" name="NodeOperation"/>
+      <class package="org.openide.options" name="ControlPanel"/>
+      <class package="org.openide.util.actions" name="ProjectSensitiveAction"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <package name="org.openide.debugger"/>
+      <package name="org.openide.src"/>
+      <package name="org.openide.src.nodes"/>
+      <issue number="19443"/>
+      <issue number="20898"/>
+    </change>
+<change id="issue-19443-2">
+      <summary>API separation, phase II</summary>
+      <version major="3" minor="17"/>
+      <date day="1" month="11" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" modification="yes" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        <p>
+          Module authors using the now-separated APIs will need to adjust their
+          compilation classpaths to include the new JAR files. Modules wishing to
+          use recent APIs and declaring a current openide specification version
+          dependency will need to explicitly declare dependencies on these new
+          APIs if there are any.
+        </p>
+        <p>
+          For compatibility, modules with no declared Open APIs dependency, or
+          declared on a version prior to 3.17, will have their dependencies
+          automatically refined as if to include the declarations:
+        </p>
+        <pre xml:space="preserve">
+OpenIDE-Module-Module-Dependencies: org.openide.compiler &gt; 1.0,
+  org.openide.execution &gt; 1.0, org.openide.io &gt; 1.0
+OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
+  org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
+        </pre>
+        <p>
+          And any package dependencies from old modules on
+          <code>org.netbeans.lib.terminalemulator</code> will be converted to
+          module dependencies.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Three sections of the Open APIs were split into new autoload modules.
+        </p>
+        <ul>
+          <li>
+            <p>
+              The module <code>org.openide.compiler</code> (version 1.0) contains
+              the Compiler API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.execution</code> (version 1.0) contains
+              the Execution API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.io</code> (version 1.0) contains
+              <code>InputOutput</code> and related classes (formerly part of the
+              Window System API, and still physically in the
+              <code>org.openide.windows</code> package).
+            </p>
+          </li>
+        </ul>
+        <p>
+          New modules wishing to use these APIs must declare regular module
+          dependencies on them. Future changes in these APIs will be documented
+          separately.
+        </p>
+        <p>
+          Furthermore, modules wishing to use certain services must
+          <code>OpenIDE-Module-Require</code> them if appropriate:
+        </p>
+        <ul>
+          <li>
+            <p>
+              <code>org.openide.compiler.CompilationEngine</code>, in order to
+              call <code>CompilationEngine.getDefault()</code>, or safely use
+              <code>AbstractCompileAction</code> or one of its subclasses, or
+              call <code>CompilerJob.start()</code>, or use
+              <code>BeanInfo</code>s for Compiler API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.execution.ExecutionEngine</code>, in order to
+              call <code>ExecutionEngine.getDefault()</code>, or safely use
+              <code>ExecuteAction</code>, or call
+              <code>Executor.execute(...)</code>, or use <code>BeanInfo</code>s
+              for Execution API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.windows.IOProvider</code>, in order to call
+              <code>IOProvider.getDefault()</code>.
+            </p>
+          </li>
+        </ul>
+        <p>
+          Other minor changes:
+        </p>
+        <ul>
+          <li>
+            <p>
+              Registration of URL stream handler factories using
+              <code>NbfsStreamHandlerFactory.register(...)</code> is deprecated.
+              Simply create an instance of <code>URLStreamHandlerFactory</code>
+              and add it to Lookup instead.
+            </p>
+          </li>
+          <li>
+            <p>
+              The method <code>FileUtil.nbfsURLStreamHandler</code> was added,
+              but is not intended for use by modules.
+            </p>
+          </li>
+          <li>
+            <p>
+              All uses of <code>ExecInfo</code> are deprecated as they abuse the
+              distinction between Filesystems and the user classpath. Use and
+              override only <code>Executor.execute(DataObject)</code>. Similarly,
+              <code>ThreadExecutor</code> is deprecated for the time being
+              because it suffers from similar problems.
+            </p>
+          </li>
+          <li>
+            <p>
+              Direct use of <code>NbfsURLConnection</code> is deprecated in favor
+              of the more general <code>URLMapper</code> from the Filesystems
+              API.
+            </p>
+          </li>
+          <li>
+            <p>
+              Package dependencies on
+              <code>org.netbeans.lib.terminalemulator</code> must be replaced
+              with module dependencies on a new autoload module
+              <code>org.netbeans.lib.terminalemulator</code> (version 1.0).
+            </p>
+          </li>
+          <li>
+            <p>
+              Several static convenience methods have been added to
+              <code>AbstractCompileAction</code>. Of most interest is
+              <code>prepareJobFor</code>. Module code should no longer assume
+              that <code>DataFolder</code> has a <code>CompilerCookie</code>
+              which recursively compiles the folder and subfolders (according to
+              depth); while it is still true, for reasons of compatibility, new
+              code should use <code>prepareJobFor</code> to create a compiler job
+              from a folder.
+            </p>
+          </li>
+        </ul>
+      </description>
+      <class package="org.openide.actions" name="AbstractCompileAction"/>
+      <class package="org.openide.actions" name="BuildAction"/>
+      <class package="org.openide.actions" name="BuildAllAction"/>
+      <class package="org.openide.actions" name="CleanAction"/>
+      <class package="org.openide.actions" name="CleanAllAction"/>
+      <class package="org.openide.actions" name="CompileAction"/>
+      <class package="org.openide.actions" name="CompileAllAction"/>
+      <class package="org.openide.actions" name="ExecuteAction"/>
+      <class package="org.openide.cookies" name="ArgumentsCookie"/>
+      <class package="org.openide.cookies" name="CompilerCookie"/>
+      <class package="org.openide.cookies" name="ExecCookie"/>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+      <class package="org.openide.loaders" name="CompilerSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <class package="org.openide.windows" name="InputOutput"/>
+      <class package="org.openide.windows" name="OutputEvent"/>
+      <class package="org.openide.windows" name="OutputListener"/>
+      <class package="org.openide.windows" name="OutputWriter"/>
+      <package name="org.openide.compiler"/>
+      <package name="org.openide.execution"/>
+      <issue number="19443"/>
+    </change>
+<change id="getPath">
+      <api name="filesystems"/>
+      <summary>
+<code>FileObject.getPath()</code> returns full resource path of file object</summary>
+      <version major="3" minor="7"/>
+      <date day="30" month="8" year="2002"/>
+      <author login="jglick"/>
+      <compatibility deprecation="yes" addition="yes" binary="compatible" source="incompatible" semantic="compatible" deletion="no" modification="no">
+        Existing <code>FileObject</code> implementations ought to override the
+        new method for efficiency. They should also cease to override
+        <code>toString</code>. Subclasses of <code>AbstractFileSystem</code> (the
+        normal case) need not be concerned, since the corresponding
+        <code>FileObject</code> already implements this method correctly. Code
+        assuming <code>toString</code> returns a resource path should be changed
+        to use <code>getPath</code> instead.
+      </compatibility>
+      <description>
+        It is commonly necessary to find the full resource path of a file object
+        within its filesystem. Formerly you could do this the safe way by calling
+        <code>getPackageNameExt('/', '.')</code>, but this is clumsy to
+        write, potentially inefficient, and is prone to misinterpretation in the
+        case of files without any extension (or files ending in a period, or
+        folders with extensions). Calling <code>toString()</code> was more
+        effective, but this suffered from the problem that for compatibility
+        reasons, no assurance could be made that it would actually give a
+        resource path - an old <code>FileObject</code> implementation could
+        implement it in any way, since it was not originally documented what it
+        should return. Therefore, the new method <code>getPath()</code> has been
+        introduced.
+      </description>
+      <class package="org.openide.filesystems" name="FileObject"/>
+      <issue number="26904"/>
+    </change>
+<change>
+        <api name="filesystems"/>
+        <summary>
+            Mounting new filesystem no longer works with filesystems providing
+            <code>WizardDescriptor</code> as bean customizers
+        </summary>
+        <date day="24" month="7" year="2001"/>
+        <author login="jtulach"/>
+        <compatibility modification="yes" semantic="incompatible" binary="compatible" source="compatible" deprecation="no" addition="no" deletion="no">
+            WizardDescriptor as bean customizer no longer opens the wizard
+            while mounting. To achieve this use of a special iterator
+            in Templates/Mount/ is now used (for modules 3.3+).
+        </compatibility>
+        <description>
+            <p>
+                It used to be the case (NB 3.2) that a FileSystem
+                implementation could in its BeanInfo specify a BeanDescriptor whose
+                Customizer class extended WizardDescriptor. This would cause the
+                wizard to be opened when the user tried to mount that filesystem type.
+            </p>
+            <p>
+                The situation now (from 3.3) is that this no longer opens
+                the customizer and property sheet is presented in the second
+                step of the mount wizard.
+            </p>
+        </description>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Filesystem implementation methods protected not public</summary>
+      <date day="27" month="3" year="2000"/>
+      <author login="jtulach"/>
+      <compatibility source="incompatible" modification="yes" binary="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        First broken, later restored binary compatibility in trunk and
+        <code>boston</code>. Any outside code calling them as public will break;
+        however such code is definitely erroneous and should be rewritten.
+      </compatibility>
+      <description>
+        <p>
+          Many methods in <code>LocalFileSystem</code> and
+          <code>JarFileSystem</code> were declared public though they should never
+          have been called directly. (They were implementing interface methods
+          that would only be called from within the class itself.) These methods
+          are:
+        </p>
+        <ul>
+          <li>
+<code>children(String)</code>
+</li>
+          <li>
+<code>createData(String)</code>
+</li>
+          <li>
+<code>createFolder(String)</code>
+</li>
+          <li>
+<code>delete(String)</code>
+</li>
+          <li>
+<code>folder(String)</code>
+</li>
+          <li>
+<code>inputStream(String)</code>
+</li>
+          <li>
+<code>lastModified(String)</code>
+</li>
+          <li>
+<code>lock(String)</code>
+</li>
+          <li>
+<code>markUnimportant(String)</code>
+</li>
+          <li>
+<code>mimeType(String)</code>
+</li>
+          <li>
+<code>outputStream(String)</code>
+</li>
+          <li>
+<code>readOnly(String)</code>
+</li>
+          <li>
+<code>rename(String,String)</code>
+</li>
+          <li>
+<code>size(String)</code>
+</li>
+          <li>
+<code>unlock(String)</code>
+</li>
+        </ul>
+        <p>
+          Also in <code>JarFileSystem</code> only:
+        </p>
+        <ul>
+          <li>
+<code>readAttribute(String,String)</code>
+</li>
+          <li>
+<code>writeAttribute(String,String,Object)</code>
+</li>
+          <li>
+<code>attributes(String)</code>
+</li>
+          <li>
+<code>renameAttributes(String,String)</code>
+</li>
+          <li>
+<code>deleteAttributes(String)</code>
+</li>
+        </ul>
+        <p>
+          All these methods are now protected.
+        </p>
+        <p>
+          In general, outside code should use the proper outer API to access
+          filesystems (<code>FileSystem</code> and <code>FileObject</code> and
+          some helper classes), only directly calling methods of implementation
+          classes where this is required (constructors or
+          <code>setRootDirectory</code>). As a matter of style, it is recommended
+          that calling code declare variables to be of the abstract type (e.g.
+          <code>FileSystem</code>) to clarify that only generally available
+          methods will be called.
+        </p>
+      </description>
+      <class package="org.openide.filesystems" name="LocalFileSystem"/>
+      <class package="org.openide.filesystems" name="JarFileSystem"/>
+      <!-- No boston branch tag, as change made before it. -->
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>URL -&gt; FileObject mapping implementation</summary>
+      <version major="2" minor="22"/>
+      <date day="6" month="6" year="2002"/>
+      <author login="rmatous"/>
+      <compatibility semantic="incompatible" modification="yes" binary="compatible" source="compatible" deprecation="no" addition="no" deletion="no">
+	Added abstract method <code>public abstract FileObject[] getFileObjects (URL url)</code>
+	But there doesn`t exists any known subclass of URLMapper yet. And URLMapper was introduced
+	recently 2.16 in 3.4 release.  
+      </compatibility>
+      <description>
+      	Two methods were added <code>public static FileObject[] findFileObjects (URL url)</code> and 
+      	<code>public abstract FileObject[] getFileObjects (URL url)</code>.
+      </description>
+      <class package="org.openide.filesystems" name="URLMapper"/>
+    </change>
+<change id="URLMapper">
+      <api name="filesystems"/>
+      <summary>Added support for better FileObject-URL mapping</summary>
+      <version major="2" minor="16"/>                  
+      <date day="25" month="4" year="2002"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added new class  <code>URLMapper</code>. This class provides basic mapping
+        for FileObjects from LocalFileSystem, JarFileSystem and MultiFileSystem and  is intended 
+        as superclass for individual mappers.
+      </description>
+      <class package="org.openide.filesystems" name="URLMapper"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>URLMapper.findFileObjects returns empty array if not successful.</summary>
+      <version major="3" minor="28"/>
+      <date day="8" month="1" year="2003"/>
+      <author login="rmatous"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+      <code>URLMapper.findFileObjects </code> returns empty array if not successful. 
+       As far there was in documentation written, that null is returned.      
+      </description>
+      <class package="org.openide.filesystems" name="URLMapper"/>
+      <issue number="28312"/>
+</change>
+<change>
+      <api name="filesystems"/>
+      <summary> Method FileObject.isReadOnly was deprecated and replaced with  methods canRead, canWrite</summary>
+      <version major="3" minor="31"/>
+      <date day="10" month="1" year="2003"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+      <description>
+      There was made changes in FileObject class.
+      Added method: <code>public boolean canRead ()</code>.
+      Method  <code>public boolean isReadOnly ()</code>  was deprecated and replaced with
+      method: <code>public boolean canWrite ()</code>. This change can be considered as compatible.
+      Newly added methods have default implementation.  Also AbstractFileSystem was modified and two
+      necessary method were added: method: <code>public boolean canRead ()</code> and 
+      method: <code>public boolean canWrite ()</code>.
+      </description>
+      <class package="org.openide.filesystems" name="FileObject"/>
+      <class package="org.openide.filesystems" name="AbstractFileSystem"/>      
+</change>
+<change id="FileSystem.refresh">
+      <api name="filesystems"/>
+      <summary>There exists possibility to refresh whole filesystem in one  </summary>
+      <version major="2" minor="16"/>            
+      <date day="24" month="4" year="2002"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Method: <code>public void FileSystem.refresh (boolean expected))</code> was added. 
+      </description>
+      <class package="org.openide.filesystems" name="FileSystem"/>      
+    </change>
+<change id="FileSystem.FileChangeListener">
+      <api name="filesystems"/>
+      <summary>FileSystem provides FileChangeListener functionality </summary>
+      <version major="2" minor="8"/>            
+      <date day="11" month="3" year="2002"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Method: <code>public final void addFileChangeListener(FileChangeListener fcl)</code> and
+         <code>public final void removeFileChangeListener(FileChangeListener fcl)</code> was added 
+         to maintain FileChangeListeners that should be notified if some change in FileSystem occures.
+      </description>
+      <class package="org.openide.filesystems" name="FileSystem"/>
+    </change>
+<change id="Repository.FileChangeListener">
+      <api name="filesystems"/>
+      <summary>Repository provides FileChangeListener functionality </summary>
+      <version major="2" minor="8"/>            
+      <date day="11" month="3" year="2002"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Method: <code>public final void addFileChangeListener(FileChangeListener fcl)</code> and
+         <code>public final void removeFileChangeListener(FileChangeListener fcl)</code> was added 
+         to maintain FileChangeListeners that should be notified if some change in Repository occures.
+      </description>
+      <class package="org.openide.filesystems" name="Repository"/>
+    </change>
+<change id="FileSystem.PROP_DISPLAY_NAME">
+      <api name="filesystems"/>
+      <summary>New property FileSystem.PROP_DISPLAY_NAME was added  </summary>
+      <version major="2" minor="1"/>            
+      <date day="17" month="1" year="2002"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>FileSystem.PROP_DISPLAY_NAME</code>  added to
+        notify a change in the display name.
+      </description>
+      <class package="org.openide.filesystems" name="FileSystem"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Propagate masks flag for multi-filesystems</summary>
+      <date day="23" month="11" year="2000"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>setPropagateMasks</code> and <code>getPropagateMasks</code> added to
+        make it easier to compose multi filesystems inside other multi filesystems.
+      </description>
+      <class package="org.openide.filesystems" name="MultiFileSystem"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>
+<code>MultiFileSystem</code> finds actions on a set of files specially</summary>
+      <date day="6" month="12" year="2000"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        Method: <code>getActions(final Set foSet)</code> was added, which should
+        provide a Set of <code>FileObject</code>s to run the actions on. This method overloads
+        default behavior of <code>FileSystem.getActions(final Set foSet)</code>.
+      </description>
+      <class package="org.openide.filesystems" name="MultiFileSystem"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>MIME lookup by extension made friendlier for C/C++</summary>
+      <date day="11" month="9" year="2000"/>
+      <author login="jglick"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        MIME types no longer include C/C++ extensions by default; and file
+        extension lookups give preference to case-sensitive matches but also work
+        with case-insensitive matches by default.
+      </description>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Find a MIME type for a file object using resolvers</summary>
+      <date day="5" month="2" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added new public method <code>getMIMEType(FileObject)</code>. Resolves
+        MIME type. Registered resolvers are invoked and used to achieve this goal.
+        Resolvers must subclass <a href="#MIMEResolver" shape="rect">
+<code>MIMEResolver</code>
+</a>. If
+        resolvers do not recognize MIME type then MIME type is obtained for a
+        well-known extension.
+      </description>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+    </change>
+<change id="MultiFileSystem.createWritableOnForRename">
+      <api name="filesystems"/>
+      <summary>Method createWritableOnForRename in MultiFileSystem was added</summary>
+      <version major="1" minor="34"/>
+      <date day="30" month="8" year="2001"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>      
+      <description>
+        Protected method <code>createWritableOnForRename</code> in <code>MultiFileSystem</code> 
+        was added. This method has the same meaning as <code>createWritableOn</code> but have two parameters: 
+        oldName, newName. This method is called from <code>MultiFileObject.rename</code>.
+      </description>
+      <class package="org.openide.filesystems" name="MultiFileSystem"/>
+    </change>
+<change id="FileEvent.firedFrom">
+      <api name="filesystems"/>
+      <summary>
+<code>FileEvent</code>s fired inside atomic actions can report from which atomic actions they were fired</summary>
+      <version major="1" minor="35"/>
+      <date day="21" month="9" year="2001"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>      
+      <description>
+	Method <code>boolean FileEvent.firedFrom(FileSystem.AtomicAction run)</code> returns true if this 
+	<code>FileEvent</code> was fired from <code>run</code>. 
+      </description>
+      <class package="org.openide.filesystems" name="FileEvent"/>      
+    </change>
+<change id="FileUtil.toFile-fromFile">
+      <api name="filesystems"/>
+      <summary>Find a disk file from a file object or vice-versa</summary>
+      <version major="1" minor="29"/>
+      <date day="31" month="7" year="2001"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added method <code>public File toFile(FileObject)</code>. Finds
+        appropriate <code>java.io.File</code> to <code>FileObject</code> if
+        possible. If not possible then <code>null</code> is returned.
+        Also added method <code>public FileObject[] fromFile(File)</code>. Finds
+        appropriate <code>FileObject</code>s to <code>java.io.File</code> if
+        possible. If not possible then empty array is returned. More than one
+        <code>FileObject</code> may correspond to one <code>java.io.File</code> so
+        an array is returned.
+      </description>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>FileAttributeEvent's methods getName (), getOldValue (), getNewValue () can return null</summary>
+      <version major="1" minor="33"/>
+      <date day="24" month="8" year="2001"/>
+      <author login="rmatous"/>
+      <compatibility semantic="incompatible" modification="yes" binary="compatible" source="compatible" deprecation="no" addition="no" deletion="no">
+	Code previously assuming that all <code>FileAttributeEvent</code>
+	fields were non-null may now be broken, and should check for
+	<code>null</code>s.
+      </compatibility>
+      <description>
+	<code>FileAttributeEvent</code>'s methods <code>getName ()</code>, 
+	<code>getOldValue ()</code>, <code>getNewValue ()</code> can return <code>null</code>.
+	If <code>getName ()</code> returns null then this means that one of attributes were changed. If
+        <code>getName ()</code> returns <code>null</code> then there is supposed that all <code>FileAttributeEvent</code>
+	fields will return <code>null</code> also.
+      </description>
+      <class package="org.openide.filesystems" name="FileAttributeEvent"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Discover which filesystem a FileStateInvalidException is associated with</summary>
+      <version major="1" minor="30"/>
+      <date day="17" month="8" year="2001"/>
+      <author login="mschilling"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added method <code>public String getFileSystemName()</code>. This will
+        return the name of the filesystem containing the file with invalid
+	state if such information is available.
+      </description>
+      <class package="org.openide.filesystems" name="FileStateInvalidException"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>
+<code>RepositoryAdapter</code> added</summary>
+      <date day="25" month="6" year="2000"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added to make it easier to use <code>RepositoryListener</code>.
+      </description>
+      <class package="org.openide.filesystems" name="RepositoryAdapter"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Find known file objects starting from some point in the tree</summary>
+      <date day="10" month="8" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added new protected method <code>existingFileObjects(FileObject)</code>.
+        Can be used to find all <code>FileObject</code>s in this filesystem with
+        the given predecessor.
+      </description>
+      <class package="org.openide.filesystems" name="AbstractFileSystem"/>
+      <branch name="boston">
+        <date day="10" month="8" year="2000"/>
+      </branch>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Customizable references to known file objects</summary>
+      <date day="22" month="8" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added new protected method
+        <code>Reference createReference(FileObject fo)</code>. This
+        method returns <code>WeakReference</code> of <code>obj</code>
+        (<code>new WeakReference (fo)</code>). If you subclass from
+        <code>AbstractFileSystem</code>, you can overload this method to return
+        another type of <code>Reference</code>.
+      </description>
+      <class package="org.openide.filesystems" name="AbstractFileSystem"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Find references to file objects by name</summary>
+      <date day="22" month="8" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added new final protected method
+        <code>Reference findReference(String resourceName)</code>. This
+        method finds the reference associated with <code>resourceName</code>.
+      </description>
+      <class package="org.openide.filesystems" name="AbstractFileSystem"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>
+<code>AbstractFileSystem.refreshRoot</code> was of the wrong type</summary>
+      <date day="24" month="2" year="2000"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        First broken, later restored binary compatibility in trunk and
+        <code>boston</code>. The change should be source-code compatible, and is
+        made to be binary compatible as well.
+      </compatibility>
+      <description>
+        <code>refreshRoot</code> now returns <code>FileObject</code> rather than
+        the subclass <code>AbstractFileObject</code>. In fact the returned object
+        currently is always an <code>AbstractFileObject</code> but this subclass
+        is package-private so it was an API bug to mention it from an accessible
+        method.
+      </description>
+      <class package="org.openide.filesystems" name="AbstractFileSystem"/>
+      <!-- No boston branch tag, as change made before it. -->
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Can mark files as being virtual</summary>
+      <date day="1" month="6" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added new protected method <code>protected boolean checkVirtual(String
+        name)</code>.Tests if file really exists or is missing. Some operation on
+        it may be restricted if returns true.
+      </description>
+      <class package="org.openide.filesystems" name="AbstractFileSystem"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Can mark files as being important</summary>
+      <date day="1" month="6" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added new protected method <code>protected void markImportant(String name,
+        boolean important)</code>. Mark the file as being important or
+        unimportant.
+      </description>
+      <class package="org.openide.filesystems" name="AbstractFileSystem"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Added <code>XMLFileSystem</code>
+</summary>
+      <date day="1" month="11" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added new <code>XMLFileSystem</code> that reads content of special XML
+        file and represents it as filesystem. This filesystem is used by modules
+        to provide their own content of menus, toolbars, templates, component
+        palette, etc.
+      </description>
+      <class package="org.openide.filesystems" name="XMLFileSystem"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Get default <code>Repository</code> from within Filesystems API</summary>
+      <date day="7" month="2" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added method <code>Repository.getDefault()</code> that allows standalone
+        tools (using just filesystems library) without access to
+        <code>TopManager</code> to get the default repository of the system.
+      </description>
+      <class package="org.openide.filesystems" name="Repository"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>
+<code>Repository</code> is not a cookie</summary>
+      <date day="8" month="1" year="2001"/>
+      <author login="jtulach"/>
+      <compatibility source="incompatible" modification="yes" binary="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        Code that used <code>Repository</code> as cookie should be changed to:
+        <pre xml:space="preserve">
+ic = (<span class="type">InstanceCookie</span>)node.getCookie(InstanceCookie.<span class="keyword">class</span>);
+<span class="keyword">if</span> (ic != <span class="constant">null</span> &amp;&amp; Repository.<span class="keyword">class</span>.isAssignableFrom(ic.instanceCookie())) {
+    <span class="comment">// do stuff
+</span>}
+</pre>
+      </compatibility>
+      <description>
+        <code>Repository</code> has been changed not to implement the
+        <code>Node.Cookie</code> interface. The reason for such change is that
+        this was the only place where filesystems package depended on another part
+        in the IDE.
+      </description>
+      <class package="org.openide.filesystems" name="Repository"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Test if a file object is virtual</summary>
+      <date day="1" month="6" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added new method <code>public isVirtual</code>. Tests if file really
+        exists or is missing. Some operation on it may be restricted. Return value
+        true indicates that the file is missing.
+      </description>
+      <class package="org.openide.filesystems" name="FileObject"/>
+    </change>
+<change id="FileObject.delete-without-lock">
+      <api name="filesystems"/>
+      <summary>Simplified file object deletion</summary>
+      <version major="1" minor="15"/>
+      <date day="25" month="6" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added method <code>public final void delete()</code>.
+        <code>FileObject</code> is locked before delete and finally this lock is
+        released.
+      </description>
+      <class package="org.openide.filesystems" name="FileObject"/>
+    </change>
+<change id="FileObject.createData-without-ext">
+      <api name="filesystems"/>
+      <summary>Create file object without extension</summary>
+      <version major="1" minor="17"/>
+      <date day="27" month="6" year="2001"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added convenience method <code>public FileObject createData(String name)
+        throws IOException</code>. Creates new data file in this folder with the
+        specified name. Plainly calls <code>createData(name,"")</code>.
+      </description>
+      <class package="org.openide.filesystems" name="FileObject"/>
+    </change>
+<change>
+      <api name="filesystems"/>
+      <summary>Create expected file events</summary>
+      <date day="29" month="1" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>FileEvent</code> and subclass constructors may take a parameter
+        <code>boolean expected</code>.
+      </description>
+      <class package="org.openide.filesystems" name="FileEvent"/>
+      <class package="org.openide.filesystems" name="FileAttributeEvent"/>
+      <class package="org.openide.filesystems" name="FileRenameEvent"/>
+    </change>
+<change id="MIMEResolver">
+      <api name="filesystems"/>
+      <summary>Added <code>MIMEResolver</code>
+</summary>
+      <date day="5" month="2" year="2001"/>
+      <author login="rmatous"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added new <code>MIMEResolver</code>. This class is intended as superclass
+        for individual resolvers.
+      </description>
+      <class package="org.openide.filesystems" name="MIMEResolver"/>
+    </change>
+</changes>
+<htmlcontents>
+<head>
+<title>Change History for the File Systems API</title>
+<link rel="stylesheet" href="prose.css" type="text/css"/>
+</head>
+<body>
+<p class="overviewlink">
+<a href="overview-summary.html">Overview</a>
+</p>
+<h1>Introduction</h1>
+<h2>What do the Dates Mean?</h2>
+<p>The supplied dates indicate when the API change was made, on the CVS
+trunk. From this you can generally tell whether the change should be
+present in a given build or not; for trunk builds, simply whether it
+was made before or after the change; for builds on a stabilization
+branch, whether the branch was made before or after the given date. In
+some cases corresponding API changes have been made both in the trunk
+and in an in-progress stabilization branch, if they were needed for a
+bug fix; this ought to be marked in this list.</p>
+<ul>
+<li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
+Specification versions: 6.0 begins after this point.</li>
+<li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
+Specification versions: 5.0 begins after this point.</li>
+</ul>
+<hr/>
+<standard-changelists module-code-name="$codebase"/>
+<hr/>
+<p>@FOOTER@</p>
+</body>
+</htmlcontents>
+</apichanges>

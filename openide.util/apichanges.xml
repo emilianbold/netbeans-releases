@@ -1,0 +1,1656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+<apidefs>
+    <apidef name="lookup">Lookup API</apidef>
+    <apidef name="util">Utilities API</apidef>
+    <apidef name="xml">XML API</apidef>
+</apidefs>
+<changes>
+<change id="excluding-lookup">
+      <api name="lookup"/>
+      <summary>
+<code>Lookups.exclude</code> added to simplify writing of lookups that filter content of other lookups</summary>
+      <version major="5" minor="4"/>
+      <date day="14" month="1" year="2005"/>
+      <author login="jtulach"/>
+      <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no" modification="no"/>
+      <description>
+        <p>New method that takes lookup and set of classes and return new lookup 
+        which contains everything from the original one except instances of 
+        the specified classes has been added.
+        </p>
+      </description>
+      <class package="org.openide.util.lookup" name="Lookups"/>
+      <issue number="53058"/>
+    </change>
+<change id="not-calling-CloneableEditorSupport-notifyModified-that-often">
+      <api name="lookup"/>
+      <summary>
+<code>CloneableEditorSupport.notifyModified</code> is called only on first modification</summary>
+      <version major="5" minor="4"/>
+      <date day="14" month="1" year="2005"/>
+      <author login="jtulach"/>
+      <compatibility binary="compatible" source="compatible" semantic="incompatible" deprecation="no" addition="no" deletion="no" modification="no"/>
+      <description>
+        <p>
+        It has been found that <code>CloneableEditorSupport.notifyModified</code>
+        is called more often than it should. It used to be called after every
+        keystroke, which is bad, as its return value could not be honored - 
+        it is not possible to prevent modification when the document is already
+        modified. Now the method is called only on first modification of the
+        document and if it returns false, the modification is not allowed.
+        <br/>
+        This may be incompatible for clients that relied on the often calls.
+        Such clients need to be fixed.
+        </p>
+      </description>
+      <class package="org.openide.text" name="CloneableEditorSupport"/>
+      <issue number="52493"/>
+    </change>
+<change id="Task-waitFinished-timeout">
+      <api name="util"/>
+      <summary>New method <code>task.waitFinished(timeout)</code> added</summary>
+      <version major="5" minor="0"/>
+      <date day="2" month="11" year="2004"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <p>It is not possible to wait for a limited amount of time for
+            completion of any task. The <code>RequestProcessor.Task</code>
+            version is optimized, the <code>Task</code> version ensures that
+            the sematics will be compatible for all subclasses, even they did
+            not know about the method at all.
+        </p>
+      </description>
+      <class package="org.openide.util" name="Task"/>
+      <class package="org.openide.util" name="RequestProcessor"/>
+      <issue number="16849"/>
+    </change>
+<change id="add-detection-of-FreeBSD-OS">
+      <api name="util"/>
+      <summary>Added field <code>OS_FREEBSD</code> to <code>Utilities</code>
+</summary>
+      <version major="4" minor="50"/>
+      <date day="29" month="10" year="2004"/>
+      <author login="jrechtacek"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <p>FreeBSD was not recognized as Unix OS. <code>Utilities</code> has been
+        enlarged with new field <code>OS_FREEBSD</code>, part of OS Unix mask. <code>Utilities.isUnix()</code>
+        now returns <code>true</code> for applications run on FreeBSD.
+        </p>
+      </description>
+      <class package="org.openide.util" name="Utilities"/>
+    </change>
+<change id="HtmlBrowser.getBrowserImpl-getBrowserComponent">
+      <api name="util"/>
+      <summary>Added methods to <code>HtmlBrowser</code>
+</summary>
+      <version major="4" minor="27"/>
+      <date day="7" month="5" year="2004"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <p>
+          The methods <code>getBrowserImpl</code> and
+          <code>getBrowserComponent</code> were added to <code>HtmlBrowser</code>
+          for use by core.
+        </p>
+      </description>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+    </change>
+<change id="Mutex.isReadWriteAccess">
+        <api name="util"/>
+        <summary>Added <code>Mutex.isReadAccess()</code> and <code>Mutex.isWriteAcess()</code>
+</summary>
+        <version major="4" minor="48"/>
+        <date day="30" month="9" year="2004"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            A thread can now check whether read or write access on a <code>Mutex</code>
+            has already been
+            granted to it and use it to decide whether it is safe to perform
+            certain operations or delay them.
+        </description>
+        <class package="org.openide.util" name="Mutex"/>
+        <issue number="49459"/>
+    </change>
+<change id="SharedClassObject.reset">
+        <api name="util"/>
+        <summary>Added <code>SharedClassObject.reset</code> method to allow subclasses to implement reset correctly</summary>
+        <version major="4" minor="46"/>
+        <date day="2" month="9" year="2004"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            The new <code>SharedClassObject.reset</code> method is called
+            by the infrastructure in moments when an original (at the time
+            of start) state of an option or any other <code>SharedClassObject</code>
+            is requested. Interested subclasses are free to implement any kind of clean
+            they need. The <code>SystemOption</code> provides a default 
+            implementation based on fired property changed events, so 
+            its correctly written subclasses do not need 
+            to do anything.
+        </description>
+        <class package="org.openide.util" name="SharedClassObject"/>
+        <class package="org.openide.options" name="SystemOption"/>
+        <issue number="20962"/>
+    </change>
+<change>
+     <api name="util"/>
+     <summary>enum package deprecated and replaced by Enumerations factory class</summary>
+     <version major="4" minor="37"/>
+     <date day="7" month="6" year="2004"/>
+     <author login="jtulach"/>
+     <compatibility deprecation="yes" addition="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+     <description>
+        enum is a keyword in JDK 1.5 and as such it should not be used. 
+        That is the reason why we had to deprecated our 
+        <code>org.openide.util.enum</code> package. We are providing 
+        replacements of the original classes in form of factory methods
+        <code>org.openide.util.Enumerations</code>.
+     </description>
+     <class package="org.openide.util" name="Enumerations"/>
+     <issue number="41166"/>
+    </change>
+<change>
+        <api name="lookup"/>
+        <summary>Added ability to order items in META-INF/services/ lookup</summary>
+        <version major="4" minor="34"/>
+        <date day="9" month="5" year="2004"/>
+        <author login="dkonecny"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Items in META-INF/services/ lookup can be followed by advisory
+            "position" attribute. The resulting lookup will list first items with lower
+            position value. Items without position attribute will be listed 
+            last. See documentation for more details on format.
+        </description>
+        <class package="org.openide.util.lookup" name="MetaInfServicesLookup"/>
+        <issue number="41606"/>
+    </change>
+<change>
+     <api name="util"/>
+     <summary>Support for complicated listeners</summary>
+     <version major="4" minor="12"/>
+     <date day="2" month="9" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+     Improved support for hierarchic listeners (aka NamingListener vs. ObjectChangeListener from
+     javax.naming.event package).
+     </description>
+     <class package="org.openide.util" name="WeakListeners"/>
+     <issue number="35726"/>
+    </change>
+<change id="Utilities.actionsGlobalContext">
+     <api name="util"/>
+     <summary>Global action context as <code>Lookup</code>
+</summary>
+     <version major="4" minor="10"/>
+     <date day="12" month="8" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+       As part of the work on separation of openide.jar into smaller parts 
+       a new interface <code>ContextGlobalProvider</code> and new method
+       in utilities <code>Utilities.actionsGlobalContext()</code> had to be
+       added in order to separate the implementation of actions like
+       <code>CallbackSystemAction</code> and <code>NodeAction</code> from 
+       their dependency on window system.
+     </description>
+     <class package="org.openide.util" name="ContextGlobalProvider"/>
+     <class package="org.openide.util" name="Utilities"/>
+     <issue number="34758"/>
+    </change>
+<change id="WeakListeners">
+     <api name="util"/>
+     <summary>Old <code>WeakListener</code> replaced by <code>WeakListeners</code> class</summary>
+     <version major="4" minor="10"/>
+     <date day="12" month="8" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility deprecation="yes" addition="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+     <description>
+        <p>
+       As part of the work on separation of openide.jar into smaller parts 
+       the <code>WeakListener</code> had to be deprecated as it referenced too
+       many classes around and replaced by more general <code>WeakListeners</code>
+       factory class that provides a generic <code>create</code> method and
+       specialized factory methods just for JDK own interfaces.
+        </p>
+        <p>
+       Also few factory methods were spread into appropriate packages like
+       <code>FileUtil.weakFileChangeListener</code> and  
+       <code>NodeOp.weakNodeListener</code>.
+        </p>
+     </description>
+     <class package="org.openide.util" name="WeakListener"/>
+     <class package="org.openide.util" name="WeakListeners"/>
+     <class package="org.openide.filesystems" name="FileUtil"/>
+     <class package="org.openide.nodes" name="NodeOp"/>
+     <issue number="34758"/>
+    </change>
+<change>
+     <api name="lookup"/>
+     <summary>New <code>lookupItem()</code> method in Lookups</summary>
+     <version major="4" minor="8"/>
+     <date day="9" month="7" year="2003"/>
+     <author login="vstejskal"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+       New method that returns Lookup.Item implementation for given instance and key identifying
+       that instance in the lookup. This method is useful when writing Looks which need to
+       return some cookies (Collection of Lookup.Items).
+     </description>
+     <class package="org.openide.util.lookup" name="Lookups"/>
+    </change>
+<change id="WeakListener-operation">
+     <api name="util"/>
+     <summary>Removal of WeakListener.operation method</summary>
+     <version major="4" minor="3"/>
+     <date day="2" month="4" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" deletion="yes" binary="incompatible" source="incompatible" semantic="compatible" deprecation="no" modification="no"/>
+     <description>
+       <code>WeakListener.operation</code> method has been removed. Instead of it 
+       one can use the generic <code>WeakListener.create</code> or 
+       <code>DataLoaderPool.createWeakOperationListener</code>.
+     </description>
+     <class package="org.openide.util" name="WeakListener"/>
+     <issue number="32143"/>
+    </change>
+<change id="HelpCtx.findHelp">
+     <api name="util"/>
+     <summary>New method to find HelpCtx</summary>
+     <version major="4" minor="3"/>
+     <date day="2" month="4" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        A new method for finding HelpCtx (<code>HelpCtx.findHelp(Object)</code>)
+        has been added to replace
+        the old <code>InstanceSupport.findHelp</code> that has been
+        separated out from the openide.jar.
+     </description>
+     <class package="org.openide.util" name="HelpCtx"/>
+     <issue number="32143"/>
+    </change>
+<change id="settings.separated">
+      <api name="lookup"/>
+      <summary>Support for XML settings fully modularized</summary>
+      <version major="4" minor="26"/>
+      <date day="19" month="3" year="2004"/>
+      <author login="jglick"/>
+      <compatibility binary="incompatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no" modification="no">
+        <!-- XXX is it worth making a ModuleAutoDeps fix for this? -->
+        <p>
+          Modules using XML settings files should declare a dependency on the
+          separated module in order to guarantee that the functionality will
+          work.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Some time ago (NetBeans 3.4), a module called the <a href="http://www.netbeans.org/download/dev/javadoc/SettingsAPI/index.html" shape="rect">Settings
+          API</a> was created to handle persistent settings in customizable
+          formats. The built-in support for
+          <code>-//NetBeans//DTD Session settings 1.0//EN</code>
+          (i.e., <code>*.settings</code> files) was moved to that module and
+          client modules were encouraged to depend on it; but a copy remained in
+          the core just in case. The redundant code has now been removed so
+          anyone using <code>*.settings</code> files should declare in their
+          manifest:
+        </p>
+        <pre xml:space="preserve">OpenIDE-Module-Module-Dependencies: org.netbeans.modules.settings/1 &gt; 1.4</pre>
+        <p>
+          Failure to do so <em>might</em> result in the settings module being
+          disabled or missing, which would prevent <code>*.settings</code> files
+          from functioning.
+        </p>
+      </description>
+    </change>
+<change>
+     <api name="util"/>
+     <summary>Retrofit of interface Cancellable into RequestProcessor.Task</summary>
+     <version major="4" minor="1"/>
+     <date day="14" month="3" year="2003"/>
+     <author login="dsimonek"/>
+     <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+     <description>
+        RequestProcessor.Task was made to implement util.Cancellable interface.
+        No change of implementation at all, RP.Task already had method from
+        interface implemented, this is just a logical retrofit.
+     </description>
+     <class package="org.openide.util" name="RequestProcessor"/>
+    </change>
+<change>
+        <api name="util"/>
+        <summary>Support for asynchronous init of UI components</summary>
+        <version major="3" minor="36"/>
+        <date day="5" month="2" year="2003"/>
+        <author login="dsimonek"/>
+        <compatibility deprecation="no" addition="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+        <description>
+            <p>
+                Performance related API addition, allows clients to write asynchronous
+                initialization of UI components easily by providing <code>AsyncGUIJob</code>
+                implementation. Also introduced <code>Cancellable</code> ability.
+                <code>Utilities.attachInitJob</code> couples init job with target
+                UI component.
+            </p>
+        </description>
+        <class package="org.openide.util" name="AsyncGUIJob"/>
+        <class package="org.openide.util" name="Cancellable"/>
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="30604"/>
+    </change>
+<change>
+        <api name="lookup"/>
+        <summary>New method Lookups.metaInfServices</summary>
+        <version major="3" minor="35"/>
+        <date day="5" month="2" year="2003"/>
+        <author login="dstrupl"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            A lookup that implements the JDK1.3 JAR services mechanism and delegates
+            to META-INF/services/name.of.class files. This lookup was (is) used by core
+            and the core had to use reflection to create an instance. Moreover can
+            be usefull for module authors and in standalone library.
+        </description>
+        <class package="org.openide.util.lookup" name="Lookups"/>
+        <issue number="29126"/>
+    </change>
+<change>
+     <api name="util"/>
+     <summary>org.openide.util.Utilities.createProgressCursor added</summary>
+     <version major="3" minor="23"/>
+     <date day="2" month="12" year="2002"/>
+     <author login="dsimonek"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        Method java.awt.Cursor createProgressCursor(java.awt.Component comp) was
+        added into Utilities class. Method creates mouse cursor suitable for
+        components which are busy, but still reacts to the input events. (don't
+        block UI).
+     </description>
+     <class package="org.openide.util" name="Utilities"/>
+    </change>
+<change>
+     <api name="util"/>
+     <summary>Added interface HelpCtx.Provider</summary>
+     <version major="3" minor="20"/>
+     <date day="11" month="11" year="2002"/>
+     <author login="pnejedly"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+	An interface HelpCtx.Provider with one method getHelpCtx was added
+        and the logic in HelpCtx.findHelp and InstanceSupport.findHelp
+        was extended to take this interface into accout.
+        Various classes with existing getHelpCtx method were retrofitted
+        to implement this interface.
+     </description>
+     <class package="org.openide.util" name="HelpCtx"/>
+     <class package="org.openide" name="DialogDescriptor"/>
+     <class package="org.openide" name="ServiceType"/>
+     <class package="org.openide.loaders" name="DataObject"/>
+     <class package="org.openide.nodes" name="Node"/>
+     <class package="org.openide.options" name="SystemOption"/>
+     <class package="org.openide.util.actions" name="SystemAction"/>
+     <class package="org.openide.util.datatransfer" name="NewType"/>
+     <class package="org.openide.util.datatransfer" name="PasteType"/>
+     <class package="org.openide.windows" name="TopComponent"/>
+    </change>
+<change>
+        <api name="util"/>
+        <summary>Can load localized cached images</summary>
+        <version major="3" minor="24"/>
+        <date day="15" month="12" year="2002"/>
+        <author login="jglick"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Added method <code>Utilities.loadImage(String, boolean)</code>
+            which works like <code>Utilities.loadImage(String)</code> except
+            that it will search for localized images. Also
+            <code>SystemAction.getIcon()</code> will load a localized image now
+            if there is one.
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+        <class package="org.openide.util.actions" name="SystemAction"/>
+        <issue number="22156"/>
+    </change>
+<change>
+        <api name="lookup"/>
+        <summary>New method Lookups.proxy</summary>
+        <version major="3" minor="9"/>
+        <date day="20" month="9" year="2002"/>
+        <author login="dstrupl"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Creates a lookup that delegates to another one but that one can change
+            from time to time. The returned lookup checks every time somebody calls
+            lookup or lookupItem method whether the provider still returns
+            the same lookup. If not, it updates state of all Lookup.Results
+            that it created (and that still exists).
+        </description>
+        <class package="org.openide.util.lookup" name="Lookups"/>
+        <issue number="27425"/>
+    </change>
+<change>
+        <api name="util"/>
+        <summary>Utilities.activeReferenceQueue()</summary>
+        <version major="3" minor="11"/>
+        <date day="7" month="10" year="2002"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+           Active java.util.ref.ReferenceQueue that polls for all
+           enqued instances (that should implement Runnable) and
+           invokes their run method to do actual cleanup. 
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+         <issue number="27238"/>
+    </change>
+<change>
+        <api name="util"/>
+        <summary>New interface Lookup.Provider</summary>
+        <version major="3" minor="6"/>
+        <date day="19" month="8" year="2002"/>
+        <author login="dstrupl"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            An object can have method getLookup if there is a need to provide
+            local loookup instance. To recognize objects with such a facility
+            we are introducing interface Lookup.Provider with only one method:
+            getLookup.
+        </description>
+        <class package="org.openide.util" name="Lookup"/>
+         <issue number="26275"/>
+    </change>
+<change>
+        <api name="util"/>
+        <summary>Deprecation of parts of MouseUtils.PopupMenuAdapter</summary>
+        <version major="3" minor="4"/>
+        <date day="6" month="8" year="2002"/>
+        <author login="dsimonek"/>
+        <compatibility deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no" modification="no"/>
+        <description>
+          Constructor MouseUtils.PopupMenuAdapter(int) and public static field
+          DEFAULT_THESHOLD are now obsoleted, performs no action.
+          PopupMenuAdapter now delegates to isPopupTrigger crossplatform call,
+          should be constructed via default constructor.
+        </description>
+    </change>
+<change id="meta-inf-services">
+        <api name="lookup"/>
+        <summary>Modules can specify the content of Lookup.getDefault
+        in META-INF/services</summary>
+        <version major="3" minor="3"/>
+        <date day="22" month="7" year="2002"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+          The content of <code>Lookup.getDefault()</code> can be specified
+          by a standard JDK registration mechanism, using JARs'
+          <a href="http://java.sun.com/j2se/1.4/docs/guide/jar/jar.html#Service Provider" shape="rect">
+            META-INF/services
+          </a>
+          directory. This is suitable for services that do not change,
+          do not require user modification and that need to be ready
+          soon during initialization of the system. For other usecases
+          it is still better to continue to use 
+          <a href="org/openide/doc-files/services-api.html#lookup-ui" shape="rect">
+          module layer registration</a>.
+        </description>
+    </change>
+<change id="TopManager-getters-deprec">
+        <api name="lookup"/>
+        <summary>TopManager's getters deprecated</summary>
+        <version major="3" minor="3"/>
+        <date day="22" month="7" year="2002"/>
+        <author login="jtulach"/>
+        <compatibility deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no" modification="no"/>
+        <description>
+          Getters in <code>TopManager</code> (methods that take no arguments
+          and return a value like <code>getPlaces</code>, <code>getLoaderPool</code>, etc.)
+          have been deprecated in favor of using <code>Lookup</code>. So 
+          instead of calling <code>TopManager.getDefault().getLoaderPool()</code>
+          the suggested way is to <code>Lookup.getDefault().lookup (DataLoaderPool.class)</code>.
+        </description>
+        <class package="org.openide" name="TopManager"/>
+    </change>
+<change>
+      <api name="lookup"/>
+      <summary>
+<code>ErrorManager.isNotifiable</code> added</summary>
+      <version major="3" minor="18"/>
+      <date day="3" month="11" year="2002"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no">
+        Existing code which assumes (incorrectly) that <code>isLoggable</code>
+        can be used for this purpose, or which calls <code>notify</code> at a low
+        level such as <code>INFORMATIONAL</code> without first checking
+        <code>isNotifiable</code> for efficiency, should be revised.
+      </compatibility>
+      <description>
+        The method <code>ErrorManager.isNotifiable</code> was added to capture
+        the fact that an error manager implementation might be more aggressive
+        about displaying stack traces than log messages.
+      </description>
+      <class package="org.openide" name="ErrorManager"/>
+      <issue number="24056"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>
+<code>Utilities.toFile</code> and <code>toURL</code> added</summary>
+      <version major="3" minor="26"/>
+      <date day="24" month="12" year="2002"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no">
+        Existing code which uses the JDK 1.3 method <code>File.toURL</code> should be
+        examined, as it may be better to call <code>Utilities.toURL</code>.
+        Similarly, code which gets the path from a URL and calls the <code>File</code>
+        constructor may need to be changed to call <code>Utilities.toFile</code>.
+        Such changes should improve robustness of code when used in strangely
+        named directories.
+      </compatibility>
+      <description>
+        Two new utility methods were added which permit easy interconversion between
+        files and URLs using the <code>file</code> protocol. This task is easy and
+        safe under JDK 1.4, yet JDK 1.3 lacks a single call to do these tasks which
+        will handle unusual characters in file names, especially hash marks. The
+        utility methods use the JDK 1.4 variants when possible, else use specially
+        coded versions of the JDK 1.3 variants which handle hash marks.
+      </description>
+      <class package="org.openide.util" name="Utilities"/>
+      <issue number="29711"/>
+    </change>
+<change>
+         <api name="lookup"/>
+         <summary>Added org.openide.util.lookup.Lookups</summary>
+         <version major="2" minor="21"/>
+         <date day="28" month="5" year="2002"/>
+         <author login="dstrupl"/>
+         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+         <description>New utility class added. The class cannot be instantiated
+           and contains following static methods:
+        <pre xml:space="preserve">
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">Lookup</span> <span class="function-name">singleton</span>(<span class="type">Object</span> <span class="variable-name">objectToLookup</span>);
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">Lookup</span> <span class="function-name">fixed</span>(<span class="type">Object</span>[] <span class="variable-name">objectsToLookup</span>);
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">Lookup</span> <span class="function-name">fixed</span>(<span class="type">Object</span>[] <span class="variable-name">keys</span>, <span class="type">InstanceContent.Convertor</span> <span class="variable-name">convertor</span>);
+</pre>
+           The methods return an instance of simple lookup implementation
+           that holds the objects passed a parameter.
+         </description>
+         <class package="org.openide.util.lookup" name="Lookups"/>
+         <issue number="20550"/>
+    </change>
+<change>
+        <api name="util"/>
+        <summary>Added RequestProcessor.getDefault(), deprecated static methods in RequestProcessor</summary>
+        <version major="2" minor="12"/>
+        <date day="15" month="4" year="2002"/>
+        <author login="pnejedly"/>
+        <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+        <description>Sharing of singlethreaded
+	    <code>RequestProcessor.DEFAULT</code>
+	    through the static methods is inherently deadlock-prone,
+	    so the methods are deprecated and their usage should phase out
+	    in the favor of using private <code>RequestProcessor</code>s
+	    or the shared multithreaded instance available through the new
+	    static method <code>RequestProcessor.getDefault()</code>.
+        </description>
+        <class package="org.openide.util" name="RequestProcessor"/>
+    </change>
+<change>
+        <api name="util"/>
+        <summary>Use Lookup to register HttpServer.Impl's</summary>
+        <version major="2" minor="11"/>
+        <date day="12" month="4" year="2002"/>
+        <author login="rkubacki"/>
+        <compatibility deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no" modification="no"/>
+        <description> Methods HttpServer.registerServer and HttpServer.deregisterServer are deprecated.
+        Lookup is preferred way how to find HttpServer.Impl.
+        </description>
+        <class package="org.openide.util" name="HttpServer"/>
+        <issue number="14501"/>
+    </change>
+<change id="issue-19443-1">
+      <summary>API separation, phase I</summary>
+      <version major="3" minor="14"/>
+      <date day="15" month="10" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" deprecation="yes" semantic="compatible" addition="no" deletion="no" modification="no">
+        <p>
+          The deprecated classes continue to be available in the module
+          <code>org.openide.deprecated</code> which you may depend on it you
+          cannot remove uses of the deprecated APIs. In order for
+          <code>TopManager.getDefault()</code> to work, you must also require the
+          token <code>org.openide.TopManager</code>, which is provided by an
+          unspecified module. The deprecated API module and its implementation
+          module are autoloads, meaning they will not be loaded unless some
+          module still requires them.
+        </p>
+        <p>
+          Similarly, the Java Hierarchy API was moved to the module
+          <code>org.openide.src</code> which you should depend on in order to use
+          this API.
+        </p>
+        <p>
+          For compatibility, the above three dependencies are added to your module
+          <em>automatically</em> in case it either requests no specific API
+          version at all, or requests an API version prior to 3.14. Modules
+          requesting APIs 3.14 or higher must declare these dependencies
+          explicitly if they in fact need them.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Many classes were moved to a separate module,
+          <samp>openide-deprecated.jar</samp>, not available to modules by
+          default. Uses of these classes in modules should be cleaned up whenever
+          possible.
+        </p>
+        <p>
+          Additionally, the entire contents of <code>org.openide.src.*</code> and
+          <code>org.openide.src.nodes.*</code>, as well as
+          <code>org.openide.cookies.SourceCookie</code> and some associated
+          property editors, were moved to a separate module.
+        </p>
+        <p>
+          The most common apparent symptom for module authors will be the absence
+          of <code>TopManager</code>. Most methods in this class have been
+          replaced by newer utility classes in a straightforward manner. See the
+          Upgrade Guide.
+        </p>
+      </description>
+      <class package="org.openide" name="DialogDisplayer"/>
+      <class package="org.openide" name="LifecycleManager"/>
+      <class package="org.openide" name="Places"/>
+      <class package="org.openide" name="TopManager"/>
+      <class package="org.openide.actions" name="AddWatchAction"/>
+      <class package="org.openide.actions" name="BuildProjectAction"/>
+      <class package="org.openide.actions" name="CompileProjectAction"/>
+      <class package="org.openide.actions" name="DebugProjectAction"/>
+      <class package="org.openide.actions" name="ExecuteProjectAction"/>
+      <class package="org.openide.actions" name="FinishDebuggerAction"/>
+      <class package="org.openide.actions" name="GoAction"/>
+      <class package="org.openide.actions" name="GoToCursorAction"/>
+      <class package="org.openide.actions" name="HelpAction"/>
+      <class package="org.openide.actions" name="OpenProjectAction"/>
+      <class package="org.openide.actions" name="SaveProjectAction"/>
+      <class package="org.openide.actions" name="StartDebuggerAction"/>
+      <class package="org.openide.actions" name="StepOutAction"/>
+      <class package="org.openide.actions" name="ToggleBreakpointAction"/>
+      <class package="org.openide.actions" name="TraceIntoAction"/>
+      <class package="org.openide.actions" name="TraceOverAction"/>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+      <class package="org.openide.awt" name="StatusDisplayer"/>
+      <class package="org.openide.cookies" name="DebuggerCookie"/>
+      <class package="org.openide.cookies" name="ElementCookie"/>
+      <class package="org.openide.cookies" name="ProjectCookie"/>
+      <class package="org.openide.cookies" name="SourceCookie"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ChoicePropertyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="DirectoryOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ElementFormatEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ExternalCompiler"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IconEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IdentifierArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="MethodParameterArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ModifierEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomizable"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="TypeEditor"/>
+      <class package="org.openide.loaders" name="DataObjectFilter"/>
+      <class package="org.openide.loaders" name="ExecSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.loaders" name="ExtensionListEditor"/>
+      <class package="org.openide.loaders" name="RepositoryNodeFactory"/>
+      <class package="org.openide.modules" name="IllegalModuleException"/>
+      <class package="org.openide.modules" name="ManifestSection"/>
+      <class package="org.openide.modules" name="ModuleDescription"/>
+      <class package="org.openide.nodes" name="NodeOperation"/>
+      <class package="org.openide.options" name="ControlPanel"/>
+      <class package="org.openide.util.actions" name="ProjectSensitiveAction"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <package name="org.openide.debugger"/>
+      <package name="org.openide.src"/>
+      <package name="org.openide.src.nodes"/>
+      <issue number="19443"/>
+      <issue number="20898"/>
+    </change>
+<change id="issue-19443-2">
+      <summary>API separation, phase II</summary>
+      <version major="3" minor="17"/>
+      <date day="1" month="11" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" modification="yes" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        <p>
+          Module authors using the now-separated APIs will need to adjust their
+          compilation classpaths to include the new JAR files. Modules wishing to
+          use recent APIs and declaring a current openide specification version
+          dependency will need to explicitly declare dependencies on these new
+          APIs if there are any.
+        </p>
+        <p>
+          For compatibility, modules with no declared Open APIs dependency, or
+          declared on a version prior to 3.17, will have their dependencies
+          automatically refined as if to include the declarations:
+        </p>
+        <pre xml:space="preserve">
+OpenIDE-Module-Module-Dependencies: org.openide.compiler &gt; 1.0,
+  org.openide.execution &gt; 1.0, org.openide.io &gt; 1.0
+OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
+  org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
+        </pre>
+        <p>
+          And any package dependencies from old modules on
+          <code>org.netbeans.lib.terminalemulator</code> will be converted to
+          module dependencies.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Three sections of the Open APIs were split into new autoload modules.
+        </p>
+        <ul>
+          <li>
+            <p>
+              The module <code>org.openide.compiler</code> (version 1.0) contains
+              the Compiler API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.execution</code> (version 1.0) contains
+              the Execution API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.io</code> (version 1.0) contains
+              <code>InputOutput</code> and related classes (formerly part of the
+              Window System API, and still physically in the
+              <code>org.openide.windows</code> package).
+            </p>
+          </li>
+        </ul>
+        <p>
+          New modules wishing to use these APIs must declare regular module
+          dependencies on them. Future changes in these APIs will be documented
+          separately.
+        </p>
+        <p>
+          Furthermore, modules wishing to use certain services must
+          <code>OpenIDE-Module-Require</code> them if appropriate:
+        </p>
+        <ul>
+          <li>
+            <p>
+              <code>org.openide.compiler.CompilationEngine</code>, in order to
+              call <code>CompilationEngine.getDefault()</code>, or safely use
+              <code>AbstractCompileAction</code> or one of its subclasses, or
+              call <code>CompilerJob.start()</code>, or use
+              <code>BeanInfo</code>s for Compiler API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.execution.ExecutionEngine</code>, in order to
+              call <code>ExecutionEngine.getDefault()</code>, or safely use
+              <code>ExecuteAction</code>, or call
+              <code>Executor.execute(...)</code>, or use <code>BeanInfo</code>s
+              for Execution API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.windows.IOProvider</code>, in order to call
+              <code>IOProvider.getDefault()</code>.
+            </p>
+          </li>
+        </ul>
+        <p>
+          Other minor changes:
+        </p>
+        <ul>
+          <li>
+            <p>
+              Registration of URL stream handler factories using
+              <code>NbfsStreamHandlerFactory.register(...)</code> is deprecated.
+              Simply create an instance of <code>URLStreamHandlerFactory</code>
+              and add it to Lookup instead.
+            </p>
+          </li>
+          <li>
+            <p>
+              The method <code>FileUtil.nbfsURLStreamHandler</code> was added,
+              but is not intended for use by modules.
+            </p>
+          </li>
+          <li>
+            <p>
+              All uses of <code>ExecInfo</code> are deprecated as they abuse the
+              distinction between Filesystems and the user classpath. Use and
+              override only <code>Executor.execute(DataObject)</code>. Similarly,
+              <code>ThreadExecutor</code> is deprecated for the time being
+              because it suffers from similar problems.
+            </p>
+          </li>
+          <li>
+            <p>
+              Direct use of <code>NbfsURLConnection</code> is deprecated in favor
+              of the more general <code>URLMapper</code> from the Filesystems
+              API.
+            </p>
+          </li>
+          <li>
+            <p>
+              Package dependencies on
+              <code>org.netbeans.lib.terminalemulator</code> must be replaced
+              with module dependencies on a new autoload module
+              <code>org.netbeans.lib.terminalemulator</code> (version 1.0).
+            </p>
+          </li>
+          <li>
+            <p>
+              Several static convenience methods have been added to
+              <code>AbstractCompileAction</code>. Of most interest is
+              <code>prepareJobFor</code>. Module code should no longer assume
+              that <code>DataFolder</code> has a <code>CompilerCookie</code>
+              which recursively compiles the folder and subfolders (according to
+              depth); while it is still true, for reasons of compatibility, new
+              code should use <code>prepareJobFor</code> to create a compiler job
+              from a folder.
+            </p>
+          </li>
+        </ul>
+      </description>
+      <class package="org.openide.actions" name="AbstractCompileAction"/>
+      <class package="org.openide.actions" name="BuildAction"/>
+      <class package="org.openide.actions" name="BuildAllAction"/>
+      <class package="org.openide.actions" name="CleanAction"/>
+      <class package="org.openide.actions" name="CleanAllAction"/>
+      <class package="org.openide.actions" name="CompileAction"/>
+      <class package="org.openide.actions" name="CompileAllAction"/>
+      <class package="org.openide.actions" name="ExecuteAction"/>
+      <class package="org.openide.cookies" name="ArgumentsCookie"/>
+      <class package="org.openide.cookies" name="CompilerCookie"/>
+      <class package="org.openide.cookies" name="ExecCookie"/>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+      <class package="org.openide.loaders" name="CompilerSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <class package="org.openide.windows" name="InputOutput"/>
+      <class package="org.openide.windows" name="OutputEvent"/>
+      <class package="org.openide.windows" name="OutputListener"/>
+      <class package="org.openide.windows" name="OutputWriter"/>
+      <package name="org.openide.compiler"/>
+      <package name="org.openide.execution"/>
+      <issue number="19443"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Added helper methods to aid module developers to write code which works correctly with multiple monitors</summary>
+      <version major="2" minor="5"/>
+      <date day="26" month="2" year="2002"/>
+      <author login="ttran"/>
+      <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+      <description>
+        The added methods are
+        <pre xml:space="preserve">
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">Rectangle</span> <span class="function-name">getUsableScreenBounds</span>();
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">Rectangle</span> <span class="function-name">getUsableScreenBounds</span>(<span class="type">GraphicsConfiguration</span> <span class="variable-name">gconf</span>);
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">Rectangle</span> <span class="function-name">findCenterBounds</span>(<span class="type">Dimension</span> <span class="variable-name">componentSize</span>);
+</pre>
+        One should use these methods instead of calling
+        <code>Toolkit.getScreenSize()</code>.  For the same reason
+        <code>Utilities.getScreenSize()</code> is now deprecated.
+      </description>
+      <class package="org.openide.util" name="Utilities"/>
+      <issue number="20882"/>
+    </change>
+<change id="ErrorManager.getDefault">
+      <api name="util"/>
+      <summary>Added accessibility method ErrorManager.getDefault () that always returns non-null values</summary>
+      <version major="2" minor="1"/>
+      <date day="17" month="1" year="2002"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no"/>
+      <description>
+        <p>
+          This method allows independent libraries (nodes, filesystems, utilities) to use the ErrorManager without 
+          testing if it is really present. Just call <code>ErrorManager.getDefault ()</code> and you can be sure 
+          that a valid instance will be returned.
+        </p>
+        <p>
+          Also <code>TopManager.getErrorManager</code> is no longer useful (<a href="#ErrorManager.getDefault" shape="rect">see change</a>) and is now deprecated.
+          It is also not abstract as it just delegates.
+          <code>notifyException</code> is similarly deprecated.
+        </p>
+      </description>
+      <class package="org.openide" name="ErrorManager"/>
+      <issue number="16854"/>
+  </change>
+<change id="AbstractLookup.Content-ProxyLookup.beforeLookup">
+      <api name="lookup"/>
+      <summary>Enhanced usage of ProxyLookup &amp; AbstractLookup.Content</summary>
+      <version major="1" minor="31"/>
+      <date day="18" month="8" year="2001"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>AbstractLookup.Content</code> made public to allow its usage 
+        for objects that do not subclass AbstractLookup. <code>ProxyLookup.beforeLookup</code>
+        added so subclasses can update themselves (call setLookups (...)) before the actual lookup is
+        performed.
+      </description>
+      <class package="org.openide.util.lookup" name="AbstractLookup"/>
+      <class package="org.openide.util.lookup" name="ProxyLookup"/>
+    </change>
+<change>
+      <api name="lookup"/>
+      <summary>Instance content simplifies creation of lookups</summary>
+      <version major="1" minor="25"/>
+      <!-- XXX date unknown -->
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added <code>AbstractLookup.Content</code> which can be passed to an
+        abstract lookup in its constructor and used to control the contents
+        easily. Also <code>InstanceLookup</code> provides the common easy
+        implementation.
+      </description>
+      <class package="org.openide.util.lookup" name="AbstractLookup"/>
+      <class package="org.openide.util.lookup" name="InstanceContent"/>
+    </change>
+<change>
+      <api name="lookup"/>
+      <summary>
+<code>ServiceType.createClone</code> added</summary>
+      <date day="30" month="11" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no">Subclasses are encouraged to implement <code>Cloneable</code>.</compatibility>
+      <description>
+        <code>public final ServiceType createClone()</code> added.
+      </description>
+      <class package="org.openide" name="ServiceType"/>
+    </change>
+<change id="WeakListener.setSource">
+      <api name="util"/>
+      <summary>Method <code>setSource</code> made protected in <code>WeakListener</code>
+      </summary>
+      <version major="1" minor="34"/>
+      <date day="12" month="5" year="2001"/>
+      <author login="anovak"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+	  This method should help in a situation when the delegated listener is gc'ed
+          and the event source does not fire any events for a long time. If the event source
+          will be set, then such WeakListeners will be collected on 25s basis.
+      </description>
+      <class package="org.openide.util" name="WeakListener"/>
+      <issue number="11519"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>
+<code>ErrorManager.isLoggable</code> added</summary>
+      <date day="2" month="12" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>isLoggable(int severity)</code> added to <code>ErrorManager</code>.
+      </description>
+      <class package="org.openide" name="ErrorManager"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Logging and hierarchy support added to <code>ErrorManager</code>
+</summary>
+      <date day="18" month="8" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>getInstance(String name)</code>, <code>log(int severity, String s)</code>, and
+        <code>log(String s)</code> added to <code>ErrorManager</code>.
+      </description>
+      <class package="org.openide" name="ErrorManager"/>
+    </change>
+<change>
+      <api name="lookup"/>
+      <summary>"Welcome" folder available</summary>
+      <date day="19" month="7" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>welcome()</code> added to <code>Places.Folders</code>.
+      </description>
+      <class package="org.openide" name="Places"/>
+    </change>
+<change>
+      <api name="lookup"/>
+      <summary>Cannot set default <code>TopManager</code>
+</summary>
+      <date day="16" month="3" year="2000"/>
+      <compatibility deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no" modification="no">
+        <date day="16" month="3" year="2000"/> removed,
+        later re-added but deprecated in trunk and <code>boston</code>.
+        An incompatible change only in the
+        technical sense: it was called by the core implementation at startup,
+        and any further attempts to call it would also result in a
+        <code>SecurityException</code> anyway.
+      </compatibility>
+      <description>
+        <code>TopManager.setDefault</code> deprecated.
+      </description>
+      <class package="org.openide" name="TopManager"/>
+      <branch name="boston"/>
+    </change>
+<change>
+      <api name="lookup"/>
+      <summary>Folder lookup may be serialized</summary>
+      <version major="3" minor="27"/>
+      <date day="7" month="1" year="2003"/>
+      <author login="jglick"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        Modules which rely on a data object under <samp>Services/</samp> gaining
+        or losing <code>InstanceCookie</code> between sessions may not work
+        correctly with the cache. This is probably very rare.
+      </compatibility>
+      <description>
+        To implement lookup caching, some lookup implementations are now
+        serializable: <code>AbstractLookup</code> as well as
+        <code>FolderLookup</code>'s lookup. <code>ProxyLookup</code> has a
+        protected subclass constructor permitting subclasses to be serializable.
+      </description>
+      <class package="org.openide.loaders" name="FolderLookup"/>
+      <class package="org.openide.util.lookup" name="AbstractLookup"/>
+      <class package="org.openide.util.lookup" name="ProxyLookup"/>
+      <issue number="20190"/>
+    </change>
+<change id="Mnemonics">
+      <api name="util"/>
+      <summary>
+<code>org.openide.awt.Mnemonics</code> added</summary>
+      <version major="3" minor="37"/>
+      <date day="10" month="2" year="2003"/>
+      <author login="jglick"/>
+      <compatibility deprecation="yes" addition="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+      <description>
+        The class <code>org.openide.awt.Mnemonics</code> was introduced as a
+        centralized and convenient place to set localized text for a variety of
+        components while properly handling mnemonics in a variety of
+        international scripts.
+      </description>
+      <class package="org.openide.awt" name="Mnemonics"/>
+      <class package="org.openide.awt" name="Actions"/>
+      <issue number="26640"/>
+    </change>
+<change>
+      <api name="xml"/>
+      <summary>Can register entity resolvers</summary>
+      <date day="20" month="12" year="2000"/>
+      <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no">
+        Subsequently deprecated on <date day="3" month="3" year="2001"/> by
+        <a href="#created-XMLUtil" shape="rect">
+<code>EntityCatalog</code>
+</a>.
+      </compatibility>
+      <description>
+        <code>addEntityResolver</code> and <code>removeEntityResolver</code>
+        added. These methods allow a user to develop own implementation of
+        functionality similar to <code>registerCatalogEntry</code>. E.g. a user
+        can register <code>EntityResolver</code> that reads data from persistent
+        catalog avoiding bunch of calls to the register method in module
+        <code>restore</code> code.
+      </description>
+      <class package="org.openide.loaders" name="XMLDataObject"/>
+    </change>
+<change>
+      <api name="xml"/>
+      <summary>Updated DOM to level 2 and added document writability</summary>
+      <date day="26" month="1" year="2001"/>
+      <author login="pkuzel"/>
+      <compatibility modification="yes" binary="incompatible" source="incompatible" deprecation="yes" semantic="compatible" addition="no" deletion="no">
+        Any code implementing DOM interfaces could be broken by the level 2
+        interfaces. Clients of the DOM API should be unaffected.
+      </compatibility>
+      <description>
+        <ul>
+          <li>All level 1 <code>Document</code>s interfaces became level 2 ones.</li>
+          <li>Deprecated <code>write(Document, Writer)</code>
+            <p>A conflict between encoding declared in document and
+              actual Writer encoding can cause data loss. Suitable
+              just for UTF-8 and UTF-16 writers.
+            </p>
+          </li>
+          <li>introduced <code>write(Document, OutputStream, String encoding)</code>
+            <p>
+              The write method is supposed to be used as an implementation
+              independent way for writing DOM documents until self-writable
+              documents specification will be introduced. The self-writability
+              is considered to be a part of DOM level 3 specs.
+            </p>
+            <p>
+              Nowadays it is implemented that it can handle following DOM implementations:
+            </p>
+            <ul>
+              <li>Crimson</li>
+              <li>JAXP 1.0 reference implementation</li>
+              <li>All others using Apache's serializers if available.</li>
+            </ul>
+          </li>
+        </ul>
+      </description>
+      <class package="org.openide.loaders" name="XMLDataObject"/>
+    </change>
+<change id="Utilities.topologicalSort">
+      <api name="util"/>
+      <summary>Improved method for topological sort</summary>
+      <version major="3" minor="30"/>
+      <date day="10" month="1" year="2003"/>
+      <author login="jglick"/>
+      <compatibility deprecation="yes" addition="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+      <description>
+        The method <code>Utilities.topologicalSort</code> was added. It should be
+        faster and probably more robust than the older <code>partialSort</code>
+        method, which required a <code>Comparator</code>; the new method requires
+        a list of ordering constraints, which should be <i>O(n + m)</i>
+        rather than <i>O(n<sup>2</sup>)</i> (where <i>n</i> is the number of
+        nodes to sort and <i>m</i> the number of edges). If the graph is 
+        not a DAG a <code>TopologicalSortException</code> is thrown containing
+        description of unsortable parts of the graph and the best partitial sort
+        that fullfils as much of ordering constraints as possible. These
+        information can be used for error reporting and recovery.
+      </description>
+      <class package="org.openide.util" name="Utilities"/>
+      <class package="org.openide.util" name="TopologicalSortException"/>
+      <issue number="27286"/>
+    </change>
+<change>
+      <api name="xml"/>
+      <summary>Moved XML static methods into separate inner class</summary>
+      <date day="16" month="2" year="2001"/>
+      <author login="pkuzel"/>
+      <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no">
+        <code>XMLDataObject.Util</code> itself deprecated on
+        <date day="3" month="3" year="2001"/> in favor of
+        <a href="#created-XMLUtil" shape="rect">
+<code>XMLUtil</code>
+</a>.
+      </compatibility>
+      <description>
+        <ul>
+          <li>
+            Deprecated all static: <code>write()</code>s, <code>parse()</code>s,
+            <code>createDocument()</code>, <code>createInputSource()</code> and
+            <code>createParser()</code>s methods.
+          </li>
+          <li>
+            Introduced public static inner class named <code>Util</code> providing
+            utility methods replacing deprecated ones.
+          </li>
+        </ul>
+      </description>
+      <class package="org.openide.loaders" name="XMLDataObject"/>
+    </change>
+<change>
+      <api name="xml"/>
+      <summary>Direct registration of XML catalog entries deprecated</summary>
+      <date day="3" month="3" year="2001"/>
+      <author login="pkuzel"/>
+      <compatibility deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no" modification="no"/>
+      <description>
+        Deprecated <code>registerCatalogEntry()</code> methods.
+      </description>
+      <class package="org.openide.loaders" name="XMLDataObject"/>
+    </change>
+<change id="ToolbarPool-create-new">
+      <api name="util"/>
+      <summary>Create your own toolbar pool</summary>
+      <version major="1" minor="5"/>
+      <date day="27" month="4" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        New constructor of <code>ToolbarPool</code>. Now any module can create its
+        own <code>ToolbarPool</code> and use it.
+      </description>
+      <class package="org.openide.awt" name="ToolbarPool"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Display names for toolbars</summary>
+      <date day="8" month="12" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added display name support for Toolbar class. New constructors and methods:
+        <ul>
+          <li>
+<code>Toolbar(String name, String displayName)</code>
+</li>
+          <li>
+<code>Toolbar(String name, String displayName, boolean floatable)</code>
+</li>
+          <li>
+<code>setDisplayName(String displayName)</code>
+</li>
+          <li>
+<code>String getDisplayName()</code>
+</li>
+        </ul>
+      </description>
+      <class package="org.openide.awt" name="Toolbar"/>
+    </change>
+<change id="Mutex.Privileged">
+      <api name="util"/>
+      <summary>Permit privileged access to mutexes to avoid inner classes</summary>
+      <version major="1" minor="17"/>
+      <date day="27" month="6" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added a new inner class and a constructor that takes an instance of that
+        inner class as a parameter. The inner class is <code>Privileged</code>.
+        Through its public methods one can enter internal states of the
+        <code>Mutex</code> to which it was passed.
+      </description>
+      <class package="org.openide.util" name="Mutex"/>
+    </change>
+<change>
+      <api name="lookup"/>
+      <summary>Changes in access protection of proxy lookup</summary>
+      <version major="1" minor="19"/>
+      <date day="8" month="7" year="2001"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        Changes to newly added feature.
+      </compatibility>
+      <description>
+        <code>ProxyLookup.setLookups</code> made protected instead of public so
+        nobody can misuse the method except the creator of the object and
+        <code>ProxyLookup.getLookups</code> added. <code>ProxyLookup</code> made
+        non final.
+      </description>
+      <class package="org.openide.util.lookup" name="ProxyLookup"/>
+    </change>
+<change>
+      <api name="lookup"/>
+      <summary>Lookup service providers package created</summary>
+      <version major="1" minor="9"/>
+      <date day="1" month="6" year="2001"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Package <code>org.openide.util.lookup</code> created, should hold SPI
+        interfaces for lookup. Initially filled with <code>AbstractLookup</code>
+        which introduces <code>AbstractLookup.Pair</code> and with
+        <code>ProxyLookup</code>.
+      </description>
+      <class package="org.openide.util.lookup" name="AbstractLookup"/>
+      <class package="org.openide.util.lookup" name="ProxyLookup"/>
+      <package name="org.openide.util.lookup"/>
+    </change>
+<change id="Task.notifyRunning">
+      <api name="util"/>
+      <summary>More flexibility in controlling running of tasks</summary>
+      <version major="1" minor="5"/>
+      <date day="27" month="4" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>Task</code> has new protected constructor for subclasses and
+        methods <code>notifyRunning ()</code> and also non-final version of
+        <code>waitFinished ()</code>.
+      </description>
+      <class package="org.openide.util" name="Task"/>
+    </change>
+<change>
+      <api name="lookup"/>
+      <summary>Added lookup items and support APIs</summary>
+      <version major="1" minor="8"/>
+      <date day="25" month="5" year="2001"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>Lookup</code> enhanced. Interface <code>Lookup.Item</code> and
+        additional methods to access it also added.
+      </description>
+      <class package="org.openide.util" name="Lookup"/>
+    </change>
+<change>
+      <api name="lookup"/>
+      <summary>Lookup system introduced</summary>
+      <date day="1" month="3" year="2001"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Better version of <code>Lookup</code> introduced. There is a
+        <code>org.openide.util.Lookup</code> with bunch of inner classes and
+        <code>org.openide.util.LookupListener</code> and
+        <code>org.openide.util.LookupEvent</code>.
+      </description>
+      <class package="org.openide.util" name="Lookup"/>
+      <class package="org.openide.util" name="LookupEvent"/>
+      <class package="org.openide.util" name="LookupListener"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Icon &amp; image cache manager added</summary>
+      <date day="9" month="3" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Loading icons and images can be done through
+        <code>Utilities.loadImage()</code> that uses cache to avoid duplicate
+        loading of images. <code>mergeImages</code> uses the cache, too, for the
+        results of merge.
+      </description>
+      <class package="org.openide.util" name="Utilities"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Updated DEC -&gt; Compaq OS names</summary>
+      <date day="15" month="12" year="2000"/>
+      <compatibility modification="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no"/>
+      <description>
+        Operating system <code>OS_DEC</code> changed to <code>OS_TRU64</code>,
+        and added <code>OS_VMS</code>.
+      </description>
+      <class package="org.openide.util" name="Utilities"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Proper break iterators used when wrapping text strings</summary>
+      <date day="11" month="8" year="2000"/>
+      <compatibility modification="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no">
+        Deprecated version first removed, later re-added with deprecation in the
+        trunk.
+      </compatibility>
+      <description>
+        Added method <code>wrapString</code> which uses
+        <code>BreakIterator</code> instead of a flag and a heuristic solution.
+        <code>wrapString(String,int,boolean,boolean)</code> deprecated.
+      </description>
+      <class package="org.openide.util" name="Utilities"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Support for merging icons added</summary>
+      <date day="25" month="1" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added method <code>mergeImages(Image image1, Image image2, int x, int
+        y)</code> for merging images.
+      </description>
+      <class package="org.openide.util" name="Utilities"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Default filter enumeration accepts any non-<code>null</code> value</summary>
+      <date day="19" month="10" year="2000"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        <code>FilterEnumeration</code> is no longer abstract. The default
+        implementation accepts all <code>non-null</code> values.
+      </description>
+      <class package="org.openide.util.enum" name="FilterEnumeration"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Can get a list of localizing suffixes</summary>
+      <date day="1" month="1" year="2001"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>getLocalizingSuffixes</code> added.
+      </description>
+      <class package="org.openide.util" name="NbBundle"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Can find localized variants of extensionless resources</summary>
+      <date day="6" month="10" year="2000"/>
+      <author login="jglick"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        <code>getLocalizedFile</code> now accepts <code>null</code> extensions
+        to suppress the addition of a dot to the resource name.
+      </description>
+      <class package="org.openide.util" name="NbBundle"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Added search for branded variants as part of locale lookup</summary>
+      <date day="20" month="7" year="2000"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added methods <code>getBranding</code> and <code>setBranding</code>.
+        Normally these should only be called by the core implementation during
+        startup, not module authors. All methods to look up localized objects
+        may now also search for branded variants, if applicable.
+      </description>
+      <class package="org.openide.util" name="NbBundle"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Classloader finder for <code>NbBundle</code> is obsolete</summary>
+      <date day="11" month="4" year="2000"/>
+      <compatibility deletion="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" modification="no">
+        First removed, later re-added but deprecated in trunk and
+        <code>boston</code>. No one outside of <code>NbBundle</code> and the
+        core implementation should have been using these classes to begin with.
+      </compatibility>
+      <description>
+        <code>NbBundle.ClassLoaderFinder</code> and
+        <code>NbBundle.setClassLoaderFinder</code> have been deprecated; they
+        were quite obsolete.
+      </description>
+      <class package="org.openide.util" name="NbBundle"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Can create custom weak listeners</summary>
+      <date day="1" month="11" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added public method <code>create</code> for creating user specified
+        WeakListeners, not only default ones.
+      </description>
+      <class package="org.openide.util" name="WeakListener"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Cleaned up accidentally public members of <code>Toolbar</code>
+</summary>
+      <date day="19" month="4" year="2000"/>
+      <compatibility deletion="yes" source="incompatible" binary="compatible" semantic="compatible" deprecation="no" addition="no" modification="no">
+        First broken, later restored binary compatibility in trunk and
+        <code>boston</code>. It is possible but unlikely that the first two
+        changes could cause incompatibilities; normally only the core
+        implementation uses the <code>Toolbar</code> class anyway.
+      </compatibility>
+      <description>
+        Several public fields removed from <code>DnDEvent</code>
+        (<code>dx</code>, <code>dy</code>, <code>name</code>, and
+        <code>type</code>); public methods serving only to implement
+        <code>MouseInputListener</code> have been removed (as well as the
+        implements-clause for this interface); <code>BASIC_HEIGHT</code> now
+        final (it was static and only intended as a constant, so this is not
+        incompatible).
+      </description>
+      <class package="org.openide.awt" name="Toolbar"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Special exception thrown to request interaction with user</summary>
+      <date day="5" month="3" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added the first revision. This exception is thrown when a process is
+        about to perform some action that requires user confirmation.
+      </description>
+      <class package="org.openide.util" name="UserQuestionException"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>
+<code>SafeException</code> is a <code>FoldingIOException</code>
+</summary>
+      <date day="9" month="3" year="2000"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        Now extends <code>FoldingIOException</code>, meaning that it should
+        delegate the detail message, etc. to the original.
+      </description>
+      <class package="org.openide.util.io" name="SafeException"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Can request to use textual icons for actions</summary>
+      <date day="23" month="3" year="2000"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>ButtonBridge</code> has protected method with which it is possible
+        to specify whether or not to use textual icons rather than empty ones if
+        an action has no icon.
+      </description>
+      <class package="org.openide.awt" name="Actions"/>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>Using official Apache regexp package</summary>
+      <date day="17" month="7" year="2000"/>
+      <compatibility deletion="yes" source="incompatible" binary="incompatible" semantic="compatible" deprecation="no" addition="no" modification="no">
+        The transition should be easy as the removed classes were based on the
+        Apache regexp package. The Apache library will be tracked in the future
+        (at least until the APIs standardize on JDK 1.4+ and can use
+        <code>java.util.regexp</code>).
+      </compatibility>
+      <description>
+        <code>CharacterArrayCharacterIterator</code>, <code>RE</code>,
+        <code>ReaderCharacterIterator</code>, <code>RECompiler</code>,
+        <code>RESyntaxException</code>, <code>StreamCharacterIterator</code>,
+        and <code>StringCharacterIterator</code> removed. Preferred regexp
+        classes are those from <samp>core/release/lib/ext/regexp.jar</samp>:
+        <code>org.apache.regexp.*</code>.
+      </description>
+      <class package="org.openide.util" name="CharacterArrayCharacterIterator"/>
+      <class package="org.openide.util" name="RE"/>
+      <class package="org.openide.util" name="ReaderCharacterIterator"/>
+      <class package="org.openide.util" name="RECompiler"/>
+      <class package="org.openide.util" name="RESyntaxException"/>
+      <class package="org.openide.util" name="StreamCharacterIterator"/>
+      <class package="org.openide.util" name="StringCharacterIterator"/>
+      <branch name="boston">
+        <date day="16" month="10" year="2000"/>
+      </branch>
+    </change>
+<change>
+      <api name="util"/>
+      <summary>HTML browser factory deprecated, use lookup instead</summary>
+      <date day="8" month="3" year="2001"/>
+      <compatibility modification="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no"/>
+      <description>
+        <code>HtmlBrower.setFactory()</code> is deprecated and its functionality
+        can be obtained by registering <code>HtmlBrowser.Impl</code> in Lookup
+        folder. This allows to register more browsers in IDE, create
+        customizable browsers and switch between them.
+      </description>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+    </change>
+<change id="created-XMLUtil">
+      <api name="xml"/>
+      <summary>Independent XML API created</summary>
+      <date day="3" month="3" year="2001"/>
+      <author login="pkuzel"/>
+      <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+      <description>
+        <code>XMLUtil</code> utility class introduced. The class provides set of
+        static methods useful for XML processing. <code>EntityCatalog</code>
+        class introduced. It provides access to entity mapping registrations
+        provided by installed modules.
+      </description>
+      <class package="org.openide.xml" name="XMLUtil"/>
+      <class package="org.openide.xml" name="EntityCatalog"/>
+      <package name="org.openide.xml"/>
+    </change>
+<change id="XMLUtil-1.29">
+      <api name="xml"/>
+      <summary>XML attribute and hexadecimal utilities added</summary>
+      <version major="1" minor="29"/>
+      <date day="8" month="8" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>toAttribute(String, char, boolean)</code>, <code>toContent(String,
+        boolean)</code>, <code>toHex(byte[], int, int)</code> and
+        <code>fromHex(char[], int, int)</code> methods added.
+      </description>
+      <class package="org.openide.xml" name="XMLUtil"/>
+    </change>
+<change>
+      <api name="xml"/>
+      <summary>XML attribute and hexadecimal utilities modified</summary>
+      <version major="1" minor="40"/>
+      <date day="18" month="10" year="2001"/>
+      <compatibility binary="incompatible" source="incompatible" modification="yes" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        The original versions of these methods were not in any public release.
+      </compatibility>
+      <description>
+        <code>toAttribute(String, char, boolean)</code> method replaced by
+        <code>toAttributeValue(String)</code>
+        and
+        <code>toContent(String, boolean)</code> method replaced by
+        <code>toElementContent(String)</code>. These new simplified
+        signatures and particular semantics should cover 99% usage of
+        previous ones. See the original <a href="#XMLUtil-1.29" shape="rect">additions</a>.
+      </description>
+      <class package="org.openide.xml" name="XMLUtil"/>
+      <issue number="16629"/>
+    </change>
+</changes>
+<htmlcontents>
+<head>
+<title>Change History for the Utilities API</title>
+<link rel="stylesheet" href="prose.css" type="text/css"/>
+</head>
+<body>
+<p class="overviewlink">
+<a href="overview-summary.html">Overview</a>
+</p>
+<h1>Introduction</h1>
+<h2>What do the Dates Mean?</h2>
+<p>The supplied dates indicate when the API change was made, on the CVS
+trunk. From this you can generally tell whether the change should be
+present in a given build or not; for trunk builds, simply whether it
+was made before or after the change; for builds on a stabilization
+branch, whether the branch was made before or after the given date. In
+some cases corresponding API changes have been made both in the trunk
+and in an in-progress stabilization branch, if they were needed for a
+bug fix; this ought to be marked in this list.</p>
+<ul>
+<li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
+Specification versions: 6.0 begins after this point.</li>
+<li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
+Specification versions: 5.0 begins after this point.</li>
+</ul>
+<hr/>
+<standard-changelists module-code-name="$codebase"/>
+<hr/>
+<p>@FOOTER@</p>
+</body>
+</htmlcontents>
+</apichanges>
