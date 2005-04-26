@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+--><!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+<apidefs>
+<apidef name="winsys">Window System API</apidef>
+</apidefs>
+<changes>
+<change id="TopComponent.toFront">
+        <api name="winsys"/>
+        <summary>Added the <code>TopComponent</code> ability to bring their parent 
+        <code>Window</code> to front of other windows.</summary>
+        <version major="5" minor="8"/>
+        <date day="21" month="3" year="2005"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            The <code>TopComponent</code> class has a new method <code>toFront()</code>
+            that attempts to bring the parent <code>Window</code> of the TopComponent to
+            front of other top-level windows.
+            The method is implemented in the <code>WindowManager</code> class
+            using AWT's <code>java.awt.Window#toFront()</code>.
+        </description>
+        <class package="org.openide.windows" name="TopComponent"/>
+        <class package="org.openide.windows" name="WindowManager"/>
+        <issue number="56277"/>
+    </change>
+<change id="TC-requestAttention">
+      <api name="winsys"/>
+      <summary>TopComponent can request attention</summary>
+      <version major="5" minor="1"/>
+      <date day="17" month="11" year="2004"/>
+      <author login="mkleint"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <p>
+<code>TopComponent.requestAttention(boolean)</code> and <code>TopComponent.cancelRequestAttention</code>
+        added to allow components to signal that they require user's attention or the attention is no longer required.
+        It's up to the current TopComponent container to decide how to attract user's attention.
+        If the user activates the attention-requiring component, the container assumes the goal was achieved and the action is cancelled.
+        The methods are thread-safe.
+        </p>
+        <p>
+        For those implementing WindowManager class, there is an incompatible change where 
+        abstract methods <code>topComponentCancelRequestAttention(TopComponent)</code> and 
+        <code>topComponentRequestAttention(TopComponent)</code> were added.
+        </p>
+      </description>
+      <class package="org.openide.windows" name="WindowManager"/>
+      <class package="org.openide.windows" name="TopComponent"/>
+      <issue number="48811"/>
+    </change>
+<change>
+        <api name="winsys"/>
+        <summary>Allow association of Lookup with TopComponent later than 
+          in constructor.
+        </summary>
+        <version major="4" minor="23"/> 
+        <date day="20" month="1" year="2004"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+                Adding <code>TopComponent.associateLookup</code> to allow
+                late (in middle of constructor) association of Lookup with
+                component. This is especially useful in 
+                <code>org.openide.explorer.ExplorerUtils</code>.
+        </description>
+        <class package="org.openide.windows" name="TopComponent"/>
+        <issue number="38475"/>
+    </change>
+<change>
+        <api name="winsys"/>
+        <summary>Method TopComponent.getPersistenceType() is added to replace usage of client property
+                 PersistenceType.
+        </summary>
+        <version major="4" minor="20"/> 
+        <date day="7" month="1" year="2004"/>
+        <author login="mslama"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+                Method to get TopComponent persistence type is added to API.
+        </description>
+        <class package="org.openide.windows" name="TopComponent"/>
+        <issue number="36916"/>
+    </change>
+<change>
+        <api name="winsys"/>
+        <summary>New constructor for better delegation</summary>
+        <version major="4" minor="19"/>
+        <date day="27" month="12" year="2003"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+        	Easier way for <code>TopComponent</code>s to provide
+          their own Lookup and still maintain their contract with
+          <code>getActivatedNodes</code>.
+        </description>
+        <class package="org.openide.windows" name="TopComponent"/>
+        <issue number="38185"/>
+    </change>
+<change>
+     <api name="winsys"/>
+     <summary>Added method findTopComponent(String tcID) to WindowManager</summary>
+     <version major="4" minor="15"/>
+     <date day="25" month="11" year="2003"/>
+     <author login="mslama"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+     This method is necessary to be able to retrieve TopComponent instance using unique TopComponent ID.
+     Important mainly to access persistent singleton TopComponent instances.
+     </description>
+     <class package="org.openide.windows" name="WindowManager"/>
+     <issue number="37199"/>
+    </change>
+<change>
+     <api name="winsys"/>
+     <summary>New Window System implementation</summary>
+     <version major="4" minor="13"/>
+     <date day="12" month="11" year="2003"/>
+     <author login="pzavadsky"/>
+     <compatibility semantic="incompatible" source="compatible" addition="yes" deprecation="yes" modification="yes" binary="compatible" deletion="no"/>
+     <description>
+     Provided implementation of new window system. It is a new major version of module core/windows.
+     There also open API affected. There were added some new APIs, some older were deprecated
+     and also some older APIs have adjusted their semantics. Look at the 
+     <a href="http://core.netbeans.org/windowsystem/changes.html" shape="rect">changes document</a>
+     which has the detailed information.
+     </description>
+     <class package="org.openide.windows" name="CloneableTopComponent"/>
+     <class package="org.openide.windows" name="TopComponent"/>
+     <class package="org.openide.windows" name="TopComponentGroup"/>
+     <class package="org.openide.windows" name="WindowManager"/>
+     <class package="org.openide.windows" name="Workspace"/>
+     <issue number="29836"/>
+    </change>
+<change id="TopComponent-DataObject">
+     <api name="winsys"/>
+     <summary>Removal of TopComponent(DataObject) constructor</summary>
+     <version major="4" minor="3"/>
+     <date day="2" month="4" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" deletion="yes" deprecation="yes" source="incompatible" binary="incompatible" semantic="compatible" modification="no"/>
+     <description>
+        Due to separation of openide-loaders.jar the <code>TopComponent (DataObject)</code>
+        and <code>CloneableTopComponent (DataObject)</code>
+        constructors have been removed. Instead of using the old behavior
+        <pre xml:space="preserve">
+        new TopComponent (dataObject);
+        </pre>
+        please change the code to use <code>TopComponent.NodeName</code>:
+        <pre xml:space="preserve">
+        tc = new TopComponent ();
+        NodeName.connect (tc, dataObject.getNodeDelegate ());
+        </pre>
+     </description>
+     <class package="org.openide.windows" name="TopComponent"/>
+     <class package="org.openide.windows" name="CloneableTopComponent"/>
+     <issue number="32143"/>
+    </change>
+<change>
+        <api name="winsys"/>
+        <summary>CloneableTopComponent.Ref.getArbitraryComponent method added</summary>
+        <version major="3" minor="41"/>
+        <date day="27" month="2" year="2003"/>
+        <author login="pzavadsky"/>
+        <compatibility deprecation="yes" addition="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+        <description>
+            The  method <code>getAnyComponent</code> in <code>CloneableTopComponent.Ref</code>
+            class uses <code>NoSuchElementException</code> as a mean indicating there is no
+            component. Moreover the exception is runtime one (unchecked). 
+            It forces clients to use try-catch blocks, which doesn't follow
+            rule, which says there shouldn't be used exception for controlling program flow.
+            It is replaced by method <code>getArbitraryComponent</code> which returns
+            <code>null</code> instead of throwing an exception.
+        </description>
+        <class package="org.openide.windows" name="CloneableTopComponent"/>
+        <issue number="25824"/>
+    </change>
+<change>
+     <api name="winsys"/>
+     <summary>New property "WizardPanel_errorMessage" for WizardDescriptor has been added</summary>
+     <version major="3" minor="39"/>
+     <date day="20" month="2" year="2003"/>
+     <author login="dkonecny"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        New property with name "WizardPanel_errorMessage" was added to WizardDescriptor class.
+        It is String property and can contain description why the wizard panel is invalid. Non-null
+        value of this property is automatically displayed at the bottom of the wizard panel.
+     </description>
+     <class package="org.openide" name="WizardDescriptor"/>
+     <issue number="28466"/>
+    </change>
+<change>
+        <api name="winsys"/>
+        <summary>Add new DTD 1.2 for wsmode configuration file</summary>
+        <date day="1" month="7" year="2002"/>
+        <author login="mslama"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description> Current frame state is now stored. Added attribute for restored frame state,
+            valid only when frame state is maximized. (Restored frame state is state of frame when
+            frame is not maximized, it can be normal or iconified.)
+        </description>
+        <issue number="25268"/>
+    </change>
+<change>
+        <api name="winsys"/>
+        <summary>Add new DTD 1.1 for window manager configuration file</summary>
+        <date day="14" month="6" year="2002"/>
+        <author login="mslama"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description> Support for positioning main windom in MDI mode during first
+            user start.
+        </description>
+        <issue number="24451"/>
+    </change>
+<change>
+        <api name="winsys"/>
+        <summary>Add new DTD 1.1 for workspace configuration file</summary>
+        <date day="6" month="1" year="2002"/>
+        <author login="dsimonek"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description> Added element for maximized desktop in MDI mode.
+        </description>
+        <issue number="19072"/>
+    </change>
+<change>
+        <api name="winsys"/>
+        <summary>Add List TopComponent.availableModes(List modes) method</summary>
+        <version major="2" minor="14"/>
+        <date day="23" month="4" year="2002"/>
+        <author login="dsimonek"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description> Method availableModes(...) added to TopComponent to allow
+            TopComponent to specify where can be docked.
+        </description>
+        <class package="org.openide.windows" name="TopComponent"/>
+        <issue number="20153"/>
+    </change>
+<change>
+        <api name="winsys"/>
+        <summary>TopComponent shown state notification methods added to Winsys API</summary>
+        <version major="2" minor="18"/>
+        <date day="10" month="5" year="2002"/>
+        <author login="pzavadsky"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+	    Four new methods has been added to Winsys API, i.e. <code>TopComponent</code>:
+	    protected void componentShowing(), protected void componentHidded(),
+            protected void componentOpened(), protected void componentClose().
+            The last two replaces deprecated protected void openNotify()
+            and protected void closeNotify() methods. 
+            Two methods were added also to <code>WindowManager</code> to handle the
+            notifiction via its subclasses:
+            protected void componentShowing(TopComponent)
+            and protected void componentHidden(TopComponent).
+        </description>
+        <class package="org.openide.windows" name="TopComponent"/>
+        <class package="org.openide.windows" name="WindowManager"/>
+        <issue number="21618"/>
+    </change>
+<change id="issue-19443-1">
+      <summary>API separation, phase I</summary>
+      <version major="3" minor="14"/>
+      <date day="15" month="10" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" deprecation="yes" semantic="compatible" addition="no" deletion="no" modification="no">
+        <p>
+          The deprecated classes continue to be available in the module
+          <code>org.openide.deprecated</code> which you may depend on it you
+          cannot remove uses of the deprecated APIs. In order for
+          <code>TopManager.getDefault()</code> to work, you must also require the
+          token <code>org.openide.TopManager</code>, which is provided by an
+          unspecified module. The deprecated API module and its implementation
+          module are autoloads, meaning they will not be loaded unless some
+          module still requires them.
+        </p>
+        <p>
+          Similarly, the Java Hierarchy API was moved to the module
+          <code>org.openide.src</code> which you should depend on in order to use
+          this API.
+        </p>
+        <p>
+          For compatibility, the above three dependencies are added to your module
+          <em>automatically</em> in case it either requests no specific API
+          version at all, or requests an API version prior to 3.14. Modules
+          requesting APIs 3.14 or higher must declare these dependencies
+          explicitly if they in fact need them.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Many classes were moved to a separate module,
+          <samp>openide-deprecated.jar</samp>, not available to modules by
+          default. Uses of these classes in modules should be cleaned up whenever
+          possible.
+        </p>
+        <p>
+          Additionally, the entire contents of <code>org.openide.src.*</code> and
+          <code>org.openide.src.nodes.*</code>, as well as
+          <code>org.openide.cookies.SourceCookie</code> and some associated
+          property editors, were moved to a separate module.
+        </p>
+        <p>
+          The most common apparent symptom for module authors will be the absence
+          of <code>TopManager</code>. Most methods in this class have been
+          replaced by newer utility classes in a straightforward manner. See the
+          Upgrade Guide.
+        </p>
+      </description>
+      <class package="org.openide" name="DialogDisplayer"/>
+      <class package="org.openide" name="LifecycleManager"/>
+      <class package="org.openide" name="Places"/>
+      <class package="org.openide" name="TopManager"/>
+      <class package="org.openide.actions" name="AddWatchAction"/>
+      <class package="org.openide.actions" name="BuildProjectAction"/>
+      <class package="org.openide.actions" name="CompileProjectAction"/>
+      <class package="org.openide.actions" name="DebugProjectAction"/>
+      <class package="org.openide.actions" name="ExecuteProjectAction"/>
+      <class package="org.openide.actions" name="FinishDebuggerAction"/>
+      <class package="org.openide.actions" name="GoAction"/>
+      <class package="org.openide.actions" name="GoToCursorAction"/>
+      <class package="org.openide.actions" name="HelpAction"/>
+      <class package="org.openide.actions" name="OpenProjectAction"/>
+      <class package="org.openide.actions" name="SaveProjectAction"/>
+      <class package="org.openide.actions" name="StartDebuggerAction"/>
+      <class package="org.openide.actions" name="StepOutAction"/>
+      <class package="org.openide.actions" name="ToggleBreakpointAction"/>
+      <class package="org.openide.actions" name="TraceIntoAction"/>
+      <class package="org.openide.actions" name="TraceOverAction"/>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+      <class package="org.openide.awt" name="StatusDisplayer"/>
+      <class package="org.openide.cookies" name="DebuggerCookie"/>
+      <class package="org.openide.cookies" name="ElementCookie"/>
+      <class package="org.openide.cookies" name="ProjectCookie"/>
+      <class package="org.openide.cookies" name="SourceCookie"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ChoicePropertyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="DirectoryOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ElementFormatEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ExternalCompiler"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IconEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IdentifierArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="MethodParameterArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ModifierEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomizable"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="TypeEditor"/>
+      <class package="org.openide.loaders" name="DataObjectFilter"/>
+      <class package="org.openide.loaders" name="ExecSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.loaders" name="ExtensionListEditor"/>
+      <class package="org.openide.loaders" name="RepositoryNodeFactory"/>
+      <class package="org.openide.modules" name="IllegalModuleException"/>
+      <class package="org.openide.modules" name="ManifestSection"/>
+      <class package="org.openide.modules" name="ModuleDescription"/>
+      <class package="org.openide.nodes" name="NodeOperation"/>
+      <class package="org.openide.options" name="ControlPanel"/>
+      <class package="org.openide.util.actions" name="ProjectSensitiveAction"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <package name="org.openide.debugger"/>
+      <package name="org.openide.src"/>
+      <package name="org.openide.src.nodes"/>
+      <issue number="19443"/>
+      <issue number="20898"/>
+    </change>
+<change id="issue-19443-2">
+      <summary>API separation, phase II</summary>
+      <version major="3" minor="17"/>
+      <date day="1" month="11" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" modification="yes" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        <p>
+          Module authors using the now-separated APIs will need to adjust their
+          compilation classpaths to include the new JAR files. Modules wishing to
+          use recent APIs and declaring a current openide specification version
+          dependency will need to explicitly declare dependencies on these new
+          APIs if there are any.
+        </p>
+        <p>
+          For compatibility, modules with no declared Open APIs dependency, or
+          declared on a version prior to 3.17, will have their dependencies
+          automatically refined as if to include the declarations:
+        </p>
+        <pre xml:space="preserve">
+OpenIDE-Module-Module-Dependencies: org.openide.compiler &gt; 1.0,
+  org.openide.execution &gt; 1.0, org.openide.io &gt; 1.0
+OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
+  org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
+        </pre>
+        <p>
+          And any package dependencies from old modules on
+          <code>org.netbeans.lib.terminalemulator</code> will be converted to
+          module dependencies.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Three sections of the Open APIs were split into new autoload modules.
+        </p>
+        <ul>
+          <li>
+            <p>
+              The module <code>org.openide.compiler</code> (version 1.0) contains
+              the Compiler API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.execution</code> (version 1.0) contains
+              the Execution API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.io</code> (version 1.0) contains
+              <code>InputOutput</code> and related classes (formerly part of the
+              Window System API, and still physically in the
+              <code>org.openide.windows</code> package).
+            </p>
+          </li>
+        </ul>
+        <p>
+          New modules wishing to use these APIs must declare regular module
+          dependencies on them. Future changes in these APIs will be documented
+          separately.
+        </p>
+        <p>
+          Furthermore, modules wishing to use certain services must
+          <code>OpenIDE-Module-Require</code> them if appropriate:
+        </p>
+        <ul>
+          <li>
+            <p>
+              <code>org.openide.compiler.CompilationEngine</code>, in order to
+              call <code>CompilationEngine.getDefault()</code>, or safely use
+              <code>AbstractCompileAction</code> or one of its subclasses, or
+              call <code>CompilerJob.start()</code>, or use
+              <code>BeanInfo</code>s for Compiler API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.execution.ExecutionEngine</code>, in order to
+              call <code>ExecutionEngine.getDefault()</code>, or safely use
+              <code>ExecuteAction</code>, or call
+              <code>Executor.execute(...)</code>, or use <code>BeanInfo</code>s
+              for Execution API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.windows.IOProvider</code>, in order to call
+              <code>IOProvider.getDefault()</code>.
+            </p>
+          </li>
+        </ul>
+        <p>
+          Other minor changes:
+        </p>
+        <ul>
+          <li>
+            <p>
+              Registration of URL stream handler factories using
+              <code>NbfsStreamHandlerFactory.register(...)</code> is deprecated.
+              Simply create an instance of <code>URLStreamHandlerFactory</code>
+              and add it to Lookup instead.
+            </p>
+          </li>
+          <li>
+            <p>
+              The method <code>FileUtil.nbfsURLStreamHandler</code> was added,
+              but is not intended for use by modules.
+            </p>
+          </li>
+          <li>
+            <p>
+              All uses of <code>ExecInfo</code> are deprecated as they abuse the
+              distinction between Filesystems and the user classpath. Use and
+              override only <code>Executor.execute(DataObject)</code>. Similarly,
+              <code>ThreadExecutor</code> is deprecated for the time being
+              because it suffers from similar problems.
+            </p>
+          </li>
+          <li>
+            <p>
+              Direct use of <code>NbfsURLConnection</code> is deprecated in favor
+              of the more general <code>URLMapper</code> from the Filesystems
+              API.
+            </p>
+          </li>
+          <li>
+            <p>
+              Package dependencies on
+              <code>org.netbeans.lib.terminalemulator</code> must be replaced
+              with module dependencies on a new autoload module
+              <code>org.netbeans.lib.terminalemulator</code> (version 1.0).
+            </p>
+          </li>
+          <li>
+            <p>
+              Several static convenience methods have been added to
+              <code>AbstractCompileAction</code>. Of most interest is
+              <code>prepareJobFor</code>. Module code should no longer assume
+              that <code>DataFolder</code> has a <code>CompilerCookie</code>
+              which recursively compiles the folder and subfolders (according to
+              depth); while it is still true, for reasons of compatibility, new
+              code should use <code>prepareJobFor</code> to create a compiler job
+              from a folder.
+            </p>
+          </li>
+        </ul>
+      </description>
+      <class package="org.openide.actions" name="AbstractCompileAction"/>
+      <class package="org.openide.actions" name="BuildAction"/>
+      <class package="org.openide.actions" name="BuildAllAction"/>
+      <class package="org.openide.actions" name="CleanAction"/>
+      <class package="org.openide.actions" name="CleanAllAction"/>
+      <class package="org.openide.actions" name="CompileAction"/>
+      <class package="org.openide.actions" name="CompileAllAction"/>
+      <class package="org.openide.actions" name="ExecuteAction"/>
+      <class package="org.openide.cookies" name="ArgumentsCookie"/>
+      <class package="org.openide.cookies" name="CompilerCookie"/>
+      <class package="org.openide.cookies" name="ExecCookie"/>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+      <class package="org.openide.loaders" name="CompilerSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <class package="org.openide.windows" name="InputOutput"/>
+      <class package="org.openide.windows" name="OutputEvent"/>
+      <class package="org.openide.windows" name="OutputListener"/>
+      <class package="org.openide.windows" name="OutputWriter"/>
+      <package name="org.openide.compiler"/>
+      <package name="org.openide.execution"/>
+      <issue number="19443"/>
+    </change>
+<change>
+        <api name="winsys"/>
+        <summary>Add WindowManager.getDefault() method</summary>
+        <version major="2" minor="10"/>
+        <date day="21" month="3" year="2002"/>
+        <author login="dsimonek"/>
+        <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+        <description> Method WindowManager.getDefault() added to loose coupling between Topmanager and winsys.
+        Old method TopManager.getWindowManager() was deprecated.
+        </description>
+        <class package="org.openide.windows" name="WindowManager"/>
+        <issue number="20942"/>
+    </change>
+<change>
+      <api name="winsys"/>
+      <summary>Wizard panels can refuse to go forward</summary>
+      <date day="15" month="1" year="2001"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        <code>WizardDescriptor.Panel.readSettings</code> can throw
+        <code>IllegalStateException</code>. This can be used to indicate that data
+        provided by the previous panels are not OK and that the panel wants the
+        wizard to go back one panel.
+      </description>
+      <class package="org.openide" name="WizardDescriptor"/>
+    </change>
+<change>
+      <api name="winsys"/>
+      <summary>Both Swing client properties and descriptor properties checked for wizard steps/image/help</summary>
+      <date day="9" month="1" year="2001"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        Added new functionality without API change. Wizard descriptor creates
+        wizard panel with list of steps/image/help on the left depending on the
+        properties supplied by
+        <code>((JComponent)WizardDescriptor.current().getComponent()).putClientProperty()</code>
+        or <code>WizardDescriptor.putProperty()</code>.
+      </description>
+      <class package="org.openide" name="WizardDescriptor"/>
+    </change>
+<change>
+      <api name="winsys"/>
+      <summary>OK button in notify dialog can be turned off</summary>
+      <date day="11" month="4" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added methods <code>isValid</code> and <code>setValid</code>, added
+        property name String constant <code>PROP_VALID</code>. It can be used to
+        change validity (enable/disable) of standard OK button in dialog.
+      </description>
+      <class package="org.openide" name="NotifyDescriptor"/>
+    </change>
+<change>
+      <api name="winsys"/>
+      <summary>Make a top component visible without focus change</summary>
+      <date day="27" month="7" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added method to make component visible without change of focus or frames
+        z-order. If it is not possible to make component visible without change of
+        focus it works in the same way as requestFocus(). New methods:
+        <ul>
+          <li>
+<code>public void TopComponent.requestVisible()</code>
+</li>
+          <li>
+<code>public void WindowManager.Component.requestVisible()</code>
+</li>
+        </ul>
+      </description>
+      <class package="org.openide.windows" name="TopComponent"/>
+      <class package="org.openide.windows" name="WindowManager"/>
+    </change>
+<change>
+      <api name="winsys"/>
+      <summary>Open and close notification for top components</summary>
+      <date day="7" month="3" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added open and close notification for top components. New methods:
+        <ul>
+          <li>
+<code>protected void TopComponent.openNotify()</code>
+</li>
+          <li>
+<code>protected void TopComponent.closeNotify()</code>
+</li>
+          <li>
+<code>protected void WindowManager.componentOpenNotify(TopComponent tc)</code>
+</li>
+          <li>
+<code>protected void WindowManager.componentCloseNotify(TopComponent tc)</code>
+</li>
+        </ul>
+      </description>
+      <class package="org.openide.windows" name="TopComponent"/>
+      <class package="org.openide.windows" name="WindowManager"/>
+    </change>
+<change>
+      <api name="winsys"/>
+      <summary>Several members of <code>InputOutput</code> removed</summary>
+      <date day="16" month="6" year="2000"/>
+      <compatibility deletion="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" modification="no">
+        First broken, later re-added but deprecated in trunk and
+        <code>boston</code>. Any code referring to these members is erroneous and
+        must be rewritten. The only useful related member, the
+        <code>InputOutput.NULL</code> constant, is still public and accessible.
+      </compatibility>
+      <description>
+        Several members of this interface were technically public before and are
+        now deprecated:
+        <ul>
+          <li>
+<code>InputOutput.Null</code>
+</li>
+          <li>
+<code>InputOutput.NullOutputWriter</code>
+</li>
+          <li>
+<code>InputOutput.nullReader</code>
+</li>
+          <li>
+<code>InputOutput.nullWriter</code>
+</li>
+        </ul>
+        In fact they were meant to be package-private and were only public due to
+        a quirk of Java's syntax (default modifier inside interfaces is public).
+      </description>
+      <class package="org.openide.windows" name="InputOutput"/>
+    </change>
+</changes>
+<htmlcontents>
+<head>
+<title>Change History for the Window Systems API</title>
+<link rel="stylesheet" href="prose.css" type="text/css"/>
+</head>
+<body>
+<p class="overviewlink">
+<a href="overview-summary.html">Overview</a>
+</p>
+<h1>Introduction</h1>
+<h2>What do the Dates Mean?</h2>
+<p>The supplied dates indicate when the API change was made, on the CVS
+trunk. From this you can generally tell whether the change should be
+present in a given build or not; for trunk builds, simply whether it
+was made before or after the change; for builds on a stabilization
+branch, whether the branch was made before or after the given date. In
+some cases corresponding API changes have been made both in the trunk
+and in an in-progress stabilization branch, if they were needed for a
+bug fix; this ought to be marked in this list.</p>
+<ul>
+<li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
+Specification versions: 6.0 begins after this point.</li>
+<li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
+Specification versions: 5.0 begins after this point.</li>
+</ul>
+<hr/>
+<standard-changelists module-code-name="org.openide.windows"/>
+<hr/>
+<p>@FOOTER@</p>
+</body>
+</htmlcontents>
+</apichanges>
