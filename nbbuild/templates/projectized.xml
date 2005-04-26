@@ -461,7 +461,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="clean" depends="files-init">
         <delete dir="build"/>
-        <delete dir="javadoc"/>
+        <delete dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
+        <delete file="${netbeans.javadoc.dir}/${code.name.base.dashes}.zip"/>
         <delete>
             <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
                 <patternset refid="module.files"/>
