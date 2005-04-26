@@ -2863,7 +2863,7 @@ widthcheck:  {
 
     /** Exception indicating that a given list could not be partially-ordered.
     * @see #partialSort
-    * @deprecated Used only by the deprecated {@link #partialSort}
+    * @deprecated Used only by the deprecated partialSort
     */
     public static class UnorderableException extends RuntimeException {
         static final long serialVersionUID = 6749951134051806661L;

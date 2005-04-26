@@ -18,55 +18,59 @@
 </head>
 <body>
 
-<p class="overviewlink"><a href="../../../../overview-summary.html">Overview</a></p>
+<p class="overviewlink"><a href="@TOP@overview-summary.html">Overview</a></p>
 
 <h1>Utility Classes</h1>
 
-A few packages contain some utility classes which are shared by
-several of the main APIs. Many such classes are not needed for
-module authors, and serve rather as supports for the implementation
-code present in API packages. Usually the classes which do need to
-be understood by module authors will be linked to from the
-appropriate main API. The packages holding utility classes and some
-of the more prominent classes in them are:
+Not all of the classes in this package are of interest for all module 
+writers, but some of them may or even are as they are used through out
+our sources.
+
+<h2>Package <a href="../package-summary.html"><code>org.openide.util</code></a></h2>
 
 <ol>
+    <li><a href="../Lookup.html">Lookup</a> and its associated 
+    <a href="../lookup/package-summary.html">support package</a> as that
+    is the <em>adaptable</em> interface that objects can provide if
+    they wish to offer dynamic capabilities.
+    </li>
+    
+    <li><a href="../NbBundle.html">NbBundle</a> as our specialized support
+    for localization and replacement to 
+    <a href="@JDK@/java/util/ResourceBundle.html">ResourceBundle</a>.
+    </li>
+    
+    <li><a href="../Task.html"><code>Task</code></a> and especially 
+    <a href="../RequestProcessor.html"><code>RequestProcessor</code></a> which
+    is our way to manage poor of thread workers and execute asynchronous
+    computations.
+    </li>
+    
+    <li>
+    <a href="../HelpCtx.html"><code>HelpCtx</code></a> to specify help ids for
+    various UI components
+    </li>
 
-<li><a href="../../awt/package-summary.html"><code>org.openide.awt</code></a>:
+    <li>
+    <a href="../Utilities.html"><code>Utilities</code></a> which contain
+    a lot of methods of possible interest. For example
+    <a href="../Utilities.html#actionsGlobalContext()"><code>actionsGlobalContext</code></a>,
+    <a href="../Utilities.html#loadImage(java.lang.String)"><code>loadImage</code></a>,
+    <a href="../Utilities.html#mergeImages(java.awt.Image,%20java.awt.Image,%20int,%20int)"><code>mergeImage</code></a>,
+    <a href="../Utilities.html#topologicalSort(java.util.Collection,%20java.util.Map)"><code>topologicalSort</code></a>,
+    <a href="../Utilities.html#activeReferenceQueue()"><code>activeReferenceQueue</code></a>,
+    <a href="../Utilities.html#translate(java.lang.String)"><code>translate</code></a>.
+    </li>
 
-<a href="../../awt/HtmlBrowser.html"><code>HtmlBrowser</code></a>;
+    <li>
+    <a href="../Enumerations.html"><code>Enumerations</code></a> provide
+    enhacened support for manipulation with 
+    <a href="@JDK@/java/util/Enumeration.html">Enumeration</a>s and especially
+    their on-demand generation.
+    </li>
+<ol>
 
-<a href="../../awt/UndoRedo.html"><code>UndoRedo</code></a>;
-
-and a variety of visual components which may be used in modules to
-help emulate the appearance and GUI behavior of the rest of the
-IDE, such as
-
-<a href="../../awt/SplittedPanel.html"><code>SplittedPanel</code></a>.
-
-<li><a href="../package-summary.html"><code>org.openide.util</code></a>:
-
-<a href="../SharedClassObject.html"><code>SharedClassObject</code></a>;
-
-<a href="../Mutex.html"><code>Mutex</code></a>;
-
-<a href="../Task.html"><code>Task</code></a>;
-
-<a href="../HelpCtx.html"><code>HelpCtx</code></a>;
-
-<a href="../Utilities.html"><code>Utilities</code></a>;
-
-<a href="../NbBundle.html"><code>NbBundle</code></a>;
-
-<a href="../HttpServer.html"><code>HttpServer</code></a>;
-
-and a few other classes.
-
-<li><a href="../enum/package-summary.html"><code>org.openide.util.enum</code></a>:
-
-convenient higher-order enumeration types, to complement the Java
-Collections system.
-
+<!--
 <li><a href="../io/package-summary.html"><code>org.openide.util.io</code></a>:
 
 a few extensions to the Java I/O system.
@@ -74,8 +78,1095 @@ a few extensions to the Java I/O system.
 <li><a href="../../xml/package-summary.html"><code>org.openide.xml</code></a>:
 
 general XML parsing, entity registration, and so on.
+-->
+
+</a><h2>Services Registration and Lookup API</h2>
+
+
+<p>For lookup, this centers around
+
+<a href="../Lookup.html"><code>Lookup</code></a>
+
+and helper implementations in
+
+<a href="../lookup/package-summary.html"><code>org.openide.util.lookup</code></a>.
+
+
+
+<h3>Contents</h3>
+
+<ul>
+
+<li><a href="#lookup">Lookup</a>
+<ul>
+<li><a href="#instances">Working with Instances</a>
+<li><a href="#instance-folders">Folders of Instances</a>
+<li><a href="#service-lookup">Lookup and Service Installation</a>
+<li><a href="#lookup-ids">Persisting Lookup Information</a>
+<li><a href="#lookup-impl">Creating Lookups</a>
+<li><a href="#settings">Settings</a>
+<li><a href="#lookup-ui">UI for Services</a>
+</ul>
+
+</ul>
+
+
+<h2><a name="lookup">Lookup</a></h2>
+
+<!-- XXX document META-INF/services/*; IDE/1 > 3.3 I think -->
+
+<div class="nonnormative">
+
+While service types are a useful abstraction for things like script types,
+they are not flexible enough to handle all of the
+IDE's needs for registering and finding services. For one thing, the
+IDE is moving toward installation of services via XML layer rather
+than manifest, and service types are normally defined via manifest.
+Layer-based installation is more flexible in many ways. Also, many
+things need to be registered that practically cannot be subclasses of
+<code>ServiceType</code>, and there is no particular reason to make
+this restriction; similarly, <code>ServiceType</code> registration is
+oriented towards registering service classes, whereas in many cases it
+is necessary to use one implementing class with many instances.
+Finally, a more generic registration system was desired in order to
+simplify the APIs and make it easier to implement some APIs
+independently of the others.
+
+<p>These considerations gave rise to the <em>lookup</em> system first
+introduced in NetBeans 3.2 and expanded upon for NetBeans 3.3. The
+center of this API from the client perspective is very simple - you
+can look up a class, and get an instance of that class (or a
+collection of them). The service provider side of it is more complex
+but useful lookup implementations are already provided in the IDE
+core; for common cases you can register an object into lookup just by
+adding one simple file to an XML layer.
+
+<p>This section of the Services API will first discuss what
+<em>instances</em> are and how to create them from files, as this is
+the core concept for service providers. It will discuss how you can
+manually retrieve sets of instances as a client, which is not used
+very frequently in new code but helps to understand what lookup is
+doing behind the scenes. Then lookup itself is discussed, and how the
+standard instance lookup works and how it relates to JDK's 
+<a href="http://java.sun.com/j2se/1.4/docs/guide/jar/jar.html#Service%20Provider">
+standard for service provider registration</a>. 
+Lookup templates, which separate the
+provision of instances from the provision of categories, will be
+explained. Finally, a note is made of the compatibility system which
+ensures that older manifest-installed services (such as service types)
+are available via lookup transparently.
+
+</div>
+
+<h3><a name="instances">Working with Instances</a></h3>
+
+Central to the management of services and many other aspects of
+the IDE's configuration is the notion of
+<em>instances</em>. An instance is just any Java object, generally
+of a particular type appropriate to its use, which is provided from
+some object (generally, a data object) using
+
+<code>InstanceCookie</code>.
+
+As an example, menu items may be added by inserting data objects
+that provide this cookie into the proper folder, and having the
+instance be a system action (or other things). Or an XML DTD may be
+registered by placing an object with an instance of
+<code>org.xml.sax.EntityResolver</code> in the proper folder.
+
+<p>Where do these instances come from? Technically, it is up to you
+to decide how to provide <code>InstanceCookie</code>; you could if
+really necessary create your own data loader that provides it
+according to some unusual scheme, and add files recognized by that
+loader to the right folder. Practically, the APIs provide
+implementations of this cookie sufficient for normal purposes.
+
+<p>The most common way to provide an instance is using
+
+<code>InstanceDataObject</code>.
+
+This is a type of data object whose sole purpose is to provide the
+instance cookie. It typically does so based on a class name you
+supply. There are several styles of instance file; all are empty (i.e.
+the file contents are of zero length, and just the file name and
+attributes matter). There are then other ways of providing instances
+which rely on the file contents. Here are the methods of providing
+instances defined in the APIs:
+
+<dl>
+
+<dt><em>Default instance - <code>InstanceDataObject</code></em>
+
+<dd><p>If there is a file with the extension <samp>*.instance</samp>, then its
+name (minus extension) will be converted to a class name by replacing dashes
+with dots; and a fresh instance of that class will be created and used as the
+instance. For example, <samp>com-mycom-mymodule-MyAction.instance</samp>
+produces an instance of the class <code>com.mycom.mymodule.MyAction</code>.</p>
+
+<p>Since reflection is used to create the new instance, just as in the
+realm of JavaBeans, the class must be loadable from your module or
+otherwise from within the IDE (technically, via the classloader found
+by querying Lookup for <code>ClassLoader</code>);
+public; and have a public no-argument constructor.
+(Or be a
+
+<a href="../SharedClassObject.html"><code>SharedClassObject</code></a>.)
+
+This form is often
+used for <em>singleton</em> classes such as system actions: there is
+no need to specify any parameters to the constructor, any instance
+will suffice.</p>
+
+
+<dt><em>Default instance with separate class - <code>InstanceDataObject</code></em>
+
+<dd><p>Rather than shoving the class name into
+the file name, you can name the file more normally and specify the
+class with a file attribute. Then the class name is specified as
+a string-valued attribute on the instance named
+<code>instanceClass</code>. For example, a keyboard shortcut
+could be registered as follows in an XML layer:</p>
+
+<pre>
+&lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="constant">"C-F6.instance"</font>&gt;
+    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceClass"</font> <font class="variable-name">stringvalue</font>=<font class="constant">"com.mycom.mymodule.MyAction"</font>/&gt;
+&lt;/<font class="function-name">file</font>&gt;
+</pre>
+
+<p>In addition to <code>instanceClass</code> you may specify an
+additional attribute <code>instanceOf</code> giving the name of a
+superclass (or implemented interface) of the instance class. In fact
+it may be a comma-separated list of superclasses and interfaces. While
+its purpose is explained more fully
+
+<a href="#instance-folders">below</a>,
+
+essentially it lets you give the system a hint as to what this
+instance is for before your instance class is even loaded into the VM.
+For example:</p>
+
+<pre>
+&lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="constant">"com-me-some-service.instance"</font>&gt;
+    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceClass"</font> <font class="variable-name">stringvalue</font>=<font class="constant">"com.me.FactoryForEverything"</font>/&gt;
+    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceOf"</font>
+     <font class="variable-name">stringvalue</font>=<font class="constant">"org.xml.sax.EntityResolver,org.openide.cookies.ExecCookie"</font>/&gt;
+&lt;/<font class="function-name">file</font>&gt;
+</pre>
+
+<dt><a name="ido-methodvalue"></a><em>Non-default instance - <code>InstanceDataObject</code></em>
+
+<dd><p>A powerful way of providing instances is to use the expressiveness
+of the XML layer syntax to handle the instance creation. In this case
+the file attribute <code>instanceCreate</code> can be defined and the
+attribute value becomes the instance. Typically the attribute value
+would be specified using the <code>methodvalue</code> syntax of
+layers. For example:</p>
+
+<pre>
+&lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="constant">"com-me-some-service.instance"</font>&gt;
+    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceClass"</font> <font class="variable-name">stringvalue</font>=<font class="constant">"com.me.FactoryForEverything"</font>/&gt;
+    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceCreate"</font> <font class="variable-name">methodvalue</font>=<font class="constant">"com.me.FactoryForEverything.configure"</font>/&gt;
+    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"myParam"</font> <font class="variable-name">urlvalue</font>=<font class="constant">"nbres:/com/me/config-1.properties"</font>/&gt;
+    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceOf"</font>
+     <font class="variable-name">stringvalue</font>=<font class="constant">"org.xml.sax.EntityResolver,org.openide.cookies.ExecCookie"</font>/&gt;
+&lt;/<font class="function-name">file</font>&gt;
+</pre>
+
+<p>According to the general system for
+
+<code>XMLFileSystem</code>,
+
+you now need a method <code>configure</code> in
+<code>FactoryForEverything</code> which must be static; the method
+need not be public (if you do not want other Java code to see it). It
+may take a file object as argument if you wish - this will be the
+instance file; typically you use this to pass extra configuration from
+the layer, useful if you want to create multiple instances with the
+same creation method. So for example you might implement such a method
+like this:</p>
+
+<pre>
+<font class="keyword">public</font> <font class="keyword">class</font> <font class="type">FactoryForEverything</font> <font class="keyword">extends</font> <font class="type">SomeBaseFactory</font>
+        <font class="keyword">implements</font> <font class="type">EntityResolver</font>, <font class="type">ExecCookie</font> {
+    <font class="keyword">public</font> <font class="type">FactoryForEverything</font>(<font class="type">Map</font> <font class="variable-name">props</font>) {
+        <font class="comment">// ...
+</font>    }
+    <font class="comment">// ...
+</font>    <font class="comment">// Called directly from XML layer. Pass URL to
+</font>    <font class="comment">// properties file from attr 'myParam'.
+</font>    <font class="keyword">private</font> <font class="keyword">static</font> <font class="type">Object</font> <font class="function-name">configure</font>(<font class="type">FileObject</font> <font class="variable-name">inst</font>) <font class="keyword">throws</font> <font class="type">IOException</font> {
+        <font class="type">URL</font> <font class="variable-name">u</font> = (<font class="type">URL</font>)inst.getAttribute(<font class="string">"myParam"</font>);
+        <font class="type">Properties</font> <font class="variable-name">p</font> = <font class="keyword">new</font> <font class="type">Properties</font>();
+        p.load(u.openStream());
+        <font class="keyword">return</font> <font class="keyword">new</font> <font class="type">FactoryForEverything</font>(p);
+    }
+}
+</pre>
+
+<dt><em>Serialized beans</em>
+
+<dd><p>A simple way to provide an instance is to serialize it as a
+JavaBean, into a file with the extension <samp>*.ser</samp>. This is
+not very useful from a layer, because you should avoid putting
+binary data into a layer, but may be useful in some circumstances.</p>
+
+<dt><a name="xml-instances"><em>XML-based instances</em></a>
+
+
+<a href="../../xml/EntityCatalog.html"><code>EntityCatalog</code></a>
+
+
+<div class="nonnormative">
+
+<p>Again, modules may also have additional ways of providing instances
+from files. For example, currently the <code>utilities</code> module
+enables any URL file (<samp>*.url</samp>) to be used directly in a
+menu, as the URL file provides an instance of
+<code>Presenter.Menu</code>.</p>
+
+<p>As an interactive demonstration of these things, first go into
+<b>Filesystem&nbsp;Settings</b> and make the system filesystem (first in
+the list) visible; then explore its contents in <b>Filesystems</b>,
+going into some subdirectory of <samp>Menu</samp>. Note the various
+actions and menu separators; these are all by default instance data
+objects.
+You may find some of these on disk in your installation directory
+under <samp>system/</samp> if you have customized them, but by default
+they live in memory only.
+You may copy-and-paste these instances from one place to another;
+create new ones on disk and watch them be recognized and inserted
+into the menus after a few seconds; and you may also choose
+Customize Bean (which really customizes the provided instance) on
+(say) a toolbar separator (under <code>Toolbars</code>) to change
+the separator size, and serialize the result to a new
+<code>*.ser</code> file which should then create a toolbar
+separator.
+
+</div>
+
+<h3><a name="instance-folders">Folders of Instances</a></h3>
+
+
+<h4><a name="instancecookie-of"><code>InstanceCookie.Of</code> and lazy class loading</a></h4>
+
+Now it is time to mention the purpose of
+<code>InstanceCookie.Of</code>. Suppose that there are two generic
+interfaces under consideration: e.g. <code>javax.swing.Action</code>
+and <code>org.xml.sax.EntityResolver</code>. For each interface, there
+is code to find registered instances, all under the
+<samp>Services/</samp> folder. Furthermore, using either of these
+interfaces is relatively rare, and might not happen at all during an
+IDE session; and the implementations of the instances are complicated
+and involve a lot of code, so it is undesirable (for performance
+reasons) to load these implementations unless and until they are
+really needed. If you write the layers simply like this:
+
+<pre>
+&lt;<font class="function-name">filesystem</font>&gt;
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Hidden"</font>&gt;
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"com-me-MyAction.instance"</font>/&gt;
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"com-me-MyResolver.instance"</font>/&gt;
+        &lt;/<font class="function-name">folder</font>&gt;
+    &lt;/<font class="function-name">folder</font>&gt;
+&lt;/<font class="function-name">filesystem</font>&gt;
+</pre>
+
+everything will work, <em>but</em> this is inefficient. Consider some
+piece of code asking for all actions. The search through the services
+folder for actions would ask each of these files if it provides an
+instance cookie assignable to <code>javax.swing.Action</code>. For
+<samp>com-me-MyAction.instance</samp>, this will load the class
+<code>com.me.MyAction</code>, determine that it implements
+<code>Action</code>, and thus create a <code>MyAction</code> instance
+and return it; so far so good. But when
+<samp>com-me-MyResolver.instance</samp> is encountered, it will again
+load <code>com.me.MyResolver</code>, only to find that this does not
+implement <code>Action</code> and skip the instance. The behavior is
+correct, but now the <code>MyResolver</code> class has been loaded
+into the VM even though no one will ever use it (unless a resolver
+search is made). This will degrade startup time and memory usage (and
+thus performance).
+
+<p>So the better solution is to mark each file in advance, saying what
+interfaces it is intended to provide in its instance:
+
+<pre>
+&lt;<font class="function-name">filesystem</font>&gt;
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Hidden"</font>&gt;
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"com-me-MyAction.instance"</font>&gt;
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"instanceOf"</font> <font class="variable-name">stringvalue</font>=<font class="string">"javax.swing.Action"</font>/&gt;
+            &lt;/<font class="function-name">file</font>&gt;
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"com-me-MyResolver.instance"</font>&gt;
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"instanceOf"</font> <font class="variable-name">stringvalue</font>=<font class="string">"org.xml.sax.EntityResolver"</font>/&gt;
+            &lt;/<font class="function-name">file</font>&gt;
+        &lt;/<font class="function-name">folder</font>&gt;
+    &lt;/<font class="function-name">folder</font>&gt;
+&lt;/<font class="function-name">filesystem</font>&gt;
+</pre>
+
+<p>
+Now the folder instance processor for <code>Action</code> will pass
+over <samp>com-me-MyResolver.instance</samp> without needing to load
+<code>com.me.MyResolver</code>, since it sees that its interfaces are
+declared, and <code>Action</code> is not among them. Of course, the
+interface classes - <code>Action</code> and
+<code>EntityResolver</code> - need to be loaded right away, but they
+were probably already loaded anyway, so this is acceptable.
+</p>
+
+<p><strong>Caution:</strong> if you do supply an
+<code>instanceOf</code> attribute, but it does <em>not</em> list all
+of the implemented interfaces and superclasses of the actual
+implementation class (including that implementation class itself,
+which is not implied), a lookup query on one of the missing
+superclasses <em>may or may not</em> succeed. So you should include in
+<code>instanceOf</code> any superclasses and interfaces that you think
+someone might use in a lookup query, possibly including the actual
+implementation class.</p>
+
+<h3><a name="service-lookup">Lookup and Service Installation</a></h3>
+
+The client side of the lookup system centers around one class,
+
+<a href="../Lookup.html"><code>Lookup</code></a>.
+
+In the simplest usage, all that is needed is to get some single
+instance of a given class (or subclass). For example, if some kind of
+service has been defined as an interface or abstract class, and you
+wish to find the implementation of it, you
+may simply use:
+
+<pre>
+<font class="type">MyService</font> <font class="variable-name">impl</font> = (<font class="type">MyService</font>)Lookup.getDefault().<a href="../Lookup.html#lookup(java.lang.Class)">lookup</a>(MyService.<font class="keyword">class</font>);
+<font class="keyword">if</font> (impl == <font class="constant">null</font>) <font class="comment">/* nothing registered */</font> ...
+impl.useIt();
+</pre>
+
+Such implementation has to be registered by some module to the system. 
+Either via layer as described above or as a JDK's
+<a href="http://java.sun.com/j2se/1.4/docs/guide/jar/jar.html#Service%20Provider">
+service provider</a>. If some module wants to register for example 
+<font class="type">org.me.MyService</font> it shall provide file name 
+<font class="function-name">META-INF/services/org.me.MyService</FONT> in its own JAR 
+with single line containing name of the implementation class (for example
+<font class="type">org.you.MyServiceImpl</FONT>). The lookup infrastructure
+will then load the implementation class and call its default constructor 
+to answer the query in the above example.
+<P>
+
+<div class="nonnormative">
+    The Lookup supports two small extensions to the 
+    <a href="http://java.sun.com/j2se/1.4/docs/guide/jar/jar.html#Service%20Provider">JDK's
+    standard</a>. It allows a module to remove class registered by
+    another one. That is why it is possible to write a module that
+    disables the <font class="type">org.you.MyServiceImpl</font> implementation
+    and provides its own. This the expected content of its 
+    <font class="function-name">META-INF/services/org.me.MyService</FONT> file:
+    <PRE>
+  # remove the other implementation (by prefixing the line with <em>#-</EM>)
+  #-<font class="type">org.you.MyServiceImpl</FONT>
+
+  # provide my own
+  org.alien.MyServiceAlienImpl
+    </PRE>
+    The reason why the removal line starts with <em>#-</em> is to keep
+    compatibility with JDK's implementation. The <em>#</em> means comment
+    and thus JDK will not interpret the line and will not get confused by
+    the <em>-</em> before class name.
+    
+    <p>Second extension allows ordering of items. The class implementing
+    the interface can be followed by advisory position attribute. If
+    multiple implementations are defined in one file then each can be
+    followed by its own positioning attribute. When querying
+    on an interface, items with a smaller position are guaranteed 
+    to be returned before items with a larger position. Items with no defined 
+    position are returned last. Example of content of 
+    <font class="function-name">META-INF/services/org.me.MyService</font>
+    file could be:
+    <pre>
+  <font class="type">org.you.MyServiceImpl</font>
+  #position=20
+  <font class="type">org.you.MyMoreImportantServiceImpl</font>
+  #position=10
+    </pre>
+    The <font class="function-name">MyMoreImportantServiceImpl</font>
+    will be returned in lookup before the 
+    <font class="function-name">MyServiceImpl</font>.
+    It is recommended to pick up larger numbers so that there is
+    gap for other modules if they need to get in front of your item. And, 
+    again, to keep compatibility the position attribute must starts with
+    comment delimiter.</p>
+</DIV>
+
+<P>
+If more than one implementation has been registered, the "first" will
+be returned. For example, if the implementations were present in the
+<samp>Services</samp> folder as <samp>*.instance</samp> files, then
+folder order would control this.
+
+<p>As mentioned above, the IDE's default lookup searches in the
+<samp>Services</samp> folder and its subfolders for instances whose
+class matches the requested class. Technically, it looks for data
+objects with <code>InstanceCookie.Of</code> claiming to match the
+requested superclass, or plain <code>InstanceCookie</code> whose
+<code>instanceClass</code> is assignable to it.
+
+<p>Note that you may use this method to find singleton instances of
+subclasses of
+
+<a href="../SharedClassObject.html"><code>SharedClassObject</code></a>
+
+that have been registered in lookup (as is normally the case for
+
+system options).
+
+However for this purpose it is simpler to use the static finder method
+
+<a href="../SharedClassObject.html#findObject(java.lang.Class,%20boolean)"><code>SharedClassObject.findObject(Class,&nbsp;true)</code></a>
+
+which is guaranteed to find the singleton whether it was registered in
+lookup or not (if necessary it will first
+
+<a href="#settings">initialize</a>
+
+the object according to saved state).
+
+<p>In many situations it is normal for there to be more than one
+registered implementation of a service. In such a case you use a more
+general method:
+
+<pre>
+<font class="type"><a href="../Lookup.Template.html">Lookup.Template</a></font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type">Lookup.Template</font>(MyService.<font class="keyword">class</font>);
+<font class="keyword">final</font> <font class="type"><a href="../Lookup.Result.html">Lookup.Result</a></font> <font class="variable-name">result</font> = Lookup.getDefault().lookup(templ);
+<font class="type">Collection</font> <font class="variable-name">impls</font> = result.allInstances(); <font class="comment">// Collection&lt;MyService&gt;
+// use Java Collections API to get iterator, ...
+// Pay attention to subsequent changes in the result.
+</font>result.addLookupListener(<font class="keyword">new</font> <font class="type"><a href="../LookupListener.html">LookupListener</a></font>() {
+    <font class="keyword">public</font> <font class="type">void</font> <font class="function-name">resultChanged</font>(<font class="type">LookupEvent</font> <font class="variable-name">ev</font>) {
+        <font class="comment">// Now it is different.
+</font>        <font class="type">Collection</font> <font class="variable-name">impls2</font> = result.allInstances();
+        <font class="comment">// use the new list of instances...
+</font>    }
+});
+</pre>
+
+Here you receive a collection of all instances matching your query,
+again in the order found if this matters. You can also listen to
+changes in the list (additions, deletions, and reorderings). It is
+fine to keep a <code>Lookup.Result</code> for a long period of time as
+it may implement its own caching scheme and only really compute the
+instances when <code>allInstances</code> is called; in fact it may be
+more efficient to keep a result, and listen for changes in it, than to
+repeatedly call <code>lookup</code> and create fresh result objects.
+
+<p>When a lookup query is finished - for example when
+<code>Lookup.Result.allInstances()</code> returns some
+<code>Collection</code> of instances - it is guaranteed that all
+objects registered in the same thread prior to the call to
+<code>lookup()</code> or prior to some change notification on the
+<code>Lookup.Result</code>, will be returned. Specifically, lookup
+instances registered via module layer will be available by the time
+<code>ModuleInstall.restored()</code> (or <code>.installed()</code>)
+is called. There are two situations in which lookup results may be
+incomplete: when you are currently inside the dynamic scope of some
+method providing a lookup instance itself; and when you are
+dynamically inside a <code>DataLoader</code> method involved in
+recognizing data objects.
+
+<h3><a name="lookup-ids">Persisting Lookup Information</a></h3>
+
+In some circumstances it is necessary to not only find registered
+objects, but to select some of them and make this selection
+persistent. For example, some setting may have as its value a choice
+among available services matching some interface; the value needs to
+be persisted, but it is the identity of the choice, rather than the
+full state of the instance itself, which must be stored.
+
+<p>In such cases it is possible to use code like this:
+
+<pre>
+<font class="type">Lookup.Template</font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type">Lookup.Template</font>(MyService.<font class="keyword">class</font>);
+<font class="type">Lookup.Result</font> <font class="variable-name">result</font> = Lookup.getDefault().lookup(templ);
+<font class="type">Iterator</font> <font class="variable-name">it</font> = result.allItems().iterator();
+<font class="keyword">while</font> (it.hasNext()) {
+    <font class="type"><a href="../Lookup.Item.html">Lookup.Item</a></font> <font class="variable-name">item</font> = (<font class="type">Lookup.Item</font>)it.next();
+    <font class="type">String</font> <font class="variable-name">displayName</font> = item.getDisplayName();
+    <font class="keyword">if</font> (<font class="comment">/* user accepts displayName as the right one */</font>) {
+        <font class="type">MyService</font> <font class="variable-name">instance</font> = (<font class="type">MyService</font>)item.getInstance();
+        <font class="comment">// use instance for now, and ...
+</font>        <font class="type">String</font> <font class="variable-name">id</font> = item.getId();
+        someSettings.setChosenService(id);
+        <font class="keyword">break</font>;
+    }
+}
+<font class="comment">// later...
+</font><font class="type">String</font> <font class="variable-name">storedID</font> = someSettings.getChosenService();
+<font class="type">Lookup.Template</font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type"><a href="../Lookup.Template.html#Lookup.Template(java.lang.Class,%20java.lang.String,%20java.lang.Object)">Lookup.Template</a></font>(MyService.<font class="keyword">class</font>, storedID, <font class="constant">null</font>);
+<font class="type">Iterator</font> <font class="variable-name">it</font> = Lookup.getDefault().lookup(templ).allInstances().iterator();
+<font class="keyword">if</font> (! it.hasNext()) <font class="comment">/* failed to find it... */</font>
+<font class="type">MyService</font> <font class="variable-name">instance</font> = (<font class="type">MyService</font>)it.next();
+<font class="comment">// use instance again
+</font></pre>
+
+The ID permits you to track which instance from all those available in
+the lookup result was last selected by the user, and find the "same"
+instance later, perhaps after a restart of the IDE. The exact form of
+the ID is the private knowledge of the implementor of the lookup, but
+typically if the instance has been provided via layer the ID will
+mention the name of the file from which it was derived.
+
+<h3><a name="lookup-impl">Creating Lookups</a></h3>
+
+There are a number of reasons to create your own lookup
+implementation. For one thing, the lookup system which scans the
+<samp>Services/</samp> folder will recognize instances of subclasses
+of <code>Lookup</code> specially by <em>proxying</em> to them. This
+can be very powerful because you may register just one layer file
+which points to your custom lookup, which in turn may provide an
+unlimited number of actual instances/items for queries (and compute
+them in a manner other than registration by files). Another reason is
+to associate a context with a data object using
+
+<code>Environment.Provider</code>;
+
+for example the data object might be an XML file and this provider
+might be registered with the file by means of the public ID of the
+doctype (informally, the DTD). Here the provider has an associated
+lookup which can serve requests for cookies and such things.
+See more information about <a href="#xml-instances">associating lookups
+with XML files</a>.
+
+<p>The simplest way to create a fresh lookup is to base it on other
+existing ones.
+
+<a href="../lookup/ProxyLookup.html"><code>ProxyLookup</code></a>
+
+accepts a list of other lookup implementations (in the constructor and
+also changeable later). The results it provides are constructed by
+merging together the results of the delegate lookups.
+
+<p>If you want to use the common mechanism of finding instances in
+folders (or subfolders) and serving these as the results,
+
+<code>FolderLookup</code>
+
+makes this possible: you need only provide a folder to look in, and
+use
+
+<code>getLookup</code>
+
+to retrieve a lookup implementation which will scan this folder and
+its subfolders for data objects with <code>InstanceCookie</code>
+matching the lookup template. Furthermore, any instance cookies whose
+instance class is assignable to <code>Lookup</code> will be treated
+specially: they will be proxied to, so these sub-lookups may provide
+additional instances if they match the lookup template.
+
+<p>The most powerful way to provide a lookup is to directly define
+what instances and items it should provide, by subclassing. For this,
+
+<a href="../lookup/AbstractLookup.html"><code>AbstractLookup</code></a>
+
+is recommended as it is easiest to use.
+
+<p>The simplest way to use <code>AbstractLookup</code> is to use its
+public constructor (in which case you need not subclass it). Here you
+provide an
+
+<a href="../lookup/AbstractLookup.Content.html"><code>AbstractLookup.Content</code></a>
+
+object which you have created and hold on to privately, and which
+keeps track of instances and permits them to be registered and
+deregistered. Often
+
+<a href="../lookup/InstanceContent.html"><code>InstanceContent</code></a>
+
+is used as the content implementation. To add something to the lookup,
+simply use
+
+<a href="../lookup/InstanceContent.html#add(java.lang.Object)"><code>add(Object)</code></a>
+
+(and <code>remove(Object)</code> for the reverse). These may be called
+at any time and will update the set of registered instances (firing
+result changes as needed).
+
+<p>In case it is expensive to actually compute the object in the
+lookup, but there is some cheap "key" which can easily generate it,
+you may instead register the key by passing in an
+
+<a href="../lookup/InstanceContent.Convertor.html"><code>InstanceContent.Convertor</code></a>.
+
+This convertor translates the key to the real instance that the lookup
+client sees, if and when needed. For example, if you have a long list
+of class names and wish to register default instances of each class,
+you might actually register the class name as the key, and supply a
+convertor which really loads the class and instantiates it. This makes
+it easy to set up the lookup, but nothing is really loaded until
+someone asks for it.
+
+<h3><a name="settings">Settings</a></h3>
+
+<em>Settings</em> require special support in the lookup system: these
+are objects (perhaps singletons but not necessarily) which should be
+made available to lookup, yet whose content can be changed and stored
+to disk (typically as a result of user interaction with the GUI).
+<samp>*.instance</samp> files and similar constructions are fine for
+registering fixed objects from layer - "fixed" in the sense that while
+the user might copy, delete, move, or reorder them, the actual object
+they provide is statically determined and does not generally have a
+means of being modified. In contrast, settings have nontrivial
+content. A typical setting is a system options,
+simply a singleton bean with a set of properties and a structured GUI
+presentation driven by <code>BeanInfo</code>.
+
+<p>In order to save such settings, an XML file is normally used, and
+the APIs provide a convenient
+
+<a href="http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">DTD</a>
+
+for settings which can be represented as a single bean. In typical
+usage, the module layer declares an initial settings file which
+instructs lookup to create a <em>default instance</em> of the settings
+class. This might look like the following:
+
+<pre>
+&lt;?<font class="keyword">xml</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font>?&gt;
+&lt;!<font class="keyword">DOCTYPE</font> <font class="type">settings</font> <font class="keyword">PUBLIC</font> <font class="string">"-//NetBeans//DTD Session settings 1.0//EN"</font> <font class="string">"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd"</font>&gt;
+&lt;<font class="function-name">settings</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font>&gt;
+    &lt;<font class="function-name">module</font> <font class="variable-name">name</font>=<font class="string">"com.foo/1"</font> <font class="variable-name">spec</font>=<font class="string">"1.0"</font>/&gt;
+    &lt;<font class="function-name">instanceof</font> <font class="variable-name">class</font>=<font class="string">"org.openide.options.SystemOption"</font>/&gt;
+    &lt;<font class="function-name">instanceof</font> <font class="variable-name">class</font>=<font class="string">"com.foo.MyOption"</font>/&gt;
+    &lt;<font class="function-name">instance</font> <font class="variable-name">class</font>=<font class="string">"com.foo.MyOption"</font>/&gt;
+&lt;/<font class="function-name">settings</font>&gt;
+</pre>
+
+Such a file might be placed in
+<samp>Services/com-foo-my-settings.xml</samp> (the exact name inside
+the <samp>Services</samp> folder is not important but ought to be
+globally unique to avoid conflicts with other modules). It provides
+an <code>InstanceCookie</code> with the settings object as instance.
+
+<p>The interesting parts of this file are:
+
+<ul>
+
+<li>The <samp>&lt;instance/&gt;</samp> element which declares that the
+actual object will be a default instance of the class
+<samp>com.foo.MyOption</samp>, i.e. created via default public
+constructor.
+
+<li>Various <samp>&lt;instanceof/&gt;</samp> elements which specify
+what lookup templates will find this instance. Giving these elements
+permits the system to defer creating the setting instance until it is
+actually requested (that is, using
+
+<a href="#instancecookie-of"><code>InstanceCookie.Of</code></a>).
+
+It is only necessary to indicate superclasses and interfaces that you
+actually expect someone to look up when searching for this setting,
+but be careful that you know what these might be. The actual class
+of the instance itself should be listed as well.
+
+<li>An optional but recommended <samp>&lt;module/&gt;</samp> element
+that declares which module provides this setting. You give the full
+code name (including a slash followed by the major release version, if applicable)
+of the module and its specification version. The purpose of
+this element becomes apparent if the user ever customizes the setting
+file, thus writing the changes to disk (for example in the IDE's
+<samp>system/Services/</samp> folder), and then uninstalls the module:
+keeping the name of the declaring module in the file ensures that with
+the module uninstalled, the system will quietly ignore the stale
+setting rather than trying to blithely load the settings class and
+failing with a <code>ClassNotFoundException</code>. If the module is
+subsequently reinstalled, the setting will automatically become active
+again (regain its <code>InstanceCookie</code>). Similarly, settings will
+not be loaded if they were written by a newer version of the module than
+the one currently installed - module-supplied settings should be readable
+by newer versions of the module, but generally not older ones.
+
+</ul>
+
+<p>There are actually three ways that the instance may be declared:</p>
+
+<ol>
+
+<li><p>Using <samp>&lt;instance/&gt;</samp> as above to generate a
+default instance. This is most common.</p>
+
+<li><p>You may pass an additional attribute <code>method</code>
+indicating a static method to call to produce
+the instance, rather than using a default constructor.
+The method may either be a simple name, in which case it is assumed
+to be a method in the class given by <code>class</code>, or you
+may give a full class name followed by a dot and method name to invoke
+a static method from some other class.
+The method may
+optionally take a <code>FileObject</code> argument which will be the
+settings file itself. This is analogous to the mechanism used for
+creating complex <samp>*.instance</samp> files. For example:</p>
+
+<pre>
+&lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"some-difficult-to-make-instance.settings"</font>&gt;
+    &lt;![<font class="keyword">CDATA</font>[&lt;?<font class="keyword">xml</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font> <font class="variable-name">encoding</font>=<font class="string">"UTF-8"</font>?&gt;
+&lt;!<font class="keyword">DOCTYPE</font> <font class="type">settings</font> <font class="keyword">PUBLIC</font>
+          <font class="string">"-//NetBeans//DTD Session settings 1.0//EN"</font>
+          <font class="string">"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd"</font>&gt;
+&lt;<font class="function-name">settings</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font>&gt;
+    &lt;<font class="function-name">module</font> <font class="variable-name">name</font>=<font class="string">"my.module/1"</font> <font class="variable-name">spec</font>=<font class="string">"1.0"</font>/&gt;
+    &lt;<font class="function-name">instanceof</font> <font class="variable-name">class</font>=<font class="string">"javax.swing.Action"</font>/&gt;
+    &lt;<font class="function-name">instanceof</font> <font class="variable-name">class</font>=<font class="string">"my.module.MyAction"</font>/&gt;
+    &lt;<font class="function-name">instance</font> <font class="variable-name">class</font>=<font class="string">"my.module.MyAction"</font> <font class="variable-name">method</font>=<font class="string">"createAction"</font>/&gt;
+&lt;/<font class="function-name">settings</font>&gt;
+]]&gt;
+    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"param"</font> <font class="variable-name">stringvalue</font>=<font class="string">"someval"</font>/&gt;
+&lt;/<font class="function-name">file</font>&gt;
+</pre>
+
+<pre>
+<font class="keyword">package</font> <font class="constant">my</font>.<font class="constant">module</font>;
+<font class="keyword">public</font> <font class="keyword">class</font> <font class="type">MyAction</font> <font class="keyword">extends</font> <font class="type">javax.swing.AbstractAction</font> {
+    <font class="keyword">public</font> <font class="type">MyAction</font>(<font class="type">String</font> <font class="variable-name">name</font>) {<font class="comment">/* ... */</font>}
+    <font class="comment">// ...
+</font>    <font class="keyword">public</font> <font class="keyword">static</font> <font class="type">MyAction</font> <font class="function-name">createAction</font>(<font class="type">FileObject</font> <font class="variable-name">fo</font>) {
+        <font class="keyword">return</font> <font class="keyword">new</font> <font class="type">MyAction</font>((<font class="type">String</font>)fo.getAttribute(<font class="string">"param"</font>));
+    }
+}
+</pre>
+
+<p>This will result in an instance of <code>MyAction</code> being
+created with name <samp>someval</samp>.</p>
+
+<li><p>You may use the <samp>&lt;serialdata&gt;</samp> element. Its
+textual contents are a hexadecimal dump (whitespace ignored) of the
+raw serialized bytes of an object to serve as the instance. Naturally
+this is the least preferred mechanism as it is not human-readable.</p>
 
 </ol>
+
+<p class="nonnormative">In the future it is planned for a fourth
+mechanism to be supported, taking advantage of the JDK 1.4 XML
+persistence ("archiver") system.</p>
+
+<p>A client can find the current setting in a couple of ways:
+
+<ul>
+
+<li>In the common case of <code>SystemOption</code>, you may simply
+call
+
+<a href="../SharedClassObject.html#findObject(java.lang.Class,%20boolean)"><code>SharedClassObject.findObject(Class,&nbsp;true)</code></a>
+
+which will either provide a previously initialized singleton, or find
+the setting in lookup if possible and read any customized state before
+returning it. You may then use property change listeners as needed to
+listen for changes.
+
+<li>Just ask the system lookup for the settings class (or a relevant
+superclass). This can be used to retrieve non-singleton settings; use
+the lookup result to track changes in the list of setting instances,
+and some ad-hoc method to track runtime changes in individual
+instances.
+
+</ul>
+
+<p>How does the customization of setting instances work? After finding a
+setting instance via this DTD, the system will automatically look for
+a beans-style event set of type <code>PropertyChangeListener</code>,
+and add its own listener. If the bean changes state (either
+programmatically or as a result of user manipulation), the property
+change will cause the new state to be written out to the original XML
+file, keeping the same name. (Normally this would mean the XML would
+be written to disk in the user directory.)</p>
+
+<p class="nonnormative">(Currently the state is simply serialized into
+the XML file using <samp>&lt;serialdata&gt;</samp>, meaning the class
+must be <code>Serializable</code>, but in the future if an alternate
+persistence form is available, such as the JDK 1.4 archiver, this will
+be used instead.)</p>
+
+<p>Conversely, changes to the setting file on disk should trigger a
+reload of the state and modification of the in-memory bean (or
+creation of a new instance cookie with a new bean).</p>
+
+<h3><a name="lookup-ui">UI for Services</a></h3>
+
+<p>There are several things you can do to not only have services and
+lookup function programmatically but also look good and behave nicely
+within the user's view of configuration options and settings.</p>
+
+<h4><a name="service-templates">Service Templates</a></h4>
+
+<p>For many kinds of services, especially <code>ServiceType</code>s
+but also others, it is necessary to permit the user to create new
+instances of the service. Generally two criteria should be met for
+such services:</p>
+
+<ol>
+
+<li>The service is not a singleton, so it is meaningful to have more
+than one instance.
+
+<li>The service has some user-configurable properties, so it is useful
+to have more than one instance.
+
+</ol>
+
+<p>Creation of new service instances may be supported simply by
+producing a template residing beneath
+<samp>Templates/Services/</samp>. If the service normally resides in a
+subfolder of services, for example <samp>Services/Executor/</samp>,
+then the template should correspondingly be placed in
+<samp>Templates/Services/Executor/</samp>.</p>
+
+<div class="nonnormative">
+
+<p>The template should work like regular source code templates do: a
+file giving the initial structure of the service (typically a
+<samp>*.settings</samp> file), with the file attribute
+<code>template</code> set to <samp>true</samp>, and optionally a
+<code>templateWizardDescription</code> and
+<code>templateWizardURL</code>. For example:</p>
+
+<pre>
+&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Templates"</font>&gt;
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Executor"</font>&gt;
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"my-module-executor.settings"</font> <font class="variable-name">url</font>=<font class="string">"executor.settings"</font>&gt;
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"template"</font> <font class="variable-name">boolvalue</font>=<font class="string">"true"</font>/&gt;
+                <font class="comment">&lt;!-- SystemFileSystem.localizedName and SystemFileSystem.icon as usual --&gt;</font>
+            &lt;/<font class="function-name">file</font>&gt;
+        &lt;/<font class="function-name">folder</font>&gt;
+    &lt;/<font class="function-name">folder</font>&gt;
+&lt;/<font class="function-name">folder</font>&gt;
+</pre>
+
+<p>If the user selects <b>New&nbsp;From&nbsp;Template</b> on the
+corresponding options folder, the template will be available.</p>
+
+</div>
+
+<!-- XXX is the file attribute 'simple'=false supported? Yarda says it was a hack only -->
+
+<h4><a name="service-mirroring">Services display area and mirroring</a></h4>
+
+<p>In addition to providing services, it is desirable to display them
+to the user as well. This is done, as is customary in other aspects of
+the IDE's configuration, by displaying customized variants of the data
+nodes coming from the system filesystem. The root folder for
+displaying options is called <samp>UI/Services/</samp>. Its subfolders
+govern the display of the options available in the system.</p>
+
+<p>As a rule, it is undesirable to place any actual settings in this
+folder (nor would they be recognized by the default lookup anyway).
+That is because the organization of this folder is driven by UI needs,
+without regards to API maintenance or compatibility of persisted user
+settings. So this folder solely <em>mirrors</em> configuration
+available elsewhere. You may freely reorganize the mirror according to
+current UI needs: existing modules plugging into services areas will
+continue to work unmodified, and existing user customizations stored
+to disk will continue to apply, since both of these act on the
+original files (which should <em>not</em> be moved frivolously).</p>
+
+<div class="nonnormative">
+
+<p>While technically you could place anything you wish in the UI
+folder, in practice a few types of things are used:</p>
+
+<ul>
+
+<li><p>Symbolic links to settings files displayed elsewhere. In the
+IDE's options, these will appear as the real setting. For example:</p>
+
+<pre>
+&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"UI"</font>&gt;
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Editing"</font>&gt;
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"my-module-config.shadow"</font>&gt;
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"originalFile"</font> <font class="variable-name">stringvalue</font>=<font class="string">"Services/my-module-Config.settings"</font>/&gt;
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"originalFileSystem"</font> <font class="variable-name">stringvalue</font>=<font class="string">"SystemFileSystem"</font>/&gt;               
+            &lt;/<font class="function-name">file</font>&gt;
+        &lt;/<font class="function-name">folder</font>&gt;
+    &lt;/<font class="function-name">folder</font>&gt;
+&lt;/<font class="function-name">folder</font>&gt;
+</pre>
+
+<!-- XXX this info should be in a normative section -->
+<p>The attribute "originalFileSystem" can be omitted. In this case the search for the
+linked file will be done on the Filesystem on which the link resides, which
+is wanted for the usages on SystemFileSystem. The link file should have zero length.<BR>
+Note that any localized display name
+and icon should be set on the original settings file; they will be
+picked up automatically by the shadow.</p>
+
+The older style of linking using the CDATA section is still supported:
+
+<pre>
+&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"UI"</font>&gt;
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Editing"</font>&gt;
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"my-module-config.shadow"</font>&gt;                
+                &lt;![<font class="keyword">CDATA</font>[Services/my-module-Config.settings
+SystemFileSystem
+]]&gt;
+            &lt;/<font class="function-name">file</font>&gt;
+        &lt;/<font class="function-name">folder</font>&gt;
+    &lt;/<font class="function-name">folder</font>&gt;
+&lt;/<font class="function-name">folder</font>&gt;
+</pre>
+
+<p>Here the shadow file consists of two lines, the first being the
+path to the real settings, the second always being
+<samp>SystemFileSystem</samp>. 
+
+<li><p>Links to other kinds of files, such as folders, whether part of
+the services lookup area or not. For example:</p>
+
+<pre>
+&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"UI"</font>&gt;
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"IDEConfiguration"</font>&gt;
+            &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"LookAndFeel"</font>&gt;
+                &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"my-module-stuff.shadow"</font>&gt;
+                    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"originalFile"</font> <font class="variable-name">stringvalue</font>=<font class="string">"Stuff"</font>/&gt;
+                &lt;/<font class="function-name">file</font>&gt;
+            &lt;/<font class="function-name">folder</font>&gt;
+        &lt;/<font class="function-name">folder</font>&gt;
+    &lt;/<font class="function-name">folder</font>&gt;
+&lt;/<font class="function-name">folder</font>&gt;
+&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Stuff"</font>&gt;
+    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"SystemFileSystem.localizingBundle"</font> <font class="variable-name">stringvalue</font>=<font class="string">"my.module.Bundle"</font>/&gt;
+    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"SystemFileSystem.icon"</font> <font class="variable-name">urlvalue</font>=<font class="string">"nbresloc:/my/module/stuff.gif"</font>/&gt;
+    <font class="comment">&lt;!-- perhaps some files to display here, perhaps not --&gt;</font>
+&lt;/<font class="function-name">folder</font>&gt;
+</pre>
+
+<p>This defines a folder <samp>Stuff</samp> in the system filesystem
+which may be used for some kind of special configuration, and displays
+it in options.</p>
+
+<li><p>Specialized nodes. In some cases you do not wish to display a
+particular folder but want to have complete control over the literal
+display of the option. In such a case you need only include a
+<samp>*.instance</samp> file with an instance of the node (or its
+handle, if you prefer), as the node delegate of this object will be (a
+clone of) the node you provide. For example:</p>
+
+<pre>
+&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"UI"</font>&gt;
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Building"</font>&gt;
+            <font class="comment">&lt;!-- Some subclass of org.openide.nodes.Node: --&gt;</font>
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"my-module-ConfigurationNode.instance"</font>/&gt;
+        &lt;/<font class="function-name">folder</font>&gt;
+    &lt;/<font class="function-name">folder</font>&gt;
+&lt;/<font class="function-name">folder</font>&gt;
+</pre>
+
+</ul>
+
+</div>
+
+<p>No particular substructure of <samp>UI/Services/</samp> is defined
+by the APIs. For optimal UI integration you may wish to examine the
+categories used by other modules and try to reuse an existing category
+appropriate to your needs.</p>
+
+<p>In some cases it is necessary to <em>hide</em> a service file, or a
+whole folder of services. While you can place files into
+<samp>Services/</samp> and simply not make any corresponding mirror in
+<samp>UI/Services/</samp>, you may wish to create services or
+subfolders inside existing displayable folders (for purposes of
+lookup, generally) yet not have them be visible in the UI. In this
+case you should mark the file or subfolder with the file attribute
+<code>hidden</code> (set to boolean <samp>true</samp>).</p>
+
+<h4><a name="services-proped">Property editor for services</a></h4>
+
+<p>If you wish to permit the user to select a service as part of the
+Property Sheet (from a node property, or as a
+<code>PropertyPanel</code>, providing general GUI embeddability), this
+is supported. You should use the property editor assigned to
+<code>java.lang.Object</code> (<em>not</em> your desired service
+interface). Various hints defined in the Explorer API
+permit you to control the result.</p>
+
+<div class="nonnormative">
+
+<p>As an example, here is a node property permitting you to ask the
+user to select a value of type <code>my.module.Thing</code>, being
+some interface or abstract superclass, where some instances are
+registered to lookup, conventionally in the
+<samp>Services/Things/</samp> folder which the module has provided:</p>
+
+<pre>
+<font class="keyword">public</font> <font class="keyword">abstract</font> <font class="keyword">class</font> <font class="type">ThingProperty</font> <font class="keyword">extends</font> <font class="type">PropertySupport.ReadWrite</font> {
+    <font class="keyword">protected</font> <font class="type">ThingProperty</font>(<font class="type">String</font> <font class="variable-name">name</font>, <font class="type">String</font> <font class="variable-name">displayName</font>, <font class="type">String</font> <font class="variable-name">shortDescription</font>) <font class="keyword">throws</font> <font class="type">IOException</font> {
+        <font class="keyword">super</font>(name, Object.<font class="keyword">class</font>, displayName, shortDescription);
+        setValue(<font class="string">"superClass"</font>, Thing.<font class="keyword">class</font>); <font class="comment">// NOI18N
+</font>        setValue(<font class="string">"nullValue"</font>, NbBundle.getMessage(ThingProperty.<font class="keyword">class</font>, <font class="string">"LBL_no_thing"</font>)); <font class="comment">// NOI18N
+</font>        <font class="type">DataFolder</font> <font class="variable-name">thingsFolder</font> = DataFolder.create(
+            DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()),
+            <font class="string">"Services/Things"</font> <font class="comment">// NOI18N
+</font>        );
+        setValue(<font class="string">"node"</font>, thingsFolder.getNodeDelegate()); <font class="comment">// NOI18N
+</font>    }
+    <font class="keyword">public</font> <font class="keyword">final</font> <font class="type">Object</font> <font class="function-name">getValue</font>() {
+        <font class="keyword">return</font> getThing();
+    }
+    <font class="keyword">public</font> <font class="keyword">final</font> <font class="type">void</font> <font class="function-name">setValue</font>(<font class="type">Object</font> <font class="variable-name">o</font>) {
+        <font class="keyword">if</font> (o != <font class="constant">null</font>) {
+            <font class="type">Lookup.Template</font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type">Lookup.Template</font>(Thing.<font class="keyword">class</font>, o, <font class="constant">null</font>);
+            <font class="type">Iterator</font> <font class="variable-name">it</font> = Lookup.getDefault().lookup(templ).allItems().iterator();
+            <font class="keyword">if</font> (it.hasNext()) {
+                setThingID(((<font class="type">Lookup.Item</font>)it.next()).getId());
+            } <font class="keyword">else</font> {
+                <font class="comment">// Thing was registered but is not persistable.
+</font>                setThingID(<font class="constant">null</font>);
+            }
+        } <font class="keyword">else</font> {
+            setThingID(<font class="constant">null</font>);
+        }
+    }
+    <font class="keyword">public</font> <font class="keyword">final</font> <font class="type">boolean</font> <font class="function-name">supportsDefaultValue</font>() {
+        <font class="keyword">return</font> <font class="constant">true</font>;
+    }
+    <font class="keyword">public</font> <font class="keyword">final</font> <font class="type">void</font> <font class="function-name">restoreDefaultValue</font>() {
+        setValue(<font class="constant">null</font>);
+    }
+    <font class="comment">// May be used by code wishing to get the actual Thing (or null):
+</font>    <font class="keyword">public</font> <font class="keyword">final</font> <font class="type">Thing</font> <font class="function-name">getThing</font>() {
+        <font class="type">String</font> <font class="variable-name">id</font> = getThingID();
+        <font class="keyword">if</font> (id != <font class="constant">null</font>) {
+            <font class="type">Lookup.Template</font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type">Lookup.Template</font>(Thing.<font class="keyword">class</font>, <font class="constant">null</font>, id);
+            <font class="type">Iterator</font> <font class="variable-name">it</font> = Lookup.getDefault().lookup(templ).allInstances().iterator();
+            <font class="keyword">if</font> (it.hasNext()) {
+                <font class="keyword">return</font> (<font class="type">Thing</font>)it.next();
+            } <font class="keyword">else</font> {
+                <font class="comment">// Invalid ID.
+</font>                <font class="keyword">return</font> <font class="constant">null</font>;
+            }
+        } <font class="keyword">else</font> {
+            <font class="keyword">return</font> <font class="constant">null</font>;
+        }
+    }
+    <font class="comment">// Subclasses implement to actually read/write Thing persistent IDs (or null):
+</font>    <font class="keyword">protected</font> <font class="keyword">abstract</font> <font class="type">String</font> <font class="function-name">getThingID</font>();
+    <font class="keyword">protected</font> <font class="keyword">abstract</font> <font class="type">void</font> <font class="function-name">setThingID</font>(<font class="type">String</font> <font class="variable-name">id</font>);
+}
+</pre>
+
+<p>A property extending this class would in the current UI display a
+pull-down list of all <code>Thing</code> implementations available in
+lookup; the custom property editor dialog would display the
+<samp>Things</samp> folder with anything contained inside it for the
+user to select from, provided it in fact had an instance assignable to
+<code>Thing</code>. The special null value is explicitly permitted
+here and would be displayed with the label given in the bundle.</p>
+
+</div>
+
 
 <hr>@FOOTER@
 </body>

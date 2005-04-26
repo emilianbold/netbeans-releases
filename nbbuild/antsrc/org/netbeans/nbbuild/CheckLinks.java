@@ -39,6 +39,7 @@ public class CheckLinks extends MatchingTask {
     private File basedir;
     private boolean checkexternal = true;
     private List mappers = new LinkedList(); // List<Mapper>
+    private boolean failOnError;
 
     /** Set whether to check external links (absolute URLs).
      * Local relative links are always checked.
@@ -46,6 +47,12 @@ public class CheckLinks extends MatchingTask {
      */
     public void setCheckexternal (boolean ce) {
         checkexternal = ce;
+    }
+    
+    /** Set to true, if you want the build to fail if a url is wrong.
+     */
+    public void setFailOnError (boolean f) {
+        failOnError = f;
     }
 
     /** Set the base directory from which to scan files.
@@ -83,6 +90,10 @@ public class CheckLinks extends MatchingTask {
             } catch (IOException ioe) {
                 throw new BuildException("Could not scan " + file + ": " + ioe, ioe, getLocation());
             }
+        }
+        
+        if (failOnError && !badurls.isEmpty ()) {
+            throw new BuildException ("There were broken links");
         }
     }
     

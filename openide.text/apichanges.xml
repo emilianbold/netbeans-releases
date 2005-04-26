@@ -49,6 +49,30 @@ Microsystems, Inc. All Rights Reserved.
       <class package="org.openide.text" name="CloneableEditorSupport"/>
       <issue number="51441"/>
     </change>
+    <change id="not-calling-CloneableEditorSupport-notifyModified-that-often">
+      <api name="text"/>
+      <summary>
+<code>CloneableEditorSupport.notifyModified</code> is called only on first modification</summary>
+      <version major="5" minor="4"/>
+      <date day="14" month="1" year="2005"/>
+      <author login="jtulach"/>
+      <compatibility binary="compatible" source="compatible" semantic="incompatible" deprecation="no" addition="no" deletion="no" modification="no"/>
+      <description>
+        <p>
+        It has been found that <code>CloneableEditorSupport.notifyModified</code>
+        is called more often than it should. It used to be called after every
+        keystroke, which is bad, as its return value could not be honored - 
+        it is not possible to prevent modification when the document is already
+        modified. Now the method is called only on first modification of the
+        document and if it returns false, the modification is not allowed.
+        <br/>
+        This may be incompatible for clients that relied on the often calls.
+        Such clients need to be fixed.
+        </p>
+      </description>
+      <class package="org.openide.text" name="CloneableEditorSupport"/>
+      <issue number="52493"/>
+    </change>
 <change id="CloneableEditorSupport.Pane">
         <api name="text"/>
         <summary>Enhance SPI interface for CloneableEditorSupport.Pane providers</summary>

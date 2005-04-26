@@ -18,7 +18,7 @@ import java.io.IOException;
 /** Encapsulates an exception.
 *
 * @author Ales Novak
-* @deprecated Better to create a new <code>IOException</code> and {@link org.openide.ErrorManager#annotate annotate} it with the throwable.
+* @deprecated Better to create a new <code>IOException</code> and {@link org.openide.ErrorManager}'s annotate with the throwable.
 */
 public class FoldingIOException extends IOException {
     static final long serialVersionUID = 1079829841541926901L;

@@ -37,6 +37,7 @@ ${javadoc.apichanges} API change list XML file; default no change list
 ${javadoc.arch}       architecture summary of the module; default a dummy summary
 ${javadoc.overview}   Overview HTML file; default a generic page
 ${javadoc.check.external.links}  set to "true" to check external HTTP links
+${javadoc.check.failonerror}     set to "true" if you want the build to fail due to broken link
 ${javadoc.header}     Special header text.
 ${javadoc.manifest}   API module manifest file - permits @SPECIFICATION-VERSION@ in arch summary to be substituted
 ${javadoc.web.root}   Base URL for online Javadoc for linking; default http://www.netbeans.org/download/dev/javadoc
@@ -79,6 +80,7 @@ cause it to fail.
             <include name="*.css"/>
         </fileset>
         <property name="javadoc.check.external.links" value="false"/>
+        <property name="javadoc.check.failonerror" value="false"/>
         <property name="javadoc.header" value="&amp;nbsp;"/>
         <mkdir dir="${javadoc.out.dir}"/>
         
@@ -324,7 +326,7 @@ cause it to fail.
                 <pathelement location="../nbantext.jar"/>
             </classpath>
         </taskdef>
-        <checklinks basedir="${javadoc.out.dir}" checkexternal="${javadoc.check.external.links}">
+        <checklinks basedir="${javadoc.out.dir}" checkexternal="${javadoc.check.external.links}" failonerror="${javadoc.check.failonerror}" >
             <include name="overview-summary.html"/>
             <include name="apichanges.html"/>
             <include name="architecture-summary.html"/>

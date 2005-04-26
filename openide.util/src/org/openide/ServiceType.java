@@ -29,6 +29,9 @@ import java.util.Enumeration;
 * the system.
 *
 * @author Jaroslav Tulach
+* @deprecated The prefered way to register and lookup services
+ *   is now {@link Lookup} as described in <a href="util/doc-files/api.html#lookup">
+ *   services registration and lookup</a> page.
 */
 public abstract class ServiceType extends Object implements java.io.Serializable, HelpCtx.Provider {
     /** generated Serialized Version UID */

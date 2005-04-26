@@ -17,7 +17,126 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
-<change id="no-icon-in-menu-for-actions">
+    <change>
+      <api name="util"/>
+      <summary>HTML browser factory deprecated, use lookup instead</summary>
+      <date day="8" month="3" year="2001"/>
+      <compatibility modification="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no"/>
+      <description>
+        <code>HtmlBrower.setFactory()</code> is deprecated and its functionality
+        can be obtained by registering <code>HtmlBrowser.Impl</code> in Lookup
+        folder. This allows to register more browsers in IDE, create
+        customizable browsers and switch between them.
+      </description>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+    </change>
+   <change>
+      <api name="util"/>
+      <summary>Display names for toolbars</summary>
+      <date day="8" month="12" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added display name support for Toolbar class. New constructors and methods:
+        <ul>
+          <li>
+    <code>Toolbar(String name, String displayName)</code>
+    </li>
+              <li>
+    <code>Toolbar(String name, String displayName, boolean floatable)</code>
+    </li>
+              <li>
+    <code>setDisplayName(String displayName)</code>
+    </li>
+              <li>
+    <code>String getDisplayName()</code>
+    </li>
+            </ul>
+      </description>
+      <class package="org.openide.awt" name="Toolbar"/>
+    </change>
+    <change>
+      <api name="util"/>
+      <summary>Cleaned up accidentally public members of <code>Toolbar</code>
+      </summary>
+      <date day="19" month="4" year="2000"/>
+      <compatibility deletion="yes" source="incompatible" binary="compatible" semantic="compatible" deprecation="no" addition="no" modification="no">
+        First broken, later restored binary compatibility in trunk and
+        <code>boston</code>. It is possible but unlikely that the first two
+        changes could cause incompatibilities; normally only the core
+        implementation uses the <code>Toolbar</code> class anyway.
+      </compatibility>
+      <description>
+        Several public fields removed from <code>DnDEvent</code>
+        (<code>dx</code>, <code>dy</code>, <code>name</code>, and
+        <code>type</code>); public methods serving only to implement
+        <code>MouseInputListener</code> have been removed (as well as the
+        implements-clause for this interface); <code>BASIC_HEIGHT</code> now
+        final (it was static and only intended as a constant, so this is not
+        incompatible).
+      </description>
+      <class package="org.openide.awt" name="Toolbar"/>
+    </change>
+    <change id="HtmlBrowser.getBrowserImpl-getBrowserComponent">
+      <api name="awt"/>
+      <summary>Added methods to <code>HtmlBrowser</code>
+      </summary>
+      <version major="4" minor="27"/>
+      <date day="7" month="5" year="2004"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <p>
+          The methods <code>getBrowserImpl</code> and
+          <code>getBrowserComponent</code> were added to <code>HtmlBrowser</code>
+          for use by core.
+        </p>
+      </description>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+    </change>
+    <change id="ToolbarPool-create-new">
+      <api name="awt"/>
+      <summary>Create your own toolbar pool</summary>
+      <version major="1" minor="5"/>
+      <date day="27" month="4" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        New constructor of <code>ToolbarPool</code>. Now any module can create its
+        own <code>ToolbarPool</code> and use it.
+      </description>
+      <class package="org.openide.awt" name="ToolbarPool"/>
+    </change>
+    <change id="Mnemonics">
+      <api name="awt"/>
+      <summary>
+        <code>org.openide.awt.Mnemonics</code> added</summary>
+      <version major="3" minor="37"/>
+      <date day="10" month="2" year="2003"/>
+      <author login="jglick"/>
+      <compatibility deprecation="yes" addition="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+      <description>
+        The class <code>org.openide.awt.Mnemonics</code> was introduced as a
+        centralized and convenient place to set localized text for a variety of
+        components while properly handling mnemonics in a variety of
+        international scripts.
+      </description>
+      <class package="org.openide.awt" name="Mnemonics"/>
+      <class package="org.openide.awt" name="Actions"/>
+      <issue number="26640"/>
+    </change>
+    <change>
+      <api name="awt"/>
+      <summary>Can request to use textual icons for actions</summary>
+      <date day="23" month="3" year="2000"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>ButtonBridge</code> has protected method with which it is possible
+        to specify whether or not to use textual icons rather than empty ones if
+        an action has no icon.
+      </description>
+      <class package="org.openide.awt" name="Actions"/>
+    </change>
+    <change id="no-icon-in-menu-for-actions">
       <api name="awt"/>
       <summary>Added property to <code>SystemAction/Action</code> that causes it's icon not to be displayed in menu.</summary>
       <version major="4" minor="49"/>
