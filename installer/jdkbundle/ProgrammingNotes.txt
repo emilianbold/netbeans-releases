@@ -1,20 +1,13 @@
 Prerequisites
    
  - InstallShield MultiPlatform 5 (SP3)
- - Apache Ant 1.6.1
+ - Apache Ant 1.6.2
  - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
  - external unzip utility on $PATH
  - Unix
- - bundled JVM for InstallShield (all four supported platforms are necessary - Win,
-   Linux, Solaris-sparc are available at InstallShield web, Solaris-x86 must be created)
-   I can provide all 4 bundled JVM. JVM from IS are JRE 1.4.2, Solaris-x86
-   is JRE 1.4.2_05). Location of bundled JVMs is given by alias bundled.jvm.
-   Names of used JVMs:
-      Windows-Sun-1.4.2.exe
-      Linux-Sun-1.4.2.bin
-      Solaris-Sun-1.4.2.bin
-      sunjre142_05-solaris-x86-installer.bin
- - installers of JDK 1.5.0_01 for all 4 supported platforms
+ - bundled JVM are Sun JRE 1.4.2_07 for all 4 supported platforms.
+   Location of bundled JVMs is given by alias bundled.jvm.
+ - installers of JDK 1.5.0_03 for all 4 supported platforms
 
 To build from command line run ant as usual with
 
@@ -34,7 +27,18 @@ be parsed by storage builder. Colon ':' is used as list separator.
 As there is different command line option for every platform it must be run
 separately for every platform.
 
-Build targets for supported platforms are as follows: build-linux,
-build-solaris-sparc, build-solaris-x86, build-windows.
+Build targets to build English (en) installers for supported platforms
+are as follows:
+build-linux - Linux - suffix '-linux' is appended to installer.basename
+build-solaris-sparc - Solaris Sparc - suffix '-solsparc'
+build-solaris-x86 - Solaris X86 - suffix '-solx86'
+build-windows - Windows - suffix '-win'
+
+Build targets to build ML (English - en, Japanese - ja, Simplified Chinese - zh) 
+installers for supported platforms are as follows:
+build-linux-ml - Linux - suffix '-linux-ml' is appended to installer.basename
+build-solaris-sparc-ml - Solaris Sparc - suffix '-solsparc-ml'
+build-solaris-x86-ml - Solaris X86 - suffix '-solx86-ml'
+build-windows-ml - Windows - suffix '-win-ml'
 
 The installers will be generated and placed in the dist/ subdir

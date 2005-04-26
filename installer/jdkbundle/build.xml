@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -20,8 +20,12 @@ Microsystems, Inc. All Rights Reserved.
   <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
   <property name="nb.dir" location="../../nbbuild/netbeans"/>
  
-  <target name="init" depends="set-buildnumber, set-installer.basename, copy-localized-data" unless="inited">
+  <target name="init" depends="set-buildnumber, set-installer.basename" unless="inited">
     <property name="inited" value="true" />
+  </target>
+  
+  <target name="init-ml" depends="init, copy-localized-data" unless="inited-ml">
+    <property name="inited-ml" value="true" />
   </target>
   
   <target name="copy-localized-data">
@@ -55,7 +59,67 @@ Microsystems, Inc. All Rights Reserved.
   <target name="set-installer.basename" unless="unstaller.basename" depends="set-buildnumber">
     <property name="installer.basename" value="NetBeans-dev-${buildnumber}"/>
   </target>
-
+  
+  <macrodef name="transform-ml">
+    <attribute name="input.ismp.project"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="@{input.ismp.project}" />
+        <arg value="-xsl" />
+        <arg value="../lib/ml.xsl"/>
+        <arg value="-saveas"/>
+        <arg value="@{input.ismp.project}-ml"/>
+        <classpath>
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
+  
+  <target name="xsl-linux-ml" depends="init">
+    <transform-ml input.ismp.project="linux.xml"/>
+  </target>
+  
+  <target name="xsl-solaris-sparc-ml" depends="init">
+    <transform-ml input.ismp.project="solaris-sparc.xml"/>
+  </target>
+  
+  <target name="xsl-solaris-x86-ml" depends="init">
+    <transform-ml input.ismp.project="solaris-x86.xml"/>
+  </target>
+  
+  <target name="xsl-windows-ml" depends="init">
+    <transform-ml input.ismp.project="windows.xml"/>
+  </target>
+  
+  <macrodef name="build-installer">
+    <attribute name="input.ismp.project"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="@{input.ismp.project}"/>
+        <arg value="-build"/>
+        <arg value="-alias"/>
+        <arg value="basedir=${basedir}"/>
+        <arg value="-alias"/>
+        <arg value="nb.dir=${nb.dir}"/>
+        <arg value="-alias"/>
+        <arg value="jdk.installer=${jdk.installer}"/>
+        <arg value="-alias"/>
+        <arg value="jdk.scripts.dir=build/scripts"/>
+        <arg value="-alias"/>
+        <arg value="bundled.jvm=${bundled.jvm}"/>
+        <arg value="-alias"/>
+        <arg value="storage.builder=${storage.builder}"/>
+        <arg value="-alias"/>
+        <arg value="sb.scripts.dir=build/storagebuilder"/>
+        <classpath>
+          <pathelement path="build/classes"/>
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
+  
   <target name="build-linux" depends="init, compile">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
@@ -63,31 +127,24 @@ Microsystems, Inc. All Rights Reserved.
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="linux.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="jdk.installer=${jdk.installer}"/>
-      <arg value="-alias"/>
-      <arg value="jdk.scripts.dir=build/scripts"/>
-      <arg value="-alias"/>
-      <arg value="bundled.jvm=${bundled.jvm}"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="sb.scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />      
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="linux.xml"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
+  </target>
+  
+  <target name="build-linux-ml" depends="init-ml, compile, xsl-linux-ml">
+    <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
+    <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <build-installer input.ismp.project="linux.xml-ml"/>
+    <delete dir="build/scripts"/>
+    <delete dir="build/storagebuilder"/>
+    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
+    <delete file="linux.xml-ml"/>
   </target>
 
   <target name="build-solaris-sparc" depends="init, compile">
@@ -97,31 +154,24 @@ Microsystems, Inc. All Rights Reserved.
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="solaris-sparc.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="jdk.installer=${jdk.installer}"/>
-      <arg value="-alias"/>
-      <arg value="jdk.scripts.dir=build/scripts"/>
-      <arg value="-alias"/>
-      <arg value="bundled.jvm=${bundled.jvm}"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="sb.scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="solaris-sparc.xml"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
+  </target>
+  
+  <target name="build-solaris-sparc-ml" depends="init-ml, compile, xsl-solaris-sparc-ml">
+    <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
+    <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <build-installer input.ismp.project="solaris-sparc.xml-ml"/>
+    <delete dir="build/scripts"/>
+    <delete dir="build/storagebuilder"/>
+    <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
+    <delete file="solaris-sparc.xml-ml"/>
   </target>
 
   <target name="build-solaris-x86" depends="init, compile">
@@ -131,31 +181,24 @@ Microsystems, Inc. All Rights Reserved.
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="solaris-x86.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="jdk.installer=${jdk.installer}"/>
-      <arg value="-alias"/>
-      <arg value="jdk.scripts.dir=build/scripts"/>
-      <arg value="-alias"/>
-      <arg value="bundled.jvm=${bundled.jvm}"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="sb.scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="solaris-x86.xml"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
+  </target>
+  
+  <target name="build-solaris-x86-ml" depends="init-ml, compile, xsl-solaris-x86-ml">
+    <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
+    <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <build-installer input.ismp.project="solaris-x86.xml-ml"/>
+    <delete dir="build/scripts"/>
+    <delete dir="build/storagebuilder"/>
+    <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
+    <delete file="solaris-x86.xml-ml"/>
   </target>
 
   <target name="build-windows" depends="init, compile">
@@ -165,31 +208,24 @@ Microsystems, Inc. All Rights Reserved.
           tofile="build/storagebuilder/run-storage-builder-windows.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="windows.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="jdk.installer=${jdk.installer}"/>
-      <arg value="-alias"/>
-      <arg value="jdk.scripts.dir=build/scripts"/>
-      <arg value="-alias"/>
-      <arg value="bundled.jvm=${bundled.jvm}"/>
-      <arg value="-alias"/>
-      <arg value="storage.builder=${storage.builder}"/>
-      <arg value="-alias"/>
-      <arg value="sb.scripts.dir=build/storagebuilder"/>
-      <classpath>
-        <pathelement path="build/classes" />
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="windows.xml"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
+  </target>
+  
+  <target name="build-windows-ml" depends="init-ml, compile, xsl-windows-ml">
+    <copy file="scripts/custom-install-jdk.template" tofile="build/scripts/_uninst/custom-install-jdk.template"/>
+    <copy file="scripts/custom-install-jre.template" tofile="build/scripts/_uninst/custom-install-jre.template"/>
+    <copy file="../lib/scripts/run-storage-builder-windows.template"
+          tofile="build/storagebuilder/run-storage-builder-windows.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
+    <build-installer input.ismp.project="windows.xml-ml"/>
+    <delete dir="build/scripts"/>
+    <delete dir="build/storagebuilder"/>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
+    <delete file="windows.xml-ml"/>
   </target>
  
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">
