@@ -1,0 +1,862 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+--><!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+<apidefs>
+<apidef name="explorer">Explorer API</apidef>
+</apidefs>
+<changes>
+<change id="NodeTableModel.ColumnMnemonicCharTTV">
+        <api name="explorer"/>
+        <summary>Added a new <code>ColumnMnemonicCharTTV</code> property to <code>NodeTableModel</code>
+</summary>
+        <version major="5" minor="9"/>
+        <date day="30" month="3" year="2005"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            The new property allows you to specify a mnemonic character for display names
+            of <code>TreeTableView</code> columns.
+        </description>
+        <class package="org.openide.explorer.view" name="NodeTableModel"/>
+        <issue number="56781"/>
+    </change>
+<change id="item-separator-attribute-for-StringArrayPropertyEditor">
+       <api name="explorer"/>
+       <summary>One can specify separator for property editor for <code>String[]</code> </summary>
+       <version major="5" minor="7"/>
+       <date day="18" month="3" year="2005"/>
+       <author login="jtulach"/>
+       <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+       <description>
+         One can specify an item separator for properties using string array editor. For example
+         following code:
+         <pre xml:space="preserve">
+           Node.Property np = new Node.Property (String[].class, ...);
+           np.setValue ("item.separator", "-");        
+         </pre>
+         separates items returned from <code>getAsText</code> and parsed by <code>setAsText</code>
+         by <q>-</q>. List of supported parameters can be found 
+         <a href="@TOP@org/openide/explorer/doc-files/api.html#core_editors_custom_parameters" shape="rect">here</a>.
+       </description>
+       <class package="org.openide.explorer.propertysheet" name="PropertyPanel"/>
+       <issue number="56257"/>
+     </change>
+<change id="ExplorerActions.DeleteActionPerfomer">
+        <api name="explorer"/>
+        <summary>Nodes in explorer can supress default confirmation dialog during delete operation</summary>
+        <version major="5" minor="6"/>
+        <date day="11" month="3" year="2005"/>
+        <author login="rkubacki"/>
+        <compatibility modification="yes" semantic="compatible" binary="compatible" source="compatible" deprecation="no" addition="no" deletion="no"/>
+        <description>
+            Nodes that need to supress default confirmation dialog shown during delete action
+            can do this if they return <code>Boolean.TRUE</code> from <code>Node.getValue(String)</code> 
+            for attribute customDelete.
+        </description>
+        <issue number="56256"/>
+    </change>
+<change id="TreeView.dragActive">
+        <api name="explorer"/>
+        <summary>Fixed <code>TreeView.drag/dropActive</code> switcher</summary>
+        <version major="4" minor="45"/>
+        <date day="25" month="8" year="2004"/>
+        <author login="jrechtacek"/>
+        <compatibility modification="yes" semantic="compatible" binary="compatible" source="compatible" deprecation="no" addition="no" deletion="no"/>
+        <description>
+            The methods <code>TreeView.setDragSource(boolean)</code> and <code>TreeView.setDropTarget</code>
+            can set drag/dropActive on/off. The drag source and drop target are enabled by default.
+            Before the views were forced to be drag/drop active no matter what state was set.
+        </description>
+        <class package="org.openide.explorer.view" name="TreeView"/>
+        <issue number="47672"/>
+    </change>
+<change>
+        <api name="explorer"/>
+        <summary>Added ExplorerUtils.getHelpCtx</summary>
+        <version major="4" minor="40"/>
+        <date day="14" month="6" year="2004"/>
+        <author login="pnejedly"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Add the utility method for computing the help id for a set
+            of nodes with a fallback to provided default id.
+        </description>
+        <class package="org.openide.explorer" name="ExplorerUtils"/>
+        <issue number="37543"/>
+    </change>
+<change>
+     <api name="explorer"/>
+     <summary>Deprecation of NodeRenderer.sharedInstance()</summary>
+     <version major="4" minor="36"/>
+     <date day="1" month="6" year="2004"/>
+     <author login="tboudreau"/>
+     <compatibility deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no" modification="no"/>
+     <description>
+     NodeRenderer.sharedInstance() is now deprecated.  Components which
+     wish to render nodes should create their own private instance of
+     NodeRenderer, to avoid one view's painting interfering with another's.
+     </description>
+     <class package="org.openide.explorer.view" name="NodeRenderer"/>
+     <issue number="43148"/>
+    </change>
+<change id="delete-InplaceEditor.handleInitialInputEvent">
+     <api name="explorer"/>
+     <summary>Removal of org.openide.explorer.propertysheet.InplaceEditor.handleInitialInputEvent</summary>
+     <version major="4" minor="17"/>
+     <date day="9" month="12" year="2003"/>
+     <author login="tboudreau"/>
+     <compatibility deletion="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" modification="no"/>
+     <description>
+     This method was introduced post-3.5, and has proven unnecessary, as the
+     event may effectively be dispatched to the component using dispatchEvent().
+     It will instead be the responsibility of the component to determine if
+     it has just been added to a container and should handle the event in some
+     special way because of that.
+     </description>
+     <class package="org.openide.explorer.propertysheet" name="InplaceEditor"/>
+     <issue number="37626"/>
+    </change>
+<change id="PropertyPanel-rewrite">
+     <api name="explorer"/>
+     <summary>Property panel rewrite, addition of set/getProperty methods and new constructors, deprecation of getPropertyEditor</summary>
+     <version major="4" minor="17"/>
+     <date day="9" month="12" year="2003"/>
+     <author login="tboudreau"/>
+     <compatibility deprecation="yes" addition="yes" modification="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no"/>
+     <description>
+     As part of the rewrite of the internals of PropertyPanel to use the new
+     property sheet's infrastructure, users of PropertyPanel are encouraged
+     to use Node.Property rather than PropertyModel objects to drive their
+     PropertyPanel instances.  To that end, methods and constructors have been
+     added in order to support using Node.Property objects. The method
+     getPropertyEditor() has been deprecated, and the property change 
+     PROP_PROPERTY_EDITOR will no longer be fired.  As documented, in the case
+     of custom editors, its function has not changed, but for inline uses,
+     there is no particular use for holding a reference to the property editor
+     instance, so for inline uses it is no longer guaranteed to return the
+     same property editor instance as previously - this is now the sole 
+     responsibility of the Property object.  As this method was primarily used
+     by the old property sheet, this is a low-impact change.
+     </description>
+     <class package="org.openide.explorer.propertysheet" name="PropertyPanel"/>
+     <issue number="31896"/>
+    </change>
+<change id="ExplorerManager-action-factories">
+     <api name="explorer"/>
+     <summary>Copy, Cut, Paste and Delete Action Factory</summary>
+     <version major="4" minor="14"/>
+     <date day="21" month="11" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+     <description>
+       As part of the work on separation of openide.jar into smaller parts 
+       the existing <code>ExplorerActions</code> class and <code>ExplorerPanel</code>
+       are being deprecated and replaced by new factory methods in 
+       <code>ExplorerUtils</code> class. Use them to create actions 
+       handling copy, cut, paste and delete on given ExplorerManager.
+     </description>
+     <class package="org.openide.explorer" name="ExplorerActions"/>
+     <class package="org.openide.explorer" name="ExplorerPanel"/>
+     <class package="org.openide.explorer" name="ExplorerUtils"/>
+     <issue number="34758"/>
+    </change>
+<change id="boolean.editor.hints">
+     <api name="explorer"/>
+     <summary>
+        Additional hints for boolean, Boolean properties
+     </summary>
+     <version major="4" minor="3"/>
+     <date day="4" month="4" year="2003"/>
+     <author login="tboudreau"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        Properties of type boolean or Boolean can now
+        supply the following hint to the property editor:
+        stringValues - a String[2] which will be used
+        to replace the standard "true" or
+        "false" displayed in the editor.
+     </description>
+     <issue number="32619"/>
+    </change>
+<change id="integer.editor.hints">
+     <api name="explorer"/>
+     <summary>
+        Additional hints for int,Integer properties
+     </summary>
+     <version major="4" minor="3"/>
+     <date day="4" month="4" year="2003"/>
+     <author login="tboudreau"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        Properties representing instances of int or Integer can
+        now supply the following hints to their property editors:
+        stringKeys, intValues, codeValues.  The String[] keys will be
+        displayed in a drop down in the propertysheet; the
+        int[] values are used when a key of the corresponding
+        index is selected;  the optional codeValues String[]
+        can be used to supply custom text to getJavaInitializationString()
+        for code generation.
+        This replaces the functionality of the now deprecated
+        ChoicePropertyEditor.
+     </description>
+     <issue number="20736"/>
+     <issue number="5278"/>
+     <issue number="31879"/>
+    </change>
+<change id="string.editor.hints">
+     <api name="explorer"/>
+     <summary>
+        Additional hints for String properties
+     </summary>
+     <version major="4" minor="2"/>
+     <date day="26" month="3" year="2003"/>
+     <author login="tboudreau"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        Properties representing String instances can now supply
+        the following additional hints: oneline, suppressCustomEditor
+        and instructions.  These affect the behavior of the custom
+        editor if invoked.  If these hints are not supplied, behavior
+        will be the same as it always was.
+     </description>
+     <issue number="29294"/>
+    </change>
+<change>
+     <api name="explorer"/>
+     <summary>MenuView.MenuItem implements HelpCtx.Provider</summary>
+     <version major="3" minor="38"/>
+     <date day="13" month="2" year="2003"/>
+     <author login="pnejedly"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        The HelpCtx of the underlying node is now exported through
+        HelpCtx.Provider interface. For the API users, HelpCtx.findHelp
+        keeps working the same way.
+     </description>
+     <class package="org.openide.explorer.view" name="MenuView"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>PropertyPanel.getState, PropertyEnv.add/removePropertyChanageListener</summary>
+      <version major="2" minor="20"/>
+      <date day="27" month="5" year="2002"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>Define interface that would allow to tell customizer that it should check
+        user changed values and that it should commit values. PropertyPanel controls/obtains
+        the value of the PropertyEnv.getState of the current property editor.
+        Thus adding method PropertyPanel.getState () and firing property
+        changes appropriatelly.
+        Added public methods
+        <code>PropertyPanel.getState()</code>,
+        <code>PropertyEnv.addPropertyChangeListener(PropertyChangeListener)</code> and
+        <code>PropertyEnv.removePropertyChangeListener(PropertyChangeListener)</code>.
+        Added public static field
+        <code>PropertyPanel.PROP_STATE</code>.
+      </description>
+      <class package="org.openide.explorer.propertysheet" name="PropertyPanel"/>
+      <class package="org.openide.explorer.propertysheet" name="PropertyEnv"/>
+      <issue number="23369"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>Add set/getSelectionMode in TreeView</summary>
+      <version major="2" minor="15"/>
+      <date day="24" month="4" year="2002"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added public methods
+        <code>TreeView.setSelectionMode(int)</code> and
+        <code>TreeView.getSelectioMode()</code>.
+      </description>
+      <class package="org.openide.explorer.view" name="TreeView"/>
+    </change>
+<change id="issue-19443-1">
+      <summary>API separation, phase I</summary>
+      <version major="3" minor="14"/>
+      <date day="15" month="10" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" deprecation="yes" semantic="compatible" addition="no" deletion="no" modification="no">
+        <p>
+          The deprecated classes continue to be available in the module
+          <code>org.openide.deprecated</code> which you may depend on it you
+          cannot remove uses of the deprecated APIs. In order for
+          <code>TopManager.getDefault()</code> to work, you must also require the
+          token <code>org.openide.TopManager</code>, which is provided by an
+          unspecified module. The deprecated API module and its implementation
+          module are autoloads, meaning they will not be loaded unless some
+          module still requires them.
+        </p>
+        <p>
+          Similarly, the Java Hierarchy API was moved to the module
+          <code>org.openide.src</code> which you should depend on in order to use
+          this API.
+        </p>
+        <p>
+          For compatibility, the above three dependencies are added to your module
+          <em>automatically</em> in case it either requests no specific API
+          version at all, or requests an API version prior to 3.14. Modules
+          requesting APIs 3.14 or higher must declare these dependencies
+          explicitly if they in fact need them.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Many classes were moved to a separate module,
+          <samp>openide-deprecated.jar</samp>, not available to modules by
+          default. Uses of these classes in modules should be cleaned up whenever
+          possible.
+        </p>
+        <p>
+          Additionally, the entire contents of <code>org.openide.src.*</code> and
+          <code>org.openide.src.nodes.*</code>, as well as
+          <code>org.openide.cookies.SourceCookie</code> and some associated
+          property editors, were moved to a separate module.
+        </p>
+        <p>
+          The most common apparent symptom for module authors will be the absence
+          of <code>TopManager</code>. Most methods in this class have been
+          replaced by newer utility classes in a straightforward manner. See the
+          Upgrade Guide.
+        </p>
+      </description>
+      <class package="org.openide" name="DialogDisplayer"/>
+      <class package="org.openide" name="LifecycleManager"/>
+      <class package="org.openide" name="Places"/>
+      <class package="org.openide" name="TopManager"/>
+      <class package="org.openide.actions" name="AddWatchAction"/>
+      <class package="org.openide.actions" name="BuildProjectAction"/>
+      <class package="org.openide.actions" name="CompileProjectAction"/>
+      <class package="org.openide.actions" name="DebugProjectAction"/>
+      <class package="org.openide.actions" name="ExecuteProjectAction"/>
+      <class package="org.openide.actions" name="FinishDebuggerAction"/>
+      <class package="org.openide.actions" name="GoAction"/>
+      <class package="org.openide.actions" name="GoToCursorAction"/>
+      <class package="org.openide.actions" name="HelpAction"/>
+      <class package="org.openide.actions" name="OpenProjectAction"/>
+      <class package="org.openide.actions" name="SaveProjectAction"/>
+      <class package="org.openide.actions" name="StartDebuggerAction"/>
+      <class package="org.openide.actions" name="StepOutAction"/>
+      <class package="org.openide.actions" name="ToggleBreakpointAction"/>
+      <class package="org.openide.actions" name="TraceIntoAction"/>
+      <class package="org.openide.actions" name="TraceOverAction"/>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+      <class package="org.openide.awt" name="StatusDisplayer"/>
+      <class package="org.openide.cookies" name="DebuggerCookie"/>
+      <class package="org.openide.cookies" name="ElementCookie"/>
+      <class package="org.openide.cookies" name="ProjectCookie"/>
+      <class package="org.openide.cookies" name="SourceCookie"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ChoicePropertyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="DirectoryOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ElementFormatEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ExternalCompiler"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IconEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IdentifierArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="MethodParameterArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ModifierEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomizable"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="TypeEditor"/>
+      <class package="org.openide.loaders" name="DataObjectFilter"/>
+      <class package="org.openide.loaders" name="ExecSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.loaders" name="ExtensionListEditor"/>
+      <class package="org.openide.loaders" name="RepositoryNodeFactory"/>
+      <class package="org.openide.modules" name="IllegalModuleException"/>
+      <class package="org.openide.modules" name="ManifestSection"/>
+      <class package="org.openide.modules" name="ModuleDescription"/>
+      <class package="org.openide.nodes" name="NodeOperation"/>
+      <class package="org.openide.options" name="ControlPanel"/>
+      <class package="org.openide.util.actions" name="ProjectSensitiveAction"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <package name="org.openide.debugger"/>
+      <package name="org.openide.src"/>
+      <package name="org.openide.src.nodes"/>
+      <issue number="19443"/>
+      <issue number="20898"/>
+    </change>
+<change id="issue-19443-2">
+      <summary>API separation, phase II</summary>
+      <version major="3" minor="17"/>
+      <date day="1" month="11" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" modification="yes" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        <p>
+          Module authors using the now-separated APIs will need to adjust their
+          compilation classpaths to include the new JAR files. Modules wishing to
+          use recent APIs and declaring a current openide specification version
+          dependency will need to explicitly declare dependencies on these new
+          APIs if there are any.
+        </p>
+        <p>
+          For compatibility, modules with no declared Open APIs dependency, or
+          declared on a version prior to 3.17, will have their dependencies
+          automatically refined as if to include the declarations:
+        </p>
+        <pre xml:space="preserve">
+OpenIDE-Module-Module-Dependencies: org.openide.compiler &gt; 1.0,
+  org.openide.execution &gt; 1.0, org.openide.io &gt; 1.0
+OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
+  org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
+        </pre>
+        <p>
+          And any package dependencies from old modules on
+          <code>org.netbeans.lib.terminalemulator</code> will be converted to
+          module dependencies.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Three sections of the Open APIs were split into new autoload modules.
+        </p>
+        <ul>
+          <li>
+            <p>
+              The module <code>org.openide.compiler</code> (version 1.0) contains
+              the Compiler API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.execution</code> (version 1.0) contains
+              the Execution API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.io</code> (version 1.0) contains
+              <code>InputOutput</code> and related classes (formerly part of the
+              Window System API, and still physically in the
+              <code>org.openide.windows</code> package).
+            </p>
+          </li>
+        </ul>
+        <p>
+          New modules wishing to use these APIs must declare regular module
+          dependencies on them. Future changes in these APIs will be documented
+          separately.
+        </p>
+        <p>
+          Furthermore, modules wishing to use certain services must
+          <code>OpenIDE-Module-Require</code> them if appropriate:
+        </p>
+        <ul>
+          <li>
+            <p>
+              <code>org.openide.compiler.CompilationEngine</code>, in order to
+              call <code>CompilationEngine.getDefault()</code>, or safely use
+              <code>AbstractCompileAction</code> or one of its subclasses, or
+              call <code>CompilerJob.start()</code>, or use
+              <code>BeanInfo</code>s for Compiler API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.execution.ExecutionEngine</code>, in order to
+              call <code>ExecutionEngine.getDefault()</code>, or safely use
+              <code>ExecuteAction</code>, or call
+              <code>Executor.execute(...)</code>, or use <code>BeanInfo</code>s
+              for Execution API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.windows.IOProvider</code>, in order to call
+              <code>IOProvider.getDefault()</code>.
+            </p>
+          </li>
+        </ul>
+        <p>
+          Other minor changes:
+        </p>
+        <ul>
+          <li>
+            <p>
+              Registration of URL stream handler factories using
+              <code>NbfsStreamHandlerFactory.register(...)</code> is deprecated.
+              Simply create an instance of <code>URLStreamHandlerFactory</code>
+              and add it to Lookup instead.
+            </p>
+          </li>
+          <li>
+            <p>
+              The method <code>FileUtil.nbfsURLStreamHandler</code> was added,
+              but is not intended for use by modules.
+            </p>
+          </li>
+          <li>
+            <p>
+              All uses of <code>ExecInfo</code> are deprecated as they abuse the
+              distinction between Filesystems and the user classpath. Use and
+              override only <code>Executor.execute(DataObject)</code>. Similarly,
+              <code>ThreadExecutor</code> is deprecated for the time being
+              because it suffers from similar problems.
+            </p>
+          </li>
+          <li>
+            <p>
+              Direct use of <code>NbfsURLConnection</code> is deprecated in favor
+              of the more general <code>URLMapper</code> from the Filesystems
+              API.
+            </p>
+          </li>
+          <li>
+            <p>
+              Package dependencies on
+              <code>org.netbeans.lib.terminalemulator</code> must be replaced
+              with module dependencies on a new autoload module
+              <code>org.netbeans.lib.terminalemulator</code> (version 1.0).
+            </p>
+          </li>
+          <li>
+            <p>
+              Several static convenience methods have been added to
+              <code>AbstractCompileAction</code>. Of most interest is
+              <code>prepareJobFor</code>. Module code should no longer assume
+              that <code>DataFolder</code> has a <code>CompilerCookie</code>
+              which recursively compiles the folder and subfolders (according to
+              depth); while it is still true, for reasons of compatibility, new
+              code should use <code>prepareJobFor</code> to create a compiler job
+              from a folder.
+            </p>
+          </li>
+        </ul>
+      </description>
+      <class package="org.openide.actions" name="AbstractCompileAction"/>
+      <class package="org.openide.actions" name="BuildAction"/>
+      <class package="org.openide.actions" name="BuildAllAction"/>
+      <class package="org.openide.actions" name="CleanAction"/>
+      <class package="org.openide.actions" name="CleanAllAction"/>
+      <class package="org.openide.actions" name="CompileAction"/>
+      <class package="org.openide.actions" name="CompileAllAction"/>
+      <class package="org.openide.actions" name="ExecuteAction"/>
+      <class package="org.openide.cookies" name="ArgumentsCookie"/>
+      <class package="org.openide.cookies" name="CompilerCookie"/>
+      <class package="org.openide.cookies" name="ExecCookie"/>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+      <class package="org.openide.loaders" name="CompilerSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <class package="org.openide.windows" name="InputOutput"/>
+      <class package="org.openide.windows" name="OutputEvent"/>
+      <class package="org.openide.windows" name="OutputListener"/>
+      <class package="org.openide.windows" name="OutputWriter"/>
+      <package name="org.openide.compiler"/>
+      <package name="org.openide.execution"/>
+      <issue number="19443"/>
+    </change>
+<change>
+        <api name="explorer"/>
+        <summary>Add generic help support to property editors</summary>
+        <version major="2" minor="7"/>
+        <date day="6" month="3" year="2002"/>
+        <author login="akemr"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description> New property PROPERTY_HELP_ID added to improve generic help 
+        support to property editors.
+        </description>
+        <class package="org.openide.explorer.propertysheet" name="ExPropertyEditor"/>
+        <issue number="19294"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>Constructor DefaultPropertyModel (bean, propertyDescriptor) added</summary>
+      <version major="2" minor="4"/>
+      <date day="20" month="2" year="2002"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="no" deprecation="no" binary="compatible" source="compatible" semantic="compatible" deletion="no"/>
+      <description>
+        <p>
+	       New constructor to make DefaultPropertyModel more easily usable with PropertyDescriptor created by hand 
+      	       and not obtained from BeanInfo.        
+        </p>
+      </description>
+      <class package="org.openide.explorer.propertysheet" name="DefaultPropertyModel"/>
+      <issue number="20601"/>
+  </change>
+<change>
+      <api name="explorer"/>
+      <summary>The whole <code>org.openide.explorer.propertysheet.editors</code> package is deprecated</summary>
+      <compatibility deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no" modification="no"/>
+      <description>
+        <p>
+        The entire
+        <code>org.openide.explorer.propertysheet.editors</code>
+        package is
+        <a href="http://openide.netbeans.org/proposals/ReasonsToDeleteEditorsPackage.html" shape="rect">generally deprecated</a>
+        and no longer included in Javadoc.
+        </p>
+        <p>
+          As of 3.14, this package is again included in the Javadoc, though only
+          only a few interfaces remain, and of these several are in fact
+          deprecated, and the rest will probably be deprecated at some point.
+        </p>
+      </description>
+      <package name="org.openide.explorer.propertysheet.editors"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>New property changesImmediate in <code>PropertyPanel</code>
+</summary>
+      <date day="22" month="8" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no">
+        Added two public methods to class PropertyPanel: <code>public boolean
+        isChangeImmediate();</code> and <code>public void
+        setChangeImmediate(boolean b);</code>
+      </compatibility>
+      <description>
+      The added property allows to control whether the changes fired from
+property editor are immediately propagated to the value of the property
+(more precisely to the property model).
+      </description>
+      <class package="org.openide.explorer.propertysheet" name="PropertyPanel"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>
+<code>PropertyEnv</code> can control validation state</summary>
+      <date day="9" month="7" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        New constants and methods added to the class <code>PropertyEnv</code>:
+<pre xml:space="preserve">public static final String PROP_STATE;
+public static final Object STATE_VALID;
+public static final Object STATE_NEEDS_VALIDATION;
+public static final Object STATE_INVALID;
+public void setState (Object state);
+public Object getState ();
+public void addVetoableChangeListener(VetoableChangeListener l);
+public void removeVetoableChangeListener(VetoableChangeListener l);</pre>
+        <br/>
+        The added methods allow to modify the state of the "environment" from 
+        a property editor. They also allow listening on such changes and
+        veto the change if needed.
+        The changes were described <a href="http://openide.netbeans.org/proposals/propertyPanel-changes.html" shape="rect">here</a>
+        and also the API documentation for the class <code>PropertyEnv</code> should
+        provide information on what they do.
+      </description>
+      <class package="org.openide.explorer.propertysheet" name="PropertyEnv"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>Moved validity check into <code>ExPropertyEditor</code>
+</summary>
+      <date day="30" month="10" year="2000"/>
+      <compatibility addition="yes" deletion="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" modification="no">
+        Deletion from newly added <code>PropertyEnv</code> only.
+      </compatibility>
+      <description>
+        Minor change to the new class <code>PropertyEnv</code>: removed methods
+        <code>set</code>/<code>isValid</code> from <code>PropertyEnv</code> and
+        introduced new constant <code>PROP_VALUE_VALID</code> in the
+        <code>ExPropertyEditor</code>.
+      </description>
+      <class package="org.openide.explorer.propertysheet" name="PropertyEnv"/>
+      <class package="org.openide.explorer.propertysheet" name="ExPropertyEditor"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>
+<code>ExPropertyEditor</code> added and used</summary>
+      <date day="25" month="10" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        New interface <code>ExPropertyEditor</code> added to the package <code>org.openide.explorer.propertysheet</code>.
+        It extends <code>PropertyEditor</code> allowing to pass information to the
+        property editor by passing an instance of <code>PropertyEnv</code> class - this
+        class was also added. To be able to pass the required information
+        the <code>PropertyModel</code> interface was also extended to <code>ExPropertyModel</code>.
+        <code>DefaultPropertyModel</code> was modified to implement the new interface
+        <code>ExPropertyModel</code> (instead of <code>PropertyModel</code>).
+      </description>
+      <class package="org.openide.explorer.propertysheet" name="ExPropertyEditor"/>
+      <class package="org.openide.explorer.propertysheet" name="DefaultPropertyModel"/>
+      <class package="org.openide.explorer.propertysheet" name="PropertyEnv"/>
+      <class package="org.openide.explorer.propertysheet" name="ExPropertyModel"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>Property editor for <code>File</code> accepts hint <code>baseDir</code>
+</summary>
+      <date day="25" month="9" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        The property editor for <code>java.io.File</code> may now be given the
+        property hint <code>baseDir</code> specifying a directory from which
+        relative filenames edited by the editor may be resolved.
+      </description>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>Property editor for <code>DataObject</code> accepts hint <code>rootNode</code>
+</summary>
+      <version major="1" minor="41"/>
+      <date day="19" month="10" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        The property editor for <code>org.openide.loaders.DataObject</code> may now be given the
+        property hint <code>rootNode</code> specifying a root node of displyed nodes hierarchy.
+        If omited filesystems repository root node is used instead.
+      </description>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>
+<code>PropertyDialogManager</code> removed</summary>
+      <date day="31" month="5" year="2000"/>
+      <compatibility deletion="yes" source="incompatible" binary="compatible" semantic="compatible" deprecation="no" addition="no" modification="no">
+        First broken, later restored binary compatibility in trunk and
+        <code>boston</code>. Code referring to this class can generally be easily
+        rewritten to simply embed the supplied component in a dialog and show that
+        dialog.
+      </compatibility>
+      <description>
+        Made inaccessible. No one should have been using this class outside its
+        package to begin with, it was public by accident.
+      </description>
+      <class package="org.openide.explorer.propertysheet" name="PropertyDialogManager"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>
+<code>SetDefaultValueAction</code> removed</summary>
+      <date day="30" month="11" year="2000"/>
+      <author login="jglick"/>
+      <compatibility deletion="yes" source="incompatible" binary="compatible" semantic="compatible" deprecation="no" addition="no" modification="no"/>
+      <description>
+        Made inaccessible. No reason for it to have been public.
+      </description>
+      <class package="org.openide.explorer.propertysheet" name="SetDefaultValueAction"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>
+<code>BeanTreeView.selectionChanged</code> made protected, not public</summary>
+      <date day="6" month="11" year="2000"/>
+      <compatibility modification="yes" source="incompatible" binary="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        Method <code>selectionChanged</code> made protected, not public, to match
+        the access mode of the method it was implementing in
+        <code>TreeView</code>. Code calling it as public is erroneous.
+      </description>
+      <class package="org.openide.explorer.view" name="BeanTreeView"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>Deserialization of explorer managers and panels may throw <code>SafeException</code>
+</summary>
+      <date day="9" month="3" year="2000"/>
+      <author login="jglick"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        <code>readExternal</code> of <code>ExplorerPanel</code> or deserialization
+        of <code>ExplorerManager</code> may throw <code>SafeException</code> to
+        indicate a failure in the loading of the manager's handles, but the stream
+        is OK.
+      </description>
+      <class package="org.openide.explorer" name="ExplorerPanel"/>
+      <class package="org.openide.explorer" name="ExplorerManager"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>
+<code>MenuView.Acceptor</code> deprecated and not used</summary>
+      <date day="5" month="9" year="2000"/>
+      <compatibility deprecation="yes" binary="incompatible" source="incompatible" semantic="compatible" addition="no" deletion="no" modification="no">
+        Subclasses accessing the <code>action</code> field will be broken.
+      </compatibility>
+      <description>
+        Interface <code>MenuView.Acceptor</code> is now deprecated. It is
+        recommended to use <code>nodes.NodeAcceptor</code> over
+        <code>MenuView.Acceptor</code>, which will be probably removed entirely in
+        future. The protected field <code>action</code> in both
+        <code>MenuView.Menu</code> and <code>MenuView.MenuItem</code> has changed
+        type to be <code>NodeAcceptor</code>.
+      </description>
+      <class package="org.openide.explorer.view" name="MenuView"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>Set explored context while selecting nodes</summary>
+      <date day="13" month="9" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        New method <code>setExploredContext</code> added with a second parameter
+        giving nodes which are to be selected.
+      </description>
+      <class package="org.openide.explorer" name="ExplorerManager"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>Set explored context while selecting nodes (and throw an exception)</summary>
+      <date day="20" month="2" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        New method <code>public final void setExploredContextAndSelection(Node
+        value, Node[] selection) throws PropertyVetoException</code> added to the
+        class <code>ExplorerManager</code>. It is replacement for the
+        <code>setExploredContext</code> method which should throw the exception.
+      </description>
+      <class package="org.openide.explorer" name="ExplorerManager"/>
+    </change>
+<change>
+      <api name="explorer"/>
+      <summary>Table explorer views added</summary>
+      <version major="1" minor="7"/>
+      <date day="7" month="5" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        New explorer views permit viewing of a list of tree of nodes with
+        properties displayed in tabular form.
+      </description>
+      <class package="org.openide.explorer.view" name="NodeTableModel"/>
+      <class package="org.openide.explorer.view" name="TreeTableView"/>
+      <class package="org.openide.explorer.view" name="ListTableView"/>
+    </change>
+</changes>
+<htmlcontents>
+<head>
+<title>Change History for the Explorer API</title>
+<link rel="stylesheet" href="prose.css" type="text/css"/>
+</head>
+<body>
+<p class="overviewlink">
+<a href="overview-summary.html">Overview</a>
+</p>
+<h1>Introduction</h1>
+<h2>What do the Dates Mean?</h2>
+<p>The supplied dates indicate when the API change was made, on the CVS
+trunk. From this you can generally tell whether the change should be
+present in a given build or not; for trunk builds, simply whether it
+was made before or after the change; for builds on a stabilization
+branch, whether the branch was made before or after the given date. In
+some cases corresponding API changes have been made both in the trunk
+and in an in-progress stabilization branch, if they were needed for a
+bug fix; this ought to be marked in this list.</p>
+<ul>
+<li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
+Specification versions: 6.0 begins after this point.</li>
+<li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
+Specification versions: 5.0 begins after this point.</li>
+</ul>
+<hr/>
+<standard-changelists module-code-name="org.openide.explorer"/>
+<hr/>
+<p>@FOOTER@</p>
+</body>
+</htmlcontents>
+</apichanges>
