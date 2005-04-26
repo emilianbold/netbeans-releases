@@ -2684,12 +2684,14 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <!-- build javadoc for selected modules -->
   <target name="build-javadoc" depends="set-config-to-javadoc,init" description="Builds Javadoc documentation for modules; on branches pass e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
+  <!--
       <ant dir="." target="merge">
           <property name="modules" value="${modules}"/>
           <property name="fixedmodules" value="${fixedmodules}"/>
           <property name="merge.dependent.modules" value="true"/>
           <property name="stop.when.broken.module" value="false"/>
       </ant>
+      -->
       
       <mkdir dir="build/ModulesExportedInterfaces" />
       <property name="export.interfaces" location="build/ModulesExportedInterfaces" />
