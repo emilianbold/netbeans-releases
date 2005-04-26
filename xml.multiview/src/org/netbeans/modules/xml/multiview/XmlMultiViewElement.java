@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.xml.multiview;
 
-import org.openide.windows.TopComponent;
+import org.openide.text.CloneableEditor;
 
 import javax.swing.*;
 
@@ -26,7 +26,7 @@ import javax.swing.*;
 public class XmlMultiViewElement extends AbstractMultiViewElement implements java.io.Serializable {
     static final long serialVersionUID = -326467724916080580L;
     
-    private TopComponent xmlTopComp;
+    private transient CloneableEditor xmlEditor;
     private transient javax.swing.JComponent toolbar;
 
     /** Creates a new instance of XmlMultiviewElement */
@@ -34,19 +34,18 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
     }
     
     /** Creates a new instance of XmlMultiviewElement */
-    public XmlMultiViewElement(TopComponent xmlTopComponent, XmlMultiViewDataObject dObj) {
+    public XmlMultiViewElement(XmlMultiViewDataObject dObj) {
         super(dObj);
-        this.xmlTopComp = xmlTopComponent;
     }
 
     public void componentOpened() {
         XmlMultiViewEditorSupport support = dObj.getEditorSupport();
-        if (support!=null) support.addListener();
+        if (support!=null) support.addXmlDocListener();
     }
 
     public void componentClosed() {
         XmlMultiViewEditorSupport support = dObj.getEditorSupport();
-        if (support!=null) support.removeListener();
+        if (support!=null) support.removeXmlDocListener();
     }
 
     public void componentDeactivated() {
@@ -62,11 +61,8 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
     }
 
     public org.openide.util.Lookup getLookup() {
-        if (xmlTopComp != null) {
-            return xmlTopComp.getLookup();
-        } else {
-            return null;
-        }
+        final CloneableEditor xmlEditor = getXmlEditor();
+        return xmlEditor != null ? xmlEditor.getLookup() : null;
     }
 
     public javax.swing.JComponent getToolbarRepresentation() {
@@ -88,9 +84,13 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
     }
 
     public javax.swing.JComponent getVisualRepresentation() {
-        if (xmlTopComp == null) {
-            xmlTopComp = dObj.getEditorSupport().createSuperCloneableComponent();
+        return getXmlEditor();
+    }
+
+    private CloneableEditor getXmlEditor() {
+        if (xmlEditor == null) {
+            xmlEditor = dObj.getEditorSupport().createCloneableEditor();
         }
-        return xmlTopComp;
+        return xmlEditor;
     }
 }

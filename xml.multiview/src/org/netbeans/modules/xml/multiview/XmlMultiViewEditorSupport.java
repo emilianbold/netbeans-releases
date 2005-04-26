@@ -29,6 +29,7 @@ import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.CloneableEditor;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
@@ -58,7 +59,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private XmlDocumentListener xmlDocListener;
     private int xmlMultiViewIndex;
     private TopComponent mvtc;
-    private TopComponent xmlTopComponent;
     private int lastOpenView=0;
     private StyledDocument document;
     private TopComponentsListener topComponentsListener;
@@ -83,9 +83,9 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         return super.getUndoRedo();
     }
     
-    /** method enabled to create super Cloneable TC 
+    /** method enabled to create Cloneable Editor
      */
-    CloneableTopComponent createSuperCloneableComponent() {
+    protected CloneableEditor createCloneableEditor() {
         return super.createCloneableEditor();
     }
     
@@ -107,7 +107,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private MultiViewDescription[] getMultiViewDescriptions() {
         if (multiViewDescriptions == null) {
             MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
-            MultiViewDescription xmlDesc = new XmlViewDesc(getXmlTopComponent(), dObj);
+            MultiViewDescription xmlDesc = new XmlViewDesc(dObj);
             multiViewDescriptions = new MultiViewDescription[customDesc.length + 1];
             for (int i = 0; i < customDesc.length; i++) {
                 multiViewDescriptions[i] = customDesc[i];
@@ -238,19 +238,17 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private static class XmlViewDesc implements MultiViewDescription, java.io.Serializable  {
 
         private static final long serialVersionUID = 8085725367398466167L;
-        TopComponent xmlTopComponent;
         XmlMultiViewDataObject dObj;
 
         XmlViewDesc() {
         }
         
-        XmlViewDesc(TopComponent xmlTopComponent, XmlMultiViewDataObject dObj) {
-            this.xmlTopComponent = xmlTopComponent;
+        XmlViewDesc(XmlMultiViewDataObject dObj) {
             this.dObj=dObj;
         }
 
         public MultiViewElement createElement() {
-            return new XmlMultiViewElement(xmlTopComponent, dObj);
+            return new XmlMultiViewElement(dObj);
         }
         
         public String getDisplayName() {
@@ -285,19 +283,12 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             TopComponent.getRegistry().addPropertyChangeListener(topComponentsListener);
         }
     }
-    
-    public TopComponent getXmlTopComponent() {
-        if (xmlTopComponent == null) {
-            xmlTopComponent = createCloneableEditor();
-        }
-        return xmlTopComponent;
-    }
 
     void setLastOpenView(int index) {
         lastOpenView=index;
     }
     
-    void addListener() {
+    void addXmlDocListener() {
         if (xmlDocListener==null) {
             xmlDocListener = new XmlDocumentListener();
             try {
@@ -307,11 +298,13 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         }
     }
     
-    void removeListener() {
-        if (xmlDocListener != null) {
-            document.removeDocumentListener(xmlDocListener);
-            document = null;
-            xmlDocListener = null;
+    void removeXmlDocListener() {
+        if (getOpenedPanes() == null) {
+            if (xmlDocListener != null) {
+                document.removeDocumentListener(xmlDocListener);
+                document = null;
+                xmlDocListener = null;
+            }
         }
     }
 
