@@ -29,6 +29,7 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.InvalidRequestStateException;
+import com.sun.jdi.request.StepRequest;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -692,6 +693,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public void suspend () {
         synchronized (LOCK) {
+            if (getState () == STATE_STOPPED)
+                return;
             if (virtualMachine != null)
                 virtualMachine.suspend ();
             setState (STATE_STOPPED);
@@ -849,7 +852,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         l.addAll (erm.methodEntryRequests ());
         l.addAll (erm.methodExitRequests ());
         l.addAll (erm.modificationWatchpointRequests ());
-        l.addAll (erm.stepRequests ());
+//        l.addAll (erm.stepRequests ());
         l.addAll (erm.threadDeathRequests ());
         l.addAll (erm.threadStartRequests ());
         int i = l.size () - 1;

@@ -168,7 +168,7 @@ implements Executor {
             //S ystem.out.println("/nStepAction.exec");
 
             // 1) remove step request
-            removeStepRequests (((LocatableEvent) ev).thread ());
+            //removeStepRequests (((LocatableEvent) ev).thread ());
             
             // 2) init info about current state
             LocatableEvent event = (LocatableEvent) ev;

@@ -167,6 +167,9 @@ implements Executor, PropertyChangeListener {
             if (ssverbose)
                 System.out.println("SS:  => do next step!");
             if (smartSteppingStepOut)
+                //TODO following line of code is wrong !
+                // step out implementation calls getDebuggerImpl ().resume ();
+                // such code should not be called from operator!
                 getStepActionProvider().doAction(ActionsManager.ACTION_STEP_OUT);
             else
             if (stepRequest != null)
