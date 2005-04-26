@@ -264,10 +264,29 @@ public class UpdateHelper {
         //add properties needed by 4.1 project
         if(props != null) {
             props.put("test.src.dir", "test"); //NOI18N
-            props.put("build.test.classes.dir", ""); //NOI18N
-            props.put("build.test.results.dir", ""); //NOI18N
+            props.put("build.test.classes.dir", "${build.dir}/test/classes"); //NOI18N
+            props.put("build.test.results.dir", "${build.dir}/test/results"); //NOI18N
             props.put("conf.dir","${source.root}/conf"); //NOI18N
             props.put("jspcompilation.classpath", "${jspc.classpath}:${javac.classpath}");
+            
+            props.setProperty(WebProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
+                "${javac.classpath}:", // NOI18N
+                "${build.classes.dir}:", // NOI18N
+                "${libs.junit.classpath}", // NOI18N
+            });
+            props.setProperty(WebProjectProperties.RUN_TEST_CLASSPATH, new String[] {
+                "${javac.test.classpath}:", // NOI18N
+                "${build.test.classes.dir}", // NOI18N
+            });
+            props.setProperty(WebProjectProperties.DEBUG_TEST_CLASSPATH, new String[] {
+                "${run.test.classpath}", // NOI18N
+            });
+            
+            props.put(WebProjectProperties.BUILD_EAR_CLASSES_DIR, "${build.ear.web.dir}/WEB-INF/classes");
+            props.put(WebProjectProperties.BUILD_EAR_WEB_DIR, "${build.dir}/ear-module");
+            props.put(WebProjectProperties.WAR_EAR_NAME, props.getProperty(WebProjectProperties.WAR_NAME));
+            props.put(WebProjectProperties.DIST_WAR_EAR, "${dist.dir}/${war.ear.name}");
+            
             if (props.getProperty(WebProjectProperties.LIBRARIES_DIR) == null) {
                 props.setProperty(WebProjectProperties.LIBRARIES_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/WEB-INF/lib"); //NOI18N
             }
