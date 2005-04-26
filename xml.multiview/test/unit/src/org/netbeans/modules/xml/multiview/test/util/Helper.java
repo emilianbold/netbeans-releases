@@ -12,10 +12,7 @@
  */
 package org.netbeans.modules.xml.multiview.test.util;
 
-import java.io.File;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.UnresolvedClass;
+import java.io.*;
 import org.openide.filesystems.FileStateInvalidException;
 
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
@@ -47,6 +44,15 @@ public class Helper {
             }
         }
         return  null;
+    }
+    
+    public static boolean isTextInFile(String text, File file) throws java.io.IOException {
+        java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file));
+        String line;
+        while ((line=reader.readLine())!=null) {
+            if (line.indexOf(text)>=0) return true;
+        }
+        return false;
     }
     
 }

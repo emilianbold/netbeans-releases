@@ -110,8 +110,8 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         
         // test to golden file
         File original = Helper.getBookFile(getDataDir());
-        String golden = "ChangedChapterLength.pass";
-        assertFile(original, getGoldenFile(golden), getWorkDir());
+        assertTrue("File doesn't contain the text : <chapter length=\"110\">",
+                    Helper.isTextInFile("<chapter length=\"110\">",original));
     }
     
     public void testChangeModelInDesignView() throws IOException {
@@ -155,8 +155,8 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         
         // test to golden file
         File original = Helper.getBookFile(getDataDir());
-        String golden = "ChangedChapterTitle.pass";
-        assertFile(original, getGoldenFile(golden), getWorkDir());
+        assertTrue("File doesn't contain the text : <title lang=\"en\">The garden full of beans</title>",
+                    Helper.isTextInFile("<title lang=\"en\">The garden full of beans</title>",original));
     }
     
     public void testExternalChange() throws IOException {
@@ -191,7 +191,8 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         XmlMultiViewEditorSupport editor  = (XmlMultiViewEditorSupport)bookDO.getCookie(EditorCookie.class);
         javax.swing.text.Document doc = editor.getDocument();
         try {
-            assertTrue("Document doesn't contain exetrnal changes: ",doc.getText(0,doc.getLength()).indexOf("22")>0);
+            assertTrue("XML document doesn't contain the external changes: ",
+                        doc.getText(0,doc.getLength()).indexOf("<chapter length=\"122\">")>0);
         } catch (javax.swing.text.BadLocationException ex) {
             throw new AssertionFailedErrorException(ex);
         }
