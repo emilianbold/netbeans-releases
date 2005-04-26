@@ -26,6 +26,6 @@ Author: Jiri.Skrivanek@sun.com
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/jemmy-api.zip!/</resource>
+        <resource>jar:nbinst:///docs/org-netbeans-jemmy.zip!/</resource>
     </volume>
 </library>
