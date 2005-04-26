@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+--><!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+<apidefs>
+<apidef name="dialogs">Dialogs API</apidef>
+</apidefs>
+<changes>
+<change id="NotifyDescriptor.getDefaultValue">
+       <api name="dialogs"/>
+       <summary>Add method <code>NotifyDescriptor.getDefaultValue()</code> </summary>
+       <version major="5" minor="999999999"/>
+       <date day="28" month="3" year="2005"/>
+       <author login="jrechtacek"/>
+       <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+       <description>
+         The <code>NotifyDescriptor.getDefaultValue()</code> returns object which represents the default value.
+         This default value is introduced in the constructor of <code>NotifyDescriptor</code>.
+       </description>
+       <class package="org.openide" name="NotifyDescriptor"/>
+       <issue number="56878"/>
+    </change>
+<change id="add-leaf-attribute-to-DialogDescriptor">
+      <api name="dialogs"/>
+      <summary>Added paramater <code>leaf</code> to <code>DialogDescriptor</code>
+</summary>
+      <version major="5" minor="5"/>
+      <date day="8" month="1" year="2005"/>
+      <author login="jrechtacek"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <p>Added the parameter <code>leaf</code> in constructor of the <code>DialogDescriptor</code>.
+        The parameter is not mandatory and can be set manually.
+        If this parameter is <code>false</code> (as default), all works as before.
+        If the parameter <code>leaf</code> is <code>true</code>, then a dialog which is created by this
+        descriptor cannot own any other windows.
+        </p>
+      </description>
+      <class package="org.openide" name="DialogDescriptor"/>
+    </change>
+<change>
+     <api name="dialogs"/>
+     <summary>Added WizardDescriptor.getInstantiatedObjects</summary>
+     <version major="4" minor="41"/>
+     <date day="2" month="7" year="2004"/>
+     <author login="jrechtacek"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        Added the new method <code>Set getInstantiatedObjects</code>. This method
+        returns set of newly instantiated objects if the wizard has been correctly finished.
+        The empty set is returned as default, if the wizard uses the <code>InstantiatingIterator</code>
+        then returns a set of <code>Object</code> as same as <code>InstantiatingIterator.instantiate()</code> does.
+        The method throws the exception <code>IllegalStateException</code> if this method
+        is called on the unfinished wizard.
+     </description>
+     <class package="org.openide" name="WizardDescriptor"/>
+     <issue number="44513"/>
+     </change>
+<change>
+     <api name="dialogs"/>
+     <summary>Made instantiating iterator</summary>
+     <version major="4" minor="33"/>
+     <date day="4" month="5" year="2004"/>
+     <author login="jrechtacek"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+     Added a special interface for a wizard that needs to controll instantiating new objects.
+     This interface can replace TemplateWizard.Iterator in template's declaration.
+     New <code>WizardDescriptor.InstantiatingIterator</code> extends <code>WizardDescriptor.Iterator</code>
+     and contains the methods for <code>initialize/uninitialize</code> the iterator and the central method
+     <code>instantiate</code> which returns a set on instantiated objects.
+     </description>
+     <class package="org.openide" name="WizardDescriptor"/>
+     <issue number="42192"/>
+    </change>
+<change>
+     <api name="dialogs"/>
+     <summary>Allow dynamically enable/disable Finish button</summary>
+     <version major="4" minor="28"/>
+     <date day="29" month="3" year="2004"/>
+     <author login="jrechtacek"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+     Added a special interface for a panel that needs to dynamically enabled
+     <code>Finish</code> button. This interface <code>WizardDescriptor.FinishablePanel</code> 
+     extends <code>WizardDescriptor.Panel</code> and adds a method <code>isFinishPanel()</code>
+     which returns if <code>Finish</code> button could be enabled. <code>WizardDescriptor.FinishPanel</code>
+     is now deprecated, the preferred way is using <code>FinishablePanel</code> instead.
+     </description>
+     <class package="org.openide" name="WizardDescriptor"/>
+     <issue number="7706"/>
+    </change>
+<change>
+     <api name="dialogs"/>
+     <summary>Allow vetoable Next/Finish validation in wizard</summary>
+     <version major="4" minor="28"/>
+     <date day="29" month="3" year="2004"/>
+     <author login="jrechtacek"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+     Added a special interface for panels that need to do additional
+     validation when <code>Next</code> or <code>Finish</code> button is clicked.
+     This interface <code>WizardDescriptor.ValidatingPanel</code> extends <code>WizardDescriptor.Panel</code>
+     and adds a method <code>validate()</code> which is called when un user clicked <code>Next</code>
+     or <code>Finish</code> button. If validation fails  the wizard doesn't move to next panel nor finish, 
+     the <code>WizardValidationException</code> is thrown and it returns which component
+     fails (in a wizard's panel) and provides a error message to notify the user about.
+     </description>
+     <class package="org.openide" name="WizardDescriptor"/>
+     <class package="org.openide" name="WizardValidationException"/>
+     <issue number="23116"/>
+    </change>
+<change id="issue-19443-1">
+      <summary>API separation, phase I</summary>
+      <version major="3" minor="14"/>
+      <date day="15" month="10" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" deprecation="yes" semantic="compatible" addition="no" deletion="no" modification="no">
+        <p>
+          The deprecated classes continue to be available in the module
+          <code>org.openide.deprecated</code> which you may depend on it you
+          cannot remove uses of the deprecated APIs. In order for
+          <code>TopManager.getDefault()</code> to work, you must also require the
+          token <code>org.openide.TopManager</code>, which is provided by an
+          unspecified module. The deprecated API module and its implementation
+          module are autoloads, meaning they will not be loaded unless some
+          module still requires them.
+        </p>
+        <p>
+          Similarly, the Java Hierarchy API was moved to the module
+          <code>org.openide.src</code> which you should depend on in order to use
+          this API.
+        </p>
+        <p>
+          For compatibility, the above three dependencies are added to your module
+          <em>automatically</em> in case it either requests no specific API
+          version at all, or requests an API version prior to 3.14. Modules
+          requesting APIs 3.14 or higher must declare these dependencies
+          explicitly if they in fact need them.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Many classes were moved to a separate module,
+          <samp>openide-deprecated.jar</samp>, not available to modules by
+          default. Uses of these classes in modules should be cleaned up whenever
+          possible.
+        </p>
+        <p>
+          Additionally, the entire contents of <code>org.openide.src.*</code> and
+          <code>org.openide.src.nodes.*</code>, as well as
+          <code>org.openide.cookies.SourceCookie</code> and some associated
+          property editors, were moved to a separate module.
+        </p>
+        <p>
+          The most common apparent symptom for module authors will be the absence
+          of <code>TopManager</code>. Most methods in this class have been
+          replaced by newer utility classes in a straightforward manner. See the
+          Upgrade Guide.
+        </p>
+      </description>
+      <class package="org.openide" name="DialogDisplayer"/>
+      <class package="org.openide" name="LifecycleManager"/>
+      <class package="org.openide" name="Places"/>
+      <class package="org.openide" name="TopManager"/>
+      <class package="org.openide.actions" name="AddWatchAction"/>
+      <class package="org.openide.actions" name="BuildProjectAction"/>
+      <class package="org.openide.actions" name="CompileProjectAction"/>
+      <class package="org.openide.actions" name="DebugProjectAction"/>
+      <class package="org.openide.actions" name="ExecuteProjectAction"/>
+      <class package="org.openide.actions" name="FinishDebuggerAction"/>
+      <class package="org.openide.actions" name="GoAction"/>
+      <class package="org.openide.actions" name="GoToCursorAction"/>
+      <class package="org.openide.actions" name="HelpAction"/>
+      <class package="org.openide.actions" name="OpenProjectAction"/>
+      <class package="org.openide.actions" name="SaveProjectAction"/>
+      <class package="org.openide.actions" name="StartDebuggerAction"/>
+      <class package="org.openide.actions" name="StepOutAction"/>
+      <class package="org.openide.actions" name="ToggleBreakpointAction"/>
+      <class package="org.openide.actions" name="TraceIntoAction"/>
+      <class package="org.openide.actions" name="TraceOverAction"/>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+      <class package="org.openide.awt" name="StatusDisplayer"/>
+      <class package="org.openide.cookies" name="DebuggerCookie"/>
+      <class package="org.openide.cookies" name="ElementCookie"/>
+      <class package="org.openide.cookies" name="ProjectCookie"/>
+      <class package="org.openide.cookies" name="SourceCookie"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ChoicePropertyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="DirectoryOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ElementFormatEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ExternalCompiler"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IconEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IdentifierArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="MethodParameterArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ModifierEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomizable"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="TypeEditor"/>
+      <class package="org.openide.loaders" name="DataObjectFilter"/>
+      <class package="org.openide.loaders" name="ExecSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.loaders" name="ExtensionListEditor"/>
+      <class package="org.openide.loaders" name="RepositoryNodeFactory"/>
+      <class package="org.openide.modules" name="IllegalModuleException"/>
+      <class package="org.openide.modules" name="ManifestSection"/>
+      <class package="org.openide.modules" name="ModuleDescription"/>
+      <class package="org.openide.nodes" name="NodeOperation"/>
+      <class package="org.openide.options" name="ControlPanel"/>
+      <class package="org.openide.util.actions" name="ProjectSensitiveAction"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <package name="org.openide.debugger"/>
+      <package name="org.openide.src"/>
+      <package name="org.openide.src.nodes"/>
+      <issue number="19443"/>
+      <issue number="20898"/>
+    </change>
+<change id="issue-19443-2">
+      <summary>API separation, phase II</summary>
+      <version major="3" minor="17"/>
+      <date day="1" month="11" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" modification="yes" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        <p>
+          Module authors using the now-separated APIs will need to adjust their
+          compilation classpaths to include the new JAR files. Modules wishing to
+          use recent APIs and declaring a current openide specification version
+          dependency will need to explicitly declare dependencies on these new
+          APIs if there are any.
+        </p>
+        <p>
+          For compatibility, modules with no declared Open APIs dependency, or
+          declared on a version prior to 3.17, will have their dependencies
+          automatically refined as if to include the declarations:
+        </p>
+        <pre xml:space="preserve">
+OpenIDE-Module-Module-Dependencies: org.openide.compiler &gt; 1.0,
+  org.openide.execution &gt; 1.0, org.openide.io &gt; 1.0
+OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
+  org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
+        </pre>
+        <p>
+          And any package dependencies from old modules on
+          <code>org.netbeans.lib.terminalemulator</code> will be converted to
+          module dependencies.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Three sections of the Open APIs were split into new autoload modules.
+        </p>
+        <ul>
+          <li>
+            <p>
+              The module <code>org.openide.compiler</code> (version 1.0) contains
+              the Compiler API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.execution</code> (version 1.0) contains
+              the Execution API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.io</code> (version 1.0) contains
+              <code>InputOutput</code> and related classes (formerly part of the
+              Window System API, and still physically in the
+              <code>org.openide.windows</code> package).
+            </p>
+          </li>
+        </ul>
+        <p>
+          New modules wishing to use these APIs must declare regular module
+          dependencies on them. Future changes in these APIs will be documented
+          separately.
+        </p>
+        <p>
+          Furthermore, modules wishing to use certain services must
+          <code>OpenIDE-Module-Require</code> them if appropriate:
+        </p>
+        <ul>
+          <li>
+            <p>
+              <code>org.openide.compiler.CompilationEngine</code>, in order to
+              call <code>CompilationEngine.getDefault()</code>, or safely use
+              <code>AbstractCompileAction</code> or one of its subclasses, or
+              call <code>CompilerJob.start()</code>, or use
+              <code>BeanInfo</code>s for Compiler API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.execution.ExecutionEngine</code>, in order to
+              call <code>ExecutionEngine.getDefault()</code>, or safely use
+              <code>ExecuteAction</code>, or call
+              <code>Executor.execute(...)</code>, or use <code>BeanInfo</code>s
+              for Execution API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.windows.IOProvider</code>, in order to call
+              <code>IOProvider.getDefault()</code>.
+            </p>
+          </li>
+        </ul>
+        <p>
+          Other minor changes:
+        </p>
+        <ul>
+          <li>
+            <p>
+              Registration of URL stream handler factories using
+              <code>NbfsStreamHandlerFactory.register(...)</code> is deprecated.
+              Simply create an instance of <code>URLStreamHandlerFactory</code>
+              and add it to Lookup instead.
+            </p>
+          </li>
+          <li>
+            <p>
+              The method <code>FileUtil.nbfsURLStreamHandler</code> was added,
+              but is not intended for use by modules.
+            </p>
+          </li>
+          <li>
+            <p>
+              All uses of <code>ExecInfo</code> are deprecated as they abuse the
+              distinction between Filesystems and the user classpath. Use and
+              override only <code>Executor.execute(DataObject)</code>. Similarly,
+              <code>ThreadExecutor</code> is deprecated for the time being
+              because it suffers from similar problems.
+            </p>
+          </li>
+          <li>
+            <p>
+              Direct use of <code>NbfsURLConnection</code> is deprecated in favor
+              of the more general <code>URLMapper</code> from the Filesystems
+              API.
+            </p>
+          </li>
+          <li>
+            <p>
+              Package dependencies on
+              <code>org.netbeans.lib.terminalemulator</code> must be replaced
+              with module dependencies on a new autoload module
+              <code>org.netbeans.lib.terminalemulator</code> (version 1.0).
+            </p>
+          </li>
+          <li>
+            <p>
+              Several static convenience methods have been added to
+              <code>AbstractCompileAction</code>. Of most interest is
+              <code>prepareJobFor</code>. Module code should no longer assume
+              that <code>DataFolder</code> has a <code>CompilerCookie</code>
+              which recursively compiles the folder and subfolders (according to
+              depth); while it is still true, for reasons of compatibility, new
+              code should use <code>prepareJobFor</code> to create a compiler job
+              from a folder.
+            </p>
+          </li>
+        </ul>
+      </description>
+      <class package="org.openide.actions" name="AbstractCompileAction"/>
+      <class package="org.openide.actions" name="BuildAction"/>
+      <class package="org.openide.actions" name="BuildAllAction"/>
+      <class package="org.openide.actions" name="CleanAction"/>
+      <class package="org.openide.actions" name="CleanAllAction"/>
+      <class package="org.openide.actions" name="CompileAction"/>
+      <class package="org.openide.actions" name="CompileAllAction"/>
+      <class package="org.openide.actions" name="ExecuteAction"/>
+      <class package="org.openide.cookies" name="ArgumentsCookie"/>
+      <class package="org.openide.cookies" name="CompilerCookie"/>
+      <class package="org.openide.cookies" name="ExecCookie"/>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+      <class package="org.openide.loaders" name="CompilerSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <class package="org.openide.windows" name="InputOutput"/>
+      <class package="org.openide.windows" name="OutputEvent"/>
+      <class package="org.openide.windows" name="OutputListener"/>
+      <class package="org.openide.windows" name="OutputWriter"/>
+      <package name="org.openide.compiler"/>
+      <package name="org.openide.execution"/>
+      <issue number="19443"/>
+    </change>
+</changes>
+<htmlcontents>
+<head>
+<title>Change History for the Dialogs API</title>
+<link rel="stylesheet" href="prose.css" type="text/css"/>
+</head>
+<body>
+<p class="overviewlink">
+<a href="overview-summary.html">Overview</a>
+</p>
+<h1>Introduction</h1>
+<h2>What do the Dates Mean?</h2>
+<p>The supplied dates indicate when the API change was made, on the CVS
+trunk. From this you can generally tell whether the change should be
+present in a given build or not; for trunk builds, simply whether it
+was made before or after the change; for builds on a stabilization
+branch, whether the branch was made before or after the given date. In
+some cases corresponding API changes have been made both in the trunk
+and in an in-progress stabilization branch, if they were needed for a
+bug fix; this ought to be marked in this list.</p>
+<ul>
+<li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
+Specification versions: 6.0 begins after this point.</li>
+<li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
+Specification versions: 5.0 begins after this point.</li>
+</ul>
+<hr/>
+<standard-changelists module-code-name="org.openide.dialogs"/>
+<hr/>
+<p>@FOOTER@</p>
+</body>
+</htmlcontents>
+</apichanges>

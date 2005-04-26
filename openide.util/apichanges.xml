@@ -19,9 +19,92 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="lookup">Lookup API</apidef>
     <apidef name="util">Utilities API</apidef>
     <apidef name="xml">XML API</apidef>
+    <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
-<change id="excluding-lookup">
+    <change>
+      <api name="actions"/>
+      <summary>Can create textual icons for actions</summary>
+      <date day="23" month="3" year="2000"/>
+      <author login="jglick"/>
+      <compatibility addition="yes" modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+        <code>iconResource</code> may now return <code>null</code> to indicate no
+        icon. <code>getIcon(true)</code> may be used to get an icon created from
+        the label if there is no icon specified.
+      </description>
+      <class package="org.openide.util.actions" name="SystemAction"/>
+    </change>
+    <change>
+      <api name="actions"/>
+      <summary>
+        <code>SystemAction</code> refers to <code>Icon</code> rather than <code>ImageIcon</code>
+      </summary>
+      <date day="11" month="4" year="2000"/>
+      <author login="jglick"/>
+      <compatibility modification="yes" binary="compatible" source="incompatible" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        First broken, later restored binary compatibility in trunk and
+        <code>boston</code>. Any code explicitly using this calls before may break
+        (source code may be compatible in many cases; binary compatibility has
+        been preserved). These calls were known to be used only for
+        <code>Actions</code> to create presenters; normal code which constructs
+        <code>SystemAction</code>s and implements <code>iconResource</code> should
+        be unaffected. Actions using the "grouping action" template should check
+        their <code>getMenuPresenter</code> method which may be
+        binary-incompatible; it is easy to replace the code with safer code such
+        as:
+        <pre xml:space="preserve">
+<span class="comment">// ....
+</span>
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Icon</span> <span class="variable-name">icon</span> = <span class="constant">null</span>;
+<span class="comment">// ....
+</span>
+<span class="keyword">public</span> <span class="type">JMenuItem</span> <span class="function-name">getMenuPresenter</span>() {
+    <span class="type">JMenu</span> <span class="variable-name">menu</span> = <span class="keyword">new</span> <span class="type">JMenu</span>(getName ());
+    <span class="keyword">if</span> (icon == <span class="constant">null</span>) {
+        icon = <span class="keyword">new</span> <span class="type">ImageIcon</span>(MyAction.<span class="keyword">class</span>.getResource(iconResource()));
+    }
+    menu.setIcon(icon);
+    <span class="comment">// ....</span>
+</pre>
+      </compatibility>
+      <description>
+        <code>getIcon</code> and <code>setIcon</code> now use the interface
+        <code>Icon</code> rather than the particular implementation
+        <code>ImageIcon</code>. This corrects an API bug (excessive specificity).
+      </description>
+      <class package="org.openide.util.actions" name="SystemAction"/>
+    </change>
+    <change>
+        <api name="actions"/>
+        <summary>New Actions system - part I.</summary>
+        <version major="3" minor="29"/>
+        <date day="8" month="1" year="2003"/>
+        <author login="jtulach"/>
+        <author login="pzavadsky"/>
+        <compatibility deprecation="yes" addition="yes" modification="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no"/>
+        <description>
+            <p>
+            Introduction of new action system, which generally means
+            move from usage of <code>SystemAction</code> to <code>Action</code> instances.
+            Look at <a href="http://openide.netbeans.org/proposals/actions/index.html" shape="rect">
+            general proposal</a>. That document also focuses on declarative actions
+            usage which is not subject of current change, it will be part of later changes.
+            </p>
+<p>
+            Current change is described by <a href="http://openide.netbeans.org/proposals/actions/impl.html" shape="rect">
+            description of already implemented changes</a> which also summarizes
+            <a href="http://openide.netbeans.org/proposals/actions/impl.html#summaryAPI" shape="rect">
+            these API changes</a>.
+            </p>
+        </description>
+        <class package="org.openide.util" name="ContextAwareAction"/>
+        <class package="org.openide.util" name="Utilities"/>
+        <class package="org.openide.util.actions" name="CallbackSystemAction"/>
+        <issue number="27868"/>
+    </change>
+
+    <change id="excluding-lookup">
       <api name="lookup"/>
       <summary>
 <code>Lookups.exclude</code> added to simplify writing of lookups that filter content of other lookups</summary>
@@ -38,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
       <class package="org.openide.util.lookup" name="Lookups"/>
       <issue number="53058"/>
     </change>
-<change id="not-calling-CloneableEditorSupport-notifyModified-that-often">
+    <change id="not-calling-CloneableEditorSupport-notifyModified-that-often">
       <api name="lookup"/>
       <summary>
 <code>CloneableEditorSupport.notifyModified</code> is called only on first modification</summary>
@@ -1588,7 +1671,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
       <class package="org.openide.xml" name="EntityCatalog"/>
       <package name="org.openide.xml"/>
     </change>
-<change id="XMLUtil-1.29">
+    <change id="XMLUtil-1.29">
       <api name="xml"/>
       <summary>XML attribute and hexadecimal utilities added</summary>
       <version major="1" minor="29"/>
@@ -1601,7 +1684,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
       </description>
       <class package="org.openide.xml" name="XMLUtil"/>
     </change>
-<change>
+    <change>
       <api name="xml"/>
       <summary>XML attribute and hexadecimal utilities modified</summary>
       <version major="1" minor="40"/>

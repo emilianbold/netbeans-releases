@@ -1,0 +1,761 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+--><!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+<apidefs>
+<apidef name="text">Text API</apidef>
+</apidefs>
+<changes>
+<change id="Line.SHOW_TOFRONT">
+        <api name="text"/>
+        <summary>Added a new constant <code>Line.SHOW_TOFRONT</code>
+</summary>
+        <version major="5" minor="8"/>
+        <date day="21" month="3" year="2005"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            The new constant is used in the <code>EditorSupportLineSet</code> and brings 
+            editor's parent <code>Window</code> to be fronted above all other top-level windows.
+        </description>
+        <class package="org.openide.text" name="Line"/>
+        <issue number="47825"/>
+    </change>
+<change id="CloneableEditor-openAt">
+      <api name="text"/>
+      <summary>CloneableEditor.openAt made protected</summary>
+      <version major="5" minor="2"/>
+      <date day="6" month="12" year="2004"/>
+      <author login="pnejedly"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <p>Deprecated <code>EditorSupport</code> has had a method
+	<code>openAt</code>, which has no easy replacement in
+	<code>CloneableEditorSupport</code>.
+	The method is implemented in <code>CloneableEditorSupport</code>,
+	but is package private. This change makes it protected.
+        </p>
+      </description>
+      <class package="org.openide.text" name="CloneableEditorSupport"/>
+      <issue number="51441"/>
+    </change>
+<change id="CloneableEditorSupport.Pane">
+        <api name="text"/>
+        <summary>Enhance SPI interface for CloneableEditorSupport.Pane providers</summary>
+        <version major="4" minor="45"/>
+        <date day="24" month="8" year="2004"/>
+        <author login="mleint"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Additional method to <code>CloneableEditorSupport.Pane</code> interface,
+            <code>Pane.ensureVisible()</code>. The implementing classes should ensure that the pane's component
+            is open and visible after calling this method. Is used in <code>CloneableEditorSupport.openAt()</code>.
+        </description>
+        <issue number="46127"/>
+    </change>
+<change>
+     <api name="text"/>
+     <summary>Line.getOriginalLineNumber</summary>
+     <version major="4" minor="38"/>
+     <date day="8" month="6" year="2004"/>
+     <author login="jtulach"/>
+     <compatibility binary="compatible" addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        A method that for a given line computes its original
+        line number. Is useful when user edits text and places a breakpoint
+        to find out what was the original line that the breakpoint should
+        be placed to.
+     </description>
+     <class package="org.openide.text" name="Line"/>
+     <issue number="43484"/>
+    </change>
+<change>
+    <api name="text"/>
+    <summary>Allow custom toolbar for NbDocument impls, editor panes separation in editor support classes</summary>
+    <version major="4" minor="31"/>
+    <date day="20" month="4" year="2004"/>
+    <author login="mkleint"/>
+    <compatibility addition="yes" modification="yes" deprecation="yes" semantic="compatible" binary="compatible" source="compatible" deletion="no"/>
+    <description>
+        In order to implement MultiViews, these changes were necessary to the org.openide.text package.
+        <ul>
+            <li>Added new subinterface to NbDocument -&gt; NbDocument.CustomToolbar which lets the implementors to define a custom toolbar. 
+            It allows to present the toolbar in different environments (eg. multiviews)</li>
+            <li>CloneableEditorSupport defined a new interface CloneableEditorSupport.Pane and has a new protected method createPane() </li>
+            <li>The deprecated EditorSupport has a new protected method createPane() </li>
+            <li>CloneableEditor implements CloneableEditorSupport.Pane, thus 
+            updateTitle was changed from protected to public and 2 additional methods from Pane interfacewere added</li>
+            
+        </ul>
+    </description>
+    <class package="org.openide.text" name="NbDocument"/>
+    <class package="org.openide.text" name="CloneableEditorSupport"/>
+    <class package="org.openide.text" name="CloneableEditor"/>
+    <class package="org.openide.text" name="EditorSupport"/>
+    <issue number="41085"/>
+    </change>
+<change>
+    <api name="text"/>
+    <summary>Support for AnnotationProvider interface</summary>
+    <version major="4" minor="30"/>
+    <date day="30" month="4" year="2004"/>
+    <author login="pnejedly"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <ul>
+            <li>Added interface org.openide.text.AnnotationProvider</li>
+            <li>Call all instances of the interface found in the global lookup
+	      when going to visualize given Annotatable.
+	    </li>
+        </ul>
+    </description>
+    <class package="org.openide.text" name="AnnotationProvider"/>
+    <issue number="41345"/>
+    </change>
+<change>
+        <api name="text"/>
+        <summary>Allow CloneableEditorSupport subclasses to specify
+	   persistence ID for the associated editor TopComponent.
+        </summary>
+        <version major="4" minor="24"/> 
+        <date day="2" month="2" year="2004"/>
+        <author login="pnejedly"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+                Adding protected <code>CloneableEditorSupport.documentID</code>
+                to allow subclasses to compute preferred ID String used for
+                TopComponent persistence.
+        </description>
+        <class package="org.openide.text" name="CloneableEditorSupport"/>
+        <issue number="37892"/>
+    </change>
+<change>
+     <api name="text"/>
+     <summary>New <code>getInputStream()</code> method in CloneableEditorSupport</summary>
+     <version major="4" minor="7"/>
+     <date day="26" month="6" year="2003"/>
+     <author login="pjiricka"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+       New method that returns an InputStream which reads the current data
+       from the editor, taking into account the encoding of the file. 
+       The returned InputStream contains the same data as if the file was written 
+       out to the disk. Useful when interacting with a tool that expects an InputStream,
+       and the current (possibly modified) content of the editor is desired.
+     </description>
+     <class package="org.openide.text" name="CloneableEditorSupport"/>
+     <issue number="34692"/>
+    </change>
+<change>
+     <api name="text"/>
+     <summary>CloneableEditorSupport takes Lookup for its Lines in constructor</summary>
+     <version major="4" minor="5"/>
+     <date day="18" month="4" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+       Allows subclasses of the support DataEditorSupport, etc. pass 
+       additional information to each of its Lines. Such information 
+       can consist of location like DataObject or FileObject.
+     </description>
+     <class package="org.openide.text" name="CloneableEditorSupport"/>
+     <issue number="32937"/>
+    </change>
+<change id="PositionRef-getEditorSupport">
+     <api name="text"/>
+     <summary>PositionRef.getEditorSupport() removed</summary>
+     <version major="4" minor="3"/>
+     <date day="2" month="4" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility deletion="yes" binary="incompatible" source="incompatible" semantic="compatible" deprecation="no" addition="no" modification="no"/>
+     <description>
+        For a long time deprecated <code>PositionRef.getEditorSupport()</code> method
+        has been removed to enabled separation of EditorSupport to openide-loaders.jar
+     </description>
+     <class package="org.openide.text" name="PositionRef"/>
+     <class package="org.openide.text" name="DataEditorSupport"/>
+     <issue number="32143"/>
+    </change>
+<change id="Line-getDataObject">
+     <api name="text"/>
+     <summary>Line.getDataObject() removed</summary>
+     <version major="4" minor="3"/>
+     <date day="2" month="4" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" deletion="yes" binary="incompatible" source="incompatible" semantic="compatible" deprecation="no" modification="no"/>
+     <description>
+        Due to separation of openide-loaders.jar the <code>Line.getDataObject()</code> 
+        method had to be removed and replaced by <code>Line.getLookup</code> which 
+        provides more general way for providing line context. The direct replacement 
+        for the old method is <code>DataObject DataEditorSupport.findDataObject(Line)</code>.
+     </description>
+     <class package="org.openide.text" name="Line"/>
+     <class package="org.openide.text" name="DataEditorSupport"/>
+     <issue number="32143"/>
+    </change>
+<change id="new_Line-DataObject">
+     <api name="text"/>
+     <summary>Line constructor changed</summary>
+     <version major="4" minor="3"/>
+     <date day="2" month="4" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" deletion="yes" binary="incompatible" source="incompatible" semantic="compatible" deprecation="no" modification="no"/>
+     <description>
+        Due to separation of openide-loaders.jar the <code>Line</code> and 
+        <code>DocumentLine</code> constructors taking DataObject had to be
+        modified to take Lookup or plain Object instead. 
+     </description>
+     <class package="org.openide.text" name="Line"/>
+     <class package="org.openide.text" name="DocumentLine"/>
+     <issue number="32143"/>
+    </change>
+<change id="CloneableEditorSupport.messageLine">
+     <api name="text"/>
+     <summary>CloneableEditorSupport can provide display name for its Lines</summary>
+     <version major="4" minor="3"/>
+     <date day="2" month="4" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        Added method <code>String messageLine (Line)</code> that can be
+        overriden to provide meaningful display name for lines produced
+        by this support.
+     </description>
+     <class package="org.openide.text" name="CloneableEditorSupport"/>
+     <issue number="32143"/>
+    </change>
+<change id="issue-19443-1">
+      <summary>API separation, phase I</summary>
+      <version major="3" minor="14"/>
+      <date day="15" month="10" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" deprecation="yes" semantic="compatible" addition="no" deletion="no" modification="no">
+        <p>
+          The deprecated classes continue to be available in the module
+          <code>org.openide.deprecated</code> which you may depend on it you
+          cannot remove uses of the deprecated APIs. In order for
+          <code>TopManager.getDefault()</code> to work, you must also require the
+          token <code>org.openide.TopManager</code>, which is provided by an
+          unspecified module. The deprecated API module and its implementation
+          module are autoloads, meaning they will not be loaded unless some
+          module still requires them.
+        </p>
+        <p>
+          Similarly, the Java Hierarchy API was moved to the module
+          <code>org.openide.src</code> which you should depend on in order to use
+          this API.
+        </p>
+        <p>
+          For compatibility, the above three dependencies are added to your module
+          <em>automatically</em> in case it either requests no specific API
+          version at all, or requests an API version prior to 3.14. Modules
+          requesting APIs 3.14 or higher must declare these dependencies
+          explicitly if they in fact need them.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Many classes were moved to a separate module,
+          <samp>openide-deprecated.jar</samp>, not available to modules by
+          default. Uses of these classes in modules should be cleaned up whenever
+          possible.
+        </p>
+        <p>
+          Additionally, the entire contents of <code>org.openide.src.*</code> and
+          <code>org.openide.src.nodes.*</code>, as well as
+          <code>org.openide.cookies.SourceCookie</code> and some associated
+          property editors, were moved to a separate module.
+        </p>
+        <p>
+          The most common apparent symptom for module authors will be the absence
+          of <code>TopManager</code>. Most methods in this class have been
+          replaced by newer utility classes in a straightforward manner. See the
+          Upgrade Guide.
+        </p>
+      </description>
+      <class package="org.openide" name="DialogDisplayer"/>
+      <class package="org.openide" name="LifecycleManager"/>
+      <class package="org.openide" name="Places"/>
+      <class package="org.openide" name="TopManager"/>
+      <class package="org.openide.actions" name="AddWatchAction"/>
+      <class package="org.openide.actions" name="BuildProjectAction"/>
+      <class package="org.openide.actions" name="CompileProjectAction"/>
+      <class package="org.openide.actions" name="DebugProjectAction"/>
+      <class package="org.openide.actions" name="ExecuteProjectAction"/>
+      <class package="org.openide.actions" name="FinishDebuggerAction"/>
+      <class package="org.openide.actions" name="GoAction"/>
+      <class package="org.openide.actions" name="GoToCursorAction"/>
+      <class package="org.openide.actions" name="HelpAction"/>
+      <class package="org.openide.actions" name="OpenProjectAction"/>
+      <class package="org.openide.actions" name="SaveProjectAction"/>
+      <class package="org.openide.actions" name="StartDebuggerAction"/>
+      <class package="org.openide.actions" name="StepOutAction"/>
+      <class package="org.openide.actions" name="ToggleBreakpointAction"/>
+      <class package="org.openide.actions" name="TraceIntoAction"/>
+      <class package="org.openide.actions" name="TraceOverAction"/>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+      <class package="org.openide.awt" name="StatusDisplayer"/>
+      <class package="org.openide.cookies" name="DebuggerCookie"/>
+      <class package="org.openide.cookies" name="ElementCookie"/>
+      <class package="org.openide.cookies" name="ProjectCookie"/>
+      <class package="org.openide.cookies" name="SourceCookie"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ChoicePropertyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="DirectoryOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ElementFormatEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ExternalCompiler"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IconEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IdentifierArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="MethodParameterArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ModifierEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomizable"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="TypeEditor"/>
+      <class package="org.openide.loaders" name="DataObjectFilter"/>
+      <class package="org.openide.loaders" name="ExecSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.loaders" name="ExtensionListEditor"/>
+      <class package="org.openide.loaders" name="RepositoryNodeFactory"/>
+      <class package="org.openide.modules" name="IllegalModuleException"/>
+      <class package="org.openide.modules" name="ManifestSection"/>
+      <class package="org.openide.modules" name="ModuleDescription"/>
+      <class package="org.openide.nodes" name="NodeOperation"/>
+      <class package="org.openide.options" name="ControlPanel"/>
+      <class package="org.openide.util.actions" name="ProjectSensitiveAction"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <package name="org.openide.debugger"/>
+      <package name="org.openide.src"/>
+      <package name="org.openide.src.nodes"/>
+      <issue number="19443"/>
+      <issue number="20898"/>
+    </change>
+<change id="issue-19443-2">
+      <summary>API separation, phase II</summary>
+      <version major="3" minor="17"/>
+      <date day="1" month="11" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" modification="yes" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        <p>
+          Module authors using the now-separated APIs will need to adjust their
+          compilation classpaths to include the new JAR files. Modules wishing to
+          use recent APIs and declaring a current openide specification version
+          dependency will need to explicitly declare dependencies on these new
+          APIs if there are any.
+        </p>
+        <p>
+          For compatibility, modules with no declared Open APIs dependency, or
+          declared on a version prior to 3.17, will have their dependencies
+          automatically refined as if to include the declarations:
+        </p>
+        <pre xml:space="preserve">
+OpenIDE-Module-Module-Dependencies: org.openide.compiler &gt; 1.0,
+  org.openide.execution &gt; 1.0, org.openide.io &gt; 1.0
+OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
+  org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
+        </pre>
+        <p>
+          And any package dependencies from old modules on
+          <code>org.netbeans.lib.terminalemulator</code> will be converted to
+          module dependencies.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Three sections of the Open APIs were split into new autoload modules.
+        </p>
+        <ul>
+          <li>
+            <p>
+              The module <code>org.openide.compiler</code> (version 1.0) contains
+              the Compiler API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.execution</code> (version 1.0) contains
+              the Execution API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.io</code> (version 1.0) contains
+              <code>InputOutput</code> and related classes (formerly part of the
+              Window System API, and still physically in the
+              <code>org.openide.windows</code> package).
+            </p>
+          </li>
+        </ul>
+        <p>
+          New modules wishing to use these APIs must declare regular module
+          dependencies on them. Future changes in these APIs will be documented
+          separately.
+        </p>
+        <p>
+          Furthermore, modules wishing to use certain services must
+          <code>OpenIDE-Module-Require</code> them if appropriate:
+        </p>
+        <ul>
+          <li>
+            <p>
+              <code>org.openide.compiler.CompilationEngine</code>, in order to
+              call <code>CompilationEngine.getDefault()</code>, or safely use
+              <code>AbstractCompileAction</code> or one of its subclasses, or
+              call <code>CompilerJob.start()</code>, or use
+              <code>BeanInfo</code>s for Compiler API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.execution.ExecutionEngine</code>, in order to
+              call <code>ExecutionEngine.getDefault()</code>, or safely use
+              <code>ExecuteAction</code>, or call
+              <code>Executor.execute(...)</code>, or use <code>BeanInfo</code>s
+              for Execution API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.windows.IOProvider</code>, in order to call
+              <code>IOProvider.getDefault()</code>.
+            </p>
+          </li>
+        </ul>
+        <p>
+          Other minor changes:
+        </p>
+        <ul>
+          <li>
+            <p>
+              Registration of URL stream handler factories using
+              <code>NbfsStreamHandlerFactory.register(...)</code> is deprecated.
+              Simply create an instance of <code>URLStreamHandlerFactory</code>
+              and add it to Lookup instead.
+            </p>
+          </li>
+          <li>
+            <p>
+              The method <code>FileUtil.nbfsURLStreamHandler</code> was added,
+              but is not intended for use by modules.
+            </p>
+          </li>
+          <li>
+            <p>
+              All uses of <code>ExecInfo</code> are deprecated as they abuse the
+              distinction between Filesystems and the user classpath. Use and
+              override only <code>Executor.execute(DataObject)</code>. Similarly,
+              <code>ThreadExecutor</code> is deprecated for the time being
+              because it suffers from similar problems.
+            </p>
+          </li>
+          <li>
+            <p>
+              Direct use of <code>NbfsURLConnection</code> is deprecated in favor
+              of the more general <code>URLMapper</code> from the Filesystems
+              API.
+            </p>
+          </li>
+          <li>
+            <p>
+              Package dependencies on
+              <code>org.netbeans.lib.terminalemulator</code> must be replaced
+              with module dependencies on a new autoload module
+              <code>org.netbeans.lib.terminalemulator</code> (version 1.0).
+            </p>
+          </li>
+          <li>
+            <p>
+              Several static convenience methods have been added to
+              <code>AbstractCompileAction</code>. Of most interest is
+              <code>prepareJobFor</code>. Module code should no longer assume
+              that <code>DataFolder</code> has a <code>CompilerCookie</code>
+              which recursively compiles the folder and subfolders (according to
+              depth); while it is still true, for reasons of compatibility, new
+              code should use <code>prepareJobFor</code> to create a compiler job
+              from a folder.
+            </p>
+          </li>
+        </ul>
+      </description>
+      <class package="org.openide.actions" name="AbstractCompileAction"/>
+      <class package="org.openide.actions" name="BuildAction"/>
+      <class package="org.openide.actions" name="BuildAllAction"/>
+      <class package="org.openide.actions" name="CleanAction"/>
+      <class package="org.openide.actions" name="CleanAllAction"/>
+      <class package="org.openide.actions" name="CompileAction"/>
+      <class package="org.openide.actions" name="CompileAllAction"/>
+      <class package="org.openide.actions" name="ExecuteAction"/>
+      <class package="org.openide.cookies" name="ArgumentsCookie"/>
+      <class package="org.openide.cookies" name="CompilerCookie"/>
+      <class package="org.openide.cookies" name="ExecCookie"/>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+      <class package="org.openide.loaders" name="CompilerSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <class package="org.openide.windows" name="InputOutput"/>
+      <class package="org.openide.windows" name="OutputEvent"/>
+      <class package="org.openide.windows" name="OutputListener"/>
+      <class package="org.openide.windows" name="OutputWriter"/>
+      <package name="org.openide.compiler"/>
+      <package name="org.openide.execution"/>
+      <issue number="19443"/>
+    </change>
+<change>
+      <api name="text"/>
+      <summary>Get attached annotatables, move them to front</summary>
+      <version major="1" minor="27"/>
+      <date day="25" month="7" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added public final methods
+        <code>Annotation.getAttachedAnnotatable()</code> and
+        <code>Annotation.moveToFront()</code>.
+      </description>
+      <class package="org.openide.text" name="Annotation"/>
+    </change>
+<change id="Annotatable.getText">
+      <api name="text"/>
+      <summary>Get content of Annotatable</summary>
+      <version major="1" minor="35"/>
+      <date day="25" month="9" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added public abstract method
+        <code>Annotatable.getText()</code>. Listeners can be attached to
+	Annotatable.PROP_TEXT property.
+      </description>
+      <class package="org.openide.text" name="Annotatable"/>
+    </change>
+<change id="Annotatable-isDeleted-getAnnotationCount-final">
+      <api name="text"/>
+      <summary>Annotatable.isDeleted and Annotatable.getAnnotationCount are final</summary>
+      <version major="1" minor="35"/>
+      <date day="25" month="9" year="2001"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no">
+          This is not considered as incompatible change,
+          because the API with these methods was not published yet.
+      </compatibility>
+      <description>
+        The Annotatable.isDeleted and Annotatable.getAnnotationCount are final now.
+      </description>
+      <class package="org.openide.text" name="Annotatable"/>
+    </change>
+<change id="Line.mark-deprecated">
+      <api name="text"/>
+      <summary>
+<code>Line</code> methods deprecated in favor of annotations</summary>
+      <version major="1" minor="20"/>
+      <date day="9" month="7" year="2001"/>
+      <compatibility modification="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no"/>
+      <description>
+        Because of publication of Annotation API, all previously used methods like
+        <code>setBreakpoint</code>, <code>isBreakpoint</code>,
+        <code>markError</code>, <code>unmarkError</code>,
+        <code>markCurrentLine</code>, <code>unmarkCurrentLine</code>, and
+        <code>canBeMarkedCurrent</code> are deprecated. Use
+        <code>Annotation.attach()</code> and <code>detach()</code> instead.
+        <code>Line</code> now extends <code>Annotatable</code> abstract class.
+      </description>
+      <class package="org.openide.text" name="Line"/>
+      <class package="org.openide.text" name="DocumentLine"/>
+    </change>
+<change>
+      <api name="text"/>
+      <summary>Refactoring of editor and open supports</summary>
+      <date day="29" month="5" year="2000"/>
+      <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no">
+        First broken, <date day="29" month="9" year="2000"/> restored backwards
+        compatibility.
+      </compatibility>
+      <description>
+        Major refactoring of <code>EditorSupport</code> and
+        <code>OpenSupport</code>, so that subclasses can have much finer control
+        over pieces of its functionality. 
+      </description>
+      <class package="org.openide.text" name="EditorSupport"/>
+      <class package="org.openide.text" name="CloneableEditorSupport"/>
+      <class package="org.openide.text" name="CloneableEditor"/>
+      <class package="org.openide.loaders" name="OpenSupport"/>
+      <class package="org.openide.windows" name="CloneableOpenSupport"/>
+    </change>
+<change>
+      <api name="text"/>
+      <summary>Customization of editor support after creation</summary>
+      <date day="1" month="12" year="2000"/>
+      <author login=""/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added method <code>initializeCloneableEditor</code> to allow easier
+        customization of the editor after creation and also after deserialization.
+      </description>
+      <class package="org.openide.text" name="CloneableEditorSupport"/>
+      <branch name="release31">
+        <date day="1" month="12" year="2000"/>
+      </branch>
+    </change>
+<change>
+      <api name="text"/>
+      <summary>Can control title format for editor supports</summary>
+      <date day="17" month="7" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>updateTitles()</code> method was made protected final instead of
+        private.
+      </description>
+      <class package="org.openide.text" name="CloneableEditorSupport"/>
+    </change>
+<change>
+      <api name="text"/>
+      <summary>Can control undo/redo on editor supports</summary>
+      <date day="21" month="7" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <code>getUndoRedo()</code> method was made protected final instead of
+        final.
+      </description>
+      <class package="org.openide.text" name="CloneableEditorSupport"/>
+    </change>
+<change>
+      <api name="text"/>
+      <summary>
+<code>IndentEngine</code> a service type</summary>
+      <date day="23" month="6" year="2000"/>
+      <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no">
+        Until <date day="27" month="9" year="2000"/>, was incompatible
+        (<code>register</code> had been deleted as it is no longer useful); the
+        method was then restored but made deprecated.
+      </compatibility>
+      <description>
+        Now a <code>ServiceType</code>. A few new methods relating to lookup.
+      </description>
+      <class package="org.openide.text" name="IndentEngine"/>
+    </change>
+<change>
+      <api name="text"/>
+      <summary>
+<code>PrintSettings.getPageFormat</code> requires a printer job</summary>
+      <date day="24" month="2" year="2000"/>
+      <compatibility modification="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no">
+        First removed, later re-added but deprecated in trunk and
+        <code>boston</code>. User-stored settings of this class should be
+        backwards compatible, however code directly calling
+        <code>getPageFormat</code> will produce a deprecation warning. Probably no
+        one should be directly referring to this class or its BeanInfo outside the
+        package; public only because it is a system option that must be public to
+        appear.
+      </compatibility>
+      <description>
+        <code>getPageFormat</code> method now requires a <code>PrinterJob</code>
+        argument.
+      </description>
+      <class package="org.openide.text" name="PrintSettings"/>
+    </change>
+<change id="Annotations-API">
+      <api name="text"/>
+      <summary>New annotations API published</summary>
+      <version major="1" minor="20"/>
+      <date day="9" month="7" year="2001"/>
+      <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no">
+        Because of publication of Annotation API, all previously used
+        <code>NbDocument</code> methods like <code>markError</code>,
+        <code>markCurrent</code>, <code>markNormal</code> are deprecated. Use
+        <code>addAnnotation</code> and <code>removeAnnotation</code> instead.
+      </compatibility>
+      <description>
+        Annotation API was published.
+      </description>
+      <class package="org.openide.text" name="Annotation"/>
+      <class package="org.openide.text" name="Annotatable"/>
+      <class package="org.openide.text" name="NbDocument"/>
+    </change>
+<change>
+      <api name="text"/>
+      <summary>Setting colors for lines deprecated</summary>
+      <date day="27" month="3" year="2000"/>
+      <compatibility deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no" modification="no">
+        First removed, later re-added but deprecated in trunk and
+        <code>boston</code>. These classes were long disused (and should only have
+        ever been used by the editor module anyway, which did not need them).
+      </compatibility>
+      <description>
+        <code>NbDocument.COLORS</code> and <code>NbDocument.Colors</code>
+        deprecated.
+      </description>
+      <class package="org.openide.text" name="NbDocument"/>
+    </change>
+<change>
+      <api name="text"/>
+      <summary>Added to javadoc an <code>IndexOutOfBoundsException</code>
+        can be thrown from <code>NbDocument.findLineOffset</code> method
+      </summary>
+      <date day="31" month="10" year="2001"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        Added declaration to javadoc of the method
+        <code>NbDocument.findLineOffset()</code> can throw an unchecked
+        <code>IndexOutOfBoundsException</code>. The method could throw 
+        the exception also before (and also other kinds of them see the issue),
+        but it was not declared in javadoc. This change makes it compliant
+        to use with standard Swing text package and also with
+        <code>Line.Set.getCurrent()</code> method.
+      </description>
+      <class package="org.openide.text" name="NbDocument"/>
+      <issue number="17144"/>
+    </change>
+<change>
+      <api name="text"/>
+      <summary>Notifications about annotation attaching/detaching added</summary>
+      <version major="1" minor="38"/>
+      <date day="12" month="10" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added protected methods
+        <code>Annotation.notifyAttached()</code> and
+        <code>Annotation.notifyDetached()</code>.
+      </description>
+      <class package="org.openide.text" name="Annotation"/>
+    </change>
+</changes>
+<htmlcontents>
+<head>
+<title>Change History for the Text API</title>
+<link rel="stylesheet" href="prose.css" type="text/css"/>
+</head>
+<body>
+<p class="overviewlink">
+<a href="overview-summary.html">Overview</a>
+</p>
+<h1>Introduction</h1>
+<h2>What do the Dates Mean?</h2>
+<p>The supplied dates indicate when the API change was made, on the CVS
+trunk. From this you can generally tell whether the change should be
+present in a given build or not; for trunk builds, simply whether it
+was made before or after the change; for builds on a stabilization
+branch, whether the branch was made before or after the given date. In
+some cases corresponding API changes have been made both in the trunk
+and in an in-progress stabilization branch, if they were needed for a
+bug fix; this ought to be marked in this list.</p>
+<ul>
+<li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
+Specification versions: 6.0 begins after this point.</li>
+<li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
+Specification versions: 5.0 begins after this point.</li>
+</ul>
+<hr/>
+<standard-changelists module-code-name="org.openide.text"/>
+<hr/>
+<p>@FOOTER@</p>
+</body>
+</htmlcontents>
+</apichanges>

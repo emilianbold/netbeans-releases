@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+--><!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+<apidefs>
+<apidef name="awt">AWT API</apidef>
+</apidefs>
+<changes>
+<change id="no-icon-in-menu-for-actions">
+      <api name="awt"/>
+      <summary>Added property to <code>SystemAction/Action</code> that causes it's icon not to be displayed in menu.</summary>
+      <version major="4" minor="49"/>
+      <date day="12" month="10" year="2004"/>
+      <author login="mkleint"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        <p>
+          <code>SystemAction putValue("noIconInMenu", Boolean.TRUE)</code> influences the display of the action
+          in the main menu, the item will have no icon there. Works for Actions that don't define custom MenuPresenter.
+          This property is considered temporary, applications building on top of the platform that 
+          don't want this functionality, have to patch the actions' code.
+        </p>
+      </description>
+      <class package="org.openide.awt" name="awt"/>
+    </change>
+<change>
+     <api name="awt"/>
+     <summary>Allow asynchronous execution of actions</summary>
+     <version major="4" minor="26"/>
+     <date day="17" month="2" year="2004"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+     Support for asynchronous execution of actions has been re-added. Right now
+     all <code>CallableSystemAction</code> that return <code>true</code>
+     from their <code>asynchronous</code> method are executed outside of AWT thread.
+     However as most actions shall be executed synchronously, it is still required
+     for a subclass of <code>CallableSystemAction</code> to override the method
+     with own implementation otherwise a warning is printed.
+     <p>
+     There is a special contract to allow synchronous actions to be executed 
+     asynchronously, by using special <a href="arch/openide-actions.html#api-waitFinished" shape="rect">waitFinished</a>
+     as action command.
+     </p>
+     </description>
+     <class package="org.openide.util.actions" name="CallableSystemAction"/>
+     <issue number="39640"/>
+    </change>
+     <change>
+      <api name="awt"/>
+      <summary>Lightweight HTML rendering methods</summary>
+      <version major="4" minor="32"/>
+      <date day="3" month="5" year="2004"/>
+      <author login="tboudreau"/>
+      <compatibility addition="yes" deprecation="no" />
+      <description>
+      A lightweight HTML renderer which can render a limited subset of
+      HTML has been added to the APIs, and will be used in Explorer.
+      Nodes wishing to provide text rendered in HTML may do so by
+      returning subset-compliant HTML formatted text from the new
+      method <code>getHtmlDisplayName</code>.  An interface,
+      <code>HTMLStatus</code> has been created which extends 
+      <code>FileSystem.Status</code>, has been created, which allows
+      filesystems to supply HTML formatted status information, by
+      implementing it on their <code>FileSystem.Status</code> implementation.
+      Filesystems which delegate to other filesystems my implement 
+      FileSystem.HtmlStatus and simply return null for filesystems which
+      do not support it.
+      If one is present, DataNode will use it to supply HTML formatted
+      text to Explorer.  The renderer itself can be found in 
+      org.openide.awt.HtmlRenderer.
+      </description>
+      <class package="org.openide.filesystems.FileSystem" name="HtmlStatus"/>
+      <class package="org.openide.nodes" name="Node"/>
+      <class package="org.openide.awt" name="HtmlRenderer"/>
+      <class package="org.openide.loaders" name="DataNode"/>
+      <issue number="29466"/>
+     </change>
+<change>
+        <api name="awt"/>
+        <summary>Support for pressed, disabled and rollover icons added to SystemAction and Actions</summary>
+        <version major="4" minor="22"/>
+        <date day="8" month="1" year="2004"/>
+        <author login="dstrupl"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Method SystemAction.getValue() was modified to support one additional special parameter: "iconBase".
+            If a value with this key is required the method calls into SystemAction.iconResource. Class
+            org.openide.awt.Actions uses value of "iconBase" to fetch the icons. The "iconBase" parameter is
+            used not only when connecting SystemAction but for all javax.swing.Action instances. The value of
+            "iconBase" is a path to the icon resources without the trailing .gif. The code in Actions adds
+            .gif, _pressed.gif, _disabled.gif and _rollover.gif suffices to the iconBase.
+        </description>
+        <class package="org.openide.util.actions" name="SystemAction"/>
+        <class package="org.openide.awt" name="awt"/>
+        <issue number="32256"/>
+    </change>
+<change>
+        <api name="awt"/>
+        <summary>New Actions system - part I.</summary>
+        <version major="3" minor="32"/>
+        <date day="21" month="1" year="2003"/>
+        <author login="pzavadsky"/>
+        <compatibility deprecation="yes" addition="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+        <description>
+            <p>
+            According to changes in action system (see the change 3.29),
+            also the method <code>TopComponent.getSystemActions()</code> 
+            is replaced by <code>TopComponent.getActions()</code> method.
+            </p>
+        </description>
+        <class package="org.openide.windows" name="TopComponent"/>
+        <issue number="30231"/>
+    </change>
+<change>
+        <api name="awt"/>
+        <summary>New Actions system - part I.</summary>
+        <version major="3" minor="29"/>
+        <date day="8" month="1" year="2003"/>
+        <author login="jtulach"/>
+        <author login="pzavadsky"/>
+        <compatibility deprecation="yes" addition="yes" modification="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no"/>
+        <description>
+            <p>
+            Introduction of new action system, which generally means
+            move from usage of <code>SystemAction</code> to <code>Action</code> instances.
+            Look at <a href="http://openide.netbeans.org/proposals/actions/index.html" shape="rect">
+            general proposal</a>. That document also focuses on declarative actions
+            usage which is not subject of current change, it will be part of later changes.
+            </p>
+<p>
+            Current change is described by <a href="http://openide.netbeans.org/proposals/actions/impl.html" shape="rect">
+            description of already implemented changes</a> which also summarizes
+            <a href="http://openide.netbeans.org/proposals/actions/impl.html#summaryAPI" shape="rect">
+            these API changes</a>.
+            </p>
+        </description>
+        <class package="org.openide.awt" name="awt"/>
+        <issue number="27868"/>
+    </change>
+</changes>
+<htmlcontents>
+<head>
+<title>Change History for the Actions API</title>
+<link rel="stylesheet" href="prose.css" type="text/css"/>
+</head>
+<body>
+<p class="overviewlink">
+<a href="overview-summary.html">Overview</a>
+</p>
+<h1>Introduction</h1>
+<h2>What do the Dates Mean?</h2>
+<p>The supplied dates indicate when the API change was made, on the CVS
+trunk. From this you can generally tell whether the change should be
+present in a given build or not; for trunk builds, simply whether it
+was made before or after the change; for builds on a stabilization
+branch, whether the branch was made before or after the given date. In
+some cases corresponding API changes have been made both in the trunk
+and in an in-progress stabilization branch, if they were needed for a
+bug fix; this ought to be marked in this list.</p>
+<ul>
+<li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
+Specification versions: 6.0 begins after this point.</li>
+<li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
+Specification versions: 5.0 begins after this point.</li>
+</ul>
+<hr/>
+<standard-changelists module-code-name="org.openide.actions"/>
+<hr/>
+<p>@FOOTER@</p>
+</body>
+</htmlcontents>
+</apichanges>
