@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+--><!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+<apidefs>
+<apidef name="nodes">Nodes API</apidef>
+</apidefs>
+<changes>
+<change>
+     <api name="nodes"/>
+     <summary>FilterNode allows controlling delegation of getValue/setValue calls</summary>
+     <version major="4" minor="25"/>
+     <date day="13" month="2" year="2004"/>
+     <author login="pnejedly"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        From this version, the FilterNode by default delegates all
+        <code>getValue(String)</code> and <code>setValue(String, Object)</code>
+        calls the to the original node. Also, FilterNode now exports two
+        new constants, <code>FilterNode.DELEGATE_SET_VALUE</code> and
+        <code>FilterNode.DELEGATE_GET_VALUE</code>, which can be used to control
+        the delegation of the above mentioned methods.
+     </description>
+     <class package="org.openide.nodes" name="FilterNode"/>
+     <issue number="31006"/>
+    </change>
+<change>
+     <api name="nodes"/>
+     <summary>InplaceEditor interface added to APIs, some deprecations in property sheet rewrite</summary>
+     <version major="4" minor="9"/>
+     <date day="16" month="7" year="2003"/>
+     <author login="tboudreau"/>
+     <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+     <description>
+       New interface that allows a property editor to supply an inline editor
+       for the new property sheet added, as part of merging the new property
+       sheet.  A method, registerInplaceEditorFactory() has been added to PropertyEnv to allow
+       modules to supply an inplace editor globally for all properties of a 
+       given type; also, Node.Property objects may supply a custom inplace editor
+       instance via the hint "inplaceEditor" in getValue(String).
+       <p>PropertySheetSettings is an old SystemOption subclass that offers
+       settings that affect the display of the property sheet.  These settings
+       are irrelevant to the new property sheet.</p>
+<p>
+       In order to provide some performance optimizations, it was
+       necessary to un-final the class PropertyEnv.  However, it 
+       should be treated as final outside the package - there should
+       never be a need to subclass it.  A note has been added to
+       its javadoc to this effect.</p>
+       <p>A non-normative hint may now be supplied by instances of Node.PropertySet
+       to return a localized display name for a tab which the property sheet
+       should use for displaying that and any other property sets which share
+       the name: "tabName".</p>
+     </description>
+     <class package="org.openide.nodes.Node" name="PropertySet"/>
+     <class package="org.openide.explorer.propertysheet" name="InplaceEditor"/>
+     <class package="org.openide.explorer.propertysheet" name="PropertyEnv"/>
+     <class package="org.openide.explorer.propertysheet" name="PropertySheet"/>
+     <class package="org.openide.explorer.propertysheet" name="PropertySheetSettings"/>
+     <issue number="29447"/>
+    </change>
+<change>
+     <api name="nodes"/>
+     <summary>New FilterNode constructor that takes Lookup</summary>
+     <version major="4" minor="4"/>
+     <date day="7" month="4" year="2003"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+       Allows users of FilterNode to provide own specific lookup.
+     </description>
+     <class package="org.openide.nodes" name="FilterNode"/>
+     <issue number="32470"/>
+    </change>
+<change>
+        <api name="nodes"/>
+        <summary>Returning value of NodeOp.findActions method refined</summary>
+        <date day="26" month="2" year="2003"/>
+        <author login="pzavadsky"/>
+        <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no">
+            In fact this is just a slight refinement of the API intoduced by 3.29 change.
+        </compatibility>
+        <description>
+            The utility method <code>NodeOp.findActions(Nodep[])</code> is changed
+            the way it returns an empty array instead of null (for the cases
+            there are no actions found). Also javadoc is refined in that sense.
+        </description>
+        <class package="org.openide.nodes" name="NodeOp"/>
+        <issue number="31476"/>
+    </change>
+<change>
+     <api name="nodes"/>
+     <summary>Added method Node.Property.isDefaultValue</summary>
+     <version major="3" minor="19"/>
+     <date day="8" month="11" year="2002"/>
+     <author login="dstrupl"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        Method public boolean isDefaultValue() has been added to class Node.Property.
+        The idea behind this is to visually mark modified properties in the property sheet.
+        If the method returns false it means that the value has been modified by the user
+        and visual feedback will be shown. The reason why the default impl is
+        returning true is to make the old properties (properties using previous
+        version of the API) look the same as they did before the change.
+     </description>
+     <class package="org.openide.nodes" name="Node"/>
+   </change>
+<change>
+     <api name="nodes"/>
+     <summary>Node implements Lookup.Provider</summary>
+     <version major="3" minor="11"/>
+     <date day="3" month="10" year="2002"/>
+     <author login="jtulach"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+         Node has been extended to provide method getLookup that allows better
+         querying possibilities than the old Node.getCookie method. New constructors
+         have been provided to allow to pass a Lookup instance to newly created
+         node. In such case Node.getCookie delegates to the provided instance,
+         otherwise Node.getLookup delegates to Node.getCookie content.
+     </description>
+     <class package="org.openide.nodes" name="Node"/>
+     <issue number="26790"/>
+   </change>
+<change>
+         <api name="nodes"/>
+         <summary>New method <code>setChildren()</code> in <code>Node</code>
+</summary>
+         <version major="3" minor="1"/>
+         <date day="15" month="7" year="2002"/>
+         <author login="phrebejk"/>
+         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+<code>Node</code> has new method <code>setChildren(Children)</code> which allows 
+        to change the <code>Children</code> of given <code>Node</code>. Node also fires
+        <code>new PropertyChangeEvent(PROP_LEAF)</code> whenever changing
+        children from non-<code>LEAF</code> to <code>LEAF</code> and vice-versa.
+         </description>
+      <class package="org.openide.nodes" name="Node"/>
+    </change>
+<change>
+        <api name="nodes"/>
+        <summary>Added Children.getNodes(boolean optimalResult)</summary>
+        <version major="2" minor="17"/>
+        <date day="2" month="5" year="2002"/>
+        <author login="pnejedly"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>Added an additional getNodes() method when the API
+	  user can specify whether he need the most right result.
+	  The method is needed for code-based navigation through nodes,
+	  like scripting, and for testability.
+	  SPI implementors can implement it better.
+        </description>
+        <class package="org.openide.nodes" name="Children"/>
+    </change>
+<change id="layer-register-nodes">
+        <api name="nodes"/>
+        <summary>Nodes can be declared through layers, manifest declaration deprecated</summary>
+        <version major="2" minor="16"/>
+        <date day="24" month="4" year="2002"/>
+        <author login="dsimonek"/>
+        <compatibility addition="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no"/>
+        <description> Added possibility to define Environment, Runtime and Root
+           nodes through layer instead of manifest declaration. Manifest declaration
+           is now deprecated.
+        </description>
+        <issue number="19609"/>
+    </change>
+<change id="issue-19443-1">
+      <summary>API separation, phase I</summary>
+      <version major="3" minor="14"/>
+      <date day="15" month="10" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" deprecation="yes" semantic="compatible" addition="no" deletion="no" modification="no">
+        <p>
+          The deprecated classes continue to be available in the module
+          <code>org.openide.deprecated</code> which you may depend on it you
+          cannot remove uses of the deprecated APIs. In order for
+          <code>TopManager.getDefault()</code> to work, you must also require the
+          token <code>org.openide.TopManager</code>, which is provided by an
+          unspecified module. The deprecated API module and its implementation
+          module are autoloads, meaning they will not be loaded unless some
+          module still requires them.
+        </p>
+        <p>
+          Similarly, the Java Hierarchy API was moved to the module
+          <code>org.openide.src</code> which you should depend on in order to use
+          this API.
+        </p>
+        <p>
+          For compatibility, the above three dependencies are added to your module
+          <em>automatically</em> in case it either requests no specific API
+          version at all, or requests an API version prior to 3.14. Modules
+          requesting APIs 3.14 or higher must declare these dependencies
+          explicitly if they in fact need them.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Many classes were moved to a separate module,
+          <samp>openide-deprecated.jar</samp>, not available to modules by
+          default. Uses of these classes in modules should be cleaned up whenever
+          possible.
+        </p>
+        <p>
+          Additionally, the entire contents of <code>org.openide.src.*</code> and
+          <code>org.openide.src.nodes.*</code>, as well as
+          <code>org.openide.cookies.SourceCookie</code> and some associated
+          property editors, were moved to a separate module.
+        </p>
+        <p>
+          The most common apparent symptom for module authors will be the absence
+          of <code>TopManager</code>. Most methods in this class have been
+          replaced by newer utility classes in a straightforward manner. See the
+          Upgrade Guide.
+        </p>
+      </description>
+      <class package="org.openide" name="DialogDisplayer"/>
+      <class package="org.openide" name="LifecycleManager"/>
+      <class package="org.openide" name="Places"/>
+      <class package="org.openide" name="TopManager"/>
+      <class package="org.openide.actions" name="AddWatchAction"/>
+      <class package="org.openide.actions" name="BuildProjectAction"/>
+      <class package="org.openide.actions" name="CompileProjectAction"/>
+      <class package="org.openide.actions" name="DebugProjectAction"/>
+      <class package="org.openide.actions" name="ExecuteProjectAction"/>
+      <class package="org.openide.actions" name="FinishDebuggerAction"/>
+      <class package="org.openide.actions" name="GoAction"/>
+      <class package="org.openide.actions" name="GoToCursorAction"/>
+      <class package="org.openide.actions" name="HelpAction"/>
+      <class package="org.openide.actions" name="OpenProjectAction"/>
+      <class package="org.openide.actions" name="SaveProjectAction"/>
+      <class package="org.openide.actions" name="StartDebuggerAction"/>
+      <class package="org.openide.actions" name="StepOutAction"/>
+      <class package="org.openide.actions" name="ToggleBreakpointAction"/>
+      <class package="org.openide.actions" name="TraceIntoAction"/>
+      <class package="org.openide.actions" name="TraceOverAction"/>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+      <class package="org.openide.awt" name="StatusDisplayer"/>
+      <class package="org.openide.cookies" name="DebuggerCookie"/>
+      <class package="org.openide.cookies" name="ElementCookie"/>
+      <class package="org.openide.cookies" name="ProjectCookie"/>
+      <class package="org.openide.cookies" name="SourceCookie"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ChoicePropertyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="DirectoryOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ElementFormatEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ExternalCompiler"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="FileOnlyEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IconEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="IdentifierArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="MethodParameterArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="ModifierEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomizable"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayEditor"/>
+      <class package="org.openide.explorer.propertysheet.editors" name="TypeEditor"/>
+      <class package="org.openide.loaders" name="DataObjectFilter"/>
+      <class package="org.openide.loaders" name="ExecSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.loaders" name="ExtensionListEditor"/>
+      <class package="org.openide.loaders" name="RepositoryNodeFactory"/>
+      <class package="org.openide.modules" name="IllegalModuleException"/>
+      <class package="org.openide.modules" name="ManifestSection"/>
+      <class package="org.openide.modules" name="ModuleDescription"/>
+      <class package="org.openide.nodes" name="NodeOperation"/>
+      <class package="org.openide.options" name="ControlPanel"/>
+      <class package="org.openide.util.actions" name="ProjectSensitiveAction"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <package name="org.openide.debugger"/>
+      <package name="org.openide.src"/>
+      <package name="org.openide.src.nodes"/>
+      <issue number="19443"/>
+      <issue number="20898"/>
+    </change>
+<change id="issue-19443-2">
+      <summary>API separation, phase II</summary>
+      <version major="3" minor="17"/>
+      <date day="1" month="11" year="2002"/>
+      <author login="jglick"/>
+      <compatibility binary="compatible" source="incompatible" modification="yes" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        <p>
+          Module authors using the now-separated APIs will need to adjust their
+          compilation classpaths to include the new JAR files. Modules wishing to
+          use recent APIs and declaring a current openide specification version
+          dependency will need to explicitly declare dependencies on these new
+          APIs if there are any.
+        </p>
+        <p>
+          For compatibility, modules with no declared Open APIs dependency, or
+          declared on a version prior to 3.17, will have their dependencies
+          automatically refined as if to include the declarations:
+        </p>
+        <pre xml:space="preserve">
+OpenIDE-Module-Module-Dependencies: org.openide.compiler &gt; 1.0,
+  org.openide.execution &gt; 1.0, org.openide.io &gt; 1.0
+OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
+  org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
+        </pre>
+        <p>
+          And any package dependencies from old modules on
+          <code>org.netbeans.lib.terminalemulator</code> will be converted to
+          module dependencies.
+        </p>
+      </compatibility>
+      <description>
+        <p>
+          Three sections of the Open APIs were split into new autoload modules.
+        </p>
+        <ul>
+          <li>
+            <p>
+              The module <code>org.openide.compiler</code> (version 1.0) contains
+              the Compiler API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.execution</code> (version 1.0) contains
+              the Execution API and some other classes directly related to it.
+            </p>
+          </li>
+          <li>
+            <p>
+              The module <code>org.openide.io</code> (version 1.0) contains
+              <code>InputOutput</code> and related classes (formerly part of the
+              Window System API, and still physically in the
+              <code>org.openide.windows</code> package).
+            </p>
+          </li>
+        </ul>
+        <p>
+          New modules wishing to use these APIs must declare regular module
+          dependencies on them. Future changes in these APIs will be documented
+          separately.
+        </p>
+        <p>
+          Furthermore, modules wishing to use certain services must
+          <code>OpenIDE-Module-Require</code> them if appropriate:
+        </p>
+        <ul>
+          <li>
+            <p>
+              <code>org.openide.compiler.CompilationEngine</code>, in order to
+              call <code>CompilationEngine.getDefault()</code>, or safely use
+              <code>AbstractCompileAction</code> or one of its subclasses, or
+              call <code>CompilerJob.start()</code>, or use
+              <code>BeanInfo</code>s for Compiler API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.execution.ExecutionEngine</code>, in order to
+              call <code>ExecutionEngine.getDefault()</code>, or safely use
+              <code>ExecuteAction</code>, or call
+              <code>Executor.execute(...)</code>, or use <code>BeanInfo</code>s
+              for Execution API classes, etc.
+            </p>
+          </li>
+          <li>
+            <p>
+              <code>org.openide.windows.IOProvider</code>, in order to call
+              <code>IOProvider.getDefault()</code>.
+            </p>
+          </li>
+        </ul>
+        <p>
+          Other minor changes:
+        </p>
+        <ul>
+          <li>
+            <p>
+              Registration of URL stream handler factories using
+              <code>NbfsStreamHandlerFactory.register(...)</code> is deprecated.
+              Simply create an instance of <code>URLStreamHandlerFactory</code>
+              and add it to Lookup instead.
+            </p>
+          </li>
+          <li>
+            <p>
+              The method <code>FileUtil.nbfsURLStreamHandler</code> was added,
+              but is not intended for use by modules.
+            </p>
+          </li>
+          <li>
+            <p>
+              All uses of <code>ExecInfo</code> are deprecated as they abuse the
+              distinction between Filesystems and the user classpath. Use and
+              override only <code>Executor.execute(DataObject)</code>. Similarly,
+              <code>ThreadExecutor</code> is deprecated for the time being
+              because it suffers from similar problems.
+            </p>
+          </li>
+          <li>
+            <p>
+              Direct use of <code>NbfsURLConnection</code> is deprecated in favor
+              of the more general <code>URLMapper</code> from the Filesystems
+              API.
+            </p>
+          </li>
+          <li>
+            <p>
+              Package dependencies on
+              <code>org.netbeans.lib.terminalemulator</code> must be replaced
+              with module dependencies on a new autoload module
+              <code>org.netbeans.lib.terminalemulator</code> (version 1.0).
+            </p>
+          </li>
+          <li>
+            <p>
+              Several static convenience methods have been added to
+              <code>AbstractCompileAction</code>. Of most interest is
+              <code>prepareJobFor</code>. Module code should no longer assume
+              that <code>DataFolder</code> has a <code>CompilerCookie</code>
+              which recursively compiles the folder and subfolders (according to
+              depth); while it is still true, for reasons of compatibility, new
+              code should use <code>prepareJobFor</code> to create a compiler job
+              from a folder.
+            </p>
+          </li>
+        </ul>
+      </description>
+      <class package="org.openide.actions" name="AbstractCompileAction"/>
+      <class package="org.openide.actions" name="BuildAction"/>
+      <class package="org.openide.actions" name="BuildAllAction"/>
+      <class package="org.openide.actions" name="CleanAction"/>
+      <class package="org.openide.actions" name="CleanAllAction"/>
+      <class package="org.openide.actions" name="CompileAction"/>
+      <class package="org.openide.actions" name="CompileAllAction"/>
+      <class package="org.openide.actions" name="ExecuteAction"/>
+      <class package="org.openide.cookies" name="ArgumentsCookie"/>
+      <class package="org.openide.cookies" name="CompilerCookie"/>
+      <class package="org.openide.cookies" name="ExecCookie"/>
+      <class package="org.openide.filesystems" name="FileUtil"/>
+      <class package="org.openide.loaders" name="CompilerSupport"/>
+      <class package="org.openide.loaders" name="ExecutionSupport"/>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <class package="org.openide.windows" name="InputOutput"/>
+      <class package="org.openide.windows" name="OutputEvent"/>
+      <class package="org.openide.windows" name="OutputListener"/>
+      <class package="org.openide.windows" name="OutputWriter"/>
+      <package name="org.openide.compiler"/>
+      <package name="org.openide.execution"/>
+      <issue number="19443"/>
+    </change>
+<change>
+        <api name="nodes"/>
+        <summary>It is impossible to remove CookieSet.Factory from CookieSet</summary>
+        <version major="2" minor="6"/>
+        <date day="28" month="2" year="2002"/>
+        <author login="dstrupl"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description> The API for CookieSet was not symmetrical. You could add factories but there
+         was no way to remove them.
+        </description>
+        <class package="org.openide.nodes" name="CookieSet"/>
+        <issue number="15373"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>Method changing original Node added into FilterNode and FilterNode.Children</summary>
+      <version major="1" minor="39"/>
+      <date day="16" month="10" year="2001"/>
+      <author login="phrebejk"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+		<code>Method protected final void changeOriginal( Node original, boolean 
+                )</code> and <code>protected final void changeOriginal( Node original</code> added
+		to the class <code>FilterNode</code> and <code>FilterNode.Children</code>. 
+                The methods allow to change the Node resp. Children the FilterNode resp. 
+                FilterNode.Children delegates to. For more detailed information please see the
+                Javadoc of the methods.
+      </description>
+      <class package="org.openide.nodes" name="FilterNode"/>
+      <issue number="12048"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>Method for checking PropertyChangeListeners on Node added</summary>
+      <version major="1" minor="36"/>
+      <date day="8" month="10" year="2001"/>
+      <author login="phrebejk"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+		<code>Method protected final boolean hasPropertyChangeListeners()</code> added
+		to the class <code>Node</code>. Method returns true if at least one PropertyChangeListener
+		is attached to the Node. At the same time changes were made to optimize the number
+		of attached listeners so calling this method should have some information value.
+      </description>
+      <class package="org.openide.nodes" name="Node"/>
+	  <issue number="15495"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>Added <code>Index.Support.showIndexedCustomizer</code>
+</summary>
+      <version major="1" minor="37"/>
+      <date day="11" month="10" year="2001"/>
+      <author login="jglick"/>
+      <compatibility deprecation="yes" addition="yes" binary="compatible" source="compatible" semantic="compatible" deletion="no" modification="no">
+        Code using <code>IndexedCustomizer</code> directly (as a dialog) should
+        consider using the new method instead.
+      </compatibility>
+      <description>
+        The static method <code>Index.Support.showIndexedCustomizer(Index)</code>
+        was added to provide a simpler way of displaying a dialog to reorder a
+        set of nodes based on an index cookie. Unlike direct use of the
+        <code>IndexedCustomizer</code> dialog, it interacts smoothly with the
+        IDE's window system.
+      </description>
+      <class package="org.openide.nodes" name="Index"/>
+      <class package="org.openide.nodes" name="IndexedCustomizer"/>
+      <issue number="9323"/>
+    </change>
+<change id="an-cookieset-protected">
+      <api name="nodes"/>
+      <summary>
+<code>AbstractNode.cookieSet</code> protected, not public</summary>
+      <date day="19" month="5" year="2001"/>
+      <author login="jglick"/>
+      <compatibility modification="yes" deprecation="yes" source="incompatible" binary="compatible" semantic="compatible" addition="no" deletion="no">
+        Subclasses of the node should have the responsibility of adding
+        or removing cookies. See further notes under
+        <a href="#mdo-cookieset-protected" shape="rect">
+<code>MultiDataObject</code>
+</a>.
+      </compatibility>
+      <description>
+        <code>getCookieSet</code> now protected, not public. Logically it should
+        never have been public, since each object is responsible for providing its
+        own set of cookies as it sees fit, and making it possible for anyone to
+        retrieve and modify its cookie set without its explicit permission
+        violates this modularity. Also <code>setCookieSet</code> deprecated.
+      </description>
+      <class package="org.openide.nodes" name="AbstractNode"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>
+<code>Children.Keys.createNodes</code> can be <code>null</code>
+</summary>
+      <date day="15" month="3" year="2001"/>
+      <author login="jtulach"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        <code>createNodes(Object key)</code> can now return <code>null</code> if
+        the key should have no nodes to represent it. The purpose is to reduce the
+        number of useless created objects.
+      </description>
+      <class package="org.openide.nodes" name="Children"/>
+      <branch name="release32">
+        <date day="15" month="3" year="2001"/>
+      </branch>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>Properties and property sets may have help</summary>
+      <date day="30" month="1" year="2001"/>
+      <author login="jglick"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        <code>Node.PropertySet</code> and <code>Node.Property</code> may now have
+        the <code>FeatureDescriptor</code> property <code>helpID</code> set on
+        them (to a <code>String</code>) help ID) which may be used in the property
+        sheet.
+      </description>
+      <class package="org.openide.nodes" name="Node"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>
+<code>Index.KeyChildren.createIndex</code> protected</summary>
+      <date day="13" month="3" year="2001"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        Method <code>createIndex</code> made protected.
+      </description>
+      <class package="org.openide.nodes" name="Index"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>May provide special lock for index implementations</summary>
+      <date day="6" month="3" year="2001"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        Added method <code>protected Index.KeyChildren.lock()</code> which returns an object that is
+        used as a synchronization lock when working the the list object provided
+        in constructor.
+      </description>
+      <class package="org.openide.nodes" name="Index"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>Added <code>Index.KeyChildren</code>
+</summary>
+      <date day="2" month="5" year="2000"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+      <description>
+        New class that should simplify displaying and reordering of nodes
+        representing <code>java.util.List</code>. Automatically provide
+        implementation of <code>Index</code> to reorder content of the list.
+      </description>
+      <class package="org.openide.nodes" name="Index"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>Default node handle stores only direct parent</summary>
+      <date day="9" month="3" year="2000"/>
+      <author login="jglick"/>
+      <compatibility semantic="compatible" modification="yes" binary="compatible" source="compatible" deprecation="no" addition="no" deletion="no">
+        It never actually worked before anyway; no module could have
+        successfully used the previous behavior and be broken by the
+        change.
+      </compatibility>
+      <description>
+        <code>DefaultHandle</code> rewritten. Now stores just handle of direct
+        parent, so that intervening nodes have the opportunity to supply their own
+        handles.
+      </description>
+      <class package="org.openide.nodes" name="DefaultHandle"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>Creation of popup menus handle duplicate actions</summary>
+      <date day="9" month="8" year="2000"/>
+      <compatibility modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no"/>
+      <description>
+        Changed method <code>findContextMenuImpl</code>. In case of constructing
+        menu from node which for some reason has more than one occurrence of the
+        same <code>SystemAction</code> no menu item was created. Now one menu item
+        will be created for such an action, where the first occurrence is taken
+        into account.
+      </description>
+      <class package="org.openide.nodes" name="NodeOp"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>
+<code>NodeOp.setDefaultActions</code> removed</summary>
+      <date day="2" month="5" year="2000"/>
+      <compatibility deletion="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" modification="no">
+        First removed, later re-added but deprecated in trunk and
+        <code>boston</code>. Only technically incompatible: could always only be
+        called once, otherwise a <code>SecurityException</code> would be thrown.
+      </compatibility>
+      <description>
+        <code>setDefaultActions</code> deprecated.
+      </description>
+      <class package="org.openide.nodes" name="NodeOp"/>
+    </change>
+<change>
+      <api name="nodes"/>
+      <summary>
+<code>BeanChildren</code> changed superclass</summary>
+      <date day="23" month="6" year="2000"/>
+      <compatibility modification="yes" source="incompatible" binary="incompatible" semantic="compatible" deprecation="no" addition="no" deletion="no">
+        Any subclasses which used the following methods will be broken:
+        <ul>
+          <li>
+<code>initMap</code>
+</li>
+          <li>
+<code>put</code>
+</li>
+          <li>
+<code>putAll</code>
+</li>
+          <li>
+<code>remove</code>
+</li>
+          <li>
+<code>removeAll</code>
+</li>
+        </ul>
+        There were no known subclasses of <code>BeanChildren</code> (it is rarely
+        used at all).
+      </compatibility>
+      <description>
+        Changed superclass from <code>Children.Map</code> to
+        <code>Children.Keys</code>.
+      </description>
+      <class package="org.openide.nodes" name="BeanChildren"/>
+    </change>
+</changes>
+<htmlcontents>
+<head>
+<title>Change History for the Nodes API</title>
+<link rel="stylesheet" href="prose.css" type="text/css"/>
+</head>
+<body>
+<p class="overviewlink">
+<a href="overview-summary.html">Overview</a>
+</p>
+<h1>Introduction</h1>
+<h2>What do the Dates Mean?</h2>
+<p>The supplied dates indicate when the API change was made, on the CVS
+trunk. From this you can generally tell whether the change should be
+present in a given build or not; for trunk builds, simply whether it
+was made before or after the change; for builds on a stabilization
+branch, whether the branch was made before or after the given date. In
+some cases corresponding API changes have been made both in the trunk
+and in an in-progress stabilization branch, if they were needed for a
+bug fix; this ought to be marked in this list.</p>
+<ul>
+<li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
+Specification versions: 6.0 begins after this point.</li>
+<li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
+Specification versions: 5.0 begins after this point.</li>
+</ul>
+<hr/>
+<standard-changelists module-code-name="org.openide.nodes"/>
+<hr/>
+<p>@FOOTER@</p>
+</body>
+</htmlcontents>
+</apichanges>
