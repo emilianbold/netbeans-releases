@@ -47,11 +47,7 @@ public class InnerTablePanel extends SectionNodeInnerPanel {
                 stopCellEditing(table);
                 selectCell(model.addRow(), 0);
                 model.modelUpdatedFromUI();
-                Utils.runInAwtDispatchThread(new Runnable() {
-                    public void run() {
-                        Utils.scrollToVisible(tablePanel);
-                    }
-                });
+                Utils.scrollToVisible(tablePanel);
             }
         });
         getEditButton().addActionListener(new ActionListener() {
