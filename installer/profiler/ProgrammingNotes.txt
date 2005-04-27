@@ -1,24 +1,38 @@
 Prerequisites
    
  - InstallShield MultiPlatform 5 (SP3)
- - Apache Ant 1.6.1
+ - Apache Ant 1.6.2
  - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
  - external unzip utility on $PATH
  - Unix
+ - Profiler cluster for all 4 supported platforms - content of profiler1
+   directory for Windows, Linux, Solaris Sparc, Solaris X86.
 
 To build from command line run ant as usual with
 
  -Dismp.home=<home dir of ISMP5>
- -Dcluster.dir=/path/to/profiler
- -Dinstaller.basename=NetBeansProfiler-dev-20040701
+ -Dcluster.dir=i$HOME/profiler/linux
+ -Dinstaller.basename=Profiler-20040622
 
-Example:
-ant -Dismp.home=/mnt/local/ismp5 -Dcluster.dir=/mnt/local/linux.profiler.cluster.dir \
--Dinstaller.basename=NetBeansProfiler-dev-20040701 build-linux
- 
-The installers will be generated and placed in the dist/ subdir
+Build targets to build English (en) installers for supported platforms are
+as follows:
+build-linux - Linux - suffix '-linux' is appended to installer.basename
+build-solaris-sparc - Solaris Sparc - suffix '-solsparc'
+build-solaris-x86 - Solaris X86 - suffix '-solx86'
+build-windows - Windows - suffix '-win'
 
-As the ${cluster.dir} is platform specific for profiler build for every
-platform must be run separately. There is target for every supported platform:
-build-windows, build-linux, build-solaris-sparc, build-solaris-x86.
-There is no default target.
+Build targets for ML installers (Language support for Japanese (ja) and
+Simplified Chinese (zh) is added to English support ie. en,ja,zh support is
+present):
+build-linux-ml - Linux - suffix '-linux-ml' is appended to installer.basename
+build-solaris-sparc-ml - Solaris Sparc - suffix '-solsparc-ml'
+build-solaris-x86-ml - Solaris X86 - suffix '-solx86-ml'
+build-windows-ml - Windows - suffix '-win-ml'
+
+As there is different command line option for every platform (different
+content is installed) it must be run separately for every platform.
+
+The installers will be generated and placed in the directory 'dist'.
+
+jar installers are also generated for i18n testing for every supported
+platform.

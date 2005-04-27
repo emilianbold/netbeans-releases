@@ -33,73 +33,107 @@ Microsystems, Inc. All Rights Reserved.
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
-
-  <target name="build-windows" depends="init, compile">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="profiler-windows.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="cluster.basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="cluster.dir=${cluster.dir}"/>      
-      <classpath>
-        <pathelement path="build/classes" />      
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-win.jar"/>
-    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>    
+  
+  <macrodef name="transform-ml">
+    <attribute name="input.ismp.project"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="@{input.ismp.project}" />
+        <arg value="-xsl" />
+        <arg value="../lib/ml.xsl"/>
+        <arg value="-saveas"/>
+        <arg value="@{input.ismp.project}-ml"/>
+        <classpath>
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
+  
+  <target name="xsl-linux-ml" depends="init">
+    <transform-ml input.ismp.project="profiler-linux.xml"/>
   </target>
-
+  
+  <target name="xsl-solaris-sparc-ml" depends="init">
+    <transform-ml input.ismp.project="profiler-solaris-sparc.xml"/>
+  </target>
+  
+  <target name="xsl-solaris-x86-ml" depends="init">
+    <transform-ml input.ismp.project="profiler-solaris-x86.xml"/>
+  </target>
+  
+  <target name="xsl-windows-ml" depends="init">
+    <transform-ml input.ismp.project="profiler-windows.xml"/>
+  </target>
+  
+  <macrodef name="build-installer">
+    <attribute name="input.ismp.project"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="@{input.ismp.project}"/>
+        <arg value="-build"/>
+        <arg value="-alias"/>
+        <arg value="cluster.basedir=${basedir}"/>
+        <arg value="-alias"/>
+        <arg value="cluster.dir=${cluster.dir}"/>      
+        <classpath>
+          <pathelement path="build/classes"/>
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
+  
   <target name="build-linux" depends="init, compile">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="profiler-linux.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="cluster.basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="cluster.dir=${cluster.dir}"/>      
-      <classpath>
-        <pathelement path="build/classes" />      
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="profiler-linux.xml"/>
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux.jar"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
   </target>
-
+  
+  <target name="build-linux-ml" depends="init, compile, xsl-linux-ml">
+    <build-installer input.ismp.project="profiler-linux.xml-ml"/>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux-ml.jar"/>
+    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
+    <delete file="profiler-linux.xml-ml"/>
+  </target>
+  
   <target name="build-solaris-sparc" depends="init, compile">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="profiler-solaris-sparc.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="cluster.basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="cluster.dir=${cluster.dir}"/>
-      <classpath>
-        <pathelement path="build/classes" />
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="profiler-solaris-sparc.xml"/>
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solsparc.jar"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
   </target>
-
+  
+  <target name="build-solaris-sparc-ml" depends="init, compile, xsl-solaris-sparc-ml">
+    <build-installer input.ismp.project="profiler-solaris-sparc.xml-ml"/>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solsparc-ml.jar"/>
+    <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
+    <delete file="profiler-solaris-sparc.xml-ml"/>
+  </target>
+  
   <target name="build-solaris-x86" depends="init, compile">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="profiler-solaris-x86.xml" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="cluster.basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="cluster.dir=${cluster.dir}"/>
-      <classpath>
-        <pathelement path="build/classes" />
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <build-installer input.ismp.project="profiler-solaris-x86.xml"/>
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solx86.jar"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
+  </target>
+  
+  <target name="build-solaris-x86-ml" depends="init, compile, xsl-solaris-x86-ml">
+    <build-installer input.ismp.project="profiler-solaris-x86.xml-ml"/>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solx86-ml.jar"/>
+    <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
+    <delete file="profiler-solaris-x86.xml-ml"/>
+  </target>
+  
+  <target name="build-windows" depends="init, compile">
+    <build-installer input.ismp.project="profiler-windows.xml"/>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-win.jar"/>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
+  </target>
+  
+  <target name="build-windows-ml" depends="init, compile, xsl-windows-ml">
+    <build-installer input.ismp.project="profiler-windows.xml-ml"/>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-win-ml.jar"/>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
+    <delete file="profiler-windows.xml-ml"/>
   </target>
   
   <target name="compile" depends="init" description="compile custom beans and panels">
