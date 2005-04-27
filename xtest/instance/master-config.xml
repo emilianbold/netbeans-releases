@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- ========= -->  
 
     <config name="unit-nb"> <!-- was also similar to old "config-1" -->
+        <module name="nbbuild" testtypes="unit" attributes="stable"/>
         <module name="core" testtypes="unit" attributes="stable"/>
         <module name="openide" testtypes="unit" attributes="stable"/>
         <module name="openide/masterfs" testtypes="unit" attributes="stable"/>
