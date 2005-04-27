@@ -204,7 +204,7 @@ public class Utils {
         return classPath.findResource(packageToPath(packageName));
     }
 
-    public static String packageToPath(String packageName) {
+    private static String packageToPath(String packageName) {
         return packageName.replace('.', '/');
     }
 
