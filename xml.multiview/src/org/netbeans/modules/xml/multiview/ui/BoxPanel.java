@@ -77,17 +77,15 @@ public class BoxPanel extends SectionNodeInnerPanel {
     }
 
     public void setComponents(Component[] components) {
-        int n1 = getComponentCount();
         for (int i = 0; i < components.length; i++) {
             Component component = components[i];
-            if (i < n1) {
-                remove(i);
+            if (i >= getComponentCount() || component != getComponent(i)) {
+                add(component, i);
             }
-            add(component, i);
         }
-        int n2 = components.length;
-        while (getComponentCount() > n2) {
-            remove(n2);
+        int n = components.length;
+        while (getComponentCount() > n) {
+            remove(n);
         }
     }
     /** This will be called before model is changed from this panel
