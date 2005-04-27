@@ -7,11 +7,11 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="Mobility Cluster Installer Kit" default="build" basedir=".">
+<project name="Mobility Cluster Installer Kit" basedir=".">
 
   <property file="nbproject/private/private.properties"/>  
   <property file="build.properties" />
@@ -34,68 +34,95 @@ Microsystems, Inc. All Rights Reserved.
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
-
+  
+  <macrodef name="transform-platform">
+    <attribute name="ismp.project.suffix"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="${ismp.project}" />
+        <arg value="-xsl" />
+        <arg value="@{ismp.project.suffix}.xsl"/>
+        <arg value="-saveas"/>
+        <arg value="build/${ismp.project}-@{ismp.project.suffix}"/>
+        <classpath>
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
+  
   <target name="xsl-win32" depends="init">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="${ismp.project}" />
-      <arg value="-xsl" />
-      <arg value="win32.xsl"/>
-      <arg value="-saveas"/>
-      <arg value="build/${ismp.project}-win32"/>
-      <classpath>
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <transform-platform ismp.project.suffix="win32"/>
   </target>
-
+  
   <target name="xsl-unix" depends="init">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="${ismp.project}" />
-      <arg value="-xsl" />
-      <arg value="unix.xsl"/>
-      <arg value="-saveas"/>
-      <arg value="build/${ismp.project}-unix"/>
-      <classpath>
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
+    <transform-platform ismp.project.suffix="unix"/>
   </target>
-
+  
+  <macrodef name="transform-ml">
+    <attribute name="input.ismp.project"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="@{input.ismp.project}" />
+        <arg value="-xsl" />
+        <arg value="../lib/ml.xsl"/>
+        <arg value="-saveas"/>
+        <arg value="@{input.ismp.project}-ml"/>
+        <classpath>
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
+  
+  <target name="xsl-win32-ml" depends="init">
+    <transform-ml input.ismp.project="build/${ismp.project}-win32"/>
+  </target>
+  
+  <target name="xsl-unix-ml" depends="init">
+    <transform-ml input.ismp.project="build/${ismp.project}-unix"/>
+  </target>
+  
+  <macrodef name="build-installer">
+    <attribute name="input.ismp.project"/>
+    <sequential>
+      <java classname="com.installshield.isje.ISJE" fork="true">
+        <arg value="@{input.ismp.project}" />
+        <arg value="-build" />
+        <arg value="-alias"/>
+        <arg value="cluster.basedir=${basedir}"/>
+        <arg value="-alias"/>
+        <arg value="cluster.dir=${cluster.dir}"/>      
+        <classpath>
+          <pathelement path="build/classes" />      
+          <path refid="ismp.cp"/>
+        </classpath>
+      </java>
+    </sequential>
+  </macrodef>
+  
   <target name="build-win32" depends="init, compile, xsl-win32">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="build/${ismp.project}-win32" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="cluster.basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="cluster.dir=${cluster.dir}"/>      
-      <classpath>
-        <pathelement path="build/classes" />      
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
-    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>    
+    <build-installer input.ismp.project="build/${ismp.project}-win32"/>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
+  </target>
+  
+  <target name="build-win32-ml" depends="init, compile, xsl-win32, xsl-win32-ml">
+    <build-installer input.ismp.project="build/${ismp.project}-win32-ml"/>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
   </target>
 
   <target name="build-unix" depends="init, compile, xsl-unix">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="build/${ismp.project}-unix" />
-      <arg value="-build" />
-      <arg value="-alias"/>
-      <arg value="cluster.basedir=${basedir}"/>
-      <arg value="-alias"/>
-      <arg value="cluster.dir=${cluster.dir}"/>      
-      <classpath>
-        <pathelement path="build/classes" />      
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
+    <build-installer input.ismp.project="build/${ismp.project}-unix"/>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux.jar"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
   </target>
   
-  <target name="build" depends="init, build-win32, build-unix" description="build the installers" />
-
+  <target name="build-unix-ml" depends="init, compile, xsl-unix, xsl-unix-ml">
+    <build-installer input.ismp.project="build/${ismp.project}-unix-ml"/>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux-ml.jar"/>
+    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
+  </target>
+  
   <target name="compile" depends="init" description="compile custom beans and panels">
     <mkdir dir="build/classes"/>
     

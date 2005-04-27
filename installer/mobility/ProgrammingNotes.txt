@@ -1,7 +1,7 @@
 Prerequisites
    
  - InstallShield MultiPlatform 5 (SP3)
- - Apache Ant 1.6.1
+ - Apache Ant 1.6.2
  - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
  - external unzip utility on $PATH
  - Unix
@@ -14,6 +14,19 @@ To build from command line run ant as usual with
 
 The installers will be generated and placed in the dist/ subdir
 
-In case the ${cluster.dir} is platform specific, one can supply the Windows
-version and Unix version separately and run the targets build-win32 and
-build-unix in turn.
+As there is different command line option for every platform it must be run
+separately for every platform.
+
+Build targets to build English (en) installers for supported platforms are
+as follows:
+build-linux - Linux - suffix '-linux' is appended to installer.basename
+build-windows - Windows - suffix '-win'
+                                                                                                             
+Build targets for ML installers (Language support for Japanese (ja) and
+Simplified Chinese (zh) is added to English support ie. en,ja,zh support is
+present):
+build-linux-ml - Linux - suffix '-linux-ml' is appended to installer.basename
+build-windows-ml - Windows - suffix '-win-ml'
+
+For linux also jar installer is built in addition to native installer. jar
+installer is used for i18n testing.
