@@ -17,6 +17,10 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
@@ -27,24 +31,118 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Watch;
 
+import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
+
 
 /**
  *
  * @author   Jan Jancura
  */
 public abstract class DebuggerAction extends AbstractAction {
+    
+    private static RequestProcessor actionRequestProcessor;
+    
+    private static WeakSet debuggeeActions;
 
     public DebuggerAction () {
         new Listener (this);
         setEnabled (getCurrentActionsManager ().isEnabled (getAction ()));
+        if (isDebuggeeAction()) {
+            synchronized (DebuggerAction.class) {
+                if (debuggeeActions == null) {
+                    debuggeeActions = new WeakSet();
+                }
+                debuggeeActions.add(this);
+            }
+        }
     }
     
     public abstract Object getAction ();
     
+    /**
+     * Test whether the action can be run synchronously or not.
+     * Actions that contact the debugged process (debuggee) should be performed
+     * asynchronously, otherwise AWT can be blocked.
+     */
+    private boolean isDebuggeeAction() {
+        Object action = getAction();
+        return ActionsManager.ACTION_CONTINUE == action ||
+               ActionsManager.ACTION_PAUSE == action ||
+               ActionsManager.ACTION_RESTART == action ||
+               ActionsManager.ACTION_RUN_INTO_METHOD == action ||
+               ActionsManager.ACTION_RUN_TO_CURSOR == action ||
+               ActionsManager.ACTION_STEP_INTO == action ||
+               ActionsManager.ACTION_STEP_OUT == action ||
+               ActionsManager.ACTION_STEP_OVER == action ||
+               ActionsManager.ACTION_POP_TOPMOST_CALL == action;
+    }
+    
     public void actionPerformed (ActionEvent evt) {
-        getCurrentActionsManager ().doAction (
+        // Perform in sync with AWT if it does not contact debuggee.
+        if (!isDebuggeeAction()) {
+            getCurrentActionsManager().doAction (
                 getAction ()
             );
+            return ;
+        }
+        // Otherwise, spawn a task for it in RP and disable all actions
+        // that would also contact the debuggee.
+        synchronized (DebuggerAction.class) {
+            if (actionRequestProcessor == null) {
+                actionRequestProcessor = new RequestProcessor("DebuggerAction", 1); // NOI18N
+            }
+        }
+        final Set actions = disableAllDebuggeeActions();
+        RequestProcessor rp;
+        if (getAction() == ActionsManager.ACTION_KILL) {
+            rp = RequestProcessor.getDefault(); // Always process the kill action
+        } else {
+            rp = actionRequestProcessor;
+        }
+        rp.post(new Runnable() {
+            public void run() {
+                getCurrentActionsManager().doAction (
+                    getAction ()
+                );
+                enableActions(actions);
+            }
+        });
+    }
+    
+    /**
+     * @return the set of actions that were disabled.
+     */
+    private static Set disableAllDebuggeeActions() {
+        Set actions = new HashSet();
+        synchronized (DebuggerAction.class) {
+            for (Iterator it = debuggeeActions.iterator(); it.hasNext(); ) {
+                DebuggerAction da = (DebuggerAction) it.next();
+                if (da == null) continue;
+                actions.add(da);
+                da.setEnabled(false);
+            }
+        }
+        return actions;
+    }
+    
+    private static void enableActions(final Set actions) {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    for (Iterator it = actions.iterator(); it.hasNext(); ) {
+                        DebuggerAction da = (DebuggerAction) it.next();
+                        da.setEnabled (getCurrentActionsManager ().isEnabled (
+                            da.getAction ()
+                        ));
+                    }
+                }
+            });
+        } catch (InterruptedException iex) {
+        } catch (InvocationTargetException itex) {
+            ErrorManager.getDefault().notify(itex);
+        }
     }
         
     private static ActionsManager getCurrentActionsManager () {
