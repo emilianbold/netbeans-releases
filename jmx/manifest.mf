@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 OpenIDE-Module: com.sun.management.jmx.modules/1
 OpenIDE-Module-Public-Packages: com.sun.management.jmx.modules.mbeanwizard.*
-OpenIDE-Module-Specification-Version: 1.0.1
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Specification-Version: 0
+OpenIDE-Module-Implementation-Version: 0
 OpenIDE-Module-Localizing-Bundle: com/sun/management/jmx/modules/Bundle.properties
 OpenIDE-Module-Layer: com/sun/management/jmx/modules/JMXModuleLayer.xml
 OpenIDE-Module-Java-Dependencies: Java > 1.4
