@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sun-ejb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD Application Server 8.1 EJB 2.1//EN" "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_2_1-1.dtd">
+<sun-ejb-jar>
+  <enterprise-beans>
+    <ejb>
+      <ejb-name>RosterBean</ejb-name>
+      <jndi-name>ejb/SimpleRoster</jndi-name>
+    </ejb>
+    <cmp-resource>
+      <jndi-name>jdbc/pointbase_sample</jndi-name>
+    </cmp-resource>
+  </enterprise-beans>
+</sun-ejb-jar>

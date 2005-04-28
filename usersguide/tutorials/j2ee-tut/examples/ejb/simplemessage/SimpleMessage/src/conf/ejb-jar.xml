@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar version="2.1" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd">
+  <display-name>SimpleMessage</display-name>
+  <enterprise-beans>
+    <message-driven>
+      <display-name>SimpleMessageMDB</display-name>
+      <ejb-name>SimpleMessageBean</ejb-name>
+      <ejb-class>beans.SimpleMessageBean</ejb-class>
+      <transaction-type>Container</transaction-type>
+      <message-destination-type>javax.jms.Queue</message-destination-type>
+      <message-destination-link>SimpleMessageDestination</message-destination-link>
+      <activation-config>
+        <activation-config-property>
+          <activation-config-property-name>acknowledgeMode</activation-config-property-name>
+          <activation-config-property-value>Auto-acknowledge</activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property>
+          <activation-config-property-name>destinationType</activation-config-property-name>
+          <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+        </activation-config-property>
+      </activation-config>
+    </message-driven>
+  </enterprise-beans>
+  <assembly-descriptor>
+    <container-transaction>
+      <method>
+        <ejb-name>SimpleMessageBean</ejb-name>
+        <method-name>*</method-name>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+    <message-destination>
+      <display-name>Destination for SimpleMessage</display-name>
+      <message-destination-name>SimpleMessageDestination</message-destination-name>
+    </message-destination>
+  </assembly-descriptor>
+</ejb-jar>
