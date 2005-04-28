@@ -14,8 +14,10 @@
 package org.netbeans.modules.xml.multiview;
 
 import org.openide.text.CloneableEditor;
+import org.openide.text.NbDocument;
 
 import javax.swing.*;
+import javax.swing.text.Document;
 
 /**
  * XmlMultiviewElement.java
@@ -67,12 +69,11 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
 
     public javax.swing.JComponent getToolbarRepresentation() {
         if (toolbar == null) {
-            XmlMultiViewEditorSupport support = dObj.getEditorSupport();
-            final JEditorPane[] panes = support.getOpenedPanes();
-            if (panes!= null && panes[0] != null) {
-                javax.swing.text.Document doc = panes[0].getDocument();
-                if (doc instanceof org.openide.text.NbDocument.CustomToolbar) {
-                    toolbar = ((org.openide.text.NbDocument.CustomToolbar) doc).createToolbar(panes[0]);
+            final JEditorPane editorPane = getXmlEditor().getEditorPane();
+            if (editorPane!= null) {
+                final Document doc = editorPane.getDocument();
+                if (doc instanceof NbDocument.CustomToolbar) {
+                    toolbar = ((NbDocument.CustomToolbar) doc).createToolbar(editorPane);
                 }
             }
             if (toolbar == null) {
