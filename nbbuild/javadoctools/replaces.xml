@@ -19,15 +19,15 @@ Microsystems, Inc. All Rights Reserved.
    to decide whether such change shall be commited to CVS
    or not
 -->
+<replacefilter token="@org-openide-compat@" value="${javadoc.docs.org-openide-compat}"/>
 <replacefilter token="@org-openide-util@" value="${javadoc.docs.org-openide-util}"/>
+<replacefilter token="@org-openide-nodes@" value="${javadoc.docs.org-openide-nodes}"/>
 <replacefilter token="@org-netbeans-modules-nbjunit@" value="${javadoc.docs.org-netbeans-modules-nbjunit}"/>
 <replacefilter token="@org-netbeans-modules-jellytools@" value="${javadoc.docs.org-netbeans-modules-jellytools}"/>
 <replacefilter token="@org-openide-actions@" value="${javadoc.docs.org-openide-actions}"/>
 <replacefilter token="@org-openide-options@" value="${javadoc.docs.org-openide-options}"/>
-<replacefilter token="@org-openide-compat@" value="${javadoc.docs.org-openide-compat}"/>
 <replacefilter token="@org-openide-awt@" value="${javadoc.docs.org-openide-awt}"/>
 <replacefilter token="@org-openide-dialogs@" value="${javadoc.docs.org-openide-dialogs}"/>
-<replacefilter token="@org-openide-nodes@" value="${javadoc.docs.org-openide-nodes}"/>
 <replacefilter token="@org-openide-explorer@" value="${javadoc.docs.org-openide-explorer}"/>
 <replacefilter token="@org-openide-fs@" value="${javadoc.docs.org-openide-fs}"/>
 <replacefilter token="@org-openide-modules@" value="${javadoc.docs.org-openide-modules}"/>

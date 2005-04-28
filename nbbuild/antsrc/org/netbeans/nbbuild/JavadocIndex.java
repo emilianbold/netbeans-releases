@@ -77,7 +77,11 @@ public class JavadocIndex extends Task {
             PrintStream ps = new PrintStream (new BufferedOutputStream (
                 new FileOutputStream (target)
             ));
-            printClassesAsHtml (ps);
+            if (target.getName ().endsWith (".xml")) {
+                printClassesAsXML (ps);
+            } else {
+                printClassesAsHtml (ps);
+            }
             ps.close ();
         } catch (IOException ex) {
             throw new BuildException (ex);
@@ -223,6 +227,39 @@ public class JavadocIndex extends Task {
             }
         }
         ps.println ("</HTML>");
+    }
+
+    private void printClassesAsXML (PrintStream ps) {
+        ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        ps.println ("<classes>");
+        
+        TreeSet allPkgs = new TreeSet (classes.keySet ());
+        Iterator it = allPkgs.iterator ();
+        while (it.hasNext ()) {
+            String pkg = (String)it.next ();
+
+            List list = (List)classes.get (pkg);
+            Collections.sort (list);
+            
+            Iterator clss = list.iterator ();
+            while (clss.hasNext ()) {
+                Clazz c = (Clazz)clss.next ();
+                ps.print ("<class name=\"");
+                ps.print (c.name);
+                ps.print ("\"");
+                ps.print (" url=\"");
+                ps.print (c.url);
+                ps.print ("\"");
+                ps.print (" interface=\"");
+                ps.print (c.isInterface);
+                ps.print ("\"");
+                ps.print (" package=\"");
+                ps.print (c.pkg);
+                ps.print ("\"");
+                ps.println (" />");
+            }
+        }
+        ps.println ("</classes>");
     }
     
     /** An information about one class in api */

@@ -2714,6 +2714,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <simplemerge topdir=".." subdir="javadoc" dest="${netbeans.javadoc.dir}" modules="${fixedmodules}"/>
       <simplemerge topdir=".." subdir="javadoc" dest="${netbeans.javadoc.dir}" modules="${modules}"/>
       
+      <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-xml" />
+      <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-html" />
+  </target>  
+      
+  <target name="javadoc-generate-xml" depends="set-config-to-javadoc,init" >
       <echo file="build/APIChanges/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;changes&gt;
 </echo>
@@ -2737,18 +2742,34 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
         &lt;/apis&gt;
       </echo>
       
-      <concat destfile="${netbeans.javadoc.dir}/index.xml" >
+      <concat destfile="${netbeans.javadoc.dir}/modules.xml" >
           <fileset dir="build/ModulesExportedInterfaces" includes="header.gen" />
           <fileset dir="build/ModulesExportedInterfaces" includes="*" excludes="*.gen" />
           <fileset dir="build/ModulesExportedInterfaces" includes="footer.gen" />
       </concat>
-            
+      
+    <taskdef 
+        name="javadoc-index" 
+        classpath="nbantext.jar" 
+        classname="org.netbeans.nbbuild.JavadocIndex"
+    />
+
+        
+    <javadoc-index target="${netbeans.javadoc.dir}/allclasses.xml" > 
+        <packageslist dir="${netbeans.javadoc.dir}" >
+            <include name="**/allclasses-noframe.html" />
+        </packageslist>
+    </javadoc-index>
+  </target>
+  
+  
+  <target name="javadoc-generate-html" depends="set-config-to-javadoc,init" >            
       <tstamp>
         <format property="modules-javadoc-date" pattern="d MMM yyyy" locale="en" />
       </tstamp>
       
       <style 
-        in="${netbeans.javadoc.dir}/index.xml" 
+        in="${netbeans.javadoc.dir}/modules.xml" 
         out="${netbeans.javadoc.dir}/usecases.html" 
         style="javadoctools/export2usecases.xsl"
       >
@@ -2767,32 +2788,63 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
         <param name="include-introduction" expression="true" />
       </style>
       
-      
-    <taskdef 
-        name="javadoc-index" 
-        classpath="nbantext.jar" 
-        classname="org.netbeans.nbbuild.JavadocIndex"
-    />
-
-        
-    <javadoc-index target="${netbeans.javadoc.dir}/allclasses.html" > 
-        <packageslist dir="${netbeans.javadoc.dir}" >
-            <include name="**/allclasses-noframe.html" />
-        </packageslist>
-    </javadoc-index>
-    
     <copy file="javadoctools/netbeans.css" tofile="${netbeans.javadoc.dir}/netbeans.css" />
+    <condition property="javadoc.style.sheet.exists" >
+        <available file="${netbeans.javadoc.dir}/org-openide-util/javadoc.css" />
+    </condition>
+    
+    <fail unless="javadoc.style.sheet.exists" >
+    The org-openide-util/javadoc.css has to exist as we are refering to
+    it from to master module javadoc pages. If it does not anymore, update
+    the javadoctools/export*.xsl templates.
+    </fail>
 
-    <!-- at the end geneate the index.html so people know where to start -->      
       <style 
-        in="${netbeans.javadoc.dir}/index.xml" 
-        out="${netbeans.javadoc.dir}/index.html" 
+        in="${netbeans.javadoc.dir}/allclasses.xml" 
+        out="${netbeans.javadoc.dir}/allclasses-frame.html" 
+        style="javadoctools/export2allclasses.xsl"
+      >
+      </style>
+      
+      <style 
+        in="${netbeans.javadoc.dir}/modules.xml" 
+        out="${netbeans.javadoc.dir}/overview-frame.html" 
+        style="javadoctools/export2allmodules.xsl"
+      >
+        <param name="date" expression="${modules-javadoc-date}"/>
+      </style>
+      
+      <style 
+        in="${netbeans.javadoc.dir}/modules.xml" 
+        out="${netbeans.javadoc.dir}/overview-summary.html" 
         style="javadoctools/export2html.xsl"
       >
         <param name="date" expression="${modules-javadoc-date}"/>
       </style>
       
       
+    <!-- at the end geneate the index.html so people know where to start -->      
+    <echo file="${netbeans.javadoc.dir}/index.html" ><![CDATA[
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
+<HTML><HEAD><TITLE>NetBeans API Index</TITLE>
+</HEAD>
+<FRAMESET cols="20%,80%" title="" onLoad="top.loadFrames()">
+<FRAMESET rows="30%,70%" title="" onLoad="top.loadFrames()">
+<FRAME src="overview-frame.html" name="packageListFrame" title="All Modules">
+<FRAME src="allclasses-frame.html" name="packageFrame" title="All classes">
+</FRAMESET>
+<FRAME src="overview-summary.html" name="classFrame" title="Module, package, class and interface descriptions" scrolling="yes">
+<NOFRAMES>
+<H2>Frame Alert</H2>
+<P>
+This document is designed to be viewed using the frames feature. If you see this message, you are using a non-frame-capable web client.
+Link to<A HREF="overview-summary.html">Non-frame version.</A>
+</NOFRAMES>
+</FRAMESET>
+</HTML>
+]]></echo>
+    
+    <echo message="Javadoc index has been generated to ${netbeans.javadoc.dir}/index.html" />
   </target>
 
   <target name="build-messaging" depends="init">

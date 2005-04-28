@@ -75,9 +75,9 @@ Microsystems, Inc. All Rights Reserved.
         <h4>Additional Sources of Information</h4>
         
         <ul>
-            <li><a href="allclasses.html">Index of all NetBeans API classes</a></li>
-            <li><a href="usecases.html">How to use certain NetBeans APIs</a></li>
             <li><a href="apichanges.html">Changes since previous release</a></li>
+            <li><a href="usecases.html">How to use certain NetBeans APIs</a></li>
+            <li><a href="allclasses-frame.html">Index of all NetBeans API classes</a></li>
         </ul>
 
         <hr/>
@@ -98,7 +98,11 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:choose>
                     <xsl:when test="api" >
                        <li>
-                           <a href="#def-api-{@name}"><xsl:value-of select="@name"/></a> -
+                           <a>
+                             <xsl:attribute name="href"><xsl:value-of select="substring-before(@target,'/')" />/overview-summary.html</xsl:attribute>
+                             <xsl:attribute name="target">classFrame</xsl:attribute>
+                             <xsl:value-of select="@name"/>
+                           </a> -
                             <!-- XXX the following is crap; e.g. messes up descs of Dialogs API, I/O API, ... -->
                             <!-- Should use e.g.:
                             <answer id="arch-what">
@@ -126,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:otherwise>
                         <li>
                             <xsl:variable name="where" select="substring-before(@target, '/')"/>
-                            <b><a href="{$where}/index.html"><xsl:value-of select="$where"/></a></b>
+                            <b><a href="{$where}/overview-summary.html"><xsl:value-of select="$where"/></a></b>
                             - no API description provided
                             (see <a href="http://openide.netbeans.org/tutorial/api.html">how to do it</a>)
                         </li>
