@@ -43,9 +43,9 @@ Microsystems, Inc. All Rights Reserved.
 	  rootDir="src"/>
   </target>
   
-  <target name="compile" depends="dd2beans_gen, projectized.compile"/>
+  <target name="compile" depends="dd2beans_gen, projectized-common.compile"/>
     
-  <target name="clean" depends="clean-ddgen-src, projectized.clean"/>
+  <target name="clean" depends="clean-ddgen-src, projectized-common.clean"/>
 
   <target name="clean-ddgen-check">
     <available property="have-config" file="${tomcat5_dir}/config"/>

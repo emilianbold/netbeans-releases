@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.j2ee.ddloaders</code-name-base>
-            <path>j2ee/ddloaders</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.schema2beans</code-name-base>

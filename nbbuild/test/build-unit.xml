@@ -9,13 +9,16 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="nbbuild/test-unit" basedir="." default="all">
+
     <property name="code.name.base.dashes" value="org-netbeans-nbbuild"  />
     <property name="module.classpath" location="../../nbbuild/nbantext.jar:${ant.home}/lib/ant.jar:${ant.home}/lib/ant-launcher.jar" />
+    <property name="xtest.userdata|nb_all" location="${nb_all}"/>
+    <property name="test.unit.cp.extra" location="${nb_all}/nbbuild/nbantext.jar"/>
 
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
+
 </project>

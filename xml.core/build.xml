@@ -8,10 +8,9 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="xml/core" default="netbeans" basedir=".">
   <import file="../../nbbuild/templates/projectized.xml"/>
 
@@ -41,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
         </echo>
     </target>
 
-    <target name="compile" depends="generate-user-handler,projectized.compile">
+    <target name="compile" depends="generate-user-handler,projectized-common.compile">
         <!-- removing temporary org.w3c package from src folder -->
         <delete dir="src/org/w3c"/>
     </target>

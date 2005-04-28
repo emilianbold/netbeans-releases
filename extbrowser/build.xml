@@ -29,6 +29,6 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="release,projectized.netbeans">
+  <target name="netbeans" depends="release,projectized-common.netbeans">
   </target>
 </project>

@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
 	</jarwithmoduleattributes>
     </target>
     
-    <target name="clean" depends="projectized.clean">
+    <target name="clean" depends="projectized-common.clean">
         <ant dir=".." target="clean" inheritAll="false"/>
     </target>
 

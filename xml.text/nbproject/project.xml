@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.xml.text</code-name-base>
-            <path>xml/text-edit</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.api.xml</code-name-base>

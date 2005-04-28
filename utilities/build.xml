@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="compile" depends="jar-cli,projectized.compile"/>
+    <target name="compile" depends="jar-cli,projectized-common.compile"/>
 
     <target name="netbeans-extra" depends="jar-cli"/>
 

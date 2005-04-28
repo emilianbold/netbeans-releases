@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -45,6 +47,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -73,10 +76,9 @@ final class NbModuleProject implements Project {
         if (getCodeNameBase() == null) {
             throw new IOException("Misconfigured project in " + getProjectDirectory() + " has no defined <code-name-base>"); // NOI18N
         }
-        File nbroot = helper.resolveFile(getNbrootRel());
-        moduleList = ModuleList.getModuleList(nbroot);
-        ClassPathExtensionsProvider cpext = new ClassPathExtensionsProvider();
-        eval = createEvaluator(cpext);
+        moduleList = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
+        assert moduleList.getEntry(getCodeNameBase()) != null : "Who am I? " + getProjectDirectory();
+        eval = createEvaluator();
         FileBuiltQueryImplementation fileBuilt;
         // XXX could add globs for other package roots too
         if (supportsUnitTests()) {
@@ -145,7 +147,6 @@ final class NbModuleProject implements Project {
             }
         });
         lookup = Lookups.fixed(new Object[] {
-            cpext,
             new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
@@ -229,26 +230,35 @@ final class NbModuleProject implements Project {
      * Create a property evaluator: private project props, shared project props, various defaults.
      * Synch with nbbuild/templates/projectized.xml.
      */
-    private PropertyEvaluator createEvaluator(ClassPathExtensionsProvider cpext) {
+    private PropertyEvaluator createEvaluator() {
+        // XXX a lot of this duplicates ModuleList.parseProperties... can they be shared?
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         Map/*<String,String>*/ stock = new HashMap();
-        stock.put("nb_all", getNbrootRel()); // NOI18N
+        File dir = FileUtil.toFile(getProjectDirectory());
+        File nbroot = ModuleList.findNetBeansOrg(dir);
+        if (nbroot != null) {
+            stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
+        }
         ModuleList ml = getModuleList();
+        // Register *.dir for nb.org modules. There is no equivalent for external modules.
         Iterator it = ml.getAllEntries().iterator();
         while (it.hasNext()) {
             ModuleList.Entry e = (ModuleList.Entry)it.next();
-            // #48449: intern these; number is (size of modules.xml) * (# of loaded module projects)
-            stock.put((e.getPath() + ".dir").intern(), e.getClusterDirectory().getAbsolutePath().intern()); // NOI18N
+            String nborgPath = e.getNetBeansOrgPath();
+            if (nborgPath != null) {
+                // #48449: intern these; number is (size of modules.xml) * (# of loaded module projects)
+                stock.put((nborgPath + ".dir").intern(), e.getClusterDirectory().getAbsolutePath().intern()); // NOI18N
+            }
         }
-        stock.put("netbeans.dest.dir", ml.getDestDirPath()); // NOI18N
         ModuleList.Entry thisEntry = ml.getEntry(getCodeNameBase());
-        if (thisEntry != null) {
-            stock.put("cluster.dir", thisEntry.getCluster()); // NOI18N
-        } else {
-            // Won't help e.g. classpath for unit tests be computed correctly in case
-            // modules.xml has no entry (cf. #57731), but maybe make other things correct.
-            stock.put("cluster.dir", "extra"); // NOI18N
+        assert thisEntry != null : "Cannot find myself";
+        if (nbroot != null) {
+            // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
+            stock.put("netbeans.dest.dir", thisEntry.getDestDir().getAbsolutePath()); // NOI18N
         }
+        File clusterDir = thisEntry.getClusterDirectory();
+        assert clusterDir.getParentFile().equals(thisEntry.getDestDir()) : "Did not find " + clusterDir + " right under " + thisEntry.getDestDir();
+        stock.put("cluster.dir", clusterDir.getName()); // NOI18N
         Map/*<String,String>*/ defaults = new HashMap();
         defaults.put("code.name.base.dashes", getCodeNameBase().replace('.', '-')); // NOI18N
         defaults.put("module.jar.dir", "modules"); // NOI18N
@@ -260,27 +270,31 @@ final class NbModuleProject implements Project {
         defaults.put("test.unit.src.dir", "test/unit/src"); // NOI18N
         defaults.put("test.qa-functional.src.dir", "test/qa-functional/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
-        PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, new PropertyProvider[] {
-            PropertyUtils.fixedPropertyProvider(stock),
-            helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
-            helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
-            PropertyUtils.fixedPropertyProvider(defaults),
-        });
-        defaults.put("module.classpath", computeModuleClasspath(cpext, baseEval));
         defaults.put("javac.source", "1.4");
+        List/*<PropertyProvider>*/ providers = new ArrayList();
+        providers.add(PropertyUtils.fixedPropertyProvider(stock));
+        if (nbroot == null) {
+            providers.add(helper.getPropertyProvider("nbproject/suite-locator.properties")); // NOI18N
+            PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+            String suiteProperties = baseEval.getProperty("suite.properties"); // NOI18N
+            // XXX should listen to changes in the value of this property...
+            if (suiteProperties != null) {
+                providers.add(PropertyUtils.propertiesFilePropertyProvider(PropertyUtils.resolveFile(dir, suiteProperties)));
+            }
+        }
+        providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+        providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+        providers.add(PropertyUtils.fixedPropertyProvider(defaults));
+        PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.classpath", computeModuleClasspath(baseEval)))); // NOI18N
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
-        return PropertyUtils.sequentialPropertyEvaluator(predefs, new PropertyProvider[] {
-            PropertyUtils.fixedPropertyProvider(stock),
-            helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
-            helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
-            PropertyUtils.fixedPropertyProvider(defaults),
-        });
+        return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
     }
     
     /**
      * Should be similar to impl in ParseProjectXml.
      */
-    private String computeModuleClasspath(ClassPathExtensionsProvider cpext, PropertyEvaluator baseEval) {
+    private String computeModuleClasspath(PropertyEvaluator baseEval) {
         Element data = getPrimarySharedConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACES_SHARED); // NOI18N
@@ -288,7 +302,6 @@ final class NbModuleProject implements Project {
         Iterator it = deps.iterator();
         StringBuffer cp = new StringBuffer();
         ModuleList ml = getModuleList();
-        File nbroot = getHelper().resolveFile(getNbrootRel());
         while (it.hasNext()) {
             Element dep = (Element)it.next();
             if (Util.findElement(dep, "compile-dependency", // NOI18N
@@ -300,7 +313,7 @@ final class NbModuleProject implements Project {
             String cnb = Util.findText(cnbEl);
             ModuleList.Entry module = ml.getEntry(cnb);
             if (module == null) {
-                Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + this);
+                Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(getProjectDirectory()));
                 continue;
             }
             // XXX if that module is projectized, check its public packages;
@@ -313,7 +326,8 @@ final class NbModuleProject implements Project {
             cp.append(moduleJar.getAbsolutePath());
             cp.append(module.getClassPathExtensions());
         }
-        cp.append(cpext.getClassPathExtensions(baseEval));
+        ModuleList.Entry myself = moduleList.getEntry(getCodeNameBase());
+        cp.append(myself.getClassPathExtensions());
         return cp.toString();
     }
     
@@ -367,14 +381,8 @@ final class NbModuleProject implements Project {
     }
     
     public File getModuleJarLocation() {
-        //XXX Workaround of core/bootstrap
-        //Why it is not in the nbbuild/templates/modules.xml ???
-        if ("org.netbeans".equals(this.getCodeNameBase())) {    //NOI18N
-            return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/platform5/${module.jar}"));   //NOI18N
-        }
-        else {
-            return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
-        }
+        // XXX could use ModuleList here instead
+        return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
     }
     
     public URL getModuleJavadocDirectoryURL() {
@@ -398,42 +406,53 @@ final class NbModuleProject implements Project {
         }
     }
     
-    public String getPath() {
-        Element config = getPrimarySharedConfigurationData();
-        Element path = Util.findElement(config, "path", NbModuleProjectType.NAMESPACES_SHARED); // NOI18N
-        if (path != null) {
-            return Util.findText(path);
+    /**
+     * Slash-separated path inside netbeans.org CVS, or null for external modules.
+     */
+    public String getPathWithinNetBeansOrg() {
+        FileObject nbroot = getNbrootFileObject(null);
+        if (nbroot != null) {
+            return FileUtil.getRelativePath(nbroot, getProjectDirectory());
         } else {
             return null;
         }
     }
     
-    private String getNbrootRel() {
-        String path = getPath();
-        if (path != null) {
-            return path.replaceAll("[^/]+", ".."); // NOI18N
-        }
-        Util.err.log(ErrorManager.WARNING, "Could not compute relative path to nb_all for " + this);
-        return ".."; // NOI18N
-    }
-    
-    public FileObject getNbroot() {
-        String nbrootRel = getNbrootRel();
-        FileObject nbroot = getHelper().resolveFileObject(nbrootRel);
-        if (nbroot == null) {
-            Util.err.log(ErrorManager.WARNING, "Warning - cannot find nb_all for " + this);
-        }
-        return nbroot;
-    }
-    
-    public File getNbrootFile(String path) {
-        return getHelper().resolveFile(getNbrootRel() + '/' + path);
-    }
-    
-    public FileObject getNbrootFileObject(String path) {
-        FileObject nbroot = getNbroot();
+    private File getNbroot() {
+        File dir = FileUtil.toFile(getProjectDirectory());
+        File nbroot = ModuleList.findNetBeansOrg(dir);
         if (nbroot != null) {
-            return nbroot.getFileObject(path);
+            return nbroot;
+        } else {
+            // OK, not it.
+            String text = evaluator().getProperty("netbeans.sources"); // NOI18N
+            if (text != null) {
+                String[] path = PropertyUtils.tokenizePath(text);
+                for (int i = 0; i < path.length; i++) {
+                    File f = FileUtil.normalizeFile(new File(path[i]));
+                    if (ModuleList.isNetBeansOrg(f)) {
+                        return f;
+                    }
+                }
+            }
+            // Did not find it.
+            return null;
+        }
+    }
+    
+    File getNbrootFile(String path) {
+        File nbroot = getNbroot();
+        if (nbroot != null) {
+            return new File(nbroot, path.replace('/', File.separatorChar));
+        } else {
+            return null;
+        }
+    }
+    
+    FileObject getNbrootFileObject(String path) {
+        File f = path != null ? getNbrootFile(path) : getNbroot();
+        if (f != null) {
+            return FileUtil.toFileObject(f);
         } else {
             return null;
         }
@@ -605,52 +624,6 @@ final class NbModuleProject implements Project {
             boot = null;
             source = null;
             compile = null;
-        }
-        
-    }
-    
-    /** See #52354. */
-    final class ClassPathExtensionsProvider {
-        
-        public ClassPathExtensionsProvider() {}
-        
-        public String getClassPathExtensions() {
-            return getClassPathExtensions(evaluator());
-        }
-        
-        String getClassPathExtensions(PropertyEvaluator evaluator) {
-            // Cf. ParseProjectXml.computeClasspath:
-            StringBuffer cpextra = new StringBuffer();
-            Element data = getPrimarySharedConfigurationData();
-            Iterator/*<Element>*/ exts = Util.findSubElements(data).iterator();
-            while (exts.hasNext()) {
-                Element ext = (Element) exts.next();
-                if (!ext.getLocalName().equals("class-path-extension")) { // NOI18N
-                    continue;
-                }
-                Element binaryOrigin = Util.findElement(ext, "binary-origin", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
-                String text;
-                if (binaryOrigin != null) {
-                    text = Util.findText(binaryOrigin);
-                } else {
-                    Element runtimeRelativePath = Util.findElement(ext, "runtime-relative-path", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
-                    assert runtimeRelativePath != null : "Malformed <class-path-extension> in " + getProjectDirectory();
-                    String reltext = Util.findText(runtimeRelativePath);
-                    // XXX assumes that module.jar is not overridden independently of module.jar.dir:
-                    text = "${netbeans.dest.dir}/${cluster.dir}/${module.jar.dir}/" + reltext;
-                }
-                String eval = evaluator.evaluate(text);
-                if (eval == null) {
-                    continue;
-                }
-                File binary = getHelper().resolveFile(eval);
-                if (cpextra == null) {
-                    cpextra = new StringBuffer();
-                }
-                cpextra.append(':');
-                cpextra.append(binary.getAbsolutePath());
-            }
-            return cpextra.toString();
         }
         
     }

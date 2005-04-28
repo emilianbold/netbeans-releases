@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.javahelp</code-name-base>
-            <path>core/javahelp</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>

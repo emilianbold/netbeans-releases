@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -40,9 +40,6 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
-  <p>
-   Registers an Ant script template.
-  </p>
   <api group="org.apache.tools.ant.Task" name="nbinstaller" type="export" category="devel">
    <p>
     This Ant task lets you installer or reload a module in the host IDE.
@@ -101,8 +98,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-   The script template is currently used by the New Module Wizard. (That will
-   probably change in the future.) The Ant task is used by the NetBeans Module
+   The Ant task is used by the NetBeans Module
    Projects module in order to make the <code>reload</code> target work in a
    module build script.
   </p>
@@ -224,13 +220,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-nb">
   <ul>
-   <li>
-    <api group="layer" name="Templates" type="import" category="official">
-     <p>
-      Uses template syntax definition.
-     </p>
-    </api>
-   </li>
    <li>
     <api group="java.io.File" name="AntModuleAPI" type="import" category="devel">
      <p>
@@ -860,7 +849,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   Supplies a template.
+   No.
   </p>
  </answer>
 

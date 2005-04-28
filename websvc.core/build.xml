@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
 		<replace file="${s2b_root_wscompile_config}/Entry.java" token="javax.xml.namespace.QName" value="java.lang.String/*QName*/"/>
 	</target>
 
-	<target name="compile" depends="dd2beansgen, projectized.compile"/>
+	<target name="compile" depends="dd2beansgen, projectized-common.compile"/>
 
     <target name="ant-extra" depends="init">
         <mkdir dir="build/antclasses"/>
@@ -80,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="netbeans-extra" depends="ant-extra"/>
 
-	<target name="clean" depends="projectized.clean,clean-ddgen-src"/>
+	<target name="clean" depends="projectized-common.clean,clean-ddgen-src"/>
 
 	<target name="clean-ddgen-src">
 		<delete dir="${s2b_root_wscompile_config}"/>

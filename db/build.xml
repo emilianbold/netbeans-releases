@@ -40,6 +40,6 @@ Microsystems, Inc. All Rights Reserved.
 		</jar>
 	</target>
 
-	<target name="compile" depends="jar-lib, projectized.compile" />
+	<target name="compile" depends="jar-lib, projectized-common.compile" />
     
 </project>

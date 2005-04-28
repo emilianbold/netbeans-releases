@@ -47,9 +47,9 @@ Microsystems, Inc. All Rights Reserved.
 	  finder="on /webservices find webservice-description by webservice-description-name,on /webservices/webservice-description/port-component find handler by handler-name,on /webservices/webservice-description/port-component/handler find init-param by param-name,on /webservices/webservice-description find port-component by port-component-name"/>
   </target>
 
-  <target name="compile" depends="dd2beansgen, projectized.compile"/>
+  <target name="compile" depends="dd2beansgen, projectized-common.compile"/>
   
-  <target name="clean" depends="clean-ddgen-src, clean-javadoc, projectized.clean"/>
+  <target name="clean" depends="clean-ddgen-src, clean-javadoc, projectized-common.clean"/>
 
   <target name="clean-ddgen-src">
         <mkdir dir="${s2b_root_1_1}"/>

@@ -41,10 +41,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target depends="init,s2beansgen" name="compile">
-	<antcall target="projectized.compile"/>
+	<antcall target="projectized-common.compile"/>
     </target>
 
-    <target name="clean" depends="projectized.clean">
+    <target name="clean" depends="projectized-common.clean">
         <delete dir="${ejbcodegenroot}"/>
     </target>
 

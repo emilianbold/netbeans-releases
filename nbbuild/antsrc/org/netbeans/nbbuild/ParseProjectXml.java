@@ -41,13 +41,11 @@ import org.xml.sax.SAXException;
  */
 public final class ParseProjectXml extends Task {
 
-    private static final String PROJECT_NS = "http://www.netbeans.org/ns/project/1"; //NOI18N
-    private static final String[] NBM_NS_1_AND_2 = {
+    static final String PROJECT_NS = "http://www.netbeans.org/ns/project/1"; //NOI18N
+    static final String[] NBM_NS_1_AND_2 = {
         "http://www.netbeans.org/ns/nb-module-project/1",
         "http://www.netbeans.org/ns/nb-module-project/2",
     };
-
-    private static final String CLASS_PATH_EXTENSIONS_FILE = "build" + File.separatorChar + "class-path-extensions.txt";
 
     private File project;
     /**
@@ -69,14 +67,6 @@ public final class ParseProjectXml extends Task {
             return projectFile;
         }
         return new File(new File(project, "nbproject"), "project.xml"); //NOI18N
-    }
-
-    private File modulesXml;
-    /**
-     * Set the location of <code>nbbuild/templates/modules.xml</code>.
-     */
-    public void setModulesXml(File f) {
-        modulesXml = f;
     }
 
     private String publicPackagesProperty;
@@ -147,6 +137,7 @@ public final class ParseProjectXml extends Task {
     private String domainProperty;
     /**
      * Set the property to set the module's netbeans.org domain to.
+     * Only applicable to modules in netbeans.org (i.e. no <path>).
      */
     public void setDomainProperty(String s) {
         domainProperty = s;
@@ -185,6 +176,7 @@ public final class ParseProjectXml extends Task {
             }
             // XXX validate against nbm-project{,2}.xsd; does this require JDK 1.5?
             // Cf.: ant/project/eg/ValidateAllBySchema.java
+            // XXX share parse w/ ModuleListParser
             Document pDoc = XMLUtil.parse(new InputSource(getProjectFile ().toURI().toString()),
                                           false, true, /*XXX*/null, null);
             if (publicPackagesProperty != null || javadocPackagesProperty != null) {
@@ -255,7 +247,8 @@ public final class ParseProjectXml extends Task {
             }
             ModuleListParser modules = null;
             if (moduleDependenciesProperty != null || moduleClassPathProperty != null) {
-                modules = new ModuleListParser(modulesXml);
+                String nball = getProject().getProperty("nb_all");
+                modules = new ModuleListParser(getProject().getProperties(), getPath(pDoc, false), getProject());
             }
             if (ideDependenciesProperty != null || moduleDependenciesProperty != null) {
                 Dep[] deps = getDeps(pDoc);
@@ -296,24 +289,29 @@ public final class ParseProjectXml extends Task {
                 define(codeNameBaseSlashesProperty, cnb.replace('.', '/')); //NOI18N
             }
             if (moduleClassPathProperty != null) {
-                if (modulesXml == null) {
-                    throw new BuildException("You must set 'modulesxml'", getLocation());
-                }
                 String cp = computeClasspath(pDoc, modules);
                 if (cp != null) {
                     define(moduleClassPathProperty, cp);
                 }
             }
             if (domainProperty != null) {
-                String path = getPath(pDoc);
-                int index = path.indexOf('/'); //NOI18N
-                String domain;
-                if (index == -1) {
-                    domain = path;
-                } else {
-                    domain = path.substring(0, index);
+                if (getPath(pDoc, true) != null) {
+                    throw new BuildException("Cannot set " + domainProperty + " for a non-netbeans.org module", getLocation());
                 }
-                define(domainProperty, domain);
+                File nball = new File(getProject().getProperty("nb_all"));
+                File basedir = new File(getProject().getProperty("basedir"));
+                File dir = basedir;
+                while (true) {
+                    File parent = dir.getParentFile();
+                    if (parent == null) {
+                        throw new BuildException("Could not find " + basedir + " inside " + nball + " for purposes of defining " + domainProperty);
+                    }
+                    if (parent.equals(nball)) {
+                        define(domainProperty, dir.getName());
+                        break;
+                    }
+                    dir = parent;
+                }
             }
             if (classPathExtensionsProperty != null) {
                 String val = computeClassPathExtensions(pDoc);
@@ -444,7 +442,7 @@ public final class ParseProjectXml extends Task {
             return b.toString();
         }
         private String implementationVersionOf(ModuleListParser modules, String cnb) throws IOException {
-            File jar = new File(computeClasspathModuleLocation(modules, cnb));
+            File jar = computeClasspathModuleLocation(modules, cnb);
             if (!jar.isFile()) {
                 throw new BuildException("No such classpath entry: " + jar, getLocation());
             }
@@ -523,11 +521,13 @@ public final class ParseProjectXml extends Task {
         return t;
     }
 
-    private String getPath(Document d) throws BuildException {
+    private String getPath(Document d, boolean ns2only) throws BuildException {
         Element data = getConfig(d);
-        Element path = XMLUtil.findElement(data, "path", NBM_NS_1_AND_2); //NOI18N
+        Element path = ns2only ?
+            XMLUtil.findElement(data, "path", NBM_NS_1_AND_2[1]) : //NOI18N
+            XMLUtil.findElement(data, "path", NBM_NS_1_AND_2); //NOI18N
         if (path == null) {
-            throw new BuildException("No <path>", getLocation());
+            return null;
         }
         String t = XMLUtil.findText(path);
         if (t == null) {
@@ -552,78 +552,30 @@ public final class ParseProjectXml extends Task {
             }
             Element cnbEl = XMLUtil.findElement(dep, "code-name-base", NBM_NS_1_AND_2); //NOI18N
             String cnb = XMLUtil.findText(cnbEl);
-            cp.append(computeClasspathModuleLocation(modules, cnb));
+            cp.append(computeClasspathModuleLocation(modules, cnb).getAbsolutePath());
             // #52354: look for <class-path-extension>s in dependent modules.
             ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
             if (entry != null) {
-                File subproject = new File(modulesXml.getParentFile().getParentFile().getParentFile(),
-                                           entry.getPath().replace('/', File.separatorChar));
-                File record = new File(subproject, CLASS_PATH_EXTENSIONS_FILE);
-                if (record.isFile()) {
-                    InputStream is = new FileInputStream(record);
-                    try {
-                        byte[] buf = new byte[1024];
-                        int len;
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        while ((len = is.read(buf)) != -1) {
-                            baos.write(buf, 0, len);
-                        }
-                        cp.append(baos.toString("UTF-8"));
-                    } finally {
-                        is.close();
-                    }
+                File[] exts = entry.getClassPathExtensions();
+                for (int i = 0; i < exts.length; i++) {
+                    cp.append(':');
+                    cp.append(exts[i].getAbsolutePath());
                 }
             }
         }
         // Also look for <class-path-extension>s for myself and put them in my own classpath.
-        // Also record the classpath addition in a place where it can be quickly and easily read
-        // by modules which depend on me (see above).
-        StringBuffer cpextra = null;
-        List/*<Element>*/ exts = XMLUtil.findSubElements(data);
-        it = exts.iterator();
-        while (it.hasNext()) {
-            Element ext = (Element) it.next();
-            if (!ext.getLocalName().equals("class-path-extension")) {
-                continue;
-            }
-            Element binaryOrigin = XMLUtil.findElement(ext, "binary-origin", NBM_NS_1_AND_2[1]);
-            String text;
-            if (binaryOrigin != null) {
-                text = XMLUtil.findText(binaryOrigin);
-            } else {
-                Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", NBM_NS_1_AND_2[1]);
-                if (runtimeRelativePath == null) {
-                    throw new BuildException("Have malformed <class-path-extension> in " + getProjectFile(), getLocation());
-                }
-                String reltext = XMLUtil.findText(runtimeRelativePath);
-                // XXX assumes that module.jar.dir=modules was not overridden!
-                text = "${netbeans.dest.dir}/${cluster.dir}/modules/" + reltext;
-            }
-            String eval = getProject().replaceProperties(text);
-            File binary = getProject().resolveFile(eval);
-            if (cpextra == null) {
-                cpextra = new StringBuffer();
-            }
-            cpextra.append(':');
-            cpextra.append(binary.getAbsolutePath());
-        }
-        if (cpextra != null) {
-            cp.append(cpextra);
-            File record = new File(project, CLASS_PATH_EXTENSIONS_FILE);
-            record.getParentFile().mkdirs();
-            OutputStream os = new FileOutputStream(record);
-            try {
-                Writer w = new OutputStreamWriter(os, "UTF-8");
-                w.write(cpextra.toString());
-                w.flush();
-            } finally {
-                os.close();
-            }
+        String cnb = getCodeNameBase(pDoc);
+        ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
+        assert entry != null;
+        File[] exts = entry.getClassPathExtensions();
+        for (int i = 0; i < exts.length; i++) {
+            cp.append(':');
+            cp.append(exts[i].getAbsolutePath());
         }
         return cp.toString();
     }
     
-    private String computeClasspathModuleLocation(ModuleListParser modules, String cnb) throws BuildException {
+    private File computeClasspathModuleLocation(ModuleListParser modules, String cnb) throws BuildException {
         ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
         if (module == null) {
             throw new BuildException("No dependent module " + cnb, getLocation());
@@ -631,14 +583,7 @@ public final class ParseProjectXml extends Task {
         // XXX if that module is projectized, check its public
         // packages; if it has none, halt the build, unless we are
         // declaring an impl dependency
-        // Prototype: ${java/srcmodel.dir}/modules/org-openide-src.jar
-        // where: path=java/srcmodel jar = modules/org-openide-src.jar
-        String topdirProp = module.getPath() + ".dir"; // "java/srcmodel.dir" //NOI18N
-        String topdirVal = getProject().getProperty(topdirProp);
-        if (topdirVal == null) {
-            throw new BuildException("Undefined: " + topdirProp + " (usually means you are missing a dependency in nbbuild/build.xml#all-*)", getLocation());
-        }
-        return topdirVal + '/' + module.getJar();
+        return module.getJar();
     }
     
     private String computeClassPathExtensions(Document pDoc) {

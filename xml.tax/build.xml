@@ -58,9 +58,6 @@ Microsystems, Inc. All Rights Reserved.
              compress="false">
             <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </jar>
-        <!-- XXX temporary, until this module is projectized, for use by others (cf. #52354): -->
-        <mkdir dir="build"/>
-        <echo file="build/class-path-extensions.txt">:${netbeans.dest.dir}/${cluster.dir}/modules/autoload/ext/tax.jar</echo>
     </target>
 
     <target name="release">
@@ -118,7 +115,6 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="xml-tax.nbm"/>
-        <delete dir="build"/>
     </target>
 
     <target name="real-clean" depends="clean">

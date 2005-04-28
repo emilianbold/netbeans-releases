@@ -1,0 +1,13 @@
+Summary of layout:
+
+suite1 contains two modules, action-project and support/lib-project. action-project depends on lib-project and
+lib-project depends on misc-project from suite2. This suite has a reference to NetBeans sources, as well as
+suite2 sources.
+
+suite2 contains just one module, misc-project. This suite does not have a reference to NetBeans sources, only
+the platform.
+
+suite3 contains another project which has a reference to NetBeans sources as well as the platform, but uses a
+path for the binary platform (a fake mini-build) which does not match what the NetBeans sources themselves would
+use (nbbuild/netbeans/). This is used to test that source association from the platform to the sources actually
+works.

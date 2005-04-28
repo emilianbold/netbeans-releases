@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- unscramble ../external/junit-3.8.1.jar and ../external/insanelib.jar used in cp.extra -->
         <ant dir="../external" target="unscramble"/>
         <copy file="../external/insanelib.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <antcall target="projectized.compile"/>
+        <antcall target="projectized-common.compile"/>
     </target>
     
     <!-- Called after jar target and before module-* targets in projectized.xml -->

@@ -21,7 +21,8 @@ Microsystems, Inc. All Rights Reserved.
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:element name="code-name-base" type="javaPackageType"/>
-                <xsd:element name="path" type="pathType"/>
+                <!-- <path> may be used *only* for external modules (not in netbeans.org CVS); for them it is mandatory. -->
+                <xsd:element name="path" minOccurs="0" type="pathType"/>
                 <xsd:element name="module-dependencies" type="moduleDependenciesType"/>
                 <xsd:choice>
                     <xsd:element name="public-packages" type="publicPackagesType"/>

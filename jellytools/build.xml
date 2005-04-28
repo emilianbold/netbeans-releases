@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="../xtest/nbjunit" target="jar-nbjunit" inheritAll="false"/>
     </target>
     
-    <target name="compile" depends="buildDependentModules,projectized.compile"/>
+    <target name="compile" depends="buildDependentModules,projectized-common.compile"/>
 
     <target name="timestamp" unless="buildnumber">
       <tstamp>
@@ -78,7 +78,7 @@ Microsystems, Inc. All Rights Reserved.
         <zip zipfile="javadoc/jemmy-jelly2-nb-javadoc.zip" basedir="javadoc/jemmy-jelly2-nb-javadoc" includes="**"/>
     </target>
  
-    <target  name="clean" depends="projectized.clean">
+    <target  name="clean" depends="projectized-common.clean">
         <delete>
             <fileset dir=".">
                 <include name="*.zip"/>

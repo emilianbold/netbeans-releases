@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.form</code-name-base>
-            <path>form</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>

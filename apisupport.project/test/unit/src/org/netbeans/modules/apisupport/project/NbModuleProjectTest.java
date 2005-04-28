@@ -14,11 +14,14 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
+import java.util.Arrays;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test functionality of NbModuleProject.
@@ -101,6 +104,55 @@ public class NbModuleProjectTest extends TestBase {
         assertNotNull("have editor/lib project", editorLibProject);
         Thread.sleep(1000);
         assertEquals("correct owner of DocumentFinder.java", editorLibProject, FileOwnerQuery.getOwner(documentFinderJava));
+    }
+    
+    public void testExternalModules() throws Exception {
+        FileObject examples = nbroot.getFileObject("apisupport/project/test/unit/data/example-external-projects");
+        FileObject suite1 = examples.getFileObject("suite1");
+        FileObject action = suite1.getFileObject("action-project");
+        NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(action);
+        PropertyEvaluator eval = actionProject.evaluator();
+        String[] cp = {
+            "platform5/core/openide.jar",
+            "extra/modules/org-netbeans-examples-modules-lib.jar",
+        };
+        StringBuffer cpS = new StringBuffer();
+        for (int i = 0; i < cp.length; i++) {
+            if (i > 0) {
+                cpS.append(File.pathSeparatorChar);
+            }
+            cpS.append(file("nbbuild/netbeans/" + cp[i]).getAbsolutePath());
+        }
+        assertEquals("right module.classpath", cpS.toString(), eval.getProperty("module.classpath"));
+        String nbsources = eval.getProperty("netbeans.sources");
+        assertNotNull("netbeans.sources defined", nbsources);
+        String[] pieces = PropertyUtils.tokenizePath(nbsources);
+        File[] piecesF = new File[pieces.length];
+        for (int i = 0; i < pieces.length; i++) {
+            piecesF[i] = PropertyUtils.resolveFile(FileUtil.toFile(action), pieces[i]);
+        }
+        assertEquals("correct netbeans.sources",
+            Arrays.asList(new File[] {
+                nbrootF,
+                FileUtil.toFile(examples.getFileObject("suite2")),
+            }), Arrays.asList(piecesF));
+        FileObject suite3 = examples.getFileObject("suite3");
+        FileObject dummy = suite3.getFileObject("dummy-project");
+        NbModuleProject dummyProject = (NbModuleProject) ProjectManager.getDefault().findProject(dummy);
+        eval = dummyProject.evaluator();
+        cp = new String[] {
+            "random/modules/random.jar",
+            "random/modules/ext/stuff.jar",
+        };
+        cpS = new StringBuffer();
+        for (int i = 0; i < cp.length; i++) {
+            if (i > 0) {
+                cpS.append(File.pathSeparatorChar);
+            }
+            cpS.append(file("apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform/" + cp[i]).getAbsolutePath());
+        }
+        assertEquals("right module.classpath", cpS.toString(), eval.getProperty("module.classpath"));
+        // XXX more...
     }
     
 }

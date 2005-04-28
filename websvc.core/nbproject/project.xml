@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.websvc.core</code-name-base>
-            <path>websvc/core</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javacore</code-name-base>

@@ -33,13 +33,17 @@ abstract class TestBase extends NbTestCase {
         super.setUp();
         nbrootF = new File(System.getProperty("test.nbroot"));
         assertTrue("there is a dir " + nbrootF, nbrootF.isDirectory());
-        assertTrue("modules.xml exists", new File(nbrootF, "nbbuild/templates/modules.xml".replace('/', File.separatorChar)).isFile());
+        assertTrue("nbbuild exists", new File(nbrootF, "nbbuild").isDirectory());
         nbroot = FileUtil.toFileObject(nbrootF);
         assertNotNull("have a file object for nbroot", nbroot);
     }
     
+    protected File file(File root, String path) {
+        return new File(root, path.replace('/', File.separatorChar));
+    }
+    
     protected File file(String path) {
-        return new File(nbrootF, path.replace('/', File.separatorChar));
+        return file(nbrootF, path);
     }
     
 }

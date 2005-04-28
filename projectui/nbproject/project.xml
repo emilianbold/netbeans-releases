@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.projectui</code-name-base>
-            <path>projects/projectui</path>
             <module-dependencies>
                 <!-- XXX is this still necessary? -->
                 <dependency>

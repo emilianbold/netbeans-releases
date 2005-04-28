@@ -79,7 +79,7 @@ TODO:
             if="do.we.need.to.parse.project.xml.file.for.coverage" >
         <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml"
              classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <parseprojectxml project=".." modulesxml="${nb_all}/nbbuild/templates/modules.xml"
+        <parseprojectxml project=".."
             codenamebasedashesproperty="code.name.base.dashes"
             moduleclasspathproperty="module.classpath"/>
     </target>

@@ -51,7 +51,11 @@ import javax.swing.filechooser.FileSystemView;
  */
 public final class FileUtil extends Object {
     private static final FileSystemView fsv = FileSystemView.getFileSystemView();
-    private static byte[] ZIP_HEADER = { 0x50, 0x4b, 0x3, 0x4 };
+    
+    /** Normal header for ZIP files. */
+    private static byte[] ZIP_HEADER_1 = {0x50, 0x4b, 0x03, 0x04};
+    /** Also seems to be used at least in apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform/random/modules/ext/stuff.jar; not known why */
+    private static byte[] ZIP_HEADER_2 = {0x50, 0x4b, 0x05, 0x06};
 
     /** transient attributes which should not be copied
     * of type Set<String>
@@ -1337,7 +1341,7 @@ public final class FileUtil extends Object {
 
                     if (len == 4) {
                         // Got a header, see if it is a ZIP file.
-                        b = Boolean.valueOf(Arrays.equals(ZIP_HEADER, buffer));
+                        b = Boolean.valueOf(Arrays.equals(ZIP_HEADER_1, buffer) || Arrays.equals(ZIP_HEADER_2, buffer));
                     } else {
                         //If the length is less than 4, it can be either
                         //broken (empty) archive file or other empty file.

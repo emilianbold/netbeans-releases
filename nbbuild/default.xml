@@ -42,6 +42,15 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="locmakenbm"
          classname="org.netbeans.nbbuild.LocMakeNBM"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="parseprojectxml"
+         classname="org.netbeans.nbbuild.ParseProjectXml"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="jarwithmoduleattributes"
+         classname="org.netbeans.nbbuild.JarWithModuleAttributes"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="arch"
+         classname="org.netbeans.nbbuild.Arch"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
   

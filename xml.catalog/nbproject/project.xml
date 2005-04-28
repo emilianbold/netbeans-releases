@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.xml.catalog</code-name-base>
-            <path>xml/catalog</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide.loaders</code-name-base>

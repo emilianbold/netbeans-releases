@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   No formal docs yet for project format (#41801).
+   See harness/README.
   </p>
   <ul>
    <li>
@@ -63,13 +63,6 @@ Microsystems, Inc. All Rights Reserved.
      <p>
       Targets in <code>nbbuild/templates/projectized.xml</code> which may be
       called or overridden in a module&rsquo;s <code>build.xml</code>.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java.io.File" name="modules.xml" type="export" category="devel">
-     <p>
-      Format of <code>nbbuild/templates/modules.xml</code>.
      </p>
     </api>
    </li>
@@ -911,7 +904,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-scale">
   <p>
-   Number of projects in <code>modules.xml</code>, perhaps.
+   Number of projects in the source tree, perhaps.
   </p>
  </answer>
 

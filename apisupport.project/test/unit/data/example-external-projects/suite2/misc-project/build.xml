@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="misc-project" default="netbeans" basedir=".">
+    <property file="nbproject/suite-locator.properties"/>
+    <property file="${suite.properties}"/>
+    <fail unless="netbeans.dest.dir">You must set suite.properties to a file defining netbeans.dest.dir</fail>
+    <import file="${harness.dir}/build.xml"/>
+</project>

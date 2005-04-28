@@ -134,7 +134,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </tstamp>
   </target>
 
-  <target name="init" depends="init-module-list,maybe-pre-unscramble,set-buildnumber">
+  <target name="init" depends="init-module-list,maybe-pre-unscramble,set-buildnumber,init-tasks">
     <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
@@ -2446,6 +2446,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../apisupport/project" target="netbeans"/>
   </target>
+  <target name="all-apisupport/harness" depends="init">
+    <echo message="Building module apisupport/harness..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../apisupport/harness" target="netbeans"/>
+  </target>
   <target name="all-i18n/form" depends="init,all-form,all-i18n,all-java,all-properties,all-java/srcmodel">
     <echo message="Building module i18n/form..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -2684,14 +2693,12 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <!-- build javadoc for selected modules -->
   <target name="build-javadoc" depends="set-config-to-javadoc,init" description="Builds Javadoc documentation for modules; on branches pass e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
-  <!--
       <ant dir="." target="merge">
           <property name="modules" value="${modules}"/>
           <property name="fixedmodules" value="${fixedmodules}"/>
           <property name="merge.dependent.modules" value="true"/>
           <property name="stop.when.broken.module" value="false"/>
       </ant>
-      -->
       
       <mkdir dir="build/ModulesExportedInterfaces" />
       <property name="export.interfaces" location="build/ModulesExportedInterfaces" />
@@ -2924,7 +2931,7 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
   <target name="build-platform" depends="init">
-    <run-depend-build clusters-to-build="nb.cluster.platform"/>
+    <run-depend-build clusters-to-build="nb.cluster.platform,nb.cluster.harness"/>
   </target>
   
   <target name="build-cluster" depends="init">
@@ -3390,8 +3397,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
   
   <!-- more correct but takes too long: <target name="localtest" depends="bootstrap,all-xtest/nbjunit" > -->
-  <target name="localtest" depends="bootstrap" >
-    <ant dir="test" />
+  <target name="localtest" depends="bootstrap">
+    <ant dir="test" target="cleanresults"/>
+    <ant dir="test" target="runtests"/>
+  </target>
+  <target name="localtest-nb" depends="localtest">
+    <nbbrowse file="test/results/index.html"/>
   </target>
 
   <target name="cleanall" depends="init">
@@ -3676,6 +3687,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <include name="${nb.cluster.nb.dir}/**/*.jar" />
         </jars>
       </input>
+      <input name="harness" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.harness.dir}/**/*.jar" />
+        </jars>
+      </input>
       
       <output type="group-dependencies" file="${generated.files.dir}/cluster-deps.txt" />
       <output type="group-implementation-dependencies" file="${generated.files.dir}/cluster-impl-deps.txt" />
@@ -3911,6 +3927,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="ide*/**" />
         <include name="enterprise*/**" />
         <include name="nb*/**" />
+        <include name="harness*/**" />
     </fileset>
     
     <pathconvert property="check-file-layout" refid="check-file-layout" dirsep="/" pathsep="," >

@@ -17,7 +17,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="all" >
         <parseprojectxml 
             projectfile="${project.file}"
-            modulesxml="${nb_all}/nbbuild/projectized/modules.xml"
             publicpackagesproperty="pub.pac"
         />
 
@@ -33,7 +32,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="withjavadoc" >
         <parseprojectxml 
             projectfile="${project.file}"
-            modulesxml="${nb_all}/nbbuild/projectized/modules.xml"
             publicpackagesproperty="pub.pac"
             javadocpackagesproperty="javadoc.pac"
         />

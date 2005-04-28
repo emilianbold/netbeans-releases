@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="init-parse-project-xml" depends="init-read-property-files" if="do.we.need.to.parse.project.xml.file" >
         <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <parseprojectxml project=".." modulesxml="${nb_all}/nbbuild/templates/modules.xml" codenamebasedashesproperty="code.name.base.dashes" moduleclasspathproperty="module.classpath"/>
+        <parseprojectxml project=".." codenamebasedashesproperty="code.name.base.dashes" moduleclasspathproperty="module.classpath"/>
     </target>
         
     <target name="init" depends="init-parse-project-xml,init-read-property-files">

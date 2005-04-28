@@ -39,9 +39,9 @@ Microsystems, Inc. All Rights Reserved.
 	  rootDir="src"/>
     </target>
     
-    <target name="compile" depends="s2bgen, projectized.compile"/>
+    <target name="compile" depends="s2bgen, projectized-common.compile"/>
   
-    <target name="clean" depends="clean-s2b-src, projectized.clean"/>
+    <target name="clean" depends="clean-s2b-src, projectized-common.clean"/>
 
     <target name="clean-s2b-src">
         <mkdir dir="${s2b_root}"/>
