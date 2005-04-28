@@ -44,18 +44,20 @@ Microsystems, Inc. All Rights Reserved.
           />-<xsl:value-of select="date/@month" />-<xsl:value-of select="date/@day" />
         </xsl:comment>
         <xsl:choose>
-            <xsl:when test="date/@year > $changes-since-year">
+            <xsl:when test="number(date/@year) > number($changes-since-year)">
                 <xsl:comment>year ok</xsl:comment>
                 <xsl:call-template name="print-change" />
             </xsl:when>
-            <xsl:when test="$changes-since-year = date/@year">
+            <xsl:when test="number($changes-since-year) = number(date/@year)">
+                <xsl:comment>year equal</xsl:comment>
                 <xsl:choose>
-                    <xsl:when test="date/@month > $changes-since-month">
+                    <xsl:when test="number(date/@month) > number($changes-since-month)">
                         <xsl:comment>month ok</xsl:comment>
                         <xsl:call-template name="print-change" />
                     </xsl:when>
-                    <xsl:when test="$changes-since-month = date/@month">
-                        <xsl:if test="date/@day >= $changes-since-day">
+                    <xsl:when test="number($changes-since-month) = number(date/@month)">
+                        <xsl:comment>month equal</xsl:comment>
+                        <xsl:if test="number(date/@day) >= number($changes-since-day) ">
                             <xsl:comment>day ok</xsl:comment>
                             <xsl:call-template name="print-change" />
                         </xsl:if>
