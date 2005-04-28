@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home">
-        <nbbrowse file="javadoc/${javadoc.name}/index.html"/>
+        <nbbrowse file="${netbeans.javadoc.dir}/${code.name.base.dashes}/index.html"/>
     </target>
     
     <!-- apisupport/project could calls this for the debug action. -->
