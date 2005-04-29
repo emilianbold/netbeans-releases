@@ -186,6 +186,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @return current stack frame or null
      */
     public CallStackFrame getCurrentCallStackFrame () {
+        if (currentCallStackFrame != null && !currentCallStackFrame.getThread().isSuspended()) {
+            return null;
+        }
         return currentCallStackFrame;
     }
 
@@ -282,23 +285,24 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
             // 2) pop obsoleted frames
             JPDAThread t = getCurrentThread ();
-            if (t == null) return;
-            CallStackFrame frame = getCurrentCallStackFrame ();
-            
-            //PATCH #52209
-            if (t.getStackDepth () < 2 && frame.isObsolete()) return;
-            try {
-                if (!frame.equals (t.getCallStack (0, 1) [0])) return;
-            } catch (AbsentInformationException ex) {
-                return;
-            }
-            
-            //PATCH #52209
-            if (frame.isObsolete ()) {
-                frame.popFrame ();
-                setState (STATE_RUNNING);
-                updateCurrentCallStackFrame (t);
-                setState (STATE_STOPPED);
+            if (t != null && t.isSuspended()) {
+                CallStackFrame frame = getCurrentCallStackFrame ();
+
+                //PATCH #52209
+                if (t.getStackDepth () < 2 && frame.isObsolete()) return;
+                try {
+                    if (!frame.equals (t.getCallStack (0, 1) [0])) return;
+                } catch (AbsentInformationException ex) {
+                    return;
+                }
+
+                //PATCH #52209
+                if (frame.isObsolete ()) {
+                    frame.popFrame ();
+                    setState (STATE_RUNNING);
+                    updateCurrentCallStackFrame (t);
+                    setState (STATE_STOPPED);
+                }
             }
             
             // update breakpoints

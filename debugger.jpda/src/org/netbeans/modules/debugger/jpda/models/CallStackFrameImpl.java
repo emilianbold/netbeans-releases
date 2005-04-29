@@ -218,11 +218,21 @@ public class CallStackFrameImpl implements CallStackFrame {
     
     // other methods............................................................
 
+    /**
+     * Get the JDI stack frame.
+     * @throws IllegalStateException when the associated thread is not suspended.
+     */
     public StackFrame getStackFrame () {
         try {
             return thread.frame (index);
-        } catch (Exception e) {
-            return null;
+        } catch (IncompatibleThreadStateException e) {
+            // There is a lot of calls like "getStackFrame().<something>
+            // therefore it's better not to return null.
+            // The caller should know that this can not be called while the
+            // thread is running
+            IllegalStateException isex = new IllegalStateException(e.getLocalizedMessage());
+            isex.initCause(e);
+            throw isex;
         }
     }
 
