@@ -12,9 +12,8 @@
  */
 
 package org.openide.filesystems;
-
-import junit.framework.*;
-import java.io.*;
+import java.net.URL;
+import java.net.URLStreamHandlerFactory;
 import java.util.*;
 
 /**
