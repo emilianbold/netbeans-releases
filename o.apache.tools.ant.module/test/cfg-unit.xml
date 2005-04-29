@@ -18,8 +18,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
-                <!-- Will not pass until Ant 1.6.3 or 1.7 is bundled (Ant #28599): -->
-                <exclude name="**/AntLoggerTest.class/testLocationOfImportedTargetsWithLineNumbers"/>
                 <!-- Failing (but only within IDE) for mysterious reasons; related to #50160: -->
                 <exclude name="**/IntrospectedInfoTest.class/testBasicAttributes"/>
             </patternset>

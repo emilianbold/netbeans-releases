@@ -57,11 +57,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="*.bat"/>
             </fileset>
         </chmod>
-        <!-- #47708: temporarily patch Ant to accept console input from forked Java processes: -->
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/patches"/>
-        <copy file="external/24918.jar" tofile="${netbeans.dest.dir}/${cluster.dir}/ant/patches/ant162-24918.jar"/>
-        <!-- #52045: patch Ant to stop forked processes when build is stopped: -->
-        <copy file="external/31928.jar" tofile="${netbeans.dest.dir}/${cluster.dir}/ant/patches/ant162-31928.jar"/>
     </target>
 
     <target name="netbeans-extra" depends="jar-bridge,release"/>
@@ -176,11 +171,15 @@ Microsystems, Inc. All Rights Reserved.
     - external/.cvsignore
     and cvs rm -f the old .scrambled files and ant scramble to make new ones and cvs add -kb them
 8.  Run: ant -f ${here}/docs/build.xml check-javahelp
+    You can ignore links to api/org/apache/... which will be broken, as well as a few other things.
+    But for real problems in the HTML, commit fixes to docs/manual/ in the ant.apache.org CVS trunk.
 9.  Increase spec versions in manifest.mf and docs/manifest.mf.
 10. Test everything, including at least:
     ant -f ${here}/build.xml clean netbeans
+    ant -f ${here}/docs/build.xml clean netbeans
     ant -f ${here}/test/build.xml cleanresults runtests
     ant -f ${here}/../java/project/test/build.xml cleanresults runtests
+    ant -f ${here}/../nbbuild/build.xml commit-verification
 11. Submit a patch for cvs://cvs.apache.org/ant/xdocs/external.xml
     mentioning that the bundled version in NB is now ${release.version}.
 
