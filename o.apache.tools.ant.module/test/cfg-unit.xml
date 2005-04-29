@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <mconfig name="ant">
@@ -20,18 +20,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/*Test.class"/>
                 <!-- Will not pass until Ant 1.6.3 or 1.7 is bundled (Ant #28599): -->
                 <exclude name="**/AntLoggerTest.class/testLocationOfImportedTargetsWithLineNumbers"/>
-                <!-- Failing (but only withing IDE) for mysterious reasons; related to #50160: -->
-                <exclude name="**/IntrospectedInfoTest.class/testBasicAttributes"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="commit" executor="unit-executor" name="ant">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/*Test.class"/>
-                <!-- See above: -->
-                <exclude name="**/AntLoggerTest.class/testLocationOfImportedTargetsWithLineNumbers"/>
+                <!-- Failing (but only within IDE) for mysterious reasons; related to #50160: -->
                 <exclude name="**/IntrospectedInfoTest.class/testBasicAttributes"/>
             </patternset>
         </testset>
