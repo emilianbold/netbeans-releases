@@ -124,9 +124,9 @@ public class JavaFreeformFileBuiltQueryTest extends TestBase {
         FileObject SomeFileJava = src.getFileObject("org/foo/myapp/SomeFile.java");
         FileObject SpecialTaskJava = antsrc.getFileObject("org/foo/ant/SpecialTask.java");
         
-        File MyAppClass = new File(FileUtil.toFile(simpleProject.getProjectDirectory()), "build/classes/org/foo/myapp/MyApp.class".replaceAll("/", File.separator));
-        File SomeFileClass = new File(FileUtil.toFile(simpleProject.getProjectDirectory()), "build/classes/org/foo/myapp/SomeFile.class".replaceAll("/", File.separator));
-        File SpecialTaskClass = new File(FileUtil.toFile(simpleProject.getProjectDirectory()), "build/antclasses/org/foo/ant/SpecialTask.class".replaceAll("/", File.separator));
+        File MyAppClass = new File(FileUtil.toFile(simpleProject.getProjectDirectory()), "build/classes/org/foo/myapp/MyApp.class".replace('/', File.separatorChar));
+        File SomeFileClass = new File(FileUtil.toFile(simpleProject.getProjectDirectory()), "build/classes/org/foo/myapp/SomeFile.class".replace('/', File.separatorChar));
+        File SpecialTaskClass = new File(FileUtil.toFile(simpleProject.getProjectDirectory()), "build/antclasses/org/foo/ant/SpecialTask.class".replace('/', File.separatorChar));
         
         FileBuiltQueryImplementation fbqi = (FileBuiltQueryImplementation) simpleProject.getLookup().lookup(FileBuiltQueryImplementation.class);
         
