@@ -20,7 +20,9 @@
 #include <commdlg.h>
 
 static char* getUserHomeFromRegistry(char* userhome);
+static BOOL shouldUseSmoothFonts();
 static char* GetStringValue(HKEY key, const char *name);
+static DWORD GetDWordValue(HKEY key, const char *name);
 static void parseConfigFile(const char* path);
 static void parseArgs(int argc, char *argv[]);
 static int dirExists(const char* path);
@@ -85,7 +87,7 @@ int WINAPI
     sprintf(buf, "%s\\etc\\netbeans.conf", userdir);
     parseConfigFile(buf);
     strcpy(userdir, olduserdir);
-    
+
     char nbexec[MAX_PATH];
     char cmdline2[10240];
 
@@ -113,6 +115,14 @@ int WINAPI
             userdir,
             options,
             cmdline);
+
+    // someone forcing the font anti-aliasing setting?
+    if (strstr(cmdline2, "swing.aatext") == NULL) {
+        // no, follow the system setting
+        if (shouldUseSmoothFonts()) {
+            strcat(cmdline2, " -J-Dswing.aatext=true");
+        }
+    }
 
     STARTUPINFO start;
     PROCESS_INFORMATION pi;
@@ -168,6 +178,27 @@ char* getUserHomeFromRegistry(char* userhome)
     return userhome;
 }
 
+
+BOOL shouldUseSmoothFonts()
+{
+    HKEY key;
+    DWORD smoothFont = 1;
+
+    if (RegOpenKeyEx(
+            HKEY_CURRENT_USER,
+            "Control Panel\\Desktop",
+            0,
+            KEY_READ,
+            &key) != 0)
+        return FALSE;
+    smoothFont = GetDWordValue(key, "FontSmoothingType");
+    RegCloseKey(key);
+    if (smoothFont == 2)
+        return TRUE;
+    return FALSE;
+}
+
+
 char * GetStringValue(HKEY key, const char *name)
 {
     DWORD type, size;
@@ -182,6 +213,21 @@ char * GetStringValue(HKEY key, const char *name)
     }
     return value;
 }
+
+
+DWORD GetDWordValue(HKEY key, const char *name)
+{
+    DWORD type, size;
+    DWORD value = 0;
+    
+    if (RegQueryValueEx(key, name, 0, &type, 0, &size) == 0 && type == REG_DWORD) {
+        if (RegQueryValueEx(key, name, 0, 0, (LPBYTE)&value, &size) != 0) {
+            return 0;
+        }
+    }
+    return value;
+}
+
 
 void parseConfigFile(const char* path) {
     FILE* fin = fopen(path, "r");

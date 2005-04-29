@@ -9,38 +9,39 @@
 # 
 # The Original Code is Forte for Java, Community Edition. The Initial
 # Developer of the Original Code is Sun Microsystems, Inc. Portions
-# Copyright 1997-2004 Sun Microsystems, Inc. All Rights Reserved.
+# Copyright 1997-2005 Sun Microsystems, Inc. All Rights Reserved.
 #
 
-LIBS = advapi32.lib user32.lib
+LIBS =
+#LIBS = advapi32.lib user32.lib
 
-CFLAGS = -nologo -W4
-!ifdef DEBUG
-    CFLAGS = $(CFLAGS) -Zi
-!endif
+CFLAGS = -s -mno-cygwin
+#!ifdef DEBUG
+#	CFLAGS = $(CFLAGS) -Zi
+#!endif
 
 all : netbeans.exe nb.exe
 
 netbeans.exe : netbeans.cpp netbeans.res
-	cl $(CFLAGS) $(LIBS) -Fe$@ /DWINMAIN $**
+	gcc $(CFLAGS) $(LIBS) -mwindows -DWINMAIN netbeans.cpp -o netbeans.exe netbeans.res
 
 nb.exe : netbeans.cpp
-	cl $(CFLAGS) $(LIBS) -Fe$@ $**
+	gcc $(CFLAGS) $(LIBS) netbeans.cpp -o nb.exe
 
 netbeans.res : netbeans.rc
-	rc /fo$@ $**
-
+	windres -o$@ -Ocoff netbeans.rc
+  
 clean :
-	-del *.res *.obj *.pdb *.ilk *~ 2>NUL
+	-rm *.res *.obj *.pdb *.ilk *~ 2>NUL
 
 distclean : clean
-	-del *.exe 2>NUL
+	-rm *.exe 2>NUL
 
 testinst : all
-	copy *.exe "..\..\..\..\nbbuild\netbeans\bin\"
+	cp *.exe ../../../nbbuild/netbeans/bin/
 
 test : testinst
-	..\..\..\..\nbbuild\netbeans\bin\netbeans.exe
+	../../../nbbuild/netbeans/bin/netbeans.exe
 
 test2 : testinst
-	..\..\..\..\nbbuild\netbeans\bin\nb.exe
+	../../../nbbuild/netbeans/bin/nb.exe
