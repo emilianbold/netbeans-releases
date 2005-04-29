@@ -13,7 +13,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="module test executors and compilers" basedir="." default="all">
-
+    
+    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
     
     <path id="jspparser_test_cp">
     </path>    
@@ -61,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="run-in-ide" depends="setupdata">
+    <target name="run-in-ide" depends="init,init-cp,setupdata">
         <executeTests pluginName="ide">
             <classpath refid="jspparser_test_cp"/>
         </executeTests>

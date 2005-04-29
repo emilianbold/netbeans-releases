@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testbag>
 
 <!--	<executor name="jvm" antfile="build-{testtype}.xml" target="run-in-jvm"/> -->
-	<executor name="ide" antfile="build-unit.xml" target="runidetest"/> 
+        <executor name="ide" antfile="build-unit.xml" target="run-in-ide"/> 
 
 	<compiler name="unit-compiler" default="true" antfile="build-unit.xml" target="unit-compiler"/>
 
