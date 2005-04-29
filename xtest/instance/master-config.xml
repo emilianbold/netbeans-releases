@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="projects/projectui" testtypes="unit" attributes="stable"/>
         <module name="projects/libraries" testtypes="unit" attributes="stable"/>
         <module name="refactoring" testtypes="unit" attributes="full"/>
-        <module name="web/freeform" testtypes="unit" attributes="full"/>
+        <module name="web/freeform" testtypes="unit" attributes="stable"/>
         <module name="core/output2" testtypes="unit" attributes="stable"/>
         <module name="core/favorites" testtypes="unit" attributes="stable"/>
         <module name="core/settings" testtypes="unit" attributes="stable"/>
