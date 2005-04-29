@@ -209,10 +209,6 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${xtest.workdir}/tmpdir"/>
         <mkdir dir="${xtest.workdir}/sys"/>
 
-        <property name="xtest.debug.port" value="0"/>
-        <property name="xtest.debug.suspend" value="true"/>
-        <property name="xtest.enable.assertions" value="true"/>
-
         <test-executor paramClasspathProp="tbag.classpath"
                        paramTestConfigProp="tbag.testtype"
                        paramNameProp="tbag.name"

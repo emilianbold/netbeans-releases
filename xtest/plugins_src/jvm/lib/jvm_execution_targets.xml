@@ -59,6 +59,10 @@ Microsystems, Inc. All Rights Reserved.
 
         <property name="xtest.testrunner.mode" value="testsuite"/>        
 
+        <property name="xtest.debug.port" value="0"/>
+        <property name="xtest.debug.suspend" value="true"/>
+        <property name="xtest.enable.assertions" value="true"/>
+        
         <!-- run the tests -->        
         <jvmTestRunner workDir="${xtest.workdir}/sys"  jdkHome="${jdkhome}" jvmArgs="${xtest.jvm.args} ${coverage.jvm.args}"
             enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}"

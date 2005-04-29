@@ -38,7 +38,9 @@ Microsystems, Inc. All Rights Reserved.
         <!-- there should be some better userdir than this -->
         <property name="xtest.userdir" location="${xtest.workdir}/sys/ide"/>
 
-
+        <property name="xtest.debug.port" value="0"/>
+        <property name="xtest.debug.suspend" value="true"/>
+        <property name="xtest.enable.assertions" value="true"/>
         <property name="xtest.ide.commandline.suffix" value=""/>
         <property name="xtest.ide.jvmargs" value=""/>
         <property name="junit.properties.file" value=""/>
