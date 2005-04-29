@@ -40,7 +40,7 @@ public class ActionsWebTest extends TestBaseWeb {
         assertNotNull("have an action provider", ap);
         List/*<String>*/ actionNames = new ArrayList(Arrays.asList(ap.getSupportedActions()));
         Collections.sort(actionNames);
-        assertEquals("right action names", Arrays.asList(new String[] {"build", "clean", "javadoc", "rebuild", "redeploy", "run"}), actionNames);
+        assertEquals("right action names", Arrays.asList(new String[] {"build", "clean", "compile.single", "debug", "javadoc", "rebuild", "redeploy", "run", "test"}), actionNames);       
         assertTrue("clean is enabled", ap.isActionEnabled("clean", Lookup.EMPTY));
         try {
             ap.isActionEnabled("frobnitz", Lookup.EMPTY);
