@@ -34,6 +34,15 @@ public abstract class TestBaseHid extends MultiThreadedTestCaseHid {
     private FileChangeListener defListener;
     private String resourcePrefix = "";
     
+    static {        
+        URL.setURLStreamHandlerFactory(new URLStreamHandlerFactory() {
+            public java.net.URLStreamHandler createURLStreamHandler(String protocol) {
+                if (protocol.equals("nbfs")) { // NOI18N
+                    return FileUtil.nbfsURLStreamHandler();
+                } 
+                return null;
+        }});
+    }    
     
     
     /** Creates new FSTest */    
