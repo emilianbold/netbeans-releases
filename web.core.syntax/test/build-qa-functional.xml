@@ -49,15 +49,16 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     
     <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
-         If you need to customize it, you can uncomment the following and override it.
-    <target name="runidetest">        
-        <executeTests  pluginName="ide">
+         If you need to customize it, you can uncomment the following and override it.-->
+    <target name="runidetest-debug">        
+        <property name="xtest.debug.port" value="1111"/>
+	<property name="xtest.debug.suspend" value="true"/>
+	<executeTests  pluginName="ide">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>  
             </classpath>
         </executeTests>
     </target>
-    -->
     
 </project>
 
