@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <attr name="API_Support/Other" boolvalue="true"/>        
         <folder name="Other">
-            <file name="properties.properties" url="sample.properties">
+            <file name="properties.properties" url="sample.properties.template">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/properties/TemplateHelp.html"/>
