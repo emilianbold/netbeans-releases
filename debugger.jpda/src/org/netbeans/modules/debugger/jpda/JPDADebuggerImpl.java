@@ -283,6 +283,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
             getVirtualMachine ().redefineClasses (map);
 
+            // update breakpoints
+            Session s = (Session) 
+                lookupProvider.lookupFirst (null, Session.class);
+            DebuggerEngine de = s.getEngineForLanguage ("Java");
+            BreakpointsEngineListener bel = (BreakpointsEngineListener) 
+                de.lookupFirst (null, LazyActionsManagerListener.class);
+            bel.fixBreakpointImpls ();
+            
             // 2) pop obsoleted frames
             JPDAThread t = getCurrentThread ();
             if (t != null && t.isSuspended()) {
@@ -305,13 +313,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             }
             
-            // update breakpoints
-            Session s = (Session) 
-                lookupProvider.lookupFirst (null, Session.class);
-            DebuggerEngine de = s.getEngineForLanguage ("Java");
-            BreakpointsEngineListener bel = (BreakpointsEngineListener) 
-                de.lookupFirst (null, LazyActionsManagerListener.class);
-            bel.fixBreakpointImpls ();
         }
     }
 
