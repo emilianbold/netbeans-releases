@@ -83,15 +83,16 @@ Microsystems, Inc. All Rights Reserved.
         </fail>
         <!-- OK, continue: -->
         <copy todir="${build.classes.dir}">
-          <fileset dir="${src.dir}" includes="**/*.properties"/>
-          <filterchain>
-            <filterreader classname="org.apache.tools.ant.filters.StripLineComments">
-              <param type="comment" value="#"/>
-            </filterreader>
-          </filterchain>
+            <!-- #58298: strip comments to save some space -->
+            <fileset dir="${src.dir}" includes="**/*.properties"/>
+            <filterchain>
+                <filterreader classname="org.apache.tools.ant.filters.StripLineComments">
+                    <param type="comment" value="#"/>
+                </filterreader>
+            </filterchain>
         </copy>
         <copy todir="${build.classes.dir}">
-          <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
+            <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
         </copy>
     </target>
 
