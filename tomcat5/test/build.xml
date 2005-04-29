@@ -8,96 +8,21 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="tomcatint-tomcat5 tests build script" basedir="." default="all">
-
-    <!-- Ant property. Value 'ignore' means that system classpath is ignored
-         and only classpath specified in build file is used. -->
-    <property name="build.sysclasspath" value="ignore"/>
-
-    <!-- Points to directory with IDE to test-->
-    <property name="netbeans.home" location="../../../nbbuild/netbeans"/>
-    <property name="netbeans.test.home" value="${netbeans.home}"/>
-    
-    <property name="xtest.build" location="."/>    
-    <property name="xtest.file.name" value="test.jar"/>
-    <property name="xtest.file.location" value="lib"/>
-    
-    <!-- default testtypes, attributes and executors -->
-    <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable"/>
-    <property name="xtest.executors" value="code"/>
-    
+    <import file="../../../nbbuild/default-properties.xml" />
 
     <!-- Name of tested module -->
     <property name="xtest.module" value="tomcatint/tomcat5"/>
     
-    <!-- Home of XTest -->
-    <property name="xtest.home" location="../../../xtest"/>
-   
-    <!-- Points to antfile with module's harness. 
-         Targets from that antfile is called from this build.xml -->
-    <property name="xtest.module_harness.antfile" location="${xtest.home}/lib/module_harness.xml"/>
+    <!-- Imports buildtests, cleantests, runtest, cleanresults, realclean, printconfig targets. -->
+    <import file="../../../nbbuild/templates/xtest.xml"/>
 
-    <!-- Says how to create classpath for compilation and for execution code tests by default.
-         Can have values src, jar, ide -->
-    <property name="xtest.source.location" value="ide"/>
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
+    <property name="xtest.testtype" value="unit"/>
+    <property name="xtest.attribs" value="stable"/>
 
-    
- 
-    <!-- ============ -->
-    <!-- Main targets -->
-    <!-- ============ -->
-    
-    <target name="all" depends="runtests"/>
-    
-    <!-- This calls target which will call compilers according to cfg file.
-         You should not change this target unless you realy know what you are doing -->
-    <target name="buildtests">
-       <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="compiler-launcher"/>
-    </target>
-    
-    <!-- This calls common clean process. -->
-    <!-- You can write your own if you need something special -->
-    <target name="cleantests">
-       <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="cleantests"/>
-       <delete dir="gensrc"/>
-    </target> 
-
-    <!-- This target runs tests. You should not change this --> 
-    <!-- target unless you realy know what you are doing -->
-    <target name="runtests" depends="buildtests">
-        <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="runtests"/>
-    </target>
-   
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <target name="test_report">
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="test_report"/>
-    </target>
-    
-    <target name="cleanresults">
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="cleanresults"/>
-    </target>
-    
-    <target name="realclean" depends="cleantests,cleanresults">
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="realclean"/>
-    </target>
-    
-    <target name="printconfig">
-        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
-    </target>
-    
-   
 </project>
-

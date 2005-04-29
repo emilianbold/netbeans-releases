@@ -12,43 +12,23 @@
  */
 
 package org.netbeans.modules.tomcat5;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Locale;
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.shared.DConfigBeanVersionType;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
-import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
-import javax.enterprise.deploy.spi.status.ProgressObject;
 import junit.framework.*;
-import org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode;
-import org.openide.ErrorManager;
-import org.openide.nodes.Node;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Radim Kubacki
  */
-public class TomcatManagerTest extends TestCase {
+public class TomcatManagerTest extends NbTestCase {
+    
+    private TomcatManager tm;
+    private java.io.File datadir;
     
     public static Test suite () {
         TestSuite suite = new TestSuite (TomcatManagerTest.class);
         return suite;
     }
-
-    private TomcatManager tm;
-    private java.io.File datadir;
     
     public TomcatManagerTest (java.lang.String testName) {
         super (testName);
@@ -57,31 +37,30 @@ public class TomcatManagerTest extends TestCase {
     protected void setUp () throws java.lang.Exception {
         super.setUp ();
         
-        tm = (TomcatManager)TomcatFactory.create ().getDeploymentManager (
-            "tomcat:"+TomcatFactoryTest.TOMCAT_URI, 
-            TomcatFactoryTest.TOMCAT_UNAME, 
-            TomcatFactoryTest.TOMCAT_PASSWD
+        tm = (TomcatManager)TomcatFactory55.create ().getDeploymentManager (
+            TomcatFactory55Test.TOMCAT_URI,
+            TomcatFactory55Test.TOMCAT_UNAME, 
+            TomcatFactory55Test.TOMCAT_PASSWD
         );
-        datadir = new java.io.File ("/usr/local/home/radim/devel/prj40/nb_all/tomcatint/tomcat5/test/unit/data");
     }
     
     /** Test of getUri method, of class org.netbeans.modules.tomcat5.TomcatManager. */
     public void testGetUri () {
         System.out.println ("testGetUri");
-        assertEquals ("Uri string doesn't match", TomcatFactoryTest.TOMCAT_URI, tm.getUri ());
+        assertEquals ("Uri string doesn't match", TomcatFactory55Test.TOMCAT_URI, tm.getUri ());
     }
     
-    /** Test of getUsername method, of class org.netbeans.modules.tomcat5.TomcatManager. */
-    public void testGetUsername () {
-        System.out.println ("testGetUsername");
-        assertEquals (TomcatFactoryTest.TOMCAT_UNAME, tm.getUsername ());
-    }
-    
-    /** Test of getPassword method, of class org.netbeans.modules.tomcat5.TomcatManager. */
-    public void testGetPassword () {
-        System.out.println ("testGetPassword");
-        assertEquals (TomcatFactoryTest.TOMCAT_PASSWD, tm.getPassword ());
-    }
+//    /** Test of getUsername method, of class org.netbeans.modules.tomcat5.TomcatManager. */
+//    public void testGetUsername () {
+//        System.out.println ("testGetUsername");
+//        assertEquals (TomcatFactory55Test.TOMCAT_UNAME, tm.getUsername ());
+//    }
+//    
+//    /** Test of getPassword method, of class org.netbeans.modules.tomcat5.TomcatManager. */
+//    public void testGetPassword () {
+//        System.out.println ("testGetPassword");
+//        assertEquals (TomcatFactory55Test.TOMCAT_PASSWD, tm.getPassword ());
+//    }
     
 //    /** Test of createConfiguration method, of class org.netbeans.modules.tomcat5.TomcatManager. */
 //    public void testCreateConfiguration () {

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <!--
                 Sun Public License Notice
 
@@ -9,72 +8,56 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
--->
-
-<!-- 
-  These classes are excluded by default (defined in build.xml):
-    "**/*Suite.class"
-    "**/*$$*.class"
-    "**/data/**"
-    "**/hidden/**"
-    "**/*Hidden.*"
-    "**/*Hid.*"
 -->
 
 <mconfig name="tomcatint-tomcat5 unit test config">
    
     <!-- stable testbag  -->
-    <testbag testattribs="stable" executor="code" name="stable tests (no ide)" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="ide" name="stable tests (ide)">
         <testset dir="unit/src">
             <patternset>
                <include name="**/*Test.class"/>
-               <exclude name="**/Deployment*Test.class"/>
+               <!--exclude name="**/ide/*Test.class"/-->
             </patternset>
         </testset>
     </testbag>
    
     <!-- stable testbag  -->
-    <testbag testattribs="deployment" executor="code" name="deployment tests (with Tomcat)" resultsprocessor="unit">
+    <testbag testattribs="stablecode" executor="code" name="stable tests (no ide)">
         <testset dir="unit/src">
             <patternset>
-               <include name="**/Deployment*Test.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-   
-    <!-- testbag with failing test (just one method)  -->
-    <testbag testattribs="failing" executor="code" name="failing tests (no ide)" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-               
             </patternset>
         </testset>
     </testbag>
     
-    <testbag testattribs="empty" executor="code" name="empty">
+    
+    <!-- testbag with failing test (just one method)  -->
+    <testbag testattribs="failing" executor="code" name="failing tests (no ide)" resultsprocessor="unit">
         <testset dir="unit/src">
-            <patternset/>
+            <patternset> 
+            </patternset>
         </testset>
     </testbag>
+    
     <!-- code excecutor - use this one if you plan to run your tests in standard 
                           JVM. You can also write your own executor, which will 
                           then call this one. It is handy when some servers (e.g. rmi registry)
                           have to be started before tests are run and stopped after
                           the run. -->
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+                          
+    <executor name="code" antfile="build-unit.xml" target="runcodetest" />
     
     <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
                         Similarly as with code executor, you can create your own to 
                         prepare some neccessary stuff before running tests. -->
-    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
+                        
     
-
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
+    
+    <!-- default compiler -->
+    
     <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
-
-    <!-- standard results processor - currently there is only one results processor
-                                      in XTest -->    
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
     
 </mconfig>
