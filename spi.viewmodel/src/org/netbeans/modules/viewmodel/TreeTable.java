@@ -138,20 +138,26 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
         treeTable.expandNodes (expandedPaths);
         // TODO: this is a workaround, we should find a better way later
         final List backupPath = new ArrayList (expandedPaths);
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                if (backupPath.size () == 0)
+        if (backupPath.size () == 0)
+            TreeModelNode.getRequestProcessor ().post (new Runnable () {
+                public void run () {
                     try {
-                        expandDefault (
-                            TreeTable.this.model.getChildren 
-                            (TreeTable.this.model.getRoot (), 0, 0));
-                    } catch (UnknownTypeException ex) {
-                        
-                    }
-                else
+                        final Object[] ch = TreeTable.this.model.getChildren 
+                            (TreeTable.this.model.getRoot (), 0, 0);
+                        SwingUtilities.invokeLater (new Runnable () {
+                            public void run () {
+                                expandDefault (ch);
+                            }
+                        });
+                    } catch (UnknownTypeException ex) {}
+                }
+            });
+        else
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
                     treeTable.expandNodes (backupPath);
-            }
-        });
+                }
+            });
         if (ep.size () > 0) expandedPaths = ep;
     }
     
@@ -312,7 +318,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
 
     public void expandNode (Object node) {
         Node n = currentTreeModelRoot.findNode (node);
-        if (treeTable != null)
+        if (treeTable != null && n != null)
             treeTable.expandNode (n);
     }
 
