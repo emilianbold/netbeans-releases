@@ -182,7 +182,12 @@ final class ModuleListParser {
             }
             exts.add(binary);
         }
-        entries.put(cnb, new Entry(cnb, jar, (File[]) exts.toArray(new File[exts.size()])));
+        Entry entry = new Entry(cnb, jar, (File[]) exts.toArray(new File[exts.size()]));
+        if (entries.containsKey(cnb)) {
+            throw new IOException("Duplicated module " + cnb + ": found in " + entries.get(cnb) + " and " + entry);
+        } else {
+            entries.put(cnb, entry);
+        }
     }
     
     /**
@@ -264,7 +269,12 @@ final class ModuleListParser {
                                 exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
                             }
                         }
-                        entries.put(codenamebase, new Entry(codenamebase, m, exts));
+                        Entry entry = new Entry(codenamebase, m, exts);
+                        if (entries.containsKey(codenamebase)) {
+                            throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
+                        } else {
+                            entries.put(codenamebase, entry);
+                        }
                     } finally {
                         jf.close();
                     }
@@ -360,6 +370,10 @@ final class ModuleListParser {
          */
         public File[] getClassPathExtensions() {
             return classPathExtensions;
+        }
+        
+        public String toString() {
+            return getJar().getAbsolutePath();
         }
         
     }
