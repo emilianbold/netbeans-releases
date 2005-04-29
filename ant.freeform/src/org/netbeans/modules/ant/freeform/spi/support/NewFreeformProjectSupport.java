@@ -107,10 +107,9 @@ public class NewFreeformProjectSupport {
      */
     public static final void instantiateTargetMappingWizardPanel(AntProjectHelper helper, WizardDescriptor wiz) {
         List mappings = (List)wiz.getProperty(TargetMappingWizardPanel.PROP_TARGET_MAPPINGS);
-        if (mappings.size() > 0) {
-            FreeformProjectGenerator.putTargetMappings(helper, mappings);
-            FreeformProjectGenerator.putContextMenuAction(helper, mappings);
-        }
+        
+        FreeformProjectGenerator.putTargetMappings(helper, mappings);
+        FreeformProjectGenerator.putContextMenuAction(helper, mappings);
     }
 
     /**
