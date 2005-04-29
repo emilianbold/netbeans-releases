@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="openide/fs">
+
+  <testbag testattribs="stable" executor="unit-executor" name="openide/fs">
+    <testset dir="unit/src">
+      <patternset>
+        <!-- fs tests should be stable. If not file a bug: -->                
+        <include name="org/openide/filesystems/*Test.class"/>
+          <exclude name="org/openide/filesystems/JarFileSystemTest.class/testForSpaces"/>
+          <!-- Under development: -->
+          <exclude  name="org/openide/filesystems/MultiFileSystemMaskTest.class"/>                                         
+          <!-- #39613, nbfilesystems protocol is internally inconsistent: -->
+          <exclude name="org/openide/filesystems/XMLFileSystemTest.class/testGetURL"/>
+      </patternset>
+    </testset>
+  </testbag>
+
+  <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+  <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
+
+</mconfig>
