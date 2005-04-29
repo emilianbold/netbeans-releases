@@ -20,6 +20,7 @@ import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
+import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
@@ -62,6 +63,7 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
         this.namePattern = namePattern;
         presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );
         setDisplayName( presenterName );
+        putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
     public void putValue( String key, Object value ) {
@@ -108,6 +110,7 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
             Mnemonics.setLocalizedText( menuPresenter, presenterName );
         }
                         
+        putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
     protected final String getCommand() {

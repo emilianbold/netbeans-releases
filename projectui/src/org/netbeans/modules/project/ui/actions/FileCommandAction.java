@@ -19,6 +19,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -43,6 +44,7 @@ public class FileCommandAction extends ProjectAction implements Presenter.Menu {
         assert namePattern != null : "Name patern must not be null";
         presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );
         setDisplayName( presenterName );
+        putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
     protected void refresh( Lookup context ) {
@@ -62,6 +64,8 @@ public class FileCommandAction extends ProjectAction implements Presenter.Menu {
         if ( menuPresenter != null ) {
             Mnemonics.setLocalizedText( menuPresenter, presenterName );
         }
+        
+        putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
     protected void actionPerformed( Lookup context ) {
