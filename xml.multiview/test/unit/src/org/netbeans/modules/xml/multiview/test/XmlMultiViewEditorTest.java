@@ -121,9 +121,9 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         } catch (Exception ex) {
             throw new AssertionFailedErrorException("Failed to open Chapter section",ex);
         }
-        // wait for saving file
+        // wait to open the design view
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException ex){}
         
         try {
@@ -184,8 +184,9 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         } catch (org.openide.filesystems.FileAlreadyLockedException ex) {
             throw new AssertionFailedErrorException("Lock problem : ",ex);
         }
+        // waiting to synchronize with the external change
         try {
-            Thread.sleep(3000);
+            Thread.sleep(5000);
         } catch (InterruptedException ex){}
         
         XmlMultiViewEditorSupport editor  = (XmlMultiViewEditorSupport)bookDO.getCookie(EditorCookie.class);
