@@ -279,6 +279,9 @@ public abstract class ServiceType extends Object implements java.io.Serializable
 
     /** Handle for a service type. This is a serializable class that should be used
     * to store types and to recreate them after deserialization.
+    * @deprecated The prefered way to register and lookup services
+    *   is now {@link Lookup} as described in <a href="util/doc-files/api.html#lookup">
+    *   services registration and lookup</a> page.
     */
     public static final class Handle extends Object implements java.io.Serializable {
         /** generated Serialized Version UID */
