@@ -672,8 +672,6 @@ public class Actions extends Object {
         * or null if it is not known
         */
         public void updateState(String changedProperty) {
-            boolean didToolTip = false;
-
             // note: "enabled" (== SA.PROP_ENABLED) hardcoded in AbstractAction
             if ((changedProperty == null) || changedProperty.equals(SystemAction.PROP_ENABLED)) {
                 button.setEnabled(action.isEnabled());
@@ -686,29 +684,24 @@ public class Actions extends Object {
                 updateButtonIcon();
             }
 
-            if ((changedProperty == null) || changedProperty.equals(Action.SHORT_DESCRIPTION)) {
-                String shortDesc = (String) action.getValue(Action.SHORT_DESCRIPTION);
-
-                if ((shortDesc != null) && !shortDesc.equals(action.getValue(Action.NAME))) {
-                    button.setToolTipText(shortDesc);
-                    didToolTip = true;
-                }
-            }
-
             if (
-                !didToolTip &&
-                    ((changedProperty == null) || changedProperty.equals(Action.ACCELERATOR_KEY) ||
-                    changedProperty.equals(Action.NAME))
+                (changedProperty == null) || changedProperty.equals(Action.ACCELERATOR_KEY) ||
+                    (changedProperty.equals(Action.NAME) && (action.getValue(Action.SHORT_DESCRIPTION) == null)) ||
+                    changedProperty.equals(Action.SHORT_DESCRIPTION)
             ) {
                 String tip = findKey(action);
-                String nm = (String) action.getValue(Action.NAME);
-                String an = (nm == null) ? "" : cutAmpersand(nm);
+                String toolTip = (String) action.getValue(Action.SHORT_DESCRIPTION);
+
+                if (toolTip == null) {
+                    toolTip = (String) action.getValue(Action.NAME);
+                    toolTip = (toolTip == null) ? "" : cutAmpersand(toolTip);
+                }
 
                 if ((tip == null) || tip.equals("")) { // NOI18N
-                    button.setToolTipText(an);
+                    button.setToolTipText(toolTip);
                 } else {
                     button.setToolTipText(
-                        org.openide.util.NbBundle.getMessage(Actions.class, "FMT_ButtonHint", an, tip)
+                        org.openide.util.NbBundle.getMessage(Actions.class, "FMT_ButtonHint", toolTip, tip)
                     );
                 }
             }

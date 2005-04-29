@@ -17,6 +17,20 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="actions-with-custom-tooltip-have-shortcuts-in-toolbar">
+        <api name="awt"/>
+        <summary>Actions with custom tooltip have tooltip with shortcut in toolbars</summary>
+        <version major="6" minor="3"/>
+        <date day="29" month="4" year="2005"/>
+        <author login="jlahoda"/>
+        <compatibility semantic="incompatible"/>
+        <description>
+            If an action specifies a tooltip, the tooltip of the corresponding toolbar button is augmented
+            with shortcut in the same way as when the action does not specify tooltip.
+        </description>
+        <issue number="57974"/>
+    </change>
+    
     <change>
       <api name="util"/>
       <summary>HTML browser factory deprecated, use lookup instead</summary>
