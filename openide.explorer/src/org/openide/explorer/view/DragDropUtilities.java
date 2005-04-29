@@ -185,44 +185,28 @@ final class DragDropUtilities extends Object {
     throws IOException {
         Transferable[] tArray = new Transferable[nodes.length];
 
-        //System.out.println("Sel count: " + nodes.length); // NOI18N
         for (int i = 0; i < nodes.length; i++) {
-            Clipboard c = getClipboard();
-
-            if (c instanceof ExClipboard) {
-                ExClipboard cb = (ExClipboard) c;
-
-                if ((dragAction & DnDConstants.ACTION_MOVE) != 0) {
-                    tArray[i] = cb.convert(nodes[i].clipboardCut());
-
-                    //System.out.println("Clipboard CUT for node: "+nodes[0]);
-                } else {
-                    tArray[i] = cb.convert(nodes[i].clipboardCopy());
-
-                    //System.out.println("Clipboard COPY for node: "+nodes[0]);
-                }
+            if ((dragAction & DnDConstants.ACTION_MOVE) != 0) {
+                tArray[i] = nodes[i].clipboardCut();
             } else {
-                // In case of standalone library we cannot do
-                // conversion here. Is this ok?
-                if ((dragAction & DnDConstants.ACTION_MOVE) != 0) {
-                    tArray[i] = nodes[i].clipboardCut();
-
-                    //System.out.println("Clipboard CUT for node: "+nodes[0]);
-                } else {
-                    tArray[i] = nodes[i].clipboardCopy();
-
-                    //System.out.println("Clipboard COPY for node: "+nodes[0]);
-                }
+                tArray[i] = nodes[i].drag ();
             }
         }
-
+        Transferable result;
         if (tArray.length == 1) {
             // only one node, so return regular single transferable
-            return tArray[0];
+            result = tArray[0];
+        } else {
+            // enclose the transferables into multi transferable
+            result = new Multi(tArray);
         }
 
-        // enclose the transferables into multi transferable
-        return new Multi(tArray);
+        Clipboard c = getClipboard();
+        if (c instanceof ExClipboard) {
+            return ((ExClipboard) c).convert(result);
+        } else {
+            return result;
+        }
     }
 
     /** Returns transferable of given node

@@ -17,6 +17,33 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="dnd.convertor.drag">
+        <api name="explorer"/>
+        <summary>
+        	Dragging uses 
+          Node.drag 
+          and 
+          ExClipboard.convert
+</summary>
+        <version major="6" minor="3"/>
+        <date day="29" month="4" year="2005"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+        	  When doing drag and drop of nodes from explorer
+            to another place in explorer the 
+            <a href="@org-openide-nodes@/org/openide/nodes/Node.html">
+						Node.drag</a> method is called when doing copy            
+            and in both cases of copy or move the
+            <a href="@org-openide-util@/org/openide/util/datatransfer/ExClipboard.html">
+		          ExClipboard.convert
+    	      </a> method is called for Transferable containing
+            all the nodes, so one can wrap the whole transfer with
+            pre and post operations.
+        </description>
+        <package name="org.openide.explorer.view" />
+        <issue number="57972"/>
+    </change>
 <change id="NodeTableModel.ColumnMnemonicCharTTV">
         <api name="explorer"/>
         <summary>Added a new <code>ColumnMnemonicCharTTV</code> property to <code>NodeTableModel</code>
