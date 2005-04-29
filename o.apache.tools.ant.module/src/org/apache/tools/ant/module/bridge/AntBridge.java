@@ -645,7 +645,7 @@ public final class AntBridge {
     private static Map/*<ThreadGroup,InputStream>*/ delegateIns = new HashMap();
     private static Map/*<ThreadGroup,PrintStream>*/ delegateOuts = new HashMap();
     private static Map/*<ThreadGroup,PrintStream>*/ delegateErrs = new HashMap();
-    /** map, not set, so can be reentrant */
+    /** list, not set, so can be reentrant - treated as a multiset */
     private static List/*<Thread>*/ suspendedDelegationTasks = new ArrayList();
     
     /**
@@ -700,7 +700,8 @@ public final class AntBridge {
     public static synchronized void suspendDelegation() {
         Thread t = Thread.currentThread();
         //assert delegateOuts.containsKey(t.getThreadGroup()) : "Not currently delegating in " + t;
-        assert !suspendedDelegationTasks.contains(t) : "Already suspended delegation in " + t;
+        // #58394: do *not* check that it does not yet contain t. It is OK if it does; need to
+        // be able to call suspendDelegation reentrantly.
         suspendedDelegationTasks.add(t);
     }
     
@@ -711,6 +712,7 @@ public final class AntBridge {
     public static synchronized void resumeDelegation() {
         Thread t = Thread.currentThread();
         //assert delegateOuts.containsKey(t.getThreadGroup()) : "Not currently delegating in " + t;
+        // This is still valid: suspendedDelegationTasks must have *at least one* copy of t.
         assert suspendedDelegationTasks.contains(t) : "Have not suspended delegation in " + t;
         suspendedDelegationTasks.remove(t);
     }
