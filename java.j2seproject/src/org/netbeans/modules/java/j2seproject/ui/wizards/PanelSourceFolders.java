@@ -21,6 +21,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -45,6 +46,9 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
     private Panel firer;
     private WizardDescriptor wizardDescriptor;
+
+    // key to action value that influence folder list current directory
+    public static final String INITIAL_SOURCE_ROOT = "EXISTING_SOURCES_CURRENT_DIRECTORY"; // NOI18N
 
     /** Creates new form PanelSourceFolders */
     public PanelSourceFolders (Panel panel) {
@@ -93,6 +97,17 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         File[] testRoot = (File[]) settings.getProperty ("testRoot");       //NOI18N
         if (testRoot != null) {
             ((FolderList)this.testsPanel).setFiles (testRoot);
+        }
+
+        // honor current directory property
+        File currentDirectory = null;
+        Action action = (Action) wizardDescriptor.getProperty("javax.swing.Action"); // NOI18N
+        if (action != null) {
+            currentDirectory = (File) action.getValue(INITIAL_SOURCE_ROOT); // NOI18N
+        }        
+        if (currentDirectory != null && currentDirectory.isDirectory()) {       
+            ((FolderList)sourcePanel).setLastUsedDir(currentDirectory);
+            ((FolderList)testsPanel).setLastUsedDir(currentDirectory);
         }
     }
 
