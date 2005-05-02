@@ -42,8 +42,9 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
         change = this;
         info = this;
 
+        
         try {
-            setSystemName("MemoryFileSystem");
+            setSystemName("MemoryFileSystem" + String.valueOf(System.identityHashCode(this)));
         } catch (PropertyVetoException ex) {
             ex.printStackTrace();
         }
