@@ -82,8 +82,7 @@ public class NewProject extends BasicAction {
             wizard.putProperty( "PRESELECT_CATEGORY", null ); 
             wizard.putProperty( "PRESELECT_TEMPLATE", null ); 
         }
-        // generic way to pass down action values to wizard properties
-        wizard.putProperty("javax.swing.Action", this);  //  NOI18N
+
         
         try {
                         
