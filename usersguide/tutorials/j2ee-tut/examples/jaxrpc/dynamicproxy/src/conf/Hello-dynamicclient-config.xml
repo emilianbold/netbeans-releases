@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : Hello-dynamicclient-config.xml
+    Created on : April 27, 2005, 11:41 AM
+    Author     : Lukas Jungmann
+    Description:
+        Purpose of the document follows.
+-->
+
+<configuration xmlns="http://java.sun.com/xml/ns/jax-rpc/ri/config">
+  <wsdl location="http://localhost:8080/helloservice/Hello?WSDL"
+        packageName="dynamicproxy"/>
+</configuration>
