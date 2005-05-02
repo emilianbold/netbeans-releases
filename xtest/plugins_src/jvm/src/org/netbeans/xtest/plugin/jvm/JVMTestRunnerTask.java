@@ -8,7 +8,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -255,7 +255,13 @@ public class JVMTestRunnerTask extends Task implements TestBoardLauncher {
     // propare command line
     private CommandlineJava prepareCommandLine(CommandlineJava existingCommandLine, File runnerPropertiesFile) throws BuildException {
         log("Preparing command line",Project.MSG_DEBUG);
-        CommandlineJava commandLine = (CommandlineJava) existingCommandLine.clone();        
+        CommandlineJava commandLine;
+        try {
+            commandLine = (CommandlineJava) existingCommandLine.clone();
+        } catch (Exception ex) {
+            // since ant1.6.3 java.lang.CloneNotSupportedException can be thrown
+            throw new BuildException(ex);
+        }
         log("Preparing command line",Project.MSG_DEBUG);
         commandLine.setClassname(TESTRUNNER_CLASS_NAME);
         // JVM args
@@ -289,7 +295,14 @@ public class JVMTestRunnerTask extends Task implements TestBoardLauncher {
     
     // execute the command line
     private void executeCommandLine(CommandlineJava execteCommandLine) throws BuildException {        
-        CommandlineJava cmd = (CommandlineJava) execteCommandLine.clone();        
+        //CommandlineJava cmd = (CommandlineJava) execteCommandLine.clone();
+        CommandlineJava cmd;
+        try {
+            // since ant1.6.3 java.lang.CloneNotSupportedException can be thrown
+            cmd = (CommandlineJava) execteCommandLine.clone();
+        } catch (Exception ex) {
+            throw new BuildException (ex);
+        }
         ExecuteWatchdog watchdog = createWatchdog();
         Execute execute = new Execute(new LogStreamHandler(this, Project.MSG_INFO, Project.MSG_WARN), watchdog);
         execute.setCommandline(cmd.getCommandline());
