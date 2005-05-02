@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -126,14 +126,24 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         if (getAsFile(projectFolder.getText() + File.separatorChar + "nbproject").exists()){ // NOI18N
             return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_8");
         }
+        
         Project p;
-        if ((p=FileOwnerQuery.getOwner(getProjectFolder().toURI()))!=null) {
+        File projectFolder = getProjectFolder();
+        
+        assert projectFolder != null;
+        
+        if ((p = FileOwnerQuery.getOwner(projectFolder.toURI())) != null && projectFolder.equals(FileUtil.toFile(p.getProjectDirectory()))) {
             ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
             String displayName = (pi == null ? "" : pi.getDisplayName());   //NOI18N
             return MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_9"),
                 new Object[] {displayName});
         }
-        if ((p=FileOwnerQuery.getOwner(getProjectLocation().toURI()))!=null) {
+        
+        File projectLocation = getProjectLocation();
+        
+        assert projectLocation != null;
+        
+        if ((p = FileOwnerQuery.getOwner(projectLocation.toURI())) != null && projectLocation.equals(FileUtil.toFile(p.getProjectDirectory()))) {
             ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
             String displayName = (pi == null ? "" : pi.getDisplayName());   //NOI18N
             return MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_10"),
