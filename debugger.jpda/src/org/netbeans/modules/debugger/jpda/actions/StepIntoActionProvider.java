@@ -38,6 +38,8 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -48,7 +50,7 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
  * @author  Jan Jancura
  */
 public class StepIntoActionProvider extends JPDADebuggerActionProvider 
-implements Executor, PropertyChangeListener {
+implements Executor, Runnable, PropertyChangeListener {
     
     public static final String SS_STEP_OUT = "SS_ACTION_STEPOUT";
     private static boolean ssverbose = 
@@ -74,6 +76,7 @@ implements Executor, PropertyChangeListener {
         Map properties = (Map) contextProvider.lookupFirst (null, Map.class);
         if (properties != null)
             smartSteppingStepOut = properties.containsKey (SS_STEP_OUT);
+        setProviderToDisableOnLazyAction(this);
     }
 
 
@@ -86,6 +89,10 @@ implements Executor, PropertyChangeListener {
     }
     
     public void doAction (Object action) {
+        doLazyAction(this);
+    }
+    
+    public void run() {
         synchronized (getDebuggerImpl ().LOCK) {
             if (ssverbose)
                 System.out.println("\nSS:  STEP INTO !!! *************");
@@ -93,6 +100,10 @@ implements Executor, PropertyChangeListener {
             try {
                 getDebuggerImpl ().resume ();
             } catch (VMDisconnectedException e) {
+                ErrorManager.getDefault().notify(ErrorManager.USER,
+                    ErrorManager.getDefault().annotate(e,
+                        NbBundle.getMessage(StepIntoActionProvider.class,
+                            "VMDisconnected")));
             }
         }
     }

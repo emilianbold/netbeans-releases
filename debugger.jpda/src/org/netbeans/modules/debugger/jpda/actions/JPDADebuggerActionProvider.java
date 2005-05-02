@@ -20,13 +20,20 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.jdi.request.StepRequest;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
+
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -43,19 +50,36 @@ implements PropertyChangeListener {
 
     private JPDADebuggerImpl debugger;
     
+    /** The ReqeustProcessor used by action performers. */
+    private static RequestProcessor actionsRequestProcessor;
+    
+    private static Set providersToDisableOnLazyActions = new HashSet();
+    
+    private volatile boolean disabled;
+    
     JPDADebuggerActionProvider (JPDADebuggerImpl debugger) {
         this.debugger = debugger;
         debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
+        if (debugger.getState() == JPDADebuggerImpl.STATE_DISCONNECTED) {
+            synchronized (JPDADebuggerActionProvider.class) {
+                if (actionsRequestProcessor != null) {
+                    actionsRequestProcessor.stop();
+                    actionsRequestProcessor = null;
+                }
+            }
+        }
         checkEnabled (debugger.getState ());
     }
     
     protected abstract void checkEnabled (int debuggerState);
     
     public boolean isEnabled (Object action) {
-        checkEnabled (debugger.getState ());
+        if (!disabled) {
+            checkEnabled (debugger.getState ());
+        }
         return super.isEnabled (action);
     }
     
@@ -86,5 +110,49 @@ implements PropertyChangeListener {
         } catch (InvalidRequestStateException e) {
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Mark the provided action provider to be disabled when a lazy action is to be performed.
+     */
+    protected final void setProviderToDisableOnLazyAction(JPDADebuggerActionProvider provider) {
+        synchronized (JPDADebuggerActionProvider.class) {
+            providersToDisableOnLazyActions.add(provider);
+        }
+    }
+    
+    /**
+     * Do the action lazily in a RequestProcessor.
+     * @param run The action to perform.
+     */
+    protected final void doLazyAction(final Runnable run) {
+        final Set disabledActions;
+        synchronized (JPDADebuggerActionProvider.class) {
+            if (actionsRequestProcessor == null) {
+                actionsRequestProcessor = new RequestProcessor("JPDA Processor", 1); // NOI18N
+            }
+            disabledActions = new HashSet(providersToDisableOnLazyActions);
+        }
+        for (Iterator it = disabledActions.iterator(); it.hasNext(); ) {
+            JPDADebuggerActionProvider ap = (JPDADebuggerActionProvider) it.next();
+            Set actions = ap.getActions();
+            ap.disabled = true;
+            for (Iterator ait = actions.iterator(); ait.hasNext(); ) {
+                Object action = ait.next();
+                ap.setEnabled (action, false);
+                //System.out.println(ap+".setEnabled("+action+", "+false+")");
+            }
+        }
+        actionsRequestProcessor.post(new Runnable() {
+            public void run() {
+                run.run();
+                for (Iterator it = disabledActions.iterator(); it.hasNext(); ) {
+                    JPDADebuggerActionProvider ap = (JPDADebuggerActionProvider) it.next();
+                    Set actions = ap.getActions();
+                    ap.disabled = false;
+                    ap.checkEnabled (debugger.getState ());
+                }
+            }
+        });
     }
 }

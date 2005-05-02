@@ -27,6 +27,8 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -41,6 +43,8 @@ implements Runnable {
     
     private boolean j2meDebugger = false;
     
+    private volatile boolean doingAction;
+    
     
     public PauseActionProvider (ContextProvider contextProvider) {
         super (
@@ -50,6 +54,7 @@ implements Runnable {
         Map properties = (Map) contextProvider.lookupFirst (null, Map.class);
         if (properties != null)
             j2meDebugger = properties.containsKey ("J2ME_DEBUGGER");
+        setProviderToDisableOnLazyAction(this);
         RequestProcessor.getDefault ().post (this, 200);
     }
     
@@ -58,7 +63,13 @@ implements Runnable {
     }
 
     public void doAction (Object action) {
-        ((JPDADebuggerImpl) getDebuggerImpl ()).suspend ();
+        doingAction = true;
+        doLazyAction(new Runnable() {
+            public void run() {
+                ((JPDADebuggerImpl) getDebuggerImpl ()).suspend ();
+                doingAction = false;
+            }
+        });
     }
     
     protected void checkEnabled (int debuggerState) {
@@ -97,6 +108,10 @@ implements Runnable {
                 }
             }
         } catch (VMDisconnectedException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.USER,
+                ErrorManager.getDefault().annotate(ex,
+                    NbBundle.getMessage(PauseActionProvider.class,
+                        "VMDisconnected")));
         }
         setEnabled (
             ActionsManager.ACTION_PAUSE,
@@ -107,7 +122,9 @@ implements Runnable {
     public void run () {
         if (getDebuggerImpl ().getState () == JPDADebugger.STATE_DISCONNECTED)
             return;
-        checkEnabled (getDebuggerImpl ().getState ());
+        if (!doingAction) {
+            checkEnabled (getDebuggerImpl ().getState ());
+        }
         RequestProcessor.getDefault ().post (this, 200);
     }
 }

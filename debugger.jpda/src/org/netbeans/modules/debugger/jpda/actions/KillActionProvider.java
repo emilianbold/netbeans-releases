@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.debugger.jpda.actions;
 
-import com.sun.jdi.VMDisconnectedException;
-
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Set;

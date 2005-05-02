@@ -30,7 +30,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 *
 * @author   Jan Jancura
 */
-public class PopToHereActionProvider extends JPDADebuggerActionProvider {
+public class PopToHereActionProvider extends JPDADebuggerActionProvider implements Runnable {
     
     private ContextProvider lookupProvider;
 
@@ -41,6 +41,7 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
                 (null, JPDADebugger.class) 
         );
         this.lookupProvider = lookupProvider;
+        setProviderToDisableOnLazyAction(this);
     }
     
     public Set getActions () {
@@ -48,6 +49,10 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
     }
 
     public void doAction (Object action) {
+        doLazyAction(this);
+    }
+    
+    public void run() {
         try {
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
             t.getCallStack (0, 1) [0].popFrame ();

@@ -41,6 +41,8 @@ implements Runnable {
     
     private boolean j2meDebugger = false;
     
+    private volatile boolean doingAction;
+    
     
     public ContinueActionProvider (ContextProvider contextProvider) {
         super (
@@ -50,6 +52,7 @@ implements Runnable {
         Map properties = (Map) contextProvider.lookupFirst (null, Map.class);
         if (properties != null)
             j2meDebugger = properties.containsKey ("J2ME_DEBUGGER");
+        setProviderToDisableOnLazyAction(this);
         RequestProcessor.getDefault ().post (this, 200);
     }
     
@@ -58,7 +61,13 @@ implements Runnable {
     }
     
     public void doAction (Object action) {
-        getDebuggerImpl ().resume ();
+        doingAction = true;
+        doLazyAction(new Runnable() {
+            public void run() {
+                getDebuggerImpl ().resume ();
+                doingAction = false;
+            }
+        });
     }
     
     protected void checkEnabled (int debuggerState) {
@@ -101,7 +110,9 @@ implements Runnable {
     public void run () {
         if (getDebuggerImpl ().getState () == JPDADebugger.STATE_DISCONNECTED)
             return;
-        checkEnabled (getDebuggerImpl ().getState ());
+        if (!doingAction) {
+            checkEnabled (getDebuggerImpl ().getState ());
+        }
         RequestProcessor.getDefault ().post (this, 200);
     }
 }
