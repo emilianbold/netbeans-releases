@@ -107,6 +107,7 @@ final class NbModuleProject implements Project {
         // XXX other principal source roots, as needed...
         sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Unit Test Packages", null, null);
         sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Functional Test Packages", null, null);
+        sourcesHelper.addTypedSourceRoot("${test.qa-performance.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Performance Test Packages", null, null);
         // #42332: also any other misc. test dirs (just add source roots, no CP etc. for now)
         FileObject testDir = helper.getProjectDirectory().getFileObject("test"); // NOI18N
         if (testDir != null) {
@@ -269,6 +270,7 @@ final class NbModuleProject implements Project {
         defaults.put("build.classes.dir", "build/classes"); // NOI18N
         defaults.put("test.unit.src.dir", "test/unit/src"); // NOI18N
         defaults.put("test.qa-functional.src.dir", "test/qa-functional/src"); // NOI18N
+        defaults.put("test.qa-performance.src.dir", "test/qa-performance/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
         defaults.put("javac.source", "1.4");
         List/*<PropertyProvider>*/ providers = new ArrayList();
@@ -360,6 +362,10 @@ final class NbModuleProject implements Project {
     
     public FileObject getFunctionalTestSourceDirectory() {
         return getDir("test.qa-functional.src.dir"); // NOI18N
+    }
+    
+    public FileObject getPerformanceTestSourceDirectory() {
+        return getDir("test.qa-performance.src.dir"); // NOI18N
     }
     
     public File getClassesDirectory() {
