@@ -85,6 +85,16 @@ final class Controller implements Runnable, ActionListener {
         postEvent(event);
     }
     
+    void toIndeterminate(InternalHandle handle) {
+        ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SWITCH, isWatched(handle));
+        postEvent(event);
+    }
+    
+    void toDeterminate(InternalHandle handle) {
+        ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SWITCH, isWatched(handle));
+        postEvent(event);
+    }    
+    
     void progress(InternalHandle handle, String msg, 
                   int units, int percentage, long estimate) {
         ProgressEvent event = new ProgressEvent(handle, msg, units, percentage, estimate, isWatched(handle));
@@ -113,6 +123,9 @@ final class Controller implements Runnable, ActionListener {
         return model.getExplicitSelection() == hndl;
     }
     
+    /**
+     * from UI thread only
+     */ 
     void runImmediately(Collection events) {
         synchronized (this) {
             eventQueue.addAll(events);
@@ -148,11 +161,12 @@ final class Controller implements Runnable, ActionListener {
                     justStarted.add(event.getSource());
                     model.addHandle(event.getSource());
                 }
-                if (event.getType() == ProgressEvent.TYPE_FINISH) {
+                else if (event.getType() == ProgressEvent.TYPE_FINISH) {
                     model.removeHandle(event.getSource());
                 }
+                
                 ProgressEvent lastEvent = (ProgressEvent)map.get(event.getSource());
-                if (lastEvent != null && lastEvent.getType() == ProgressEvent.TYPE_FINISH && 
+                if (lastEvent != null && event.getType() == ProgressEvent.TYPE_FINISH && 
                         justStarted.contains(event.getSource())) {
                     // if task quits really fast, ignore..
                     map.remove(event.getSource());
@@ -160,6 +174,10 @@ final class Controller implements Runnable, ActionListener {
                     if (lastEvent != null) {
                         // preserve last message
                         event.copyMessageFromEarlier(lastEvent);
+                        // preserve the switched state
+                        if (lastEvent.isSwitched()) {
+                            event.markAsSwitched();
+                        }
                     }
                     map.put(event.getSource(), event);
                 }
