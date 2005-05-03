@@ -519,9 +519,17 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             if( isJdk16 && !isMetalLaF ) {
                 ((AbstractButton) c).setMargin( emptyInsets );
             }
+        } else if( c instanceof JToolBar.Separator ) {
+            JToolBar.Separator separator = (JToolBar.Separator)c;
+            if (getOrientation() == VERTICAL) {
+                separator.setOrientation(JSeparator.HORIZONTAL);
+            } else {
+                separator.setOrientation(JSeparator.VERTICAL);
+            }
         }
+        
         super.addImpl (c, constraints, idx);
-        if (!"grip".equals(c.getName())) {
+        if( !("grip".equals(c.getName()) || (c instanceof JToolBar.Separator)) ) {
             dnd.register(c);
         }
     }
