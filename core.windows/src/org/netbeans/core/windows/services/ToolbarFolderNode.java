@@ -13,6 +13,7 @@
 
 package org.netbeans.core.windows.services;
 
+import javax.swing.Action;
 import org.netbeans.core.NbPlaces;
 import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.ErrorManager;
@@ -151,7 +152,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
     /** Actions.
     * @return array of actions for this node
     */
-    protected SystemAction[] createActions () {
+    public Action[] getActions( boolean context ) {
         if (topStaticActions == null)
             topStaticActions = new SystemAction [] {
                                    SystemAction.get (FileSystemAction.class),
@@ -467,7 +468,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
         /** Actions.
         * @return array of actions for this node
         */
-        public SystemAction[] getActions () {
+        public Action[] getActions (boolean context) {
             if (staticActions == null)
                 staticActions = new SystemAction [] {
                                     SystemAction.get (FileSystemAction.class),
