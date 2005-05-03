@@ -47,6 +47,7 @@ import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.modules.tomcat5.progress.MultiProgressObjectWrapper;
 
 import org.netbeans.modules.tomcat5.util.*;
 
@@ -848,27 +849,32 @@ public class TomcatManager implements DeploymentManager {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.undeploy called on disconnected instance");   // NOI18N
         }
-            
-        if (tmID.length != 1 || !(tmID[0] instanceof TomcatModule)) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "-----------------------------------------------------------------------------------");  // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Please report this message at: http://www.netbeans.org/issues/show_bug.cgi?id=58255");  // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "TomcatManager.undeploy invalid TargetModuleID passed");  // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Number of TargetModuleIDs passed: " + tmID.length); // NOI18N
-            for (int i=0; i < tmID.length; i++) {
-                String className = tmID[i].getClass().getName();
-                String moduleID = tmID[i].getModuleID();
-                String target = tmID[i].getTarget().getName();
-                ErrorManager.getDefault().log(ErrorManager.WARNING, " class name: " + className); // NOI18N
-                ErrorManager.getDefault().log(ErrorManager.WARNING, " moduleID:   " + moduleID);  // NOI18N
-                ErrorManager.getDefault().log(ErrorManager.WARNING, " target:     " + target);    // NOI18N                
-            }
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "-----------------------------------------------------------------------------------");  // NOI18N
-            throw new IllegalStateException ("TomcatManager.undeploy invalid TargetModuleID passed");   // NOI18N
+        
+        if (tmID == null) {
+            throw new NullPointerException("TomcatManager.undeploy the tmID argument must not be null."); // NOI18N
         }
         
-        TomcatManagerImpl impl = new TomcatManagerImpl (this);
-        impl.remove ((TomcatModule)tmID[0]);
-        return impl;
+        if (tmID.length == 0) {
+            throw new IllegalArgumentException("TomcatManager.undeploy at least one TargetModuleID object must be passed."); // NOI18N
+        }
+        
+        for (int i = 0; i < tmID.length; i++) {
+            if (!(tmID[i] instanceof TomcatModule)) {
+                throw new IllegalStateException ("TomcatManager.undeploy invalid TargetModuleID passed: " + tmID[i].getClass().getName());   // NOI18N
+            }
+        }
+        
+        TomcatManagerImpl[] tmImpls = new TomcatManagerImpl[tmID.length];
+        for (int i = 0; i < tmID.length; i++) {
+            tmImpls[i] = new TomcatManagerImpl (this);
+        }
+        // wrap all the progress objects into a single one
+        ProgressObject po = new MultiProgressObjectWrapper(tmImpls);
+        
+        for (int i = 0; i < tmID.length; i++) {
+            tmImpls[i].remove((TomcatModule)tmID[i]);
+        }
+        return po;
     }
     
     /** Deploys web module using deploy command
