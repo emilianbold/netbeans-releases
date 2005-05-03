@@ -149,7 +149,8 @@ public final class Dependency {
             if (expectingPath) {
                 expectingPath = false;
 
-                if (!Utilities.isJavaIdentifier(tok.nextToken())) {
+                String nt = tok.nextToken();
+                if (!Utilities.isJavaIdentifier(nt) &&  !"enum".equals (nt)) { // NOI18N
                     throw new IllegalArgumentException("Bad package component in " + base); // NOI18N
                 }
             } else {
