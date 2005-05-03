@@ -47,7 +47,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  *
  * @author   Jan Jancura
  */
-public class ViewModelListener extends DebuggerManagerAdapter {
+class ViewModelListener extends DebuggerManagerAdapter {
     
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.models") != null;
