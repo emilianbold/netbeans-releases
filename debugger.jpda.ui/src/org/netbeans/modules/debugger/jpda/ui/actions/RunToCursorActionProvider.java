@@ -83,11 +83,6 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
     }
 
     public void propertyChange (PropertyChangeEvent evt) {
-        System.out.println("RunToCursorActionProvider.propertyChange("+evt.getPropertyName()+")");
-        System.out.println("  enabled("+(getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
-            (debugger.getState () == debugger.STATE_STOPPED) &&
-            (EditorContextBridge.getCurrentLineNumber () >= 0) && 
-            (EditorContextBridge.getCurrentURL ().endsWith (".java")))+")");
         setEnabled (
             ActionsManager.ACTION_RUN_TO_CURSOR,
             getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
@@ -131,8 +126,6 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
 
     /** Sync up with continue action state. */
     public void actionStateChanged(Object action, boolean enabled) {
-        System.out.println("actionStateChanged("+action+", "+enabled+")");
-        System.out.println("  is continue = "+(ActionsManager.ACTION_CONTINUE == action));
         if (ActionsManager.ACTION_CONTINUE == action) {
             setEnabled (
                 ActionsManager.ACTION_RUN_TO_CURSOR,
