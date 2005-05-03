@@ -15,9 +15,13 @@ package org.netbeans.modules.xml.multiview;
 
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
+import org.openide.actions.SaveAction;
+import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
 import javax.swing.text.Document;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 /**
  * XmlMultiviewElement.java
@@ -91,6 +95,11 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
     private CloneableEditor getXmlEditor() {
         if (xmlEditor == null) {
             xmlEditor = dObj.getEditorSupport().createCloneableEditor();
+            final ActionMap map = xmlEditor.getActionMap();
+            SaveAction act = (SaveAction) SystemAction.get(SaveAction.class);
+            KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK);
+            xmlEditor.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, "save"); //NOI18N
+            map.put("save", act); //NOI18N
         }
         return xmlEditor;
     }
