@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda.ui.actions;
@@ -20,6 +20,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.ActionsManagerListener;
 
 
 import org.netbeans.api.debugger.DebuggerManager;
@@ -35,11 +36,14 @@ import org.netbeans.spi.debugger.ActionsProviderSupport;
  *
  * @author  Jan Jancura
  */
-public class RunToCursorActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
+public class RunToCursorActionProvider extends ActionsProviderSupport
+                                       implements PropertyChangeListener,
+                                                  ActionsManagerListener {
 
     private JPDADebugger debugger;
     private Session session;
     private LineBreakpoint breakpoint;
+    private ActionsManager lastActionsManager;
     
     
     public RunToCursorActionProvider (ContextProvider lookupProvider) {
@@ -56,9 +60,37 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
         EditorContextBridge.removePropertyChangeListener (this);
     }
     
+    static ActionsManager getCurrentActionsManager () {
+        return DebuggerManager.getDebuggerManager ().
+            getCurrentEngine () == null ? 
+            DebuggerManager.getDebuggerManager ().getActionsManager () :
+            DebuggerManager.getDebuggerManager ().getCurrentEngine ().
+                getActionsManager ();
+    }
+    
+    private ActionsManager getActionsManager () {
+        ActionsManager current = getCurrentActionsManager();
+        if (current != lastActionsManager) {
+            if (lastActionsManager != null) {
+                lastActionsManager.removeActionsManagerListener(
+                        ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
+            }
+            current.addActionsManagerListener(
+                    ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
+            lastActionsManager = current;
+        }
+        return current;
+    }
+
     public void propertyChange (PropertyChangeEvent evt) {
+        System.out.println("RunToCursorActionProvider.propertyChange("+evt.getPropertyName()+")");
+        System.out.println("  enabled("+(getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
+            (debugger.getState () == debugger.STATE_STOPPED) &&
+            (EditorContextBridge.getCurrentLineNumber () >= 0) && 
+            (EditorContextBridge.getCurrentURL ().endsWith (".java")))+")");
         setEnabled (
             ActionsManager.ACTION_RUN_TO_CURSOR,
+            getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
             (debugger.getState () == debugger.STATE_STOPPED) &&
             (EditorContextBridge.getCurrentLineNumber () >= 0) && 
             (EditorContextBridge.getCurrentURL ().endsWith (".java"))
@@ -91,5 +123,24 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
         session.getEngineForLanguage ("Java").getActionsManager ().doAction (
             ActionsManager.ACTION_CONTINUE
         );
+    }
+
+    public void actionPerformed(Object action) {
+        // Is never called
+    }
+
+    /** Sync up with continue action state. */
+    public void actionStateChanged(Object action, boolean enabled) {
+        System.out.println("actionStateChanged("+action+", "+enabled+")");
+        System.out.println("  is continue = "+(ActionsManager.ACTION_CONTINUE == action));
+        if (ActionsManager.ACTION_CONTINUE == action) {
+            setEnabled (
+                ActionsManager.ACTION_RUN_TO_CURSOR,
+                enabled &&
+                (debugger.getState () == debugger.STATE_STOPPED) &&
+                (EditorContextBridge.getCurrentLineNumber () >= 0) && 
+                (EditorContextBridge.getCurrentURL ().endsWith (".java"))
+            );
+        }
     }
 }
