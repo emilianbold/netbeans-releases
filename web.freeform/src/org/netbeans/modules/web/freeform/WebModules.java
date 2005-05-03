@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Collections;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileStateInvalidException;
 import org.w3c.dom.Element;
@@ -228,8 +229,8 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             this.j2eeSpec = j2eeSpec;
             this.contextPath = (contextPath == null ? "" : contextPath);
             this.sourcesFOs = sourcesFOs;
-            this.webClassPath = classPath;
-            javaSourcesClassPath = ClassPathSupport.createClassPath(sourcesFOs); 
+            this.webClassPath = (classPath ==  null ? ClassPathSupport.createClassPath(Collections.EMPTY_LIST) : classPath);
+            javaSourcesClassPath = (sourcesFOs == null ? ClassPathSupport.createClassPath(Collections.EMPTY_LIST): ClassPathSupport.createClassPath(sourcesFOs)); 
         }
         
         boolean contais (FileObject fo) {
