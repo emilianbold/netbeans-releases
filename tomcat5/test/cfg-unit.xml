@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
                           have to be started before tests are run and stopped after
                           the run. -->
                           
-    <executor name="code" antfile="build-unit.xml" target="runcodetest" />
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test" />
     
     <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
                         Similarly as with code executor, you can create your own to 

@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executors -->
     <!-- ========= -->
     
-    <!--target name="runcodetest" depends="init,init-cp">
+    <!--target name="run-unit-test" depends="init,init-cp">
         <executeTests pluginname="jvm">
             <classpath refid="test.unit.run.cp"/>
         </executeTests>
