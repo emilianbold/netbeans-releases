@@ -147,7 +147,16 @@ public final class View implements LogicalViewProvider {
                     setKeys(keys);
                 }
             } else {
-                setKeys(Collections.EMPTY_SET);
+                if (fromListener) {
+                    // #58491 - post setKeys to different thread to prevent deadlocks
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            setKeys(Collections.EMPTY_SET);
+                        }
+                    });
+                } else {
+                    setKeys(Collections.EMPTY_SET);
+                }
             }
         }
         
