@@ -26,11 +26,21 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.sysclasspath" value="ignore"/>
     </target>
 
+    <target name="build-jellytools" if="jellytools.available">
+        <ant dir="${nb_all}/jellytools" target="jar-library" inheritAll="false"/>
+    </target>
+    
     <target name="init-cp">
+        <!-- If jellytools repository available, build jelly2-nb.jar -->
+        <available file="${nb_all}/jellytools/build.xml" property="jellytools.available"/>
+        <antcall target="build-jellytools"/>
+        <!-- Used built jar preferably. If not available use the latest from CVS. -->
+        <available file="${nb_all}/jellytools/jelly2-nb.jar" property="jelly.jar" value="${nb_all}/jellytools/jelly2-nb.jar"/>
+        <property name="jelly.jar" location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
         <!-- path reference used in both compiler and executor -->
         <path id="jemmy.and.jelly.path">
             <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
-            <pathelement location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+            <pathelement location="${jelly.jar}"/>
         </path>
         <path id="test.qa-functional.compile.cp">
             <path refid="jemmy.and.jelly.path"/>

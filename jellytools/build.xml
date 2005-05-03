@@ -19,6 +19,12 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="buildDependentModules">
         <ant dir="../xtest/nbjunit" target="jar-nbjunit" inheritAll="false"/>
+        <!-- Write jemmy/idemodule.dir property to moduleCluster.properties. -->
+        <ant dir="../jemmy/idemodule" target="init" inheritAll="false"/>
+        <!-- Re-read moduleCluster.properties to initialize jemmy/idemodule.dir. -->
+        <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+        <!-- Need to build jemmy because jellytools has jemmy/dist/jemmy.jar in cp.extra. -->
+        <ant dir="../jemmy" target="jar" inheritAll="false"/>
     </target>
     
     <target name="compile" depends="buildDependentModules,projectized-common.compile"/>
