@@ -156,10 +156,12 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
         }
+        
+        int highlightedRaiseCompensation = (!isTabInFront(index) && isMoreThanOne()) ? HIGHLIGHTED_RAISE : 0;
         // draw bump (dragger)
         ColorUtil.paintXpTabDragTexture(getDisplayer(), g, x + BUMP_X_PAD, y
                  + BUMP_Y_PAD_UPPER, height - (BUMP_Y_PAD_UPPER
-                 + BUMP_Y_PAD_BOTTOM));
+                 + BUMP_Y_PAD_BOTTOM)+highlightedRaiseCompensation);
         HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
                 + TXT_Y_PAD, txtWidth, height, getTxtFont(),
                 txtC,
