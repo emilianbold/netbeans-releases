@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.j2ee.ejbjarproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2ee-ejbjarproject/3">
-            <name>CMPRoster</name>
+            <name>Roster</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <source-roots>
                 <root id="src.dir" name="Source Packages"/>

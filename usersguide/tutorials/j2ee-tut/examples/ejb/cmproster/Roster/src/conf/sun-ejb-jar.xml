@@ -4,7 +4,7 @@
   <enterprise-beans>
     <ejb>
       <ejb-name>RosterBean</ejb-name>
-      <jndi-name>ejb/SimpleRoster</jndi-name>
+      <jndi-name>ejb/RosterBean</jndi-name>
     </ejb>
     <cmp-resource>
       <jndi-name>jdbc/pointbase_sample</jndi-name>

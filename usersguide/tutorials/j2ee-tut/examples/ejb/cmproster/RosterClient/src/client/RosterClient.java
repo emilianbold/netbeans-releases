@@ -40,14 +40,10 @@ public class RosterClient {
     public static void main(String[] args) {
         try {
             
-            Properties props = new Properties();
-            props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
-            props.put(Context.PROVIDER_URL, "rmi://localhost");
+        
             
-            
-            
-            Context initial = new InitialContext(props);
-            Object objref = initial.lookup("ejb/SimpleRoster");
+            Context initial = new InitialContext();
+            Object objref = initial.lookup("ejb/RosterBean");
 
             RosterRemoteHome home =
                 (RosterRemoteHome) PortableRemoteObject.narrow(objref,

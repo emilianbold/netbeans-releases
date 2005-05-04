@@ -2,7 +2,7 @@
 <!-- You may freely edit this file. See commented blocks below for -->
 <!-- some examples of how to customize the build. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
-<project xmlns:ejbjarproject="http://www.netbeans.org/ns/j2ee-ejbjarproject/2" name="" default="default" basedir=".">
+<project name="" default="default" basedir="." xmlns:ejbjarproject="http://www.netbeans.org/ns/j2ee-ejbjarproject/2">
     <description>Builds, tests, and runs the project .</description>
     <import file="nbproject/build-impl.xml"/>
     <!--
