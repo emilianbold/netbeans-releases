@@ -1,20 +1,7 @@
-/*
- * HelloStaticClient.java
- *
- * Created on April 26, 2005, 7:22 PM
- *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
- */
-
 package staticstub;
 
 import javax.xml.rpc.Stub;
-/**
- *
- * @author Lukas Jungmann
- */
+
 public class HelloStaticClient {
     
     private String endpointAddress;

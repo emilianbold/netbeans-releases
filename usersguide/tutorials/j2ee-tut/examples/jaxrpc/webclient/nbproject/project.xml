@@ -10,7 +10,7 @@
             <web-service-clients>
                 <web-service-client>
                     <web-service-client-name>Hello</web-service-client-name>
-                    <web-service-stub-type>jaxrpc_static_client</web-service-stub-type>
+                    <web-service-stub-type>jsr-109_client</web-service-stub-type>
                     <client-source-url>http://localhost:8080/helloservice/Hello?WSDL</client-source-url>
                 </web-service-client>
             </web-service-clients>

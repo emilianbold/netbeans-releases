@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!--
-    Document   : Hello-staticclient-config.xml
-    Created on : April 26, 2005, 7:26 PM
-    Author     : Lukas Jungmann
-    Description:
-        Purpose of the document follows.
--->
-
 <configuration xmlns="http://java.sun.com/xml/ns/jax-rpc/ri/config">
     <wsdl name="HelloWebService"
           location="http://localhost:8080/helloservice/Hello?wsdl"

@@ -5,25 +5,17 @@
 <project name="staticstub" default="default" basedir=".">
   <description>Builds, tests, and runs the project staticstub.</description>
   <import file="nbproject/build-impl.xml"/>
-    
-  <target name="-pre-init">
-    <fail unless="com.sun.aas.installRoot">
-      J2EE home property
-        - neither j2ee.home nor com.sun.aas.installRoot(NetBeans) is set.
-    </fail>
-    <property name="j2ee.home" value="${com.sun.aas.installRoot}" />
-  </target>
   
   <target name="-pre-compile">
     <taskdef name="wscompile"
              classname="com.sun.xml.rpc.tools.ant.Wscompile"
-             classpath="${jaxrpc.classpath}"/>
+             classpath="${javac.classpath}"/>
     <copy file="src/conf/Hello-staticclient-config.xml"
       tofile="${build.classes.dir}/META-INF/wsdl/Hello-staticclient-config.xml"/>
     <wscompile gen="true" base="${build.classes.dir}"
       features="explicitcontext,wsi,unwrap" keep="true" debug="true"
       config="${build.classes.dir}/META-INF/wsdl/Hello-staticclient-config.xml"
-      classpath="${jaxrpc.classpath}"/>
+      classpath="${javac.classpath}"/>
   </target>
   
     <!--

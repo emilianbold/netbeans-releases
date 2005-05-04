@@ -240,7 +240,7 @@ is divided into following sections:
                 <filter token="CONFIG_ABSOLUTE_PATH" value="${config_target}"/>
             </filterset>
         </copy>
-        <wscompile xPrintStackTrace="true" verbose="false" fork="true" keep="true" client="true" import="false" features="${wscompile.client.Hello.features}" base="${build.generated.dir}/wsbinary" sourceBase="${build.generated.dir}/wsclient" classpath="${wscompile.classpath}:${javac.classpath}" mapping="${build.web.dir.real}/WEB-INF/Hello-mapping.xml" config="${build.generated.dir}/wsclient/wsdl/Hello-config.xml"/>
+        <wscompile xPrintStackTrace="true" verbose="false" fork="true" keep="true" client="false" import="true" features="${wscompile.client.Hello.features}" base="${build.generated.dir}/wsbinary" sourceBase="${build.generated.dir}/wsclient" classpath="${wscompile.classpath}:${javac.classpath}" mapping="${build.web.dir.real}/WEB-INF/Hello-mapping.xml" config="${build.generated.dir}/wsclient/wsdl/Hello-config.xml"/>
     </target>
     <target name="web-service-client-generate" depends="Hello-client-wscompile"/>
     <target name="web-service-client-compile" depends="web-service-client-generate">

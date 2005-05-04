@@ -18,4 +18,4 @@
         <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" use="encoded" namespace="urn:Hello/wsdl"/></output></operation></binding>
   <service name="Hello">
     <port name="HelloSEIPort" binding="tns:HelloSEIBinding">
-      <soap:address location="http://ljungmann-ws.czech.sun.com:8080/helloservice/Hello" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/></port></service></definitions>
+      <soap:address location="http://localhost:8080/helloservice/Hello" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/></port></service></definitions>

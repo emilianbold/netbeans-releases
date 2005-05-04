@@ -1,13 +1,3 @@
-/*
- * HelloDIIClient.java
- *
- * Created on April 27, 2005, 11:21 AM
- *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
- */
-
 package diiclient;
 
 import javax.xml.rpc.Call;
@@ -17,10 +7,6 @@ import javax.xml.namespace.QName;
 import javax.xml.rpc.ServiceFactory;
 import javax.xml.rpc.ParameterMode;
 
-/**
- *
- * @author jungi
- */
 public class HelloDIIClient {
     
     private static String qnameService = "Hello";
@@ -36,7 +22,6 @@ public class HelloDIIClient {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
         System.out.println("Endpoint address = " + args[0]);
         try {
             ServiceFactory factory = ServiceFactory.newInstance();
