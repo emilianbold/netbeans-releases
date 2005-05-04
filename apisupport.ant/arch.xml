@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.24"
+  question-version="1.25"
   module="apisupport/ant"
   author="jglick@netbeans.org"
 >
@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <api group="org.apache.tools.ant.Task" name="nbinstaller" type="export" category="devel">
    <p>
-    This Ant task lets you installer or reload a module in the host IDE.
+    This Ant task lets you installer or reload a module in the host IDE or a target IDE.
    </p>
   </api>
  </answer>
@@ -98,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-   The Ant task is used by the NetBeans Module
+   The Ant task and/or --reload option is used by the NetBeans Module
    Projects module in order to make the <code>reload</code> target work in a
    module build script.
   </p>
@@ -137,6 +137,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="compat-i18n">
   <p>
    Yes, although the Ant task is not internationalized; Ant tasks normally are not.
+   CLI messages are not internationalized.
   </p>
  </answer>
 
@@ -235,6 +236,13 @@ Microsystems, Inc. All Rights Reserved.
      </p>
     </api>
    </li>
+   <li>
+    <api group="java" name="org.netbeans.CLIHandler" type="import" category="devel">
+     <p>
+      Uses the CLI extension SPI.
+     </p>
+    </api>
+   </li>
   </ul>
  </answer>
 
@@ -313,7 +321,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-jar">
   <p>
-   Module JAR and Ant task JAR, according to Ant module SPI.
+   Module JAR; Ant task JAR, according to Ant module SPI; and CLI handler.
   </p>
  </answer>
 
@@ -630,7 +638,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-   No.
+   Yes, registers a <code>CLIHandler</code> handler.
   </p>
  </answer>
 
@@ -926,6 +934,24 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="security-policy">
   <p>
    No.
+  </p>
+ </answer>
+
+<!--
+        <question id="exec-ant-tasks" when="impl">
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
+-->
+ <answer id="exec-ant-tasks">
+  <p>
+   Yes, it registers the <code>&lt;nbinstaller&gt;</code> task.
   </p>
  </answer>
 

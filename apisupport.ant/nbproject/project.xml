@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
                 <dependency>
                     <code-name-base>org.openide</code-name-base>
                     <build-prerequisite/>
+                    <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>3.17</specification-version>
@@ -35,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
                 <dependency>
                     <code-name-base>org.netbeans.core</code-name-base>
                     <build-prerequisite/>
+                    <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.1</specification-version>
@@ -47,6 +49,12 @@ Microsystems, Inc. All Rights Reserved.
                 <classpath>${antsrc.cp}</classpath>
                 <built-to>build/antclasses</built-to>
                 <built-to>${netbeans.dest.dir}/${cluster.dir}/ant/nblib/${code.name.base.dashes}.jar</built-to>
+            </extra-compilation-unit>
+            <extra-compilation-unit>
+                <package-root>clisrc</package-root>
+                <classpath>${cli.cp}</classpath>
+                <built-to>build/cliclasses</built-to>
+                <built-to>${cli.jar.absolute}</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

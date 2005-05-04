@@ -88,6 +88,12 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${nb_all}/nbbuild" target="tryme-debug"/>
     </target>
 
+    <target name="reload" depends="netbeans">
+        <ant dir="${nb_all}/nbbuild" target="tryme">
+            <property name="tryme.debug.args" value="--reload ${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+        </ant>
+    </target>
+    
     <target name="javahelp" depends="init" if="has.javahelp">
         <mkdir dir="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}"/>
         <copy todir="${build.javahelp.dir}">

@@ -33,4 +33,25 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="netbeans-extra" depends="nblib"/>
 
+   <target name="compile-cli" depends="init">
+        <mkdir dir="build/cliclasses"/>
+        <javac srcdir="clisrc" destdir="build/cliclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+            <classpath>
+                <path path="${cli.cp}"/>
+            </classpath>
+        </javac>
+        <copy todir="build/cliclasses">
+            <fileset dir="clisrc" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+   </target>
+
+   <target name="jar-cli" depends="init,compile-cli">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/core" />
+        <jar jarfile="${cli.jar.absolute}" compress="${build.package.compress}">
+            <fileset dir="build/cliclasses"/>
+        </jar>
+   </target>
+
+   <target name="compile" depends="jar-cli,projectized-common.compile"/>
+
 </project>

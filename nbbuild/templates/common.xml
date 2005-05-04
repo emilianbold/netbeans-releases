@@ -126,11 +126,6 @@ Microsystems, Inc. All Rights Reserved.
         </jarwithmoduleattributes>
     </target>
     
-    <target name="reload" depends="init,jar">
-        <fail unless="netbeans.home">Reloading modules works only inside the NetBeans IDE</fail>
-        <nbinstaller module="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" action="reinstall"/>
-    </target>
-
     <!-- Can insert extra stuff in here, like release, etc.: -->
     <target name="netbeans-extra"/>
 
