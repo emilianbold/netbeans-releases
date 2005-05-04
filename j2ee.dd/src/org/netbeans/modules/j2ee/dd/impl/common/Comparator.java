@@ -24,7 +24,6 @@ import org.netbeans.modules.j2ee.dd.api.web.*;
  */
 public class Comparator extends org.netbeans.modules.schema2beans.BeanComparator
 {
-
     public BaseBean compareBean(String 		beanName,
 				BaseBean 	curBean,
 				BaseBean 	newBean) {
@@ -35,13 +34,6 @@ public class Comparator extends org.netbeans.modules.schema2beans.BeanComparator
                 Object key2 = newBean.getValue(prop);
                 if (key1!=null) {
                     if (key1.equals(key2)) return curBean;
-                    else {
-                        BaseBean clonnedNewBean = (BaseBean)newBean.clone();
-                        clonnedNewBean.setValue(prop,key1);
-                        if (curBean.equals(super.compareBean(beanName, curBean, clonnedNewBean))) {
-                            return curBean;
-                        }
-                    }
                 }
             } else {
                 if (beanName.equals("SessionConfig")) { //NOI18N
