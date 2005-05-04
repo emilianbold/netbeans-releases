@@ -261,14 +261,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return new ClassPath[]{getBootClassPath()};
         }
         if (ClassPath.COMPILE.equals(type)) {
-            ClassPath[] l = new ClassPath[1];
+            ClassPath[] l = new ClassPath[2];
             l[0] = getCompileTimeClasspath(0);
+            l[1] = getCompileTimeClasspath(1);
             return l;
         }
         if (ClassPath.SOURCE.equals(type)) {
-            ClassPath[] l = new ClassPath[2];
+            ClassPath[] l = new ClassPath[3];
             l[0] = getSourcepath(0);
             l[1] = getSourcepath(5);
+            l[2] = getSourcepath(1);
             return l;
         }
         assert false;
