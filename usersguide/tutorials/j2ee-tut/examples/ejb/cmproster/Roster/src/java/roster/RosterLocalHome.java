@@ -1,18 +1,15 @@
 
 package roster;
 
+import javax.ejb.CreateException;
+import javax.ejb.EJBLocalHome;
+
 
 /**
  * This is the local-home interface for Roster enterprise bean.
  */
-public interface RosterLocalHome extends javax.ejb.EJBLocalHome {
+public interface RosterLocalHome extends EJBLocalHome {
     
-    
-    
-    /**
-     *
-     */
-    roster.RosterLocal create()  throws javax.ejb.CreateException;
-    
+    RosterLocal create()  throws CreateException;
     
 }

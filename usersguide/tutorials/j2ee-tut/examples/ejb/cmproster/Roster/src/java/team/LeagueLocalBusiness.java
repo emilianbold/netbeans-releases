@@ -1,29 +1,31 @@
 
 package team;
 
+import java.util.Collection;
+
 
 /**
  * This is the business interface for League enterprise bean.
  */
 public interface LeagueLocalBusiness {
-    public abstract java.lang.String getLeagueId();
+    public abstract String getLeagueId();
 
-    public abstract void setLeagueId(java.lang.String id);
+    public abstract void setLeagueId(String id);
 
-    public abstract java.lang.String getName();
+    public abstract String getName();
 
-    public abstract void setName(java.lang.String name);
+    public abstract void setName(String name);
 
-    public abstract java.lang.String getSport();
+    public abstract String getSport();
 
-    public abstract void setSport(java.lang.String sport);
+    public abstract void setSport(String sport);
 
-    java.util.Collection getTeams();
+    Collection getTeams();
 
-    void setTeams(java.util.Collection teams);
+    void setTeams(Collection teams);
 
-    void addTeam(team.TeamLocal team);
+    void addTeam(TeamLocal team);
 
-    void dropTeam(team.TeamLocal team);
+    void dropTeam(TeamLocal team);
     
 }

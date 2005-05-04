@@ -1,24 +1,21 @@
 
 package team;
 
+import java.util.Collection;
+import javax.ejb.*;
+
 
 /**
  * This is the local-home interface for Team enterprise bean.
  */
-public interface TeamLocalHome extends javax.ejb.EJBLocalHome {
-    
-    
-    
-    /**
-     *
-     */
-    team.TeamLocal findByPrimaryKey(java.lang.String key)  throws javax.ejb.FinderException;
+public interface TeamLocalHome extends EJBLocalHome {
 
-    public team.TeamLocal create(java.lang.String id, java.lang.String name, java.lang.String city) throws javax.ejb.CreateException;
+    public TeamLocal create(String id, String name, String city) throws CreateException;
 
-    java.util.Collection findByName(java.lang.String name) throws javax.ejb.FinderException;
+    TeamLocal findByPrimaryKey(String key)  throws FinderException;
 
-    java.util.Collection findByCity(java.lang.String city) throws javax.ejb.FinderException;
-    
+    Collection findByName(String name) throws FinderException;
+
+    Collection findByCity(String city) throws FinderException;
     
 }

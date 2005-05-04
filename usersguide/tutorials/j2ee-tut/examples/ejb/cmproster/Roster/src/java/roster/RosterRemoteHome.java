@@ -1,18 +1,17 @@
 
 package roster;
 
+import java.rmi.RemoteException;
+import javax.ejb.CreateException;
+import javax.ejb.EJBHome;
+
 
 /**
  * This is the home interface for RosterBean enterprise bean.
  */
-public interface RosterRemoteHome extends javax.ejb.EJBHome {
-    
-    
-    
-    /**
-     *
-     */
-    roster.RosterRemote create()  throws javax.ejb.CreateException, java.rmi.RemoteException;
+public interface RosterRemoteHome extends EJBHome {
+
+    RosterRemote create()  throws CreateException, RemoteException;
     
     
 }

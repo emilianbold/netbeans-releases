@@ -1,62 +1,63 @@
 package team;
+
 import java.util.Collection;
-import javax.ejb.FinderException;
+import javax.ejb.*;
 
 /**
  * This is the bean class for the PlayerBean enterprise bean.
  * Created Mar 23, 2005 1:48:50 PM
  * @author honza
  */
-public abstract class PlayerBean implements javax.ejb.EntityBean, team.PlayerLocalBusiness {
-    private javax.ejb.EntityContext context;
+public abstract class PlayerBean implements EntityBean, PlayerLocalBusiness {
+    private EntityContext context;
     
     // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click on the + sign on the left to edit the code.">
     // TODO Consider creating Transfer Object to encapsulate data
     // TODO Review finder methods
     /**
-     * @see javax.ejb.EntityBean#setEntityContext(javax.ejb.EntityContext)
+     * @see EntityBean#setEntityContext(EntityContext)
      */
-    public void setEntityContext(javax.ejb.EntityContext aContext) {
+    public void setEntityContext(EntityContext aContext) {
         context = aContext;
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbActivate()
+     * @see EntityBean#ejbActivate()
      */
     public void ejbActivate() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbPassivate()
+     * @see EntityBean#ejbPassivate()
      */
     public void ejbPassivate() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbRemove()
+     * @see EntityBean#ejbRemove()
      */
     public void ejbRemove() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#unsetEntityContext()
+     * @see EntityBean#unsetEntityContext()
      */
     public void unsetEntityContext() {
         context = null;
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbLoad()
+     * @see EntityBean#ejbLoad()
      */
     public void ejbLoad() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbStore()
+     * @see EntityBean#ejbStore()
      */
     public void ejbStore() {
         
@@ -65,23 +66,23 @@ public abstract class PlayerBean implements javax.ejb.EntityBean, team.PlayerLoc
     
     // <editor-fold desc="CMP fields and relationships.">
     
-    public abstract java.lang.String getPlayerId();
-    public abstract void setPlayerId(java.lang.String id);
+    public abstract String getPlayerId();
+    public abstract void setPlayerId(String id);
     
-    public abstract java.lang.String getName();
-    public abstract void setName(java.lang.String name);
+    public abstract String getName();
+    public abstract void setName(String name);
     
-    public abstract java.lang.String getPosition();
-    public abstract void setPosition(java.lang.String position);
+    public abstract String getPosition();
+    public abstract void setPosition(String position);
     
-    public abstract java.lang.Double getSalary();
-    public abstract void setSalary(java.lang.Double salary);
+    public abstract Double getSalary();
+    public abstract void setSalary(Double salary);
     
     // </editor-fold>
     
-    public java.lang.String ejbCreate(java.lang.String playerId, java.lang.String name, java.lang.String position, java.lang.Double salary)  throws javax.ejb.CreateException {
+    public String ejbCreate(String playerId, String name, String position, Double salary)  throws CreateException {
         if (playerId == null) {
-            throw new javax.ejb.CreateException("The field \"id\" must not be null");
+            throw new CreateException("The field \"id\" must not be null");
         }
         
         // TODO add additional validation code, throw CreateException if data is not valid
@@ -93,27 +94,27 @@ public abstract class PlayerBean implements javax.ejb.EntityBean, team.PlayerLoc
         return null;
     }
     
-    public void ejbPostCreate(java.lang.String playerId, java.lang.String name, java.lang.String position, java.lang.Double salary) {
+    public void ejbPostCreate(String playerId, String name, String position, Double salary) {
         // TODO populate relationships here if appropriate
         
     }
  // Business methods
     public Collection getLeagues() throws FinderException {
-        PlayerLocal player = (team.PlayerLocal) context.getEJBLocalObject();
+        PlayerLocal player = (PlayerLocal) context.getEJBLocalObject();
 
         return ejbSelectLeagues(player);
     }
 
     public Collection getSports() throws FinderException {
-        PlayerLocal player = (team.PlayerLocal) context.getEJBLocalObject();
+        PlayerLocal player = (PlayerLocal) context.getEJBLocalObject();
 
         return ejbSelectSports(player);
     }
-    public abstract java.util.Collection getTeams();
+    public abstract Collection getTeams();
 
-    public abstract void setTeams(java.util.Collection teams);
+    public abstract void setTeams(Collection teams);
     
-    public abstract java.util.Collection ejbSelectLeagues(PlayerLocal p0) throws javax.ejb.FinderException;
+    public abstract Collection ejbSelectLeagues(PlayerLocal p0) throws FinderException;
 
-    public abstract java.util.Collection ejbSelectSports(PlayerLocal p0) throws javax.ejb.FinderException;
+    public abstract Collection ejbSelectSports(PlayerLocal p0) throws FinderException;
 }

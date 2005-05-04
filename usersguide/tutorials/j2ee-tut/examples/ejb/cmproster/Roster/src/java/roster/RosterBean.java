@@ -3,7 +3,11 @@ package roster;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.*;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import team.*;
 import util.Debug;
@@ -16,8 +20,8 @@ import util.TeamDetails;
  * Created Mar 23, 2005 1:49:15 PM
  * @author honza
  */
-public class RosterBean implements javax.ejb.SessionBean, roster.RosterLocalBusiness, roster.RosterRemoteBusiness {
-    private javax.ejb.SessionContext context;
+public class RosterBean implements SessionBean, RosterLocalBusiness, RosterRemoteBusiness {
+    private SessionContext context;
     private PlayerLocalHome playerHome = null;
     private TeamLocalHome teamHome = null;
     private LeagueLocalHome leagueHome = null;
@@ -29,7 +33,7 @@ public class RosterBean implements javax.ejb.SessionBean, roster.RosterLocalBusi
     /**
      * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
      */
-    public void setSessionContext(javax.ejb.SessionContext aContext) {
+    public void setSessionContext(SessionContext aContext) {
         context = aContext;
     }
     
@@ -515,45 +519,42 @@ public class RosterBean implements javax.ejb.SessionBean, roster.RosterLocalBusi
     }
     
     
-    // Enter business methods below. (Right-click in editor and choose
-    // EJB Methods > Add Business Method)
+    // Lookup methods for entity beans
 
-    private team.LeagueLocalHome lookupLeagueBean() {
+    private LeagueLocalHome lookupLeagueBean() {
         try {
-            javax.naming.Context c = new javax.naming.InitialContext();
-            team.LeagueLocalHome rv = (team.LeagueLocalHome) c.lookup("java:comp/env/ejb/LeagueBean");
+            Context c = new InitialContext();
+            LeagueLocalHome rv = (LeagueLocalHome) c.lookup("java:comp/env/ejb/LeagueBean");
             return rv;
         }
-        catch(javax.naming.NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
+        catch(NamingException ne) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE,"exception caught" ,ne);
             throw new RuntimeException(ne);
         }
     }
 
-    private team.PlayerLocalHome lookupPlayerBean() {
+    private PlayerLocalHome lookupPlayerBean() {
         try {
-            javax.naming.Context c = new javax.naming.InitialContext();
-            team.PlayerLocalHome rv = (team.PlayerLocalHome) c.lookup("java:comp/env/ejb/PlayerBean");
+            Context c = new InitialContext();
+            PlayerLocalHome rv = (PlayerLocalHome) c.lookup("java:comp/env/ejb/PlayerBean");
             return rv;
         }
         catch(javax.naming.NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE,"exception caught" ,ne);
             throw new RuntimeException(ne);
         }
     }
 
-    private team.TeamLocalHome lookupTeamBean() {
+    private TeamLocalHome lookupTeamBean() {
         try {
             javax.naming.Context c = new javax.naming.InitialContext();
-            team.TeamLocalHome rv = (team.TeamLocalHome) c.lookup("java:comp/env/ejb/TeamBean");
+            TeamLocalHome rv = (TeamLocalHome) c.lookup("java:comp/env/ejb/TeamBean");
             return rv;
         }
         catch(javax.naming.NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE,"exception caught" ,ne);
             throw new RuntimeException(ne);
         }
     }
-    
-    
     
 }

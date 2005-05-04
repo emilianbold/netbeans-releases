@@ -9,25 +9,26 @@ import javax.ejb.FinderException;
  * This is the business interface for Player enterprise bean.
  */
 public interface PlayerLocalBusiness {
-    public abstract java.lang.String getPlayerId();
+    
+    public abstract String getPlayerId();
 
-    public abstract void setPlayerId(java.lang.String id);
+    public abstract void setPlayerId(String id);
 
-    public abstract java.lang.String getName();
+    public abstract String getName();
 
-    public abstract void setName(java.lang.String name);
+    public abstract void setName(String name);
 
-    public abstract java.lang.String getPosition();
+    public abstract String getPosition();
 
-    public abstract void setPosition(java.lang.String position);
+    public abstract void setPosition(String position);
 
-    public abstract java.lang.Double getSalary();
+    public abstract Double getSalary();
 
-    public abstract void setSalary(java.lang.Double salary);
+    public abstract void setSalary(Double salary);
 
-    java.util.Collection getTeams();
+    Collection getTeams();
 
-    void setTeams(java.util.Collection teams);
+    void setTeams(Collection teams);
 
     Collection getLeagues() throws FinderException;
 

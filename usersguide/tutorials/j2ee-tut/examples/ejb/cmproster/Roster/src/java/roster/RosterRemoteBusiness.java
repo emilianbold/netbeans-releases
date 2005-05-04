@@ -1,6 +1,7 @@
 
 package roster;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import util.LeagueDetails;
 import util.PlayerDetails;
@@ -11,60 +12,56 @@ import util.TeamDetails;
  * This is the business interface for RosterBean enterprise bean.
  */
 public interface RosterRemoteBusiness {
-    LeagueDetails getLeague(java.lang.String leagueId) throws java.rmi.RemoteException;
+    LeagueDetails getLeague(String leagueId) throws RemoteException;
 
-    void removeLeague(java.lang.String leagueId) throws java.rmi.RemoteException;
+    void removeLeague(String leagueId) throws RemoteException;
 
-    void createLeague(util.LeagueDetails details) throws java.rmi.RemoteException;
+    void createLeague(LeagueDetails details) throws RemoteException;
 
-    TeamDetails getTeam(java.lang.String teamId) throws java.rmi.RemoteException;
+    TeamDetails getTeam(String teamId) throws RemoteException;
 
-    void removeTeam(java.lang.String teamId) throws java.rmi.RemoteException;
+    void removeTeam(String teamId) throws RemoteException;
 
-    void createTeamInLeague(util.TeamDetails details, java.lang.String leagueId) throws java.rmi.RemoteException;
+    void createTeamInLeague(TeamDetails details, String leagueId) throws RemoteException;
 
-    ArrayList getSportsOfPlayer(java.lang.String playerId) throws java.rmi.RemoteException;
+    ArrayList getSportsOfPlayer(String playerId) throws RemoteException;
 
-    ArrayList getLeaguesOfPlayer(java.lang.String playerId) throws java.rmi.RemoteException;
+    ArrayList getLeaguesOfPlayer(String playerId) throws RemoteException;
 
-    ArrayList getPlayersByPositionAndName(java.lang.String position, java.lang.String name) throws java.rmi.RemoteException;
+    ArrayList getPlayersByPositionAndName(String position, String name) throws RemoteException;
 
-    ArrayList getPlayersNotOnTeam() throws java.rmi.RemoteException;
+    ArrayList getPlayersNotOnTeam() throws RemoteException;
 
-    ArrayList getAllPlayers() throws java.rmi.RemoteException;
+    ArrayList getAllPlayers() throws RemoteException;
 
-    ArrayList getPlayersByCity(java.lang.String city) throws java.rmi.RemoteException;
+    ArrayList getPlayersByCity(String city) throws RemoteException;
 
-    ArrayList getPlayersBySport(java.lang.String sport) throws java.rmi.RemoteException;
+    ArrayList getPlayersBySport(String sport) throws RemoteException;
 
-    ArrayList getPlayersByLeagueId(java.lang.String leagueId) throws java.rmi.RemoteException;
+    ArrayList getPlayersByLeagueId(String leagueId) throws RemoteException;
 
-    ArrayList getPlayersBySalaryRange(double low, double high) throws java.rmi.RemoteException;
+    ArrayList getPlayersBySalaryRange(double low, double high) throws RemoteException;
 
-    ArrayList getPlayersByHigherSalary(java.lang.String name) throws java.rmi.RemoteException;
+    ArrayList getPlayersByHigherSalary(String name) throws RemoteException;
 
-    ArrayList getPlayersByPosition(java.lang.String position) throws java.rmi.RemoteException;
+    ArrayList getPlayersByPosition(String position) throws RemoteException;
 
-    ArrayList getTeamsOfLeague(java.lang.String leagueId) throws java.rmi.RemoteException;
+    ArrayList getTeamsOfLeague(String leagueId) throws RemoteException;
 
-    ArrayList getPlayersOfTeam(java.lang.String teamId) throws java.rmi.RemoteException;
+    ArrayList getPlayersOfTeam(String teamId) throws RemoteException;
 
-    PlayerDetails getPlayer(java.lang.String playerId) throws java.rmi.RemoteException;
+    PlayerDetails getPlayer(String playerId) throws RemoteException;
 
-    void dropPlayer(java.lang.String playerId, java.lang.String teamId) throws java.rmi.RemoteException;
+    void dropPlayer(String playerId, String teamId) throws RemoteException;
 
-    void removePlayer(java.lang.String playerId) throws java.rmi.RemoteException;
+    void removePlayer(String playerId) throws RemoteException;
 
-    void addPlayer(java.lang.String playerId, java.lang.String teamId) throws java.rmi.RemoteException;
+    void addPlayer(String playerId, String teamId) throws RemoteException;
 
-    void createPlayer(util.PlayerDetails details) throws java.rmi.RemoteException;
+    void createPlayer(PlayerDetails details) throws RemoteException;
 
-    /**
-     * See section 7.10.3 of the EJB 2.0 specification
-     * See section 7.11.3 of the EJB 2.1 specification
-     */
-    ArrayList testFinder(java.lang.String parm1, java.lang.String parm2, java.lang.String parm3) throws java.rmi.RemoteException;
+    ArrayList testFinder(String parm1, String parm2, String parm3) throws RemoteException;
 
-    ArrayList getPlayersOfTeamCopy(java.lang.String teamId) throws java.rmi.RemoteException;
+    ArrayList getPlayersOfTeamCopy(String teamId) throws RemoteException;
     
 }

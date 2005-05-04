@@ -1,45 +1,43 @@
 
 package team;
 
+import java.util.Collection;
+import javax.ejb.*;
+
 
 /**
  * This is the local-home interface for Player enterprise bean.
  */
-public interface PlayerLocalHome extends javax.ejb.EJBLocalHome {
+public interface PlayerLocalHome extends EJBLocalHome {
     
+    PlayerLocal findByPrimaryKey(String key)  throws FinderException;
     
+    public PlayerLocal create(String id, String name, String position, Double salary) throws CreateException;
     
-    /**
-     *
-     */
-    team.PlayerLocal findByPrimaryKey(java.lang.String key)  throws javax.ejb.FinderException;
-
-    public team.PlayerLocal create(java.lang.String id, java.lang.String name, java.lang.String position, java.lang.Double salary) throws javax.ejb.CreateException;
-
-    java.util.Collection findByName(java.lang.String name) throws javax.ejb.FinderException;
-
-    java.util.Collection findByPosition(java.lang.String position) throws javax.ejb.FinderException;
-
-    java.util.Collection findBySalary(java.lang.Double salary) throws javax.ejb.FinderException;
-
-    java.util.Collection findAll() throws javax.ejb.FinderException;
-
-         java.util.Collection findByHigherSalary(java.lang.String name) throws javax.ejb.FinderException;
-
-        java.util.Collection findByPositionAndName(java.lang.String position, java.lang.String name) throws javax.ejb.FinderException;
-
-     java.util.Collection findBySalaryRange(double low, double high) throws javax.ejb.FinderException;
-
-      java.util.Collection findBySport(java.lang.String sport) throws javax.ejb.FinderException;
-
-       java.util.Collection findByTest(java.lang.String param1, java.lang.String param2, java.lang.String param3) throws javax.ejb.FinderException;
-
-     java.util.Collection findNotOnTeam() throws javax.ejb.FinderException;
+    Collection findByName(String name) throws FinderException;
     
-     java.util.Collection findByCity(java.lang.String city) throws javax.ejb.FinderException;
-
-     java.util.Collection findByLeague(team.LeagueLocal league) throws javax.ejb.FinderException;
-
+    Collection findByPosition(String position) throws FinderException;
+    
+    Collection findBySalary(Double salary) throws FinderException;
+    
+    Collection findAll() throws FinderException;
+    
+    Collection findByHigherSalary(String name) throws FinderException;
+    
+    Collection findByPositionAndName(String position, String name) throws FinderException;
+    
+    Collection findBySalaryRange(double low, double high) throws FinderException;
+    
+    Collection findBySport(String sport) throws FinderException;
+    
+    Collection findByTest(String param1, String param2, String param3) throws FinderException;
+    
+    Collection findNotOnTeam() throws FinderException;
+    
+    Collection findByCity(String city) throws FinderException;
+    
+    Collection findByLeague(LeagueLocal league) throws FinderException;
+    
     
     
 }

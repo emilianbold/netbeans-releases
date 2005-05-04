@@ -9,56 +9,56 @@ import java.util.*;
  * Created Mar 23, 2005 1:48:50 PM
  * @author honza
  */
-public abstract class TeamBean implements javax.ejb.EntityBean, team.TeamLocalBusiness {
-    private javax.ejb.EntityContext context;
+public abstract class TeamBean implements EntityBean, TeamLocalBusiness {
+    private EntityContext context;
     
     // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click on the + sign on the left to edit the code.">
     // TODO Consider creating Transfer Object to encapsulate data
     // TODO Review finder methods
     /**
-     * @see javax.ejb.EntityBean#setEntityContext(javax.ejb.EntityContext)
+     * @see EntityBean#setEntityContext(EntityContext)
      */
-    public void setEntityContext(javax.ejb.EntityContext aContext) {
+    public void setEntityContext(EntityContext aContext) {
         context = aContext;
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbActivate()
+     * @see EntityBean#ejbActivate()
      */
     public void ejbActivate() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbPassivate()
+     * @see EntityBean#ejbPassivate()
      */
     public void ejbPassivate() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbRemove()
+     * @see EntityBean#ejbRemove()
      */
     public void ejbRemove() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#unsetEntityContext()
+     * @see EntityBean#unsetEntityContext()
      */
     public void unsetEntityContext() {
         context = null;
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbLoad()
+     * @see EntityBean#ejbLoad()
      */
     public void ejbLoad() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbStore()
+     * @see EntityBean#ejbStore()
      */
     public void ejbStore() {
         
@@ -67,23 +67,23 @@ public abstract class TeamBean implements javax.ejb.EntityBean, team.TeamLocalBu
     
     // <editor-fold desc="CMP fields and relationships.">
     
-    public abstract java.lang.String getTeamId();
-    public abstract void setTeamId(java.lang.String id);
+    public abstract String getTeamId();
+    public abstract void setTeamId(String id);
     
-    public abstract java.lang.String getName();
-    public abstract void setName(java.lang.String name);
+    public abstract String getName();
+    public abstract void setName(String name);
     
-    public abstract java.lang.String getCity();
-    public abstract void setCity(java.lang.String city);
+    public abstract String getCity();
+    public abstract void setCity(String city);
     
     // </editor-fold>
     
-    public java.lang.String ejbCreate(java.lang.String teamId, java.lang.String name, java.lang.String city)  throws javax.ejb.CreateException {
+    public String ejbCreate(String teamId, String name, String city)  throws CreateException {
         if (teamId == null) {
-            throw new javax.ejb.CreateException("The field \"id\" must not be null");
+            throw new CreateException("The field \"id\" must not be null");
         }
        // if (leagueId == null) {
-       //     throw new javax.ejb.CreateException("The field \"leagueId\" must not be null");
+       //     throw new CreateException("The field \"leagueId\" must not be null");
         //}
         
         // TODO add additional validation code, throw CreateException if data is not valid
@@ -94,7 +94,7 @@ public abstract class TeamBean implements javax.ejb.EntityBean, team.TeamLocalBu
         return null;
     }
     
-    public void ejbPostCreate(java.lang.String teamId, java.lang.String name, java.lang.String city) {
+    public void ejbPostCreate(String teamId, String name, String city) {
         // TODO populate relationships here if appropriate
         //setLeagueId(leagueId);
         
@@ -143,13 +143,13 @@ public abstract class TeamBean implements javax.ejb.EntityBean, team.TeamLocalBu
         }
     }
 
-    public abstract java.util.Collection getPlayers();
+    public abstract Collection getPlayers();
 
-    public abstract void setPlayers(java.util.Collection players);
+    public abstract void setPlayers(Collection players);
 
-    public abstract team.LeagueLocal getLeague();
+    public abstract LeagueLocal getLeague();
 
-    public abstract void setLeague(team.LeagueLocal league);
+    public abstract void setLeague(LeagueLocal league);
 
 
 
