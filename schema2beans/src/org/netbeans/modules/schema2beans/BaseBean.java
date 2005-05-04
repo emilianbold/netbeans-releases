@@ -1830,7 +1830,7 @@ public abstract class BaseBean implements Cloneable, Bean {
                 // comments (from second graph) are merged only for MERGE_UPDATE
                 // see also the issue 58499
                 if (startingNode1 != null && startingNode2 != null &&
-                        ((mode & MERGE_UNION) == MERGE_UPDATE)) {
+                        (mode == MERGE_UPDATE)) {
                     NodeList nodes1 = startingNode1.getChildNodes();
                     NodeList nodes2 = startingNode2.getChildNodes();
                     int pos1 = 0;
