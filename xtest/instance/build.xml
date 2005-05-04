@@ -37,6 +37,21 @@ Microsystems, Inc. All Rights Reserved.
              target="runtests"/>
     </target>
 
+    <target name="coverage">
+       <xslt in="master-config.xml" out="coveragebuild.xml"
+          style="coverage.xsl">
+          <xmlcatalog>
+              <dtd
+                 publicId="-//NetBeans//DTD XTest Master Config 1.0//EN"
+                 location="dtd/xtest-master-config-1_0.dtd"/>
+          </xmlcatalog>
+       </xslt>
+       <ant antfile="coveragebuild.xml" target="${xtest.config}">
+         <property name="netbeans.dest.dir" location="${netbeans.dest.dir}"/>
+       </ant>     
+       <delete file="coveragebuild.xml"/>
+    </target>
+      
     <target name="runtestsdist">
         <ant dir="." antfile="${xtest.harness.antfile}"
              target="runtestsdist"/>
