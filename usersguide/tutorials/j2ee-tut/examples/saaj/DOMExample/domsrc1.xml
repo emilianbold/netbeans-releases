@@ -1,0 +1,14 @@
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<SOAP-ENV:Header>
+<ns:orderDesk SOAP-ENV:actor="http://gizmos.com/orders" xmlns:ns="http://gizmos.com/NSURI"/>
+<ns:shippingDesk SOAP-ENV:actor="http://gizmos.com/shipping" xmlns:ns="http://gizmos.com/NSURI"/>
+<ns:confirmationDesk SOAP-ENV:actor="http://gizmos.com/confirmations" xmlns:ns="http://gizmos.com/NSURI"/>
+<ns:billingDesk SOAP-ENV:actor="http://gizmos.com/billing" xmlns:ns="http://gizmos.com/NSURI"/>
+<t:Transaction SOAP-ENV:mustUnderstand="1" xmlns:t="http://gizmos.com/orders">5</t:Transaction>
+</SOAP-ENV:Header>
+<SOAP-ENV:Body>
+<find_binding serviceKey="68280D53-00E2-E6A7-19BD-C6113993AA77"
+    generic="2.0" 
+xmlns="urn:uddi-org:api_v2"><tModelBag><tModelKey>UUID:64C756D1-3374-4E00-AE83-EE12E38FAE63</tModelKey></tModelBag></find_binding>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

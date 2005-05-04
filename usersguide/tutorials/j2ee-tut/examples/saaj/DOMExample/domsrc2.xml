@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+ <SOAP-ENV:Body>
+ <businessList generic="2.0" xmlns="urn:uddi-org:api_v2" 
+  operator="www.ibm.com/services/uddi" truncated="false">
+  <businessInfos>
+   <businessInfo businessKey="5C4E0770-6952-11D5-AE83-0004AC49CC1E">
+    <name xml:lang="en">Food</name>
+    <description xml:lang="en">Test Food</description>
+    <serviceInfos></serviceInfos>
+   </businessInfo>
+   <businessInfo businessKey="94803BF0-5DD8-11D7-A0C7-000629DC0A53">
+    <name xml:lang="en">Food Manufacturing</name>
+    <serviceInfos>
+     <serviceInfo serviceKey="DB111D50-5DD8-11D7-A0C7-000629DC0A53" 
+      businessKey="94803BF0-5DD8-11D7-A0C7-000629DC0A53">
+      <name xml:lang="en">Food Category</name>
+     </serviceInfo>
+     <serviceInfo serviceKey="F101DFF0-5DD8-11D7-A0C7-000629DC0A53" 
+      businessKey="94803BF0-5DD8-11D7-A0C7-000629DC0A53">
+      <name xml:lang="en">Food Price</name>
+     </serviceInfo>
+    </serviceInfos>
+   </businessInfo>
+   <businessInfo businessKey="5FBEB480-29D7-11D7-9B59-000629DC0A53">
+    <name xml:lang="en">foodCompanyA</name>
+    <description xml:lang="en">It is a food company sells biscuit</description>
+    <serviceInfos></serviceInfos>
+   </businessInfo>
+  </businessInfos>
+ </businessList>
+ </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
