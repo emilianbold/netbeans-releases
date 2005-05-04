@@ -120,6 +120,9 @@ Microsystems, Inc. All Rights Reserved.
  	<module name="performance"   testtypes="qa-functional"  attributes=""/>  
   </config>
   
+  <config name="qa-j2ee-functional">
+ 	<module name="j2ee"   testtypes="qa-functional"  attributes="validation"/>  
+  </config>
   
   <!-- validation suites for Release Engineering -->
 
