@@ -93,6 +93,7 @@ public class JspLineBreakpointTest extends NbTestCase {
             JPDADebugger debugger = support.getDebugger();
 
             support.waitState (JPDADebugger.STATE_STOPPED);  // breakpoint hit
+            assertNotNull(debugger.getCurrentCallStackFrame());
             assertEquals(
                 "Debugger stopped at wrong file", 
                 lb.getSourcePath(), 
