@@ -37,6 +37,7 @@ public class NbObjectOutputStream extends ObjectOutputStream {
         alreadyReported.add("java.lang.Exception"); // NOI18N
         alreadyReported.add("java.io.IOException"); // NOI18N
         alreadyReported.add("java.util.TreeSet"); // NOI18N
+        alreadyReported.add("java.awt.geom.AffineTransform"); // NOI18N
     }
 
     private static Map examinedClasses = new WeakHashMap(250); // Map<String,Boolean>
