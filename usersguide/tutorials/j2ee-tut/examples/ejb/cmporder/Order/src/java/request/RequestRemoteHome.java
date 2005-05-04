@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,18 +27,16 @@
 
 package request;
 
+import java.rmi.RemoteException;
+import javax.ejb.CreateException;
+import javax.ejb.EJBHome;
+
 
 /**
  * This is the home interface for Request enterprise bean.
  */
-public interface RequestRemoteHome extends javax.ejb.EJBHome {
-    
-    
-    
-    /**
-     *
-     */
-    request.RequestRemote create()  throws javax.ejb.CreateException, java.rmi.RemoteException;
-    
+public interface RequestRemoteHome extends EJBHome {
+
+    request.RequestRemote create()  throws CreateException, RemoteException;
     
 }

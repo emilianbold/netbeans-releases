@@ -1,17 +1,5 @@
 /*
- * CheckerClient.java
- *
- * Created on May 3, 2005, 11:07 AM
- *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
- */
-
-package checker;
-
-/*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -22,7 +10,7 @@ package checker;
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -37,6 +25,7 @@ package checker;
  * Microsystems, Inc. aux Etats-Unis et dans d'autres pays.
  */
 
+package checker;
 
 import java.util.*;
 import javax.naming.*;

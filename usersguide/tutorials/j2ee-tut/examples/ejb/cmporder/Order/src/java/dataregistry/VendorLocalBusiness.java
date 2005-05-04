@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,6 +27,8 @@
 
 package dataregistry;
 
+import java.util.Collection;
+
 
 /**
  * This is the business interface for Vendor enterprise bean.
@@ -34,24 +36,24 @@ package dataregistry;
 public interface VendorLocalBusiness {
     public abstract int getVendorId();
 
-    public abstract java.lang.String getName();
+    public abstract String getName();
 
-    public abstract void setName(java.lang.String name);
+    public abstract void setName(String name);
 
-    public abstract java.lang.String getAddress();
+    public abstract String getAddress();
 
-    public abstract void setAddress(java.lang.String address);
+    public abstract void setAddress(String address);
 
-    public abstract java.lang.String getContact();
+    public abstract String getContact();
 
-    public abstract void setContact(java.lang.String contact);
+    public abstract void setContact(String contact);
 
-    public abstract java.lang.String getPhone();
+    public abstract String getPhone();
 
-    public abstract void setPhone(java.lang.String phone);
+    public abstract void setPhone(String phone);
 
-    public abstract java.util.Collection getVendorPartBean();
+    public abstract Collection getVendorPartBean();
 
-    public abstract void setVendorPartBean(java.util.Collection vendorPartBean);
+    public abstract void setVendorPartBean(Collection vendorPartBean);
     
 }

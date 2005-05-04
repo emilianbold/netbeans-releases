@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,25 +27,27 @@
 
 package dataregistry;
 
+import java.math.BigDecimal;
+
 
 /**
  * This is the business interface for Lineitem enterprise bean.
  */
 public interface LineItemLocalBusiness {
-    public abstract java.lang.Integer getOrderId();
+    public abstract Integer getOrderId();
 
-    public abstract java.math.BigDecimal getItemId();
+    public abstract BigDecimal getItemId();
 
-    public abstract java.math.BigDecimal getQuantity();
+    public abstract BigDecimal getQuantity();
 
-    public abstract void setQuantity(java.math.BigDecimal quantity);
+    public abstract void setQuantity(BigDecimal quantity);
 
-    public abstract dataregistry.OrdersLocal getOrdersBean();
+    public abstract OrdersLocal getOrdersBean();
 
-    public abstract void setOrdersBean(dataregistry.OrdersLocal ordersBean);
+    public abstract void setOrdersBean(OrdersLocal ordersBean);
 
-    public abstract dataregistry.VendorPartLocal getVendorPartNumber();
+    public abstract VendorPartLocal getVendorPartNumber();
 
-    public abstract void setVendorPartNumber(dataregistry.VendorPartLocal vendorPartNumber);
+    public abstract void setVendorPartNumber(VendorPartLocal vendorPartNumber);
     
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,30 +27,29 @@
 
 package dataregistry;
 
+import java.math.BigDecimal;
+import javax.ejb.*;
+
 
 /**
  * This is the local-home interface for Lineitem enterprise bean.
  */
-public interface LineItemLocalHome extends javax.ejb.EJBLocalHome {
+public interface LineItemLocalHome extends EJBLocalHome {
     
-    
-    
-    /**
-     *
-     */
-    dataregistry.LineItemLocal findByPrimaryKey(dataregistry.LineItemPK key)  throws javax.ejb.FinderException;
 
-    public dataregistry.LineItemLocal create(java.lang.Integer orderId, java.math.BigDecimal itemId, java.math.BigDecimal quantity, dataregistry.OrdersLocal ordersBean, dataregistry.VendorPartLocal vendorPartNumber) throws javax.ejb.CreateException;
+    LineItemLocal findByPrimaryKey(LineItemPK key)  throws FinderException;
 
-    java.util.Collection findByOrderId(java.lang.Integer orderId) throws javax.ejb.FinderException;
+    public LineItemLocal create(Integer orderId, BigDecimal itemId, BigDecimal quantity, OrdersLocal ordersBean, VendorPartLocal vendorPartNumber) throws CreateException;
 
-    java.util.Collection findByItemId(java.math.BigDecimal itemId) throws javax.ejb.FinderException;
+    java.util.Collection findByOrderId(Integer orderId) throws FinderException;
 
-    java.util.Collection findByQuantity(java.math.BigDecimal quantity) throws javax.ejb.FinderException;
+    java.util.Collection findByItemId(BigDecimal itemId) throws FinderException;
 
-    dataregistry.LineItemLocal create(dataregistry.OrdersLocal ordersBean, java.math.BigDecimal quantity, dataregistry.VendorPartLocal vendorPartNumber) throws javax.ejb.CreateException;
+    java.util.Collection findByQuantity(BigDecimal quantity) throws FinderException;
 
-    java.util.Collection findAll() throws javax.ejb.FinderException;
+    LineItemLocal create(OrdersLocal ordersBean, BigDecimal quantity, VendorPartLocal vendorPartNumber) throws CreateException;
+
+    java.util.Collection findAll() throws FinderException;
     
     
 }

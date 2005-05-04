@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,61 +27,62 @@
 
 package dataregistry;
 
+import java.util.Collection;
 import javax.ejb.*;
 
 /**
  * This is the bean class for the VendorBean enterprise bean.
  */
-public abstract class VendorBean implements javax.ejb.EntityBean, dataregistry.VendorLocalBusiness {
-    private javax.ejb.EntityContext context;
+public abstract class VendorBean implements EntityBean, VendorLocalBusiness {
+    private EntityContext context;
     
     // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click on the + sign on the left to edit the code.">
     // TODO Consider creating Transfer Object to encapsulate data
     // TODO Review finder methods
     /**
-     * @see javax.ejb.EntityBean#setEntityContext(javax.ejb.EntityContext)
+     * @see EntityBean#setEntityContext(EntityContext)
      */
-    public void setEntityContext(javax.ejb.EntityContext aContext) {
+    public void setEntityContext(EntityContext aContext) {
         context = aContext;
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbActivate()
+     * @see EntityBean#ejbActivate()
      */
     public void ejbActivate() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbPassivate()
+     * @see EntityBean#ejbPassivate()
      */
     public void ejbPassivate() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbRemove()
+     * @see EntityBean#ejbRemove()
      */
     public void ejbRemove() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#unsetEntityContext()
+     * @see EntityBean#unsetEntityContext()
      */
     public void unsetEntityContext() {
         context = null;
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbLoad()
+     * @see EntityBean#ejbLoad()
      */
     public void ejbLoad() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbStore()
+     * @see EntityBean#ejbStore()
      */
     public void ejbStore() {
         
@@ -92,34 +93,34 @@ public abstract class VendorBean implements javax.ejb.EntityBean, dataregistry.V
     public abstract int getVendorId();
     public abstract void setVendorId(int vendorId);
     
-    public abstract java.lang.String getName();
-    public abstract void setName(java.lang.String name);
+    public abstract String getName();
+    public abstract void setName(String name);
     
-    public abstract java.lang.String getAddress();
-    public abstract void setAddress(java.lang.String address);
+    public abstract String getAddress();
+    public abstract void setAddress(String address);
     
-    public abstract java.lang.String getContact();
-    public abstract void setContact(java.lang.String contact);
+    public abstract String getContact();
+    public abstract void setContact(String contact);
     
-    public abstract java.lang.String getPhone();
-    public abstract void setPhone(java.lang.String phone);
+    public abstract String getPhone();
+    public abstract void setPhone(String phone);
     
-    public abstract java.util.Collection getVendorPartBean();
-    public abstract void setVendorPartBean(java.util.Collection vendorPartBean);
+    public abstract Collection getVendorPartBean();
+    public abstract void setVendorPartBean(Collection vendorPartBean);
     
     
-    public dataregistry.VendorKey ejbCreate(int vendorId, java.lang.String name, java.lang.String address, java.lang.String contact, java.lang.String phone)  throws javax.ejb.CreateException {
+    public VendorKey ejbCreate(int vendorId, String name, String address, String contact, String phone)  throws CreateException {
         if (name == null) {
-            throw new javax.ejb.CreateException("The field \"name\" must not be null");
+            throw new CreateException("The field \"name\" must not be null");
         }
         if (address == null) {
-            throw new javax.ejb.CreateException("The field \"address\" must not be null");
+            throw new CreateException("The field \"address\" must not be null");
         }
         if (contact == null) {
-            throw new javax.ejb.CreateException("The field \"contact\" must not be null");
+            throw new CreateException("The field \"contact\" must not be null");
         }
         if (phone == null) {
-            throw new javax.ejb.CreateException("The field \"phone\" must not be null");
+            throw new CreateException("The field \"phone\" must not be null");
         }
         
         // TODO add additional validation code, throw CreateException if data is not valid
@@ -132,7 +133,7 @@ public abstract class VendorBean implements javax.ejb.EntityBean, dataregistry.V
         return null;
     }
     
-    public void ejbPostCreate(int vendorId, java.lang.String name, java.lang.String address, java.lang.String contact, java.lang.String phone) {
+    public void ejbPostCreate(int vendorId, String name, String address, String contact, String phone) {
         // TODO populate relationships here if appropriate
         
     }

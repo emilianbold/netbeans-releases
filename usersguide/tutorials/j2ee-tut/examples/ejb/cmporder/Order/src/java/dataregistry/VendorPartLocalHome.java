@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,28 +27,25 @@
 
 package dataregistry;
 
-import javax.ejb.FinderException;
+import java.util.Collection;
+import javax.ejb.*;
+
 
 
 /**
  * This is the local-home interface for VendorPart enterprise bean.
  */
-public interface VendorPartLocalHome extends javax.ejb.EJBLocalHome {
+public interface VendorPartLocalHome extends EJBLocalHome {
     
-    
-    
-    /**
-     *
-     */
-    dataregistry.VendorPartLocal findByPrimaryKey(java.lang.Object key)  throws javax.ejb.FinderException;
+    VendorPartLocal findByPrimaryKey(Object key)  throws FinderException;
 
-    public dataregistry.VendorPartLocal create(java.lang.String description, java.lang.Double price, dataregistry.PartLocal partBean, dataregistry.VendorLocal vendorId) throws javax.ejb.CreateException;
+    public VendorPartLocal create(String description, Double price, PartLocal partBean, VendorLocal vendorId) throws CreateException;
 
-    java.util.Collection findByDescription(java.lang.String description) throws javax.ejb.FinderException;
+    Collection findByDescription(String description) throws FinderException;
 
-    java.util.Collection findByPrice(java.lang.Double price) throws javax.ejb.FinderException;
+    Collection findByPrice(Double price) throws FinderException;
 
-    dataregistry.VendorPartLocal create(java.lang.String description, double price, dataregistry.PartLocal part) throws javax.ejb.CreateException;
+    VendorPartLocal create(String description, double price, PartLocal part) throws CreateException;
 
     Double getAvgPrice() throws FinderException;
 

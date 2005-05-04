@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,34 +27,34 @@
 
 package dataregistry;
 
+import java.util.Collection;
+import javax.ejb.CreateException;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.FinderException;
+
 
 /**
  * This is the local-home interface for Vendor enterprise bean.
  */
-public interface VendorLocalHome extends javax.ejb.EJBLocalHome {
-    
-    
-    
-    /**
-     *
-     */
-    dataregistry.VendorLocal findByPrimaryKey(dataregistry.VendorKey key)  throws javax.ejb.FinderException;
+public interface VendorLocalHome extends EJBLocalHome {
 
-    public dataregistry.VendorLocal create(int vendorId, java.lang.String name, java.lang.String address, java.lang.String contact, java.lang.String phone) throws javax.ejb.CreateException;
+    VendorLocal findByPrimaryKey(VendorKey key)  throws FinderException;
 
-    java.util.Collection findByVendorId(java.lang.Integer vendorId) throws javax.ejb.FinderException;
+    public VendorLocal create(int vendorId, String name, String address, String contact, String phone) throws CreateException;
 
-    java.util.Collection findByName(java.lang.String name) throws javax.ejb.FinderException;
+    Collection findByVendorId(Integer vendorId) throws FinderException;
 
-    java.util.Collection findByAddress(java.lang.String address) throws javax.ejb.FinderException;
+    Collection findByName(String name) throws FinderException;
 
-    java.util.Collection findByContact(java.lang.String contact) throws javax.ejb.FinderException;
+    Collection findByAddress(String address) throws FinderException;
 
-    java.util.Collection findByPhone(java.lang.String phone) throws javax.ejb.FinderException;
+    Collection findByContact(String contact) throws FinderException;
 
-    java.util.Collection findByPartialName(java.lang.String name) throws javax.ejb.FinderException;
+    Collection findByPhone(String phone) throws FinderException;
 
-    java.util.Collection findByOrder(java.lang.Integer orderId) throws javax.ejb.FinderException;
+    Collection findByPartialName(String name) throws FinderException;
+
+    Collection findByOrder(Integer orderId) throws FinderException;
     
     
 }

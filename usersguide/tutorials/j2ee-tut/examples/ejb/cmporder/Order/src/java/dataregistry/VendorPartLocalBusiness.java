@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,31 +27,33 @@
 
 package dataregistry;
 
+import java.util.Collection;
+
 
 /**
  * This is the business interface for VendorPart enterprise bean.
  */
 public interface VendorPartLocalBusiness {
 
-    public abstract java.lang.String getDescription();
+    public abstract String getDescription();
 
-    public abstract void setDescription(java.lang.String description);
+    public abstract void setDescription(String description);
 
-    public abstract java.lang.Double getPrice();
+    public abstract Double getPrice();
 
-    public abstract void setPrice(java.lang.Double price);
+    public abstract void setPrice(Double price);
 
-    public abstract java.util.Collection getLineitemBean();
+    public abstract Collection getLineitemBean();
 
-    public abstract void setLineitemBean(java.util.Collection lineitemBean);
+    public abstract void setLineitemBean(Collection lineitemBean);
 
-    public abstract dataregistry.PartLocal getPartBean();
+    public abstract PartLocal getPartBean();
 
-    public abstract void setPartBean(dataregistry.PartLocal partBean);
+    public abstract void setPartBean(PartLocal partBean);
 
-    dataregistry.VendorLocal getVendor();
+    VendorLocal getVendor();
 
-    void setVendor(dataregistry.VendorLocal vendor);
+    void setVendor(VendorLocal vendor);
 
     
 }

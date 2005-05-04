@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,28 +27,30 @@
 
 package dataregistry;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Collection;
+import javax.ejb.*;
+
 
 /**
  * This is the local-home interface for Part enterprise bean.
  */
-public interface PartLocalHome extends javax.ejb.EJBLocalHome {
-    
-    
-    
-    /**
-     *
-     */
-    dataregistry.PartLocal findByPrimaryKey(dataregistry.PartPK key)  throws javax.ejb.FinderException;
 
-    public dataregistry.PartLocal create(java.lang.String partNumber, java.math.BigDecimal revision, java.lang.String description, java.sql.Timestamp revisionDate, dataregistry.PartLocal partBean) throws javax.ejb.CreateException;
+public interface PartLocalHome extends EJBLocalHome {
 
-    java.util.Collection findByPartNumber(java.lang.String partNumber) throws javax.ejb.FinderException;
+    PartLocal findByPrimaryKey(PartPK key)  throws FinderException;
 
-    java.util.Collection findByRevision(java.math.BigDecimal revision) throws javax.ejb.FinderException;
+    public PartLocal create(String partNumber, BigDecimal revision, String description, Timestamp revisionDate, PartLocal partBean) throws CreateException;
 
-    java.util.Collection findByDescription(java.lang.String description) throws javax.ejb.FinderException;
+    Collection findByPartNumber(String partNumber) throws FinderException;
 
-    dataregistry.PartLocal create(java.lang.String partNumber, int revision, java.lang.String description, java.util.Date revisionDate, java.lang.String specification, java.io.Serializable drawing) throws javax.ejb.CreateException;
+    Collection findByRevision(BigDecimal revision) throws FinderException;
+
+    Collection findByDescription(String description) throws FinderException;
+
+    PartLocal create(String partNumber, int revision, String description, java.util.Date revisionDate, String specification, Serializable drawing) throws CreateException;
     
     
 }

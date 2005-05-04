@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -26,62 +26,68 @@
  */
 
 package dataregistry;
+
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
+import javax.ejb.CreateException;
+import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
 
 /**
  * This is the bean class for the PartBean enterprise bean.
  */
-public abstract class PartBean implements javax.ejb.EntityBean, dataregistry.PartLocalBusiness {
-    private javax.ejb.EntityContext context;
+public abstract class PartBean implements EntityBean, PartLocalBusiness {
+    private EntityContext context;
     
     // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click on the + sign on the left to edit the code.">
     // TODO Consider creating Transfer Object to encapsulate data
     // TODO Review finder methods
     /**
-     * @see javax.ejb.EntityBean#setEntityContext(javax.ejb.EntityContext)
+     * @see EntityBean#setEntityContext(EntityContext)
      */
-    public void setEntityContext(javax.ejb.EntityContext aContext) {
+    public void setEntityContext(EntityContext aContext) {
         context = aContext;
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbActivate()
+     * @see EntityBean#ejbActivate()
      */
     public void ejbActivate() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbPassivate()
+     * @see EntityBean#ejbPassivate()
      */
     public void ejbPassivate() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbRemove()
+     * @see EntityBean#ejbRemove()
      */
     public void ejbRemove() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#unsetEntityContext()
+     * @see EntityBean#unsetEntityContext()
      */
     public void unsetEntityContext() {
         context = null;
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbLoad()
+     * @see EntityBean#ejbLoad()
      */
     public void ejbLoad() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbStore()
+     * @see EntityBean#ejbStore()
      */
     public void ejbStore() {
         
@@ -89,40 +95,40 @@ public abstract class PartBean implements javax.ejb.EntityBean, dataregistry.Par
     // </editor-fold>
     
     
-    public abstract java.lang.String getPartNumber();
-    public abstract void setPartNumber(java.lang.String partNumber);
+    public abstract String getPartNumber();
+    public abstract void setPartNumber(String partNumber);
     
-    public abstract java.math.BigDecimal getRevision();
-    public abstract void setRevision(java.math.BigDecimal revision);
+    public abstract BigDecimal getRevision();
+    public abstract void setRevision(BigDecimal revision);
     
-    public abstract java.lang.String getDescription();
-    public abstract void setDescription(java.lang.String description);
+    public abstract String getDescription();
+    public abstract void setDescription(String description);
     
-    public abstract java.sql.Timestamp getRevisionDate();
-    public abstract void setRevisionDate(java.sql.Timestamp revisionDate);
+    public abstract Timestamp getRevisionDate();
+    public abstract void setRevisionDate(Timestamp revisionDate);
     
-    public abstract dataregistry.PartLocal getBomPart();
-    public abstract void setBomPart(dataregistry.PartLocal partBean);
+    public abstract PartLocal getBomPart();
+    public abstract void setBomPart(PartLocal partBean);
     
-    public abstract java.util.Collection getPartBean1();
-    public abstract void setPartBean1(java.util.Collection partBean1);
+    public abstract Collection getPartBean1();
+    public abstract void setPartBean1(Collection partBean1);
     
-    public abstract dataregistry.VendorPartLocal getVendorPartBean();
-    public abstract void setVendorPartBean(dataregistry.VendorPartLocal vendorPartBean);
+    public abstract VendorPartLocal getVendorPartBean();
+    public abstract void setVendorPartBean(VendorPartLocal vendorPartBean);
     
     
-    public dataregistry.PartPK ejbCreate(java.lang.String partNumber, java.math.BigDecimal revision, java.lang.String description, java.sql.Timestamp revisionDate, dataregistry.PartLocal partBean)  throws javax.ejb.CreateException {
+    public PartPK ejbCreate(String partNumber, BigDecimal revision, String description, Timestamp revisionDate, PartLocal partBean)  throws CreateException {
         if (partNumber == null) {
-            throw new javax.ejb.CreateException("The field \"partNumber\" must not be null");
+            throw new CreateException("The field \"partNumber\" must not be null");
         }
         if (revision == null) {
-            throw new javax.ejb.CreateException("The field \"revision\" must not be null");
+            throw new CreateException("The field \"revision\" must not be null");
         }
         if (revisionDate == null) {
-            throw new javax.ejb.CreateException("The field \"revisionDate\" must not be null");
+            throw new CreateException("The field \"revisionDate\" must not be null");
         }
         if (partBean == null) {
-            throw new javax.ejb.CreateException("The field \"partBean\" must not be null");
+            throw new CreateException("The field \"partBean\" must not be null");
         }
         
         // TODO add additional validation code, throw CreateException if data is not valid
@@ -134,7 +140,7 @@ public abstract class PartBean implements javax.ejb.EntityBean, dataregistry.Par
         return null;
     }
     
-    public void ejbPostCreate(java.lang.String partNumber, java.math.BigDecimal revision, java.lang.String description, java.sql.Timestamp revisionDate, dataregistry.PartLocal partBean) {
+    public void ejbPostCreate(String partNumber, BigDecimal revision, String description, Timestamp revisionDate, PartLocal partBean) {
         // TODO populate relationships here if appropriate
         setBomPart(partBean);
         
@@ -142,20 +148,20 @@ public abstract class PartBean implements javax.ejb.EntityBean, dataregistry.Par
     
     
 
-    public abstract java.io.Serializable getDrawing();
+    public abstract Serializable getDrawing();
 
-    public abstract void setDrawing(java.io.Serializable drawing);
+    public abstract void setDrawing(Serializable drawing);
 
     public abstract String getSpecification();
 
     public abstract void setSpecification(String specification);
 
-    public dataregistry.PartPK ejbCreate(java.lang.String partNumber, int revision, java.lang.String description, java.util.Date revisionDate, java.lang.String specification, java.io.Serializable drawing) throws javax.ejb.CreateException {
+    public PartPK ejbCreate(String partNumber, int revision, String description, java.util.Date revisionDate, String specification, Serializable drawing) throws CreateException {
         if (partNumber == null) {
-            throw new javax.ejb.CreateException("The field \"partNumber\" must not be null");
+            throw new CreateException("The field \"partNumber\" must not be null");
         }
         if (revisionDate == null) {
-            throw new javax.ejb.CreateException("The field \"revisionDate\" must not be null");
+            throw new CreateException("The field \"revisionDate\" must not be null");
         }
 
         
@@ -170,7 +176,7 @@ public abstract class PartBean implements javax.ejb.EntityBean, dataregistry.Par
         return null;
     }
 
-    public void ejbPostCreate(java.lang.String partNumber, int revision, java.lang.String description, java.util.Date revisionDate, java.lang.String specification, java.io.Serializable drawing) throws javax.ejb.CreateException {
+    public void ejbPostCreate(String partNumber, int revision, String description, java.util.Date revisionDate, String specification, Serializable drawing) throws CreateException {
         //TODO implement ejbPostCreate
     }
 }

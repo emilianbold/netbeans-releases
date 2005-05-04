@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -45,13 +45,16 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.ejb.*;
 
 /**
  * This is the bean class for the RequestBean enterprise bean.
  */
-public class RequestBean implements javax.ejb.SessionBean, request.RequestRemoteBusiness {
-    private javax.ejb.SessionContext context;
+public class RequestBean implements SessionBean, request.RequestRemoteBusiness {
+    private SessionContext context;
     private LineItemLocalHome lineItemHome = null;
     private OrdersLocalHome orderHome = null;
     private PartLocalHome partHome = null;
@@ -62,28 +65,28 @@ public class RequestBean implements javax.ejb.SessionBean, request.RequestRemote
     // TODO Add code to acquire and use other enterprise resources (DataSource, JMS, enterprise bean, Web services)
     // TODO Add business methods or web service operations
     /**
-     * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
+     * @see SessionBean#setSessionContext(SessionContext)
      */
-    public void setSessionContext(javax.ejb.SessionContext aContext) {
+    public void setSessionContext(SessionContext aContext) {
         context = aContext;
     }
     
     /**
-     * @see javax.ejb.SessionBean#ejbActivate()
+     * @see SessionBean#ejbActivate()
      */
     public void ejbActivate() {
         
     }
     
     /**
-     * @see javax.ejb.SessionBean#ejbPassivate()
+     * @see SessionBean#ejbPassivate()
      */
     public void ejbPassivate() {
         
     }
     
     /**
-     * @see javax.ejb.SessionBean#ejbRemove()
+     * @see SessionBean#ejbRemove()
      */
     public void ejbRemove() {
         
@@ -308,57 +311,57 @@ public class RequestBean implements javax.ejb.SessionBean, request.RequestRemote
         
     }
     
-    private dataregistry.LineItemLocalHome lookupLineitem() {
+    private LineItemLocalHome lookupLineitem() {
         try {
-            javax.naming.Context c = new javax.naming.InitialContext();
-            dataregistry.LineItemLocalHome rv = (dataregistry.LineItemLocalHome) c.lookup("java:comp/env/ejb/Lineitem");
+            Context c = new InitialContext();
+            LineItemLocalHome rv = (LineItemLocalHome) c.lookup("java:comp/env/ejb/Lineitem");
             return rv;
-        } catch(javax.naming.NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
+        } catch(NamingException ne) {
+            Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
             throw new RuntimeException(ne);
         }
     }
     
     private dataregistry.OrdersLocalHome lookupOrders() {
         try {
-            javax.naming.Context c = new javax.naming.InitialContext();
-            dataregistry.OrdersLocalHome rv = (dataregistry.OrdersLocalHome) c.lookup("java:comp/env/ejb/Orders");
+            Context c = new InitialContext();
+            OrdersLocalHome rv = (OrdersLocalHome) c.lookup("java:comp/env/ejb/Orders");
             return rv;
-        } catch(javax.naming.NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
+        } catch(NamingException ne) {
+            Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
             throw new RuntimeException(ne);
         }
     }
     
-    private dataregistry.PartLocalHome lookupPart() {
+    private PartLocalHome lookupPart() {
         try {
-            javax.naming.Context c = new javax.naming.InitialContext();
-            dataregistry.PartLocalHome rv = (dataregistry.PartLocalHome) c.lookup("java:comp/env/ejb/Part");
+            Context c = new InitialContext();
+            PartLocalHome rv = (PartLocalHome) c.lookup("java:comp/env/ejb/Part");
             return rv;
-        } catch(javax.naming.NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
+        } catch(NamingException ne) {
+            Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
             throw new RuntimeException(ne);
         }
     }
     
-    private dataregistry.VendorLocalHome lookupVendor() {
+    private VendorLocalHome lookupVendor() {
         try {
-            javax.naming.Context c = new javax.naming.InitialContext();
-            dataregistry.VendorLocalHome rv = (dataregistry.VendorLocalHome) c.lookup("java:comp/env/ejb/Vendor");
+            Context c = new InitialContext();
+            VendorLocalHome rv = (VendorLocalHome) c.lookup("java:comp/env/ejb/Vendor");
             return rv;
-        } catch(javax.naming.NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
+        } catch(NamingException ne) {
+            Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
             throw new RuntimeException(ne);
         }
     }
     
-    private dataregistry.VendorPartLocalHome lookupVendorPart() {
+    private VendorPartLocalHome lookupVendorPart() {
         try {
-            javax.naming.Context c = new javax.naming.InitialContext();
-            dataregistry.VendorPartLocalHome rv = (dataregistry.VendorPartLocalHome) c.lookup("java:comp/env/ejb/VendorPart");
+            Context c = new InitialContext();
+            VendorPartLocalHome rv = (VendorPartLocalHome) c.lookup("java:comp/env/ejb/VendorPart");
             return rv;
-        } catch(javax.naming.NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
+        } catch(NamingException ne) {
+            Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
             throw new RuntimeException(ne);
         }
     }

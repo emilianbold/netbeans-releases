@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,38 +27,44 @@
 
 package dataregistry;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Collection;
+
 
 /**
  * This is the business interface for Part enterprise bean.
  */
 public interface PartLocalBusiness {
-    public abstract java.lang.String getPartNumber();
+    
+    public abstract String getPartNumber();
 
-    public abstract java.math.BigDecimal getRevision();
+    public abstract BigDecimal getRevision();
 
-    public abstract java.lang.String getDescription();
+    public abstract String getDescription();
 
-    public abstract void setDescription(java.lang.String description);
+    public abstract void setDescription(String description);
 
-    public abstract java.sql.Timestamp getRevisionDate();
+    public abstract Timestamp getRevisionDate();
 
-    public abstract void setRevisionDate(java.sql.Timestamp revisionDate);
+    public abstract void setRevisionDate(Timestamp revisionDate);
 
-    public abstract dataregistry.PartLocal getBomPart();
+    public abstract PartLocal getBomPart();
 
-    public abstract void setBomPart(dataregistry.PartLocal partBean);
+    public abstract void setBomPart(PartLocal partBean);
 
-    public abstract java.util.Collection getPartBean1();
+    public abstract Collection getPartBean1();
 
-    public abstract void setPartBean1(java.util.Collection partBean1);
+    public abstract void setPartBean1(Collection partBean1);
 
-    public abstract dataregistry.VendorPartLocal getVendorPartBean();
+    public abstract VendorPartLocal getVendorPartBean();
 
-    public abstract void setVendorPartBean(dataregistry.VendorPartLocal vendorPartBean);
+    public abstract void setVendorPartBean(VendorPartLocal vendorPartBean);
 
-    java.io.Serializable getDrawing();
+    Serializable getDrawing();
 
-    void setDrawing(java.io.Serializable drawing);
+    void setDrawing(Serializable drawing);
 
     String getSpecification();
 

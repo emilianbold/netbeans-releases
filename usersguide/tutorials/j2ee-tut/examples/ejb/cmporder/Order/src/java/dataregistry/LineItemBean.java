@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -29,61 +29,61 @@ package dataregistry;
 import java.math.BigDecimal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.FinderException;
+import javax.ejb.*;
 
 /**
  * This is the bean class for the LineitemBean enterprise bean.
  */
-public abstract class LineItemBean implements javax.ejb.EntityBean, dataregistry.LineItemLocalBusiness {
-    private javax.ejb.EntityContext context;
+public abstract class LineItemBean implements EntityBean, LineItemLocalBusiness {
+    private EntityContext context;
     
     // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click on the + sign on the left to edit the code.">
     // TODO Consider creating Transfer Object to encapsulate data
     // TODO Review finder methods
     /**
-     * @see javax.ejb.EntityBean#setEntityContext(javax.ejb.EntityContext)
+     * @see EntityBean#setEntityContext(EntityContext)
      */
-    public void setEntityContext(javax.ejb.EntityContext aContext) {
+    public void setEntityContext(EntityContext aContext) {
         context = aContext;
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbActivate()
+     * @see EntityBean#ejbActivate()
      */
     public void ejbActivate() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbPassivate()
+     * @see EntityBean#ejbPassivate()
      */
     public void ejbPassivate() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbRemove()
+     * @see EntityBean#ejbRemove()
      */
     public void ejbRemove() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#unsetEntityContext()
+     * @see EntityBean#unsetEntityContext()
      */
     public void unsetEntityContext() {
         context = null;
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbLoad()
+     * @see EntityBean#ejbLoad()
      */
     public void ejbLoad() {
         
     }
     
     /**
-     * @see javax.ejb.EntityBean#ejbStore()
+     * @see EntityBean#ejbStore()
      */
     public void ejbStore() {
         
@@ -91,39 +91,39 @@ public abstract class LineItemBean implements javax.ejb.EntityBean, dataregistry
     // </editor-fold>
     
     
-    public abstract java.lang.Integer getOrderId();
-    public abstract void setOrderId(java.lang.Integer orderId);
+    public abstract Integer getOrderId();
+    public abstract void setOrderId(Integer orderId);
     
-    public abstract java.math.BigDecimal getItemId();
-    public abstract void setItemId(java.math.BigDecimal itemId);
+    public abstract BigDecimal getItemId();
+    public abstract void setItemId(BigDecimal itemId);
     
-    public abstract java.math.BigDecimal getQuantity();
-    public abstract void setQuantity(java.math.BigDecimal quantity);
+    public abstract BigDecimal getQuantity();
+    public abstract void setQuantity(BigDecimal quantity);
     
-    public abstract dataregistry.OrdersLocal getOrdersBean();
-    public abstract void setOrdersBean(dataregistry.OrdersLocal ordersBean);
+    public abstract OrdersLocal getOrdersBean();
+    public abstract void setOrdersBean(OrdersLocal ordersBean);
     
-    public abstract dataregistry.VendorPartLocal getVendorPartNumber();
-    public abstract void setVendorPartNumber(dataregistry.VendorPartLocal vendorPartNumber);
+    public abstract VendorPartLocal getVendorPartNumber();
+    public abstract void setVendorPartNumber(VendorPartLocal vendorPartNumber);
     
     
-    public dataregistry.LineItemPK ejbCreate(java.lang.Integer orderId, java.math.BigDecimal itemId,
-            java.math.BigDecimal quantity, dataregistry.OrdersLocal ordersBean,
-            dataregistry.VendorPartLocal vendorPartNumber)  throws javax.ejb.CreateException {
+    public LineItemPK ejbCreate(Integer orderId, BigDecimal itemId,
+            BigDecimal quantity, OrdersLocal ordersBean,
+            VendorPartLocal vendorPartNumber)  throws CreateException {
         if (orderId == null) {
-            throw new javax.ejb.CreateException("The field \"orderId\" must not be null");
+            throw new CreateException("The field \"orderId\" must not be null");
         }
         if (itemId == null) {
-            throw new javax.ejb.CreateException("The field \"itemId\" must not be null");
+            throw new CreateException("The field \"itemId\" must not be null");
         }
         if (quantity == null) {
-            throw new javax.ejb.CreateException("The field \"quantity\" must not be null");
+            throw new CreateException("The field \"quantity\" must not be null");
         }
         if (ordersBean == null) {
-            throw new javax.ejb.CreateException("The field \"ordersBean\" must not be null");
+            throw new CreateException("The field \"ordersBean\" must not be null");
         }
         if (vendorPartNumber == null) {
-            throw new javax.ejb.CreateException("The field \"vendorPartNumber\" must not be null");
+            throw new CreateException("The field \"vendorPartNumber\" must not be null");
         }
         
         // TODO add additional validation code, throw CreateException if data is not valid
@@ -134,23 +134,23 @@ public abstract class LineItemBean implements javax.ejb.EntityBean, dataregistry
         return null;
     }
     
-    public void ejbPostCreate(java.lang.Integer orderId, java.math.BigDecimal itemId, java.math.BigDecimal quantity, dataregistry.OrdersLocal ordersBean, dataregistry.VendorPartLocal vendorPartNumber) {
+    public void ejbPostCreate(Integer orderId, BigDecimal itemId, BigDecimal quantity, OrdersLocal ordersBean, VendorPartLocal vendorPartNumber) {
         // TODO populate relationships here if appropriate
         setOrdersBean(ordersBean);
         setVendorPartNumber(vendorPartNumber);
         
     }
     
-    public dataregistry.LineItemPK ejbCreate(dataregistry.OrdersLocal ordersBean, java.math.BigDecimal quantity, dataregistry.VendorPartLocal vendorPartNumber) throws javax.ejb.CreateException {
+    public LineItemPK ejbCreate(OrdersLocal ordersBean, BigDecimal quantity, VendorPartLocal vendorPartNumber) throws CreateException {
         //TODO implement ejbCreate
         if (quantity == null) {
-            throw new javax.ejb.CreateException("The field \"quantity\" must not be null");
+            throw new CreateException("The field \"quantity\" must not be null");
         }
         if (ordersBean == null) {
-            throw new javax.ejb.CreateException("The field \"ordersBean\" must not be null");
+            throw new CreateException("The field \"ordersBean\" must not be null");
         }
         if (vendorPartNumber == null) {
-            throw new javax.ejb.CreateException("The field \"vendorPartNumber\" must not be null");
+            throw new CreateException("The field \"vendorPartNumber\" must not be null");
         }
         setOrderId(ordersBean.getOrderId());
         setItemId(new BigDecimal(ordersBean.getNexId()));
@@ -159,7 +159,7 @@ public abstract class LineItemBean implements javax.ejb.EntityBean, dataregistry
         return null;
     }
     
-    public void ejbPostCreate(dataregistry.OrdersLocal ordersBean, java.math.BigDecimal quantity, dataregistry.VendorPartLocal vendorPartNumber) throws javax.ejb.CreateException {
+    public void ejbPostCreate(OrdersLocal ordersBean, BigDecimal quantity, VendorPartLocal vendorPartNumber) throws CreateException {
         //TODO implement ejbPostCreate
         setOrdersBean(ordersBean);
         setVendorPartNumber(vendorPartNumber);

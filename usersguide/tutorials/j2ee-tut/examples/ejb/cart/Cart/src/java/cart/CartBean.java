@@ -1,16 +1,39 @@
+/*
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Government Rights - Commercial software.  Government users are subject
+ * to the Sun Microsystems, Inc. standard license agreement and
+ * applicable provisions of the FAR and its supplements.  Use is subject
+ * to license terms.
+ *
+ * This distribution may include materials developed by third parties.
+ * Sun, Sun Microsystems, the Sun logo, Java and J2EE are trademarks
+ * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
+ * other countries.
+ *
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
+ *
+ * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
+ * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
+ * licence standard de Sun Microsystems, Inc., ainsi qu'aux dispositions
+ * en vigueur de la FAR (Federal Acquisition Regulations) et des
+ * supplements a celles-ci.  Distribue par des licences qui en
+ * restreignent l'utilisation.
+ *
+ * Cette distribution peut comprendre des composants developpes par des
+ * tierces parties. Sun, Sun Microsystems, le logo Sun, Java et J2EE
+ * sont des marques de fabrique ou des marques deposees de Sun
+ * Microsystems, Inc. aux Etats-Unis et dans d'autres pays.
+ */
+
 package cart;
+
 import exception.BookException;
 import java.util.Vector;
-import javax.ejb.CreateException;
+import javax.ejb.*;
 import util.IdVerifier;
 
-/**
- * This is the bean class for the CartBean enterprise bean.
- * Created Mar 25, 2005 9:37:42 AM
- * @author blaha
- */
-public class CartBean implements javax.ejb.SessionBean, cart.CartRemoteBusiness, cart.CartLocalBusiness {
-    private javax.ejb.SessionContext context;
+public class CartBean implements SessionBean, CartRemoteBusiness, CartLocalBusiness {
+    private SessionContext context;
     String customerName;
     String customerId;
     Vector contents;
@@ -19,28 +42,28 @@ public class CartBean implements javax.ejb.SessionBean, cart.CartRemoteBusiness,
     // TODO Add code to acquire and use other enterprise resources (DataSource, JMS, enterprise bean, Web services)
     // TODO Add business methods
     /**
-     * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
+     * @see SessionBean#setSessionContext(SessionContext)
      */
-    public void setSessionContext(javax.ejb.SessionContext aContext) {
+    public void setSessionContext(SessionContext aContext) {
         context = aContext;
     }
     
     /**
-     * @see javax.ejb.SessionBean#ejbActivate()
+     * @see SessionBean#ejbActivate()
      */
     public void ejbActivate() {
         
     }
     
     /**
-     * @see javax.ejb.SessionBean#ejbPassivate()
+     * @see SessionBean#ejbPassivate()
      */
     public void ejbPassivate() {
         
     }
     
     /**
-     * @see javax.ejb.SessionBean#ejbRemove()
+     * @see SessionBean#ejbRemove()
      */
     public void ejbRemove() {
         
@@ -65,7 +88,7 @@ public class CartBean implements javax.ejb.SessionBean, cart.CartRemoteBusiness,
     // Enter business methods below. (Right-click in editor and choose
     // EJB Methods > Add Business Method)
 
-    public void ejbCreate(java.lang.String person) throws javax.ejb.CreateException {
+    public void ejbCreate(String person) throws CreateException {
         //TODO implement 
         if(person == null) {
             throw new CreateException("Null person not allowed.");
@@ -76,7 +99,7 @@ public class CartBean implements javax.ejb.SessionBean, cart.CartRemoteBusiness,
         contents = new Vector();
     }
 
-    public void ejbCreate(java.lang.String person, java.lang.String id) throws javax.ejb.CreateException {
+    public void ejbCreate(String person, String id) throws CreateException {
         //TODO implement 
         if(person == null) {
             throw new CreateException("Null person not allowed.");
@@ -93,12 +116,12 @@ public class CartBean implements javax.ejb.SessionBean, cart.CartRemoteBusiness,
         contents = new Vector();
     }
 
-    public void addBook(java.lang.String title) {
+    public void addBook(String title) {
         //TODO implement addBook
         contents.add(title);
     }
 
-    public void removeBook(java.lang.String title) throws BookException {
+    public void removeBook(String title) throws BookException {
         //TODO implement removeBook
         boolean result = contents.remove(title);
         if(result == false)

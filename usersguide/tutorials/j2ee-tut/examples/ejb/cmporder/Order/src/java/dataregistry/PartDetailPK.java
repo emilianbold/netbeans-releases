@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -10,7 +10,7 @@
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,27 +27,28 @@
 
 package dataregistry;
 
-import javax.ejb.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * This is the bean class for the PartDetailBean enterprise bean.
  */
-public final class PartDetailPK implements java.io.Serializable {
+public final class PartDetailPK implements Serializable {
     
-    public java.lang.String partNumber;
-    public java.math.BigDecimal revision;
+    public String partNumber;
+    public BigDecimal revision;
     /**
-     * @see java.lang.Object#equals(java.lang.Object)
+     * @see Object#equals(Object)
      */
-    public boolean equals(java.lang.Object otherOb) {
+    public boolean equals(Object otherOb) {
         
         if (this == otherOb) {
             return true;
         }
-        if (!(otherOb instanceof dataregistry.PartDetailPK)) {
+        if (!(otherOb instanceof PartDetailPK)) {
             return false;
         }
-        dataregistry.PartDetailPK other = (dataregistry.PartDetailPK) otherOb;
+        PartDetailPK other = (PartDetailPK) otherOb;
         return (
                 
                 (partNumber==null?other.partNumber==null:partNumber.equals(other.partNumber))
@@ -58,7 +59,7 @@ public final class PartDetailPK implements java.io.Serializable {
     }
     
     /**
-     * @see java.lang.Object#hashCode()
+     * @see Object#hashCode()
      */
     public int hashCode() {
         return (
