@@ -31,8 +31,14 @@ To build from command line run ant as usual with
  -Dpreparse.files=../../java/storagebuilder/preparse-files.txt
 
 Property storage.builder contains location of storage builder jar file.
+Storage builder project is located at /cvs/java/storagebuilder. It must be
+built separately as usual using command 'ant' in its project dir. After
+storagebuilder is built storagebuilder.jar is created in directory
+/cvs/java/storagebuilder/dist. To build storage builder IDE must be built
+first as it uses some jars from IDE.
 
 Property preparse.files contains location of text file with list of classes to
-be parsed by storage builder. Colon ':' is used as list separator.
+be parsed by storage builder. Colon ':' is used as list separator. File is
+located at /cvs/java/storagebuilder/preparse-files.txt.
 
-The installers will be generated and placed in the dist/ subdir
+The installers will be generated to 'dist' directory.
