@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -63,7 +63,7 @@ import java.lang.reflect.Constructor;
  *  The BeanProp for summary would handle a single String property, and the
  *  BeanProp for chapter would handle an indexed property of Chapter classes.
  *  Also, the chapter BaseBean (one instance for each element of the indexed
- *  property), would have one instance of BeanProp, that would handle the 
+ *  property), would have one instance of BeanProp, that would handle the
  *  String indexed property line.
  *
  *  The internal graph representation of the XML document is handled using
@@ -81,37 +81,36 @@ public abstract class BaseBean implements Cloneable, Bean {
     public class IterateChoiceProperties implements java.util.Iterator {
         private ArrayList groups;
         private int index;
-	
+        
         public IterateChoiceProperties() {
             this.groups = new ArrayList();
             this.index = 0;
         }
-	
+        
         void add(BeanProp prop) {
             if (prop.group != null && !this.groups.contains(prop.group))
                 this.groups.add(prop.group);
         }
-	
+        
         public boolean hasNext() {
             return (this.index < this.groups.size());
         }
-	
+        
         public Object next() throws NoSuchElementException {
             if (hasNext()) {
                 BeanProp.GroupProp gp =
-                    (BeanProp.GroupProp)this.groups.get(this.index++);
+                        (BeanProp.GroupProp)this.groups.get(this.index++);
                 return (BaseProperty[])gp.list();
-            }
-            else
+            } else
                 throw new NoSuchElementException();
         }
-	
+        
         public void remove()
-            throws UnsupportedOperationException, IllegalStateException {
+        throws UnsupportedOperationException, IllegalStateException {
             throw new UnsupportedOperationException();
         }
     }
-
+    
     //	The binding object that links us to the DOM node. This might be null
     //	if there is no DOM Node yet (brand new object not attached to a graph)
     protected DOMBinding 		binding;
@@ -130,7 +129,7 @@ public abstract class BaseBean implements Cloneable, Bean {
     //	If we use this hashMap, we have better performances whenever we
     //	access the element using the dtd name. Since schema2beans generate classes
     //	using Bean names, we can assume that very few accesses are performed
-    //	using the dtd name and we can then save memory commenting out this 
+    //	using the dtd name and we can then save memory commenting out this
     //	hashMap. If performance is an issue while accessing the element using
     //	dtd names, we should consider using this hashmap again.
     //
@@ -138,7 +137,7 @@ public abstract class BaseBean implements Cloneable, Bean {
     
     //	When an attribute is added, we might not be part of a graph yet.
     //  In this case, we want to cache the attribute information and defer
-    //	its processing. Whenever the node is added to a schema2beans tree, 
+    //	its processing. Whenever the node is added to a schema2beans tree,
     //	the values of the cache are automatically check to populate
     //	the attribute values.
     private HashMap			attrCache;
@@ -146,7 +145,7 @@ public abstract class BaseBean implements Cloneable, Bean {
     //	We can define an array of comparator, even though most of the usage
     //	is to have one comparator.
     private ArrayList			comparators;
-
+    
     // This is a provision to mark at runtime the version of each node
     // of the schema2beans tree. As this is not of much use for now, we simply
     // save the memory space.
@@ -160,16 +159,16 @@ public abstract class BaseBean implements Cloneable, Bean {
     //	their order is. This is how we know, when we add a new property
     //	where it should be added (it has to match the DTD order declaration)
     private int				propertyOrder;
-
+    
     private String			defaultNamespace;
-
+    
     /*
     public BaseBean() {
         this(null, new Version(Version.MAJVER, Version.MINVER,
                                Version.PTCVER));
         System.out.println("warning: schema2beans.BaseBean: unknown version of generated beans being used.");
     }
-    */
+     */
     
     /**
      * @param comps the comparators to use.  Can be null
@@ -178,7 +177,7 @@ public abstract class BaseBean implements Cloneable, Bean {
     public BaseBean(Vector comps, Version version) {
         init(comps, version);
     }
-
+    
     protected void init(Vector comps, Version version) {
         if (version.getMajor() < 3) {
             initPropertyTables(13);
@@ -188,18 +187,17 @@ public abstract class BaseBean implements Cloneable, Bean {
         this.isRoot = false;
         this.propertyOrder = 0;
         this.attrCache = null;
-	
+        
         if ((comps == null) || (comps.size()==0)) {
             //	Use the default comparator
             this.comparators.add(new BeanComparator());
-        }
-        else {
+        } else {
             int size = comps.size();
             for (int i=0; i<size; i++)
                 this.comparators.add(comps.get(i));
         }
     }
-
+    
     protected void initPropertyTables(int propertyCount) {
         //
         // In order to avoid a rehash, the initial capacity of a HashMap
@@ -222,14 +220,14 @@ public abstract class BaseBean implements Cloneable, Bean {
     //	and merge graphs. There are usually populated in the constructor
     //
     public synchronized void addBeanComparator(BeanComparator cmp) {
-	if (cmp != null)
-	    this.comparators.add(cmp);
+        if (cmp != null)
+            this.comparators.add(cmp);
     }
     
     public synchronized void removeBeanComparator(BeanComparator cmp) {
-	int i = this.comparators.indexOf(cmp);
-	if (i != -1)
-	    this.comparators.remove(i);
+        int i = this.comparators.indexOf(cmp);
+        if (i != -1)
+            this.comparators.remove(i);
     }
     
     
@@ -238,29 +236,29 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	values.
      */
     public void createProperty(String dtdName, String beanName, Class type) {
-	int o = Common.TYPE_0_1;
-	
-	if (type.isInstance(java.lang.String.class))
-	    o |= Common.TYPE_STRING;
-	else
-	    o |= Common.TYPE_BEAN;
-	
-	this.createProperty(dtdName, beanName, o, type);
+        int o = Common.TYPE_0_1;
+        
+        if (type.isInstance(java.lang.String.class))
+            o |= Common.TYPE_STRING;
+        else
+            o |= Common.TYPE_BEAN;
+        
+        this.createProperty(dtdName, beanName, o, type);
     }
     
     /**
      *	Create the root element of the graph
      */
     public void createRoot(String dtdName, String beanName,
-			   int option, Class type) throws Schema2BeansRuntimeException {
-	BeanProp prop = new BeanProp(this, dtdName, beanName,
-				     option, type, true);
-    try {
-        this.graphManager.createRootBinding(this, prop, null);
-    } catch (Schema2BeansException e) {
-        throw new Schema2BeansRuntimeException(e);
-    }
-	this.isRoot = true;
+            int option, Class type) throws Schema2BeansRuntimeException {
+        BeanProp prop = new BeanProp(this, dtdName, beanName,
+                option, type, true);
+        try {
+            this.graphManager.createRootBinding(this, prop, null);
+        } catch (Schema2BeansException e) {
+            throw new Schema2BeansRuntimeException(e);
+        }
+        this.isRoot = true;
     }
     
     /**
@@ -271,36 +269,36 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	This property is later accessed by its bean name.
      */
     public void createProperty(String dtdName, String beanName,
-			       int option, Class type) throws
-                   Schema2BeansRuntimeException {
-
-	//  This number represents the order of this property amoung
-	//  its siblings. The beans generator generates the createProperty()
-	//  method calls in the order of the DTD declaration. Therefore, we
-	//  can simply relies on the order of the createProperty method calls
-	//  to affect the order value for the property.
-	this.propertyOrder++;
-
-	BeanProp prop = new BeanProp(this, dtdName, beanName, option, type);
-	prop.setOrder(this.propertyOrder);
-	Object 	 obj1 = this.propByName.put(beanName, prop);
-	//Object 	 obj2 = this.propByDtdName.put(dtdName, prop);
-	this.propByOrder.put(String.valueOf(this.propertyOrder), prop);
-	
-	if (obj1 != null) // || obj2 != null)
-	    throw new Schema2BeansRuntimeException(Common.
-		getMessage("DuplicateProperties_msg"));
-	
-	prop.initialize();
+            int option, Class type) throws
+            Schema2BeansRuntimeException {
+        
+        //  This number represents the order of this property amoung
+        //  its siblings. The beans generator generates the createProperty()
+        //  method calls in the order of the DTD declaration. Therefore, we
+        //  can simply relies on the order of the createProperty method calls
+        //  to affect the order value for the property.
+        this.propertyOrder++;
+        
+        BeanProp prop = new BeanProp(this, dtdName, beanName, option, type);
+        prop.setOrder(this.propertyOrder);
+        Object 	 obj1 = this.propByName.put(beanName, prop);
+        //Object 	 obj2 = this.propByDtdName.put(dtdName, prop);
+        this.propByOrder.put(String.valueOf(this.propertyOrder), prop);
+        
+        if (obj1 != null) // || obj2 != null)
+            throw new Schema2BeansRuntimeException(Common.
+                    getMessage("DuplicateProperties_msg"));
+        
+        prop.initialize();
     }
-
+    
     public void setDefaultNamespace(String namespace) {
         defaultNamespace = namespace;
         createAttribute("xmlns", "xmlns", AttrProp.CDATA | AttrProp.IMPLIED,
-                        null, namespace);
+                null, namespace);
         setAttributeValue("xmlns", namespace);
     }
-
+    
     public String getDefaultNamespace() {
         return defaultNamespace;
     }
@@ -309,11 +307,11 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	Returns the list of properties of this bean as an array.
      */
     public BeanProp[] beanProps() {
-	int size = this.propByOrder.size();
-	BeanProp[] ret = new BeanProp[size];
-	for (int i=1; i<=size; i++)
-	    ret[i-1] = (BeanProp)this.propByOrder.get(String.valueOf(i));
-	return ret;
+        int size = this.propByOrder.size();
+        BeanProp[] ret = new BeanProp[size];
+        for (int i=1; i<=size; i++)
+            ret[i-1] = (BeanProp)this.propByOrder.get(String.valueOf(i));
+        return ret;
     }
     
     /**
@@ -329,19 +327,19 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	property name, an exception is thrown.
      */
     public BeanProp beanProp(String name) {
-	BeanProp prop = (BeanProp)this.propByName.get(name);
-	
-	if (prop == null) {
-	    //	Search using the dtd name
-	    String beanName = Common.convertName(name);
-	    prop = (BeanProp)this.propByName.get(beanName);
-	    
-	    if (prop == null)
-		throw new IllegalArgumentException(Common.
-		    getMessage("BeanPropertyDoesntExist_msg",
-			       this.getClass().getName(), name));
-	}
-	return prop;
+        BeanProp prop = (BeanProp)this.propByName.get(name);
+        
+        if (prop == null) {
+            //	Search using the dtd name
+            String beanName = Common.convertName(name);
+            prop = (BeanProp)this.propByName.get(beanName);
+            
+            if (prop == null)
+                throw new IllegalArgumentException(Common.
+                        getMessage("BeanPropertyDoesntExist_msg",
+                        this.getClass().getName(), name));
+        }
+        return prop;
     }
     
     /**
@@ -350,21 +348,21 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	property name, an exception is thrown.
      */
     public BeanProp beanProp(int order) {
-	return (BeanProp)this.propByOrder.get(String.valueOf(order));
+        return (BeanProp)this.propByOrder.get(String.valueOf(order));
     }
     
     /**
      *	Return the value of the single property named name.
      */
     public Object getValue(String name) {
-	return this.beanProp(name).getValue(0);
+        return this.beanProp(name).getValue(0);
     }
     
     /**
      *	Return one element of the indexed property named name.
      */
     public Object getValue(String name, int index) {
-	return this.beanProp(name).getValue(index);
+        return this.beanProp(name).getValue(index);
     }
     
     /**
@@ -375,7 +373,7 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	and other elements removal.
      */
     public Object getValueById(String name, int id) {
-	return this.beanProp(name).getValueById(id);
+        return this.beanProp(name).getValueById(id);
     }
     
     /**
@@ -385,7 +383,7 @@ public abstract class BaseBean implements Cloneable, Bean {
      * This method may return -1 if we cannot figure out the index.
      */
     public int idToIndex(String name, int id) {
-	return this.beanProp(name).idToIndex(id);
+        return this.beanProp(name).idToIndex(id);
     }
     
     /**
@@ -393,21 +391,21 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	The property name specified must be an indexed property.
      */
     public int indexToId(String name, int index) {
-	return this.beanProp(name).indexToId(index);
+        return this.beanProp(name).indexToId(index);
     }
     
     /**
      *	Return true if this property is null
      */
     public boolean isNull(String name) {
-	return (this.getValue(name) == null);
+        return (this.getValue(name) == null);
     }
     
     /**
      *	Return true if this property is null
      */
     public boolean isNull(String name, int index) {
-	return (this.getValue(name, index) == null);
+        return (this.getValue(name, index) == null);
     }
     
     /**
@@ -415,7 +413,7 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	can be cast as an array of the property type.
      */
     public Object[] getValues(String name) {
-	return this.beanProp(name).getValues();
+        return this.beanProp(name).getValues();
     }
     
     /**
@@ -431,15 +429,15 @@ public abstract class BaseBean implements Cloneable, Bean {
     public void setValue(String name, int index, Object value) {
         setValue(beanProp(name), index, value);
     }
-
+    
     protected void setValue(BeanProp prop, int index, Object value) {
         prop.setValue(index, value);
     }
-
+    
     protected int addValue(BeanProp prop, Object value) {
         return prop.addValue(value);
     }
-
+    
     protected int removeValue(BeanProp prop, Object value) {
         return prop.removeValue(value);
     }
@@ -453,16 +451,16 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	using the unique internal index.
      */
     public void setValueById(String name, int id, Object value) {
-	BeanProp bp = this.beanProp(name);
-	int index = bp.idToIndex(id);
-	bp.setValue(index, value);
+        BeanProp bp = this.beanProp(name);
+        int index = bp.idToIndex(id);
+        bp.setValue(index, value);
     }
     
     /**
      *	Set the values for the indexed property named name.
      */
     public void setValue(String name, Object[] value) {
-	this.beanProp(name).setValue(value);
+        this.beanProp(name).setValue(value);
     }
     
     /**
@@ -478,7 +476,7 @@ public abstract class BaseBean implements Cloneable, Bean {
     public int removeValue(String name, Object value) {
         return removeValue(beanProp(name), value);
     }
-
+    
     /**
      *	Remove a value from the indexed property named name.
      */
@@ -493,27 +491,27 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	If the element is not found, return -1.
      */
     public int indexOf(String name, Object value) throws
-    Schema2BeansRuntimeException {
-	BeanProp 	bp = this.beanProp(name);
-	
-	if (bp == null)
-	    throw new Schema2BeansRuntimeException(Common.
-		getMessage("UnknownPropertyName_msg", name));
-	
-	if (Common.isArray(bp.type)) {
-	    boolean isBean = Common.isBean(bp.type);
-	    
-	    int size = bp.size();
-	    for (int i=0; i<size; i++) {
-		Object obj = bp.getValue(i);
-		if (isBean && (obj == value))
-		    return i;
-		else
-		    if (!isBean && (obj.equals(value)))
-			return i;
-	    }
-	}
-	return -1;
+            Schema2BeansRuntimeException {
+        BeanProp 	bp = this.beanProp(name);
+        
+        if (bp == null)
+            throw new Schema2BeansRuntimeException(Common.
+                    getMessage("UnknownPropertyName_msg", name));
+        
+        if (Common.isArray(bp.type)) {
+            boolean isBean = Common.isBean(bp.type);
+            
+            int size = bp.size();
+            for (int i=0; i<size; i++) {
+                Object obj = bp.getValue(i);
+                if (isBean && (obj == value))
+                    return i;
+                else
+                    if (!isBean && (obj.equals(value)))
+                        return i;
+            }
+        }
+        return -1;
     }
     
     /**
@@ -522,7 +520,7 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	property array contains null elements).
      */
     public int size(String name) {
-	return this.beanProp(name).size();
+        return this.beanProp(name).size();
     }
     
     /**
@@ -530,14 +528,14 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	in the DTD with the | char, such as (a | b | c ...)
      */
     public boolean isChoiceProperty(String name) {
-	return this.beanProp(name).isChoiceProperty();
+        return this.beanProp(name).isChoiceProperty();
     }
     
     /**
      *	Equivalent to isChoiceProperty(name) on the current bean property.
      */
     public boolean isChoiceProperty() {
-	return this.beanProp().isChoiceProperty();
+        return this.beanProp().isChoiceProperty();
     }
     
     /**
@@ -546,7 +544,7 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	Return null otherwise.
      */
     public BaseProperty[] listChoiceProperties(String name) {
-	return this.beanProp(name).getChoiceProperties();
+        return this.beanProp(name).getChoiceProperties();
     }
     
     /**
@@ -555,50 +553,50 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	The returned value is never null be can be empty.
      */
     public Iterator listChoiceProperties() {
-	IterateChoiceProperties it = new IterateChoiceProperties();
-	Iterator i = beanPropsIterator();
-	while (i.hasNext())
-	    it.add((BeanProp)i.next());
-	return it;
+        IterateChoiceProperties it = new IterateChoiceProperties();
+        Iterator i = beanPropsIterator();
+        while (i.hasNext())
+            it.add((BeanProp)i.next());
+        return it;
     }
     
     /**
      *	Return the list of the properties
      */
     public BaseProperty[] listProperties() {
-	return (BaseProperty[])this.beanProps();
+        return (BaseProperty[])this.beanProps();
     }
-
+    
     /**
      *  Return the BaseProperty object for the current bean
      */
     public BaseProperty getProperty() {
-	return (BaseProperty)this.beanProp();
+        return (BaseProperty)this.beanProp();
     }
-
+    
     /**
      *  Return the BaseProperty object for the specified property
      */
     public BaseProperty getProperty(String propName) {
-	return (BaseProperty)this.beanProp(propName);
+        return (BaseProperty)this.beanProp(propName);
     }
-
+    
     /**
      *	Return the known values as declared in the mdd file.
      */
     public Object[] knownValues(String name) {
-	return this.beanProp(name).knownValues();
+        return this.beanProp(name).knownValues();
     }
     
     protected void addKnownValue(String name, Object value) {
-	this.beanProp(name).addKnownValue(value);
+        this.beanProp(name).addKnownValue(value);
     }
     
     /**
      *	Create a new attribute on the current bean.
      */
     public void createAttribute(String dtdName, String name, int type,
-                                String[] values, String defValue) {
+            String[] values, String defValue) {
         BeanProp bp = this.beanProp();
         if (bp != null)
             bp.createAttribute(dtdName, name, type, values, defValue);
@@ -611,16 +609,16 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	the attribute within the BeanProp associated to the property.
      */
     public void createAttribute(String propName, String dtdName, String name,
-				int type, String[] values, String defValue) {
-	this.beanProp(propName).createAttribute(dtdName, name, type,
-						values, defValue);
+            int type, String[] values, String defValue) {
+        this.beanProp(propName).createAttribute(dtdName, name, type,
+                values, defValue);
     }
     
     /**
      *	Set the value of the attribute (see the BeanClass class)
      */
     public void setAttributeValue(String propName, String name,
-				  String value) {
+            String value) {
         this.beanProp(propName).setAttributeValue(0, name, value);
     }
     
@@ -630,14 +628,13 @@ public abstract class BaseBean implements Cloneable, Bean {
     public void setAttributeValue(String name, String value) {
         if (name == null)
             return;
-	
+        
         BeanProp bp = this.beanProp();
         if (bp != null) {
             //	Find out what our index is within the BeanProp object
             int i = bp.idToIndex(this.binding.getId());
             bp.setAttributeValue(i, name, value);
-        }
-        else {
+        } else {
             //
             //	There is no BeanProp/DOMBinding for this bean yet,
             //	cache the value.
@@ -656,33 +653,33 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	the cached attribute values are ready to be really created).
      */
     String[] cachedAttributeNames() {
-	int size = (this.attrCache==null)?0:this.attrCache.size();
-	String[] ret = new String[size];
-	if (size >0) {
-	    Iterator it = this.attrCache.keySet().iterator();
-	    int i = 0;
-	    while (it.hasNext())
-		ret[i++] = it.next().toString();
-	}
-	
-	return ret;
+        int size = (this.attrCache==null)?0:this.attrCache.size();
+        String[] ret = new String[size];
+        if (size >0) {
+            Iterator it = this.attrCache.keySet().iterator();
+            int i = 0;
+            while (it.hasNext())
+                ret[i++] = it.next().toString();
+        }
+        
+        return ret;
     }
     
     /**
      *	Return the value cached for the attribute named name.
      */
     String cachedAttributeValue(String name) {
-	if (this.attrCache != null)
-	    return (String)this.attrCache.get(name);
-	else
-	    return null;
+        if (this.attrCache != null)
+            return (String)this.attrCache.get(name);
+        else
+            return null;
     }
     
     /**
      *	Return the value cached for the attribute named name.
      */
     void cachedAttributeClear() {
-	this.attrCache = null;
+        this.attrCache = null;
     }
     
     /**
@@ -691,46 +688,45 @@ public abstract class BaseBean implements Cloneable, Bean {
      *  then null is returned.
      */
     public String getAttributeValue(String name) {
-	BeanProp bp = this.beanProp();
-	if (bp != null) {
-	    //	Find out what our index is within the BeanProp object
-	    int i = bp.idToIndex(this.binding.getId());
-        if (i < 0)   // I guess we're not part of the BeanProp yet.
-            return null;
-	    return bp.getAttributeValue(i, name);
-	}
-	else {
-	    //
-	    //	That's a brand new bean not attached yet to a graph. Try
-	    //	to get the value from the cache.
-	    //
-	    if (this.attrCache != null)
-		return (String)this.attrCache.get(name);
-	    else
-		return null;
-	}
+        BeanProp bp = this.beanProp();
+        if (bp != null) {
+            //	Find out what our index is within the BeanProp object
+            int i = bp.idToIndex(this.binding.getId());
+            if (i < 0)   // I guess we're not part of the BeanProp yet.
+                return null;
+            return bp.getAttributeValue(i, name);
+        } else {
+            //
+            //	That's a brand new bean not attached yet to a graph. Try
+            //	to get the value from the cache.
+            //
+            if (this.attrCache != null)
+                return (String)this.attrCache.get(name);
+            else
+                return null;
+        }
     }
     
     /**
      *	Get the attribute value (see BeanProp class)
      */
     public String getAttributeValue(String propName, String name) {
-	return this.beanProp(propName).getAttributeValue(0, name);
+        return this.beanProp(propName).getAttributeValue(0, name);
     }
     
     /**
      *	Set the value of the attribute (see the BeanClass class)
      */
     public void setAttributeValue(String propName, int index, String name,
-				  String value) {
-	this.beanProp(propName).setAttributeValue(index, name, value);
+            String value) {
+        this.beanProp(propName).setAttributeValue(index, name, value);
     }
     
     /**
      *	Get the attribute value (see BeanProp class)
      */
     public String getAttributeValue(String propName, int index, String name) {
-	return this.beanProp(propName).getAttributeValue(index, name);
+        return this.beanProp(propName).getAttributeValue(index, name);
     }
     
     /**
@@ -738,18 +734,18 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	(even if they are not set).
      */
     public String[] getAttributeNames(String propName) {
-	return this.beanProp(propName).getAttributeNames();
+        return this.beanProp(propName).getAttributeNames();
     }
     
     /**
      *	Return the list of all known attribute names for the current bean
      */
     public String[] getAttributeNames() {
-	BeanProp bp = this.beanProp();
-	if (bp != null)
-	    return bp.getAttributeNames();
-	else
-	    return null;
+        BeanProp bp = this.beanProp();
+        if (bp != null)
+            return bp.getAttributeNames();
+        else
+            return null;
     }
     
     
@@ -758,90 +754,89 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	(even if they are not set).
      */
     public BaseAttribute[] listAttributes(String propName) {
-	return this.beanProp(propName).getAttributes();
+        return this.beanProp(propName).getAttributes();
     }
     
     /**
      *	Return the list of all known attribute names for the current bean
      */
     public BaseAttribute[] listAttributes() {
-	BeanProp bp = this.beanProp();
-	if (bp != null)
-	    return bp.getAttributes();
-	else
-	    return null;
+        BeanProp bp = this.beanProp();
+        if (bp != null)
+            return bp.getAttributes();
+        else
+            return null;
     }
     
     
     //	Called by find() method. Where the attributes are searched for.
     private void lookForAttribute(ArrayList found, BeanProp bp, BaseBean bean,
-				  BaseAttribute[] attrs, String attrName,
-				  Object value) {
-
-	for (int j=0; j<attrs.length; j++) {
-	    if (attrName == null || attrs[j].hasName(attrName)) {
-		String name = attrs[j].getName();
-		
-		if (DDLogFlags.debug) {
-		    TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-				    DDLogFlags.DBG_UBN, 1, DDLogFlags.FINDATTR,
-				    bp.getName() + "." +  name +
-				    " for value " + value);
-		}
-		
-		int size = bp.size();
-		if (bp.isIndexed()) {
-		    for (int k=0; k<size; k++) {
-			String v = bp.getAttributeValue(k, name);
-			v = (String)Common.getComparableObject(v);
-			
-			if (DDLogFlags.debug) {
-			    TraceLogger.put(TraceLogger.DEBUG,
-					    TraceLogger.SVC_DD,
-					    DDLogFlags.DBG_UBN, 1,
-					    DDLogFlags.FINDCMP,
-					    bp.getName() + "." +
-					    name + " = " + v);
-			}
-			
-			if ((bean == null || bean == bp.getValue(k))
-			&& value.equals(v)) {
-			    if (DDLogFlags.debug) {
-				TraceLogger.put(TraceLogger.DEBUG,
-						TraceLogger.SVC_DD,
-						DDLogFlags.DBG_UBN, 1,
-						DDLogFlags.FNDATTR);
-			    }
-			    found.add(bp.buildFullName(k, name));
-			}
-		    }
-		}
-		else {
-		    String v = bp.getAttributeValue(0, name);
-		    v = (String)Common.getComparableObject(v);
-		    
-		    if (DDLogFlags.debug) {
-			TraceLogger.put(TraceLogger.DEBUG,
-					TraceLogger.SVC_DD,
-					DDLogFlags.DBG_UBN, 1,
-					DDLogFlags.FINDCMP,
-					bp.getName() + "." +
-					name + " = " + v);
-		    }
-		    
-		    if (value.equals(v)) {
-			if (DDLogFlags.debug) {
-			    TraceLogger.put(TraceLogger.DEBUG,
-					    TraceLogger.SVC_DD,
-					    DDLogFlags.DBG_UBN, 1,
-					    DDLogFlags.FNDATTR);
-			}
-			
-			found.add(bp.buildFullName(0, name));
-		    }
-		}
-	    }
-	}
+            BaseAttribute[] attrs, String attrName,
+            Object value) {
+        
+        for (int j=0; j<attrs.length; j++) {
+            if (attrName == null || attrs[j].hasName(attrName)) {
+                String name = attrs[j].getName();
+                
+                if (DDLogFlags.debug) {
+                    TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                            DDLogFlags.DBG_UBN, 1, DDLogFlags.FINDATTR,
+                            bp.getName() + "." +  name +
+                            " for value " + value);
+                }
+                
+                int size = bp.size();
+                if (bp.isIndexed()) {
+                    for (int k=0; k<size; k++) {
+                        String v = bp.getAttributeValue(k, name);
+                        v = (String)Common.getComparableObject(v);
+                        
+                        if (DDLogFlags.debug) {
+                            TraceLogger.put(TraceLogger.DEBUG,
+                                    TraceLogger.SVC_DD,
+                                    DDLogFlags.DBG_UBN, 1,
+                                    DDLogFlags.FINDCMP,
+                                    bp.getName() + "." +
+                                    name + " = " + v);
+                        }
+                        
+                        if ((bean == null || bean == bp.getValue(k))
+                        && value.equals(v)) {
+                            if (DDLogFlags.debug) {
+                                TraceLogger.put(TraceLogger.DEBUG,
+                                        TraceLogger.SVC_DD,
+                                        DDLogFlags.DBG_UBN, 1,
+                                        DDLogFlags.FNDATTR);
+                            }
+                            found.add(bp.buildFullName(k, name));
+                        }
+                    }
+                } else {
+                    String v = bp.getAttributeValue(0, name);
+                    v = (String)Common.getComparableObject(v);
+                    
+                    if (DDLogFlags.debug) {
+                        TraceLogger.put(TraceLogger.DEBUG,
+                                TraceLogger.SVC_DD,
+                                DDLogFlags.DBG_UBN, 1,
+                                DDLogFlags.FINDCMP,
+                                bp.getName() + "." +
+                                name + " = " + v);
+                    }
+                    
+                    if (value.equals(v)) {
+                        if (DDLogFlags.debug) {
+                            TraceLogger.put(TraceLogger.DEBUG,
+                                    TraceLogger.SVC_DD,
+                                    DDLogFlags.DBG_UBN, 1,
+                                    DDLogFlags.FNDATTR);
+                        }
+                        
+                        found.add(bp.buildFullName(0, name));
+                    }
+                }
+            }
+        }
     }
     
     /**
@@ -853,138 +848,136 @@ public abstract class BaseBean implements Cloneable, Bean {
      *		propName == null & attrName == null, find for any value
      */
     void find(BaseBean bean, ArrayList found, String propName,
-	      String attrName, Object value) {
-
-	if (DDLogFlags.debug) {
-	    TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-			    DDLogFlags.DBG_UBN, 1, DDLogFlags.FIND,
-			    (bean==null?"<null>":bean.getClass().getName()) +
-			    " - " + propName + "/" + attrName + " for value " +
-			    ((value == null)?"<null>":value.toString()));
-	}
-	
-	if (bean == null || value == null)
-	    return;
-	
-	BaseProperty[] props = bean.listProperties();
-	
-	//
-	//  Search our own attributes first (as any node might be the
-	//  root of the search, we have to start by ourself first)
-	//
-	BaseAttribute[] attrs = bean.listAttributes();
-	if (propName == null && attrs != null && attrs.length > 0) {
-	    BeanProp bp = bean.beanProp();
-	    this.lookForAttribute(found, bp, bean, attrs, attrName, value);
-	}
-	
-	//
-	//  Look for the properties and the attributes of the non-bean
-	//  properties (bean property attributes are searched as the root
-	//  case explained above)
-	//
-	for (int i=0; i<props.length; i++) {
-	    BaseProperty 	p = props[i];
-	    String  	 	name = p.getName();
-	    BeanProp	 	bp = (BeanProp)p;
-	    int  		size = p.size();
-	    
-	    //
-	    //	Skip if this is a node (bean): we do not try to look for
-	    //	a node (we are searching a final value), and the attributes
-	    //	of a bean are searched at the beginning of the method.
-	    //
-	    if (!p.isBean()) {
-		// Prop name & size
-		if (((propName != null && p.hasName(propName)) ||
-		     (propName == null && attrName == null))) {
-		    if (DDLogFlags.debug) {
-			TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-					DDLogFlags.DBG_UBN, 1,
-					DDLogFlags.FINDPROP,
-					name + " for value " + value);
-		    }
-		    
-		    if (p.isIndexed()) {
-			//	Search for a specific one
-			for (int j=0; j<size; j++) {
-			    Object v = bp.getValue(j);
-			    v = Common.getComparableObject(v);
-			    
-			    if (DDLogFlags.debug) {
-				TraceLogger.put(TraceLogger.DEBUG,
-						TraceLogger.SVC_DD,
-						DDLogFlags.DBG_UBN, 1,
-						DDLogFlags.FINDCMP,
-						name + "[" + j + "] = " +
-						v.toString());
-				
-			    }
-			    if (value.equals(v)) {
-				if (DDLogFlags.debug)
-				    TraceLogger.put(TraceLogger.DEBUG,
-						    TraceLogger.SVC_DD,
-						    DDLogFlags.DBG_UBN, 1,
-						    DDLogFlags.FNDPROP);
-				
-				found.add(bp.getFullName(j));
-			    }
-			}
-		    }
-		    else {
-			Object v = bp.getValue(0);
-			v = Common.getComparableObject(v);
-			
-			if (DDLogFlags.debug) {
-			    TraceLogger.put(TraceLogger.DEBUG,
-					    TraceLogger.SVC_DD,
-					    DDLogFlags.DBG_UBN, 1,
-					    DDLogFlags.FINDCMP,
-					    name + " = " +
-					    ((v==null)?"null":v.toString()));
-			}
-			
-			if (value.equals(v)) {
-			    if (DDLogFlags.debug)
-				TraceLogger.put(TraceLogger.DEBUG,
-						TraceLogger.SVC_DD,
-						DDLogFlags.DBG_UBN, 1,
-						DDLogFlags.FNDPROP);
-			    
-			    found.add(bp.getFullName());
-			}
-		    }
-		}
-		
-		// Prop attributes
-		attrs = p.getAttributes();
-		if (propName == null && attrs.length > 0)
-		    this.lookForAttribute(found, bp, null, attrs,
-					  attrName, value);
-	    }
-	    
-	    // recurse
-	    if (p.isBean() && p.isIndexed()) {
-		BaseBean[] ba = (BaseBean[])bean.getValues(name);
-		for (int k=0; k<ba.length; k++)
-		    find(ba[k], found, propName, attrName, value);
-	    }
-	    else
-		if (p.isBean()) {
-		    BaseBean b = (BaseBean)bean.getValue(name);
-		    find(b, found, propName, attrName, value);
-		}
-	}
+            String attrName, Object value) {
+        
+        if (DDLogFlags.debug) {
+            TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                    DDLogFlags.DBG_UBN, 1, DDLogFlags.FIND,
+                    (bean==null?"<null>":bean.getClass().getName()) +
+                    " - " + propName + "/" + attrName + " for value " +
+                    ((value == null)?"<null>":value.toString()));
+        }
+        
+        if (bean == null || value == null)
+            return;
+        
+        BaseProperty[] props = bean.listProperties();
+        
+        //
+        //  Search our own attributes first (as any node might be the
+        //  root of the search, we have to start by ourself first)
+        //
+        BaseAttribute[] attrs = bean.listAttributes();
+        if (propName == null && attrs != null && attrs.length > 0) {
+            BeanProp bp = bean.beanProp();
+            this.lookForAttribute(found, bp, bean, attrs, attrName, value);
+        }
+        
+        //
+        //  Look for the properties and the attributes of the non-bean
+        //  properties (bean property attributes are searched as the root
+        //  case explained above)
+        //
+        for (int i=0; i<props.length; i++) {
+            BaseProperty 	p = props[i];
+            String  	 	name = p.getName();
+            BeanProp	 	bp = (BeanProp)p;
+            int  		size = p.size();
+            
+            //
+            //	Skip if this is a node (bean): we do not try to look for
+            //	a node (we are searching a final value), and the attributes
+            //	of a bean are searched at the beginning of the method.
+            //
+            if (!p.isBean()) {
+                // Prop name & size
+                if (((propName != null && p.hasName(propName)) ||
+                        (propName == null && attrName == null))) {
+                    if (DDLogFlags.debug) {
+                        TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                                DDLogFlags.DBG_UBN, 1,
+                                DDLogFlags.FINDPROP,
+                                name + " for value " + value);
+                    }
+                    
+                    if (p.isIndexed()) {
+                        //	Search for a specific one
+                        for (int j=0; j<size; j++) {
+                            Object v = bp.getValue(j);
+                            v = Common.getComparableObject(v);
+                            
+                            if (DDLogFlags.debug) {
+                                TraceLogger.put(TraceLogger.DEBUG,
+                                        TraceLogger.SVC_DD,
+                                        DDLogFlags.DBG_UBN, 1,
+                                        DDLogFlags.FINDCMP,
+                                        name + "[" + j + "] = " +
+                                        v.toString());
+                                
+                            }
+                            if (value.equals(v)) {
+                                if (DDLogFlags.debug)
+                                    TraceLogger.put(TraceLogger.DEBUG,
+                                            TraceLogger.SVC_DD,
+                                            DDLogFlags.DBG_UBN, 1,
+                                            DDLogFlags.FNDPROP);
+                                
+                                found.add(bp.getFullName(j));
+                            }
+                        }
+                    } else {
+                        Object v = bp.getValue(0);
+                        v = Common.getComparableObject(v);
+                        
+                        if (DDLogFlags.debug) {
+                            TraceLogger.put(TraceLogger.DEBUG,
+                                    TraceLogger.SVC_DD,
+                                    DDLogFlags.DBG_UBN, 1,
+                                    DDLogFlags.FINDCMP,
+                                    name + " = " +
+                                    ((v==null)?"null":v.toString()));
+                        }
+                        
+                        if (value.equals(v)) {
+                            if (DDLogFlags.debug)
+                                TraceLogger.put(TraceLogger.DEBUG,
+                                        TraceLogger.SVC_DD,
+                                        DDLogFlags.DBG_UBN, 1,
+                                        DDLogFlags.FNDPROP);
+                            
+                            found.add(bp.getFullName());
+                        }
+                    }
+                }
+                
+                // Prop attributes
+                attrs = p.getAttributes();
+                if (propName == null && attrs.length > 0)
+                    this.lookForAttribute(found, bp, null, attrs,
+                            attrName, value);
+            }
+            
+            // recurse
+            if (p.isBean() && p.isIndexed()) {
+                BaseBean[] ba = (BaseBean[])bean.getValues(name);
+                for (int k=0; k<ba.length; k++)
+                    find(ba[k], found, propName, attrName, value);
+            } else
+                if (p.isBean()) {
+                BaseBean b = (BaseBean)bean.getValue(name);
+                find(b, found, propName, attrName, value);
+                }
+        }
     }
-
+    
     /**
      *  Search for a specific attribute name/value.
      */
     public String[] findAttributeValue(String attrName, String value) {
-	ArrayList list = new ArrayList();
-	this.find(this, list, null, attrName, value);
-	String[] ret = new String[list.size()];
-	return (String[])list.toArray(ret);
+        ArrayList list = new ArrayList();
+        this.find(this, list, null, attrName, value);
+        String[] ret = new String[list.size()];
+        return (String[])list.toArray(ret);
     }
     
     /**
@@ -1001,12 +994,12 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	Search for any property or attribute of the specified value.
      */
     public String[] findValue(Object value) {
-	ArrayList list = new ArrayList();
-	this.find(this, list, null, null, value);
-	String[] ret = new String[list.size()];
-	return (String[])list.toArray(ret);
+        ArrayList list = new ArrayList();
+        this.find(this, list, null, null, value);
+        String[] ret = new String[list.size()];
+        return (String[])list.toArray(ret);
     }
-
+    
     public void write(File f) throws IOException, Schema2BeansRuntimeException {
         OutputStream out = new FileOutputStream(f);
         try {
@@ -1021,17 +1014,17 @@ public abstract class BaseBean implements Cloneable, Bean {
      */
     public void write(OutputStream out)	throws IOException, Schema2BeansRuntimeException {
         try {
-        reindent();
-        if (this.graphManager != null) {
-            this.graphManager.write(out);
-        } else
-            throw new IllegalStateException(Common.
-		         getMessage("CantWriteBeanNotInDOMTree_msg"));
+            reindent();
+            if (this.graphManager != null) {
+                this.graphManager.write(out);
+            } else
+                throw new IllegalStateException(Common.
+                        getMessage("CantWriteBeanNotInDOMTree_msg"));
         } catch (Schema2BeansException e) {
             throw new Schema2BeansRuntimeException(e);
         }
     }
-
+    
     /**
      * Write the current schema2beans graph as an XML document.  The
      * parameter @param encoding tells us to write to @param out using
@@ -1043,9 +1036,9 @@ public abstract class BaseBean implements Cloneable, Bean {
             this.graphManager.write(out, encoding);
         } else
             throw new IllegalStateException(Common.
-		         getMessage("CantWriteBeanNotInDOMTree_msg"));
+                    getMessage("CantWriteBeanNotInDOMTree_msg"));
     }
-
+    
     /**
      * If you call this method, you're responsible for setting up the
      * right encoding for the Writer @param w.
@@ -1053,7 +1046,7 @@ public abstract class BaseBean implements Cloneable, Bean {
     public void write(java.io.Writer w)	throws IOException, Schema2BeansException {
         write(w, null);
     }
-
+    
     /**
      * If you call this method, you're responsible for setting up the
      * right encoding for the Writer @param w.  The @param encoding
@@ -1066,21 +1059,21 @@ public abstract class BaseBean implements Cloneable, Bean {
             this.graphManager.write(w, encoding);
         } else
             throw new IllegalStateException(Common.
-		          getMessage("CantWriteBeanNotInDOMTree_msg"));
+                    getMessage("CantWriteBeanNotInDOMTree_msg"));
     }
-
+    
     public void writeNoReindent(OutputStream out) throws IOException, Schema2BeansException {
         if (this.graphManager != null) {
             this.graphManager.write(out);
         } else
             throw new IllegalStateException(Common.
-                       getMessage("CantWriteBeanNotInDOMTree_msg"));
+                    getMessage("CantWriteBeanNotInDOMTree_msg"));
     }
-
+    
     public void writeNode(java.io.Writer out) throws IOException {
         if (graphManager == null) {
             throw new IllegalStateException(Common.
-                       getMessage("CantWriteBeanNotInDOMTree_msg"));
+                    getMessage("CantWriteBeanNotInDOMTree_msg"));
         }
         Node myNode = binding.getNode();
         try {
@@ -1090,7 +1083,7 @@ public abstract class BaseBean implements Cloneable, Bean {
             throw new RuntimeException(e);
         }
     }
-
+    
     /**
      * Rearrange the internal whitespace so that when it gets printed
      * out, it looks pretty.
@@ -1098,43 +1091,42 @@ public abstract class BaseBean implements Cloneable, Bean {
     public void reindent() {
         reindent("  ");
     }
-
+    
     public void reindent(String indent) {
         if (graphManager != null) {
             graphManager.reindent(indent);
-        }
-        else
+        } else
             throw new IllegalStateException(Common.
-                                            getMessage("CantWriteBeanNotInDOMTree_msg"));
+                    getMessage("CantWriteBeanNotInDOMTree_msg"));
     }
     
     protected boolean hasDomNode() {
-	if (this.binding == null)
-	    return false;
-	else
-	    return this.binding.hasDomNode();
+        if (this.binding == null)
+            return false;
+        else
+            return this.binding.hasDomNode();
     }
     
     protected DOMBinding domBinding() {
-	return this.binding;
+        return this.binding;
     }
     
     protected void setDomBinding(DOMBinding binding) {
-	this.binding = binding;
+        this.binding = binding;
     }
-
+    
     /**
      *  Return the unique graphManager instance of the schema2beans graph
      */
     public GraphManager graphManager() {
-	return this.graphManager;
+        return this.graphManager;
     }
     
     protected void setGraphManager(GraphManager graphMgr) {
-	this.graphManager = graphMgr;
-	if (this.changeListeners != null) {
-	    // XXXX - move these listeners to the final place.
-	}
+        this.graphManager = graphMgr;
+        if (this.changeListeners != null) {
+            // XXXX - move these listeners to the final place.
+        }
     }
     
     /*
@@ -1155,13 +1147,13 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	DOMBinding syncNodes() methods).
      */
     void syncNodes(BeanProp.Action a) {
-	Iterator i = beanPropsIterator();
-	
-	while (i.hasNext()) {
-	    BeanProp prop = (BeanProp)i.next();
-	    if (prop != null)
-		prop.syncNodes(a);
-	}
+        Iterator i = beanPropsIterator();
+        
+        while (i.hasNext()) {
+            BeanProp prop = (BeanProp)i.next();
+            if (prop != null)
+                prop.syncNodes(a);
+        }
     }
     
     /**
@@ -1182,26 +1174,26 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	signal all its ancestors about a property that has changed.
      */
     void notifyInternal(BeanProp.InternalEvent ie) {
-	if (this.changeListeners != null
-	    && ie.type == BeanProp.InternalEvent.CHANGED) {
-
-	    boolean addedGM = false;
-	    
-	    if (this.graphManager == null) {
-		this.graphManager = new GraphManager(this);
-		addedGM = true;
-	    }
-	    this.changeListeners.
-		firePropertyChange(ie.getPropertyChangeEvent());
-	    if (addedGM) {
-		this.graphManager = null;
-	    }
-	}
-	if (this.binding != null) {
-	    BeanProp p = this.binding.getBeanProp(this);
-	    if (p != null)
-		p.notifyInternal(ie, true);
-	}
+        if (this.changeListeners != null
+                && ie.type == BeanProp.InternalEvent.CHANGED) {
+            
+            boolean addedGM = false;
+            
+            if (this.graphManager == null) {
+                this.graphManager = new GraphManager(this);
+                addedGM = true;
+            }
+            this.changeListeners.
+                    firePropertyChange(ie.getPropertyChangeEvent());
+            if (addedGM) {
+                this.graphManager = null;
+            }
+        }
+        if (this.binding != null) {
+            BeanProp p = this.binding.getBeanProp(this);
+            if (p != null)
+                p.notifyInternal(ie, true);
+        }
     }
     
     
@@ -1209,116 +1201,112 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	Process a deep clone() of the current bean
      */
     public Object clone() {
-	BaseBean bean = null;
-
-	try {
-	    //	Create a new instance of ourself
-	    bean = (BaseBean)this.getClass().newInstance();
-	}
-	catch(Exception e) {
-	    TraceLogger.error(e);
-	    throw new Schema2BeansRuntimeException(Common.
-		getMessage("CantInstantiateBean_msg", e.getMessage()));
-	}
-
-	//  If we are cloning the root - we need some extra initialization
-	if (this.graphManager != null && this.graphManager.root == this) {
-	    //  Get the info on the current root
-	    BeanProp 	p = this.binding.getBeanProp(this);
-	    String	dtdName = p.getDtdName();
-	    String 	beanName = p.getDtdName();
-	    Class	beanClass = p.getPropClass();
-	    	    
-        //  Create the initial DOM Node element
-        Node n = GraphManager.createRootElementNode(dtdName);
-	    
-        //  Initialize the graph manager
-        bean.graphManager.setXmlDocument(n);	    
-        n = GraphManager.getElementNode(dtdName, n);
-        bean.graphManager.completeRootBinding(bean, n);
-	}
-	    
-	//  Copy the attributes of the root
-	String[] attrs = this.getAttributeNames();
-	if (attrs != null) {
-	    for(int j=0; j<attrs.length; j++) {
-		String a = attrs[j];
-		if (!this.beanProp().getAttrProp(a).isFixed()) {
-		    String v = this.getAttributeValue(a);
-		    if (bean.getAttributeValue(a) != v)
-			bean.setAttributeValue(a, v);
-		}
-	    }
-	}
-
-    if (attrCache != null)
-        bean.attrCache = (HashMap) attrCache.clone();  // This does a shallow clone of the HashMap, but that's fine since they're all just Strings in there.
-
-	Iterator it = beanPropsIterator();
-	
-	//  Parse our attributes and copy them
-	while (it.hasNext()) {
-	    BeanProp prop = (BeanProp)it.next();
-	    
-	    if (prop == null)
-		continue;
-	    
-	    String name = prop.getBeanName();
-	    
-	    if (Common.isArray(prop.type)) {
-		int size = prop.size();
-		if (Common.isBean(prop.type)) {
-		    for(int i=0; i<size; i++) {
-			BaseBean b = (BaseBean)prop.getValue(i);
-			if (b != null)
-			    b = (BaseBean)b.clone();
-			bean.addValue(name, b);
-		    }
-		}
-		else {
-		    for(int i=0; i<size; i++)
-			bean.addValue(name, prop.getValue(i));
-		
-		    //	Copy the attributes
-		    attrs = prop.getAttributeNames();
-		    for(int j=0; j<attrs.length; j++) {
-			String a = attrs[j];
-			if (!prop.getAttrProp(a).isFixed()) {
-			    for(int i=0; i<size; i++) {
-				String v = prop.getAttributeValue(i, a);
-				if (bean.getAttributeValue(name, i, a) != v)
-				    bean.setAttributeValue(name, i, a, v);
-					       
-			    }
-			}
-		    }
-		}
-	    }
-	    else {
-		if (Common.isBean(prop.type)) {
-		    BaseBean b = (BaseBean)prop.getValue(0);
-		    if (b != null)
-			b = (BaseBean)b.clone();
-		    bean.setValue(name, b);
-		}
-		else {
-		    bean.setValue(name, prop.getValue(0));
-		
-		    //	Copy the attributes
-		    attrs = prop.getAttributeNames();
-		    for(int j=0; j<attrs.length; j++) {
-			String a = attrs[j];
-			if (!prop.getAttrProp(a).isFixed()) {
-			    String v = prop.getAttributeValue(0, a);
-			    if (bean.getAttributeValue(name, 0, a) != v)
-				bean.setAttributeValue(name, a, v);
-			}
-		    }
-		}
-	    }
-	}
-	
-	return bean;
+        BaseBean bean = null;
+        
+        try {
+            //	Create a new instance of ourself
+            bean = (BaseBean)this.getClass().newInstance();
+        } catch(Exception e) {
+            TraceLogger.error(e);
+            throw new Schema2BeansRuntimeException(Common.
+                    getMessage("CantInstantiateBean_msg", e.getMessage()));
+        }
+        
+        //  If we are cloning the root - we need some extra initialization
+        if (this.graphManager != null && this.graphManager.root == this) {
+            //  Get the info on the current root
+            BeanProp 	p = this.binding.getBeanProp(this);
+            String	dtdName = p.getDtdName();
+            String 	beanName = p.getDtdName();
+            Class	beanClass = p.getPropClass();
+            
+            //  Create the initial DOM Node element
+            Node n = GraphManager.createRootElementNode(dtdName);
+            
+            //  Initialize the graph manager
+            bean.graphManager.setXmlDocument(n);
+            n = GraphManager.getElementNode(dtdName, n);
+            bean.graphManager.completeRootBinding(bean, n);
+        }
+        
+        //  Copy the attributes of the root
+        String[] attrs = this.getAttributeNames();
+        if (attrs != null) {
+            for(int j=0; j<attrs.length; j++) {
+                String a = attrs[j];
+                if (!this.beanProp().getAttrProp(a).isFixed()) {
+                    String v = this.getAttributeValue(a);
+                    if (bean.getAttributeValue(a) != v)
+                        bean.setAttributeValue(a, v);
+                }
+            }
+        }
+        
+        if (attrCache != null)
+            bean.attrCache = (HashMap) attrCache.clone();  // This does a shallow clone of the HashMap, but that's fine since they're all just Strings in there.
+        
+        Iterator it = beanPropsIterator();
+        
+        //  Parse our attributes and copy them
+        while (it.hasNext()) {
+            BeanProp prop = (BeanProp)it.next();
+            
+            if (prop == null)
+                continue;
+            
+            String name = prop.getBeanName();
+            
+            if (Common.isArray(prop.type)) {
+                int size = prop.size();
+                if (Common.isBean(prop.type)) {
+                    for(int i=0; i<size; i++) {
+                        BaseBean b = (BaseBean)prop.getValue(i);
+                        if (b != null)
+                            b = (BaseBean)b.clone();
+                        bean.addValue(name, b);
+                    }
+                } else {
+                    for(int i=0; i<size; i++)
+                        bean.addValue(name, prop.getValue(i));
+                    
+                    //	Copy the attributes
+                    attrs = prop.getAttributeNames();
+                    for(int j=0; j<attrs.length; j++) {
+                        String a = attrs[j];
+                        if (!prop.getAttrProp(a).isFixed()) {
+                            for(int i=0; i<size; i++) {
+                                String v = prop.getAttributeValue(i, a);
+                                if (bean.getAttributeValue(name, i, a) != v)
+                                    bean.setAttributeValue(name, i, a, v);
+                                
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (Common.isBean(prop.type)) {
+                    BaseBean b = (BaseBean)prop.getValue(0);
+                    if (b != null)
+                        b = (BaseBean)b.clone();
+                    bean.setValue(name, b);
+                } else {
+                    bean.setValue(name, prop.getValue(0));
+                    
+                    //	Copy the attributes
+                    attrs = prop.getAttributeNames();
+                    for(int j=0; j<attrs.length; j++) {
+                        String a = attrs[j];
+                        if (!prop.getAttrProp(a).isFixed()) {
+                            String v = prop.getAttributeValue(0, a);
+                            if (bean.getAttributeValue(name, 0, a) != v)
+                                bean.setAttributeValue(name, a, v);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return bean;
     }
     
     /**
@@ -1342,16 +1330,16 @@ public abstract class BaseBean implements Cloneable, Bean {
     
     
     static String mergeModeToString(int mode) {
-	switch(mode) {
-	    case MERGE_NONE: return "MERGE_NONE";		// NOI18N
-	    case MERGE_INTERSECT: return "MERGE_INTERSECT";	// NOI18N
-	    case MERGE_UNION: return "MERGE_UNION";		// NOI18N
-	    case MERGE_UPDATE: return "MERGE_UPDATE";	// NOI18N
-	    case MERGE_COMPARE: return "MERGE_COMPARE";	// NOI18N
-	    default: return "Unknown merge mode: " + mode;	// NOI18N
-	}
+        switch(mode) {
+            case MERGE_NONE: return "MERGE_NONE";		// NOI18N
+            case MERGE_INTERSECT: return "MERGE_INTERSECT";	// NOI18N
+            case MERGE_UNION: return "MERGE_UNION";		// NOI18N
+            case MERGE_UPDATE: return "MERGE_UPDATE";	// NOI18N
+            case MERGE_COMPARE: return "MERGE_COMPARE";	// NOI18N
+            default: return "Unknown merge mode: " + mode;	// NOI18N
+        }
     }
-
+    
     /**
      *	Merge the specified bean schema2beans graph into the current graph using
      *	the specified mode.
@@ -1364,13 +1352,13 @@ public abstract class BaseBean implements Cloneable, Bean {
     }
     
     /**
-     *	Merge the bean tree with the current graph using the default 
+     *	Merge the bean tree with the current graph using the default
      *	merging option.
      */
     public void merge(BaseBean bean) {
         mergeUpdate(bean);
     }
-
+    
     /**
      * Same as merge(BaseBean bean).
      * It's possible to override this method and make it more efficient,
@@ -1382,22 +1370,22 @@ public abstract class BaseBean implements Cloneable, Bean {
     
     //	Called by mergeTree to set the default hasKey value
     private boolean setHasKeyDefaultValue(BeanProp prop) {
-	BeanComparator cmp = (BeanComparator)this.comparators.get(0);
-	return cmp.hasKeyDefined(prop);
+        BeanComparator cmp = (BeanComparator)this.comparators.get(0);
+        return cmp.hasKeyDefined(prop);
     }
-
+    
     /*
      *	Copy a property from the graph 'bean' to the graph 'prop', making
      *	sure that both property and attributes are copied.
      *	This method is used to copy non BaseBean properties
      *	(a clone on a BaseBean automatically copies the attributes).
      */
-    protected void copyProperty(BeanProp prop, BaseBean bean, 
-                                int index, Object value) {
-
+    protected void copyProperty(BeanProp prop, BaseBean bean,
+            int index, Object value) {
+        
         boolean isArray = Common.isArray(prop.type);
         String name = prop.getName();
-
+        
         //  Copy the property value
         if (value == null) {
             if (isArray)
@@ -1405,43 +1393,43 @@ public abstract class BaseBean implements Cloneable, Bean {
             else
                 value = bean.getValue(name, 0);
         }
-
+        
         int newIndex = 0;
-
+        
         if (isArray) {
             newIndex = addValue(prop, value);
         } else {
             setValue(prop, 0, value);
             index = 0;
         }
-
+        
         this.copyAttributes(prop, newIndex, bean, index);
     }
-
+    
     /*
      *	This copies the attributes of a property from 'bean' (whole BaseBean)
      *	to a property BeanProp (the specific BeanProp of the other BaseBean
      *	where the copy as to occur).
      */
-    private void copyAttributes(BeanProp prop, int propIndex, 
-			        BaseBean bean, int beanIndex) {
-
-	//	Copy the attributes
-	String name = prop.getName();
-	BaseAttribute[] ba = bean.listAttributes(name);
-	if (ba != null) {
-	    for(int j=0; j<ba.length; j++) {
-		if (!ba[j].isFixed()) {
-		    String attrName = ba[j].getName();
-		    String v = 
-			bean.getAttributeValue(name, beanIndex, attrName);
-		    if (v != prop.getAttributeValue(propIndex, attrName)) {
-			prop.setAttributeValue(propIndex, attrName, v);
-		    }
-		}
-	    }
-	}
-    } 
+    private void copyAttributes(BeanProp prop, int propIndex,
+            BaseBean bean, int beanIndex) {
+        
+        //	Copy the attributes
+        String name = prop.getName();
+        BaseAttribute[] ba = bean.listAttributes(name);
+        if (ba != null) {
+            for(int j=0; j<ba.length; j++) {
+                if (!ba[j].isFixed()) {
+                    String attrName = ba[j].getName();
+                    String v =
+                            bean.getAttributeValue(name, beanIndex, attrName);
+                    if (v != prop.getAttributeValue(propIndex, attrName)) {
+                        prop.setAttributeValue(propIndex, attrName, v);
+                    }
+                }
+            }
+        }
+    }
     
     /*
      *	Entry point for the merge processing. This takes care of processing
@@ -1450,41 +1438,41 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	first level (same simple property values and same attribute values).
      */
     synchronized boolean mergeTreeRoot(BaseBean bean, int mode) {
-
-	//  We need to process the attributes of the root first
-	BaseAttribute[] ba = bean.listAttributes();
-
-	//  We might have no attribute on the root
-	if (ba != null) {
-	    for(int j=0; j<ba.length; j++) {
-    	    if (!ba[j].isFixed()) {
-		    String attrName = ba[j].getName();
-
-		    String curValue = this.getAttributeValue(attrName);
-		    String otherValue = bean.getAttributeValue(attrName);
-
-		    if (curValue != otherValue) {
-			// Might have one of the two null, not both
-			if (curValue == null || otherValue == null ||
-			    !curValue.equals(otherValue)) {
-
-			    if ((mode & MERGE_COMPARE) == MERGE_COMPARE) {
-				return false;
-			    }
-		    
-			    if ((mode & MERGE_UNION) == MERGE_UNION) {
-				this.setAttributeValue(attrName, otherValue);
-			    }
-			}
-		    }
-		}
-	    }
-	}
-	
-	//  Process the whole graph now
-	return this.mergeTree(bean, mode);
+        
+        //  We need to process the attributes of the root first
+        BaseAttribute[] ba = bean.listAttributes();
+        
+        //  We might have no attribute on the root
+        if (ba != null) {
+            for(int j=0; j<ba.length; j++) {
+                if (!ba[j].isFixed()) {
+                    String attrName = ba[j].getName();
+                    
+                    String curValue = this.getAttributeValue(attrName);
+                    String otherValue = bean.getAttributeValue(attrName);
+                    
+                    if (curValue != otherValue) {
+                        // Might have one of the two null, not both
+                        if (curValue == null || otherValue == null ||
+                                !curValue.equals(otherValue)) {
+                            
+                            if ((mode & MERGE_COMPARE) == MERGE_COMPARE) {
+                                return false;
+                            }
+                            
+                            if ((mode & MERGE_UNION) == MERGE_UNION) {
+                                this.setAttributeValue(attrName, otherValue);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        //  Process the whole graph now
+        return this.mergeTree(bean, mode);
     }
-
+    
     /**
      *	Merge the bean tree with ourself
      */
@@ -1499,486 +1487,481 @@ public abstract class BaseBean implements Cloneable, Bean {
     //	the merging/comparison.
     //
     synchronized boolean mergeTree(BaseBean bean, int mode) {
-	if (DDLogFlags.debug) {
-	    TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-			    DDLogFlags.DBG_UBN, 1, DDLogFlags.MERGE,
-			    this.getClass().getName() + "/" +
-			    (bean==null?"<null>":bean.getClass().getName()) +
-			    " - " + mergeModeToString(mode));
-	}
-	
-	//
-	//	The merge method is called only when two beans are logically
-	//	identical. Therefore, this method doesn't try to check if it
-	//	is equal to the other beans, but find out which properties
-	//	have to be updated.
-	//
-	if (this.getClass().isInstance(bean)) {
-	    //	We got the same as ourself in another graph
-	    Iterator it = beanPropsIterator();
-	    
-	    //
-	    //	Parse our attributes
-	    //
-	    //	To have the following code easier to read, we could
-	    //	call the setter/getter method of the BaseBean object for
-	    //	both our attributes and the bean-to-merge attributes.
-	    //	However, since we get the BeanProp objects from our
-	    //	properties hashtable, we can call directly the BeanProp
-	    //	getter/setter methods for our properties and the
-	    //	BaseBean getter/setter for the bean we have to merge.
-	    //
-	    while (it.hasNext()) {
-		//	Get our next property (as a BeanProp)
-		BeanProp prop = (BeanProp)it.next();
-		
-		if (prop == null)
-		    continue;
-		
-		String 		name = prop.getBeanName();
-		boolean 	isArray = Common.isArray(prop.type);
-		boolean 	isBean = Common.isBean(prop.type);
-		Object 		o1, o2, o3;
-		boolean		hasKey = false;
-		boolean		hasKeyDefined = false;
-		
-		if (isArray) {
-		    //
-		    //	For each element of the index property, we have to
-		    //	find if there is a matching element in the other
-		    //	indexed property. If there is, merge the two
-		    //	elements if this is a bean. If there are no
-		    //	matching elements, remove it. At the end,
-		    //	add any new elements of the other indexed property.
-		    //
-		    int		i, j = 0;
-		    int 	size1 = prop.size();
-		    int 	size2 = bean.size(name);
-		    boolean 	toRemove[] = new boolean[size1];
-		    boolean 	toAdd[] = new boolean[size2];
-		    boolean 	compared[] = new boolean[size2];
-		    
-		    //	To keep track of that need to be removed
-		    Arrays.fill(toRemove, false);
-		    
-		    //	To keep track of what we'll need to add after the loop
-		    Arrays.fill(toAdd, true);
-		    
-		    //	To make sure that we do not match twice the same elt
-		    Arrays.fill(compared, false);
-		    
-		    if (DDLogFlags.debug) {
-			TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-					DDLogFlags.DBG_UBN, 5,
-					DDLogFlags.MERGEPROP,
-					this.getClass().getName() + "." +
-					name + "[" + size1 + "] / " +
-					bean.getClass().getName() + "." +
-					name + "[" + size2 + "]");
-		    }
-		    
-		    //	For each of our current property elts ...
-		    for (i=0; i<size1; i++) {
-                o1 = prop.getValue(i);
-                //System.out.println("looking at prop "+i+" o1="+o1);
-			
-                if (isBean && o1 == null)
-                    continue;	// Nothing to compare
-			
-                boolean found = false;
-			
-                // ... try each comparator ...
-                for (int c=0; c<this.comparators.size() && !found; c++){
-                    BeanComparator cmp =
-                        (BeanComparator)this.comparators.get(c);
-			    
-                    //	... with every new property elts
-                    for (j=0; j<size2; j++) {
-                        if (!compared[j]) {
-                            o2 = bean.getValue(name, j);
-				    
-                            if (isBean) {
-                                if (o2 == null) {
-                                // Ignore null elt
-                                    compared[j] = true;
-                                    toAdd[j] = false;
-                                    continue;
-                                }
-				    
-                                o3 = cmp.compareBean(name,
-                                                     (BaseBean)o1,
-                                                     (BaseBean)o2);
-					
-                                if (!hasKey) {
-                                    hasKey = cmp.hasKey();
-                                    hasKeyDefined = true;
-                                }
-					
-                                if (o3 == o1) {
-                                    //	Beans identicals - recurse
-                                    boolean ret = ((BaseBean)o1).
-                                        mergeTree((BaseBean)o2, mode);
-					    
-                                    if (!ret) return ret;
-                                    compared[j] = true;
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            else {
-                                o3 = cmp.compareProperty(name,
-                                                         this, o1, i,
-                                                         bean, o2, j);
-                                if (!hasKey) {
-                                    hasKey = cmp.hasKey();
-                                    hasKeyDefined = true;
-                                }
-					
-                                if (o3 == o1) {
-                                    compared[j] = true;
-                                    found = true;
-                                    break;
+        if (DDLogFlags.debug) {
+            TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                    DDLogFlags.DBG_UBN, 1, DDLogFlags.MERGE,
+                    this.getClass().getName() + "/" +
+                    (bean==null?"<null>":bean.getClass().getName()) +
+                    " - " + mergeModeToString(mode));
+        }
+        
+        //
+        //	The merge method is called only when two beans are logically
+        //	identical. Therefore, this method doesn't try to check if it
+        //	is equal to the other beans, but find out which properties
+        //	have to be updated.
+        //
+        if (this.getClass().isInstance(bean)) {
+            //	We got the same as ourself in another graph
+            Iterator it = beanPropsIterator();
+            
+            //
+            //	Parse our attributes
+            //
+            //	To have the following code easier to read, we could
+            //	call the setter/getter method of the BaseBean object for
+            //	both our attributes and the bean-to-merge attributes.
+            //	However, since we get the BeanProp objects from our
+            //	properties hashtable, we can call directly the BeanProp
+            //	getter/setter methods for our properties and the
+            //	BaseBean getter/setter for the bean we have to merge.
+            //
+            while (it.hasNext()) {
+                //	Get our next property (as a BeanProp)
+                BeanProp prop = (BeanProp)it.next();
+                
+                if (prop == null)
+                    continue;
+                
+                String 		name = prop.getBeanName();
+                boolean 	isArray = Common.isArray(prop.type);
+                boolean 	isBean = Common.isBean(prop.type);
+                Object 		o1, o2, o3;
+                boolean		hasKey = false;
+                boolean		hasKeyDefined = false;
+                
+                if (isArray) {
+                    //
+                    //	For each element of the index property, we have to
+                    //	find if there is a matching element in the other
+                    //	indexed property. If there is, merge the two
+                    //	elements if this is a bean. If there are no
+                    //	matching elements, remove it. At the end,
+                    //	add any new elements of the other indexed property.
+                    //
+                    int		i, j = 0;
+                    int 	size1 = prop.size();
+                    int 	size2 = bean.size(name);
+                    boolean 	toRemove[] = new boolean[size1];
+                    boolean 	toAdd[] = new boolean[size2];
+                    boolean 	compared[] = new boolean[size2];
+                    
+                    //	To keep track of that need to be removed
+                    Arrays.fill(toRemove, false);
+                    
+                    //	To keep track of what we'll need to add after the loop
+                    Arrays.fill(toAdd, true);
+                    
+                    //	To make sure that we do not match twice the same elt
+                    Arrays.fill(compared, false);
+                    
+                    if (DDLogFlags.debug) {
+                        TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                                DDLogFlags.DBG_UBN, 5,
+                                DDLogFlags.MERGEPROP,
+                                this.getClass().getName() + "." +
+                                name + "[" + size1 + "] / " +
+                                bean.getClass().getName() + "." +
+                                name + "[" + size2 + "]");
+                    }
+                    
+                    //	For each of our current property elts ...
+                    for (i=0; i<size1; i++) {
+                        o1 = prop.getValue(i);
+                        //System.out.println("looking at prop "+i+" o1="+o1);
+                        
+                        if (isBean && o1 == null)
+                            continue;	// Nothing to compare
+                        
+                        boolean found = false;
+                        
+                        // ... try each comparator ...
+                        for (int c=0; c<this.comparators.size() && !found; c++){
+                            BeanComparator cmp =
+                                    (BeanComparator)this.comparators.get(c);
+                            
+                            //	... with every new property elts
+                            for (j=0; j<size2; j++) {
+                                if (!compared[j]) {
+                                    o2 = bean.getValue(name, j);
+                                    
+                                    if (isBean) {
+                                        if (o2 == null) {
+                                            // Ignore null elt
+                                            compared[j] = true;
+                                            toAdd[j] = false;
+                                            continue;
+                                        }
+                                        
+                                        o3 = cmp.compareBean(name,
+                                                (BaseBean)o1,
+                                                (BaseBean)o2);
+                                        
+                                        if (!hasKey) {
+                                            hasKey = cmp.hasKey();
+                                            hasKeyDefined = true;
+                                        }
+                                        
+                                        if (o3 == o1) {
+                                            //	Beans identicals - recurse
+                                            boolean ret = ((BaseBean)o1).
+                                                    mergeTree((BaseBean)o2, mode);
+                                            
+                                            if (!ret) return ret;
+                                            compared[j] = true;
+                                            found = true;
+                                            break;
+                                        }
+                                    } else {
+                                        o3 = cmp.compareProperty(name,
+                                                this, o1, i,
+                                                bean, o2, j);
+                                        if (!hasKey) {
+                                            hasKey = cmp.hasKey();
+                                            hasKeyDefined = true;
+                                        }
+                                        
+                                        if (o3 == o1) {
+                                            compared[j] = true;
+                                            found = true;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-			
-                if (found) {
-                    toAdd[j] = false;	// already have it
-			    
-                    if (DDLogFlags.debug) {
-                        TraceLogger.put(TraceLogger.DEBUG,
+                        
+                        if (found) {
+                            toAdd[j] = false;	// already have it
+                            
+                            if (DDLogFlags.debug) {
+                                TraceLogger.put(TraceLogger.DEBUG,
                                         TraceLogger.SVC_DD,
                                         DDLogFlags.DBG_UBN, 5,
                                         DDLogFlags.MERGEFOUND,
                                         name + "[" + i + "] <=> " +
                                         name + "[" + j + "]");
-                    }
-                } else {
-                    toRemove[i] = true;	//	no more exists
-			    
-                    if (DDLogFlags.debug) {
-                        TraceLogger.put(TraceLogger.DEBUG,
+                            }
+                        } else {
+                            toRemove[i] = true;	//	no more exists
+                            
+                            if (DDLogFlags.debug) {
+                                TraceLogger.put(TraceLogger.DEBUG,
                                         TraceLogger.SVC_DD,
                                         DDLogFlags.DBG_UBN, 5,
                                         DDLogFlags.MERGENTFND,
                                         name + "[" + i +
                                         "] to be removed");
+                            }
+                        }
                     }
-                }
-		    }
-		    
-		    //
-		    //	We want to make sure that we set a proper value
-		    //	to hasKey when one of the two array is empty
-		    //	(either null or containing null elements)
-		    //
-		    if (!hasKeyDefined)
-                hasKey = this.setHasKeyDefaultValue(prop);
-		    
-		    if ((mode & MERGE_COMPARE) == MERGE_COMPARE) {
-                //	Any diff returns false
-                for (i=0; i<size1; i++)
-                    if (toRemove[i] && hasKey)
-                        return false;
-			
-                for (j=0; j<size2; j++)
-                    if (toAdd[j] && hasKey)
-                        return false;
-		    }
-		    
-		    //	Remove, taking care of the index shifting
-		    if ((mode & MERGE_INTERSECT) == MERGE_INTERSECT) {
-                for (i=0, j=0; i<size1; i++) {
-                    if (toRemove[i] && hasKey) {
-                        //System.out.println("MERGE_INTERSECT: "+name+": removeValue("+prop.getBeanName()+", "+ (i-j)+")");
-                        removeValue(prop, i-j);
-                        j++;
+                    
+                    //
+                    //	We want to make sure that we set a proper value
+                    //	to hasKey when one of the two array is empty
+                    //	(either null or containing null elements)
+                    //
+                    if (!hasKeyDefined)
+                        hasKey = this.setHasKeyDefaultValue(prop);
+                    
+                    if ((mode & MERGE_COMPARE) == MERGE_COMPARE) {
+                        //	Any diff returns false
+                        for (i=0; i<size1; i++)
+                            if (toRemove[i] && hasKey)
+                                return false;
+                        
+                        for (j=0; j<size2; j++)
+                            if (toAdd[j] && hasKey)
+                                return false;
+                    }
+                    
+                    //	Remove, taking care of the index shifting
+                    if ((mode & MERGE_INTERSECT) == MERGE_INTERSECT) {
+                        for (i=0, j=0; i<size1; i++) {
+                            if (toRemove[i] && hasKey) {
+                                //System.out.println("MERGE_INTERSECT: "+name+": removeValue("+prop.getBeanName()+", "+ (i-j)+")");
+                                removeValue(prop, i-j);
+                                j++;
+                            }
+                        }
+                    }
+                    
+                    //	Add all the new elements
+                    if ((mode & MERGE_UNION) == MERGE_UNION) {
+                        for (j=0; j < size2; j++) {
+                            if (toAdd[j] && hasKey) {
+                                //System.out.println("MERGE_UNION: "+name+": add j="+j);
+                                if (isBean) {
+                                    //	Attrs are within the BaseBean
+                                    BaseBean srcBean = (BaseBean) bean.getValue(name, j);
+                                    o2 = srcBean.clone();
+                                    addValue(prop, o2);
+                                    // Make sure that whitespace & comments get brought over.
+                                    ((BaseBean)o2).mergeTree(srcBean, mode);
+                                } else {
+                                    //	We need to explicitely copy the attrs
+                                    this.copyProperty(prop, bean, j, null);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Object  newValue = null;
+                    boolean found = false;
+                    
+                    if (DDLogFlags.debug) {
+                        TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                                DDLogFlags.DBG_UBN, 5,
+                                DDLogFlags.MERGEPROP,
+                                this.getClass().getName() + "." +
+                                name);
+                    }
+                    
+                    //	This is a single value property
+                    o1 = prop.getValue(0);	//	ourself
+                    o2 = bean.getValue(name);	//	the other one
+                    
+                    //
+                    //	We have two properties to compare. Go over all the
+                    //	comparators. Stop the comparison if any of them
+                    //	find the two properties identical.
+                    //	If they are beans, recurse calling the merge method
+                    //	on these two beans. If they are not beans, simply
+                    //	keep our current property value, ignoring the new one.
+                    //
+                    //	If no comparator find the two properties identical,
+                    //	update our current property with the value returned
+                    //	by the very first comparator.
+                    //
+                    for (int c=0; c<this.comparators.size() && !found; c++) {
+                        BeanComparator cmp =
+                                (BeanComparator)this.comparators.get(c);
+                        
+                        if (isBean) {
+                            if (o1 != null && o2 != null) {
+                                //	Recurse merging if they are the same
+                                o3 = cmp.compareBean(name, (BaseBean)o1,
+                                        (BaseBean)o2);
+                                
+                                if (!hasKey)
+                                    hasKey = cmp.hasKey();
+                                
+                                if (o3 != o1)
+                                    newValue = (c==0)?o3:newValue;
+                                else {
+                                    found = true;
+                                    boolean ret = ((BaseBean)o1).
+                                            mergeTree((BaseBean)o2, mode);
+                                    if (!ret) return ret;
+                                }
+                            } else {
+                                if (o1 == o2)
+                                    found = true;
+                                else {
+                                    hasKey = cmp.hasKeyDefined(prop);
+                                    newValue = (c==0)?o2:newValue;
+                                }
+                            }
+                        } else {
+                            o3 = cmp.compareProperty(name, this, o1, -1,
+                                    bean, o2, -1);
+                            
+                            if (!hasKey)
+                                hasKey = cmp.hasKey();
+                            
+                            if (o3 != o1)
+                                newValue = (c==0)?o3:newValue;
+                            else
+                                found = true;
+                        }
+                        
+                        if (!found && ((mode & MERGE_COMPARE)==MERGE_COMPARE)) {
+                            //	Any diff - return false
+                            return false;
+                        }
+                        
+                        if (!found && ((mode & MERGE_UNION) == MERGE_UNION)
+                        && hasKey) {
+                            
+                            if (isBean) {
+                                if (newValue != null) {
+                                    setValue(prop, 0,
+                                            ((BaseBean)newValue).clone());
+                                } else {
+                                    setValue(prop, 0, newValue);
+                                }
+                            } else {
+                                //  We need to explicitely copy the attrs
+                                this.copyProperty(prop, bean, 0, newValue);
+                            }
+                            
+                            if (DDLogFlags.debug) {
+                                TraceLogger.put(TraceLogger.DEBUG,
+                                        TraceLogger.SVC_DD,
+                                        DDLogFlags.DBG_UBN, 5,
+                                        DDLogFlags.MERGENTFND,
+                                        "updating with new value");
+                            }
+                        } else
+                            if (found) {
+                            if (DDLogFlags.debug) {
+                                TraceLogger.put(TraceLogger.DEBUG,
+                                        TraceLogger.SVC_DD,
+                                        DDLogFlags.DBG_UBN, 5,
+                                        DDLogFlags.MERGEFOUND,
+                                        "keeping current value");
+                            }
+                            }
                     }
                 }
             }
-		    
-		    //	Add all the new elements
-		    if ((mode & MERGE_UNION) == MERGE_UNION) {
-                for (j=0; j < size2; j++) {
-                    if (toAdd[j] && hasKey) {
-                        //System.out.println("MERGE_UNION: "+name+": add j="+j);
-                        if (isBean) {
-                            //	Attrs are within the BaseBean
-                            BaseBean srcBean = (BaseBean) bean.getValue(name, j);
-                            o2 = srcBean.clone();
-                            addValue(prop, o2);
-                            // Make sure that whitespace & comments get brought over.
-                            ((BaseBean)o2).mergeTree(srcBean, mode);
-                        } else {
-                            //	We need to explicitely copy the attrs
-                            this.copyProperty(prop, bean, j, null);
-                        }
-                    }
-                }
-			}
-		} else {
-		    Object  newValue = null;
-		    boolean found = false;
-		    
-		    if (DDLogFlags.debug) {
-			TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-					DDLogFlags.DBG_UBN, 5,
-					DDLogFlags.MERGEPROP,
-					this.getClass().getName() + "." +
-					name);
-		    }
-		    
-		    //	This is a single value property
-		    o1 = prop.getValue(0);	//	ourself
-		    o2 = bean.getValue(name);	//	the other one
-		    
-		    //
-		    //	We have two properties to compare. Go over all the
-		    //	comparators. Stop the comparison if any of them
-		    //	find the two properties identical.
-		    //	If they are beans, recurse calling the merge method
-		    //	on these two beans. If they are not beans, simply
-		    //	keep our current property value, ignoring the new one.
-		    //
-		    //	If no comparator find the two properties identical,
-		    //	update our current property with the value returned
-		    //	by the very first comparator.
-		    //
-		    for (int c=0; c<this.comparators.size() && !found; c++) {
-			BeanComparator cmp =
-			    (BeanComparator)this.comparators.get(c);
-			
-			if (isBean) {
-			    if (o1 != null && o2 != null) {
-				//	Recurse merging if they are the same
-				o3 = cmp.compareBean(name, (BaseBean)o1,
-						     (BaseBean)o2);
-				
-				if (!hasKey)
-				    hasKey = cmp.hasKey();
-				
-				if (o3 != o1)
-				    newValue = (c==0)?o3:newValue;
-				else {
-				    found = true;
-				    boolean ret = ((BaseBean)o1).
-					mergeTree((BaseBean)o2, mode);
-				    if (!ret) return ret;
-				}
-			    }
-			    else {
-				if (o1 == o2)
-				    found = true;
-				else {
-				    hasKey = cmp.hasKeyDefined(prop);
-				    newValue = (c==0)?o2:newValue;
-				}
-			    }
-			}
-			else {
-			    o3 = cmp.compareProperty(name, this, o1, -1,
-						     bean, o2, -1);
-			    
-			    if (!hasKey)
-				hasKey = cmp.hasKey();
-			    
-			    if (o3 != o1)
-				newValue = (c==0)?o3:newValue;
-			    else
-				found = true;
-			}
-			
-			if (!found && ((mode & MERGE_COMPARE)==MERGE_COMPARE)) {
-			    //	Any diff - return false
-			    return false;
-			}
-			
-			if (!found && ((mode & MERGE_UNION) == MERGE_UNION)
-			    && hasKey) {
-
-			    if (isBean) {
-                    if (newValue != null) {
-                        setValue(prop, 0, 
-                                 ((BaseBean)newValue).clone());
-                    } else {
-                        setValue(prop, 0, newValue);
-                    }
-			    }
-			    else {
-                    //  We need to explicitely copy the attrs
-                    this.copyProperty(prop, bean, 0, newValue);
-			    }
-			    
-			    if (DDLogFlags.debug) {
-                    TraceLogger.put(TraceLogger.DEBUG,
-                                    TraceLogger.SVC_DD,
-                                    DDLogFlags.DBG_UBN, 5,
-                                    DDLogFlags.MERGENTFND,
-                                    "updating with new value");
-			    }
-			}
-			else
-			    if (found) {
-				if (DDLogFlags.debug) {
-				    TraceLogger.put(TraceLogger.DEBUG,
-						    TraceLogger.SVC_DD,
-						    DDLogFlags.DBG_UBN, 5,
-						    DDLogFlags.MERGEFOUND,
-						    "keeping current value");
-				}
-			    }
-		    }
-		}
-	    }
-
-        //
-        // Look over comments (IZ#20156) and inner-element whitespace.
-        // Comments and inner-element whitespace are only stored
-        // in the DOM Graph.  We only deal in CharacterData here as
-        // all other things are stored in hash tables too.
-        //
-        if (binding != null && bean.binding != null && graphManager != null) {
-            Document doc1 = graphManager().getXmlDocument();
-            Node startingNode1 = binding.getNode();
-            Node startingNode2 = bean.binding.getNode();
-            //System.out.println("Hit startingNode1="+startingNode1);
-            //System.out.println("Hit startingNode2="+startingNode2);
-            if (startingNode1 != null && startingNode2 != null &&
-                ((mode & MERGE_UNION) == MERGE_UNION)) {
-                NodeList nodes1 = startingNode1.getChildNodes();
-                NodeList nodes2 = startingNode2.getChildNodes();
-                int pos1 = 0;
-                int pos2 = 0;
-                int size1 = nodes1.getLength();
-                int size2 = nodes2.getLength();
-                //System.out.println("size1="+size1+" size2="+size2);
-                Node n1 = null, n2 = null;
-                while (pos1 < size1 || pos2 < size2) {
-                    //System.out.println("pos1="+pos1+" pos2="+pos2);
-                    if (pos1 < size1) {
-                        n1 = nodes1.item(pos1);
-                        //System.out.println("n1="+n1+" value="+n1.getNodeValue());
-                    } else
-                        n1 = null;
-                    if (pos2 < size2) {
-                        n2 = nodes2.item(pos2);
-                        //System.out.println("n2="+n2+" value="+n2.getNodeValue());
-                    } else
-                        n2 = null;
-                    if (areNodesEqual(n1, n2)) {
-                        ++pos1;
-                        ++pos2;
-                        //System.out.println("--> Same");
-                        continue;
-                    }
-                    //System.out.println("--> Different");
-                    if (pos1 >= size1) {
-                        //System.out.println("New stuff added to end.");
-                        for (; pos2 < size2; ++pos2) {
+            
+            //
+            // Look over comments (IZ#20156) and inner-element whitespace.
+            // Comments and inner-element whitespace are only stored
+            // in the DOM Graph.  We only deal in CharacterData here as
+            // all other things are stored in hash tables too.
+            //
+            
+            if (binding != null && bean.binding != null && graphManager != null) {
+                Document doc1 = graphManager().getXmlDocument();
+                Node startingNode1 = binding.getNode();
+                Node startingNode2 = bean.binding.getNode();
+                // comments (from second graph) are merged only for MERGE_UPDATE
+                // see also the issue 58499
+                if (startingNode1 != null && startingNode2 != null &&
+                        ((mode & MERGE_UNION) == MERGE_UPDATE)) {
+                    NodeList nodes1 = startingNode1.getChildNodes();
+                    NodeList nodes2 = startingNode2.getChildNodes();
+                    int pos1 = 0;
+                    int pos2 = 0;
+                    int size1 = nodes1.getLength();
+                    int size2 = nodes2.getLength();
+                    //System.out.println("size1="+size1+" size2="+size2);
+                    Node n1 = null, n2 = null;
+                    while (pos1 < size1 || pos2 < size2) {
+                        //System.out.println("pos1="+pos1+" pos2="+pos2);
+                        if (pos1 < size1) {
+                            n1 = nodes1.item(pos1);
+                            //System.out.println("n1="+n1+" value="+n1.getNodeValue());
+                        } else
+                            n1 = null;
+                        if (pos2 < size2) {
                             n2 = nodes2.item(pos2);
-                            if (n2 instanceof CharacterData) {
-                                Node newNode = doc1.importNode(n2, true);
-                                startingNode1.appendChild(newNode);
-                            }
-                        }
-                        break;
-                    }
-                    if (pos2 >= size2) {
-                        //System.out.println("Stuff deleted from end.");
-                        for (int i = size1 - 1; i >= pos1; --i) {
-                            n1 = nodes1.item(i);
-                            if (n1 instanceof CharacterData) {
-                                startingNode1.removeChild(n1);
-                            }
-                        }
-                        break;
-                    }
-                    if (n1 instanceof CharacterData &&
-                        n2 != null && n2.getNodeType() == n1.getNodeType()) {
-                        String value1 = n1.getNodeValue();
-                        String value2 = n2.getNodeValue();
-                        // Are they both just whitespace?
-                        if ((value1 == null || "".equals(value1.trim())) &&
-                            (value2 == null || "".equals(value2.trim())) ) {
-                            //System.out.println("whitespace was changed in graph 2");
-                            ((CharacterData)n1).setData(value2);
+                            //System.out.println("n2="+n2+" value="+n2.getNodeValue());
+                        } else
+                            n2 = null;
+                        if (areNodesEqual(n1, n2)) {
                             ++pos1;
                             ++pos2;
+                            //System.out.println("--> Same");
                             continue;
                         }
-                    }
-                    int j2 = pos2;
-                    int j1 = -1;
-                    for (; j2 < size2; ++j2) {
-                        Node j2node = nodes2.item(j2);
-                        // Skip whitespace here
-                        if (j2node instanceof CharacterData) {
-                            String j2value = j2node.getNodeValue();
-                            if (j2value == null || "".equals(j2value.trim()))
-                                continue;
-                        }
-                        j1 = findInNodeList(nodes1, j2node, pos1);
-                        if (j1 >= 0)
+                        //System.out.println("--> Different");
+                        if (pos1 >= size1) {
+                            //System.out.println("New stuff added to end.");
+                            for (; pos2 < size2; ++pos2) {
+                                n2 = nodes2.item(pos2);
+                                if (n2 instanceof CharacterData) {
+                                    Node newNode = doc1.importNode(n2, true);
+                                    startingNode1.appendChild(newNode);
+                                }
+                            }
                             break;
-                    }
-                    //System.out.println("j1="+j1+" j2="+j2);
-                    if (j1 == pos1 && j2 > pos2) {
-                        //System.out.println("stuff was added in graph 2");
-                        // pos2 thru j2 were added (including pos2 and not j2)
-                        Node nodeToInsertBefore = nodes1.item(j1);
-                        for (; pos2 < j2; ++pos2) {
-                            n2 = nodes2.item(pos2);
+                        }
+                        if (pos2 >= size2) {
+                            //System.out.println("Stuff deleted from end.");
+                            for (int i = size1 - 1; i >= pos1; --i) {
+                                n1 = nodes1.item(i);
+                                if (n1 instanceof CharacterData) {
+                                    startingNode1.removeChild(n1);
+                                }
+                            }
+                            break;
+                        }
+                        if (n1 instanceof CharacterData &&
+                                n2 != null && n2.getNodeType() == n1.getNodeType()) {
+                            String value1 = n1.getNodeValue();
+                            String value2 = n2.getNodeValue();
+                            // Are they both just whitespace?
+                            if ((value1 == null || "".equals(value1.trim())) &&
+                                    (value2 == null || "".equals(value2.trim())) ) {
+                                //System.out.println("whitespace was changed in graph 2");
+                                ((CharacterData)n1).setData(value2);
+                                ++pos1;
+                                ++pos2;
+                                continue;
+                            }
+                        }
+                        int j2 = pos2;
+                        int j1 = -1;
+                        for (; j2 < size2; ++j2) {
+                            Node j2node = nodes2.item(j2);
+                            // Skip whitespace here
+                            if (j2node instanceof CharacterData) {
+                                String j2value = j2node.getNodeValue();
+                                if (j2value == null || "".equals(j2value.trim()))
+                                    continue;
+                            }
+                            j1 = findInNodeList(nodes1, j2node, pos1);
+                            if (j1 >= 0)
+                                break;
+                        }
+                        //System.out.println("j1="+j1+" j2="+j2);
+                        if (j1 == pos1 && j2 > pos2) {
+                            //System.out.println("stuff was added in graph 2");
+                            // pos2 thru j2 were added (including pos2 and not j2)
+                            Node nodeToInsertBefore = nodes1.item(j1);
+                            for (; pos2 < j2; ++pos2) {
+                                n2 = nodes2.item(pos2);
+                                if (n2 instanceof CharacterData) {
+                                    Node newNode = doc1.importNode(n2, true);
+                                    //System.out.println("newNode="+newNode);
+                                    ++pos1;
+                                    startingNode1.insertBefore(newNode, nodeToInsertBefore);
+                                }
+                            }
+                            // reestablish nodes1 and size1 data
+                            nodes1 = startingNode1.getChildNodes();
+                            size1 = nodes1.getLength();
+                        } else if (j1 - 1 < pos1) {
+                            //System.out.println("Simply replace n1 with n2");
                             if (n2 instanceof CharacterData) {
-                                Node newNode = doc1.importNode(n2, true);
-                                //System.out.println("newNode="+newNode);
-                                ++pos1;
-                                startingNode1.insertBefore(newNode, nodeToInsertBefore);
+                                startingNode1.replaceChild(doc1.importNode(n2, true), n1);
                             }
-                        }
-                        // reestablish nodes1 and size1 data
-                        nodes1 = startingNode1.getChildNodes();
-                        size1 = nodes1.getLength();
-                    } else if (j1 - 1 < pos1) {
-                        //System.out.println("Simply replace n1 with n2");
-                        if (n2 instanceof CharacterData) {
-                            startingNode1.replaceChild(doc1.importNode(n2, true), n1);
-                        }
-                        ++pos1;
-                        ++pos2;
-                    } else {
-                        //System.out.println("stuff was deleted in graph 2");
-                        for (int i = j1 - 1; i >= pos1; --i) {
-                            n1 = nodes1.item(i);
-                            if (n1 instanceof CharacterData) {
-                                //System.out.println("Deleting: "+n1);
-                                startingNode1.removeChild(n1);
-                            } else {
-                                ++pos1;
+                            ++pos1;
+                            ++pos2;
+                        } else {
+                            //System.out.println("stuff was deleted in graph 2");
+                            for (int i = j1 - 1; i >= pos1; --i) {
+                                n1 = nodes1.item(i);
+                                if (n1 instanceof CharacterData) {
+                                    //System.out.println("Deleting: "+n1);
+                                    startingNode1.removeChild(n1);
+                                } else {
+                                    ++pos1;
+                                }
                             }
+                            // reestablish nodes1 and size1 data
+                            nodes1 = startingNode1.getChildNodes();
+                            size1 = nodes1.getLength();
                         }
-                        // reestablish nodes1 and size1 data
-                        nodes1 = startingNode1.getChildNodes();
-                        size1 = nodes1.getLength();
                     }
                 }
             }
-        }
-	    
-	    //
-	    //	For the MERGE_COMPARE option: if we reach this point, that
-	    //	means we didn't find any diff. We can therefore return true.
-	    //	Any other option returns always true.
-	    //
-	    return true;
-	}
-	else
-	    throw new IllegalArgumentException(Common.getMessage(
-	        "MergeWrongClassType_msg", this.getClass().getName(),
-		(bean==null ? "<null>" : bean.getClass().getName())));
+            
+            //
+            //	For the MERGE_COMPARE option: if we reach this point, that
+            //	means we didn't find any diff. We can therefore return true.
+            //	Any other option returns always true.
+            //
+            return true;
+        } else
+            throw new IllegalArgumentException(Common.getMessage(
+                    "MergeWrongClassType_msg", this.getClass().getName(),
+                    (bean==null ? "<null>" : bean.getClass().getName())));
     }
-
+    
     /**
      * Compare 2 Node's and tell me if they're roughly equivalent.
      * By roughly equivalent, attributes and children are ignored.
@@ -2001,7 +1984,7 @@ public abstract class BaseBean implements Cloneable, Bean {
             return false;
         return true;
     }
-
+    
     /**
      * Search in @param nodes for an equivalent node to @param node
      * (equivalent as defined by areNodesEqual) starting the search
@@ -2010,7 +1993,7 @@ public abstract class BaseBean implements Cloneable, Bean {
     private int findInNodeList(NodeList nodes, Node node, int start) {
         return findInNodeList(nodes, node, start, nodes.getLength());
     }
-
+    
     /**
      * Search in @param nodes for an equivalent node to @param node
      * (equivalent as defined by areNodesEqual) starting the search
@@ -2018,14 +2001,14 @@ public abstract class BaseBean implements Cloneable, Bean {
      * @param maxPosition.
      */
     private int findInNodeList(NodeList nodes, Node node,
-                               int start, int maxPosition) {
+            int start, int maxPosition) {
         for (; start < maxPosition; ++start) {
             if (areNodesEqual(nodes.item(start), node))
                 return start;
         }
         return -1;
     }
-
+    
     /**
      *	Perform a deep recursive comparison. Return true if the two graphs
      *	are equals, false otherwise.
@@ -2040,35 +2023,34 @@ public abstract class BaseBean implements Cloneable, Bean {
      */
     
     public boolean isEqualTo(Object obj) {
-	boolean ret = false;
-	
-	try {
-	    if (this == obj)
-		return true;
-	    else
-		if (obj instanceof BaseBean)
-		    ret = this.mergeTreeRoot((BaseBean)obj, MERGE_COMPARE);
-	}
-	catch(Exception e) {
-	    //	Equals method only returns either true or false
-	    if (DDLogFlags.debug) {
-		TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-				DDLogFlags.DBG_UBN, 1, DDLogFlags.EQUALS,
-				"got exception while comparing: " +
-				e + "\n");
-		e.printStackTrace();
-	    }
-	    ret = false;
-	}
-	
-	if (DDLogFlags.debug) {
-	    TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
-			    DDLogFlags.DBG_UBN, 1, DDLogFlags.EQUALS,
-			    (ret?"true":"false"));
-	}
-	return ret;
+        boolean ret = false;
+        
+        try {
+            if (this == obj)
+                return true;
+            else
+                if (obj instanceof BaseBean)
+                    ret = this.mergeTreeRoot((BaseBean)obj, MERGE_COMPARE);
+        } catch(Exception e) {
+            //	Equals method only returns either true or false
+            if (DDLogFlags.debug) {
+                TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                        DDLogFlags.DBG_UBN, 1, DDLogFlags.EQUALS,
+                        "got exception while comparing: " +
+                        e + "\n");
+                e.printStackTrace();
+            }
+            ret = false;
+        }
+        
+        if (DDLogFlags.debug) {
+            TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
+                    DDLogFlags.DBG_UBN, 1, DDLogFlags.EQUALS,
+                    (ret?"true":"false"));
+        }
+        return ret;
     }
-
+    
     /**
      *	Get the bean using its unique identifier. This identifier is not
      *	the indexed position of the element in the array but a unique id
@@ -2077,28 +2059,27 @@ public abstract class BaseBean implements Cloneable, Bean {
      */
     public Bean propertyById(String name, int id) {
         BeanProp bp = this.beanProp(name);
-	
+        
         if (Common.isBean(bp.type)) {
             if (Common.isArray(bp.type))
                 return (BaseBean)bp.getValueById(id);
             else
                 return (BaseBean)bp.getValue(0);
-        }
-        else
+        } else
             throw new IllegalStateException(Common.
-                                            getMessage("PropertyIsNotABean_msg", name));
+                    getMessage("PropertyIsNotABean_msg", name));
     }
     
     /**
      *	Return the BeanProp object where this bean belongs.
      */
     public BeanProp beanProp() {
-	if (this.binding != null)
-	    return this.binding.getBeanProp(this);
-	else
-	    return null;
+        if (this.binding != null)
+            return this.binding.getBeanProp(this);
+        else
+            return null;
     }
-
+    
     /**
      *  Return the BaseBean parent of the current bean. This might return null
      *	either because this is the root of the graph or because this node is not
@@ -2106,17 +2087,17 @@ public abstract class BaseBean implements Cloneable, Bean {
      */
     public BaseBean parent() {
         BeanProp bp = this.beanProp();
-	
+        
         if (bp != null)
             return this.beanProp().getBean();
         else
             return null;
     }
-
+    
     public Bean _getParent() {
         return parent();
     }
-
+    
     /**
      * Return the root of the graph.  If the graph is not connected to a
      * generated root, then the topmost bean is returned.
@@ -2132,72 +2113,72 @@ public abstract class BaseBean implements Cloneable, Bean {
         }
         return b;
     }
-
+    
     /**
      *	Return the path name of this element in the graph.
      */
     public String fullName() {
-	StringBuffer str = new StringBuffer();
-	this.buildPathName(str);
-	return str.toString();
+        StringBuffer str = new StringBuffer();
+        this.buildPathName(str);
+        return str.toString();
     }
     
     public boolean hasName(String name) {
-	if (name != null)
-	    return (name.equals(this.name()) || name.equals(this.dtdName()));
-	else
-	    return false;
+        if (name != null)
+            return (name.equals(this.name()) || name.equals(this.dtdName()));
+        else
+            return false;
     }
-
+    
     /**
      *	Return true if this element is the root of the schema2beans tree.
      */
     public boolean isRoot() {
-	return this.isRoot;
+        return this.isRoot;
     }
-
+    
     /**
      *	Return the bean name of this schema2beans graph node.
      */
     public String name() {
-	BeanProp bp = this.beanProp();
-	
-	if (bp != null)
-	    return this.beanProp().getBeanName();
-	else
-	    return "";	// NOI18N
+        BeanProp bp = this.beanProp();
+        
+        if (bp != null)
+            return this.beanProp().getBeanName();
+        else
+            return "";	// NOI18N
     }
     
     /**
      *	Return the DTD name of this schema2beans graph node.
      */
     public String dtdName() {
-	return this.beanProp().getDtdName();
+        return this.beanProp().getDtdName();
     }
     
     public void createBean(Node node, GraphManager mgr) throws Schema2BeansRuntimeException {
-	if (this.isRoot) {
-	    mgr.completeRootBinding(this, node);
-	}
-	
-	this.graphManager = mgr;
-    try {
-        mgr.fillProperties(this.beanProps(), node);
-    } catch (Schema2BeansException e) {
-        throw new Schema2BeansRuntimeException(e);
-    }
+        if (this.isRoot) {
+            mgr.completeRootBinding(this, node);
+        }
+        
+        this.graphManager = mgr;
+        try {
+            mgr.fillProperties(this.beanProps(), node);
+        } catch (Schema2BeansException e) {
+            throw new Schema2BeansRuntimeException(e);
+        }
     }
     
     /**
      *	Return a new instance of the specified bean property
      */
     public BaseBean newInstance(String name) {
-	return this.beanProp(name).newBeanInstance();
+        return this.beanProp(name).newBeanInstance();
     }
     
     
     public abstract void dump(StringBuffer str, String indent);
-
+    
     // The old abstract verify method never did anything.
     // a validate method will get generated if the -validate option is on.
     //public abstract void validate() throws org.netbeans.modules.schema2beans.ValidateException;
@@ -2207,48 +2188,48 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	dump only from the subname named nodeName.
      */
     public String dumpDomNode(String nodeName, int depth) {
-	Node n = null;
-	
-	if (this.binding == null)
-	    return "<no binding>";	// NOI18N
-	else {
-	    n = this.binding.node;
-	    if (n == null)
-		return "<no node>";	// NOI18N
-	}
-	
-	return DDFactory.XmlToString(n, depth, nodeName);
+        Node n = null;
+        
+        if (this.binding == null)
+            return "<no binding>";	// NOI18N
+        else {
+            n = this.binding.node;
+            if (n == null)
+                return "<no node>";	// NOI18N
+        }
+        
+        return DDFactory.XmlToString(n, depth, nodeName);
     }
     
     public String dumpDomNode(int depth) {
-	return this.dumpDomNode(null, depth);
+        return this.dumpDomNode(null, depth);
     }
     
     public String dumpDomNode() {
-	return this.dumpDomNode(null, 99999);
+        return this.dumpDomNode(null, 99999);
     }
     
     public String dumpBeanNode() {
-	return null;
+        return null;
     }
     
     public void dumpAttributes(String name, int index, StringBuffer str,
-    String indent) {
-	String[] names = this.getAttributeNames(name);
-	
-	for (int i=0; i<names.length; i++) {
-	    String v = this.getAttributeValue(name, index, names[i]);
-	    if (v != null) {
-		str.append(indent + "\t  attr: ");	// NOI18N
-		str.append(names[i]);
-		str.append("=");	// NOI18N
-		str.append(v);
-	    }
-	}
+            String indent) {
+        String[] names = this.getAttributeNames(name);
+        
+        for (int i=0; i<names.length; i++) {
+            String v = this.getAttributeValue(name, index, names[i]);
+            if (v != null) {
+                str.append(indent + "\t  attr: ");	// NOI18N
+                str.append(names[i]);
+                str.append("=");	// NOI18N
+                str.append(v);
+            }
+        }
     }
     
     public String toString() {
-	return this.name();
+        return this.name();
     }
     
     
@@ -2259,122 +2240,121 @@ public abstract class BaseBean implements Cloneable, Bean {
             ee.printStackTrace();
         }
     }
-
-
+    
+    
     /**
      *	Create the schema2beans graph of root bean clazz, from the input stream.
      */
     public static BaseBean createGraph(Class clazz, InputStream in)
-        throws Schema2BeansException {
-	return createGraph(clazz, in, false, null, null);
+    throws Schema2BeansException {
+        return createGraph(clazz, in, false, null, null);
     }
-
+    
     /**
      *	Create the schema2beans graph of root bean clazz, from the input stream
      *	in using the validate option.
      */
     public static BaseBean createGraph(Class clazz, InputStream in,
-				       boolean validate) throws Schema2BeansException {
-	return createGraph(clazz, in, validate, null, null);
+            boolean validate) throws Schema2BeansException {
+        return createGraph(clazz, in, validate, null, null);
     }
-
+    
     /**
      *	Create the schema2beans graph of root bean clazz, from the input stream
      *	in using the validate option and the entity resolver er.
      */
     public static BaseBean createGraph(Class clazz, InputStream in,
-				       boolean validate,
-				       org.xml.sax.EntityResolver er) throws
-                       Schema2BeansException {
-	return createGraph(clazz, in, validate, er, null);
+            boolean validate,
+            org.xml.sax.EntityResolver er) throws
+            Schema2BeansException {
+        return createGraph(clazz, in, validate, er, null);
     }
-
+    
     /**
      *	Create the schema2beans graph of root bean clazz, from the input stream in
      *  and using the validate, er and sh options.
      */
     public static BaseBean createGraph(Class clazz, InputStream in,
-				       boolean validate,
-				       org.xml.sax.EntityResolver er,
-				       org.xml.sax.ErrorHandler   eh) throws
-                       Schema2BeansException {
-
-	Constructor 	c = null;
-	Document 	doc = null;
-	BaseBean	bean = null;
-
-    doc = GraphManager.createXmlDocument(new org.xml.sax.InputSource(in), 
-                                         validate, er, eh);
-	try {
-	    Class[] cc = new Class[] {org.w3c.dom.Node.class,
-				      int.class};
-	    c = clazz.getDeclaredConstructor(cc);
-	}
-	catch(NoSuchMethodException me) {
-	    throw new RuntimeException(Common.
-		getMessage("CantGetConstructor_msg"));
-	}
-	
-	Object[] p = new Object[] {doc, new Integer(Common.NO_DEFAULT_VALUES)};
-	
-	try {
-	    bean = (BaseBean)c.newInstance(p);
-    } catch (InstantiationException e) {
-	    throw new Schema2BeansNestedException(Common.getMessage(
-                                       "CantInstanciateBeanClass_msg"), e);
-    } catch (IllegalAccessException e) {
-	    throw new Schema2BeansNestedException(Common.getMessage(
-                                       "CantInstanciateBeanClass_msg"), e);
-    } catch (java.lang.reflect.InvocationTargetException e) {
-	    throw new Schema2BeansNestedException(Common.getMessage(
-                                       "CantInstanciateBeanClass_msg"), e);
+            boolean validate,
+            org.xml.sax.EntityResolver er,
+            org.xml.sax.ErrorHandler   eh) throws
+            Schema2BeansException {
+        
+        Constructor 	c = null;
+        Document 	doc = null;
+        BaseBean	bean = null;
+        
+        doc = GraphManager.createXmlDocument(new org.xml.sax.InputSource(in),
+                validate, er, eh);
+        try {
+            Class[] cc = new Class[] {org.w3c.dom.Node.class,
+                    int.class};
+                    c = clazz.getDeclaredConstructor(cc);
+        } catch(NoSuchMethodException me) {
+            throw new RuntimeException(Common.
+                    getMessage("CantGetConstructor_msg"));
+        }
+        
+        Object[] p = new Object[] {doc, new Integer(Common.NO_DEFAULT_VALUES)};
+        
+        try {
+            bean = (BaseBean)c.newInstance(p);
+        } catch (InstantiationException e) {
+            throw new Schema2BeansNestedException(Common.getMessage(
+                    "CantInstanciateBeanClass_msg"), e);
+        } catch (IllegalAccessException e) {
+            throw new Schema2BeansNestedException(Common.getMessage(
+                    "CantInstanciateBeanClass_msg"), e);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            throw new Schema2BeansNestedException(Common.getMessage(
+                    "CantInstanciateBeanClass_msg"), e);
+        }
+        
+        return bean;
     }
-
-	return bean;
-    }
-
-
+    
+    
     //
     PropertyChangeSupport changeListeners;
     
     
     //
     public void addPropertyChangeListener(PropertyChangeListener l) {
-	BeanProp p = this.beanProp();
-	if (p != null) {
-	    p.addPCListener(l);
-	} else {
-	    if (this.changeListeners == null) {
-		this.changeListeners = new PropertyChangeSupport(this);
-	    }
-	    this.changeListeners.addPropertyChangeListener(l);
-	}
+        BeanProp p = this.beanProp();
+        if (p != null) {
+            p.addPCListener(l);
+        } else {
+            if (this.changeListeners == null) {
+                this.changeListeners = new PropertyChangeSupport(this);
+            }
+            this.changeListeners.addPropertyChangeListener(l);
+        }
     }
     
     //
     public void removePropertyChangeListener(PropertyChangeListener l) {
-	BeanProp p = this.beanProp();
-	if (p != null) {
-	    p.removePCListener(l);
-	} else if (this.changeListeners != null) {
-	    this.changeListeners.removePropertyChangeListener(l);
-	}
+        BeanProp p = this.beanProp();
+        if (p != null) {
+            p.removePCListener(l);
+        } else if (this.changeListeners != null) {
+            this.changeListeners.removePropertyChangeListener(l);
+        }
     }
     
     //
     public void addPropertyChangeListener(String n, PropertyChangeListener l) {
-	BeanProp p = this.beanProp(n);
-	if (p != null)
-	    p.addPCListener(l);
+        BeanProp p = this.beanProp(n);
+        if (p != null)
+            p.addPCListener(l);
     }
     
     //
     public void removePropertyChangeListener(String n, PropertyChangeListener l) {
-	BeanProp p = this.beanProp(n);
-	if (p != null)
-	    p.removePCListener(l);
+        BeanProp p = this.beanProp(n);
+        if (p != null)
+            p.removePCListener(l);
     }
-
+    
     /**
      * @return all Comment nodes found in this particular bean.
      *         If there are no comments, then a 0 sized array will be
@@ -2398,7 +2378,7 @@ public abstract class BaseBean implements Cloneable, Bean {
         result = (org.w3c.dom.Comment[]) foundComments.toArray(result);
         return result;
     }
-
+    
     /**
      * The new comment will be added to the first of the bean's children.
      * @return the newly added Comment
@@ -2420,14 +2400,14 @@ public abstract class BaseBean implements Cloneable, Bean {
         }
         return commentNode;
     }
-
+    
     /**
      * Remove @param comment from this bean.
      */
     public void removeComment(org.w3c.dom.Comment comment) {
         comment.getParentNode().removeChild(comment);
     }
-
+    
     /**
      * @return child beans.
      */
@@ -2437,7 +2417,7 @@ public abstract class BaseBean implements Cloneable, Bean {
         BaseBean[] result = new BaseBean[children.size()];
         return (BaseBean[]) children.toArray(result);
     }
-
+    
     /**
      * Store all child beans into @param beans.
      */
@@ -2468,87 +2448,87 @@ public abstract class BaseBean implements Cloneable, Bean {
             }
         }
     }
-
+    
     public String nameSelf() {
         return beanProp().getFullName();
     }
-
+    
     public String nameChild(Object childObj) {
         return nameChild(childObj, false, false);
     }
-
+    
     public String nameChild(Object childObj, boolean returnConstName,
-                            boolean returnSchemaName) {
+            boolean returnSchemaName) {
         return nameChild(childObj, returnConstName, returnSchemaName, false);
     }
     
     public String nameChild(Object childObj, boolean returnConstName,
-                            boolean returnSchemaName,
-                            boolean returnXPathName) {
+            boolean returnSchemaName,
+            boolean returnXPathName) {
         BeanProp[] props = beanProps();
         Object propValue;
         BeanProp prop = null;
         boolean found = false;
         int index = -2;
-    propLoop:
-        for (int propPosition = 0; propPosition < props.length; ++propPosition) {
-            prop = props[propPosition];
-            if (prop.isIndexed()) {
-                for (int i = 0; i < prop.size(); ++i) {
-                    propValue = prop.getValue(i);
+        propLoop:
+            for (int propPosition = 0; propPosition < props.length; ++propPosition) {
+                prop = props[propPosition];
+                if (prop.isIndexed()) {
+                    for (int i = 0; i < prop.size(); ++i) {
+                        propValue = prop.getValue(i);
+                        if (propValue == null ? childObj == null : propValue.equals(childObj)) {
+                            found = true;
+                            index = i;
+                            break propLoop;
+                        }
+                    }
+                } else {
+                    propValue = prop.getValue(0);
                     if (propValue == null ? childObj == null : propValue.equals(childObj)) {
                         found = true;
-                        index = i;
                         break propLoop;
                     }
                 }
-            } else {
-                propValue = prop.getValue(0);
-                if (propValue == null ? childObj == null : propValue.equals(childObj)) {
-                    found = true;
-                    break propLoop;
-                }
             }
-        }
-        if (found) {
-            if (returnConstName)
-                return prop.getBeanName();
-            else if (returnSchemaName)
-                return prop.dtdName;
-            else if (returnXPathName) {
-                if (index < 0)
+            if (found) {
+                if (returnConstName)
+                    return prop.getBeanName();
+                else if (returnSchemaName)
                     return prop.dtdName;
-                else
-                    return prop.dtdName+"[position()="+index+"]";
-            } else
-                return prop.getBeanName()+"."+Integer.toHexString(prop.indexToId(index));
-        }
-        return null;
+                else if (returnXPathName) {
+                    if (index < 0)
+                        return prop.dtdName;
+                    else
+                        return prop.dtdName+"[position()="+index+"]";
+                } else
+                    return prop.getBeanName()+"."+Integer.toHexString(prop.indexToId(index));
+            }
+            return null;
     }
-
+    
     public void changeDocType(String publicId, String systemId) {
         graphManager().setDoctype(publicId, systemId);
     }
-
+    
     public void _setChanged(boolean changed) {
         throw new UnsupportedOperationException();
     }
-
+    
     public String _getXPathExpr() {
-		if (parent() == null) {
-			return "/"+dtdName();
-		} else {
-			String parentXPathExpr = parent()._getXPathExpr();
-			String myExpr = parent().nameChild(this, false, false, true);
-			return parentXPathExpr + "/" + myExpr;
-		}
+        if (parent() == null) {
+            return "/"+dtdName();
+        } else {
+            String parentXPathExpr = parent()._getXPathExpr();
+            String myExpr = parent().nameChild(this, false, false, true);
+            return parentXPathExpr + "/" + myExpr;
+        }
     }
-
-	public String _getXPathExpr(Object childObj) {
-		String childName = nameChild(childObj, false, false, true);
-		if (childName == null) {
-			throw new IllegalArgumentException("childObj ("+childObj.toString()+") is not a child of this bean ("+dtdName()+")");
-		}
-		return _getXPathExpr() + "/" + childName;
-	}
+    
+    public String _getXPathExpr(Object childObj) {
+        String childName = nameChild(childObj, false, false, true);
+        if (childName == null) {
+            throw new IllegalArgumentException("childObj ("+childObj.toString()+") is not a child of this bean ("+dtdName()+")");
+        }
+        return _getXPathExpr() + "/" + childName;
+    }
 }
