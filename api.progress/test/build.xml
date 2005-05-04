@@ -17,6 +17,8 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.ide.use.classloader" value="org.netbeans.progress"/>
+    
 </project>
 
 

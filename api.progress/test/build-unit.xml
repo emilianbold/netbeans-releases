@@ -14,4 +14,30 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="core/progress/test-unit" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../../nbbuild/default.xml"/>
+    
+    <path id="codetest.classpath">
+				
+        <pathelement location="${openide.dir}/core/openide.jar"/>
+        
+        <pathelement location="${core.dir}/core/core.jar"/>
+        <pathelement location="${core.dir}/lib/boot.jar"/>
+    </path>    
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <target name="runidetest">
+        <executeTests pluginName="ide">
+            <classpath/>
+        </executeTests>
+    </target>
+    
+    <target name="runcodetest">
+        <executeTests pluginName="jvm">
+            <classpath refid="codetest.classpath"/>
+        </executeTests>
+    </target>    
+        
 </project>
