@@ -7,14 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.installer;
-
-import java.io.IOException;
-import java.util.Vector;
 
 import com.installshield.product.i18n.ProductResourcesConst;
 import com.installshield.product.service.product.ProductService;
@@ -27,6 +24,9 @@ import com.installshield.wizard.WizardPanel;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.WizardServicesUI;
 import com.installshield.wizard.service.file.FileService;
+
+import java.io.IOException;
+import java.util.Vector;
 
 public class DirectoryChooserPanel extends WizardPanel // implements ActionListener
 {
@@ -256,7 +256,9 @@ public class DirectoryChooserPanel extends WizardPanel // implements ActionListe
         
         // blank/all white-space check
         if (StringUtils.isWhitespace(destination)) {
-            showLocalizedErrorMsg(ProductResourcesConst.NAME, "DestinationPanel.destinationDirectory", "DestinationPanel.specifyDirectory");
+            showLocalizedErrorMsg(ProductResourcesConst.NAME,
+            "DestinationPanel.destinationDirectory",
+            "DestinationPanel.specifyDirectory");
             return false;
         }
         
