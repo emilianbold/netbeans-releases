@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.24"
+  question-version="1.25"
   module="projects/projectuiapi"
   author="jglick@netbeans.org"
 >
@@ -924,6 +924,24 @@ Microsystems, Inc. All Rights Reserved.
     <code>Templates/Projects/</code>.
    </p>
   </api>
+  <api group="layer" name="ProjectActions" type="export" category="official">
+   <p>
+    Providers of generic project actions can register action and JSeparator
+    instances and s in a special folder <code>Projects/Actions</code>. So if any module wishes
+    to extend, hide or reorder some of them it can just register its actions there.    
+   </p>
+  </api>
+    Revieved as issue #57874. Example code:
+    <pre>
+    &lt;folder name="Projects" &gt;
+        &lt;folder name="Actions" &gt;
+            &lt;file name="org-mymodule-MyAction.instance" &gt;
+                &lt;attr name="instanceCreate" stringvalue="org.mymodule.MyAction" /&gt;
+            &lt;/file&gt;
+        &lt;/folder&gt;
+    &lt;/folder&gt;
+    </pre>
+  
   <!-- XXX link to Javadoc or something with definitions -->
   <api group="layer" name="Templates" type="export" category="official">
    <p>
@@ -968,4 +986,25 @@ Microsystems, Inc. All Rights Reserved.
  </answer>
 
 
+<!--
+        <question id="exec-ant-tasks" when="impl">
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
+-->
+ <answer id="exec-ant-tasks">
+  <p>
+   No
+  </p>
+ </answer>
+ 
 </api-answers>
+
+
+
