@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <jdbc-resource enabled="true" jndi-name="jdbc/CollegeDB" object-type="user" pool-name="connectionPool">
+    <description/>
+  </jdbc-resource>
+</resources>
