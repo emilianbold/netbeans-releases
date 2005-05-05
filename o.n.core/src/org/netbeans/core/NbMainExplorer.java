@@ -335,14 +335,15 @@ public final class NbMainExplorer extends CloneableTopComponent {
             } else {
                 panel = MainTab.getDefaultMainTab();
             }
+            panel.setRootContext(rc, false);
         } else {
             // tabs added by modules
             //We cannot use findTopComponent here because we do not know unique
             //TC ID ie. proper deserialization of such TC will not work.
             panel = NbMainExplorer.findModuleTab(rc, null);
+            panel.setRootContext(rc);
         }
         
-        panel.setRootContext(rc);
         
         rootsToTCs().put(rc, panel);
         return panel;
@@ -448,6 +449,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         private NodeListener rcListener;
         /** validity flag */
         private boolean valid = true;
+        private boolean rootVis = true;
         
         /** Used by ModuleTab to set persistence type according
          * root context node persistence ability. */
@@ -458,6 +460,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
             // complete initialization of composited explorer actions
             ideSettings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
             setConfirmDelete(ideSettings.getConfirmDelete ());
+            
             
             // attach listener to the changes of IDE settings
             weakIdeL = WeakListeners.propertyChange(rcListener(), ideSettings);
@@ -476,6 +479,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
             
             if (view == null) {
                 view = initGui ();
+                view.setRootVisible(rootVis);
                 
                 view.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerBeanTree"));
                 view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerBeanTree"));
@@ -544,6 +548,14 @@ public final class NbMainExplorer extends CloneableTopComponent {
             }
             getExplorerManager().setRootContext(rc);
             initializeWithRootContext(rc);
+        }
+        
+        public void setRootContext(Node rc, boolean rootVisible) {
+            rootVis = rootVisible;
+            if (view != null) {
+                view.setRootVisible(rootVisible);
+            }
+            setRootContext(rc);
         }
 
         // #16375. Not to try to serialize explored nodes which aren't
