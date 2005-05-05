@@ -27,14 +27,8 @@ public class Helper {
         return new File(result);
     }
     
-    public static javax.swing.JTextField getChapterTitleTF(BookDataObject dObj, Chapter chapter) 
-        throws NoSuchMethodException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
-        
-        java.lang.reflect.Method meth  = XmlMultiViewDataObject.class.getDeclaredMethod("getActiveMultiViewElement", new Class[]{});
-        meth.setAccessible(true);
-        ToolBarMultiViewElement mvEl = (ToolBarMultiViewElement)meth.invoke(dObj, new Object[]{});
-        meth.setAccessible(false);
-        if (mvEl==null) throw new IllegalAccessException("Problem with invoking getActiveMultiViewElement()");
+    public static javax.swing.JTextField getChapterTitleTF(BookDataObject dObj, Chapter chapter) {
+        ToolBarMultiViewElement mvEl = dObj.getActiveMultiViewElement0();
         javax.swing.JPanel sectionPanel = mvEl.getSectionView().findSectionPanel(chapter).getInnerPanel();
         if (sectionPanel==null) return null;
         java.awt.Component[] children = sectionPanel.getComponents();

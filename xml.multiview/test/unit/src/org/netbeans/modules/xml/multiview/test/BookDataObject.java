@@ -129,4 +129,10 @@ public class BookDataObject extends XmlMultiViewDataObject {
         }
     }
     
+    /** Enable to get active MultiViewElement object
+     */
+    public ToolBarMultiViewElement getActiveMultiViewElement0() {
+        return super.getActiveMultiViewElement();
+    }
+    
 }

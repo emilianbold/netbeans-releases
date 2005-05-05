@@ -95,7 +95,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         }
         // wait to see the changes
         try {
-            Thread.sleep(3000);
+            Thread.sleep(5000);
         } catch (InterruptedException ex){}
         
         // test if data object was modified
@@ -105,7 +105,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         
         // wait to save
         try {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException ex){}
         
         // test to golden file
@@ -150,7 +150,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
 
         // wait for save
         try {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException ex){}
         
         // test to golden file
