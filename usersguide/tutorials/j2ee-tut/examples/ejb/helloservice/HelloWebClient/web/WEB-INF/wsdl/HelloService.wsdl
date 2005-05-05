@@ -27,4 +27,7 @@
         <soap:body use="literal"/></output></operation></binding>
   <service name="HelloService">
     <port name="HelloServiceSEIPort" binding="tns:HelloServiceSEIBinding">
-      <soap:address location="http://localhost:8080/webservice/HelloService" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/></port></service></definitions>
+      <soap:address location="http://localhost:8080/webservice/HelloService" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+    </port>
+  </service>
+</definitions>
