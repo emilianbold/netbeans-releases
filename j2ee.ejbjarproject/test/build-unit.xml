@@ -15,4 +15,24 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="j2ee/ejbjarproject/test-unit" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+
+    <property name="test.classpath" value=""/>
+
+    <!-- 
+        This target expects to have installed appserver at /space/appserver on Unix machine 
+        or e:\space\appserver on Windows machine (that's how it is set on test servers).
+        Symlink on Unix is also OK.
+    -->
+    <target name="set-appserver-path" unless="xtest.ide.commandline.suffix">
+        <condition property="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=e:\\space\\appserver">
+           <os family="windows"/>
+        </condition>
+        <condition property="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=/space/appserver">
+           <os family="unix"/>
+        </condition>
+    </target>
+
+    <target name="runidetest" depends="init,init-cp,set-appserver-path">
+        <executeTests pluginname="ide"/>
+    </target>
 </project>

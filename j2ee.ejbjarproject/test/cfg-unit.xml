@@ -9,13 +9,13 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<mconfig name="j2ee/ejbapi">
+<mconfig name="Configuration of J2EE EJB unit tests">
     
-    <testbag testattribs="stable" executor="unit-executor" name="j2ee/ejbapi">
+    <testbag testattribs="stable" executor="ide" name="j2ee/ejbjarproject">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
@@ -24,6 +24,6 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
-    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
+    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>    
     
 </mconfig>
