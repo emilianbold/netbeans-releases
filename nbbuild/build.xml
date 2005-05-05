@@ -2652,6 +2652,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../websvc/websvcddapi" target="netbeans"/>
   </target>
 
+  <target name="all-performance/insane" depends="all-openide">
+    <echo message="Building performance/insane..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../performance/insane" target="netbeans"/>
+  </target>
 
 
   <!-- target for branding of NetBeans IDE -->
