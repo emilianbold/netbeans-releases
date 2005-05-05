@@ -28,8 +28,11 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -161,6 +164,28 @@ public class Utils {
             }
         }
         return ce;
+    }
+
+    // from org.netbeans.modules.j2ee.refactoring.test.util.Helper
+    public static JavaClass findClass(String s) {
+        JavaClass result;
+        int i = 20;
+        do {
+            result = (JavaClass) JavaMetamodel.getManager().getDefaultExtent().getType().resolve(s);
+            if (result instanceof UnresolvedClass) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+            i--;
+        } while ((result instanceof UnresolvedClass) && i > 0);
+        if (result instanceof UnresolvedClass) {
+            throw new IllegalStateException("Class " + s + " not found.");
+        }
+        return result;
     }
 
 }
