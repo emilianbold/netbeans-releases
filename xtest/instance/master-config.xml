@@ -65,10 +65,11 @@ Microsystems, Inc. All Rights Reserved.
         <module name="debuggerjpda" testtypes="unit" attributes="stable"/>
         <module name="web/core" testtypes="unit" attributes="stable"/>
         <module name="web/jspparser" testtypes="unit" attributes="stable"/>
+        <module name="tomcatint/tomcat5" testtypes="unit" attributes="stable"/>
         <!-- removed (not runnable): html, schema2beans -->
         <!-- hangs: core/execution -->
         <!-- does not run: core/multiview -->
-        <!-- other candidate modules in current default moduleconfig: debuggercore debuggerjpda editor editor/fold editor/util httpserver mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks tomcatint/tomcat5 web/core web/jspparser xml/api xml/core xml/schema xml/text-edit xml/xsl -->
+        <!-- other candidate modules in current default moduleconfig: debuggercore debuggerjpda editor editor/fold editor/util httpserver mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks web/core web/jspparser xml/api xml/core xml/schema xml/text-edit xml/xsl -->
     </config>
   
   <config name="unit-nb-nbm">
