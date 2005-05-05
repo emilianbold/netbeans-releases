@@ -10,8 +10,8 @@
 
 package savingsaccountclient;
 
-import bean.SavingsAccountRemote;
-import bean.SavingsAccountRemoteHome;
+import bank.SavingsAccountRemote;
+import bank.SavingsAccountRemoteHome;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Iterator;
