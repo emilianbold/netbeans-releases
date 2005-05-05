@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="init-cp">
         <!-- If jellytools repository available, build jelly2-nb.jar -->
-        <available file="${nb_all}/jellytools/build.xml" property="jellytools.available"/>
+        <available file="${nb_all}/jellytools/src" type="dir" property="jellytools.available"/>
         <antcall target="build-jellytools"/>
         <!-- Used built jar preferably. If not available use the latest from CVS. -->
         <available file="${nb_all}/jellytools/jelly2-nb.jar" property="jelly.jar" value="${nb_all}/jellytools/jelly2-nb.jar"/>
