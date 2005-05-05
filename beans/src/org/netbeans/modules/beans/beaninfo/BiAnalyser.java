@@ -434,7 +434,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                                                         RequestProcessor.getDefault().post(new Runnable() {
                                                             public void run() {
                                                                 JavaMetamodel manager = JavaMetamodel.getManager();
-                                                                manager.addModified(bis.getDataObject());
+                                                                manager.addModified(bis.getDataObject().getPrimaryFile());
                                                                 manager.getDefaultRepository().beginTrans(true);
                                                                 manager.getDefaultRepository().endTrans();
                                                             }

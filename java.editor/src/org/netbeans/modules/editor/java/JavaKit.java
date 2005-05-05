@@ -826,7 +826,7 @@ public class JavaKit extends NbEditorKit {
                 BaseDocument doc = (BaseDocument)target.getDocument();
                 Position caretPosition = null;
                 TryWrapper wrapper;
-                JavaMetamodel.getManager().addModified(NbEditorUtilities.getDataObject(doc));
+                JavaMetamodel.getManager().addModified(NbEditorUtilities.getDataObject(doc).getPrimaryFile());
                 JavaModel.getJavaRepository().beginTrans(true);
                 try {
                     doc.atomicLock();
