@@ -5,9 +5,9 @@
     <entity>
       <display-name>SavingsAccountEB</display-name>
       <ejb-name>SavingsAccountBean</ejb-name>
-      <home>bean.SavingsAccountRemoteHome</home>
-      <remote>bean.SavingsAccountRemote</remote>
-      <ejb-class>bean.SavingsAccountBean</ejb-class>
+      <home>bank.SavingsAccountRemoteHome</home>
+      <remote>bank.SavingsAccountRemote</remote>
+      <ejb-class>bank.SavingsAccountBean</ejb-class>
       <persistence-type>Bean</persistence-type>
       <prim-key-class>java.lang.String</prim-key-class>
       <reentrant>false</reentrant>
