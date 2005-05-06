@@ -81,18 +81,18 @@ Controller, ActionListener {
         connectors.addAll (vmm.attachingConnectors ());
         connectors.addAll (vmm.listeningConnectors ());
            
-        // We temporary do not support these three connectors
-        for (Iterator ci = connectors.iterator(); ci.hasNext(); ) {
-            String name = ((Connector)ci.next()).name();
-            int index = name.lastIndexOf('.');
-            if (index >= 0)
-                    name = name.substring(index + 1);
-           
-            if (name.equalsIgnoreCase("SACoreAttachingConnector") || 
-                name.equalsIgnoreCase("SAPIDAttachingConnector") ||
-                name.equalsIgnoreCase("SADebugServerAttachingConnector"))
-                ci.remove();
-        }
+//        // We temporary do not support these three connectors
+//        for (Iterator ci = connectors.iterator(); ci.hasNext(); ) {
+//            String name = ((Connector)ci.next()).name();
+//            int index = name.lastIndexOf('.');
+//            if (index >= 0)
+//                    name = name.substring(index + 1);
+//           
+//            if (name.equalsIgnoreCase("SACoreAttachingConnector") || 
+//                name.equalsIgnoreCase("SAPIDAttachingConnector") ||
+//                name.equalsIgnoreCase("SADebugServerAttachingConnector"))
+//                ci.remove();
+//        }
                 
         if (connectors.size () == 0) {
             // no attaching connectors available => print message only
