@@ -39,14 +39,14 @@ public final class Controller implements Runnable, ActionListener {
     // non-private so that it can be accessed from the tests
     public static Controller defaultInstance;
     
-    private NewInterface component;
+    private ProgressUIWorker component;
     private TaskModel model;
     private List eventQueue;
     private boolean dispatchRunning;
     private Timer timer;
     private static final int TIMER_QUANTUM = 400;
     /** Creates a new instance of Controller */
-    public Controller(NewInterface comp) {
+    public Controller(ProgressUIWorker comp) {
         component = comp;
         model = new TaskModel();
         eventQueue = new ArrayList();
