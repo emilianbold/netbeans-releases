@@ -27,6 +27,7 @@ import org.openide.util.lookup.Lookups;
 
 import org.netbeans.junit.*;
 import org.netbeans.core.*;
+import org.openide.awt.StatusLineElementProvider;
 
 
 /** Test what MainWindow returns the Status Line Elements and

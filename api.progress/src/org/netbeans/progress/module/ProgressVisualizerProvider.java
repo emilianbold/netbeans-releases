@@ -16,7 +16,7 @@ package org.netbeans.progress.module;
 import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.core.StatusLineElementProvider;
+import org.openide.awt.StatusLineElementProvider;
 import org.openide.util.Utilities;
 
 /**

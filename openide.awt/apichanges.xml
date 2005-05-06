@@ -17,6 +17,21 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="statuslineelementprovider-added">
+        <api name="awt"/>
+        <summary>Make IDE's status bar pluggable.</summary>
+        <version major="6" minor="4"/>
+        <date day="4" month="5" year="2005"/>
+        <author login="mkleint"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+        By registering org.openide.awt.StatusLineElementProvider in the default lookup (META-INF/servides)
+        one can provide a custom component that will be incorporated into the IDE's statusbar.
+        The exact location of your component is determined by the ordering of the providers.
+        </description>
+        <class package="org.openide.awt" name="StatusLineElementProvider"/>
+    </change>
+
     <change id="actions-with-custom-tooltip-have-shortcuts-in-toolbar">
         <api name="awt"/>
         <summary>Actions with custom tooltip have tooltip with shortcut in toolbars</summary>

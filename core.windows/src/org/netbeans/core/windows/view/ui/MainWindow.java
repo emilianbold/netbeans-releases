@@ -50,7 +50,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.core.StatusLineElementProvider;
+import org.openide.awt.StatusLineElementProvider;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.ErrorManager;
