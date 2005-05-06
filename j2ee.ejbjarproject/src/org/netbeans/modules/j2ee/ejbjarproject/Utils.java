@@ -12,6 +12,8 @@
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -32,7 +34,6 @@ import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -153,26 +154,34 @@ public class Utils {
         return false;
     }
 
-    // from org.netbeans.modules.j2ee.refactoring.test.util.Helper
-    // TODO: must be changed to set classpath, because when it is not set, it takes classpath
-    // from all open projects (ok for tests, but problem if you have same class name in more projects)
-    public static JavaClass findClass(String s) {
+    public static JavaClass findClass(String className, FileObject[] roots) {
+        return findClass(className, ClassPathSupport.createClassPath(roots));
+    }
+    
+    // modified version of org.netbeans.modules.j2ee.refactoring.test.util.Helper.findClass()
+    public static JavaClass findClass(String className, ClassPath cp) {
         JavaClass result;
         int i = 20;
-        do {
-            result = (JavaClass) JavaMetamodel.getManager().getDefaultExtent().getType().resolve(s);
-            if (result instanceof UnresolvedClass) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    return null;
+        JavaModel.getJavaRepository().beginTrans(false);
+        try {
+            JavaModel.setClassPath(cp);
+            do {
+                result = (JavaClass) JavaModel.getDefaultExtent().getType().resolve(className);
+                if (result instanceof UnresolvedClass) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
-            }
-            i--;
-        } while ((result instanceof UnresolvedClass) && i > 0);
+                i--;
+            } while ((result instanceof UnresolvedClass) && i > 0);
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
         if (result instanceof UnresolvedClass) {
-            throw new IllegalStateException("Class " + s + " not found.");
+            throw new IllegalStateException("Class " + className + " not found.");
         }
         return result;
     }
