@@ -24,7 +24,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Menu">
         <folder name="Window">
-            <attr name="ProgressListAction.shadow/Separator3.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-web-monitor-client-MonitorAction.instance/ProgressListAction.shadow" boolvalue="true" />
+            <attr name="ProgressListAction.shadow/Form" boolvalue="true" />
             <file name="ProgressListAction.shadow" >
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-progress-module-ProgressListAction.instance" />
             </file>
