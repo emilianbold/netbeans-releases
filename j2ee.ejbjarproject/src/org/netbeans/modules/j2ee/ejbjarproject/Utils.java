@@ -153,20 +153,9 @@ public class Utils {
         return false;
     }
 
-    public static ClassElement getClassElement(ClassPath cp, String className) {
-        assert className != null: "cannot find null className"; //NOI18N
-        FileObject[] roots = cp.getRoots();
-        ClassElement ce = null;
-        for (int i=0; i < roots.length && ce == null; i++) {
-            FileObject[] children = roots[i].getChildren();
-            if (children.length != 0) {
-                ce = ClassElement.forName(className, children[0]);
-            }
-        }
-        return ce;
-    }
-
     // from org.netbeans.modules.j2ee.refactoring.test.util.Helper
+    // TODO: must be changed to set classpath, because when it is not set, it takes classpath
+    // from all open projects (ok for tests, but problem if you have same class name in more projects)
     public static JavaClass findClass(String s) {
         JavaClass result;
         int i = 20;
