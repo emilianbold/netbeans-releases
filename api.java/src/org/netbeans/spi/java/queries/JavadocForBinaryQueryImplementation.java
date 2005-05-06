@@ -42,9 +42,8 @@ public interface JavadocForBinaryQueryImplementation {
      * (e.g. <samp>jar:file:/tmp/foo.jar!/</samp>).
      * </p>
      * <p>
-     * The JavadocForBinaryQuery class calls this method on instances registered
-     * in the lookup until null result is returned for given binaryRoot. The
-     * non null result is returned by the JavadocForBinaryQuery.findJavadoc method.
+     * {@link JavadocForBinaryQuery#findJavadoc} calls this method on instances registered
+     * in default lookup until a non-null result is returned for the given binaryRoot.
      * </p>
      * @param binaryRoot the class path root of Java class files
      * @return a result object encapsulating the roots and permitting changes to
