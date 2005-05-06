@@ -19,7 +19,6 @@ import javax.swing.SwingUtilities;
 import javax.jmi.reflect.JmiException;
 
 import org.netbeans.modules.beans.*;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Type;
@@ -27,7 +26,6 @@ import org.netbeans.jmi.javamodel.Array;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 
 /** Analyses the ClassElement trying to find source code patterns i.e.
  * properties or event sets;
@@ -430,15 +428,6 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                                                         regenerateIcons();
                                                         regenerateDefaultIdx();
                                                         regenerateSuperclass();
-                                                        
-                                                        RequestProcessor.getDefault().post(new Runnable() {
-                                                            public void run() {
-                                                                JavaMetamodel manager = JavaMetamodel.getManager();
-                                                                manager.addModified(bis.getDataObject().getPrimaryFile());
-                                                                manager.getDefaultRepository().beginTrans(true);
-                                                                manager.getDefaultRepository().endTrans();
-                                                            }
-                                                        });
                                                     }
                                                 } );
     }
