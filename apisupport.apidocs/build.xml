@@ -13,94 +13,53 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="apisupport/apidocs" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/default.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <target name="init" depends="default.init">
-        <patternset id="apisupport/apidocs.files">
-            <include name="modules/apisupport-apidocs.jar"/>
-            <include name="docs/ConvertorAPI.zip"/>
-            <include name="docs/ExecutionAPI.zip"/>
-            <include name="docs/InputOutputAPI.zip"/>
-            <include name="docs/JavaHelpAPI.zip"/>
-            <include name="docs/JavaHierarchyAPI.zip"/>
-            <include name="docs/JavaSupportAPIs.zip"/>
-            <include name="docs/LoadersAPI.zip"/>
-            <include name="docs/LooksAPI.zip"/>
-            <include name="docs/OpenAPIs.zip"/>
-            <include name="docs/RegistryAPI.zip"/>
-            <include name="docs/RegistryOverFSAPI.zip"/>
-        </patternset>
+    <target name="netbeans-extra" depends="docs"/>
+    
+    <target name="docs-check" depends="init">
+        <property name="docs.dir" location="${netbeans.dest.dir}/${cluster.dir}/docs"/>
+        <property name="docs.zip" location="${docs.dir}/NetBeansAPIs.zip"/>
+        <available property="have.docs" file="${docs.zip}"/>
     </target>
 
-    <target name="jars" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules"/>
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/apisupport-apidocs.jar"
-             manifest="manifest-subst.mf"
-             excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
-             compress="false">
-            <fileset dir="src"/>
-        </jar>
-    </target>
-
-    <target name="collect-javadoc" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
-        <!-- Order is significant here because APIs with compile-time interdependencies among public classes, -->
-        <!-- when reflected in signatures, need to be built in the correct order so that hyperlinking will work: -->
-        <ant dir="${nb_all}/openide" target="javadoc"/>
-        <copy file="${nb_all}/openide/javadoc/OpenAPIs.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/OpenAPIs.zip"/>
-        <ant dir="${nb_all}/openide/io" target="javadoc"/>
-        <copy file="${nb_all}/openide/io/javadoc/InputOutputAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/InputOutputAPI.zip"/>
-        <ant dir="${nb_all}/openide/execution" target="javadoc"/>
-        <copy file="${nb_all}/openide/execution/javadoc/ExecutionAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/ExecutionAPI.zip"/>
-        <ant dir="${nb_all}/openide/loaders" target="javadoc"/>
-        <copy file="${nb_all}/openide/loaders/javadoc/LoadersAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/LoadersAPI.zip"/>
-        <ant dir="${nb_all}/core/javahelp" target="javadoc"/>
-        <copy file="${nb_all}/core/javahelp/javadoc/JavaHelpAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/JavaHelpAPI.zip"/>
-        <ant dir="${nb_all}/java/api" target="javadoc"/>
-        <copy file="${nb_all}/java/api/javadoc/JavaSupportAPIs.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/JavaSupportAPIs.zip"/>
-        <ant dir="${nb_all}/java/srcmodel" target="javadoc"/>
-        <copy file="${nb_all}/java/srcmodel/javadoc/JavaHierarchyAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/JavaHierarchyAPI.zip"/>
-        <ant dir="${nb_all}/openide/registry" target="javadoc"/>
-        <copy file="${nb_all}/openide/registry/javadoc/RegistryAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/RegistryAPI.zip"/>
-        <ant dir="${nb_all}/openide/convertor" target="javadoc"/>
-        <copy file="${nb_all}/openide/convertor/javadoc/ConvertorAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/ConvertorAPI.zip"/>
-        <!-- The next two will need to run Javadoc against org-netbeans-modules-registry.jar: -->
-        <ant dir="${nb_all}/openide/registry" target="netbeans"/>
-        <ant dir="${nb_all}/core/registry" target="javadoc"/>
-        <copy file="${nb_all}/core/registry/javadoc/RegistryOverFSAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/RegistryOverFSAPI.zip"/>
-        <ant dir="${nb_all}/openide/looks" target="javadoc"/>
-        <copy file="${nb_all}/openide/looks/javadoc/LooksAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/docs/LooksAPI.zip"/>
-    </target>
-
-    <target name="netbeans" depends="init,jars,collect-javadoc" description="Build complete module.">
-        <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="modules/apisupport-apidocs.jar">
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-                <patternset refid="apisupport/apidocs.files"/>
+    <target name="docs" depends="docs-check" unless="have.docs">
+        <fail message="Must have defined netbeans.javadoc.dir!">
+            <condition>
+                <not>
+                    <isset property="netbeans.javadoc.dir"/>
+                </not>
+            </condition>
+        </fail>
+        <!-- Build Javadoc in the usual way: -->
+        <ant dir="../../nbbuild" target="build-javadoc" inheritall="false">
+            <!-- Stable only: -->
+            <property name="modules" value="apisupport/apidocs"/>
+            <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
+        </ant>
+        <mkdir dir="${docs.dir}"/>
+        <zip zipfile="${docs.zip}" compress="true">
+            <fileset dir="${netbeans.javadoc.dir}">
+                <exclude name="*.zip"/>
             </fileset>
-        </genlist>
+        </zip>
     </target>
-
-    <target name="nbm" depends="init,netbeans" description="Build standalone NBM.">
-        <makenbm file="apisupport-apidocs.nbm"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
-                 module="modules/apisupport-apidocs.jar"
-	         homepage="http://apisupport.${homepage.base}/"
-	         distribution="http://${dist.base}/apisupport-apidocs.nbm">
-            <license file="${license.file}"/>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
+    
+    <target name="javadoc"/><!-- dummy, see above -->
+    
+    <target name="netbeans" unless="building.apisupport/apidocs"><!-- see above -->
+        <antcall target="projectized-common.netbeans"/>
     </target>
-
-    <target name="clean" depends="init" description="Clean out build products.">
-        <delete file="manifest-subst.mf"/>
-        <delete file="apisupport-apidocs.nbm"/>
-        <delete>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-                <patternset refid="apisupport/apidocs.files"/>
-            </fileset>
-        </delete>
+    
+    <target name="clean" depends="projectized-common.clean">
+        <fail message="Must have defined netbeans.javadoc.dir!">
+            <condition>
+                <not>
+                    <isset property="netbeans.javadoc.dir"/>
+                </not>
+            </condition>
+        </fail>
+        <delete dir="${netbeans.javadoc.dir}"/>
     </target>
 
 </project>

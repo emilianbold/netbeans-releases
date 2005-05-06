@@ -1,8 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.apisupport.apidocs
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/apisupport/apidocs/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/apisupport/apidocs/layer.xml
-OpenIDE-Module-Specification-Version: 2.22
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
+OpenIDE-Module-Install: org/netbeans/modules/apisupport/apidocs/Install.class
+OpenIDE-Module-Specification-Version: 2.23
 

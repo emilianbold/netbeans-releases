@@ -692,7 +692,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../apisupport/ant" target="netbeans"/>
   </target>
   <!-- Deps include modules for which we build APIs: -->
-  <target name="all-apisupport/apidocs" depends="all-openide/registry,all-openide/looks,all-core/registry,all-openide/convertor,all-java/api">
+  <target name="all-apisupport/apidocs" depends="all-ant/project,all-projects/projectapi">
     <echo message="Building module apisupport/apidocs..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -3452,9 +3452,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="build"/>
     <delete file="moduledefs-tmp.properties"/>
     <delete dir="nbms" />
-    <delete dir="modules_exported_interfaces"/>
     <delete dir="${netbeans.dest.dir}"/>
-    <delete file="moduleCluster.properties"/>
   </target>
   
   <!-- more correct but takes too long: <target name="localtest" depends="bootstrap,all-xtest/nbjunit" > -->
