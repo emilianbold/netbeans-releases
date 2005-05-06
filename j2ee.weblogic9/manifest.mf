@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: com.sun.tools.ide.modules.j2eeplugins.weblogic9/1
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Layer: com/sun/tools/ide/modules/j2eeplugins/weblogic9/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: com/sun/tools/ide/modules/j2eeplugins/weblogic9/resources/Bundle.properties

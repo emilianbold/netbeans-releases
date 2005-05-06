@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<project name="websphere6" default="netbeans" basedir=".">
+    <import file="../../nbbuild/templates/projectized.xml"/>
+
+    <target name="netbeans-extra">
+        <locjar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}">
+            <branding name="jse"/>
+            <fileset dir="src">
+                <patternset>
+                    <include name="**/*"/>
+                </patternset>
+            </fileset>
+        </locjar>
+
+        <property name="locale.dir" value="${netbeans.dest.dir}/${cluster.dir}/modules/locale"/>
+    </target>
+</project>
+
