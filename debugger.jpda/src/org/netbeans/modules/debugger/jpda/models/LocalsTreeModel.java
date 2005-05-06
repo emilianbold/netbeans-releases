@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -53,6 +53,8 @@ public class LocalsTreeModel implements TreeModel {
         (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
         (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('l') >= 0);
     
+    private static final int MAX_ARRAY_LENGTH = 50; // Display just the first 50 elements of arrays
+    
     
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
@@ -80,11 +82,11 @@ public class LocalsTreeModel implements TreeModel {
                 Object[] avs = abstractVariable.getFields (from, to);
                 if ( (abstractVariable.getInnerValue () instanceof 
                         ArrayReference) &&
-                     (avs.length >= 51)
+                     (avs.length >= (MAX_ARRAY_LENGTH + 1))
                 ) {
                     Object[] avs2 = new Object [to - from];
                     System.arraycopy (avs, 0, avs2, 0, to - from);
-                    avs2 [50] = "More";
+                    avs2 [MAX_ARRAY_LENGTH] = "More";
                     avs = avs2;
                 }
                 return avs;
@@ -138,7 +140,7 @@ public class LocalsTreeModel implements TreeModel {
                 if (abstractVariable.getInnerValue () instanceof 
                     ArrayReference
                 ) 
-                    return Math.min (abstractVariable.getFieldsCount (), 51);
+                    return Math.min (abstractVariable.getFieldsCount (), MAX_ARRAY_LENGTH + 1);
                 return abstractVariable.getFieldsCount ();
             } else
             throw new UnknownTypeException (node);
