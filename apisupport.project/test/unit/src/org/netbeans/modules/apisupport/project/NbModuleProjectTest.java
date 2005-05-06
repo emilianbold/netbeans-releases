@@ -92,6 +92,10 @@ public class NbModuleProjectTest extends TestBase {
         eval = loadersProject.evaluator();
         assertEquals("right module JAR", file("nbbuild/netbeans/platform5/core/openide-loaders.jar"),
             loadersProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
+        /*
+        assertEquals("right netbeans.javadoc.dir", file("nbbuild/build/javadoc"),
+            loadersProject.getHelper().resolveFile(eval.getProperty("netbeans.javadoc.dir")));
+         */
     }
     
     /** #56457 */
@@ -152,6 +156,10 @@ public class NbModuleProjectTest extends TestBase {
             cpS.append(file("apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform/" + cp[i]).getAbsolutePath());
         }
         assertEquals("right module.classpath", cpS.toString(), eval.getProperty("module.classpath"));
+        /*
+        assertEquals("right netbeans.javadoc.dir", file("apisupport/project/test/unit/data/example-external-projects/suite3/dummy-project/build/javadoc"),
+            dummyProject.getHelper().resolveFile(eval.getProperty("netbeans.javadoc.dir")));
+         */
         // XXX more...
     }
     

@@ -77,6 +77,7 @@ final class NbModuleProject implements Project {
             throw new IOException("Misconfigured project in " + getProjectDirectory() + " has no defined <code-name-base>"); // NOI18N
         }
         moduleList = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
+        // XXX should instead reset ModuleList and try again:
         assert moduleList.getEntry(getCodeNameBase()) != null : "Who am I? " + getProjectDirectory();
         eval = createEvaluator();
         FileBuiltQueryImplementation fileBuilt;
@@ -156,7 +157,6 @@ final class NbModuleProject implements Project {
             new Actions(this),
             new ClassPathProviderImpl(this),
             new SourceForBinaryImpl(this),
-            new JavadocForBinaryQueryImpl(this),
             new UnitTestForSourceQueryImpl(this),
             new LogicalView(this),
             new SubprojectProviderImpl(this),
@@ -166,7 +166,6 @@ final class NbModuleProject implements Project {
             helper.createSharabilityQuery(eval, new String[0], new String[] {
                 // currently these are hardcoded
                 "build", // NOI18N
-                "javadoc", // NOI18N
             }),
             sourcesHelper.createSources(),
             new AntArtifactProviderImpl (this, helper, evaluator ()),
@@ -273,6 +272,7 @@ final class NbModuleProject implements Project {
         defaults.put("test.qa-performance.src.dir", "test/qa-performance/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
         defaults.put("javac.source", "1.4");
+        //defaults.put("netbeans.javadoc.dir", nbroot != null ? "${nb_all}/nbbuild/build/javadoc" : "build/javadoc"); // NOI18N
         List/*<PropertyProvider>*/ providers = new ArrayList();
         providers.add(PropertyUtils.fixedPropertyProvider(stock));
         if (nbroot == null) {
@@ -389,17 +389,6 @@ final class NbModuleProject implements Project {
     public File getModuleJarLocation() {
         // XXX could use ModuleList here instead
         return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
-    }
-    
-    public URL getModuleJavadocDirectoryURL() {
-        String moduleJavadoc = "javadoc/" + eval.getProperty("javadoc.name"); // NOI18N
-        File f = helper.resolveFile(moduleJavadoc);
-        try {
-            return f.toURI().toURL();
-        } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ex);
-            return null;
-        }
     }
     
     public String getCodeNameBase() {
