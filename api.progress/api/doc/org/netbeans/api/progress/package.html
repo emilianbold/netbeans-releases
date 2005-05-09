@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+   -                 Sun Public License Notice
+   - 
+   - The contents of this file are subject to the Sun Public License
+   - Version 1.0 (the "License"). You may not use this file except in
+   - compliance with the License. A copy of the License is available at
+   - http://www.sun.com/
+   - 
+   - The Original Code is NetBeans. The Initial Developer of the Original
+   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+   - Microsystems, Inc. All Rights Reserved.
+  -->
+</head>
+<body>
+This API allows to visualize tracking for progress of long lasting tasks.<br>
+<br>
+The usual usecase goes like this:
+<br>
+<pre>
+ProgressHandle handle = ProgressHandleFactory.creatHandle("My custom task");
+...
+// we have 100 workunits
+// at this point the task appears in status bar.
+handle.start(100);
+...
+handle.progress(10);
+...
+handle.progress(50);
+...
+// at this point the task is finished and removed from status bar
+handle.finish();
+</pre>
+<br>
+There are several options on how detailed visualization you want.
+<ul>
+  <li>task with unknown duration or with hard to show progress steps.</li>
+  <li>task with known scaled steps</li>
+  <li>task with known steps and also with a time estimate for completion</li>
+</ul>
+All these usecases are supported by methods of {@link org.netbeans.api.progress.ProgressHandle} class. Additionally
+it's possible to include textual information about current progress.
+<br>
+If the task allows to be cancelled by the user, then you have to implement 
+{@link org.openide.util.Cancellable} interface and pass it to the {@link org.netbeans.api.progress.ProgressHandleFactory}
+when creating the handle.
+</body>
+</html>
