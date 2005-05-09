@@ -7,7 +7,7 @@
       <jndi-name>ejb/RosterBean</jndi-name>
     </ejb>
     <cmp-resource>
-      <jndi-name>jdbc/pointbase_sample</jndi-name>
+      <jndi-name>jdbc/pointbase</jndi-name>
     </cmp-resource>
   </enterprise-beans>
 </sun-ejb-jar>
