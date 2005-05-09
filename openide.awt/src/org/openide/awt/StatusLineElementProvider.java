@@ -20,7 +20,7 @@ import java.awt.Component;
  * Provides a component which will be added at east side of the status line.
  * The providers can be declared in module's MET-INF/services.
  * 
- * @since
+ * @since 6.4
  * @author Jiri Rechtacek
  */
 public interface StatusLineElementProvider {

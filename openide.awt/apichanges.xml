@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
         The exact location of your component is determined by the ordering of the providers.
         </description>
         <class package="org.openide.awt" name="StatusLineElementProvider"/>
+        <issue number="55828"/>
     </change>
 
     <change id="actions-with-custom-tooltip-have-shortcuts-in-toolbar">
