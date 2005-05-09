@@ -281,7 +281,7 @@ public class Common {
     }
     
     public static String constName(String name) {
-        return name.replace('-', '_').replace('#', '_').replace('.', '_').toUpperCase();
+        return name.replace('-', '_').replace('#', '_').replace('.', '_').replace(':', '_').toUpperCase();
     }
     
     /**

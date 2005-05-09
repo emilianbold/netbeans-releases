@@ -42,8 +42,6 @@ public class QName {
         if (localPart == null)
             throw new IllegalArgumentException("localPart == null");
         this.localPart = localPart;
-        if (prefix == null)
-            throw new IllegalArgumentException("prefix == null");
         this.prefix = prefix;
     }
 
