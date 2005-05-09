@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-  <jdbc-connection-pool connection-validation-method="auto-commit" datasource-classname="com.pointbase.jdbc.jdbcDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" max-pool-size="32" max-wait-time-in-millis="60000" name="connectionPool" pool-resize-quantity="2" res-type="javax.sql.DataSource" steady-pool-size="8" transaction-isolation-level="JDBC Driver Default" validation-table-name="TAB_NAME">
-    <property name="databaseName" value="jdbc:pointbase://localhost:9092/sun-appserv-samples"/>
-    <property name="User" value="pbpublic"/>
-    <property name="Password" value="pbpublic"/>
+  <jdbc-connection-pool steady-pool-size="8" max-pool-size="32" max-wait-time-in-millis="60000" pool-resize-quantity="2" idle-timeout-in-seconds="300" is-isolation-level-guaranteed="true" is-connection-validation-required="false" connection-validation-method="auto-commit" fail-all-connections="false" validation-table-name="TAB_NAME" datasource-classname="com.pointbase.jdbc.jdbcDataSource" res-type="javax.sql.DataSource" name="pointbaseConnectionPool">
+    <property value="jdbc:pointbase://localhost:9092/sun-appserv-samples" name="databaseName"/>
+    <property value="pbpublic" name="User"/>
+    <property value="pbpublic" name="Password"/>
   </jdbc-connection-pool>
 </resources>

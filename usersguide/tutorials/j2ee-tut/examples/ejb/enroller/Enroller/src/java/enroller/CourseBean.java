@@ -36,7 +36,7 @@ import javax.rmi.PortableRemoteObject;
 
 
 public class CourseBean implements EntityBean, CourseRemoteBusiness {
-    private static final String dbName = "jdbc/CollegeDB";
+    private static final String dbName = "jdbc/pointbase";
     private String courseId;
     private String name;
     private ArrayList studentIds;

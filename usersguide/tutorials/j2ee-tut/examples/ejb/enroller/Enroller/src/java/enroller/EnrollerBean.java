@@ -36,7 +36,7 @@ import javax.naming.*;
 
 
 public class EnrollerBean implements SessionBean, EnrollerRemoteBusiness {
-    private static final String dbName = "jdbc/CollegeDB";
+    private static final String dbName = "jdbc/pointbase";
     private Connection con;
     private SessionContext context;
 
