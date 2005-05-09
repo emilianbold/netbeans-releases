@@ -32,9 +32,11 @@ Microsystems, Inc. All Rights Reserved.
             </condition>
         </fail>
         <!-- Build Javadoc in the usual way: -->
+        <property file="../../nbbuild/build.properties"/>
         <ant dir="../../nbbuild" target="build-javadoc" inheritall="false">
             <!-- Stable only: -->
             <property name="modules" value="apisupport/apidocs"/>
+            <property name="fixedmodules" value="${config.fixedmodules.javadoc}"/>
             <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
         </ant>
         <mkdir dir="${docs.dir}"/>
