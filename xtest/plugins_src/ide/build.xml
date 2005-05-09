@@ -49,8 +49,10 @@ Microsystems, Inc. All Rights Reserved.
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">          
           <classpath refid="basecp"/>
-        </javac> 
-    </target>
+        </javac>
+        <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
+        <copy file="src/META-INF/services/org.openide.ErrorManager" todir="build/classes/META-INF/services"/>
+     </target>
     
     
     <target name="jar" depends="compile">
