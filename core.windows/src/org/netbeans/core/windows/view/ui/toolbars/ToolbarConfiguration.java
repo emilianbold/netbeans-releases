@@ -601,6 +601,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             toolbarPanel().add (tb, tc);
         }
 
+        if( someBarAdded ) {
+            rebuildMenu();
+        }
+        
         revalidateWindow();
 
     }
