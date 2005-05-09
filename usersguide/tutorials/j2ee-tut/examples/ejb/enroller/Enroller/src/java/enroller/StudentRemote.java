@@ -1,6 +1,5 @@
-package enroller;
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -11,7 +10,7 @@ package enroller;
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -26,9 +25,9 @@ package enroller;
  * Microsystems, Inc. aux Etats-Unis et dans d'autres pays.
  */
 
+package enroller;
 
 import javax.ejb.EJBObject;
-
 
 
 public interface StudentRemote extends EJBObject, StudentRemoteBusiness {

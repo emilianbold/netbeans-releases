@@ -1,7 +1,5 @@
-package order;
-
 /*
- * Copyright (c) 2004 Sun Microsystems, Inc.  All rights reserved.  U.S.
+ * Copyright (c) 2005 Sun Microsystems, Inc.  All rights reserved.  U.S.
  * Government Rights - Commercial software.  Government users are subject
  * to the Sun Microsystems, Inc. standard license agreement and
  * applicable provisions of the FAR and its supplements.  Use is subject
@@ -12,7 +10,7 @@ package order;
  * or registered trademarks of Sun Microsystems, Inc. in the U.S. and
  * other countries.
  *
- * Copyright (c) 2004 Sun Microsystems, Inc. Tous droits reserves.
+ * Copyright (c) 2005 Sun Microsystems, Inc. Tous droits reserves.
  *
  * Droits du gouvernement americain, utilisateurs gouvernementaux - logiciel
  * commercial. Les utilisateurs gouvernementaux sont soumis au contrat de
@@ -27,6 +25,7 @@ package order;
  * Microsystems, Inc. aux Etats-Unis et dans d'autres pays.
  */
 
+package order;
 
 import java.sql.*;
 import javax.sql.*;
@@ -35,7 +34,7 @@ import javax.ejb.*;
 import javax.naming.*;
 
 
-public class OrderBean implements EntityBean {
+public class OrderBean implements EntityBean, OrderRemoteBusiness {
     private static final String dbName = "jdbc/OrderDB";
     private String orderId;
     private ArrayList lineItems;
