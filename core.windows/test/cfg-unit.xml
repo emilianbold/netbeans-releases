@@ -48,6 +48,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/windows/persistence/*.class"/>
                 <include name="org/netbeans/core/windows/*.class"/>
                 <include name="org/netbeans/core/windows/services/*.class"/>
+                <include name="org/netbeans/core/windows/view/ui/*.class"/>
                 <exclude name="org/netbeans/core/windows/persistence/WindowManagerParserTest.class"/>
             </patternset>
         </testset>
