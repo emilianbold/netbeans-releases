@@ -242,7 +242,7 @@ public class SavingsAccountBean implements EntityBean, SavingsAccountRemoteBusin
         return result;
     }
 
-    public java.util.Collection ejbFindLastName(java.lang.String lastName) throws FinderException {
+    public java.util.Collection ejbFindByLastName(java.lang.String lastName) throws FinderException {
         //TODO implement ejbFindByLastName
          Collection result;
          try{

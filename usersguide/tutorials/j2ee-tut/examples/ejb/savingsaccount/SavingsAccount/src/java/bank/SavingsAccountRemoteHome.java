@@ -44,7 +44,7 @@ public interface SavingsAccountRemoteHome extends EJBHome {
 
     Collection findInRange(BigDecimal low, BigDecimal high) throws FinderException, RemoteException;
 
-    Collection findLastName(String lastName) throws FinderException, RemoteException;
+    Collection findByLastName(String lastName) throws FinderException, RemoteException;
 
     void ChargeForLowBalance(BigDecimal minimumBalance, BigDecimal charge) throws InsufficientBalanceException, RemoteException;
     
