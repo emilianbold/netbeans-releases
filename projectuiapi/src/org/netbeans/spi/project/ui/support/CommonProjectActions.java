@@ -21,13 +21,7 @@ import org.netbeans.modules.project.uiapi.Utilities;
  * @author Jesse Glick, Petr Hrebejk
  */
 public class CommonProjectActions {
-
-    /**
-     * Property honored by newProjectAction that defines
-     * default working directory (compare to project directory).
-     */
-    public static final String CURRENT_SOURCE_DIRECTORY = "currentSourceDirectory";  // NOI18N
-
+    
     private CommonProjectActions() {}
         
     /**
@@ -95,18 +89,5 @@ public class CommonProjectActions {
     public static Action newFileAction() {
         return Utilities.getActionsFactory().newFileAction();
     }
-
-    /**
-     * Creates action that invokes new project wizard.
-     * It honors {@link CURRENT_SOURCE_DIRECTORY}.
-     *
-     * @return an action
-     * @see org.netbeans.spi.project.ui.PrivilegedTemplates
-     * @see org.netbeans.spi.project.ui.RecommendedTemplates
-     */
-    public static Action newProjectAction() {
-        return null;
-        //return Utilities.getActionsFactory().newProjectAction();
-    }
-
+    
 }
