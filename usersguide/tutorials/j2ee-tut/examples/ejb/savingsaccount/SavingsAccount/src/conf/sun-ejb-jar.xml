@@ -6,8 +6,8 @@
       <ejb-name>SavingsAccountBean</ejb-name>
       <jndi-name>ejb/SavingsAccountBean</jndi-name>
       <resource-ref>
-        <res-ref-name>jdbc/SavingsAccountDB</res-ref-name>
-        <jndi-name>jdbc/SavingsAccountDB</jndi-name>
+        <res-ref-name>jdbc/pointbase</res-ref-name>
+        <jndi-name>jdbc/pointbase</jndi-name>
       </resource-ref>
     </ejb>
   </enterprise-beans>

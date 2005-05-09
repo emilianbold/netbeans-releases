@@ -163,7 +163,7 @@ public class SavingsAccountBean implements EntityBean, SavingsAccountRemoteBusin
     
     private javax.sql.DataSource getSavingsAccountDB() throws javax.naming.NamingException {
         javax.naming.Context c = new javax.naming.InitialContext();
-        return (javax.sql.DataSource) c.lookup("java:comp/env/jdbc/SavingsAccountDB");
+        return (javax.sql.DataSource) c.lookup("java:comp/env/jdbc/pointbase");
     }
     
     public String getId() {

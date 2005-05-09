@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-  <jdbc-resource enabled="true" jndi-name="jdbc/SavingsAccountDB" object-type="user" pool-name="pointbaseConnectionPool"/>
+  <jdbc-resource enabled="true" jndi-name="jdbc/pointbase" object-type="user" pool-name="pointbaseConnectionPool"/>
 </resources>
