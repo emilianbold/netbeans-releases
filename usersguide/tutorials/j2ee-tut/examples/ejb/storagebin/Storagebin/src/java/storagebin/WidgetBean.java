@@ -40,7 +40,7 @@ public class WidgetBean implements EntityBean, WidgetRemoteBusiness {
     private double price;
     private EntityContext context;
     private Connection con;
-    private String dbName = "jdbc/WidgetDB";
+    private String dbName = "jdbc/pointbase";
 
     public String getDescription() {
         return description;

@@ -35,7 +35,7 @@ import javax.naming.*;
 
 
 public class StorageBinBean implements EntityBean, StorageBinRemoteBusiness {
-    private static final String dbName = "jdbc/StorageBinDB";
+    private static final String dbName = "jdbc/pointbase";
     private String storageBinId;
     private String widgetId;
     private int quantity;
