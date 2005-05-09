@@ -931,7 +931,7 @@ Microsystems, Inc. All Rights Reserved.
     to extend, hide or reorder some of them it can just register its actions there.    
    </p>
   </api>
-    Revieved as issue #57874. Example code:
+    Revieved as issue <a href="http://tasklist.netbeans.org/issues/show_bug.cgi?id=57874">#57874</a>. Example code:
     <pre>
     &lt;folder name="Projects" &gt;
         &lt;folder name="Actions" &gt;
