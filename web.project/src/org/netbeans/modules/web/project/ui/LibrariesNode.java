@@ -521,13 +521,13 @@ final class LibrariesNode extends AbstractNode {
             }
             switch (type) {
                 case TYPE_LIBRARY:
-                    return this.sg == null ? other.sg == null : this.sg.equals(other.sg) &&
-                        this.classPathId == null ? other.classPathId == null : this.classPathId.equals (other.classPathId) &&
-                        this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId);
+                    return (this.sg == null ? other.sg == null : this.sg.equals(other.sg)) &&
+                        (this.classPathId == null ? other.classPathId == null : this.classPathId.equals (other.classPathId)) &&
+                        (this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId));
                 case TYPE_PROJECT:
-                    return this.antArtifact == null ? other.antArtifact == null : this.antArtifact.equals(other.antArtifact) &&
-                        this.classPathId == null ? other.classPathId == null : this.classPathId.equals (other.classPathId) &&
-                        this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId);
+                    return (this.antArtifact == null ? other.antArtifact == null : this.antArtifact.equals(other.antArtifact)) &&
+                        (this.classPathId == null ? other.classPathId == null : this.classPathId.equals (other.classPathId)) &&
+                        (this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId));
                 case TYPE_PLATFORM:
                 case TYPE_J2EE_PLATFORM:
                     return true;
