@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Writing a JMX Agent</h2>
+<br>
+This chapter demonstrates the use of the Agent Wizard. Part of the
+contained information can be applied to any Java application.<br>
+<br>
+Any application that registers MBeans within an MBeanServer is a JMX
+Agent.<br>
+You can locally access the platform MBeanServer by calling <span
+ style="font-style: italic;">java.lang.management.ManagementFactory.getPlatformMBeanServer()<br>
+</span>Once you get a reference to the MBeanServer you can then
+register your MBeans.<br>
+<br>
+<h2>Using the JMX Agent Wizard to generate a Simple Agent</h2>
+<ol>
+  <li>Select <span style="font-style: italic;">File/New File...</span></li>
+  <li>Select the <span style="font-style: italic;">Management </span>category.
+In <span style="font-style: italic;">File Types</span> select <span
+ style="font-style: italic;">JMX Agent</span></li>
+  <li>Type in a <span style="font-style: italic;">Name</span> and a <span
+ style="font-style: italic;">Package</span>.</li>
+  <li>A main method and some sample code are generated. If the current
+project is a <span style="font-style: italic;">Java Application project</span>,
+the agent class will be set as the project main class.&nbsp; You can
+disable these features by unselecting the appropriate checkbox.<br>
+  </li>
+  <li>Click <span style="font-style: italic;">Finish&gt;</span></li>
+  <li>The JMX Agent source code is loaded in the editor.</li>
+</ol>
+<br>
+<h2>Registering your MBeans in MBeanServer</h2>
+<ol>
+  <li>In the Agent source file go to the <span
+ style="font-style: italic; font-weight: bold;">init()</span> method</li>
+  <li>If you asked for sample code generation, a commented block of
+code shows how a CounterMonitor (an MBean that is part of JMX API) is
+created, named and registered. You can uncomment the generated sample
+code and update it with your own MBeans.&nbsp; For example you can :</li>
+  <ol>
+    <li>Replace the CounterMonitor instantiation with the&nbsp; MBean
+you previously generated (eg: <span
+ style="font-weight: bold; font-style: italic;">CacheManager cm = new
+CacheManager();</span>)</li>
+    <li>Change theObjectName <span
+ style="font-style: italic; font-weight: bold;">type </span>key value
+with your MBean class name (eg: <span
+ style="font-style: italic; font-weight: bold;">new
+ObjectName(":type=CacheManager");</span>)</li>
+    <li>Register your MBean in the MBeanServer (eg: <span
+ style="font-weight: bold; font-style: italic;">getMBeanServer().registerMBean(cm,
+objName);</span>)</li>
+  </ol>
+  <li>You can now compile, run and visualize MBeans living in your
+Agent. Just click on <span style="font-style: italic;">Run/Run Main
+Project with JConsole...</span>, or on its associated toolbar icon.
+Compilation, execution and visualization will be processed automatically.<br>
+  </li>
+</ol>
+<h3 class="pHeading2">
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</h3>
+</body>
+</html>

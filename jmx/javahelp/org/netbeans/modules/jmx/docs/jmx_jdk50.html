@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>JMX Technology and J2SE 5.0</h2>
+J2SE 5.0 has implemented version 1.2 of the JMX specification and
+version 1.0 of the <a
+ href="http://jcp.org/aboutJava/communityprocess/final/jsr160/index.html">JMX
+Remote API (JSR 160)</a> specification. J2SE 5.0 includes significant
+monitoring and management features, including:
+<p></p>
+<ul>
+  <li><b>JVM instrumentation:</b> The JVM is instrumented for
+monitoring and management providing built-in, out-of-the-box management
+capabilities for local and remote access.<br>
+    <br>
+  </li>
+  <li><b>Monitoring and Management APIs:</b> The <code>java.lang.management</code>
+package provides the interface for monitoring and managing the JVM. It
+provides access to information such as: the number of classes loaded and
+threads running, memory consumption, garbage collection statistics,
+on-demand deadlock detection, and others.<br>
+    <br>
+  </li>
+  <li><b>Management tools</b> such as <a
+ href="http://java.sun.com/developer/technicalArticles/J2SE/jconsole.html">JConsole</a>,
+which is a JMX-compliant monitoring tool that comes with J2SE 5.0. It
+uses JMX instrumentation of the JVM to provide information on
+performance and resource consumption of applications running on the
+Java platform.<br>
+    <br>
+  </li>
+</ul>
+<p>
+The core classes for the JMX implementation are provided in the <a
+ href="http://java.sun.com/j2se/1.5.0/docs/api/javax/management/package-summary.html#package_description"><code>javax.management</code></a>
+package. In addition, the <a
+ href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/management/package-summary.html#package_description"><code>java.lang.management</code></a>
+package provides the mangagement interface for monitoring and
+management of the JVM as well as the operating system on which the JVM
+is running.
+</p>
+<p>
+To enable the JMX agent and configure its operation using <code>jconsole</code>,
+you must set some specific system properties when you start the JVM.
+For local access, set the property <code>com.sun.management.jmxremote</code>
+as follows when starting the JVM:
+</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<b>prompt&gt;</b> <code>java
+-Dcom.sun.management.jmxremote AppName</code>
+</p>
+<p>And, to enable monitoring and management from remote systems, set
+the property:
+</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<code>com.sun.management.jmxremote.port=portNumber</code>
+</p>
+<p>For more information on setting system properties for JMX, please
+see <a
+ href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html">Monitoring
+and Management using JMX</a>.
+</p>
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</body>
+</html>

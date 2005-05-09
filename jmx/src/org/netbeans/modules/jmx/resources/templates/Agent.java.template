@@ -1,0 +1,71 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Template.Classes;
+
+import javax.management.ObjectName;
+import javax.management.MBeanServer;
+import java.lang.management.ManagementFactory;
+
+/**
+ * JMX agent class.
+ * You may use the New JMX MBean wizard to create a Managed Bean.
+ * @author __USER__
+ */
+public class Agent {
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) throws Exception {
+    
+        __NAME__ agent = __NAME__.getDefault();
+
+        System.out.println("__NAME__ started. Waiting...");
+        Thread.sleep(Long.MAX_VALUE);
+    }
+
+    /**
+     * Instantiate and register your MBeans.
+     */
+    public void init() throws Exception {
+
+        //TODO Add your MBean registration code here
+
+        /* *** SAMPLE REGISTRATION EXAMPLE *** */
+        /*
+        // Instantiate CounterMonitor MBean
+        javax.management.monitor.CounterMonitor mbean = 
+            new javax.management.monitor.CounterMonitor();
+        ObjectName mbeanName = new ObjectName (":type=CounterMonitor");
+        //Register the CounterMonitor MBean
+        getMBeanServer().registerMBean(mbean, mbeanName);
+        */
+    }
+    
+    /**
+    * Returns an agent singleton.
+    */
+    public synchronized static __NAME__ getDefault() throws Exception {
+        if(singleton == null) {
+            singleton = new __NAME__();
+            singleton.init();
+        }
+        return singleton;
+    }
+
+    public MBeanServer getMBeanServer() {
+        return mbs;
+    }
+
+    // Platform MBeanServer used to register your MBeans
+    private final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+
+    // Singleton instance
+    private static __NAME__ singleton;
+}
+
+

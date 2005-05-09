@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Bundled Tomcat configuration</h2>
+In order to enable a JConsole access to the Tomcat JVM management data,
+the Tomcat launch script must be updated.<br>
+1) Edit &lt;your netbeans
+install&gt;/enterprise1/jakarta-tomcat-5.5.7/bin/catalina.bat (.sh on
+Unix)<br>
+2) Add <span style="font-weight: bold;">-Dcom.sun.management.jmxremote</span>&nbsp;
+system property to Tomcat JVM run command line. For each <span
+ style="font-style: italic;">exec</span> command, add the needed
+property. Follows a catalina script extract :<br>
+<br>
+...<br>
+<span style="font-style: italic;">&nbsp;exec "$_RUNJAVA" $JAVA_OPTS
+$CATALINA_OPTS \</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-Djava.endorsed.dirs="$JAVA_ENDORSED_DIRS" -classpath "$CLASSPATH" \</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-Djava.security.manager \</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-Djava.security.policy=="$CATALINA_BASE"/conf/catalina.policy \</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-Dcatalina.base="$CATALINA_BASE" \</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-Dcatalina.home="$CATALINA_HOME" \</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-Djava.io.tmpdir="$CATALINA_TMPDIR" \</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span
+ style="font-weight: bold; font-style: italic;">
+-Dcom.sun.management.jmxremote</span><span style="font-style: italic;">
+\</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+org.apache.catalina.startup.Bootstrap "$@" start</span><br>
+...<br>
+<br>
+3) You are done. You are now able to visualize your MBeans (and all
+other JVM MBeans) from JConsole.<br>
+<br>
+<h2>Connecting JConsole</h2>
+1) First, be sure to have properly configured Tomcat. <br>
+2) If you have a running Tomcat, stop it.<br>
+3) Run your web application.<br>
+4) Call <span style="font-style: italic;">Run/Start JConsole...</span>
+(or its associated Toolbar icon).<br>
+5) JConsole is displayed. <br>
+6) Select <span style="font-weight: bold;">org.apache.catalina.startup.Bootstrap</span>
+from the proposed table of Agent to connect to.<br>
+7) Click <span style="font-style: italic;">Connect</span>.<br>
+8) You can now visualize your MBeans as well as Tomcat and JVM ones.<br>
+<h3 class="pHeading2">
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</h3>
+</body>
+</html>

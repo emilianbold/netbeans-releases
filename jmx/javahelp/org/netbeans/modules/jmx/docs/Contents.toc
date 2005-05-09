@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN" "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<toc version="1.0">
+  <tocitem>JMX. Application Management
+    <tocitem target="release_notes">Release Notes</tocitem>
+    <tocitem>Overview
+     <tocitem target="jmx_about">About JMX Application Development</tocitem>
+     <tocitem target="jmx_jdk50">JMX and JDK 5.0</tocitem>
+     <tocitem target="jmx_progr_model">JMX Programming Model</tocitem>
+    </tocitem>
+    <tocitem>Architecture
+     <tocitem target="jmx_architecture">JMX Architecture</tocitem>
+     <tocitem target="jmx_instrumentation">Instrumentation Level</tocitem>
+     <tocitem target="jmx_agent">Agent Level</tocitem>
+     <tocitem target="jmx_manager">Manager Level</tocitem>
+    </tocitem>
+    <tocitem>JMX MBean and Agent Wizards
+     <tocitem target="jmx_instrumenting_app">Instrumenting your Resources with MBean</tocitem>
+     <tocitem target="jmx_agent_app">Writing a JMX Agent</tocitem>
+    </tocitem>
+    <tocitem>Running, Debugging and Visualizing JMX Management
+     <tocitem target="jconsole_standalone">JConsole Management Console</tocitem>
+     <tocitem target="jmx_project_conf">Configuring your Java Application Project</tocitem>
+     <tocitem target="jmx_running_app">Running and Debugging with JConsole</tocitem>
+     <tocitem target="jmx_remote_running_app">Running and Debugging with Remote Management</tocitem>
+     <tocitem target="mgt_properties">Management Configuration File Wizard</tocitem>
+    </tocitem>
+    <tocitem>Web Application Project and JMX
+     <tocitem target="jmx_web_app">Accessing MBeans from JSP</tocitem>
+     <tocitem target="jmx_web_jconsole">Connecting JConsole to Tomcat JVM</tocitem>
+    </tocitem>
+  </tocitem>
+</toc>

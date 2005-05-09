@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
-OpenIDE-Module: com.sun.management.jmx.modules/1
-OpenIDE-Module-Public-Packages: com.sun.management.jmx.modules.mbeanwizard.*
+OpenIDE-Module: org.netbeans.modules.jmx
+OpenIDE-Module-Public-Packages: org.netbeans.modules.jmx.mbeanwizard.*
 OpenIDE-Module-Specification-Version: 0
 OpenIDE-Module-Implementation-Version: 0
-OpenIDE-Module-Localizing-Bundle: com/sun/management/jmx/modules/Bundle.properties
-OpenIDE-Module-Layer: com/sun/management/jmx/modules/JMXModuleLayer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jmx/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/jmx/JMXModuleLayer.xml
 OpenIDE-Module-Java-Dependencies: Java > 1.4
-Class-Path: docs/com-sun-management-jmx-modules.jar
+Class-Path: docs/org-netbeans-modules-jmx.jar

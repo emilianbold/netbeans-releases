@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Instrumentation Level</h2>
+<p>This tier contains MBeans and their manageable resources. It
+provides a specification for implementing JMX technology-manageable
+resources, which can be an application, service, device, or user. A
+resource is manageable if it is developed in Java (or provides a Java
+wrapper) and has been instrumented so that it can be managed by
+JMX-compliant applications. A resource is instrumented by one or more
+MBeans that are either standard or dynamic. Standard MBeans are Java
+objects that conform to certain design patterns (for example, they must
+have a constructor and setter/getter methods). A dynamic MBean conforms
+to a specific interface that offers more flexibility at runtime. The
+instrumentation of a resource allows it to be manageable at the agent
+level; however, note that MBeans do not require knowledge of the JMX
+agent with which they operate. In other words, any JMX-manageable
+resource can use any JMX agent that offers the services it requires.
+</p>
+<p>
+The key Components at the instrumentation level are the MBeans, the
+notification model, and the MBean metadata classes.
+</p>
+<ul>
+  <li><b>MBeans</b>: An MBean is a Java object that implements a
+specific interface. The management interface of an MBean is represented
+as: (1) valued attributes that can be accessed; (2) operations that can
+be invoked; (3) notifications that can be emitted; and (4) the
+constructors. There are four types of MBeans:</li>
+  <br>
+  <ul>
+    <li><b>Standard MBeans</b>: The simplest to design and implement.
+Their management interface is described by their method names.</li>
+    <li><b>Dynamic MBeans</b>: They implement a specific interface, and
+they expose their management interfaces at runtime for greatest
+flexibility.</li>
+    <li><b>Open MBean</b>: Dynamic MBeans that rely on basic data types
+for universal manageability; they are self-describing for
+user-friendliness.</li>
+    <li><b>Model MBeans</b>: Dynamic MBeans that are fully configurable
+and self described at runtime. They provide a generic MBean class with
+default behavior for dynamic instrumentation of resources. </li>
+  </ul>
+</ul>
+<ul>
+  <li><b>Notification Model</b>: JMX technology defines a generic
+notification model based on the Java event model. It lets developers
+build proactive management solutions. Using notifications, JMX agents
+and MBeans can send critical information to interested parties such as
+management applications or other MBeans.</li>
+  <br>
+  <br>
+  <li><b>MBean Metadata Classes</b>: These classes contain the
+structures to describe all components of an MBean's management
+interface: its attributes, operations, notification, and constructors.
+For each of these, the metadata include a name, a description and its
+particular characteristics (for example, an attribute is readable,
+writeable, or both; for an operation, the signature of its parameter
+and return types).<small></small></li>
+</ul>
+<p><br>
+</p>
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN" "http://java.sun.com/products/javahelp/map_1_0.dtd">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<map version="1.0">
+  <mapID target="jmx_about" url="jmx_about.html" />
+	<mapID target="tbd" url="tbd.html" />
+        <mapID target="release_notes" url="release_notes.html" />
+	<mapID target="jmx_architecture" url="jmx_architecture.html" />
+        <mapID target="jmx_instrumentation" url="jmx_instrumentation.html" />
+        <mapID target="jmx_agent" url="jmx_agent.html" />
+        <mapID target="jmx_manager" url="jmx_manager.html" />
+        <mapID target="jmx_jdk50" url="jmx_jdk50.html" />
+        <mapID target="jmx_progr_model" url="jmx_progr_model.html"/>
+        <mapID target="jmx_instrumenting_app" url="jmx_instrumenting_app.html"/>
+        <mapID target="jmx_agent_app" url="jmx_agent_app.html"/>
+        <mapID target="jconsole_standalone" url="jconsole_standalone.html"/>
+        <mapID target="jmx_project_conf" url="jmx_project_conf.html"/>
+        <mapID target="jmx_remote_running_app" url="jmx_remote_running_app.html"/>
+        <mapID target="jmx_running_app" url="jmx_running_app.html"/>      
+        <mapID target="jmx_web_app" url="jmx_web_app.html"/>
+        <mapID target="jmx_web_jconsole" url="jmx_web_jconsole.html"/>
+        <mapID target="mgt_properties" url="mgt_properties.html"/>
+</map>

@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Instrumenting your resources with MBeans</h2>
+<p class="pBody">An <em class="cEmphasis">MBean</em> is a managed Java
+object, similar to a JavaBean<sup class="cSuperscript">TM</sup>, that
+follows the design patterns set forth in the instrumentation level of
+the JMX specification. An MBean can represent a device, an application,
+or any resource that needs to be managed. MBeans expose a management
+interface: a set of readable and/or writable attributes and a set of
+invokable operations, along with a self-description. The management
+interface does not change throughout the life of an MBean instance.
+MBeans can also emit notifications when certain defined events occur.
+</p>
+<a name="wp1053105"> </a>
+<p class="pBody">The JMX specification defines four types of MBean: <em
+ class="cEmphasis">standard MBeans</em>, <em class="cEmphasis">dynamic
+MBeans</em>, <em class="cEmphasis">open MBeans</em> and <em
+ class="cEmphasis">model MBeans</em>. The examples in this chapter
+demonstrate the simplest type of MBean, namely standard MBeans.<br>
+</p>
+<h2>Standard MBeans</h2>
+<p class="pBody">A standard MBean is defined by writing a Java
+interface called <code class="cCode">SomethingMBean</code> and a Java
+class called <code class="cCode">Something</code> that implements that
+interface. Every method in the interface defines either an attribute or
+an operation in the MBean. By default every method defines an
+operation. Attributes and operations are simply methods which follow
+certain design patterns. A standard MBean is com posed of the MBean
+interface which lists the methods for all exposed attributes and
+operations, and the class which implements this interface and provides
+the functionality of the instrumented resource. </p>
+<h2>Using the MBean Wizard to generate a
+Standard MBean</h2>
+<p class="pBody">The following sections dissect an example standard
+MBean, and a simple JMX agent that manages the MBean. <br>
+The MBean and Agent wizards are used to generate the classes. <span
+ style="font-style: italic;"></span><br>
+</p>
+<ol>
+  <li>Select <span style="font-style: italic;">File/New File...</span></li>
+  <li>Select the <span style="font-style: italic;">Management </span>category.
+In <span style="font-style: italic;">File Types</span> select <span
+ style="font-style: italic;">JMX MBean</span></li>
+  <li>Type in a <span style="font-style: italic;">Name</span>, a <span
+ style="font-style: italic;">Package </span>and a <span
+ style="font-style: italic;">Description</span>. <br>
+  </li>
+  <li>Choose an MBean type. By default a Standard MBean will be
+created. If you want to go for a <span style="font-weight: bold;">more
+dynamic and more self documented</span> kind of MBean, you can select <span
+ style="font-style: italic; font-weight: bold;">Dynamic MBean</span>.
+This kind of MBean is more complex to implement<span
+ style="font-style: italic;"> </span>but allows you to provide some
+documented MetaData. An <span style="font-style: italic;"><span
+ style="font-weight: bold;">Extended Standard MBean</span> </span>is <span
+ style="font-weight: bold;">as simple to implement as a Standard MBean
+and has the dynamicity of a Dynamic MBean</span>. This kind of MBean is
+well suited to add management to an existing class.<br>
+  </li>
+  <li><span style="font-style: italic;"></span>From now, you can click <span
+ style="font-style: italic;">Finish</span>
+at any time.</li>
+  <li>Click <span style="font-style: italic;">Next&gt;</span><br>
+  </li>
+  <li>If you want your MBean to have attributes, click <span
+ style="font-style: italic;">Add Attribute.</span><br>
+  </li>
+  <li>In the <span style="font-style: italic;">Attributes </span>Table,
+first row, type in :</li>
+  <ul>
+    <li>In the column <span style="font-style: italic;">Name</span> type
+in an Attribute Name (eg : Status)<br>
+    </li>
+    <li>In the column <span style="font-style: italic;">Type </span>select
+a Java type<span style="font-style: italic;"> </span>(eg: <span
+ style="font-style: italic;">String</span>)<span
+ style="font-style: italic;"><br>
+      </span></li>
+    <li>In the column<span style="font-style: italic;"> Access </span>select
+an access type (eg:<span style="font-style: italic;">Read / Write</span>)</li>
+    <li>In the column <span style="font-style: italic;">Description</span>,
+type in what this attribute represents (eg: This MBean current Status)<span
+ style="font-style: italic;"><br>
+      </span></li>
+  </ul>
+  <li>If you want your MBean to have operations, click <span
+ style="font-style: italic;">Add Operation.</span></li>
+  <li>In the <span style="font-style: italic;">Operations </span>Table,
+first row, type in :</li>
+  <ul>
+    <li>In the column <span style="font-style: italic;">Name</span> type
+in an operation name (eg : reset)<br>
+    </li>
+    <li>In the column <span style="font-style: italic;">Return Type </span>select
+a Java type<span style="font-style: italic;"> </span>(eg: <span
+ style="font-style: italic;">void</span>)</li>
+    <li>If you want to add input parameters, in the column <span
+ style="font-style: italic;">Parameters</span>, click <span
+ style="font-style: italic;">Edit</span> button.</li>
+    <ul>
+      <li>Click <span style="font-style: italic;">Add Parameter</span></li>
+      <li>In the column <span style="font-style: italic;">Parameter Name</span>
+you can change the default parameter name.<br>
+      </li>
+      <li>In the column <span style="font-style: italic;">Parameter Type </span>select
+a Java type<span style="font-style: italic;"> </span>(eg: <span
+ style="font-style: italic;">String</span>)</li>
+      <li>In the column <span style="font-style: italic;">Parameter
+Description&nbsp;</span>
+type in what this parameter represents.</li>
+    </ul>
+    <li>In the column <span style="font-style: italic;">Description</span>,
+type in what this operation represents (eg: Reset the current Status)</li>
+  </ul>
+  <li>Click <span style="font-style: italic;">Next&gt;</span></li>
+  <li>If you want your MBean to send notifications, click <span
+ style="font-style: italic;">Add Notification</span><br>
+  </li>
+  <li>In the <span style="font-style: italic;">Notifications </span>Table,
+first row, type in :</li>
+  <ul>
+    <li>In the column <span style="font-style: italic;">Notification Class</span>
+you can select a standard JMX notification class or type in your own
+Notification class. If you select AttributeChangeNotification class,
+the Notification type will be automaticaly set to
+AttributeChangeNotification.ATTRIBUTE_CHANGE.<span
+ style="font-weight: bold;"> NB A more explicit UI design will be
+applied to reflect this behavior.</span><br>
+    </li>
+    <li>In the column <span style="font-style: italic;">Description</span>
+type in a notification description (eg: "Send a notification when the
+Status attribute is changed")</li>
+    <li>In the column Notification type,&nbsp; click <span
+ style="font-style: italic;">Edit </span>button.</li>
+    <ul>
+      <li>Click <span style="font-style: italic;">Add Type</span></li>
+      <li>In the column <span style="font-style: italic;">Notification, </span>you
+can change the default type to your own type (eg :
+com.foo.event.BIRTHDAY)<span style="font-style: italic;"><br>
+        </span></li>
+    </ul>
+  </ul>
+  <li>Click <span style="font-style: italic;">Next&gt;</span></li>
+  <li>If you want to generate a JUnit test, select the <span
+ style="font-style: italic;">Create JUnit Test</span> checkbox.</li>
+  <li>Select a test package.<br>
+  </li>
+  <li>Click <span style="font-style: italic;">Finish</span>.</li>
+  <li>The MBean implementation class is opened in the editor.&nbsp;
+If you selected a Standard MBean type, an MBean interface (named <span
+ style="font-style: italic;">&lt;MBean
+Name&gt;MBean</span>) implementation class (named <span
+ style="font-style: italic;">&lt;MBean Name&gt;) </span>and JUnit test
+are generated in the src and test packages you selected.</li>
+  <li>You can now add your own logic to the generated code and run the
+JUnit test.</li>
+</ol>
+<br>
+<h2>Adding code to send Attribute Change Notifications</h2>
+In the editor, select the <span style="font-style: italic;">setStatus</span>
+method name. After your attribute is set, add the following code.<br>
+<span style="font-weight: bold;">NB</span>: For reasons of simplification,
+the sequence number is set to 0.
+Be sure to provide a meaningful, unique sequence number.<br>
+<br>
+<span style="font-style: italic; font-weight: bold;">//Send a
+notification when the
+attribute is set</span><br style="font-weight: bold;">
+<span style="font-style: italic; font-weight: bold;">Notification n =
+new
+Notification(AttributeChangeNotification.ATTRIBUTE_CHANGE, this, 0);<br>
+broadcaster.sendNotification(n);</span><br>
+<br>
+<h3 class="pHeading2">
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</h3>
+</body>
+</html>

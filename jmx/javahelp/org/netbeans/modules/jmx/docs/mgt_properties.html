@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Management Property File Wizard<br>
+</h2>
+This wizard allows you to generate a management configuration file.
+This file is a standard Java property file.<br>
+When launching a JDK 5.0 JVM, you can provide a management property
+file using the following System property<br>
+<pre style="font-weight: bold; font-style: italic;">-Dcom.sun.management.config.file=&lt;path to managemenet properties file&gt;</pre>
+<br>
+To Access the wizard :<br>
+<ol>
+  <li>Select <span style="font-style: italic;">File/New File...</span></li>
+  <li>Select the <span style="font-style: italic;">Management </span>category.
+In <span style="font-style: italic;">File Types</span> select <span
+ style="font-style: italic;">Management Properties File<br>
+    </span></li>
+  <li>Type in a <span style="font-style: italic;">Name</span> and a <span
+ style="font-style: italic;">Location</span>. Two more files will be
+generated. An access and password file that contain RMI authentication
+configuration.<br>
+  </li>
+  <li>Click <span style="font-style: italic;">Next&gt;</span></li>
+  <li>Type in RMI related information. You can set an RMI Port, enable
+RMI Authentication, add Roles and Passwords, Enable SSL.<span
+ style="font-weight: bold;">&nbsp;</span></li>
+  <li>Click <span style="font-style: italic;">Next&gt;</span></li>
+  <li>You can enable SNMP and type in an UDP
+port, an SNMP interface, a trap port, enable Access Control, and set a
+custom ACL file.<br>
+  </li>
+  <li>Click <span style="font-style: italic;">Next&gt;</span></li>
+  <li>You can then enable
+thread contention monitoring.&nbsp;<span style="font-weight: bold;"></span></li>
+  <li><span style="font-style: italic;">Finish&gt; </span>A popup
+window informs you to restrict access to password file. You have to
+change
+the generated .password file access. It must be readable for you only
+(On Unix systems : -rw-------). If you don't change the access, and you
+enable RMI Authentication, the
+Agent will not start.</li>
+  <span style="font-style: italic;"><br>
+  </span>
+</ol>
+Three files are generated in the selected location. You can use this
+generated properties file when running the Main Project with Remote
+Management (from menu <span style="font-style: italic;">Run/Management/Run(orDebug)
+Main Project with Remote Management...</span>).<span
+ style="font-weight: bold;"><br>
+</span>
+<h3 class="pHeading2"></h3>
+<h3 class="pHeading2">
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</h3>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Agent Level</h2>
+<p>This tier contains the JMX agents used to expose the MBeans. It
+provides a specification for implementing agents, which control the
+resources and make them available to remote management applications.
+Agents are usually located on the same machine as the resources they
+manage, but this is not a requirement. The JMX agent consists of an
+MBean server and a set of services for handling MBeans. Managers access
+an agent's MBeans and use the provided services through a protocol
+adaptor or connector. But note that JMX agents do not require knowledge
+of the remote management applications that use them.</p>
+<p>The main components at the agent level are the MBean Server and
+Agent Services.</p>
+<ul>
+  <li><b>MBean Server</b>: A registry of objects that are exposed to
+management operations in an agent. Any object registered with the MBean
+server becomes visible to management applications. However, note that
+the MBean server only exposes an MBean's management interface and never
+its direct object reference. Any resources that you want to manage from
+outside the agent's JVM must be registered as an MBean in the server.
+The server also provides a standardized interface for accessing MBeans
+within the same JVM, giving local objects all the benefits of
+manipulating manageable resources. MBeans can be instantiated and
+registered by another MBean, the agent itself, or a remote management
+application through the distributed services. When you register an
+MBean, you must assign it a unique object name, which is used by the
+management application to identify the object on which to perform a
+management operation.<br>
+    <br>
+  </li>
+  <li><b>Agent Services</b>: Objects that can perform management
+operations on the MBeans registered in the MBean server. By including
+management intelligence in the agent, JMX helps you build more powerful
+management solutions. The JMX API defines the following Agent Services
+available in J2SE 5.0:</li>
+  <br>
+  <ul>
+    <li><b>Dynamic Class loader</b>: Through the management applet
+(m-let) service, retrieves and instantiates new classes and native
+libraries from an arbitrary network location.</li>
+    <li><b>Monitors</b>: Observe the numerical or string value of an
+attribute of several MBeans and can notify other objects of several
+types of changes in the target.</li>
+    <li><b>Timers</b>: Provide a scheduling mechanism based on a
+one-time alarm-clock notification or on a repeated, periodic
+notification.</li>
+    <li><b>The relation service</b>: Defines associations between
+MBeans and enforces the cardinality of the relation based on predefined
+relation types.<small></small></li>
+  </ul>
+</ul>
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</body>
+</html>

@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <code-name-base>com.sun.management.jmx.modules</code-name-base>
+            <code-name-base>org.netbeans.modules.jmx</code-name-base>
             <path>jmx</path>
             <public-packages/>
             <module-dependencies> 
