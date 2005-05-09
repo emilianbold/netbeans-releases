@@ -414,15 +414,21 @@ public final class Utils {
                 }
                 continue;
             }
-            if (FileOwnerQuery.getOwner(sourceRoots[i]) != project) {
+            Project testRootOwner = FileOwnerQuery.getOwner(sourceRoots[i]);
+            if (!project.equals(testRootOwner)) {
+                sourceRoots[i] = null;
+                
                 int severity = ErrorManager.INFORMATIONAL;
                 if (ErrorManager.getDefault().isNotifiable(severity)) {
                     ErrorManager.getDefault().notify(
                         severity,
                         new IllegalStateException(
-                    "Source root found by FileOwnerQuery points "       //NOI18N
-                    + "to a different project for the following URL: "  //NOI18N
-                    + rootURLs[i]));
+                            "Malformed project: Found test root (" +    //NOI18N
+                                rootURLs[i] + ')' + ' ' +
+                                (testRootOwner == null
+                                        ? "does not belong to any"      //NOI18N
+                                        : "belongs to a different") +   //NOI18N
+                                " project."));                          //NOI18N
                 }
                 continue;
             }
