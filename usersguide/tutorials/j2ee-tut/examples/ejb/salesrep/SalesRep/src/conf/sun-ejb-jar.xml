@@ -7,7 +7,7 @@
       <jndi-name>ejb/CustomerBean</jndi-name>
       <resource-ref>
         <res-ref-name>jdbc/SalesDB</res-ref-name>
-        <jndi-name>jdbc/SalesDB</jndi-name>
+        <jndi-name>jdbc/pointbase</jndi-name>
       </resource-ref>
     </ejb>
     <ejb>
@@ -19,7 +19,7 @@
       </ejb-ref>
       <resource-ref>
         <res-ref-name>jdbc/SalesDB</res-ref-name>
-        <jndi-name>jdbc/SalesDB</jndi-name>
+        <jndi-name>jdbc/pointbase</jndi-name>
       </resource-ref>
     </ejb>
   </enterprise-beans>
