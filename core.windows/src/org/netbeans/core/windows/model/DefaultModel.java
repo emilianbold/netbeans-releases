@@ -212,13 +212,6 @@ final class DefaultModel implements Model {
     }
     
     // XXX
-    public void addModeBetween(ModeImpl mode, ModelElement firstElement, ModelElement secondElement) {
-        synchronized(LOCK_MODES) {
-            modesSubModel.addModeBetween(mode, firstElement, secondElement);
-        }
-    }
-    
-    // XXX
     public void addModeAround(ModeImpl mode, String side) {
         synchronized(LOCK_MODES) {
             modesSubModel.addModeAround(mode, side);
@@ -1000,10 +993,9 @@ final class DefaultModel implements Model {
         }
     }
     
-    public void setSplitWeights(ModelElement firstElement, double firstSplitWeight,
-    ModelElement secondElement, double secondSplitWeight) {
+    public void setSplitWeights( ModelElement[] snapshots, double[] splitWeights ) {
         synchronized(LOCK_MODES) {
-            modesSubModel.setSplitWeights(firstElement, firstSplitWeight, secondElement, secondSplitWeight);
+            modesSubModel.setSplitWeights(snapshots, splitWeights);
         }
     }
     // Controller updates <<

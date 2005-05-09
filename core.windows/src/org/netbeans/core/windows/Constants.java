@@ -66,7 +66,7 @@ public abstract class Constants {
     
     // DnD drop ratios.
     /** How big portion of the original mode has to be taken (range from 0.0 to 1.0). */
-    public static final double DROP_TO_SIDE_RATIO = 0.15D;
+    public static final double DROP_TO_SIDE_RATIO = 0.25D;
     /** How big portion should take the new mode from each one (between which is dropped) (range from 0.0 to 1.0). */
     public static final double DROP_BETWEEN_RATIO = 1.0D/3;
     /** How big portion of entire area should take the dropped mode (range from 0.0 to 1.0). */

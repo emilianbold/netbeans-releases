@@ -91,13 +91,12 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
             }
         } else if(accessor instanceof SplitAccessor) {
             SplitAccessor split = (SplitAccessor)accessor; 
-            ModeAccessor ma = findModeAccessorOfName(split.getFirst(), name);
-            if(ma != null) {
-                return ma;
-            }
-            ma = findModeAccessorOfName(split.getSecond(), name);
-            if(ma != null) {
-                return ma;
+            ElementAccessor[] children = split.getChildren();
+            for( int i=0; i<children.length; i++ ) {
+                ModeAccessor ma = findModeAccessorOfName(children[i], name);
+                if(ma != null) {
+                    return ma;
+                }
             }
         } else if(accessor instanceof EditorAccessor) {
             EditorAccessor editorAccessor = (EditorAccessor)accessor;
@@ -152,20 +151,18 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
     /** */ 
     static final class SplitAccessorImpl extends ElementAccessorImpl implements SplitAccessor {
         private final int orientation;
-        private final double splitPosition; // relative
-        private final ElementAccessor first;
-        private final ElementAccessor second;
+        private final double[] splitPositions; // relative
+        private final ElementAccessor[] children;
         private final double resizeWeight;
         
         public SplitAccessorImpl(ModelElement originator, ElementSnapshot snapshot,
-        int orientation, double splitPosition,
-        ElementAccessor first, ElementAccessor second, double resizeWeight) {
+        int orientation, double[] splitPositions,
+        ElementAccessor[] children, double resizeWeight) {
             super(originator, snapshot); // It correspond to the first child model element.
             
             this.orientation = orientation;
-            this.splitPosition = splitPosition;
-            this.first = first;
-            this.second = second;
+            this.splitPositions = splitPositions;
+            this.children = children;
             this.resizeWeight = resizeWeight;
         }
 
@@ -173,16 +170,12 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
             return orientation;
         }
         
-        public double getSplitPosition() {
-            return splitPosition;
+        public double[] getSplitWeights() {
+            return splitPositions;
         }
         
-        public ElementAccessor getFirst() {
-            return first;
-        }
-        
-        public ElementAccessor getSecond() {
-            return second;
+        public ElementAccessor[] getChildren() {
+            return children;
         }
         
         public double getResizeWeight() {
@@ -190,10 +183,18 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
         }
         
         public String toString() {
-            return super.toString() + "[orientation=" + orientation // NOI18N
-                + ", splitPosition=" + splitPosition + "]"; // NOI18N
+            StringBuffer buffer = new StringBuffer();
+            buffer.append( super.toString() );
+            buffer.append( "[orientation=" + orientation );// NOI18N
+            buffer.append( ", splitPosition=" ); // NOI18N
+            for( int i=0; i<splitPositions.length; i++ ) {
+                buffer.append( splitPositions[i] );
+                if( i < splitPositions.length-1 )
+                    buffer.append( " : " ); // NOI18N
+            }
+            buffer.append( "]" ); // NOI18N
+            return buffer.toString();
         }
-       
     }
 
     /** */
@@ -334,8 +335,10 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
             SplitAccessor splitAccessor = (SplitAccessor)accessor;
             sb.append(indentString + "split="+splitAccessor); // NOI18N
             indent++;
-            sb.append("\n" + dumpAccessor(splitAccessor.getFirst(), indent)); // NOI18N
-            sb.append("\n" + dumpAccessor(splitAccessor.getSecond(), indent)); // NOI18N
+            ElementAccessor[] children = splitAccessor.getChildren();
+            for( int i=0; i<children.length; i++ ) {
+                sb.append("\n" + dumpAccessor(children[i], indent)); // NOI18N
+            }
         } else if(accessor instanceof ModeAccessor) {
             sb.append(indentString + "mode=" + accessor); // NOI18N
         } else if(accessor instanceof EditorAccessor) {

@@ -21,6 +21,7 @@ import org.netbeans.core.windows.ModeStructureSnapshot.ElementSnapshot;
 import org.netbeans.core.windows.WindowSystemSnapshot;
 
 import java.util.*;
+import org.netbeans.core.windows.model.ModelElement;
 
 
 
@@ -28,9 +29,8 @@ import java.util.*;
  * This class converts snapshot to accessor structure, which is a 'model'
  * of view (GUI) structure window system has to display to user.
  * It reflects the specific view implementation (the difference from snapshot)
- * e.g. the nesting splitted panes, which imitates (yet nonexisiting) multi-split
- * component and also contains only visible elements in that structure.
- * It also provides computing of split weights.
+ * e.g. merging of split panes with the same orientation, accomodates for split
+ * panes with only one visible child etc.
  *
  * @author  Peter Zavadsky
  */
@@ -141,6 +141,7 @@ final class ViewHelper {
             }
         } else {
             if(snapshot instanceof ModeStructureSnapshot.SplitSnapshot) {
+                //the split has only one visible child, so create an accessor for this child
                 ModeStructureSnapshot.SplitSnapshot splitSnapshot = (ModeStructureSnapshot.SplitSnapshot)snapshot;
                 for(Iterator it = splitSnapshot.getChildSnapshots().iterator(); it.hasNext(); ) {
                     ModeStructureSnapshot.ElementSnapshot child = (ModeStructureSnapshot.ElementSnapshot)it.next();
@@ -157,169 +158,123 @@ final class ViewHelper {
     private static ElementAccessor createSplitAccessor(ModeStructureSnapshot.SplitSnapshot splitSnapshot) {
         List visibleChildren = splitSnapshot.getVisibleChildSnapshots();
         
-        List invisibleChildren = splitSnapshot.getChildSnapshots();
-        invisibleChildren.removeAll(visibleChildren);
-        double invisibleWeights = 0D;
-        for(Iterator it = invisibleChildren.iterator(); it.hasNext(); ) {
-            ModeStructureSnapshot.ElementSnapshot next = (ModeStructureSnapshot.ElementSnapshot)it.next();
-            invisibleWeights += splitSnapshot.getChildSnapshotSplitWeight(next);
-        }
+        ArrayList children = new ArrayList( visibleChildren.size() );
+        ArrayList weights = new ArrayList( visibleChildren.size() );
         
-        double delta = invisibleWeights;
-        // Get the refined weights to work with.
-        Map visibleChild2refinedWeight = new HashMap();
-        for(Iterator it = visibleChildren.iterator(); it.hasNext(); ) {
-            ModeStructureSnapshot.ElementSnapshot next = (ModeStructureSnapshot.ElementSnapshot)it.next();
-            double refinedWeight = splitSnapshot.getChildSnapshotSplitWeight(next);
-            if( !it.hasNext() )
-                refinedWeight += delta; //add the weight of invisible children to the last element
-            
-            visibleChild2refinedWeight.put(next, new Double(refinedWeight));
-        }
-        
-        // Begin from the end.
-        // I.e. the splits are always nested the way,
-        // the one at the LEFT (or TOP) side is the top level one.
-        int orientation = splitSnapshot.getOrientation();
-        // Group the split children into SplitSnapshots (-> corresponding to JSplitPanes)
-        SplitAccessor se = null;
-        List reversedVisibleChildren = new ArrayList(visibleChildren);
-        Collections.reverse(reversedVisibleChildren);
-        for(Iterator it = reversedVisibleChildren.iterator(); it.hasNext(); ) {
-            ElementAccessor secondAccessor;
-            if(se == null) {
-                ModeStructureSnapshot.ElementSnapshot second = (ModeStructureSnapshot.ElementSnapshot)it.next();
-                secondAccessor = createVisibleAccessor(second);
-            } else {
-                // There is nested split add that one to second place.
-                secondAccessor = se;
-            }
-
-            if(!it.hasNext()) {
-                // No other element present.
-                return secondAccessor;
-            }
-
-            // Get first element.
-            ModeStructureSnapshot.ElementSnapshot first = (ModeStructureSnapshot.ElementSnapshot)it.next();
-            ElementAccessor firstAccessor = createVisibleAccessor(first);
-
-            double firstSplitWeight = ((Double)visibleChild2refinedWeight.get(first)).doubleValue();
-            
-            // Find nextVisible weights.
-            double nextVisibleWeights = 0D;
-            List anotherReversedChildren = new ArrayList(visibleChildren);
-            Collections.reverse(anotherReversedChildren);
-            for(Iterator it2 = anotherReversedChildren.iterator(); it2.hasNext(); ) {
-                ModeStructureSnapshot.ElementSnapshot next = (ModeStructureSnapshot.ElementSnapshot)it2.next();
-                if(next == first) {
-                    break;
+        int index = 0;
+        for( Iterator i=visibleChildren.iterator(); i.hasNext(); index++ ) {
+            ModeStructureSnapshot.ElementSnapshot child = (ModeStructureSnapshot.ElementSnapshot)i.next();
+            ElementAccessor childAccessor = createVisibleAccessor( child );
+            double weight = splitSnapshot.getChildSnapshotSplitWeight( child );
+            //double weight = getSplitWeight( splitSnapshot, child );
+            if( childAccessor instanceof SplitAccessor 
+                && ((SplitAccessor)childAccessor).getOrientation() == splitSnapshot.getOrientation() ) {
+                //merge nested splits with the same orientation into one big split
+                //e.g. (A | B | C) where B is a nested split (X | Y | Z) 
+                //will be merged into -> (A | X | Y | Z | C)
+                SplitAccessor subSplit = (SplitAccessor)childAccessor;
+                ElementAccessor[] childrenToMerge = subSplit.getChildren();
+                double[] weightsToMerge = subSplit.getSplitWeights();
+                for( int j=0; j<childrenToMerge.length; j++ ) {
+                    children.add( childrenToMerge[j] );
+                    weights.add( new Double( weightsToMerge[j] * weight ) );
                 }
-                nextVisibleWeights += ((Double)visibleChild2refinedWeight.get(next)).doubleValue();
+            } else {
+                children.add( childAccessor );
+                weights.add( new Double( weight ) );
             }
-            
-            if(DEBUG) {
-                debugLog(""); // NOI18N
-                debugLog("Computing split"); // NOI18N
-                debugLog("firstSplitWeight=" + firstSplitWeight); // NOI18N
-                debugLog("nextVisibleWeigths=" + nextVisibleWeights); // NOI18N
-            }
-            
-            // Compute split position.
-            double splitPosition = firstSplitWeight/(firstSplitWeight + nextVisibleWeights);
-            if(DEBUG) {
-                debugLog("splitPosition=" + splitPosition); // NOI18N
-            }
-
-            se = new ModeStructureAccessorImpl.SplitAccessorImpl(
-                first.getOriginator(), splitSnapshot, orientation, splitPosition, firstAccessor, secondAccessor, splitSnapshot.getResizeWeight());
         }
-
-        return se;
+        
+        ElementAccessor[] childrenAccessors = new ElementAccessor[children.size()];
+        double[] splitWeights = new double[children.size()];
+        for( int i=0; i<children.size(); i++ ) {
+            ElementAccessor ea = (ElementAccessor)children.get( i );
+            Double weight = (Double)weights.get( i );
+            childrenAccessors[i] = ea;
+            splitWeights[i] = weight.doubleValue();
+        }
+        
+        return new ModeStructureAccessorImpl.SplitAccessorImpl( 
+                splitSnapshot.getOriginator(), 
+                splitSnapshot, 
+                splitSnapshot.getOrientation(), 
+                splitWeights,
+                childrenAccessors, 
+                splitSnapshot.getResizeWeight());
     }
-
     
-    public static boolean computeSplitWeights(double location, SplitAccessor splitAccessor,
-    ElementAccessor firstAccessor, ElementAccessor secondAccessor, ControllerHandler controllerHandler) {
+    /**
+     * Update the model with new split weights when user moved a splitter bar or
+     * when the main window has been resized.
+     *
+     * @param splitAccessor The split parent that has been modified.
+     * @param children Split children.
+     * @param splitWeights New split weights.
+     * @param controllerHandler
+     *
+     */
+    public static void setSplitWeights(SplitAccessor splitAccessor,
+        ElementAccessor[] children, double[] splitWeights, ControllerHandler controllerHandler) {
+        
         ModeStructureSnapshot.SplitSnapshot splitSnapshot = (ModeStructureSnapshot.SplitSnapshot)splitAccessor.getSnapshot();
 
         if(splitSnapshot == null) {
-            return false;
+            return;
         }
         
-        ArrayList visibleChildren = new ArrayList( splitSnapshot.getVisibleChildSnapshots() );
-        
-        ElementSnapshot first = firstAccessor.getSnapshot();
-        ElementSnapshot second = secondAccessor.getSnapshot();
-
-        // XXX #36696 If it is 'nested-split' find the real element.
-        if(first == splitSnapshot) {
-            first = ((SplitAccessor)firstAccessor).getSecond().getSnapshot();
-        }
-        
-        // Find the corresponding nodes in the split.
-        while(first != null && !visibleChildren.contains(first)) {
-            first = first.getParent();
-        }
-        if(first == null) {
-            // Is not in this split.
-            return false;
+        ModelElement[] elements = new ModelElement[ children.length ];
+        for( int i=0; i<children.length; i++ ) {
+            //the split child may belong to another splitter that has only one visible child
+            //so we must set new split weight for its actual parent
+            //e.g. the 'S' = (A | X | C) and X's parent is B -> (X | Y | Z) but Y and Z are not visible
+            //so instead of setting split weight of X in splitter B we must set split weight of B in 'S'
+            //see also method createVisibleAccessor()
+            ModeStructureSnapshot.ElementSnapshot snapshot = findVisibleSplitSnapshot( children[i].getSnapshot() );
+            elements[ i ] = snapshot.getOriginator();
+            //if this splitter has been merged with a nested splitter with the same orientation
+            //then the nested split child split weight must be corrected according to its parent
+            splitWeights[ i ] = correctNestedSplitWeight( children[i].getSnapshot().getParent(), splitWeights[i] );
         }
 
-        // XXX #36696 If it is 'nested-split' find the real element.
-        if(second == splitSnapshot) {
-            second = ((SplitAccessor)secondAccessor).getFirst().getSnapshot();
+        controllerHandler.userChangedSplit( elements, splitWeights );
+    }
+    
+    /**
+     * Recalculate the given child split weight if the given split is nested in a parent
+     * split with the same orientation.
+     * e.g. If this split X is (A | B) with weights 0.5 and 0.5 and is nested in a parent
+     * split (X | Y | Z) with split weights 0.5, 0.25 and 0.25 then the accessors
+     * look like this (A | B | Y | Z) with split weights 0.25, 0.25, 0.25, and 0.25
+     * If the new split weight for A being corrected is 0.3 then the corrected value will be (0.3 / 0.5)
+     *
+     * @return New split weight corrected as described above or the original value if the
+     * split does not have a parent split with the same orientation.
+     */
+    private static double correctNestedSplitWeight( ModeStructureSnapshot.SplitSnapshot split, double splitWeight ) {
+        ModeStructureSnapshot.SplitSnapshot parentSplit = split.getParent();
+        if( null != parentSplit && parentSplit.getOrientation() == split.getOrientation() ) {
+            double parentSplitWeight = parentSplit.getChildSnapshotSplitWeight( split );
+            if( parentSplit.getVisibleChildSnapshots().size() > 1 && parentSplitWeight > 0.0 )
+                splitWeight /= parentSplitWeight;
+            
+            return correctNestedSplitWeight( parentSplit, splitWeight );
         }
-
-        while(second != null && !visibleChildren.contains(second)) {
-            second = second.getParent();
-        }
-        if(second == null) {
-            // Is not in this split.
-            return false;
-        }
-        
-        double currentFirstWeight = splitSnapshot.getChildSnapshotSplitWeight(first);
-        double currentSecondWeight = splitSnapshot.getChildSnapshotSplitWeight(second);
-        
-        double remainingWeights = 0.0D;
-        ArrayList allChildren = new ArrayList( splitSnapshot.getChildSnapshots() );
-        for( int i=allChildren.indexOf( second ); i<allChildren.size(); i++ ) {
-            ElementSnapshot es = (ElementSnapshot)allChildren.get( i );
-            double childWeight = splitSnapshot.getChildSnapshotSplitWeight(es);
-            remainingWeights += childWeight;
-        }
-        
-        double invisibleFirstWeight = 0.0D;
-        int indexOfFirst = allChildren.indexOf( first );
-        for( int i=0; i<indexOfFirst; i++ ) {
-            ElementSnapshot es = (ElementSnapshot)allChildren.get( i );
-            if( !visibleChildren.contains( es ) ) {
-                double childWeight = splitSnapshot.getChildSnapshotSplitWeight(es);
-                invisibleFirstWeight += childWeight;
+        return splitWeight;
+    }
+    
+    /**
+     * Find the topmost split parent of the given snapshot that is visible in split hierarchy 
+     * (i.e. has at least two visible children).
+     */
+    private static ModeStructureSnapshot.ElementSnapshot findVisibleSplitSnapshot( ModeStructureSnapshot.ElementSnapshot snapshot ) {
+        ModeStructureSnapshot.SplitSnapshot parent = snapshot.getParent();
+        if( null != parent ) {
+            List visibleChildren = parent.getVisibleChildSnapshots();
+            if( visibleChildren.size() == 1 ) {
+                return findVisibleSplitSnapshot( parent );
             }
         }
-        
-        double firstWeight = location * (currentFirstWeight + invisibleFirstWeight + remainingWeights);
-
-        double delta = currentFirstWeight - firstWeight;
-
-        double secondWeight = currentSecondWeight + delta;
-
-        //just a safeguard so that the model doesn't fall apart
-        if( secondWeight <= 0.0 )
-            secondWeight = 0.001;
-        if( secondWeight >= 1.0 )
-            secondWeight = 0.999;
-
-        if( firstWeight <= 0.0 )
-            firstWeight = 0.001;
-        if( firstWeight >= 1.0 )
-            firstWeight = 0.999;
-
-        controllerHandler.userChangedSplit(first.getOriginator(), firstWeight, second.getOriginator(), secondWeight);
-
-        return true;
+        return snapshot;
     }
 
     private static void debugLog(String message) {

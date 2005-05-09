@@ -16,6 +16,7 @@ package org.netbeans.core.windows.view;
 
 
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
 import org.openide.windows.TopComponent;
 
@@ -51,7 +52,7 @@ public interface Controller {
     
     public void userResizedModeBounds(ModeView modeView, Rectangle bounds);
     
-    public void userMovedSplit(double splitLocation, SplitView splitView, ViewElement first, ViewElement second);
+    public void userMovedSplit(SplitView splitView, ViewElement[] childrenViews, double[] splitWeights);
     
     public void userClosedTopComponent(ModeView modeView, TopComponent tc);
     
@@ -65,8 +66,6 @@ public interface Controller {
     public void userDroppedTopComponentsIntoEmptyEditor(TopComponent[] tcs);
     
     public void userDroppedTopComponentsAround(TopComponent[] tcs, String side);
-    
-    public void userDroppedTopComponentsIntoSplit(SplitView splitView, TopComponent[] tcs);
     
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side);
     

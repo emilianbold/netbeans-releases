@@ -15,6 +15,8 @@ package org.netbeans.core.windows.view;
 
 
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
@@ -643,8 +645,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         if(hierarchy.getMainWindow().getExtendedState() != Frame.MAXIMIZED_BOTH) {
             controllerHandler.userResizedMainWindow(bounds);
         } 
-        // Update also the splits.
-        updateChangedSplits();
 
         // Ignore when main window is maximized.
         if(hierarchy.getMainWindow().getExtendedState() != Frame.MAXIMIZED_BOTH) {
@@ -652,32 +652,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             updateMainWindowBoundsSeparatedHelp();
             updateEditorAreaBoundsHelp();
             updateSeparateBoundsForView(hierarchy.getSplitRootElement());
-        }
-    }
-    
-    
-    private void updateChangedSplits() {
-        if(hierarchy.getMaximizedModeView() != null) { // PENDING
-            return;
-        }
-        splitChangedForView(hierarchy.getSplitRootElement());
-    }
-    
-    private void splitChangedForView(ViewElement view) {
-        if(view instanceof SplitView) {
-            SplitView sv = (SplitView)view;
-            JSplitPane sp = (JSplitPane)sv.getComponent();
-            int absoluteLocation = sp.getDividerLocation();
-            double relativeLocation;
-            if(sp.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
-                relativeLocation = (double)absoluteLocation/sp.getHeight();
-            } else {
-                relativeLocation = (double)absoluteLocation/sp.getWidth();
-            }
-            userMovedSplit(relativeLocation, sv, sv.getFirst(), sv.getSecond());
-            
-            splitChangedForView(sv.getFirst());
-            splitChangedForView(sv.getSecond());
         }
     }
     
@@ -713,17 +687,18 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
     }
     
-    public void userMovedSplit(double splitLocation, SplitView splitView,
-    ViewElement first, ViewElement second) {
+    public void userMovedSplit(SplitView splitView, ViewElement[] childrenViews, double[] splitWeights) {
         if(DEBUG) {
             debugLog("User moved split"); // NOI18N
 //            Debug.dumpStack(DefaultView.class);
         }
 
         SplitAccessor splitAccessor = (SplitAccessor)hierarchy.getAccessorForView(splitView);
-        ElementAccessor firstAccessor = hierarchy.getAccessorForView(first);
-        ElementAccessor secondAccessor = hierarchy.getAccessorForView(second);
-        ViewHelper.computeSplitWeights(splitLocation, splitAccessor, firstAccessor, secondAccessor, controllerHandler);
+        ElementAccessor[] childrenAccessors = new ElementAccessor[childrenViews.length];
+        for( int i=0; i<childrenViews.length; i++ ) {
+            childrenAccessors[i] = hierarchy.getAccessorForView( childrenViews[i] );
+        }
+        ViewHelper.setSplitWeights(splitAccessor, childrenAccessors, splitWeights, controllerHandler);
         
         // XXX PENDING
 //        updateSeparateBoundsForView(splitView);
@@ -836,26 +811,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
         
         controllerHandler.userDroppedTopComponentsAround(tcs, side);
-    }
-    
-    public void userDroppedTopComponentsIntoSplit(SplitView splitView, TopComponent[] tcs) {
-        if(tcs.length == 0) {
-            return;
-        }
-        
-        if(DEBUG) {
-            debugLog("User dropped TopComponent's into split=" + splitView); // NOI18N
-        }
-
-        SplitAccessor splitAccessor = (SplitAccessor)hierarchy.getAccessorForView(splitView);
-        ElementAccessor firstAccessor = hierarchy.getAccessorForView(splitView.getFirst());
-        ElementAccessor secondAccessor = hierarchy.getAccessorForView(splitView.getSecond());
-        
-        ModelElement splitElement  = getModelElementForAccessor(splitAccessor);
-        ModelElement firstElement  = getModelElementForAccessor(firstAccessor);
-        ModelElement secondElement = getModelElementForAccessor(secondAccessor);
-        
-        controllerHandler.userDroppedTopComponentsIntoSplit(splitElement, firstElement, secondElement, tcs);
     }
     
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side) {
@@ -989,8 +944,11 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             }
         } else if(view instanceof SplitView) {
             SplitView sv = (SplitView)view;
-            updateSeparateBoundsForView(sv.getFirst());
-            updateSeparateBoundsForView(sv.getSecond());
+            List children = sv.getChildren();
+            for( Iterator i=children.iterator(); i.hasNext(); ) {
+                ViewElement child = (ViewElement)i.next();
+                updateSeparateBoundsForView( child );
+            }
         } else if(view instanceof EditorView) {
             updateEditorAreaBoundsHelp();
             // Editor area content isn't needed to remember.

@@ -755,9 +755,6 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             } else {
                 controller.userDroppedTopComponents(modeView, tcArray);
             }
-        } else if(viewElement instanceof SplitView) {
-            SplitView splitView = (SplitView)viewElement;
-            controller.userDroppedTopComponentsIntoSplit(splitView, tcArray);
         } else if(viewElement == null) { // XXX around area or free area
             if(constr == Constants.TOP
             || constr == Constants.LEFT

@@ -15,6 +15,7 @@
 package org.netbeans.core.windows.model;
 
 
+import java.util.ArrayList;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeStructureSnapshot;
 import org.netbeans.core.windows.SplitConstraint;
@@ -67,15 +68,12 @@ final class EditorSplitSubModel extends SplitSubModel {
         return editorNode.getEditorArea();
     }
 
-    public boolean setSplitWeights(ModelElement firstElement, double firstSplitWeight,
-    ModelElement secondElement, double secondSplitWeight) {
-        if(super.setSplitWeights(firstElement, firstSplitWeight,
-                                secondElement, secondSplitWeight)) {
+    public boolean setSplitWeights( ModelElement[] snapshots, double[] splitWeights) {
+        if( super.setSplitWeights( snapshots, splitWeights ) ) {
             return true;
         }
         
-        return getEditorArea().setSplitWeights(firstElement, firstSplitWeight,
-                                                secondElement, secondSplitWeight);
+        return getEditorArea().setSplitWeights( snapshots, splitWeights );
     }
     
     

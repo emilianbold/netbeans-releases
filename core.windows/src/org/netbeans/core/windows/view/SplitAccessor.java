@@ -25,11 +25,9 @@ public interface SplitAccessor extends ElementAccessor {
 
     public int getOrientation();
 
-    public double getSplitPosition();
+    public double[] getSplitWeights();
 
-    public ElementAccessor getFirst();
-
-    public ElementAccessor getSecond();
+    public ElementAccessor[] getChildren();
     
     public double getResizeWeight();
     

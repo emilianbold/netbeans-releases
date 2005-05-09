@@ -1278,25 +1278,6 @@ final class Central implements ControllerHandler {
         
         attachTopComponentsHelper(tcs, newMode, fireEvents);
     }
-
-    /** Creates new mode at split position and puts there the TopComponentS. */
-    private void attachTopComponentsIntoSplit(ModelElement firstElement, ModelElement secondElement,
-    TopComponent[] tcs, boolean fireEvents) {
-        if(tcs == null || tcs.length == 0) {
-            return;
-        }
-
-        ModeImpl newMode = WindowManagerImpl.getInstance().createModeImpl(
-            ModeImpl.getUnusedModeName(), Constants.MODE_KIND_VIEW, false);
-  
-        // XXX All others should have the same restriction.
-        if(!newMode.canContain(tcs[0])) {
-            return;
-        }
-        model.addModeBetween(newMode, firstElement, secondElement);
-        
-        attachTopComponentsHelper(tcs, newMode, fireEvents);
-    }
     
     /** Creates new mode on side of editor area and puts there the TopComponentS. */
     private void attachTopComponentsAroundEditor(TopComponent[] tcs, String side, boolean fireEvents) {
@@ -1542,9 +1523,8 @@ final class Central implements ControllerHandler {
         model.setModeFrameState(mode, frameState);
     }
     
-    public void userChangedSplit(ModelElement firstElement, double firstSplitWeight,
-    ModelElement secondElement, double secondSplitWeight) {
-        model.setSplitWeights(firstElement, firstSplitWeight, secondElement, secondSplitWeight);
+    public void userChangedSplit( ModelElement[] snapshots, double[] splitWeights ) {
+        model.setSplitWeights( snapshots, splitWeights );
     }
 
     public void userClosedTopComponent(ModeImpl mode, TopComponent tc) {
@@ -1600,13 +1580,6 @@ final class Central implements ControllerHandler {
     
     public void userDroppedTopComponentsAround(TopComponent[] tcs, String side) {
         attachTopComponentsAroundDesktop(tcs, side, false);
-
-        updateViewAfterDnD(true);
-    }
-    
-    public void userDroppedTopComponentsIntoSplit(ModelElement splitElement,
-    ModelElement firstElement, ModelElement secondElement, TopComponent[] tcs) {
-        attachTopComponentsIntoSplit(firstElement, secondElement, tcs, false);
 
         updateViewAfterDnD(true);
     }

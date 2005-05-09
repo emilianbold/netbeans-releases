@@ -14,6 +14,7 @@
 package org.netbeans.core.windows.model;
 
 
+import java.util.ArrayList;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.SplitConstraint;
 import org.netbeans.core.windows.TopComponentGroupImpl;
@@ -66,9 +67,6 @@ public interface Model {
     /** Adds mode. */
     // XXX
     public void addModeToSide(ModeImpl mode, ModeImpl attachMode, String side);
-    // XXX
-    /** Adds mode between two mode elements ('into split') */
-    public void addModeBetween(ModeImpl mode, ModelElement firstElement, ModelElement secondElement);
     // XXX
     /** Adds mode around (attaches from side). */
     public void addModeAround(ModeImpl mode, String side);
@@ -283,8 +281,7 @@ public interface Model {
     public void setEditorAreaBoundsUserHelp(Rectangle bounds);
     public void setModeBoundsSeparatedHelp(ModeImpl mode, Rectangle bounds);
     
-    public void setSplitWeights(ModelElement firstElement, double firstSplitWeight,
-    ModelElement secondElement, double secondSplitWeight);
+    public void setSplitWeights( ModelElement[] snapshots, double[] splitWeights );
     // controller updates <<
     ////////////////////////
 

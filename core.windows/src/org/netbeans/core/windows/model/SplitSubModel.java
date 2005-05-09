@@ -130,28 +130,6 @@ class SplitSubModel {
 
         return addNodeToTreeToSide(modeNode, attachModeNode, side);
     }
-    
-    // XXX
-    public boolean addModeBetween(ModeImpl mode, ModelElement firstElement, ModelElement secondElement) {
-        if(mode == null || mode.getState() == Constants.MODE_STATE_SEPARATED) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalArgumentException("Mode=" + mode));
-            return false;
-        }
-
-        Node modeNode = getModeNode(mode);
-        
-        if(DEBUG) {
-            debugLog(""); // NOI18N
-            debugLog(""); // NOI18N
-            debugLog("=========================================="); // NOI18N
-            debugLog("Adding mode to between=" + mode); // NOI18N
-            debugLog("firstElement=" + firstElement); // NOI18N
-            debugLog("secondElement=" + secondElement); // NOI18N
-        }
-
-        return addNodeToTreeBetween(modeNode, firstElement, secondElement);
-    }
 
     // XXX
     public boolean addModeAround(ModeImpl mode, String side) {
@@ -353,103 +331,6 @@ class SplitSubModel {
     }
     
     // XXX
-    private boolean addNodeToTreeBetween(Node addingNode,
-    ModelElement firstElement, ModelElement secondElement) {
-        if(isInTree(addingNode)) {
-            return false;
-        }
-        
-        if(!(firstElement instanceof Node)
-        || !(secondElement instanceof Node)) {
-            return false;
-        }
-        
-        Node first = (Node)firstElement;
-        Node second = (Node)secondElement;
-        
-        if(!isInTree(first) || !isInTree(second)) {
-            return false;
-        }
-        
-        //  Adjust first and second to common parent.
-        List firstParents = new ArrayList();
-        Node node = first;
-        while(node.getParent() != null) {
-            Node firstParent = node.getParent();
-            firstParents.add(firstParent);
-            node = firstParent;
-        }
-        node = second;
-        while(node.getParent() != null) {
-            Node secondParent = node.getParent();
-            if(firstParents.contains(secondParent)) {
-                second = node;
-                int index = firstParents.indexOf(secondParent);
-                if(index > 0) {
-                    first = (Node)firstParents.get(index - 1);
-                }
-                break;
-            } else {
-                node = secondParent;
-            }
-        }
-        if(first.getParent() != second.getParent()) {
-            return false;
-        }
-        SplitNode parent = first.getParent();
-        
-        // Update
-
-        List visibleChildren = parent.getVisibleChildren();
-        // Prepare how to distribute the rest of weights.
-        double visibleResizeWeights = 0D;
-        for(Iterator it = visibleChildren.iterator(); it.hasNext(); ) {
-            Node next = (Node)it.next();
-            visibleResizeWeights += next.getResizeWeight();
-        }
-        
-        List invisibleChildren = parent.getChildren();
-        invisibleChildren.removeAll(visibleChildren);
-        double invisibleWeights = 0D;
-        for(Iterator it = invisibleChildren.iterator(); it.hasNext(); ) {
-            Node next = (Node)it.next();
-            invisibleWeights += parent.getChildSplitWeight(next);
-        }
-
-        // Get the refined weights to work with.
-        Map visibleChild2refinedWeight = new HashMap();
-        for(Iterator it = visibleChildren.iterator(); it.hasNext(); ) {
-            Node next = (Node)it.next();
-            double refinedWeight;
-            if(visibleResizeWeights > 0D) {
-                refinedWeight = parent.getChildSplitWeight(next) + ((next.getResizeWeight() / visibleResizeWeights) * invisibleWeights);
-            } else {
-                refinedWeight = parent.getChildSplitWeight(next);
-            }
-            visibleChild2refinedWeight.put(next, new Double(refinedWeight));
-        }
-        
-        double firstWeight = ((Double)visibleChild2refinedWeight.get(first)).doubleValue();
-        double secondWeight = ((Double)visibleChild2refinedWeight.get(second)).doubleValue();
-        
-        if(DEBUG) {
-            debugLog(""); // NOI18N
-            debugLog("Inserting between"); // NOI18N
-            debugLog("firstWeight="+firstWeight); // NOI18N
-            debugLog("secondWeight="+secondWeight); // NOI18N
-        }
-        
-        int index = parent.getChildIndex(second);
-        double newWeight = firstWeight * Constants.DROP_BETWEEN_RATIO + secondWeight * Constants.DROP_BETWEEN_RATIO;
-
-        parent.setChildSplitWeight(first, parent.getChildSplitWeight(first) - firstWeight * Constants.DROP_BETWEEN_RATIO);
-        parent.setChildSplitWeight(second, parent.getChildSplitWeight(second) - secondWeight * Constants.DROP_BETWEEN_RATIO);
-        parent.setChildAt(index, newWeight, addingNode);
-        
-        return true;
-    }
-
-    // XXX
     private boolean addNodeToTreeAround(Node addingNode, String side) {
         Node top = root;
         
@@ -597,28 +478,34 @@ class SplitSubModel {
         }
     }
 
-    public boolean setSplitWeights(ModelElement firstElement, double firstSplitWeight,
-    ModelElement secondElement, double secondSplitWeight) {
-        Node firstNode = (Node)firstElement;
-        Node secondNode = (Node)secondElement;
-        
-        if(firstNode == null || secondNode == null
-        || (firstNode.getParent() != secondNode.getParent())) {
-            return false;
+    public boolean setSplitWeights( ModelElement[] snapshots, double[] splitWeights ) {
+        for( int i=0; i<snapshots.length; i++ ) {
+            Node node = (Node)snapshots[i];
+            if( null == node || null == node.getParent() )
+                return false;
         }
-        
+        Node firstNode = (Node)snapshots[0];
         SplitNode parent = firstNode.getParent();
         
         if(parent == null || !isInTree(parent)) {
             return false;
         }
        
-        parent.setChildSplitWeight(firstNode, firstSplitWeight);
-        parent.setChildSplitWeight(secondNode, secondSplitWeight);
+        boolean res = true;
+        for( int i=0; i<snapshots.length; i++ ) {
+            Node node = (Node)snapshots[ i ];
+            double weight = splitWeights[ i ];
+            SplitNode parentNode = node.getParent();
+            if( null == parentNode || !isInTree( parentNode ) ) {
+                res = false;
+            } else {
+                parentNode.setChildSplitWeight( node, weight );
+            }
+        }
         
-        return true;
+        return res;
     }
-
+    
     /** */
     public ModeStructureSnapshot.ElementSnapshot createSplitSnapshot() {
         return root == null ? null : root.createSnapshot();

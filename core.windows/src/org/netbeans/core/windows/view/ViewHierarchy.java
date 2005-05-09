@@ -102,6 +102,7 @@ final class ViewHierarchy {
     /** Updates the view hierarchy according to new structure. */
     public void updateViewHierarchy(ModeStructureAccessor modeStructureAccessor) {
         updateAccessors(modeStructureAccessor);
+        //(re)create gridsplit model
         currentSplitRoot = updateViewForAccessor(modeStructureAccessor.getSplitRootAccessor());
 //        System.out.println("updateViewHierarchy... elem=" + elem);
 //        if (maximizedModeView == null) {
@@ -147,8 +148,10 @@ final class ViewHierarchy {
         } else if(accessor instanceof SplitAccessor) {
             SplitAccessor sa = (SplitAccessor)accessor;
             s.add(sa);
-            s.addAll(getAllAccessorsForTree(sa.getFirst()));
-            s.addAll(getAllAccessorsForTree(sa.getSecond()));
+            ElementAccessor[] children = sa.getChildren();
+            for( int i=0; i<children.length; i++ ) {
+                s.addAll(getAllAccessorsForTree(children[i]));
+            }
         } else if(accessor instanceof EditorAccessor) {
             EditorAccessor ea = (EditorAccessor)accessor;
             s.add(ea);
@@ -180,11 +183,20 @@ final class ViewHierarchy {
         if(view != null) {
             if(patternAccessor instanceof SplitAccessor) {
                 SplitAccessor sa = (SplitAccessor)patternAccessor;
+                ElementAccessor[] childAccessors = sa.getChildren();
+                ArrayList childViews = new ArrayList( childAccessors.length );
+                for( int i=0; i<childAccessors.length; i++ ) {
+                    childViews.add( updateViewForAccessor( childAccessors[i] ) );
+                }
+                double[] splitWeights = sa.getSplitWeights();
+                ArrayList weights = new ArrayList( splitWeights.length );
+                for( int i=0; i<splitWeights.length; i++ ) {
+                    weights.add( new Double( splitWeights[i] ) );
+                }
                 SplitView sv = (SplitView)view;
-                sv.setOrientation(sa.getOrientation());
-                sv.setLocation(sa.getSplitPosition());
-                sv.setFirst(updateViewForAccessor(sa.getFirst()));
-                sv.setSecond(updateViewForAccessor(sa.getSecond()));
+                sv.setOrientation( sa.getOrientation() );
+                sv.setSplitWeights( weights );
+                sv.setChildren( childViews );
                 return sv;
             } else if(patternAccessor instanceof EditorAccessor) {
                 EditorAccessor ea = (EditorAccessor)patternAccessor;
@@ -210,10 +222,16 @@ final class ViewHierarchy {
         } else {
             if(patternAccessor instanceof SplitAccessor) {
                 SplitAccessor sa = (SplitAccessor)patternAccessor;
-                ViewElement first = updateViewForAccessor(sa.getFirst());
-                ViewElement second = updateViewForAccessor(sa.getSecond());
+                ArrayList weights = new ArrayList( sa.getSplitWeights().length );
+                for( int i=0; i<sa.getSplitWeights().length; i++ ) {
+                    weights.add( new Double( sa.getSplitWeights()[i]) );
+                }
+                ArrayList children = new ArrayList( sa.getChildren().length );
+                for( int i=0; i<sa.getChildren().length; i++ ) {
+                    children.add( updateViewForAccessor( sa.getChildren()[i] ) );
+                }
                 SplitView sv = new SplitView(controller, sa.getResizeWeight(),
-                    sa.getOrientation(), sa.getSplitPosition(), first, second);
+                    sa.getOrientation(), weights, children );
                 accessor2view.put(patternAccessor, sv);
                 view2accessor.put(sv, patternAccessor);
                 return sv;
@@ -451,16 +469,26 @@ final class ViewHierarchy {
             return null;
         } else if(view instanceof SplitView) {
             SplitView sv = (SplitView)view;
-            if(sv.getFirst() == modeView) {
-                return sv.getSecond();
+            List children = sv.getChildren();
+            ArrayList newChildren = new ArrayList( children.size() );
+            ViewElement removedView = null;
+            for( Iterator i=children.iterator(); i.hasNext(); ) {
+                ViewElement child = (ViewElement)i.next();
+                ViewElement newChild = removeModeViewFromElement( child, modeView );
+                if( newChild != child ) {
+                    removedView = child;
+                }
+                if( null != newChild )
+                    newChildren.add( newChild );
             }
-            
-            if(sv.getSecond() == modeView) {
-                return sv.getFirst();
+            if( newChildren.size() == 0 ) {
+                //the view is not split anymore
+                return (ViewElement)newChildren.get( 0 );
             }
-            
-            sv.setFirst(removeModeViewFromElement(sv.getFirst(), modeView));
-            sv.setSecond(removeModeViewFromElement(sv.getSecond(), modeView));
+            if( null != removedView ) {
+                sv.remove( removedView );
+            }
+            sv.setChildren( newChildren );
             return sv;
         } else if(view instanceof EditorView) {
             EditorView ev = (EditorView)view;
@@ -496,8 +524,11 @@ final class ViewHierarchy {
             view.getComponent().setVisible(visible);
         } else if(view instanceof SplitView) {
             SplitView sv = (SplitView)view;
-            setVisibleModeElement(sv.getFirst(), visible);
-            setVisibleModeElement(sv.getSecond(), visible);
+            List children = sv.getChildren();
+            for( Iterator i=children.iterator(); i.hasNext(); ) {
+                ViewElement child = (ViewElement)i.next();
+                setVisibleModeElement( child, visible );
+            }
         } else if(view instanceof EditorView) {
             setVisibleModeElement(((EditorView)view).getEditorArea(), visible);
         }
@@ -559,9 +590,6 @@ final class ViewHierarchy {
         desktop.setMaximizedView(elem);
         
         if (revalidate) {
-            if (elem instanceof SplitView) {
-                ((SplitView)elem).resetToPrefferedSizes();
-            }
             desktop.getDesktopComponent().invalidate();
             ((JComponent)desktop.getDesktopComponent()).revalidate();
             desktop.getDesktopComponent().repaint();
@@ -579,9 +607,6 @@ final class ViewHierarchy {
         }
         
         if (revalidate) {
-            if (root instanceof SplitView) {
-                ((SplitView)root).resetToPrefferedSizes();
-            }
             desktop.getDesktopComponent().invalidate();
             ((JComponent)desktop.getDesktopComponent()).revalidate();
             desktop.getDesktopComponent().repaint();
@@ -809,8 +834,11 @@ final class ViewHierarchy {
             controller.userClosingMode((ModeView)view);
         } else if(view instanceof SplitView) {
             SplitView sv = (SplitView)view;
-            closeModeForView(sv.getFirst());
-            closeModeForView(sv.getSecond());
+            List children = sv.getChildren();
+            for( Iterator i=children.iterator(); i.hasNext(); ) {
+                ViewElement child = (ViewElement)i.next();
+                closeModeForView( child );
+            }
         }
     }
     
@@ -840,13 +868,12 @@ final class ViewHierarchy {
             return (EditorView)view;
         } else if(view instanceof SplitView) {
             SplitView sv = (SplitView)view;
-            EditorView ev = findEditorViewForElement(sv.getFirst());
-            if(ev != null) {
-                return ev;
-            }
-            ev = findEditorViewForElement(sv.getSecond());
-            if(ev != null) {
-                return ev;
+            List children = sv.getChildren();
+            for( Iterator i=children.iterator(); i.hasNext(); ) {
+                ViewElement child = (ViewElement)i.next();
+                EditorView ev = findEditorViewForElement( child );
+                if( null != ev )
+                    return ev;
             }
         }
         
@@ -898,8 +925,11 @@ final class ViewHierarchy {
         } else if(view instanceof SplitView) {
             sb.append(indentString + view + "->" + view.getComponent().getClass() + "@"  + view.getComponent().hashCode());
             indent++;
-            sb.append("\n" + dumpElement(((SplitView)view).getFirst(), indent));
-            sb.append("\n" + dumpElement(((SplitView)view).getSecond(), indent));
+            List children = ((SplitView)view).getChildren();
+            for( Iterator i=children.iterator(); i.hasNext(); ) {
+                ViewElement child = (ViewElement)i.next();
+                sb.append("\n" + dumpElement(child, indent));
+            }
         }
          
         return sb.toString();

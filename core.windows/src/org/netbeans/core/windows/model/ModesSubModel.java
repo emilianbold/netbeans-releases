@@ -13,6 +13,7 @@
 
 package org.netbeans.core.windows.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,26 +140,6 @@ final class ModesSubModel {
     }
     
     // XXX
-    public boolean addModeBetween(ModeImpl mode, ModelElement firstElement, ModelElement secondElement) {
-        if(modes.contains(mode)) {
-            return false;
-        }
-
-        boolean result;
-        // XXX PENDING
-        if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
-            result = editorSplitSubModel.getEditorArea().addModeBetween(mode, firstElement, secondElement);
-        } else {
-            result = editorSplitSubModel.addModeBetween(mode, firstElement, secondElement);
-        }
-
-        if(result) {
-            modes.add(mode);
-        }
-        return result;
-    }
-    
-    // XXX
     public boolean addModeAround(ModeImpl mode, String side) {
         if(modes.contains(mode)) {
             return false;
@@ -262,10 +243,8 @@ final class ModesSubModel {
         return new HashSet(modes);
     }
     
-    public void setSplitWeights(ModelElement firstElement, double firstSplitWeight,
-    ModelElement secondElement, double secondSplitWeight) {
-        editorSplitSubModel.setSplitWeights(firstElement, firstSplitWeight,
-            secondElement, secondSplitWeight);
+    public void setSplitWeights( ModelElement[] snapshots, double[] splitWeights ) {
+        editorSplitSubModel.setSplitWeights( snapshots, splitWeights );
     }
     
     public String toString() {

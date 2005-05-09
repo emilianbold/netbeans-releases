@@ -15,6 +15,7 @@
 package org.netbeans.core.windows.view;
 
 
+import java.util.ArrayList;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
@@ -50,8 +51,7 @@ public interface ControllerHandler {
     
     public void userChangedFrameStateMode(ModeImpl mode, int frameState);
     
-    public void userChangedSplit(ModelElement firstElement, double firstSplitWeight,
-    ModelElement secondElement, double secondSplitWeight);
+    public void userChangedSplit( ModelElement[] snapshots, double[] splitWeights );
     
     public void userClosedTopComponent(ModeImpl mode, TopComponent tc);
     
@@ -75,9 +75,6 @@ public interface ControllerHandler {
     public void userDroppedTopComponentsIntoEmptyEditor(TopComponent[] tcs);
     
     public void userDroppedTopComponentsAround(TopComponent[] tcs, String side);
-    
-    public void userDroppedTopComponentsIntoSplit(ModelElement splitElement,
-    ModelElement firstElementr, ModelElement secondElement, TopComponent[] tcs);
     
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side);
     
