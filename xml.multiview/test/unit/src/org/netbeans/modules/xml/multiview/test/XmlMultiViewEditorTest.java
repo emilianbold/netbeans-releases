@@ -140,7 +140,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         ((EditCookie)bookDO.getCookie(EditCookie.class)).edit();
         // wait for see the changes
         try {
-            Thread.sleep(3000);
+            Thread.sleep(5000);
         } catch (InterruptedException ex){}
         
         // test if data object was modified
