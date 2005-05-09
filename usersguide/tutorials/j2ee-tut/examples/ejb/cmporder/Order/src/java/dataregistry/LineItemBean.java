@@ -100,15 +100,12 @@ public abstract class LineItemBean implements EntityBean, LineItemLocalBusiness 
     public abstract BigDecimal getQuantity();
     public abstract void setQuantity(BigDecimal quantity);
     
-    public abstract OrdersLocal getOrdersBean();
-    public abstract void setOrdersBean(OrdersLocal ordersBean);
-    
     public abstract VendorPartLocal getVendorPartNumber();
     public abstract void setVendorPartNumber(VendorPartLocal vendorPartNumber);
     
     
     public LineItemPK ejbCreate(Integer orderId, BigDecimal itemId,
-            BigDecimal quantity, OrdersLocal ordersBean,
+            BigDecimal quantity, OrderLocal ordersBean,
             VendorPartLocal vendorPartNumber)  throws CreateException {
         if (orderId == null) {
             throw new CreateException("The field \"orderId\" must not be null");
@@ -134,14 +131,14 @@ public abstract class LineItemBean implements EntityBean, LineItemLocalBusiness 
         return null;
     }
     
-    public void ejbPostCreate(Integer orderId, BigDecimal itemId, BigDecimal quantity, OrdersLocal ordersBean, VendorPartLocal vendorPartNumber) {
+    public void ejbPostCreate(Integer orderId, BigDecimal itemId, BigDecimal quantity, OrderLocal ordersBean, VendorPartLocal vendorPartNumber) {
         // TODO populate relationships here if appropriate
-        setOrdersBean(ordersBean);
+        setOrderBean(ordersBean);
         setVendorPartNumber(vendorPartNumber);
         
     }
     
-    public LineItemPK ejbCreate(OrdersLocal ordersBean, BigDecimal quantity, VendorPartLocal vendorPartNumber) throws CreateException {
+    public LineItemPK ejbCreate(OrderLocal ordersBean, BigDecimal quantity, VendorPartLocal vendorPartNumber) throws CreateException {
         //TODO implement ejbCreate
         if (quantity == null) {
             throw new CreateException("The field \"quantity\" must not be null");
@@ -159,10 +156,14 @@ public abstract class LineItemBean implements EntityBean, LineItemLocalBusiness 
         return null;
     }
     
-    public void ejbPostCreate(OrdersLocal ordersBean, BigDecimal quantity, VendorPartLocal vendorPartNumber) throws CreateException {
+    public void ejbPostCreate(OrderLocal ordersBean, BigDecimal quantity, VendorPartLocal vendorPartNumber) throws CreateException {
         //TODO implement ejbPostCreate
-        setOrdersBean(ordersBean);
+        setOrderBean(ordersBean);
         setVendorPartNumber(vendorPartNumber);
     }
+
+    public abstract dataregistry.OrderLocal getOrderBean();
+
+    public abstract void setOrderBean(dataregistry.OrderLocal orderBean);
 
 }

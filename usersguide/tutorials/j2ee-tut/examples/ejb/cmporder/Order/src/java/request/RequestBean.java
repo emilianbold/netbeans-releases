@@ -29,8 +29,8 @@ package request;
 
 import dataregistry.LineItemLocal;
 import dataregistry.LineItemLocalHome;
-import dataregistry.OrdersLocal;
-import dataregistry.OrdersLocalHome;
+import dataregistry.OrderLocal;
+import dataregistry.OrderLocalHome;
 import dataregistry.PartLocal;
 import dataregistry.PartLocalHome;
 import dataregistry.PartPK;
@@ -56,7 +56,7 @@ import javax.ejb.*;
 public class RequestBean implements SessionBean, request.RequestRemoteBusiness {
     private SessionContext context;
     private LineItemLocalHome lineItemHome = null;
-    private OrdersLocalHome orderHome = null;
+    private OrderLocalHome orderHome = null;
     private PartLocalHome partHome = null;
     private VendorLocalHome vendorHome = null;
     private VendorPartLocalHome vendorPartHome = null;
@@ -100,7 +100,7 @@ public class RequestBean implements SessionBean, request.RequestRemoteBusiness {
     public void ejbCreate() {
         try {
             lineItemHome = lookupLineitem();
-            orderHome = lookupOrders();
+            orderHome = lookupOrder();
             partHome = lookupPart();
             vendorHome = lookupVendor();
             vendorPartHome = lookupVendorPart();
@@ -176,7 +176,7 @@ public class RequestBean implements SessionBean, request.RequestRemoteBusiness {
     
     public void createOrder(OrderRequest orderRequest) {
         try {
-            OrdersLocal order =
+            OrderLocal order =
                     orderHome.create(orderRequest.orderId, String.valueOf(orderRequest.status),
                     new BigDecimal(orderRequest.discount), orderRequest.shipmentInfo);
         } catch (Exception e) {
@@ -187,7 +187,7 @@ public class RequestBean implements SessionBean, request.RequestRemoteBusiness {
     
     public void addLineItem(LineItemRequest lineItemRequest) {
         try {
-            OrdersLocal order =
+            OrderLocal order =
                     orderHome.findByPrimaryKey(lineItemRequest.orderId);
             
             PartPK pkey = new PartPK();
@@ -230,7 +230,7 @@ public class RequestBean implements SessionBean, request.RequestRemoteBusiness {
     public double getOrderPrice(Integer orderId) {
         double price = 0.0;
         try {
-            OrdersLocal order = orderHome.findByPrimaryKey(orderId);
+            OrderLocal order = orderHome.findByPrimaryKey(orderId);
             price = order.calculateAmmount();
         } catch (Exception e) {
             throw new EJBException(e.getMessage());
@@ -322,10 +322,10 @@ public class RequestBean implements SessionBean, request.RequestRemoteBusiness {
         }
     }
     
-    private dataregistry.OrdersLocalHome lookupOrders() {
+    private dataregistry.OrderLocalHome lookupOrder() {
         try {
             Context c = new InitialContext();
-            OrdersLocalHome rv = (OrdersLocalHome) c.lookup("java:comp/env/ejb/Orders");
+            OrderLocalHome rv = (OrderLocalHome) c.lookup("java:comp/env/ejb/Order");
             return rv;
         } catch(NamingException ne) {
             Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);

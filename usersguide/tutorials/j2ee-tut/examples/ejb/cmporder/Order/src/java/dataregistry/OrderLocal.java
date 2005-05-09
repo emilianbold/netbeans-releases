@@ -27,27 +27,13 @@
 
 package dataregistry;
 
-import java.math.BigDecimal;
+import javax.ejb.EJBLocalObject;
 
 
 /**
- * This is the business interface for Lineitem enterprise bean.
+ * This is the local interface for Orders enterprise bean.
  */
-public interface LineItemLocalBusiness {
-    public abstract Integer getOrderId();
-
-    public abstract BigDecimal getItemId();
-
-    public abstract BigDecimal getQuantity();
-
-    public abstract void setQuantity(BigDecimal quantity);
-
-    public abstract OrderLocal getOrderBean();
-
-    public abstract void setOrderBean(OrderLocal orderBean);
-
-    public abstract VendorPartLocal getVendorPartNumber();
-
-    public abstract void setVendorPartNumber(VendorPartLocal vendorPartNumber);
+public interface OrderLocal extends EJBLocalObject, OrderLocalBusiness {
+    
     
 }

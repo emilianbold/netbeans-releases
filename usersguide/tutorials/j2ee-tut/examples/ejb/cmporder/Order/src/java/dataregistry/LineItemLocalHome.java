@@ -39,7 +39,7 @@ public interface LineItemLocalHome extends EJBLocalHome {
 
     LineItemLocal findByPrimaryKey(LineItemPK key)  throws FinderException;
 
-    public LineItemLocal create(Integer orderId, BigDecimal itemId, BigDecimal quantity, OrdersLocal ordersBean, VendorPartLocal vendorPartNumber) throws CreateException;
+    public LineItemLocal create(Integer orderId, BigDecimal itemId, BigDecimal quantity, OrderLocal ordersBean, VendorPartLocal vendorPartNumber) throws CreateException;
 
     java.util.Collection findByOrderId(Integer orderId) throws FinderException;
 
@@ -47,7 +47,7 @@ public interface LineItemLocalHome extends EJBLocalHome {
 
     java.util.Collection findByQuantity(BigDecimal quantity) throws FinderException;
 
-    LineItemLocal create(OrdersLocal ordersBean, BigDecimal quantity, VendorPartLocal vendorPartNumber) throws CreateException;
+    LineItemLocal create(OrderLocal ordersBean, BigDecimal quantity, VendorPartLocal vendorPartNumber) throws CreateException;
 
     java.util.Collection findAll() throws FinderException;
     

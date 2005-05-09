@@ -28,26 +28,33 @@
 package dataregistry;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Collection;
+import javax.ejb.CreateException;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.FinderException;
 
 
 /**
- * This is the business interface for Lineitem enterprise bean.
+ * This is the local-home interface for Orders enterprise bean.
  */
-public interface LineItemLocalBusiness {
-    public abstract Integer getOrderId();
+public interface OrderLocalHome extends EJBLocalHome {
 
-    public abstract BigDecimal getItemId();
+    OrderLocal findByPrimaryKey(Integer key)  throws FinderException;
 
-    public abstract BigDecimal getQuantity();
+    public OrderLocal create(Integer orderId, String status, Timestamp lastUpdate, BigDecimal discount, String shipmentInfo) throws CreateException;
 
-    public abstract void setQuantity(BigDecimal quantity);
+    Collection findByOrderId(Integer orderId) throws FinderException;
 
-    public abstract OrderLocal getOrderBean();
+    Collection findByStatus(String status) throws FinderException;
 
-    public abstract void setOrderBean(OrderLocal orderBean);
+    Collection findByDiscount(BigDecimal discount) throws FinderException;
 
-    public abstract VendorPartLocal getVendorPartNumber();
+    Collection findByShipmentInfo(String shipmentInfo) throws FinderException;
 
-    public abstract void setVendorPartNumber(VendorPartLocal vendorPartNumber);
+    OrderLocal create(Integer orderId, String status, BigDecimal discount, String shipmentInfo) throws CreateException;
+
+    void adjustDiscount(int adjustment);
+    
     
 }

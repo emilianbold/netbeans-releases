@@ -126,7 +126,7 @@
         </fetched-with>
       </cmp-field-mapping>
       <cmr-field-mapping>
-        <cmr-field-name>ordersBean</cmr-field-name>
+        <cmr-field-name>orderBean</cmr-field-name>
         <column-pair>
           <column-name>LINEITEM.ORDER_ID</column-name>
           <column-name>ORDERS.ORDER_ID</column-name>
@@ -140,55 +140,6 @@
         <column-pair>
           <column-name>LINEITEM.VENDOR_PART_NUMBER</column-name>
           <column-name>VENDOR_PART.VENDOR_PART_NUMBER</column-name>
-        </column-pair>
-        <fetched-with>
-          <none/>
-        </fetched-with>
-      </cmr-field-mapping>
-    </entity-mapping>
-    <entity-mapping>
-      <ejb-name>OrdersBean</ejb-name>
-      <table-name>ORDERS</table-name>
-      <cmp-field-mapping>
-        <field-name>discount</field-name>
-        <column-name>ORDERS.DISCOUNT</column-name>
-        <fetched-with>
-          <default/>
-        </fetched-with>
-      </cmp-field-mapping>
-      <cmp-field-mapping>
-        <field-name>lastUpdate</field-name>
-        <column-name>ORDERS.LAST_UPDATE</column-name>
-        <fetched-with>
-          <default/>
-        </fetched-with>
-      </cmp-field-mapping>
-      <cmp-field-mapping>
-        <field-name>orderId</field-name>
-        <column-name>ORDERS.ORDER_ID</column-name>
-        <fetched-with>
-          <default/>
-        </fetched-with>
-      </cmp-field-mapping>
-      <cmp-field-mapping>
-        <field-name>shipmentInfo</field-name>
-        <column-name>ORDERS.SHIPMENT_INFO</column-name>
-        <fetched-with>
-          <default/>
-        </fetched-with>
-      </cmp-field-mapping>
-      <cmp-field-mapping>
-        <field-name>status</field-name>
-        <column-name>ORDERS.STATUS</column-name>
-        <fetched-with>
-          <default/>
-        </fetched-with>
-      </cmp-field-mapping>
-      <cmr-field-mapping>
-        <cmr-field-name>lineitemBean</cmr-field-name>
-        <column-pair>
-          <column-name>ORDERS.ORDER_ID</column-name>
-          <column-name>LINEITEM.ORDER_ID</column-name>
         </column-pair>
         <fetched-with>
           <none/>
@@ -290,6 +241,55 @@
         <column-pair>
           <column-name>VENDOR_PART.VENDOR_ID</column-name>
           <column-name>VENDOR.VENDOR_ID</column-name>
+        </column-pair>
+        <fetched-with>
+          <none/>
+        </fetched-with>
+      </cmr-field-mapping>
+    </entity-mapping>
+    <entity-mapping>
+      <ejb-name>OrderBean</ejb-name>
+      <table-name>ORDERS</table-name>
+      <cmp-field-mapping>
+        <field-name>discount</field-name>
+        <column-name>ORDERS.DISCOUNT</column-name>
+        <fetched-with>
+          <default/>
+        </fetched-with>
+      </cmp-field-mapping>
+      <cmp-field-mapping>
+        <field-name>lastUpdate</field-name>
+        <column-name>ORDERS.LAST_UPDATE</column-name>
+        <fetched-with>
+          <default/>
+        </fetched-with>
+      </cmp-field-mapping>
+      <cmp-field-mapping>
+        <field-name>orderId</field-name>
+        <column-name>ORDERS.ORDER_ID</column-name>
+        <fetched-with>
+          <default/>
+        </fetched-with>
+      </cmp-field-mapping>
+      <cmp-field-mapping>
+        <field-name>shipmentInfo</field-name>
+        <column-name>ORDERS.SHIPMENT_INFO</column-name>
+        <fetched-with>
+          <default/>
+        </fetched-with>
+      </cmp-field-mapping>
+      <cmp-field-mapping>
+        <field-name>status</field-name>
+        <column-name>ORDERS.STATUS</column-name>
+        <fetched-with>
+          <default/>
+        </fetched-with>
+      </cmp-field-mapping>
+      <cmr-field-mapping>
+        <cmr-field-name>lineitemBean</cmr-field-name>
+        <column-pair>
+          <column-name>ORDERS.ORDER_ID</column-name>
+          <column-name>LINEITEM.ORDER_ID</column-name>
         </column-pair>
         <fetched-with>
           <none/>

@@ -18,11 +18,11 @@
         <ejb-link>LineitemBean</ejb-link>
       </ejb-local-ref>
       <ejb-local-ref>
-        <ejb-ref-name>ejb/Orders</ejb-ref-name>
+        <ejb-ref-name>ejb/Order</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>dataregistry.OrdersLocalHome</local-home>
-        <local>dataregistry.OrdersLocal</local>
-        <ejb-link>OrdersBean</ejb-link>
+        <local-home>dataregistry.OrderLocalHome</local-home>
+        <local>dataregistry.OrderLocal</local>
+        <ejb-link>OrderBean</ejb-link>
       </ejb-local-ref>
       <ejb-local-ref>
         <ejb-ref-name>ejb/Part</ejb-ref-name>
@@ -142,7 +142,7 @@ WHERE LOCATE(?1,o.name) &gt; 0</ejb-ql>
           </method-params>
         </query-method>
         <ejb-ql>SELECT DISTINCT l.vendorPartNumber.vendor 
-FROM Orders o, IN (o.lineitemBean) AS l
+FROM Order o, IN (o.lineitemBean) AS l
 WHERE o.orderId = ?1 ORDER BY 
 l.vendorPartNumber.vendor.name</ejb-ql>
       </query>
@@ -328,15 +328,15 @@ WHERE o.vendor.vendorId = ?1</ejb-ql>
     </entity>
     <entity>
       <description>jdbc:pointbase://localhost/order [order on ORDER]</description>
-      <display-name>OrdersEB</display-name>
-      <ejb-name>OrdersBean</ejb-name>
-      <local-home>dataregistry.OrdersLocalHome</local-home>
-      <local>dataregistry.OrdersLocal</local>
-      <ejb-class>dataregistry.OrdersBean</ejb-class>
+      <display-name>OrderEB</display-name>
+      <ejb-name>OrderBean</ejb-name>
+      <local-home>dataregistry.OrderLocalHome</local-home>
+      <local>dataregistry.OrderLocal</local>
+      <ejb-class>dataregistry.OrderBean</ejb-class>
       <persistence-type>Container</persistence-type>
       <prim-key-class>java.lang.Integer</prim-key-class>
       <reentrant>false</reentrant>
-      <abstract-schema-name>Orders</abstract-schema-name>
+      <abstract-schema-name>Order</abstract-schema-name>
       <cmp-field>
         <field-name>orderId</field-name>
       </cmp-field>
@@ -361,7 +361,7 @@ WHERE o.vendor.vendorId = ?1</ejb-ql>
             <method-param>java.lang.Integer</method-param>
           </method-params>
         </query-method>
-        <ejb-ql>SELECT OBJECT(o) FROM Orders AS o WHERE o.orderId = ?1</ejb-ql>
+        <ejb-ql>SELECT OBJECT(o) FROM Order AS o WHERE o.orderId = ?1</ejb-ql>
       </query>
       <query>
         <description>auto generated method</description>
@@ -371,7 +371,7 @@ WHERE o.vendor.vendorId = ?1</ejb-ql>
             <method-param>java.lang.String</method-param>
           </method-params>
         </query-method>
-        <ejb-ql>SELECT OBJECT(o) FROM Orders AS o WHERE o.status = ?1</ejb-ql>
+        <ejb-ql>SELECT OBJECT(o) FROM Order AS o WHERE o.status = ?1</ejb-ql>
       </query>
       <query>
         <description>auto generated method</description>
@@ -381,7 +381,7 @@ WHERE o.vendor.vendorId = ?1</ejb-ql>
             <method-param>java.math.BigDecimal</method-param>
           </method-params>
         </query-method>
-        <ejb-ql>SELECT OBJECT(o) FROM Orders AS o WHERE o.discount = ?1</ejb-ql>
+        <ejb-ql>SELECT OBJECT(o) FROM Order AS o WHERE o.discount = ?1</ejb-ql>
       </query>
       <query>
         <description>auto generated method</description>
@@ -391,7 +391,7 @@ WHERE o.vendor.vendorId = ?1</ejb-ql>
             <method-param>java.lang.String</method-param>
           </method-params>
         </query-method>
-        <ejb-ql>SELECT OBJECT(o) FROM Orders AS o WHERE o.shipmentInfo = ?1</ejb-ql>
+        <ejb-ql>SELECT OBJECT(o) FROM Order AS o WHERE o.shipmentInfo = ?1</ejb-ql>
       </query>
       <query>
         <query-method>
@@ -399,7 +399,7 @@ WHERE o.vendor.vendorId = ?1</ejb-ql>
           <method-params/>
         </query-method>
         <ejb-ql>SELECT OBJECT(o) 
-FROM Orders o</ejb-ql>
+FROM Order o</ejb-ql>
       </query>
     </entity>
   </enterprise-beans>
@@ -430,7 +430,8 @@ FROM Orders o</ejb-ql>
       </ejb-relationship-role>
     </ejb-relation>
     <ejb-relation>
-      <ejb-relation-name>LineitemBean-OrdersBean</ejb-relation-name>
+      <description/>
+      <ejb-relation-name>LineitemBean-OrderBean</ejb-relation-name>
       <ejb-relationship-role>
         <ejb-relationship-role-name>LineitemBean</ejb-relationship-role-name>
         <multiplicity>Many</multiplicity>
@@ -439,14 +440,14 @@ FROM Orders o</ejb-ql>
           <ejb-name>LineitemBean</ejb-name>
         </relationship-role-source>
         <cmr-field>
-          <cmr-field-name>ordersBean</cmr-field-name>
+          <cmr-field-name>orderBean</cmr-field-name>
         </cmr-field>
       </ejb-relationship-role>
       <ejb-relationship-role>
         <ejb-relationship-role-name>OrderId</ejb-relationship-role-name>
         <multiplicity>One</multiplicity>
         <relationship-role-source>
-          <ejb-name>OrdersBean</ejb-name>
+          <ejb-name>OrderBean</ejb-name>
         </relationship-role-source>
         <cmr-field>
           <cmr-field-name>lineitemBean</cmr-field-name>
@@ -561,7 +562,7 @@ FROM Orders o</ejb-ql>
     </container-transaction>
     <container-transaction>
       <method>
-        <ejb-name>OrdersBean</ejb-name>
+        <ejb-name>OrderBean</ejb-name>
         <method-name>*</method-name>
       </method>
       <trans-attribute>Required</trans-attribute>

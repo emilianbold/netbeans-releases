@@ -28,26 +28,38 @@
 package dataregistry;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Collection;
 
 
 /**
- * This is the business interface for Lineitem enterprise bean.
+ * This is the business interface for Orders enterprise bean.
  */
-public interface LineItemLocalBusiness {
+public interface OrderLocalBusiness {
     public abstract Integer getOrderId();
 
-    public abstract BigDecimal getItemId();
+    public abstract String getStatus();
 
-    public abstract BigDecimal getQuantity();
+    public abstract void setStatus(String status);
 
-    public abstract void setQuantity(BigDecimal quantity);
+    public abstract Timestamp getLastUpdate();
 
-    public abstract OrderLocal getOrderBean();
+    public abstract void setLastUpdate(Timestamp lastUpdate);
 
-    public abstract void setOrderBean(OrderLocal orderBean);
+    public abstract BigDecimal getDiscount();
 
-    public abstract VendorPartLocal getVendorPartNumber();
+    public abstract void setDiscount(BigDecimal discount);
 
-    public abstract void setVendorPartNumber(VendorPartLocal vendorPartNumber);
+    public abstract String getShipmentInfo();
+
+    public abstract void setShipmentInfo(String shipmentInfo);
+
+    public abstract Collection getLineitemBean();
+
+    public abstract void setLineitemBean(Collection lineitemBean);
+
+    double calculateAmmount();
+
+    int getNexId();
     
 }
