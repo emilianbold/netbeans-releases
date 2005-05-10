@@ -13,6 +13,7 @@
 
 package org.netbeans.core.windows.services;
 
+import javax.swing.JSeparator;
 import org.netbeans.core.NbPlaces;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -30,6 +31,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.cookies.InstanceCookie;
 
 import java.util.ResourceBundle;
 import java.util.List;
@@ -320,6 +322,8 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
 
         /** Actions which this node supports */
         static SystemAction[] staticActions;
+        /** Actions which this node supports (when representing a menu separator) */
+        static SystemAction[] separatorStaticActions;
 
         /** Constructs new filter node for menu item */
         MenuItemNode (Node filter) {
@@ -336,6 +340,23 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
         * @return array of actions for this node
         */
         public SystemAction[] getActions () {
+            InstanceCookie.Of ic = (InstanceCookie.Of)getCookie(InstanceCookie.Of.class);
+            if (ic != null && ic.instanceOf(JSeparator.class)) {
+                //do not allow copy&paste for menu separators
+                if( null == separatorStaticActions ) {
+                    separatorStaticActions = new SystemAction [] {
+                                    SystemAction.get(MoveUpAction.class),
+                                    SystemAction.get(MoveDownAction.class),
+                                    null,
+                                    SystemAction.get(DeleteAction.class),
+                                    null,
+                                    SystemAction.get(ToolsAction.class),
+                                    SystemAction.get(PropertiesAction.class),
+                                };
+                }
+                return separatorStaticActions;
+            }
+            
             if (staticActions == null) {
                 staticActions = new SystemAction [] {
                                     SystemAction.get(MoveUpAction.class),

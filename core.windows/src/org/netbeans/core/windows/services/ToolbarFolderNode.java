@@ -14,6 +14,7 @@
 package org.netbeans.core.windows.services;
 
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import org.netbeans.core.NbPlaces;
 import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.ErrorManager;
@@ -305,6 +306,8 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
 
         /** Actions which this node supports */
         static SystemAction[] staticActions;
+        /** Actions which this node supports (when representing a toolbar separator) */
+        static SystemAction[] separatorStaticActions;
 
         /** Constructs new filter node for Toolbar item */
         ToolbarItemNode (Node filter) {
@@ -321,6 +324,23 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
         * @return array of actions for this node
         */
         public SystemAction[] getActions () {
+            InstanceCookie.Of ic = (InstanceCookie.Of)getCookie(InstanceCookie.Of.class);
+            if (ic != null && ic.instanceOf(JSeparator.class)) {
+                //do not allow copy&paste for toolbar separators
+                if( null == separatorStaticActions ) {
+                    separatorStaticActions = new SystemAction [] {
+                                    SystemAction.get(MoveUpAction.class),
+                                    SystemAction.get(MoveDownAction.class),
+                                    null,
+                                    SystemAction.get(DeleteAction.class),
+                                    null,
+                                    SystemAction.get(ToolsAction.class),
+                                    SystemAction.get(PropertiesAction.class),
+                                };
+                }
+                return separatorStaticActions;
+            }
+            
             if (staticActions == null) {
                 staticActions = new SystemAction [] {
                                     SystemAction.get(MoveUpAction.class),
