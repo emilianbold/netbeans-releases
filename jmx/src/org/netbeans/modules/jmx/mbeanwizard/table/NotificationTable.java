@@ -65,6 +65,7 @@ public class NotificationTable extends JTable {
             JComboBox nameField = new JComboBox();
             nameField.addItem(WizardConstants.NOTIFICATION);
             nameField.addItem(WizardConstants.ATTRIBUTECHANGE_NOTIFICATION);
+            nameField.setName("notifClassBox");
             Object o = getModel().getValueAt(row,column);
             nameField.setSelectedItem(o);
             
@@ -100,6 +101,7 @@ public class NotificationTable extends JTable {
                     JTextField typeField = new JTextField();
                     typeField.setEditable(false);
                     JButton typeButton = new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
+                    typeButton.setName("notifTypePopupJButton");
                     typeButton.setMargin(new java.awt.Insets(2,2,2,2));
                     typeButton.addActionListener(
                             new DisplayPopupListener(ancestorPanel, this, model,

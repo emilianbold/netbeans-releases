@@ -60,6 +60,7 @@ public class NotificationTypePopup extends AbstractPopup{
         popupTableModel = new NotificationTypeTableModel(
                 notifTableModel.getDefaultTypeValue());
         popupTable = new NotificationTypePopupTable(popupTableModel);
+        popupTable.setName("notifPopupTable");
     }
     
     protected void initComponents() {
@@ -72,10 +73,12 @@ public class NotificationTypePopup extends AbstractPopup{
                 "LBL_Notification_close");
         
         addJButton.addActionListener(new AddTableRowListener(popupTable,popupTableModel,removeJButton));
+        addJButton.setName("addNotifTypeJButton");
         removeJButton.addActionListener(new RemTableRowListener(popupTable,popupTableModel,removeJButton));
         
         closeJButton.addActionListener(new ClosePopupButtonListener(this,textFieldToFill));
-        
+    closeJButton.setName("closeNotifTypeJButton");
+                
         definePanels(new JButton[] {addJButton,
                 removeJButton,
                 closeJButton
