@@ -17,9 +17,9 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="javadoc" depends="init" description="Build Javadoc.">
         <!-- Do this before so <checklinks> will find it and not report it as an error: -->
-        <mkdir dir="javadoc/${code.name.base.dashes}/org/netbeans/spi/settings/doc-files"/>
+        <mkdir dir="${netbeans.javadoc.dir}/${code.name.base.dashes}/org/netbeans/spi/settings/doc-files"/>
         <copy file="src/org/netbeans/modules/settings/resources/properties-1_0.dtd"
-            tofile="javadoc/${code.name.base.dashes}/org/netbeans/spi/settings/doc-files/properties-1_0.dtd"/>
+            tofile="${netbeans.javadoc.dir}/${code.name.base.dashes}/org/netbeans/spi/settings/doc-files/properties-1_0.dtd"/>
         <antcall target="projectized.javadoc" inheritRefs="true"/>
     </target>
     
