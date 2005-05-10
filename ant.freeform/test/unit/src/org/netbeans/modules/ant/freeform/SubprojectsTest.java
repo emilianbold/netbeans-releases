@@ -14,6 +14,7 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.util.Collections;
+import java.util.Set;
 import org.netbeans.spi.project.SubprojectProvider;
 
 // XXX testChanges
@@ -39,8 +40,16 @@ public class SubprojectsTest extends TestBase {
     }
     
     public void testBasicSubprojects() throws Exception {
-        assertEquals("no subprojects for simple", Collections.EMPTY_SET, simpleSubprojects.getSubprojects());
-        assertEquals("extsrcroot has simple as a subproject", Collections.singleton(simple), extsrcrootSubprojects.getSubprojects());
+        Set subprojects = simpleSubprojects.getSubprojects();
+        
+        assertTrue("no subprojects for simple", subprojects.isEmpty());
+        assertEquals("no subprojects for simple", Collections.EMPTY_SET, subprojects);
+        assertTrue("no subprojects for simple", subprojects.isEmpty());
+        
+        subprojects = extsrcrootSubprojects.getSubprojects();
+        assertFalse("extsrcroot has simple as a subproject", subprojects.isEmpty());
+        assertEquals("extsrcroot has simple as a subproject", Collections.singleton(simple), subprojects);
+        assertFalse("extsrcroot has simple as a subproject", subprojects.isEmpty());
     }
     
 }

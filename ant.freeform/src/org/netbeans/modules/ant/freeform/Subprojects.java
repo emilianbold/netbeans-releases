@@ -14,6 +14,8 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +43,10 @@ final class Subprojects implements SubprojectProvider {
     }
 
     public Set/*<Project>*/ getSubprojects() {
-        Set/*<Project>*/ subprojects = new HashSet();
+        return new LazySubprojectsSet();
+    }
+    
+    private Set/*<Project>*/ createSubprojects(Set/*<Project>*/ subprojects) {
         Element config = project.helper().getPrimaryConfigurationData(true);
         Element subprjsEl = Util.findElement(config, "subprojects", FreeformProjectType.NS_GENERAL); // NOI18N
         if (subprjsEl != null) {
@@ -63,13 +68,17 @@ final class Subprojects implements SubprojectProvider {
                 try {
                     Project p = ProjectManager.getDefault().findProject(subprjDir);
                     if (p != null) {
-                        subprojects.add(p);
+                        if (subprojects == null)
+                            return Collections.EMPTY_SET;
+                        else
+                            subprojects.add(p);
                     }
                 } catch (IOException e) {
                     org.netbeans.modules.ant.freeform.Util.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
         }
+
         return subprojects;
     }
 
@@ -79,6 +88,78 @@ final class Subprojects implements SubprojectProvider {
 
     public void removeChangeListener(ChangeListener listener) {
         // XXX
+    }
+    
+    /**Fix for #58639: the subprojects should be loaded lazily, so invoking the popup menu
+     * with "Open Required Projects" is fast.
+     */
+    private final class LazySubprojectsSet implements Set {
+        
+        private Set delegateTo = null;
+        
+        private synchronized Set getDelegateTo() {
+            if (delegateTo == null) {
+                delegateTo = createSubprojects(new HashSet());
+            }
+            
+            return delegateTo;
+        }
+        
+        public boolean contains(Object o) {
+            return getDelegateTo().contains(o);
+        }
+        
+        public boolean add(Object o) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public boolean removeAll(Collection c) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public boolean retainAll(Collection c) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public boolean addAll(Collection c) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public boolean containsAll(Collection c) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public Object[] toArray(Object[] a) {
+            return getDelegateTo().toArray(a);
+        }
+        
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
+        
+        public int size() {
+            return getDelegateTo().size();
+        }
+        
+        public boolean isEmpty() {
+            if (delegateTo == null)
+                return createSubprojects(null) == null;
+            else
+                return delegateTo.isEmpty();
+        }
+        
+        public Iterator iterator() {
+            return getDelegateTo().iterator();
+        }
+        
+        public Object[] toArray() {
+            return getDelegateTo().toArray();
+        }
+        
     }
     
 }

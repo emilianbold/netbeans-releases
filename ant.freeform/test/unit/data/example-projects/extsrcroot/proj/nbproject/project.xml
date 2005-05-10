@@ -29,6 +29,7 @@
             </view>
             <subprojects>
                 <project>../../simple</project>
+                <project>../../simple</project>
             </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
