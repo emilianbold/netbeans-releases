@@ -29,7 +29,7 @@ public class SubprojectsTest extends TestBase {
         super(name);
     }
     
-    private SubprojectProvider simpleSubprojects, extsrcrootSubprojects;
+    private SubprojectProvider simpleSubprojects, extsrcrootSubprojects, simple2Subprojects;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -37,6 +37,8 @@ public class SubprojectsTest extends TestBase {
         assertNotNull("have a SubprojectProvider for simple", simpleSubprojects);
         extsrcrootSubprojects = (SubprojectProvider) extsrcroot.getLookup().lookup(SubprojectProvider.class);
         assertNotNull("have a SubprojectProvider for extsrcroot", extsrcrootSubprojects);
+        simple2Subprojects = (SubprojectProvider) simple2.getLookup().lookup(SubprojectProvider.class);
+        assertNotNull("have a SubprojectProvider for simple2", simple2Subprojects);
     }
     
     public void testBasicSubprojects() throws Exception {
@@ -50,6 +52,12 @@ public class SubprojectsTest extends TestBase {
         assertFalse("extsrcroot has simple as a subproject", subprojects.isEmpty());
         assertEquals("extsrcroot has simple as a subproject", Collections.singleton(simple), subprojects);
         assertFalse("extsrcroot has simple as a subproject", subprojects.isEmpty());
+        
+        subprojects = simple2Subprojects.getSubprojects();
+        
+        assertTrue("no subprojects for simple", subprojects.isEmpty());
+        assertEquals("no subprojects for simple", Collections.EMPTY_SET, subprojects);
+        assertTrue("no subprojects for simple", subprojects.isEmpty());
     }
     
 }

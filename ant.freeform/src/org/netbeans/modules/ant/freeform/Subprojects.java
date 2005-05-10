@@ -46,6 +46,18 @@ final class Subprojects implements SubprojectProvider {
         return new LazySubprojectsSet();
     }
     
+    /**Analyzes subprojects element.
+     * Works in two modes:
+     * 1. Lazy mode, detects only if the set of subprojects would be empty.
+     *    Enabled if the provided subprojects parameter is null.
+     *    The subprojects set is empty if createSubprojects(null) == null.
+     *    Used by the LazySubprojectsSet, see #58639. Works as fast as possible.
+     * 2. Full mode, creates the set of projects.
+     *    Enabled if the subprojects parameter is not-null.
+     *    The provided instance of Set is filled by the projects and returned.
+     *
+     * This method never allocates a new set.
+     */
     private Set/*<Project>*/ createSubprojects(Set/*<Project>*/ subprojects) {
         Element config = project.helper().getPrimaryConfigurationData(true);
         Element subprjsEl = Util.findElement(config, "subprojects", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -95,9 +107,9 @@ final class Subprojects implements SubprojectProvider {
      */
     private final class LazySubprojectsSet implements Set {
         
-        private Set delegateTo = null;
+        private Set/*<Project>*/ delegateTo = null;
         
-        private synchronized Set getDelegateTo() {
+        private synchronized Set/*<Project>*/ getDelegateTo() {
             if (delegateTo == null) {
                 delegateTo = createSubprojects(new HashSet());
             }
@@ -130,7 +142,7 @@ final class Subprojects implements SubprojectProvider {
         }
         
         public boolean containsAll(Collection c) {
-            throw new UnsupportedOperationException();
+            return getDelegateTo().containsAll(c);
         }
         
         public Object[] toArray(Object[] a) {
@@ -145,14 +157,14 @@ final class Subprojects implements SubprojectProvider {
             return getDelegateTo().size();
         }
         
-        public boolean isEmpty() {
+        public synchronized boolean isEmpty() {
             if (delegateTo == null)
                 return createSubprojects(null) == null;
             else
                 return delegateTo.isEmpty();
         }
         
-        public Iterator iterator() {
+        public Iterator/*<Project>*/ iterator() {
             return getDelegateTo().iterator();
         }
         

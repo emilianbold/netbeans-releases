@@ -69,6 +69,9 @@
                 </items>
                 <!-- XXX no <context-menu> currently -->
             </view>
+            <subprojects>
+	        <project>does-not-exist</project>
+            </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
