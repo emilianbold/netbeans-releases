@@ -158,10 +158,11 @@ final class Subprojects implements SubprojectProvider {
         }
         
         public synchronized boolean isEmpty() {
-            if (delegateTo == null)
+            if (delegateTo == null) {
                 return createSubprojects(null) == null;
-            else
+            } else {
                 return delegateTo.isEmpty();
+            }
         }
         
         public Iterator/*<Project>*/ iterator() {
