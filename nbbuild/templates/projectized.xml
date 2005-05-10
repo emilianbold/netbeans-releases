@@ -18,8 +18,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="common-init" depends="default.init"/>
     <target name="init" depends="basic-init,files-init,build-init"/>
+    
+    <target name="javadoc-fail-init" if="netbeans.home" >
+        <property name="javadoc.check.failonerror" value="true" />
+    </target>
+    
 
-    <target name="build-init" depends="basic-init">
+    <target name="build-init" depends="basic-init,javadoc-fail-init" >
         <parseprojectxml project="." publicpackagesproperty="public.packages" friendsproperty="friends" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" domainproperty="nbm.domain" classpathextensionsproperty="class.path.extensions"/>
         <condition property="is.regular">
             <not>
@@ -70,6 +75,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="javadoc" depends="build-init">
         <fail unless="javadoc.title">Must set javadoc.title</fail>
         <!-- This should become an import at some point, perhaps: -->
+        <property name="javadoc.check.failonerror" value="false" />
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
             <property name="javadoc.name" value="${code.name.base.dashes}" />
@@ -78,7 +84,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="javadoc.manifest" location="${manifest.mf}"/>
         </ant>
     </target>
-
+    
     <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home">
         <nbbrowse file="${netbeans.javadoc.dir}/${code.name.base.dashes}/index.html"/>
     </target>
