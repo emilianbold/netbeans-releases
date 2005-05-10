@@ -174,14 +174,14 @@ public class ConfigPanel extends javax.swing.JPanel
         {
             if (WizardHelpers.fileExists(
                     getPanel().rmiAccessFileJTextField.getText())) {
-                setErrorMsg("File " + 
+                setErrorMsg("The file " + 
                         WizardHelpers.getFileName(
                             getPanel().rmiAccessFileJTextField.getText()) +
                         " already exists.");
                 return false;
             } else if (WizardHelpers.fileExists(
                     getPanel().rmiPasswordFileJTextField.getText())) {
-                setErrorMsg("File " + 
+                setErrorMsg("The file " + 
                         WizardHelpers.getFileName(
                             getPanel().rmiPasswordFileJTextField.getText()) +
                         " already exists.");
