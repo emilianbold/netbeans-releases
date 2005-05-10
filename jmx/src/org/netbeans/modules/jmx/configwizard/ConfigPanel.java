@@ -104,6 +104,7 @@ public class ConfigPanel extends javax.swing.JPanel
         northWestCenterPanel.add(rmiPasswordFileJLabel, gridBagConstraints);
 
         rmiAccessFileJTextField.setEditable(false);
+        rmiAccessFileJTextField.setName("rmiAccessFileJTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -111,6 +112,7 @@ public class ConfigPanel extends javax.swing.JPanel
         northWestCenterPanel.add(rmiAccessFileJTextField, gridBagConstraints);
 
         rmiPasswordFileJTextField.setEditable(false);
+        rmiPasswordFileJTextField.setName("rmiPasswordFileJTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

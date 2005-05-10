@@ -71,6 +71,7 @@
             <Component class="javax.swing.JTextField" name="rmiAccessFileJTextField">
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
+                <Property name="name" type="java.lang.String" value="rmiAccessFileJTextField"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -81,6 +82,7 @@
             <Component class="javax.swing.JTextField" name="rmiPasswordFileJTextField">
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
+                <Property name="name" type="java.lang.String" value="rmiPasswordFileJTextField"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
