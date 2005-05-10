@@ -29,10 +29,8 @@ Microsystems, Inc. All Rights Reserved.
 <link href="${javadoc.docs.org-openide-dialogs}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-dialogs"/>
 <link href="${javadoc.docs.org-openide-nodes}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-nodes"/>
 <link href="${javadoc.docs.org-openide-explorer}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-explorer"/>
-<link href="${javadoc.docs.org-openide-fs}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-fs"/>
 <link href="${javadoc.docs.org-openide-modules}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-modules"/>
 <link href="${javadoc.docs.org-openide-text}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-text"/>
-<link href="${javadoc.docs.org-openide-util-enum}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-util-enum"/>
 <link href="${javadoc.docs.org-openide-windows}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-windows"/>
 <link href="${javadoc.docs.org-openide-loaders}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-loaders"/>
 <link href="${javadoc.docs.org-openide-io}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-io"/>
@@ -85,3 +83,5 @@ Microsystems, Inc. All Rights Reserved.
 <link href="${javadoc.docs.org-netbeans-modules-autoupdate}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-autoupdate"/>
 <link href="${javadoc.docs.org-netbeans-api-mdr}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-mdr"/>
 <link href="${javadoc.docs.org-netbeans-api-progress}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-progress"/>
+<link href="${javadoc.docs.org-openide-filesystems}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-filesystems"/>
+<link href="${javadoc.docs.org-openide-util-enumerations}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-util-enumerations"/>

@@ -109,6 +109,12 @@ cause it to fail.
 </concat>
         <concat append="true" destfile="replaces.xml" ><![CDATA[<replacefilter token="@${javadoc.name}@" value="$${javadoc.docs.${javadoc.name}}"/>]]>
 </concat>
+
+        <replace
+            token="${netbeans.javadoc.dir}" 
+            value="$${netbeans.javadoc.dir}" 
+            file="links.xml"
+        />
         
         <!-- set the property for use in this script -->
         <property name="javadoc.docs.${javadoc.name}" value="${javadoc.web.root}/${javadoc.name}" />

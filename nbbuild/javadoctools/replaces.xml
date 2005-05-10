@@ -29,10 +29,8 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-openide-awt@" value="${javadoc.docs.org-openide-awt}"/>
 <replacefilter token="@org-openide-dialogs@" value="${javadoc.docs.org-openide-dialogs}"/>
 <replacefilter token="@org-openide-explorer@" value="${javadoc.docs.org-openide-explorer}"/>
-<replacefilter token="@org-openide-fs@" value="${javadoc.docs.org-openide-fs}"/>
 <replacefilter token="@org-openide-modules@" value="${javadoc.docs.org-openide-modules}"/>
 <replacefilter token="@org-openide-text@" value="${javadoc.docs.org-openide-text}"/>
-<replacefilter token="@org-openide-util-enum@" value="${javadoc.docs.org-openide-util-enum}"/>
 <replacefilter token="@org-openide-windows@" value="${javadoc.docs.org-openide-windows}"/>
 <replacefilter token="@org-openide-loaders@" value="${javadoc.docs.org-openide-loaders}"/>
 <replacefilter token="@org-openide-io@" value="${javadoc.docs.org-openide-io}"/>
@@ -85,3 +83,5 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-autoupdate@" value="${javadoc.docs.org-netbeans-modules-autoupdate}"/>
 <replacefilter token="@org-netbeans-api-mdr@" value="${javadoc.docs.org-netbeans-api-mdr}"/>
 <replacefilter token="@org-netbeans-api-progress@" value="${javadoc.docs.org-netbeans-api-progress}"/>
+<replacefilter token="@org-openide-filesystems@" value="${javadoc.docs.org-openide-filesystems}"/>
+<replacefilter token="@org-openide-util-enumerations@" value="${javadoc.docs.org-openide-util-enumerations}"/>
