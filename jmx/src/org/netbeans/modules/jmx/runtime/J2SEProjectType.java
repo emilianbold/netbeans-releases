@@ -1,10 +1,16 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc. All rights reserved.
- * SUN PROPRIETARY/CONFIDENTIAL.
- * Use is subject to license terms.
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.jmx.runtime;
-
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -37,12 +43,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Iterator;
 
-/**
- * @author Ian Formanek
- */
 public class J2SEProjectType {
-
-  public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.profiler.j2se"); // NOI18N
 
   private static final String J2SE_PROJECT_NAMESPACE_40 = "http://www.netbeans.org/ns/j2se-project/1";
   private static final String J2SE_PROJECT_NAMESPACE_41 = "http://www.netbeans.org/ns/j2se-project/2";
@@ -101,6 +102,7 @@ public class J2SEProjectType {
     }
     return fo;
   }
+ 
   public static boolean checkProjectIsModifiedForManagement(Project project) {
     Element e = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).getConfigurationFragment("data", MANAGEMENT_NAME_SPACE, true);
     if (e != null) return true; // already modified, nothing more to do
@@ -117,14 +119,12 @@ public class J2SEProjectType {
         return false; // cancelled by the user
     }
 
-    // not yet modified for profiler => create profiler-build-impl & modify build.xml and project.xml
     Element mgtFragment = XMLUtil.createDocument("ignore", null, null, null).createElementNS(MANAGEMENT_NAME_SPACE, "data");
     mgtFragment.setAttribute("version", "0.4");
     ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).putConfigurationFragment(mgtFragment, true);
     try {
       ProjectManager.getDefault().saveProject(project);
     } catch (IOException e1) {
-      err.notify(e1);
       e1.printStackTrace(System.err);
       return false;
     }
@@ -133,7 +133,6 @@ public class J2SEProjectType {
       GeneratedFilesHelper gfh = new GeneratedFilesHelper(project.getProjectDirectory());
       gfh.refreshBuildScript("nbproject/management-build-impl.xml", J2SEProjectType.class.getResource("management-build-impl.xsl"), false);
     } catch (IOException e1) {
-      err.notify(ErrorManager.INFORMATIONAL, e1);
       return false;
     }
 
@@ -196,10 +195,8 @@ public class J2SEProjectType {
 
     } catch (FileNotFoundException e1) {
       e1.printStackTrace(System.err);
-      err.notify(e1);
     } catch (IOException e1) {
       e1.printStackTrace(System.err);
-      err.notify(e1);
     } finally {
         lock.releaseLock();
         if (writer != null)
@@ -211,7 +208,6 @@ public class J2SEProjectType {
   public static void overwriteProperty(Project project, final String key, final String value) throws Exception {
       FileObject privatePropsFile = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
       final File projectPropsFile = FileUtil.toFile(project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-      //final File userPropsFile = InstalledFileLocator.getDefault().locate("build.properties", null, false);
       ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
           public Object run() throws Exception {
               java.util.Properties p = new java.util.Properties();
@@ -250,7 +246,7 @@ public class J2SEProjectType {
           is.close();
         }
       } catch (IOException e) {
-        err.notify(ErrorManager.INFORMATIONAL, e);
+        e.printStackTrace();
       }
     }
 
@@ -263,7 +259,7 @@ public class J2SEProjectType {
           is.close();
         }
       } catch (IOException e) {
-        err.notify(ErrorManager.INFORMATIONAL, e);
+          e.printStackTrace();
       }
     }
 
@@ -276,49 +272,9 @@ public class J2SEProjectType {
           is.close();
         }
       } catch (IOException e) {
-        err.notify(ErrorManager.INFORMATIONAL, e);
+        e.printStackTrace();
       }
     }
     return props;
-  }
-
-  /*
-  public SessionSettings getProjectSessionSettings(Project project) {
-    SessionSettings ss = new SessionSettings();
-    Properties pp = getProjectProperties(project);
-    ss.setMainClass(pp.getProperty("main.class", ""));
-    ss.setMainArgs(pp.getProperty("application.args", ""));
-    ss.setMainClassPath(pp.getProperty("run.classpath", ""));
-
-    return ss;
-  }
-*/
-  public String getProfilerTargetName(Project project, int type, FileObject profiledClass) {
-      /*
-    switch (type) {
-      case TARGET_PROFILE: return "profile";
-      case TARGET_PROFILE_SINGLE:
-        if (SourceUtilities.isApplet (profiledClass)) return "profile-applet";
-        else return "profile-single";
-      case TARGET_PROFILE_TEST: return "profile-test-single";
-      default: return null;
-    }
-       **/
-      return null;
-  }
-
-  public void configurePropertiesForProfiling(Properties props, Project project, FileObject profiledClassFile) {
-      /*
-    if (profiledClassFile != null) { // In case the class to profile is explicitely selected (profile-single)
-      // 1. specify profiled class name
-      String profiledClass = SourceUtilities.getMainClassName(profiledClassFile);
-      props.setProperty("profile.class", profiledClass); //NOI18N
-
-      // 2. include it in javac.includes so that the compile-single picks it up
-      String clazz = FileUtil.getRelativePath(ProjectUtilities.getRoot(ProjectUtilities.getSourceRoots(project), profiledClassFile), profiledClassFile);
-      props.setProperty("javac.includes", clazz); //NOI18N
-    }
-  }
-       */
   }
 }
