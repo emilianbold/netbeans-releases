@@ -95,7 +95,7 @@ public class Main {
                                                                                             
             mary.credit(new BigDecimal("100.07"));
                                                                                             
-            Collection c = home.findLastName("Smith");
+            Collection c = home.findByLastName("Smith");
             Iterator i = c.iterator();
                                                                                             
             while (i.hasNext()) {
