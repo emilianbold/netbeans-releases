@@ -52,6 +52,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -642,8 +644,23 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             return false;
         }
 
+        private static synchronized PackageRenameHandler getRenameHandler() {
+            Lookup.Result renameImplementations = Lookup.getDefault().lookup(new Lookup.Template(PackageRenameHandler.class));
+            List handlers = (List) renameImplementations.allInstances();
+            if (handlers.size()==0)
+                return null;
+            if (handlers.size()>1)
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Multiple instances of PackageRenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
+            return (PackageRenameHandler) handlers.get(0); 
+        }
         
         public void setName(String name) {
+            PackageRenameHandler handler = getRenameHandler();
+            if (handler!=null) {
+                handler.handleRename(this, name);
+                return;
+            }
+            
             if (isDefaultPackage) {
                 return;
             }

@@ -29,6 +29,8 @@ import org.openide.DialogDisplayer;
 
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.datatransfer.*;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
@@ -1183,6 +1185,24 @@ implements Serializable, DataObject.Container {
                 return new NewType[] { new NewFolder () };
             }
  */
+        }
+        private synchronized FolderRenameHandler getRenameHandler() {
+            Lookup.Result renameImplementations = Lookup.getDefault().lookup(new Lookup.Template(FolderRenameHandler.class));
+            List handlers = (List) renameImplementations.allInstances();
+            if (handlers.size()==0)
+                return null;
+            if (handlers.size()>1)
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Multiple instances of FolderRenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
+            return (FolderRenameHandler) handlers.get(0);
+        }
+
+        public void setName(String name) {
+            FolderRenameHandler handler = getRenameHandler();
+            if (handler == null) {
+                super.setName(name);
+            } else {
+                handler.handleRename(DataFolder.this, name);
+            }
         }
         
         /* May add some paste types for objects being added to folders.
