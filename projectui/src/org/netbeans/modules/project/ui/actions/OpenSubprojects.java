@@ -63,7 +63,7 @@ public class OpenSubprojects extends NodeAction {
                 
                 SubprojectProvider spp = (SubprojectProvider)p.getLookup().lookup( SubprojectProvider.class );
                 
-                if ( spp != null && spp.getSubprojects().iterator().hasNext() ) {
+                if ( spp != null && !spp.getSubprojects().isEmpty() ) {
                     someSubprojects = true;
                 }                
             }
