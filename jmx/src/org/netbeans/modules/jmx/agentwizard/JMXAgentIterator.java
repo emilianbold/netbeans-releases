@@ -51,7 +51,6 @@ import org.netbeans.jmi.javamodel.*;
 import org.netbeans.modules.javacore.api.JavaModel;
 
 import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardIntegration;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.configwizard.ConfigPanel;
 
@@ -62,9 +61,7 @@ import org.netbeans.modules.jmx.runtime.J2SEProjectType;
  * Main Wizard class : manage the panel navigation and the code generation.
  *
  */
-public class JMXAgentIterator implements TemplateWizard.Iterator,
-                                      WizardIntegration
-{
+public class JMXAgentIterator implements TemplateWizard.Iterator {
     private static final long serialVersionUID = 1L;
     
     /** private variables */
@@ -105,7 +102,7 @@ public class JMXAgentIterator implements TemplateWizard.Iterator,
         wiz.putProperty("setAsMain", false); // NOI18N
 
         try {
-            // setup project location for the current project (mimic cacao wizard)
+            // setup project location for the current project
             WizardHelpers.setProjectValues(wiz);
 
             // initialize each panel
