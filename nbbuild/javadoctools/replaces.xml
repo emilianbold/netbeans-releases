@@ -84,3 +84,4 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-swing-plaf@" value="${javadoc.docs.org-netbeans-swing-plaf}"/>
 <replacefilter token="@org-netbeans-modules-autoupdate@" value="${javadoc.docs.org-netbeans-modules-autoupdate}"/>
 <replacefilter token="@org-netbeans-api-mdr@" value="${javadoc.docs.org-netbeans-api-mdr}"/>
+<replacefilter token="@org-netbeans-api-progress@" value="${javadoc.docs.org-netbeans-api-progress}"/>

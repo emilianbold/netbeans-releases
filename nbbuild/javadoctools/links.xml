@@ -84,3 +84,4 @@ Microsystems, Inc. All Rights Reserved.
 <link href="${javadoc.docs.org-netbeans-swing-plaf}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-swing-plaf"/>
 <link href="${javadoc.docs.org-netbeans-modules-autoupdate}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-autoupdate"/>
 <link href="${javadoc.docs.org-netbeans-api-mdr}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-mdr"/>
+<link href="${javadoc.docs.org-netbeans-api-progress}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-progress"/>

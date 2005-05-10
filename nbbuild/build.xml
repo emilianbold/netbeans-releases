@@ -419,6 +419,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../core/multiview" target="netbeans"/>
   </target>  
+  <target name="all-core/progress" depends="all-openide">
+    <echo message="Building module core/progress..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../core/progress" target="netbeans"/>
+  </target>  
   <target name="all-core/ide" depends="all-openide">
     <echo message="Building module core/ide..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>

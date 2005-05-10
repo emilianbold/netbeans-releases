@@ -84,3 +84,4 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-swing-plaf" value="${javadoc.web.root}/org-netbeans-swing-plaf"/>
 <property name="javadoc.docs.org-netbeans-modules-autoupdate" value="${javadoc.web.root}/org-netbeans-modules-autoupdate"/>
 <property name="javadoc.docs.org-netbeans-api-mdr" value="${javadoc.web.root}/org-netbeans-api-mdr"/>
+<property name="javadoc.docs.org-netbeans-api-progress" value="${javadoc.web.root}/org-netbeans-api-progress"/>
