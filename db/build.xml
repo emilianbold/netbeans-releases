@@ -17,7 +17,8 @@ Microsystems, Inc. All Rights Reserved.
 
 	<target name="init" depends="projectized.init">
 		<path id="libcp">
-			<pathelement location="${openide.dir}/core/openide.jar" />
+			<pathelement location="${openide/util.dir}/lib/org-openide-util.jar" />
+			<pathelement location="${openide/dialogs.dir}/modules/org-openide-dialogs.jar" />
 			<pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
       		<pathelement location="${openide/io.dir}/modules/org-openide-io.jar"/>
 		</path>

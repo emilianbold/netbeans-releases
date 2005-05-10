@@ -25,8 +25,6 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import org.openide.util.WeakListener;
-
 import org.netbeans.tax.TreeNamedObjectMap;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeAttlistDeclAttributeDef;
@@ -142,7 +140,7 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
         }
 
         updateView (peer);
-        peer.addPropertyChangeListener (WeakListener.propertyChange (this, peer));
+        peer.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (this, peer));
     }
 
 

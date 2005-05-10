@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.openide.util.enum
+OpenIDE-Module: org.openide.util.enumerations
 OpenIDE-Module-Specification-Version: 6.2
 OpenIDE-Module-Localizing-Bundle: org/openide/util/enum/Bundle.properties
 

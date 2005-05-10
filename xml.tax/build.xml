@@ -28,8 +28,15 @@ Microsystems, Inc. All Rights Reserved.
         <!--<include name="modules/autoload/ext/xerces2.jar"/>-->
       </patternset>
       <path id="cp">
-         <pathelement location="${openide.dir}/core/openide.jar"/>
+         <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
+         <pathelement location="${openide/modules.dir}/lib/org-openide-modules.jar"/>
+         <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
+         <pathelement location="${openide/awt.dir}/modules/org-openide-awt.jar"/>
+         <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
+         <pathelement location="${openide/explorer.dir}/modules/org-openide-explorer.jar"/>
+         <pathelement location="${openide/dialogs.dir}/modules/org-openide-dialogs.jar"/>
          <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+         <pathelement location="${openide/text.dir}/modules/org-openide-text.jar"/>
          <pathelement location="${lib_root}/src"/>
          <pathelement location="${xml/api.dir}/modules/org-netbeans-api-xml.jar"/>
          <pathelement location="${xml/core.dir}/modules/org-netbeans-modules-xml-core.jar"/>

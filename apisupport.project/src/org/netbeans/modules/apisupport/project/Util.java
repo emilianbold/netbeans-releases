@@ -57,7 +57,7 @@ class Util {
         "org.openide.options",
         "org.openide.text",
         "org.openide.util",
-        "org.openide.util.enum", // XXX double check (not valid name in JDK 1.4)
+        "org.openide.util.enumerations", 
         "org.openide.windows",
         "org.openide.awt",
         "org.openide.compat",

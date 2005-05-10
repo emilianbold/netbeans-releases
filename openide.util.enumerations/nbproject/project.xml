@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.openide.util.enum</code-name-base>
+            <code-name-base>org.openide.util.enumerations</code-name-base>
             <module-dependencies>
             <!--
                 <dependency>

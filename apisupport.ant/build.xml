@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.4" debug="true" deprecation="true">
             <classpath>
                 <pathelement path="${antsrc.cp}"/>
+                <pathelement location="${openide/util.dir}/lib/org-openide-util.jar" />
             </classpath>
         </javac>
         <copy todir="build/antclasses">

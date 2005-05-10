@@ -19,8 +19,6 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import org.openide.util.WeakListener;
-
 import org.netbeans.tax.TreeObject;
 
 /**
@@ -140,7 +138,7 @@ public abstract class AbstractTreeCustomizer extends JPanel implements Customize
      */
     private void initListeners () {
         if (!treeListening) {
-            treeObject.addPropertyChangeListener (WeakListener.propertyChange (this, treeObject));
+            treeObject.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (this, treeObject));
             treeListening = true;
         }
     }

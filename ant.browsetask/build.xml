@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="antsrc" destdir="build/antclasses" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" source="1.4" includeantruntime="false">
             <classpath>
                 <pathelement location="${ant.jar}"/>
-                <pathelement location="${openide.dir}/core/openide.jar"/>
+                <pathelement location="${openide/awt.dir}/modules/org-openide-awt.jar"/>
             </classpath>
         </javac>
         <copy todir="build/antclasses">

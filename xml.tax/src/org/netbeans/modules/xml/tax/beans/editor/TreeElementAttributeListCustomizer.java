@@ -36,8 +36,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
-import org.openide.util.WeakListener;
-
 import org.netbeans.tax.TreeNamedObjectMap;
 import org.netbeans.tax.TreeAttribute;
 import org.netbeans.tax.TreeName;
@@ -348,7 +346,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         updateView();
         
         TreeObjectListProxyListener proxy = new TreeObjectListProxyListener(peer);
-        proxy.addPropertyChangeListener(WeakListener.propertyChange(this, proxy));
+        proxy.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(this, proxy));
     }
     
     
