@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+  <folder name="Templates">
+    <folder name="Project">
+      <attr name="Standard/APISupport" boolvalue="true" />
+
+      <folder name="APISupport">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle" />
+        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/apisupport.html" />
+
+        <!-- Add template for the netbeans module project -->
+        <file name="emptyModule.xml">
+          <attr name="template" boolvalue="true" />
+          <attr name="templateWizardIterator" newvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator" />
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle" />
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif" />
+          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyModule.html" />
+        </file>
+<!--        <file name="importWeb.xml">-->
+<!--          <attr name="template" boolvalue="true"/>-->
+<!--          <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator"/>-->
+<!--          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.wizards.Bundle"/>-->
+<!--          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>-->
+<!--          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/importProject.html"/>-->
+<!--        </file>-->
+      </folder>
+    </folder>
+  </folder>
+</filesystem>
