@@ -551,6 +551,12 @@ public class MultiSplitPane extends JPanel
             for( int i=0; i<getCellCount(); i++ ) {
                 MultiSplitCell cell = cellAt( i );
                 
+                //the child component may have been removed from this container 
+                //(e.g. the view has been maximalized)
+                if( cell.getComponent().getParent() != MultiSplitPane.this ) {
+                    add( cell.getComponent() );
+                }
+                
                 if( isHorizontalSplit() ) {
                     width = cell.getRequiredSize();
                 } else {
