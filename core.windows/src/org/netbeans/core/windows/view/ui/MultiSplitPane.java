@@ -26,6 +26,11 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleState;
+import javax.accessibility.AccessibleStateSet;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.UIManager;
@@ -512,6 +517,67 @@ public class MultiSplitPane extends JPanel
             dividers.add( divider );
         }
     }
+    
+    // *************************************************************************
+    // Accessibility
+    
+    public AccessibleContext getAccessibleContext() {
+        if( accessibleContext == null ) {
+            accessibleContext = new AccessibleMultiSplitPane();
+        }
+        return accessibleContext;
+    }
+    
+    int getDividerAccessibleIndex( MultiSplitDivider divider ) {
+        int res = dividers.indexOf( divider );
+        res += getAccessibleContext().getAccessibleChildrenCount() - dividers.size();
+        return res;
+    }
+
+    protected class AccessibleMultiSplitPane extends AccessibleJComponent {
+        public AccessibleStateSet getAccessibleStateSet() {
+            AccessibleStateSet states = super.getAccessibleStateSet();
+            if( isHorizontalSplit() ) {
+                states.add( AccessibleState.HORIZONTAL );
+            } else {
+                states.add( AccessibleState.VERTICAL );
+            }
+            return states;
+        }
+
+        public AccessibleRole getAccessibleRole() {
+            return AccessibleRole.SPLIT_PANE;
+        }
+
+        public Accessible getAccessibleAt( Point p ) {
+            MultiSplitDivider divider = dividerAtPoint( p );
+            if( null != divider ) {
+                return divider;
+            }
+            return super.getAccessibleAt( p );
+        }
+
+        public Accessible getAccessibleChild(int i) {
+
+            int childrenCount = super.getAccessibleChildrenCount();
+            if( i < childrenCount ) {
+                return super.getAccessibleChild( i );
+            }
+            if( i-childrenCount >= dividers.size() ) {
+                return null;
+            }
+            
+            MultiSplitDivider divider = (MultiSplitDivider)dividers.get( i-childrenCount );
+            return divider;
+        }
+
+        public int getAccessibleChildrenCount() {
+            return super.getAccessibleChildrenCount() + dividers.size();
+        }
+        
+    } // inner class AccessibleMultiSplitPane
+
+    // *************************************************************************
     
     protected class MultiSplitLayout implements LayoutManager {
         

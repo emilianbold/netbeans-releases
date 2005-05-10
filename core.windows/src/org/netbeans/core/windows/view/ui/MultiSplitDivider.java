@@ -18,12 +18,19 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Locale;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleState;
+import javax.accessibility.AccessibleStateSet;
+import javax.accessibility.AccessibleValue;
 
 
 /**
  * Wrapper class for MultiSplitPane's split divider rectangle.
  */
-public class MultiSplitDivider {
+public class MultiSplitDivider implements Accessible {
     
     MultiSplitPane splitPane;
     Rectangle rect = new Rectangle();
@@ -33,6 +40,9 @@ public class MultiSplitDivider {
     Point currentDragLocation;
     int dragMin;
     int dragMax;
+    int cursorPositionCompensation;
+    
+    private AccessibleContext accessibleContext;
 
     public MultiSplitDivider( MultiSplitPane parent, MultiSplitCell first, MultiSplitCell second ) {
         assert null != parent;
@@ -83,6 +93,11 @@ public class MultiSplitDivider {
     
     void startDragging( Point p ) {
         currentDragLocation = new Point( rect.x, rect.y );
+
+        if( isHorizontal() )
+            cursorPositionCompensation = p.x - rect.x;
+        else
+            cursorPositionCompensation = p.y - rect.y;
         
         initDragMinMax();
     }
@@ -117,15 +132,27 @@ public class MultiSplitDivider {
     
     void finishDraggingTo( Point p ) {
         if( isHorizontal() ) {
+            p.x -= cursorPositionCompensation;
             if( p.x < dragMin )
                 p.x = dragMin;
             if( p.x > dragMax )
                 p.x = dragMax;
+            
+            if( p.x == rect.x ) {
+                //split bar position didn't change
+                return;
+            }
         } else {
+            p.y -= cursorPositionCompensation;
             if( p.y < dragMin )
                 p.y = dragMin;
             if( p.y > dragMax )
                 p.y = dragMax;
+
+            if( p.y == rect.y ) {
+                //split bar position didn't change
+                return;
+            }
         }
         currentDragLocation = null;
     
@@ -200,4 +227,87 @@ public class MultiSplitDivider {
             rect.height = getDividerSize();
         }
     }
+    
+    // *************************************************************************
+    // Accessibility
+    
+    public AccessibleContext getAccessibleContext() {
+        if( null == accessibleContext ) {
+            accessibleContext = new AccessibleMultiSplitDivider();
+        }
+        return accessibleContext;
+    }
+    
+    protected class AccessibleMultiSplitDivider extends AccessibleContext
+        implements AccessibleValue {
+        
+        public AccessibleMultiSplitDivider() {
+            setAccessibleParent( splitPane );
+        }
+        
+        public Accessible getAccessibleChild(int i) {
+            return null;
+        }
+
+        public int getAccessibleChildrenCount() {
+            return 0;
+        }
+
+        public int getAccessibleIndexInParent() {
+            return splitPane.getDividerAccessibleIndex( MultiSplitDivider.this );
+        }
+
+        public AccessibleRole getAccessibleRole() {
+            return AccessibleRole.SPLIT_PANE;
+        }
+
+        public AccessibleStateSet getAccessibleStateSet() {
+            AccessibleStateSet stateSet = new AccessibleStateSet();
+            if( isHorizontal() ) {
+                stateSet.add( AccessibleState.HORIZONTAL );
+            } else {
+                stateSet.add( AccessibleState.VERTICAL );
+            }
+            return stateSet;
+        }
+
+        public Locale getLocale() throws java.awt.IllegalComponentStateException {
+            return Locale.getDefault();
+        }
+        
+        public boolean setCurrentAccessibleValue(Number n) {
+            initDragMinMax();
+            int value = n.intValue();
+            if( value < dragMin || value > dragMax ) {
+                return false;
+            }
+            if( isHorizontal() ) {
+                finishDraggingTo( new Point( value, 0 ) );
+            } else {
+                finishDraggingTo( new Point( 0, value ) );
+            }
+            return true;
+        }
+
+        public Number getMinimumAccessibleValue() {
+            initDragMinMax();
+            return new Integer( dragMin );
+        }
+
+        public Number getMaximumAccessibleValue() {
+            initDragMinMax();
+            return new Integer( dragMax );
+        }
+
+        public Number getCurrentAccessibleValue() {
+            if( isHorizontal() )
+                return new Integer( rect.x );
+            else
+                return new Integer( rect.y );
+        }
+
+        public AccessibleValue getAccessibleValue() {
+            return this;
+        }
+    } //end of AccessibleMultiSplitDivider inner class
 }
