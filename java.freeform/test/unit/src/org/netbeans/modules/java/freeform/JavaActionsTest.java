@@ -235,6 +235,32 @@ public class JavaActionsTest extends TestBase {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<ide-action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"general.action\"/>\n";
         assertEquals(expectedXml, xmlToString(lastContextMenuAction));
+        
+        //test #58442:
+        data = prj.helper().getPrimaryConfigurationData(true);
+        ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
+        data.removeChild(ideActions);
+        
+        ja.addBinding("some.other.action", "special.xml", "special-target", "selection", "${some.src.dir}", null, "relative-path", null);
+        data = prj.helper().getPrimaryConfigurationData(true);
+        ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
+        actions = Util.findSubElements(ideActions);
+        lastAction = (Element) actions.get(actions.size() - 1);
+        expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"some.other.action\">\n" +
+            "    <script>special.xml</script>\n" +
+            "    <target>special-target</target>\n" +
+            "    <context>\n" +
+            "        <property>selection</property>\n" +
+            "        <folder>${some.src.dir}</folder>\n" +
+            "        <format>relative-path</format>\n" +
+            "        <arity>\n" +
+            "            <one-file-only/>\n" +
+            "        </arity>\n" +
+            "    </context>\n" +
+            "</action>\n";
+        assertEquals(expectedXml, xmlToString(lastAction));
     }
     
     public void testCreateCompileSingleTarget() throws Exception {

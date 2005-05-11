@@ -33,6 +33,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.ui.ProjectModel;
 import org.netbeans.spi.project.ActionProvider;
@@ -744,6 +745,10 @@ final class JavaActions implements ActionProvider {
         return null;
     }
     
+    //The order of the root elements as specified in the schema.
+    //Used to add <ide-actions> at the correct place.
+    private static final String[] rootElementsOrder = new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}; // NOI18N
+    
     /**
      * Add an action binding to project.xml.
      * If there is no required context, the action is also added to the context menu of the project node.
@@ -762,9 +767,9 @@ final class JavaActions implements ActionProvider {
         Element data = helper.getPrimaryConfigurationData(true);
         Element ideActions = Util.findElement(data, "ide-actions", NS_GENERAL); // NOI18N
         if (ideActions == null) {
-            // Probably won't happen, since generator produces it always.
-            // Not trivial to just add it now, since order is significant in the schema. (FPG deals with these things.)
-            return;
+            //fix for #58442:
+            ideActions = data.getOwnerDocument().createElementNS(FreeformProjectType.NS_GENERAL, "ide-actions"); // NOI18N
+            Util.appendChildElement(data, ideActions, rootElementsOrder);
         }
         Document doc = data.getOwnerDocument();
         Element action = doc.createElementNS(NS_GENERAL, "action"); // NOI18N
