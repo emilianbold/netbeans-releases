@@ -23,7 +23,6 @@ import java.util.Collections;
 import org.netbeans.modules.beans.JMIUtils;
 import org.netbeans.modules.beans.GenerateBeanException;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.modules.javacore.jmiimpl.javamodel.MetadataElement;
 import org.netbeans.jmi.javamodel.*;
 
 import javax.jmi.reflect.JmiException;

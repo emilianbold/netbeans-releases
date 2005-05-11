@@ -32,7 +32,6 @@ import org.openide.filesystems.Repository;
 public final class BeanInfoSource extends Object {
 
     private static final String BEANINFO_NAME_EXT = "BeanInfo"; // NOI18N
-    private static final String BEANINFONOICON_NAME_EXT = "BeanInfoNoIcon"; // NOI18N
     
     private static final String DESCRIPTOR_SECTION = "BeanDescriptor"; // NOI18N
     private static final String PROPERTIES_SECTION = "Properties"; // NOI18N
@@ -73,7 +72,7 @@ public final class BeanInfoSource extends Object {
         //JavaEditor.InteriorSection dis = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
         JavaEditor.InteriorSection pis = javaEditor.findInteriorSection( PROPERTIES_SECTION );
         JavaEditor.InteriorSection eis = javaEditor.findInteriorSection( EVENTSETS_SECTION );
-        JavaEditor.InteriorSection mis = javaEditor.findInteriorSection( METHODS_SECTION );
+//        JavaEditor.InteriorSection mis = javaEditor.findInteriorSection( METHODS_SECTION );
         //JavaEditor.SimpleSection iss = javaEditor.findSimpleSection( ICONS_SECTION );
         JavaEditor.SimpleSection dss = javaEditor.findSimpleSection( IDX_SECTION );
 

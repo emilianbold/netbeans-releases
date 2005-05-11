@@ -19,24 +19,18 @@ import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.net.URL;
-import java.util.ResourceBundle;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.border.*;
 
 import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
-import org.openide.NotifyDescriptor;
 import java.text.MessageFormat;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 
 /**
  * PropertyEditor for Icons. Depends on existing DataObject for images.
@@ -310,16 +304,6 @@ class BiIconEditor extends PropertyEditorSupport {
             bSelect.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (rbClasspath.isSelected()) {
-                        Node ds = RepositoryNodeFactory.getDefault().repository(new DataFilter() {
-                            public boolean acceptDataObject(DataObject obj) {
-                                // accept only data folders but ignore read only roots of file systems
-                                if (obj instanceof DataFolder)
-                                    return !obj.getPrimaryFile().isReadOnly() ||
-                                    obj.getPrimaryFile().getParent() != null;
-                                return isImage(obj.getPrimaryFile().getExt());
-                            }
-                        });
-                        
                         String name;
                         try {
                             // selects one folder from data systems

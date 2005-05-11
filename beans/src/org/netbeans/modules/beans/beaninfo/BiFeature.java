@@ -189,12 +189,12 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         Iterator it = code.iterator();
         String n = getBracketedName();
 
-        String stNew = new String( n + "=new" ); // NOI18N
-        String stExpert = new String( n + "." + TEXT_EXPERT ); // NOI18N
-        String stHidden = new String( n + "." + TEXT_HIDDEN ); // NOI18N
-        String stPreferred = new String( n + "." + TEXT_PREFERRED ); // NOI18N
-        String stDisplayName = new String( n + "." + TEXT_DISPLAY_NAME ); // NOI18N
-        String stShortDescription = new String( n + "." + TEXT_SHORT_DESCRIPTION ); // NOI18N
+        String stNew = n + "=new"; // NOI18N
+        String stExpert = n + "." + TEXT_EXPERT; // NOI18N
+        String stHidden = n + "." + TEXT_HIDDEN; // NOI18N
+        String stPreferred = n + "." + TEXT_PREFERRED; // NOI18N
+        String stDisplayName = n + "." + TEXT_DISPLAY_NAME; // NOI18N
+        String stShortDescription = n + "." + TEXT_SHORT_DESCRIPTION; // NOI18N
         while( it.hasNext() ) {
             String statement = ( String ) it.next();
 
@@ -473,9 +473,9 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
 
         void analyzeCustomizationString( String statement ) {
             String n = getBracketedName();
-            String stBound = new String( n + "." + TEXT_BOUND ); // NOI18N
-            String stConstrained = new String( n + "." + TEXT_CONSTRAINED ); // NOI18N
-            String stPropertyEditor = new String( n + "." + TEXT_PROPERTY_EDITOR ); // NOI18N
+            String stBound = n + "." + TEXT_BOUND; // NOI18N
+            String stConstrained = n + "." + TEXT_CONSTRAINED; // NOI18N
+            String stPropertyEditor = n + "." + TEXT_PROPERTY_EDITOR; // NOI18N
             int peIndex;
             
             if ( statement.indexOf( stBound ) != -1 ) {

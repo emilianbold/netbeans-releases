@@ -498,8 +498,6 @@ public final class BiNode extends AbstractNode {
                 return super.getActions( true );
             }
             else {
-                SystemAction[] staticActions;
-
                 Children ch = getChildren();
                 Node[] nodes = ch.getNodes();
                 if ( nodes == null )

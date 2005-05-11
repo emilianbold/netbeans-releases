@@ -38,7 +38,6 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     private static final String TAB = "    "; // NOI18N
     private static final String TABx2 = TAB +TAB;
     private static final String TABx3 = TAB + TABx2;
-    private static final String TABx4 = TAB + TABx3;
 
     private static final String ICONNAME_C16 = "iconNameC16"; // NOI18N
     private static final String ICONNAME_C32 = "iconNameC32"; // NOI18N
@@ -949,8 +948,6 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     }
 
     static String getArgumentParameter( String command ) {
-        String paramString;
-
         int beg = command.indexOf( '(' );
         int end = command.lastIndexOf( ')' );
 

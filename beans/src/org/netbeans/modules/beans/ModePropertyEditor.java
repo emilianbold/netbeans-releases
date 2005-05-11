@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,17 +15,14 @@ package org.netbeans.modules.beans;
 
 import java.beans.*;
 
-import org.openide.util.NbBundle;
-
 /** property editor for mode property of Prperty patterns
 *
 * @author Petr Hrebejk
 */
 public class ModePropertyEditor extends PropertyEditorSupport {
+
     /** Array of tags
     */
-
-
     private static String[] tags;
     private static final int [] values = {
         PropertyPattern.READ_WRITE,

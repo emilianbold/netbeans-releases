@@ -391,8 +391,7 @@ public final class IdxPropertyPattern extends PropertyPattern {
         if ( this.indexedType.equals( type ) )
             return;
 
-        // Remember the old type & old indexed type
-        Type oldIndexedType = this.indexedType;
+        // Remember the old type
         Type oldType = this.type;
 
         // Change the indexed type
@@ -431,45 +430,6 @@ public final class IdxPropertyPattern extends PropertyPattern {
         }
 
         indexedType = type;
-    }
-
-    /**
-     * @param methodBody old method body
-     * @param name of property
-     * @param type new type of property value
-     * @param oldType old type of property value
-     * @return null if no change is possible or new body if it is
-     */
-    // XXX seems that noone uses this
-    private String regenerateIdxPropertySupport( String methodBody, String name, Type type, Type oldType ){
-        if( methodBody == null )
-            return null;
-        
-        int first = -1;
-        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
-        
-        //will search for line containing property support or field
-        String oldVarLine = oldType.getName() + " old" + Pattern.capitalizeFirstLetter( name ) + " = " + propertyStyle + name; // NOI18N
-        if( (first = methodBody.indexOf( oldVarLine )) == -1 )
-            return null;
-
-        if( first == -1 )
-            return null;
-        
-        //find end of statement
-        int last = methodBody.indexOf(';', first);
-        if( first >= last )
-            return null;
-        
-        StringBuffer newBody = new StringBuffer(100);
-        newBody.append( type.getName() );
-        newBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
-        newBody.append( " = " ).append( propertyStyle ).append( name ); // NOI18N            
-
-        StringBuffer sb = new StringBuffer(methodBody);
-        sb.delete(first, last);
-        sb.insert(first, newBody);
-        return sb.toString();        
     }
 
     /** Returns the mode of the property {@link PropertyPattern#READ_WRITE READ_WRITE},

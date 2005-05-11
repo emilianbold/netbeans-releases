@@ -553,7 +553,7 @@ final class BeanPatternGenerator extends Object {
         String typeSimpleName = ((JavaClass) type).getSimpleName();
         String fieldNameToFind = Introspector.decapitalize( typeSimpleName );
         if ( fieldNameToFind.equals( typeSimpleName ) ) {
-            fieldNameToFind = new String( "listener" + fieldNameToFind  ); // NOI18N
+            fieldNameToFind = "listener" + fieldNameToFind; // NOI18N
         }
 
         List/*<Field>*/ fields = JMIUtils.getFields(ce);
@@ -637,7 +637,7 @@ final class BeanPatternGenerator extends Object {
         String simpleTypeName = ((JavaClass) type).getSimpleName();
         String fieldName = Introspector.decapitalize( simpleTypeName );
         if ( fieldName.equals( simpleTypeName ) ) {
-            fieldName = new String( "listener" + fieldName  ); // NOI18N
+            fieldName = "listener" + fieldName; // NOI18N
         }
 
         StringBuffer body = new StringBuffer( 50 );
@@ -659,7 +659,7 @@ final class BeanPatternGenerator extends Object {
         String simpleTypeName = ((JavaClass) type).getSimpleName();
         String fieldName = Introspector.decapitalize( simpleTypeName );
         if ( fieldName.equals( simpleTypeName ) ) {
-            fieldName = new String( "listener" + fieldName  ); // NOI18N
+            fieldName = "listener" + fieldName; // NOI18N
         }
 
         StringBuffer body = new StringBuffer( 50 );
@@ -823,7 +823,7 @@ final class BeanPatternGenerator extends Object {
         if ( implementation == 1 ) {
             String fieldName = Introspector.decapitalize( simpleTypeName );
             if ( fieldName.equals( simpleTypeName ) ) {
-                fieldName = new String( "listener" + fieldName  ); // NOI18N
+                fieldName = "listener" + fieldName; // NOI18N
             }
             
             body.append(TAB + "if (" + fieldName + " == null) return;\n"); // NOI18N
