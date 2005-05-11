@@ -15,4 +15,15 @@
 <!-- You may freely edit this file. -->
 <project basedir="." default="netbeans" name="jmx">
     <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar" depends="init,compile,jar-prep,zip-examples,jar-no-module-deps,jar-with-module-deps"/>
+    
+    <target name="zip-examples">
+        <property name="examples" location="${build.classes.dir}/org/netbeans/modules/jmx/examples/resources"/>
+        <mkdir dir="${examples}"/>
+        <zip basedir="jmx_anagrams" destfile="${examples}/jmx_anagrams.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+    </target>
 </project>
