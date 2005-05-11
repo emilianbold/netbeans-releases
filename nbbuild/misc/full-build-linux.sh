@@ -29,17 +29,17 @@
 # (default "no").
 #
 # nbjdk=/opt/java/j2se/1.4.2
-# JDK 1.4.2_07 installation directory. (Full JDK, not just JRE.)
+# JDK 1.4.2_08 installation directory. (Full JDK, not just JRE.)
 #
 # nbtestjdk=/opt/java/j2se/1.4
 # JDK installation directory for use when running (but not building!) test suites.
 # By default, same as nbjdk. However you may wish to run tests with a
 # different VM.
 #
-# ant=/opt/ant-1.6.2/bin/ant
-# Ant 1.6.2 installation directory.
+# ant=/opt/ant-1.6.3/bin/ant
+# Ant 1.6.3 installation directory.
 #
-# testant=/opt/ant-1.6.2/bin/ant
+# testant=/opt/ant-1.6.3/bin/ant
 # By default, same as ant.
 #
 # doclean=no
@@ -128,12 +128,12 @@ if [ "$override" != yes ]
 then
     if $nbjdk/bin/java -version 2>&1 | fgrep -q -v 1.4
     then
-        echo "You need to set the variable 'nbjdk' to a JDK 1.4.2_07 installation" 1>&2
+        echo "You need to set the variable 'nbjdk' to a JDK 1.4.2_08 installation" 1>&2
         exit 2
     fi
-    if $ant -version 2>&1 | fgrep -q -v 1.6.2
+    if $ant -version 2>&1 | fgrep -q -v 1.6.3
     then
-        echo "You need to set the variable 'ant' to an Ant 1.6.2 binary" 1>&2
+        echo "You need to set the variable 'ant' to an Ant 1.6.3 binary" 1>&2
         exit 2
     fi
 fi
