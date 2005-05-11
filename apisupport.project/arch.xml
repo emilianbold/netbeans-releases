@@ -62,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
     <api group="java.io.File" name="projectized.xml" type="export" category="devel">
      <p>
       Targets in <code>nbbuild/templates/projectized.xml</code> which may be
-      called or overridden in a module&rsquo;s <code>build.xml</code>.
+      called or overridden in a module's <code>build.xml</code>.
      </p>
     </api>
    </li>
