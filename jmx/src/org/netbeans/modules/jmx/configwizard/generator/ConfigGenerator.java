@@ -234,6 +234,9 @@ public class ConfigGenerator
                                             (r.getPassword() == null ? "" : r.getPassword()) + "\n");
                 }
             }
+         ManagementDialogs.getDefault().notify(
+         new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));
+                        
         }
         
         is.close();
@@ -398,9 +401,7 @@ public class ConfigGenerator
                                  Templates.getTargetFolder(wiz),
                                  WizardConstants.PASSWORD_EXT,
                                  passwordContent);
-        ManagementDialogs.getDefault().notify(
-         new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));
-                        
+
         // create the mbean implementation file
         return WizardHelpers.createFile(Templates.getTargetName(wiz),
                                  Templates.getTargetFolder(wiz),
