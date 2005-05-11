@@ -84,9 +84,8 @@ public class ConfigPanel extends javax.swing.JPanel
 
         rmiAccessFileJLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         rmiAccessFileJLabel.setLabelFor(rmiAccessFileJTextField);
-        rmiAccessFileJLabel.setMaximumSize(new java.awt.Dimension(1000, 1000));
-        rmiAccessFileJLabel.setMinimumSize(new java.awt.Dimension(60, 10));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         northWestCenterPanel.add(rmiAccessFileJLabel, gridBagConstraints);
@@ -94,11 +93,10 @@ public class ConfigPanel extends javax.swing.JPanel
         rmiPasswordFileJLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         rmiPasswordFileJLabel.setLabelFor(rmiPasswordFileJTextField);
         rmiPasswordFileJLabel.setAlignmentX(0.5F);
-        rmiPasswordFileJLabel.setMaximumSize(new java.awt.Dimension(1000, 1000));
-        rmiPasswordFileJLabel.setMinimumSize(new java.awt.Dimension(60, 10));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         northWestCenterPanel.add(rmiPasswordFileJLabel, gridBagConstraints);
