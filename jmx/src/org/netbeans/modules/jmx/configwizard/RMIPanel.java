@@ -483,7 +483,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        rMIPortJLabel.setName("rmiPortJLabel");
+        rMIPortJLabel.setName("rMIPortJLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;

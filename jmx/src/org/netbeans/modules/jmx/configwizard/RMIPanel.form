@@ -38,7 +38,7 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="rMIPortJLabel">
           <Properties>
-            <Property name="name" type="java.lang.String" value="rmiPortJLabel"/>
+            <Property name="name" type="java.lang.String" value="rMIPortJLabel"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
