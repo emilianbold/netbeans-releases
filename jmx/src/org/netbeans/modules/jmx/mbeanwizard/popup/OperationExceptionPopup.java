@@ -25,11 +25,11 @@ import javax.swing.JTextField;
 
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
-import org.netbeans.modules.jmx.mbeanwizard.popup.ExceptionResultStructure;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
 import org.netbeans.modules.jmx.runtime.ManagementDialogs;
 import org.netbeans.modules.jmx.mbeanwizard.table.OperationExceptionPopupTable;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 
 
 /**
@@ -67,6 +67,7 @@ public class OperationExceptionPopup extends AbstractPopup{
         
         popupTableModel = new OperationExceptionTableModel();
         popupTable = new OperationExceptionPopupTable(popupTableModel);
+        popupTable.setName("ExcepPopupTable");
     }
     
     protected void initComponents() {
@@ -123,6 +124,9 @@ public class OperationExceptionPopup extends AbstractPopup{
     }
     
     public String storeSettings() {
+        
+        //stores all values from the table in the model even with keyboard navigation
+        popupTable.editingStopped(new ChangeEvent(this));
         
         int nbParam = popupTableModel.size();
         

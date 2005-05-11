@@ -22,11 +22,11 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 
 import org.openide.util.NbBundle;
-import org.netbeans.modules.jmx.mbeanwizard.popup.ParamResultStructure;
 import org.netbeans.modules.jmx.mbeanwizard.table.OperationParameterPopupTable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 
 
 
@@ -126,6 +126,9 @@ public class OperationParameterPopup extends AbstractPopup{
     }
     
     public String storeSettings() {
+        
+        //stores all values from the table in the model even with keyboard navigation
+        popupTable.editingStopped(new ChangeEvent(this));
         
         int nbParam = popupTableModel.size();
         

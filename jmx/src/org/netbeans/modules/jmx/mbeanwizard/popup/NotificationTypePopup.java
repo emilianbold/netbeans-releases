@@ -25,6 +25,7 @@ import javax.swing.JTextField;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.jmx.mbeanwizard.table.NotificationTypePopupTable;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 
 /**
  *
@@ -110,6 +111,8 @@ public class NotificationTypePopup extends AbstractPopup{
         String notifType = "";
         String notifTypeString = "";
         
+        popupTable.editingStopped(new ChangeEvent(this));
+        
         for (int i = 0; i < popupTableModel.size(); i++) {
             notifType = (String)popupTableModel.getValueAt(i, NotificationTypeTableModel.IDX_NOTIF_TYPE);
             
@@ -122,6 +125,7 @@ public class NotificationTypePopup extends AbstractPopup{
             }
         }
         notifTableModel.setValueAt(notifTypeString, editedRow, MBeanNotificationTableModel.IDX_NOTIF_TYPE);
+        
         
         return notifTypeString;
     }

@@ -184,6 +184,7 @@ public class OperationTable extends JTable {
                         JTextField excepField = new JTextField();
                         excepField.setEditable(false);
                         JButton excepButton = new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
+                        excepButton.setName("methAddExcepJButton");
                         excepButton.setMargin(new java.awt.Insets(2,2,2,2));
                         excepButton.addActionListener(new DisplayPopupListener(ancestorPanel, this, model,
                                 excepField, excepResultArrayList));
