@@ -303,6 +303,9 @@ cause it to fail.
             <include name="**/*.html"/>
             <replacefilter token="http://root/" value="@TOP@.." />
         </replace>
+        <replace dir="${javadoc.out.dir}" token="@TOP@/" value="@TOP@">
+            <include name="**/*.html"/>
+        </replace>
         <replace dir="${javadoc.out.dir}" token="@TOP@" value="">
             <include name="*.html"/>
         </replace>
