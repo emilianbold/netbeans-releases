@@ -16,16 +16,7 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.lib.cvsclient</code-name-base>
-            <module-dependencies>
-                <dependency>
-                    <code-name-base>org.openide</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>4.20</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
+            <module-dependencies/>
             <public-packages>
                 <package>org.netbeans.lib.cvsclient</package>
                 <package>org.netbeans.lib.cvsclient.admin</package>
