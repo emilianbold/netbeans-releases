@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/windows/services/DialogDisplayer50960Test.class"/>
+                <include name="org/netbeans/core/windows/view/ui/StatusLineElementProviderTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -50,6 +51,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/windows/services/*.class"/>
                 <include name="org/netbeans/core/windows/view/ui/*.class"/>
                 <exclude name="org/netbeans/core/windows/persistence/WindowManagerParserTest.class"/>
+                <exclude name="org/netbeans/core/windows/view/ui/StatusLineElementProviderTest.class"/>
             </patternset>
         </testset>
     </testbag>
