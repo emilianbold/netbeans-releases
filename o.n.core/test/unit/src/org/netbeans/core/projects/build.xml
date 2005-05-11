@@ -15,7 +15,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="build" description="Build stuff for projects tests">
 	<path id="openide">
-            <pathelement location="${openide.dir}/core/openide.jar"/>
+            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
+            <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
             <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
         </path>
         <antcall target="create-jar">

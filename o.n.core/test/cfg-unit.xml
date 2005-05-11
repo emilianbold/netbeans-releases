@@ -137,7 +137,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
     <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
     <executor name="platform" antfile="build-unit.xml" target="runplatformtest"/>
 

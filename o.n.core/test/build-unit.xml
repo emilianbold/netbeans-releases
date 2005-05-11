@@ -13,41 +13,18 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Unit tests" basedir="." default="all">
-    
-    <!-- ================== -->
-    <!-- Setting classpaths -->
-    <!-- ================== -->
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 
-    <path id="compiletest.classpath">
-        <pathelement location="${core.dir}/core/core.jar"/>
-        <pathelement location="${core.dir}/lib/boot.jar"/>
-        <pathelement location="${openide.dir}/core/openide.jar"/>
-        <pathelement location="${core.dir}/core/org-netbeans-swing-plaf.jar"/>
-        <pathelement location="${core.dir}/modules/org-netbeans-swing-tabcontrol.jar"/>
-        <!-- XXX -->
-        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-    </path>
-    <path id="codetest.classpath">
-	<pathelement location="${core.dir}/core/core.jar"/>
-        <pathelement location="${core.dir}/lib/boot.jar"/>
-        <pathelement location="${openide.dir}/core/openide.jar"/>
-        <pathelement location="${core.dir}/core/org-netbeans-swing-plaf.jar"/>
-        <pathelement location="${core.dir}/modules/org-netbeans-swing-tabcontrol.jar"/>
-        <!-- XXX -->
-        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-        <pathelement location="${core/settings.dir}/modules/org-netbeans-modules-settings.jar"/>
-    </path>
-    
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="unit-compiler">
+    <target name="unit-compiler" depends="init,init-cp">
         <ant dir="unit/src/org/netbeans/core/modules"/>
         <ant dir="unit/src/org/netbeans/core/projects"/>
         <ant dir="unit/src/org/netbeans/core/lookup/data"/>
-        <buildTests srcDir="unit/src" compileexcludes="**/jars/**,**/data/**">
-            <classpath refid="compiletest.classpath"/>
+        <buildTests srcdir="unit/src" compileexcludes="**/jars/**,**/data/**">
+            <classpath refid="test.unit.compile.cp"/>
         </buildTests>
     </target>
     
@@ -68,11 +45,4 @@ Microsystems, Inc. All Rights Reserved.
             <classpath/>
         </executeTests>
     </target>
-    
-    <target name="runcodetest">
-        <executeTests  pluginName="jvm">
-            <classpath refid="codetest.classpath"/>
-        </executeTests>
-    </target>
-
 </project>
