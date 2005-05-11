@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,11 +45,7 @@ public class PDFDataLoaderBeanInfo extends SimpleBeanInfo {
 
     /** Gets icon. Overrides superclass method. */
     public Image getIcon (int type) {
-        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage("org/netbeans/modules/pdf/PDFDataIcon.gif"); // NOI18N
-        } else {
-            return Utilities.loadImage("org/netbeans/modules/PDFDataIcon32.gif"); // NOI18N
-        }
+        return Utilities.loadImage("org/netbeans/modules/pdf/PDFDataIcon.gif"); // NOI18N
     }
 
 }
