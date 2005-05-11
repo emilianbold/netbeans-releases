@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <pathelement location="${web/jspsyntax.dir}/modules/org-netbeans-modules-web-core-syntax.jar"/>
         
-        <pathelement location="${xml/text-edit.dir}/modules/xml-text-edit.jar"/>
+        <pathelement location="${xml/text-edit.dir}/modules/org-netbeans-modules-xml-text.jar"/>        
                 
         <pathelement location="${nball.dir}/xtest/lib/junit.jar"/>
         <pathelement location="${nball.dir}/xtest/lib/nbjunit.jar"/>
