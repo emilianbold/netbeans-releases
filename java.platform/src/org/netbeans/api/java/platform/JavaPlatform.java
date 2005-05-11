@@ -7,17 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.java.platform;
 
-import java.beans.*;
-import java.util.*;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.filesystems.FileObject;
 
 /**
  * JavaPlatform describes a java platform in a way that the IDE tools may utilize. It may serve as
@@ -152,7 +155,9 @@ public abstract class JavaPlatform {
 
 
     /**
-     * @return the default platform.
+     * Get the "default platform", meaning the JDK on which NetBeans itself is running.
+     * @return the default platform, if it can be found, or null
+     * @see JavaPlatformManager#getDefaultPlatform
      */
     public static JavaPlatform getDefault() {
         return JavaPlatformManager.getDefault().getDefaultPlatform();

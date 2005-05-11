@@ -7,21 +7,25 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.java.platform;
 
-import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
 import org.openide.modules.SpecificationVersion;
-import org.netbeans.modules.java.platform.JavaPlatformProvider;
 
 /**
  * JavaPlatformManager provides access to list of installed Java Platforms in the system. It can enumerate them,
@@ -62,8 +66,8 @@ public final class JavaPlatformManager {
     
     /**
      * Returns default platform. The platform the IDE is running on.
-     * @return JavaPlatform or null in the case when the default platform can
-     * not be found (e.g. the J2SEPlatform module is not installed).
+     * @return the default platform, or null in case the default platform cannot
+     *         be found (e.g. the j2seplatform module is not installed)
      */
     public JavaPlatform getDefaultPlatform() {
         Collection/*<JavaPlatformProvider>*/ instances = this.getProviders ();
