@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide;
@@ -609,22 +609,18 @@ public class WizardDescriptor extends DialogDescriptor {
         boolean prev = panels.hasPrevious();
         boolean valid = p.isValid();
 
-        nextButton.setEnabled(next && valid);
-        previousButton.setEnabled(prev);
-
-        if (current instanceof FinishablePanel) {
-            // check if isFinishPanel
-            if (((FinishablePanel) current).isFinishPanel()) {
-                finishButton.setEnabled(valid);
-            } else {
-                // XXX What if the last panel is not FinishPanel ??? enable ?
-                finishButton.setEnabled(valid && !next);
-            }
+        // AWT sensitive code
+        if (SwingUtilities.isEventDispatchThread ()) {
+            updateStateInAWT ();
         } else {
-            // original way
-            finishButton.setEnabled(valid && (!next || (current instanceof FinishPanel)));
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                   updateStateInAWT ();
+                } 
+            });
         }
-
+        // end of AWT sensitive code
+        
         //    nextButton.setVisible (next);
         //    finishButton.setVisible (!next || (current instanceof FinishPanel));
         // XXX Why setValue on Next ?
@@ -721,6 +717,33 @@ public class WizardDescriptor extends DialogDescriptor {
         }
     }
 
+    private void updateStateInAWT () {
+        Panel p = panels.current ();        
+        boolean next = panels.hasNext ();
+        boolean prev = panels.hasPrevious ();
+        boolean valid = p.isValid ();
+
+        nextButton.setEnabled (next && valid);
+        previousButton.setEnabled (prev);
+        
+        if (current instanceof FinishablePanel) {
+            // check if isFinishPanel
+            if (((FinishablePanel)current).isFinishPanel ()) {
+                finishButton.setEnabled (valid);
+            } else {
+                // XXX What if the last panel is not FinishPanel ??? enable ?
+                finishButton.setEnabled (valid && !next);
+            }
+        } else {
+            // original way
+            finishButton.setEnabled (
+                valid &&
+                (!next || (current instanceof FinishPanel))
+            );
+        }
+    }
+
+    
     /** Shows blocking wait cursor during updateState run */
     private void updateStateWithFeedback() {
         try {
