@@ -14,13 +14,13 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
-import java.io.OutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 
 /**
@@ -46,29 +46,49 @@ public class NbModuleProjectGeneratorTest extends NbTestCase {
         "src/org/company/example/testModule/resources/layer.xml",
     };
     
-    protected void setUp() throws Exception {
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        cleanUp();
+    }
+    
+    private void cleanUp() throws IOException {
         clearWorkDir();
-        // create layerTemplate
         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject parent = root.createFolder("org-netbeans-modules-apisupport-project");
-        FileObject layerTemplate = parent.createData("layer_template.xml");
-        FileLock lock = layerTemplate.lock();
-        PrintWriter pw = new PrintWriter(layerTemplate.getOutputStream(lock));
-        try {
-            pw.println("\"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\"");
-            pw.println("<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">");
-            pw.println("<filesystem>");
-            pw.println("</filesystem>");
-        } finally {
-            lock.releaseLock();
-            pw.close();
+        FileObject parent = root.getFileObject("org-netbeans-modules-apisupport-project");
+        if (parent != null) {
+            parent.delete();
         }
+    }
+
+    protected void setUp() throws Exception {
         super.setUp();
+        cleanUp();
+        // prepare data (layerTemplate)
+        final FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws java.io.IOException {
+                FileObject root = fs.getRoot();
+                FileObject parent = root.createFolder("org-netbeans-modules-apisupport-project");
+                FileObject layerTemplate = parent.createData("layer_template.xml");
+                FileLock lock = layerTemplate.lock();
+                PrintWriter pw = new PrintWriter(layerTemplate.getOutputStream(lock));
+                try {
+                    pw.println("\"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\"");
+                    pw.println("<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">");
+                    pw.println("<filesystem>");
+                    pw.println("</filesystem>");
+                } finally {
+                    lock.releaseLock();
+                    pw.close();
+                }
+            }
+        });
     }
     
     // XXX also should test content created files (XMLs, properties) and
     // created suite.
-    public void testCreateProject() throws Exception {
+    public void testCreateExternalProject() throws Exception {
         // XXX huh? is this a good way?
         String defPlatform = getDataDir().getParentFile().getParentFile().getParent();
         File suiteDir = new File(getWorkDir(), "testSuite");
