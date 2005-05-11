@@ -212,6 +212,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
+        sNMPJCheckBox.setName("sNMPJCheckBox");
         sNMPJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sNMPJCheckBoxActionPerformed(evt);
@@ -226,6 +227,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         jPanel1.add(sNMPJCheckBox, gridBagConstraints);
 
         sNMPPortJLabel.setText("port");
+        sNMPPortJLabel.setName("sNMPPortJLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -234,6 +236,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         jPanel1.add(sNMPPortJLabel, gridBagConstraints);
 
         sNMPPortJTextField.setMinimumSize(new java.awt.Dimension(55, 20));
+        sNMPPortJTextField.setName("sNMPPortJTextField");
         sNMPPortJTextField.setPreferredSize(new java.awt.Dimension(55, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -244,6 +247,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         jPanel1.add(sNMPPortJTextField, gridBagConstraints);
 
         interfaceJLabel.setText("interface");
+        interfaceJLabel.setName("interfaceJLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -252,6 +256,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         jPanel1.add(interfaceJLabel, gridBagConstraints);
 
         interfaceJTextField.setMinimumSize(new java.awt.Dimension(100, 20));
+        interfaceJTextField.setName("interfaceJTextField");
         interfaceJTextField.setPreferredSize(new java.awt.Dimension(100, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -262,6 +267,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         jPanel1.add(interfaceJTextField, gridBagConstraints);
 
         sNMPTrapPortJLabel.setText("trap");
+        sNMPTrapPortJLabel.setName("sNMPTrapPortJLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -270,6 +276,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         jPanel1.add(sNMPTrapPortJLabel, gridBagConstraints);
 
         trapPortJTextField.setMinimumSize(new java.awt.Dimension(55, 20));
+        trapPortJTextField.setName("trapPortJTextField");
         trapPortJTextField.setPreferredSize(new java.awt.Dimension(55, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -278,6 +285,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(trapPortJTextField, gridBagConstraints);
 
+        aclJCheckBox.setName("aclJCheckBox");
         aclJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 aclJCheckBoxActionPerformed(evt);
@@ -295,13 +303,14 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
 
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
-        customACL.setText("jLabel1");
+        customACL.setName("customACL");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         jPanel10.add(customACL, gridBagConstraints);
 
         aclFileJTextField.setMinimumSize(new java.awt.Dimension(200, 20));
+        aclFileJTextField.setName("aclFileJTextField");
         aclFileJTextField.setPreferredSize(new java.awt.Dimension(200, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -312,6 +321,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
 
         aclFileJButton.setMaximumSize(new java.awt.Dimension(90, 20));
         aclFileJButton.setMinimumSize(new java.awt.Dimension(90, 20));
+        aclFileJButton.setName("aclFileJButton");
         aclFileJButton.setPreferredSize(new java.awt.Dimension(90, 20));
         aclFileJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

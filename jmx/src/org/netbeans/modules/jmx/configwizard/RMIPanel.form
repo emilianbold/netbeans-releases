@@ -37,6 +37,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
       <SubComponents>
         <Component class="javax.swing.JLabel" name="rMIPortJLabel">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="rmiPortJLabel"/>
+          </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="15" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -48,6 +51,7 @@
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>
+            <Property name="name" type="java.lang.String" value="rMIPortJTextField"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>
@@ -76,6 +80,9 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JCheckBox" name="authJCheckBox">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="authJCheckBox"/>
+          </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="authJCheckBoxActionPerformed"/>
           </Events>
@@ -86,6 +93,9 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JCheckBox" name="sslJCheckBox">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="sslJCheckBox"/>
+          </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sslJCheckBoxActionPerformed"/>
           </Events>
@@ -96,6 +106,9 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JLabel" name="tableNameJLabel">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="tableNameJLabel"/>
+          </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="3" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="5" insetsLeft="30" insetsBottom="5" insetsRight="0" anchor="17" weightX="1.0" weightY="0.0"/>
@@ -103,6 +116,9 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JLabel" name="sslProtocolJLabel">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="sslProtocolJLabel"/>
+          </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="7" gridWidth="2" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="2" insetsLeft="30" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -114,6 +130,7 @@
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[50, 20]"/>
             </Property>
+            <Property name="name" type="java.lang.String" value="sslProtocolJTextField"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[65, 20]"/>
             </Property>
@@ -125,6 +142,9 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JLabel" name="sslCipherJLabel">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="sslCipherJLabel"/>
+          </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="8" gridWidth="2" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="5" insetsLeft="30" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -136,6 +156,7 @@
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[50, 20]"/>
             </Property>
+            <Property name="name" type="java.lang.String" value="sslCipherJTextField"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[65, 20]"/>
             </Property>
@@ -147,6 +168,9 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JCheckBox" name="sslClientAuthJCheckBox">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="sslClientAuthJCheckBox"/>
+          </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="9" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="5" insetsLeft="28" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -155,7 +179,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="addAuth">
           <Properties>
-            <Property name="text" type="java.lang.String" value="jButton1"/>
+            <Property name="name" type="java.lang.String" value="addAuth"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addAuthActionPerformed"/>
@@ -168,7 +192,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="removeAuth">
           <Properties>
-            <Property name="text" type="java.lang.String" value="jButton2"/>
+            <Property name="name" type="java.lang.String" value="removeAuth"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeAuthActionPerformed"/>

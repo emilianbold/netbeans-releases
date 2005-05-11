@@ -225,18 +225,18 @@ public class ConfigGenerator
         while( (ch = is.read( )) != -1 )
             passwordContent.append( (char) ch );
         
-         if(rmiAuthenticate) {
+        if(rmiAuthenticate) {
             if(rmiAuthenticatedUsers != null) {
                 for(int i = 0; i < rmiAuthenticatedUsers.size(); i++) {
-                    RMIAuthenticatedUser r = 
+                    RMIAuthenticatedUser r =
                             (RMIAuthenticatedUser) rmiAuthenticatedUsers.get(i);
                     passwordContent.append((r.getName() == null ? "" : r.getName()) + " " +
-                                            (r.getPassword() == null ? "" : r.getPassword()) + "\n");
+                            (r.getPassword() == null ? "" : r.getPassword()) + "\n");
                 }
             }
-         ManagementDialogs.getDefault().notify(
-         new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));
-                        
+            ManagementDialogs.getDefault().notify(
+                    new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));
+            
         }
         
         is.close();

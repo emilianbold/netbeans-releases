@@ -275,98 +275,96 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         
         //Table
         final String[] columnNames = { bundle.getString("LBL_TABLE_ROLE"),
-                bundle.getString("LBL_TABLE_PASSWORD"),
-                bundle.getString("LBL_TABLE_ACCESS")};
-                tableModel = new AuthTableModel();
-                authTable = new AuthTable(tableModel);
-                authTable.setPreferredSize(new Dimension(400, 100));
-                authTable.setRowSelectionAllowed(true);
-                authTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                authTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-                JScrollPane jscp = new JScrollPane(authTable);
-                jscp.setPreferredSize(new Dimension(400,100));
-                java.awt.GridBagConstraints tablegridBagConstraints = new java.awt.GridBagConstraints();
-                tablegridBagConstraints.gridx = 0;
-                tablegridBagConstraints.gridy = 4;
-                tablegridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-                tablegridBagConstraints.gridheight = 1;
+                                       bundle.getString("LBL_TABLE_PASSWORD"),
+                                       bundle.getString("LBL_TABLE_ACCESS") };
+        tableModel = new AuthTableModel();
+        authTable = new AuthTable(tableModel);
+        authTable.setName("authTable");
+        authTable.setPreferredSize(new Dimension(400, 100));
+        authTable.setRowSelectionAllowed(true);
+        authTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        authTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        JScrollPane jscp = new JScrollPane(authTable);
+        jscp.setPreferredSize(new Dimension(400,100));
+        java.awt.GridBagConstraints tablegridBagConstraints = new java.awt.GridBagConstraints();
+        tablegridBagConstraints.gridx = 0;
+        tablegridBagConstraints.gridy = 4;
+        tablegridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        tablegridBagConstraints.gridheight = 1;
+        
+        tablegridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        tablegridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        
+        tablegridBagConstraints.weightx = 1.0;
+        tablegridBagConstraints.weighty = 1.0;
+        tablegridBagConstraints.insets = new java.awt.Insets(0,30,0,0);
+        jPanel2.add(jscp,tablegridBagConstraints);
+        ((DefaultTableModel)authTable.getModel()).setColumnIdentifiers(columnNames);
+        //AddAuthTableListener listener = new AddAuthTableListener(tableModel, removeAuth);
+        //addAuth.addActionListener(listener);
+        
+        Mnemonics.setLocalizedText(addAuth, bundle.getString("LBL_RMI_ADD_AUTH"));
+        Mnemonics.setLocalizedText(removeAuth, bundle.getString("LBL_RMI_REMOVE_AUTH"));
+        
+        removeAuth.setEnabled(false);
+        addAuth.setEnabled(false);
+        tableNameJLabel.setEnabled(false);
+        
+        Mnemonics.setLocalizedText(rMIJCheckBox,
+                bundle.getString("LBL_RMI"));//NOI18N
+        Mnemonics.setLocalizedText(rMIPortJLabel,
+                bundle.getString("LBL_RMI_Port"));//NOI18N
+        Mnemonics.setLocalizedText(sslJCheckBox,
+                bundle.getString("LBL_SSL"));//NOI18N
+        Mnemonics.setLocalizedText(sslClientAuthJCheckBox,
+                bundle.getString("LBL_SSL_Required_Auth"));//NOI18N
+        Mnemonics.setLocalizedText(sslCipherJLabel,
+                bundle.getString("LBL_SSL_Cipher"));//NOI18N
+        Mnemonics.setLocalizedText(sslProtocolJLabel,
+                bundle.getString("LBL_SSL_Protocol_Version"));//NOI18N
+        Mnemonics.setLocalizedText(authJCheckBox,
+                bundle.getString("LBL_Authenticate"));//NOI18N
+        //Mnemonics.setLocalizedText(authJButton,
+        //                         bundle.getString("LBL_Authenticate_Edit"));//NOI18N
+        
+        //Set tooltips
+        
+        rMIJCheckBox.setToolTipText(bundle.getString("TLTP_RMI"));//NOI18N
+        rMIPortJLabel.setToolTipText(bundle.getString("TLTP_RMI_PORT"));//NOI18N
+        sslJCheckBox.setToolTipText(bundle.getString("TLTP_SSL"));//NOI18N
+        sslClientAuthJCheckBox.setToolTipText(bundle.getString("TLTP_SSL_Client_Auth"));//NOI18N
+        sslCipherJLabel.setToolTipText(bundle.getString("TLTP_SSL_Cipher_Suite"));//NOI18N
+        sslProtocolJLabel.setToolTipText(bundle.getString("TLTP_SSL_Protocol"));//NOI18N
+        authJCheckBox.setToolTipText(bundle.getString("TLTP_RMI_Auth"));//NOI18N
+        
+        // init flags
+        rMIJCheckBox.setSelected(true);
+        updateSelected();
+        setRMIPanelEnabled(true);
+        setSSLPanelEnabled(false);
+        updateSelected();
+        rMIPortJTextField.addKeyListener(new KeyListener() {
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!(Character.isDigit(c) ||
+                        c == KeyEvent.VK_BACK_SPACE ||
+                        c == KeyEvent.VK_DELETE)) {
+                    authTable.getToolkit().beep();
+                    e.consume();
+                }
+            }
+            
+            public void keyPressed(KeyEvent e) {
+            }
+            
+            public void keyReleased(KeyEvent e) {
                 
-                tablegridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-                tablegridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-                
-                tablegridBagConstraints.weightx = 1.0;
-                tablegridBagConstraints.weighty = 1.0;
-                tablegridBagConstraints.insets = new java.awt.Insets(0,30,0,0);
-                jPanel2.add(jscp,tablegridBagConstraints);
-                ((DefaultTableModel)authTable.getModel()).setColumnIdentifiers(columnNames);
-                //AddAuthTableListener listener = new AddAuthTableListener(tableModel, removeAuth);
-                //addAuth.addActionListener(listener);
-                
-                //addAuth.setText(bundle.getString("LBL_RMI_ADD_AUTH"));
-                //removeAuth.setText(bundle.getString("LBL_RMI_REMOVE_AUTH"));
-                Mnemonics.setLocalizedText(addAuth, bundle.getString("LBL_RMI_ADD_AUTH"));
-                Mnemonics.setLocalizedText(removeAuth, bundle.getString("LBL_RMI_REMOVE_AUTH"));
-                
-                removeAuth.setEnabled(false);
-                addAuth.setEnabled(false);
-                tableNameJLabel.setEnabled(false);
-                
-                Mnemonics.setLocalizedText(rMIJCheckBox,
-                        bundle.getString("LBL_RMI"));//NOI18N
-                Mnemonics.setLocalizedText(rMIPortJLabel,
-                        bundle.getString("LBL_RMI_Port"));//NOI18N
-                Mnemonics.setLocalizedText(sslJCheckBox,
-                        bundle.getString("LBL_SSL"));//NOI18N
-                Mnemonics.setLocalizedText(sslClientAuthJCheckBox,
-                        bundle.getString("LBL_SSL_Required_Auth"));//NOI18N
-                Mnemonics.setLocalizedText(sslCipherJLabel,
-                        bundle.getString("LBL_SSL_Cipher"));//NOI18N
-                Mnemonics.setLocalizedText(sslProtocolJLabel,
-                        bundle.getString("LBL_SSL_Protocol_Version"));//NOI18N
-                Mnemonics.setLocalizedText(authJCheckBox,
-                        bundle.getString("LBL_Authenticate"));//NOI18N
-                //Mnemonics.setLocalizedText(authJButton,
-                //                         bundle.getString("LBL_Authenticate_Edit"));//NOI18N
-                
-                //Set tooltips
-                
-                rMIJCheckBox.setToolTipText(bundle.getString("TLTP_RMI"));//NOI18N
-                rMIPortJLabel.setToolTipText(bundle.getString("TLTP_RMI_PORT"));//NOI18N
-                sslJCheckBox.setToolTipText(bundle.getString("TLTP_SSL"));//NOI18N
-                sslClientAuthJCheckBox.setToolTipText(bundle.getString("TLTP_SSL_Client_Auth"));//NOI18N
-                sslCipherJLabel.setToolTipText(bundle.getString("TLTP_SSL_Cipher_Suite"));//NOI18N
-                sslProtocolJLabel.setToolTipText(bundle.getString("TLTP_SSL_Protocol"));//NOI18N
-                authJCheckBox.setToolTipText(bundle.getString("TLTP_RMI_Auth"));//NOI18N
-                
-                // init flags
-                rMIJCheckBox.setSelected(true);
-                updateSelected();
-                setRMIPanelEnabled(true);
-                setSSLPanelEnabled(false);
-                updateSelected();
-                rMIPortJTextField.addKeyListener(new KeyListener() {
-                    public void keyTyped(KeyEvent e) {
-                        char c = e.getKeyChar();
-                        if (!(Character.isDigit(c) ||
-                                c == KeyEvent.VK_BACK_SPACE ||
-                                c == KeyEvent.VK_DELETE)) {
-                            authTable.getToolkit().beep();
-                            e.consume();
-                        }
-                    }
-                    
-                    public void keyPressed(KeyEvent e) {
-                    }
-                    
-                    public void keyReleased(KeyEvent e) {
-                        
-                    }
-                });
-                
-                // Provide a name in the title bar.
-                setName(NbBundle.getMessage(ConfigPanel.class,
-                        "LBL_RMI_Panel"));
-                //agentNameField.getDocument().addDocumentListener(this);
+            }
+        });
+        
+        // Provide a name in the title bar.
+        setName(NbBundle.getMessage(ConfigPanel.class,
+                "LBL_RMI_Panel"));
     }
     
     
@@ -485,6 +483,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
+        rMIPortJLabel.setName("rmiPortJLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -493,6 +492,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         jPanel2.add(rMIPortJLabel, gridBagConstraints);
 
         rMIPortJTextField.setMinimumSize(new java.awt.Dimension(55, 20));
+        rMIPortJTextField.setName("rMIPortJTextField");
         rMIPortJTextField.setPreferredSize(new java.awt.Dimension(55, 20));
         rMIPortJTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -524,6 +524,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel2.add(rMIJCheckBox, gridBagConstraints);
 
+        authJCheckBox.setName("authJCheckBox");
         authJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 authJCheckBoxActionPerformed(evt);
@@ -538,6 +539,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.insets = new java.awt.Insets(8, 13, 0, 0);
         jPanel2.add(authJCheckBox, gridBagConstraints);
 
+        sslJCheckBox.setName("sslJCheckBox");
         sslJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sslJCheckBoxActionPerformed(evt);
@@ -552,6 +554,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.insets = new java.awt.Insets(8, 13, 0, 0);
         jPanel2.add(sslJCheckBox, gridBagConstraints);
 
+        tableNameJLabel.setName("tableNameJLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -562,6 +565,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.insets = new java.awt.Insets(5, 30, 5, 0);
         jPanel2.add(tableNameJLabel, gridBagConstraints);
 
+        sslProtocolJLabel.setName("sslProtocolJLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -571,6 +575,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         jPanel2.add(sslProtocolJLabel, gridBagConstraints);
 
         sslProtocolJTextField.setMinimumSize(new java.awt.Dimension(50, 20));
+        sslProtocolJTextField.setName("sslProtocolJTextField");
         sslProtocolJTextField.setPreferredSize(new java.awt.Dimension(65, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -581,6 +586,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         jPanel2.add(sslProtocolJTextField, gridBagConstraints);
 
+        sslCipherJLabel.setName("sslCipherJLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -590,6 +596,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         jPanel2.add(sslCipherJLabel, gridBagConstraints);
 
         sslCipherJTextField.setMinimumSize(new java.awt.Dimension(50, 20));
+        sslCipherJTextField.setName("sslCipherJTextField");
         sslCipherJTextField.setPreferredSize(new java.awt.Dimension(65, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -600,6 +607,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         jPanel2.add(sslCipherJTextField, gridBagConstraints);
 
+        sslClientAuthJCheckBox.setName("sslClientAuthJCheckBox");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -608,7 +616,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.insets = new java.awt.Insets(5, 28, 0, 0);
         jPanel2.add(sslClientAuthJCheckBox, gridBagConstraints);
 
-        addAuth.setText("jButton1");
+        addAuth.setName("addAuth");
         addAuth.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addAuthActionPerformed(evt);
@@ -623,7 +631,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.insets = new java.awt.Insets(5, 30, 0, 5);
         jPanel2.add(addAuth, gridBagConstraints);
 
-        removeAuth.setText("jButton2");
+        removeAuth.setName("removeAuth");
         removeAuth.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeAuthActionPerformed(evt);
