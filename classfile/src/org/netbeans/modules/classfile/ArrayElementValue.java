@@ -1,6 +1,4 @@
 /*
- * ArrayElementValue.java
- *
  *                 Sun Public License Notice
  * 
  * The contents of this file are subject to the Sun Public License
@@ -9,19 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * Contributor(s): Thomas Ball
- *
- * Version: $Revision$
  */
 
 package org.netbeans.modules.classfile;
-
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * ArrayElementValue:  the value portion of an annotation element that 
