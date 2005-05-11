@@ -16,9 +16,20 @@ package org.netbeans.spi.java.project.support.ui;
 import org.openide.nodes.Node;
 
 /**
- *
+ * This handler is used by PackageViewChildren.PackageNode.setName() method. 
+ * PackageNode.setName() uses  Lookup.getDefault() to lookup for instances of 
+ * packageRenameHandler. If there is one instance found, it's handleRename(...) 
+ * method is called to handle rename request. More than one instance of 
+ * PackageRenameHandler is not allowed.
+ * 
+ * @since 1.5
  * @author Jan Becicka
  */
 public interface PackageRenameHandler {
+    /**
+     * @param node on this node rename was requested
+     * @param newName new name of node
+     * @throws java.lang.IllegalArgumentException thrown if rename cannot be performed
+     */
     void handleRename(Node node, String newName) throws IllegalArgumentException;
 }

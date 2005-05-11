@@ -733,6 +733,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="lookup-lookup">
   <p>
    Delegating query implementations search project lookups for their delegates.
+   PackageViewChildren.PackageNode.setName() looks for one instance of org.netbeans.spi.java.project.support.ui.PackageRenameHandler.
   </p>
  </answer>
 

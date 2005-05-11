@@ -77,7 +77,7 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        <change id="JavaProjectConstants">
+    <change id="JavaProjectConstants">
             <api name="general"/>
             <summary>Added artifact type representing folder</summary>
             <version major="1" minor="4"/>
@@ -184,6 +184,23 @@ is the proper place.
             </description>
             <issue number="51468"/>
         </change>
+        
+    <change>
+        <api name="ui"/>
+        <summary>Introduction of a new interface PackageRenameHandler which allows plugging into <code>PackageViewChildren.PackageNode.setName()</code></summary>
+        <version major="1" minor="5"/>
+        <date day="11" month="5" year="2005"/>
+        <author login="jbecicka"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+        Refactoring needs to handle rename of Package Nodes. It is allowed through PackageRenameHandler.
+        Any client can put it's PackageRenameHandler into Lookup (only one instance is allowed). 
+        Implementation of packageNode.setName() will use this instance to handle rename request.
+        </description>
+        <class package="org.netbeans.spi.java.project.support.ui" name="PackageRenameHandler"/>
+        <issue number="53295"/>
+    </change>
+        
 
     </changes>
 
