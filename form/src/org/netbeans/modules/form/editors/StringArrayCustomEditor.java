@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,12 +25,11 @@ import org.openide.util.NbBundle;
 /** A custom editor for array of Strings.
 *
 * @author  Ian Formanek
-* @version 1.00, Sep 21, 1998
 */
 public class StringArrayCustomEditor extends javax.swing.JPanel {
 
     // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
+    private ResourceBundle bundle = NbBundle.getBundle (
                                        StringArrayCustomEditor.class);
 
     private Vector itemsVector;
@@ -379,7 +378,7 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         {
             if (!(value instanceof String)) return this;
             String text = (String)value;
-            if ("".equals (text)) text = bundle.getString ("CTL_Empty");
+            if ("".equals (text)) text = NbBundle.getMessage (EmptyStringListCellRenderer.class, "CTL_Empty");
 
             setText(text);
             if (isSelected){
