@@ -12,12 +12,12 @@
  */
 
 package org.netbeans.spi.java.project.support.ui;
-
-import java.beans.PropertyChangeListener;
-import javax.swing.Icon;
-import junit.framework.*;
+import java.io.File;
 import org.netbeans.api.project.SourceGroup;
-import org.openide.filesystems.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.support.GenericSources;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -27,7 +27,8 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  * @author Jan Becicka
  */
-public class PackageRenameHandlerTest extends TestCase {
+public class PackageRenameHandlerTest extends NbTestCase {
+    
     static {
         System.setProperty ("org.openide.util.Lookup", Lkp.class.getName()); // NOI18N
     }
@@ -43,10 +44,14 @@ public class PackageRenameHandlerTest extends TestCase {
     
     public void setUp() throws Exception {
         super.setUp();
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        clearWorkDir();
+        File d = getWorkDir();
+        assertTrue("root dir " + d + " exists", d.isDirectory());
+        FileObject root = FileUtil.toFileObject(d);
+        assertNotNull("file object for " + d + " exists", root);
         fo = FileUtil.createFolder (root, "test");// NOI18N
 
-        SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
+        SourceGroup group = GenericSources.group(null, root.createFolder("src"), "testGroup", "Test Group", null, null);
         Children ch = PackageView.createPackageView( group ).getChildren();
         
         // Create folder
@@ -56,11 +61,6 @@ public class PackageRenameHandlerTest extends TestCase {
         assertNotNull(n);
     }
     
-    public void tearDown() throws Exception {
-        super.tearDown();
-         fo.delete();
-    }
-
     public void testRenameHandlerNotCalled () throws Exception {
         ((Lkp) Lkp.getDefault()).register(new Object[]{});
         frh.called = false;
@@ -80,9 +80,14 @@ public class PackageRenameHandlerTest extends TestCase {
     public static class Lkp extends ProxyLookup {
         public Lkp() {
             super(new Lookup[0]);
+            register(new Object[0]);
         }
         public void register(Object[] instances) {
-            setLookups(new Lookup[] {Lookups.fixed(instances)});
+            setLookups(new Lookup[] {
+                Lookups.fixed(instances),
+                Lookups.metaInfServices(Lkp.class.getClassLoader()),
+                Lookups.singleton(Lkp.class.getClassLoader()),
+            });
         }
     }    
     
@@ -92,38 +97,5 @@ public class PackageRenameHandlerTest extends TestCase {
             called = true;
         }
     }
-    private static class SimpleSourceGroup implements SourceGroup {
-        
-        private FileObject root;
-        
-        public SimpleSourceGroup( FileObject root ) {
-            this.root = root;
-        }
-        
-        public FileObject getRootFolder() {
-            return root;
-        }
-        
-        public String getName() {
-            return "TestGroup";
-        }
-        
-        public String getDisplayName() {
-            return getName();
-        }
-        
-        public Icon getIcon(boolean opened) {
-            return null;
-        }
-
-        public boolean contains(FileObject file) throws IllegalArgumentException {
-            return FileUtil.isParentOf( root, file );
-        }
-    
-        public void addPropertyChangeListener(PropertyChangeListener listener) {}
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {}
-        
-    }    
     
 }
