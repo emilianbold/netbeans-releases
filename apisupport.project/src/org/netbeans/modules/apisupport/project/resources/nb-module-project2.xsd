@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
                 </xsd:choice>
                 <xsd:element name="class-path-extension" minOccurs="0" maxOccurs="unbounded" type="classPathExtensionType"/>
                 <xsd:element name="extra-compilation-unit" minOccurs="0" maxOccurs="unbounded" type="compilation-unit"/>
+                <!-- XXX remove this element; does little: -->
                 <xsd:element name="javadoc" minOccurs="0"/>
             </xsd:sequence>
         </xsd:complexType>
