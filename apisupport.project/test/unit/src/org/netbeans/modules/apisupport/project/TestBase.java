@@ -27,8 +27,12 @@ abstract class TestBase extends NbTestCase {
         super(name);
     }
     
+    protected static String EEP = "apisupport/project/test/unit/data/example-external-projects";
+    
     protected File nbrootF;
     protected FileObject nbroot;
+    protected File extexamplesF;
+    protected FileObject extexamples;
     protected void setUp() throws Exception {
         super.setUp();
         nbrootF = new File(System.getProperty("test.nbroot"));
@@ -36,6 +40,10 @@ abstract class TestBase extends NbTestCase {
         assertTrue("nbbuild exists", new File(nbrootF, "nbbuild").isDirectory());
         nbroot = FileUtil.toFileObject(nbrootF);
         assertNotNull("have a file object for nbroot", nbroot);
+        extexamplesF = file(nbrootF, EEP);
+        assertTrue("there is a dir " + extexamplesF, extexamplesF.isDirectory());
+        extexamples = FileUtil.toFileObject(extexamplesF);
+        assertNotNull("have a file object for extexamples", extexamples);
     }
     
     protected File file(File root, String path) {

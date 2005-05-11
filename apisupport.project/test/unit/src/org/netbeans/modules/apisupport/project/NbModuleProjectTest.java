@@ -23,6 +23,8 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
+// XXX testGetPlatform
+
 /**
  * Test functionality of NbModuleProject.
  * @author Jesse Glick
@@ -111,14 +113,13 @@ public class NbModuleProjectTest extends TestBase {
     }
     
     public void testExternalModules() throws Exception {
-        FileObject examples = nbroot.getFileObject("apisupport/project/test/unit/data/example-external-projects");
-        FileObject suite1 = examples.getFileObject("suite1");
+        FileObject suite1 = extexamples.getFileObject("suite1");
         FileObject action = suite1.getFileObject("action-project");
         NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(action);
         PropertyEvaluator eval = actionProject.evaluator();
         String[] cp = {
             "platform5/core/openide.jar",
-            "extra/modules/org-netbeans-examples-modules-lib.jar",
+            "devel/modules/org-netbeans-examples-modules-lib.jar",
         };
         StringBuffer cpS = new StringBuffer();
         for (int i = 0; i < cp.length; i++) {
@@ -138,9 +139,9 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals("correct netbeans.sources",
             Arrays.asList(new File[] {
                 nbrootF,
-                FileUtil.toFile(examples.getFileObject("suite2")),
+                FileUtil.toFile(extexamples.getFileObject("suite2")),
             }), Arrays.asList(piecesF));
-        FileObject suite3 = examples.getFileObject("suite3");
+        FileObject suite3 = extexamples.getFileObject("suite3");
         FileObject dummy = suite3.getFileObject("dummy-project");
         NbModuleProject dummyProject = (NbModuleProject) ProjectManager.getDefault().findProject(dummy);
         eval = dummyProject.evaluator();
@@ -153,11 +154,11 @@ public class NbModuleProjectTest extends TestBase {
             if (i > 0) {
                 cpS.append(File.pathSeparatorChar);
             }
-            cpS.append(file("apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform/" + cp[i]).getAbsolutePath());
+            cpS.append(file(extexamplesF, "suite3/nbplatform/" + cp[i]).getAbsolutePath());
         }
         assertEquals("right module.classpath", cpS.toString(), eval.getProperty("module.classpath"));
         /*
-        assertEquals("right netbeans.javadoc.dir", file("apisupport/project/test/unit/data/example-external-projects/suite3/dummy-project/build/javadoc"),
+        assertEquals("right netbeans.javadoc.dir", file(extexamplesF, "suite3/dummy-project/build/javadoc"),
             dummyProject.getHelper().resolveFile(eval.getProperty("netbeans.javadoc.dir")));
          */
         // XXX more...

@@ -104,12 +104,12 @@ public class ModuleListParserTest extends TestCase {
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.examples.modules.action");
         assertNotNull("found myself", e);
         assertEquals("org.netbeans.examples.modules.action", e.getCnb());
-        assertEquals(file(nball, "nbbuild/netbeans/extra/modules/org-netbeans-examples-modules-action.jar"), e.getJar());
+        assertEquals(file(nball, "nbbuild/netbeans/devel/modules/org-netbeans-examples-modules-action.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.netbeans.examples.modules.lib");
         assertNotNull("found sister project in suite", e);
         assertEquals("org.netbeans.examples.modules.lib", e.getCnb());
-        assertEquals(file(nball, "nbbuild/netbeans/extra/modules/org-netbeans-examples-modules-lib.jar"), e.getJar());
+        assertEquals(file(nball, "nbbuild/netbeans/devel/modules/org-netbeans-examples-modules-lib.jar"), e.getJar());
         e = p.findByCodeNameBase("org.netbeans.libs.xerces");
         assertNotNull("found netbeans.org module by its binary", e);
         assertEquals("org.netbeans.libs.xerces", e.getCnb());

@@ -255,6 +255,9 @@ final class NbModuleProject implements Project {
         if (nbroot != null) {
             // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
             stock.put("netbeans.dest.dir", thisEntry.getDestDir().getAbsolutePath()); // NOI18N
+            assert thisEntry.getNetBeansOrgPath() != null : thisEntry;
+        } else {
+            assert thisEntry.getNetBeansOrgPath() == null : thisEntry;
         }
         File clusterDir = thisEntry.getClusterDirectory();
         assert clusterDir.getParentFile().equals(thisEntry.getDestDir()) : "Did not find " + clusterDir + " right under " + thisEntry.getDestDir();
@@ -455,6 +458,10 @@ final class NbModuleProject implements Project {
     
     public ModuleList getModuleList() {
         return moduleList;
+    }
+    
+    public NbPlatform getPlatform() {
+        return null;// XXX
     }
     
     public boolean supportsJavadoc() {

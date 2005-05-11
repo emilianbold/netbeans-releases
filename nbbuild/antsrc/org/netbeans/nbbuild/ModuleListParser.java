@@ -49,14 +49,14 @@ final class ModuleListParser {
     /**
      * Find all NBM projects in a root, possibly from cache.
      */
-    private static Map/*<String,Entry>*/ scanSources(File root, Hashtable properties, int depth, Project project) throws IOException {
+    private static Map/*<String,Entry>*/ scanSources(File root, Hashtable properties, int depth, Project project, boolean isNetBeansOrg) throws IOException {
         Map/*<String,Entry>*/ entries = (Map) SOURCE_SCAN_CACHE.get(root);
         if (entries == null) {
             if (project != null) {
                 project.log("Scanning for modules in " + root);
             }
             entries = new HashMap();
-            doScanSources(entries, root, depth, root, properties, null);
+            doScanSources(entries, root, depth, root, properties, null, isNetBeansOrg);
             if (project != null) {
                 project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
             }
@@ -68,7 +68,7 @@ final class ModuleListParser {
     /**
      * Scan a root for all NBM projects.
      */
-    private static void doScanSources(Map/*<String,Entry>*/ entries, File dir, int depth, File root, Hashtable properties, String pathPrefix) throws IOException {
+    private static void doScanSources(Map/*<String,Entry>*/ entries, File dir, int depth, File root, Hashtable properties, String pathPrefix, boolean isNetBeansOrg) throws IOException {
         if (depth == 0) {
             return;
         }
@@ -82,18 +82,18 @@ final class ModuleListParser {
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + kids[i].getName() : kids[i].getName();
             try {
-                scanPossibleProject(kids[i], entries, root, properties, newPathPrefix);
+                scanPossibleProject(kids[i], entries, root, properties, newPathPrefix, isNetBeansOrg);
             } catch (SAXException e) {
                 throw (IOException) new IOException(e.toString()).initCause(e);
             }
-            doScanSources(entries, kids[i], depth - 1, root, properties, newPathPrefix);
+            doScanSources(entries, kids[i], depth - 1, root, properties, newPathPrefix, isNetBeansOrg);
         }
     }
     
     /**
      * Check a single dir to see if it is an NBM project, and if so, register it.
      */
-    private static void scanPossibleProject(File dir, Map/*<String,Entry>*/ entries, File root, Hashtable properties, String path) throws IOException, SAXException {
+    private static void scanPossibleProject(File dir, Map/*<String,Entry>*/ entries, File root, Hashtable properties, String path, boolean isNetBeansOrg) throws IOException, SAXException {
         File nbproject = new File(dir, "nbproject");
         File projectxml = new File(nbproject, "project.xml");
         if (!projectxml.isFile()) {
@@ -146,7 +146,7 @@ final class ModuleListParser {
             }
         }
         faketask.setName("cluster.dir");
-        faketask.setValue("extra"); // fallback
+        faketask.setValue(isNetBeansOrg ? "extra" : "devel"); // fallback
         faketask.execute();
         faketask.setName("netbeans.dest.dir");
         faketask.setValue((String) properties.get("netbeans.dest.dir"));
@@ -317,13 +317,13 @@ final class ModuleListParser {
                 }
                 root = root.getParentFile();
             }
-            entries.putAll(scanSources(root, properties, DEPTH_EXTERNAL, project));
+            entries.putAll(scanSources(root, properties, DEPTH_EXTERNAL, project, false));
         } else {
             // netbeans.org module.
             if (nball == null) {
                 throw new IOException("You must define a <path> for an external module in " + new File((String) properties.get("basedir")));
             }
-            entries = scanSources(new File(nball), properties, DEPTH_NB_ALL, project);
+            entries = scanSources(new File(nball), properties, DEPTH_NB_ALL, project, true);
         }
     }
     

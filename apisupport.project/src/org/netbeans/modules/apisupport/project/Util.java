@@ -13,11 +13,15 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -176,6 +180,59 @@ class Util {
             }
         }
         return elements;
+    }
+    
+    // CANDIDATES FOR FileUtil:
+    
+    /**
+     * Creates a URL for a directory on disk.
+     * Works correctly even if the directory does not currently exist.
+     */
+    public static URL urlForDir(File dir) {
+        try {
+            URL u = FileUtil.normalizeFile(dir).toURI().toURL();
+            String s = u.toExternalForm();
+            if (s.endsWith("/")) {
+                return u;
+            } else {
+                return new URL(s + "/");
+            }
+        } catch (MalformedURLException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /**
+     * Creates a URL for the root of a JAR on disk.
+     */
+    public static URL urlForJar(File jar) {
+        try {
+            return FileUtil.getArchiveRoot(FileUtil.normalizeFile(jar).toURI().toURL());
+        } catch (MalformedURLException e) {
+            throw new AssertionError(e);
+        }
+    }
+    
+    /**
+     * Creates a URL for a directory on disk or the root of a JAR.
+     * Works correctly whether or not the directory or JAR currently exists.
+     * Detects whether the file is supposed to be a directory or a JAR.
+     */
+    public static URL urlForDirOrJar(File location) {
+        try {
+            URL u = FileUtil.normalizeFile(location).toURI().toURL();
+            if (FileUtil.isArchiveFile(u)) {
+                u = FileUtil.getArchiveRoot(u);
+            } else {
+                String us = u.toExternalForm();
+                if (!us.endsWith("/")) { // NOI18N
+                    u = new URL(us + "/"); // NOI18N
+                }
+            }
+            return u;
+        } catch (MalformedURLException e) {
+            throw new AssertionError(e);
+        }
     }
     
 }
