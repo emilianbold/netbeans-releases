@@ -43,6 +43,7 @@ final class SubprojectProviderImpl implements SubprojectProvider {
         return (Set/*<Project>*/)ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
                 ReferenceHelper.RawReference[] refs = helper.getRawReferences();
+                // XXX could use a special set w/ lazy isEmpty() - cf. #58639 for freeform
                 Set/*<String>*/ foreignProjectNames = new HashSet();
                 for (int i = 0; i < refs.length; i++) {
                     foreignProjectNames.add(refs[i].getForeignProjectName());
