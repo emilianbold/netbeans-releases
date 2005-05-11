@@ -34,4 +34,7 @@ Microsystems, Inc. All Rights Reserved.
       </folder>
     </folder>
   </folder>
+  <folder name="org-netbeans-modules-apisupport-project">
+    <file name="layer_template.xml" url="layer_template.xml"/>
+  </folder>
 </filesystem>

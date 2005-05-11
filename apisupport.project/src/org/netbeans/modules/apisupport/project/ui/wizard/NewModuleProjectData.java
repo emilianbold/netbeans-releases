@@ -28,6 +28,7 @@ final class NewModuleProjectData {
     private String codeNameBase;
     private String platform;
     private String bundle;
+    private String layer;
     private String projectDisplayName;
     
     /** Creates a new instance of NewModuleProjectData */
@@ -99,6 +100,14 @@ final class NewModuleProjectData {
 
     void setBundle(String bundle) {
         this.bundle = bundle;
+    }
+
+    String getLayer() {
+        return layer;
+    }
+
+    void setLayer(String layer) {
+        this.layer = layer;
     }
 
     String getProjectDisplayName() {

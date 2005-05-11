@@ -14,13 +14,14 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.Repository;
 
 /**
  * NbModuleProjectGenerator tests.
@@ -28,7 +29,6 @@ import org.openide.filesystems.FileUtil;
  * @author mkrauskopf
  */
 public class NbModuleProjectGeneratorTest extends NbTestCase {
-    // based on David's J2SEProjectGeneratorTest
     // TODO test both firstLevel and secondLevel modules and also NetBeans CVS
     // tree modules
 
@@ -43,12 +43,32 @@ public class NbModuleProjectGeneratorTest extends NbTestCase {
         "nbproject/project.xml",
         "src",
         "src/org/company/example/testModule/resources/Bundle.properties",
+        "src/org/company/example/testModule/resources/layer.xml",
     };
+    
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        // create layerTemplate
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject parent = root.createFolder("org-netbeans-modules-apisupport-project");
+        FileObject layerTemplate = parent.createData("layer_template.xml");
+        FileLock lock = layerTemplate.lock();
+        PrintWriter pw = new PrintWriter(layerTemplate.getOutputStream(lock));
+        try {
+            pw.println("\"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\"");
+            pw.println("<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">");
+            pw.println("<filesystem>");
+            pw.println("</filesystem>");
+        } finally {
+            lock.releaseLock();
+            pw.close();
+        }
+        super.setUp();
+    }
     
     // XXX also should test content created files (XMLs, properties) and
     // created suite.
     public void testCreateProject() throws Exception {
-        clearWorkDir();
         // XXX huh? is this a good way?
         String defPlatform = getDataDir().getParentFile().getParentFile().getParent();
         File suiteDir = new File(getWorkDir(), "testSuite");
@@ -58,8 +78,9 @@ public class NbModuleProjectGeneratorTest extends NbTestCase {
         
         NbModuleProjectGenerator.createExternalProject(
                 prjDir, "Testing Module", "org.company.example.testModule", 
-                "testModule",
+                "testModule", 
                 "org/company/example/testModule/resources/Bundle.properties",
+                "org/company/example/testModule/resources/layer.xml",
                 suiteDir.getPath());
         FileObject fo = FileUtil.toFileObject(prjDir);
         for (int i=0; i < CREATED_FILES.length; i++) {

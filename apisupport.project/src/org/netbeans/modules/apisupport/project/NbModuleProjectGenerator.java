@@ -30,6 +30,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -69,8 +70,8 @@ public class NbModuleProjectGenerator {
     // we will see, anyway it is not possible to return anything in the time of
     // writing this --> TBD
     public static void createExternalProject(File projectDir, String name,
-            String cnb, String path, String bundlePath, String suiteRoot) throws
-            IOException {
+            String cnb, String path, String bundlePath, String layerPath, 
+            String suiteRoot) throws IOException {
         final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
@@ -78,10 +79,9 @@ public class NbModuleProjectGenerator {
         NbModuleProjectGenerator.createProjectXML(dirFO, cnb, path);
         NbModuleProjectGenerator.createSuiteLocator(dirFO, suiteRoot);
         NbModuleProjectGenerator.createBuildScript(dirFO);
-        NbModuleProjectGenerator.createManifest(dirFO, cnb, bundlePath);
+        NbModuleProjectGenerator.createManifest(dirFO, cnb, bundlePath, layerPath);
         NbModuleProjectGenerator.createBundle(dirFO, bundlePath, name);
-//        NbModuleProjectGenerator.createLayer(dirFO);
-        
+        NbModuleProjectGenerator.createLayer(dirFO, layerPath);
     }
     
     /**
@@ -214,17 +214,18 @@ public class NbModuleProjectGenerator {
     }
     
     private static void createManifest(FileObject projectDir, String cnb, 
-            String bundlePath) throws IOException {
+            String bundlePath, String layerPath) throws IOException {
         FileObject manifestFO = FileUtil.createData(projectDir,
                 "manifest.mf"); // NOI18N
         FileLock lock = manifestFO.lock();
         try {
             PrintWriter pw = new PrintWriter(manifestFO.getOutputStream(lock));
             try {
-                pw.println("Manifest-Version: 1.0");
-                pw.println("OpenIDE-Module: " + cnb);
-                pw.println("OpenIDE-Module-Specification-Version: 1.0");
-                pw.println("OpenIDE-Module-Localizing-Bundle: " + bundlePath);
+                pw.println("Manifest-Version: 1.0"); // NOI18N
+                pw.println("OpenIDE-Module: " + cnb); // NOI18N
+                pw.println("OpenIDE-Module-Specification-Version: 1.0"); // NOI18N
+                pw.println("OpenIDE-Module-Localizing-Bundle: " + bundlePath); // NOI18N
+                pw.println("OpenIDE-Module-Layer: " + layerPath); // NOI18N
                 pw.println();
             } finally {
                 pw.close();
@@ -252,7 +253,19 @@ public class NbModuleProjectGenerator {
             lock.releaseLock();
         }
     }
-    
+
+    private static void createLayer(FileObject projectDir, String layerPath) throws IOException {
+        FileObject layerFO =  Repository.getDefault().getDefaultFileSystem().
+                findResource("org-netbeans-modules-apisupport-project/layer_template.xml"); //NOI18N
+        assert layerFO != null : "Cannot find layer template"; // NOI18N
+        int lastSlashPos = layerPath.lastIndexOf('/');
+        String layerDir = layerPath.substring(0, lastSlashPos);
+        String layerName = layerPath.substring(lastSlashPos + 1, 
+                layerPath.length() - 4);  // ".xml" <- 4
+        FileObject destDir = FileUtil.createFolder(projectDir, "src/" + layerDir); // NOI18N
+        FileUtil.copyFile(layerFO, destDir, layerName);
+    }
+
     /**
      * Creates project projectDir if it doesn't already exist and returns representing
      * <code>FileObject</code>.

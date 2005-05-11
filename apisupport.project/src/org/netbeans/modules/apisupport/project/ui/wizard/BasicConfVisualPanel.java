@@ -50,10 +50,14 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
             public void removeUpdate(DocumentEvent e) { bundleUpdated(); }
             public void changedUpdate(DocumentEvent e) {}
         });
-        
+        layerValue.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { layerUpdated(); }
+            public void removeUpdate(DocumentEvent e) { layerUpdated(); }
+            public void changedUpdate(DocumentEvent e) {}
+        });
     }
     
-    // TODO this whole method is nonsense ant will be probably removed in the 
+    // TODO this whole method is nonsense ant will be probably removed in the
     // future when thinks around NB Platforms will be clear
     private String getDefaultPlatform() {
         File userDirProps = new File(System.getProperty("netbeans.user"),
@@ -89,17 +93,25 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
     }
     
     private void bundleUpdated() {
-        String bundle = getBundleValue();
-        if (bundle.length() == 0) {
-            setErrorMessage("Bundle cannot be empty."); // NOI18N
+        checkEntry(getBundleValue(), "Bundle", ".properties"); // NOI18N
+    }
+    
+    private void layerUpdated() {
+        checkEntry(getLayerValue(), "Layer", ".xml"); // NOI18N
+    }
+    
+    /** Used for Layer and Bundle entries. */
+    private void checkEntry(String layer, String resName, String extension) {
+        if (layer.length() == 0) {
+            setErrorMessage(resName + " cannot be empty."); // NOI18N
             return;
         }
-        if (bundle.indexOf('/') == -1) {
-            setErrorMessage("Cannot use default package for a Bundle.");
+        if (layer.indexOf('/') == -1) {
+            setErrorMessage("Cannot use default package for " + resName);
             return;
         }
-        if (!bundle.endsWith(".properties")) {
-            setErrorMessage("Bundle must have \".properties\" extension.");
+        if (!layer.endsWith(extension)) {
+            setErrorMessage(resName + " must have \"" + extension + "\" extension."); // NOI18N
             return;
         }
         setErrorMessage(null);
@@ -141,14 +153,19 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
         data.setPlatform((String) platformValue.getSelectedItem());
         data.setProjectDisplayName(displayNameValue.getText());
         data.setBundle(getBundleValue());
+        data.setLayer(getLayerValue());
     }
-
+    
     private String getCodeNameBaseValue() {
         return codeNameBaseValue.getText().trim();
     }
     
     private String getBundleValue() {
         return bundleValue.getText().trim();
+    }
+    
+    private String getLayerValue() {
+        return layerValue.getText().trim();
     }
     
     /** This method is called from within the constructor to
