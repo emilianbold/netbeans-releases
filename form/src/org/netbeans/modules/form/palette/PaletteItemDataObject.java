@@ -28,7 +28,6 @@ import org.openide.xml.XMLUtil;
 import org.openide.actions.*;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.project.ClassSource;
@@ -182,10 +181,6 @@ class PaletteItemDataObject extends MultiDataObject {
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
         }
-    }
-
-    private void saveFile() {
-        // TBD
     }
 
     /**
