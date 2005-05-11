@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert;
@@ -46,8 +47,13 @@ import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -423,6 +429,38 @@ public final class Actions implements ActionProvider {
         actions.add(CommonProjectActions.closeProjectAction());
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
+        
+        // honor #57874 contract, see #58624:
+        try {
+            Repository repository  = Repository.getDefault();
+            FileSystem sfs = repository.getDefaultFileSystem();
+            FileObject fo = sfs.findResource("Projects/Actions");  // NOI18N
+            
+            if (fo != null) {
+                DataObject dobj = DataObject.find(fo);
+                FolderLookup actionRegistry = new FolderLookup((DataFolder) dobj);
+                Lookup.Template query = new Lookup.Template(Object.class);
+                Lookup lookup = actionRegistry.getLookup();
+                Iterator it = lookup.lookup(query).allInstances().iterator();
+                
+                if (it.hasNext()) {
+                    actions.add(null);
+                }
+                
+                while (it.hasNext()) {
+                    Object next = it.next();
+                    if (next instanceof Action) {
+                        actions.add(next);
+                    } else if (next instanceof JSeparator) {
+                        actions.add(null);
+                    }
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            // data folder for exitinf fileobject expected
+            ErrorManager.getDefault().notify(ex);
+        }
+        
         actions.add(null);
         actions.add(SystemAction.get(ToolsAction.class));
         actions.add(null);
