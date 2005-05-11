@@ -510,6 +510,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         jPanel2.add(rMIPortJTextField, gridBagConstraints);
 
         rMIJCheckBox.setToolTipText("");
+        rMIJCheckBox.setName("rMIJCheckBox");
         rMIJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rMIJCheckBoxActionPerformed(evt);
