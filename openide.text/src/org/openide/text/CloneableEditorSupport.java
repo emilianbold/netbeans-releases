@@ -789,7 +789,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     // update cached info about lines
                     updateLineSet(true);
-                    updateTitles();
+                    // updateTitles(); radim #58266
                 } catch (IOException e) {
                     this.ex = e;
                 }
