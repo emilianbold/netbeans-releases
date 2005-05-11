@@ -37,6 +37,7 @@ public final class Install extends ModuleInstall {
                 public Object run() {
                     EditableProperties p = PropertyUtils.getGlobalProperties();
                     p.setProperty("netbeans.dest.dir", install.getAbsolutePath()); // NOI18N
+                    p.setProperty("harness.dir", "${netbeans.dest.dir}/harness"); // NOI18N
                     try {
                         PropertyUtils.putGlobalProperties(p);
                     } catch (IOException e) {
