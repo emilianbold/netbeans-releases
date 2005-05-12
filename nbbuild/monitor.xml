@@ -154,7 +154,7 @@ an exception can be made for your code so you do not get further mail about it.
         <exclude name="editor/src/org/netbeans/modules/editor/resources/DTDs/"/>
         <exclude name="**/external/"/>
         <exclude name="contrib/**/external/"/>
-        <external name="web/examples/"/>
+        <exclude name="web/examples/"/>
       </cvsfileset>
     </checklicense>
     <echo message="Now looking for copyrighted documentation..."/>
