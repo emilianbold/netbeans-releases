@@ -54,6 +54,7 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.Properties;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadGroupImpl;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -84,6 +85,7 @@ import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.ErrorManager;
 
 
 /**
@@ -517,10 +519,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 } finally {
                     enableAllBreakpoints (l);
                 }
-            } catch (Throwable e) {
+            } catch (EvaluationException e) {
                 InvalidExpressionException iee = new InvalidExpressionException (e);
                 iee.initCause (e);
                 throw iee;
+            } catch (IncompatibleThreadStateException itsex) {
+                ErrorManager.getDefault().notify(itsex);
+                IllegalStateException isex = new IllegalStateException(itsex.getLocalizedMessage());
+                isex.initCause(itsex);
+                throw isex;
             }
         }
     }
