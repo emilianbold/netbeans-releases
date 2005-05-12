@@ -104,37 +104,6 @@ class Util {
     }
     
     /**
-     * Search for an XML element in the direct children of a parent.
-     * DOM provides a similar method but it does a recursive search
-     * which we do not want. It also gives a node list and we want
-     * only one result.
-     * @param parent a parent element
-     * @param name the intended local name
-     * @param namespace a list of possible intended namespaces (not null or empty, but one element may be null)
-     * @return the one child element with that name, or null if none or more than one
-     */
-    public static Element findElement(Element parent, String name, String[] namespaces) {
-        Collection/*<String>*/ _namespaces = Arrays.asList(namespaces);
-        Element result = null;
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element)l.item(i);
-                if ((_namespaces.contains(null) && name.equals(el.getTagName())) ||
-                    (name.equals(el.getLocalName()) &&
-                     _namespaces.contains(el.getNamespaceURI()))) {
-                    if (result == null) {
-                        result = el;
-                    } else {
-                        return null;
-                    }
-                }
-            }
-        }
-        return result;
-    }
-    
-    /**
      * Extract nested text from an element.
      * Currently does not handle coalescing text nodes, CDATA sections, etc.
      * @param parent a parent element

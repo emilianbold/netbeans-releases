@@ -137,7 +137,7 @@ final class NbModuleProject implements Project {
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
             Element ecu = (Element) entry.getValue();
-            Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACES_SHARED); // NOI18N
+            Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
             String pkgrootS = Util.findText(pkgrootEl);
             FileObject pkgroot = (FileObject) entry.getKey();
             sourcesHelper.addTypedSourceRoot(pkgrootS, JavaProjectConstants.SOURCES_TYPE_JAVA, /* XXX should schema incl. display name? */pkgroot.getNameExt(), null, null);
@@ -186,19 +186,8 @@ final class NbModuleProject implements Project {
         return helper.getProjectDirectory();
     }
     
-    /**
-     * Use instead of {@link AntProjectHelper#getPrimaryConfigurationData}
-     * to handle /1 -> /2 upgrade.
-     */
     public Element getPrimarySharedConfigurationData() {
-        // A little bit backwards, but easiest: APH.gPCD never returns null.
-        // Do not look for AuxiliaryConfiguration in lookup, as this method can be called from the constructor.
-        Element e = getHelper().createAuxiliaryConfiguration().
-            getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_OLD, true);
-        if (e == null) {
-            e = getHelper().getPrimaryConfigurationData(true);
-        }
-        return e;
+        return getHelper().getPrimaryConfigurationData(true);
     }
     
     public FileObject getManifestFile() {
@@ -300,9 +289,9 @@ final class NbModuleProject implements Project {
      * Should be similar to impl in ParseProjectXml.
      */
     private String computeModuleClasspath(PropertyEvaluator baseEval) {
-        Element data = getPrimarySharedConfigurationData();
+        Element data = getHelper().getPrimaryConfigurationData(true);
         Element moduleDependencies = Util.findElement(data,
-            "module-dependencies", NbModuleProjectType.NAMESPACES_SHARED); // NOI18N
+            "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
         Iterator it = deps.iterator();
         StringBuffer cp = new StringBuffer();
@@ -310,11 +299,11 @@ final class NbModuleProject implements Project {
         while (it.hasNext()) {
             Element dep = (Element)it.next();
             if (Util.findElement(dep, "compile-dependency", // NOI18N
-                    NbModuleProjectType.NAMESPACES_SHARED) == null) {
+                    NbModuleProjectType.NAMESPACE_SHARED_NEW) == null) {
                 continue;
             }
             Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                NbModuleProjectType.NAMESPACES_SHARED);
+                NbModuleProjectType.NAMESPACE_SHARED_NEW);
             String cnb = Util.findText(cnbEl);
             ModuleList.Entry module = ml.getEntry(cnb);
             if (module == null) {
@@ -395,8 +384,8 @@ final class NbModuleProject implements Project {
     }
     
     public String getCodeNameBase() {
-        Element config = getPrimarySharedConfigurationData();
-        Element cnb = Util.findElement(config, "code-name-base", NbModuleProjectType.NAMESPACES_SHARED); // NOI18N
+        Element config = getHelper().getPrimaryConfigurationData(true);
+        Element cnb = Util.findElement(config, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
         if (cnb != null) {
             return Util.findText(cnb);
         } else {
@@ -473,8 +462,8 @@ final class NbModuleProject implements Project {
     }
     
     private boolean supportsFeature(String name) {
-        Element config = getPrimarySharedConfigurationData();
-        return Util.findElement(config, name, NbModuleProjectType.NAMESPACES_SHARED) != null;
+        Element config = getHelper().getPrimaryConfigurationData(true);
+        return Util.findElement(config, name, NbModuleProjectType.NAMESPACE_SHARED_NEW) != null;
     }
     
     /**
@@ -484,11 +473,11 @@ final class NbModuleProject implements Project {
     public Map/*<FileObject,Element>*/ getExtraCompilationUnits() {
         if (extraCompilationUnits == null) {
             extraCompilationUnits = new HashMap();
-            Iterator/*<Element>*/ ecuEls = Util.findSubElements(getPrimarySharedConfigurationData()).iterator();
+            Iterator/*<Element>*/ ecuEls = Util.findSubElements(getHelper().getPrimaryConfigurationData(true)).iterator();
             while (ecuEls.hasNext()) {
                 Element ecu = (Element) ecuEls.next();
                 if (ecu.getLocalName().equals("extra-compilation-unit")) { // NOI18N
-                    Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACES_SHARED); // NOI18N
+                    Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
                     String pkgrootS = Util.findText(pkgrootEl);
                     String pkgrootEval = evaluator().evaluate(pkgrootS);
                     FileObject pkgroot = getHelper().resolveFileObject(pkgrootEval);

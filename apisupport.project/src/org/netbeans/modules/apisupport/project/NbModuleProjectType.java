@@ -26,12 +26,7 @@ public final class NbModuleProjectType implements AntBasedProjectType {
     
     static final String TYPE = "org.netbeans.modules.apisupport.project"; // NOI18N
     static final String NAME_SHARED = "data"; // NOI18N
-    static final String NAMESPACE_SHARED_OLD = "http://www.netbeans.org/ns/nb-module-project/1"; // NOI18N
     static final String NAMESPACE_SHARED_NEW = "http://www.netbeans.org/ns/nb-module-project/2"; // NOI18N
-    static final String[] NAMESPACES_SHARED = {
-        NAMESPACE_SHARED_OLD,
-        NAMESPACE_SHARED_NEW,
-    };
     private static final String NAME_PRIVATE = "data"; // NOI18N
     private static final String NAMESPACE_PRIVATE = "http://www.netbeans.org/ns/nb-module-project-private/1"; // NOI18N
     
