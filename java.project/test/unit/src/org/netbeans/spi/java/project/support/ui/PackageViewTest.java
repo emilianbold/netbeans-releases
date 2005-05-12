@@ -50,27 +50,20 @@ public class PackageViewTest extends NbTestCase {
         super( name );
     }
     
+    private FileObject root;
+    
     protected void setUp() throws Exception {
         super.setUp();
-        // XXX causes problems: DataObjectNotFoundException when finding nodes
-        // for folders which do not in fact exist on disk.
-        // Maybe due to differences of behavior between LocalFileSystem and MasterFileSystem?
-        /*
-        TestUtil.setLookup(new Object[] {
-            new VQImpl(),
-        });
-         */
+        // XXX *sometimes* (maybe 2/3 of the time) fails when you do this; no idea why:
+        //TestUtil.setLookup(new Object[] {new VQImpl()});
+        // Get "Wrong # or names of nodes expected:<[c.d, c.f, p.me.toolsx]> but was:<[c.d, c.f, p.me.tools, p.me.toolsx]>"
+        // from testRename after call to n.setName("p.me.toolsx")
+        // This however seems to work all the time:
         TestUtil.setLookup( Lookups.fixed( new Object[] { new VQImpl(), PackageViewTest.class.getClassLoader() } ) ); 
-        clearWorkDir();
+        root = TestUtil.makeScratchDir(this);
     }
     
     public void testFolders() throws Exception {
-        
-        // Prepare test data
-        FileObject root = TestUtil.makeScratchDir( this );
-        // System.out.println("root " + root.getFileSystem().getClass() );
-        
-        
         assertNull( "source folder should not exist yet", root.getFileObject( "src" ) );
         
         
@@ -313,12 +306,6 @@ public class PackageViewTest extends NbTestCase {
     }
     
     public void testDefaultPackage() throws Exception {
-        
-        // Prepare test data
-        FileObject root = TestUtil.makeScratchDir( this );
-        // System.out.println("root " + root.getFileSystem().getClass() );
-        
-        
 	// Create children        
         SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
         Children ch = PackageView.createPackageView( group ).getChildren();
@@ -356,9 +343,6 @@ public class PackageViewTest extends NbTestCase {
     }
     
     public void testNodeDestroy() throws Exception {
-        // Prepare test data
-        FileObject root = TestUtil.makeScratchDir( this );
-                
 	FileObject srcRoot;
         FileObject toDelete;
         SourceGroup group;
@@ -475,14 +459,7 @@ public class PackageViewTest extends NbTestCase {
         assertNodes(rootNode.getChildren(), new String[] { "a" },true );
     }
     
-    
     public void testFindPath() throws Exception {
-        
-        // Prepare test data
-        FileObject root = TestUtil.makeScratchDir( this );
-        // System.out.println("root " + root.getFileSystem().getClass() );
-        
-        
 	// Create children        
         SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
         Node sourceRoot = PackageView.createPackageView( group );
@@ -541,13 +518,12 @@ public class PackageViewTest extends NbTestCase {
     
     public void testCopyPaste () throws Exception {
         //Setup 2 sourcegroups
-        FileObject workDirFo = TestUtil.makeScratchDir( this );        
-        FileObject root1 = workDirFo.createFolder("src1");
+        FileObject root1 = root.createFolder("src1");
         FileObject tmp = root1.createFolder ("src1test1");
         root1.createFolder ("src1test2");
         createFile(tmp, "src1test1", "File1");
         createFile(tmp, "src1test1", "File2");
-        FileObject root2 = workDirFo.createFolder("src2");
+        FileObject root2 = root.createFolder("src2");
         SourceGroup group1 = new SimpleSourceGroup(root1);
         SourceGroup group2 = new SimpleSourceGroup(root2);
         Node rn1 = PackageView.createPackageView( group1 );        
@@ -714,13 +690,7 @@ public class PackageViewTest extends NbTestCase {
         }
     }
     
-    
     public void testRename() throws Exception {
-        // Prepare test data
-        FileObject root = TestUtil.makeScratchDir( this );
-        // System.out.println("root " + root.getFileSystem().getClass() );
-        
-        
         assertNull( "source folder should not exist yet", root.getFileObject( "src" ) );
         
         
@@ -811,7 +781,8 @@ public class PackageViewTest extends NbTestCase {
         n.setName( "p.me.toolsx" );
         assertNodes( ch, 
                      new String[] { "c.d", "c.f", "p.me.toolsx" },
-                     new int[] { 0, 0, 0 } );
+                     new int[] { 0, 0, 0 },
+                     true);
         n = ch.findChild( "p.me.toolsx" );
         n.setName( "p.me.tools" );
         assertNodes( ch,
@@ -819,24 +790,27 @@ public class PackageViewTest extends NbTestCase {
                      new int[] { 0, 0, 0 } );
     }
 
-    public static void assertNodes( Children children, String[] nodeNames, boolean optimalResult ) {
+    private static void assertNodes( Children children, String[] nodeNames, boolean optimalResult ) {
         assertNodes( children, nodeNames, null, optimalResult );
     }
 
-    public static void assertNodes( Children children, String[] nodeNames ) {
+    private static void assertNodes( Children children, String[] nodeNames ) {
         assertNodes( children, nodeNames, null, false );
     }
 
-    public static void assertNodes (Children children, String[] nodeNames, int[] childCount) {
+    private static void assertNodes (Children children, String[] nodeNames, int[] childCount) {
         assertNodes(children, nodeNames, childCount, false);
     }
 
-    public static void assertNodes( Children children, String[] nodeNames, int[] childCount, boolean optimalResult ) {
+    private static void assertNodes( Children children, String[] nodeNames, int[] childCount, boolean optimalResult ) {
         Node[] nodes = children.getNodes (optimalResult);
-        assertEquals( "Wrong number of nodes.", nodeNames.length, nodes.length );
+        String[] actualNodeNames = new String[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            actualNodeNames[i] = nodes[i].getDisplayName();
+        }
+        assertEquals("Wrong # or names of nodes", Arrays.asList(nodeNames), Arrays.asList(actualNodeNames));
         
         for( int i = 0; i < nodeNames.length; i++ ) {
-            assertEquals( "Wrong node name on index " + i + ": " + nodes[i].getDisplayName(), nodeNames[i], nodes[i].getDisplayName() );
             if ( childCount != null ) {
                 if ( childCount[i] == 0 ) {
                     assertEquals( "Node should be leaf", true, nodes[i].isLeaf() );
@@ -871,7 +845,7 @@ public class PackageViewTest extends NbTestCase {
         }
     }
     
-    public static void assertNode( Node n, String name ) {
+    private static void assertNode( Node n, String name ) {
         
         if ( name != null ) {
             assertNotNull( "Node " + name +" not found", n  );
@@ -883,7 +857,7 @@ public class PackageViewTest extends NbTestCase {
         
     }
     
-    public static void assertFileObjects( FileObject folder, String[] names ) {
+    private static void assertFileObjects( FileObject folder, String[] names ) {
         
         assertTrue( "Has to be a folder ", folder.isFolder() );
         
