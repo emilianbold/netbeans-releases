@@ -71,6 +71,14 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider implemen
                     );
                     return;
                 }
+                if (!t.isSuspended()) {
+                    setEnabled (
+                        ActionsManager.ACTION_POP_TOPMOST_CALL,
+                        false
+                    );
+                }
+                // TODO the thread can be resumed at any time!
+                // This can still throw VMDisconnectedException when thread is resumed!
                 setEnabled (
                     ActionsManager.ACTION_POP_TOPMOST_CALL,
                     t.getStackDepth () > 1

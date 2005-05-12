@@ -119,13 +119,6 @@ implements Executor {
                         ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
                             getCurrentThread ()).getThreadReference ();
                         removeStepRequests (tr);
-                        StackFrame sf;
-                        try {
-                            sf = tr.frame (0);
-                        } catch (java.lang.IndexOutOfBoundsException e) {
-                            return; //No frame -> step after thread breakpoint; PATCH 56540
-                        }
-                        Location l = sf.location ();
 
                         // 2) create new step request
                         stepRequest = getDebuggerImpl ().getVirtualMachine ().
@@ -143,8 +136,6 @@ implements Executor {
 
                         // 3) resume JVM
                         getDebuggerImpl ().resume ();
-                    } catch (IncompatibleThreadStateException e) {
-                        ErrorManager.getDefault().notify(e);
                     } catch (VMDisconnectedException e) {
                         ErrorManager.getDefault().notify(ErrorManager.USER,
                             ErrorManager.getDefault().annotate(e,

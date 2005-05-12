@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
@@ -466,9 +467,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (csf != null)
                 return evaluateIn (expression, csf.getStackFrame ());
             //PATCH 48174
-            if (altCSF != null)
-                return evaluateIn (expression, altCSF);
-            
+            if (altCSF != null) {
+                try {
+                    if (!altCSF.thread().isSuspended()) {
+                        altCSF = null; // Already invalid
+                    } else {
+                        // TODO XXX : Can be resumed in the mean time !!!!
+                        return evaluateIn (expression, altCSF);
+                    }
+                } catch (InvalidStackFrameException isfex) {
+                    // Will be thrown when the altCSF is invalid
+                    altCSF = null; // throw it
+                }
+            }
             throw new InvalidExpressionException
                     ("No current context (stack frame)");
             

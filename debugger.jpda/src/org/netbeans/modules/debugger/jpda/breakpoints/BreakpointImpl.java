@@ -198,6 +198,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             //PATCH 48174
             resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || resume;
         }
+        getDebugger().setAltCSF(null);
         if (!resume) {
             DebuggerManager.getDebuggerManager().setCurrentSession(session);
             getDebugger ().setStoppedState (thread);
