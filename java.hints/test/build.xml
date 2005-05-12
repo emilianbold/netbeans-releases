@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="java hints tests build script" basedir="." default="all">
+
+    <property name="xtest.module" value="java/hints"/>
+
+    <!-- options for logging gj trees to files - set the correct dump directory if you use want to use this option -->
+    <!-- <property name="xtest.ide.commandline.suffix" value="-J-Dgjast.dump.trees=true -J-Dtest.dump.dir=/tmp/javacore/test/test_dumps"/> -->
+    <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.modules.java.hints.experimental=true"/>
+    
+    <import file="../../../nbbuild/templates/xtest.xml"/>
+    
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
+    <property name="xtest.testtype" value="qa-functional"/>
+    <property name="xtest.attribs" value="full"/>
+</project>
+
