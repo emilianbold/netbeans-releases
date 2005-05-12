@@ -7,24 +7,26 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.masterfs.filebasedfs;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.actions.SystemAction;
-import org.openide.ErrorManager;
-
-import java.io.File;
-import java.util.*;
-
 
 /**
  * @author Radek Matous
@@ -119,7 +121,7 @@ public final class FileBasedFileSystem extends FileSystem {
         stopWatch.stop();
 	
         // print refresh stats unconditionally in trunk
-        ErrorManager.getDefault().log(ErrorManager.WARNING,
+        ErrorManager.getDefault().getInstance("org.netbeans.modules.masterfs.REFRESH").log(
             "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
             Statistics.REFRESH_FS.toString() + "\n  " +
             Statistics.LISTENERS_CALLS.toString() + "\n  " + 
