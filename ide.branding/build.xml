@@ -121,6 +121,12 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       basedir="core/windows/src"
       jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/org-netbeans-core-windows.jar"
     />
+
+    <locjar 
+      basedir="autoupdate/libsrc"
+      jarfile="${netbeans.dest.dir}/${cluster.dir}/core/updater.jar"
+    />
+
   </target>
 
   <target name="nbm" depends="netbeans" description="Create Localized NBM's">
