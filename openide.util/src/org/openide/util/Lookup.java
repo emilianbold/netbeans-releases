@@ -32,11 +32,11 @@ import java.util.*;
  * <p>
  * For a general talk about the idea behind the lookup pattern please see
  * <UL>
- *      <LI><a href="http://openide.netbeans.org/lookup/">The Solution to Comunication Between Components</a>
+ *      <LI><a href="lookup/doc-files/index.html">The Solution to Comunication Between Components</a>
  *      page
- *      <LI>the introduction to the <a href="http://openide.netbeans.org/lookup/lookup-api.html">lookup API via
+ *      <LI>the introduction to the <a href="lookup/doc-files/lookup-api.html">lookup API via
  *      use cases</a>
- *      <LI>the examples of <a href="http://openide.netbeans.org/lookup/lookup-spi.html">how to write your own lookup</a>
+ *      <LI>the examples of <a href="lookup/doc-files/lookup-spi.html">how to write your own lookup</a>
  * </UL>
  *
  * @see org.openide.util.lookup.AbstractLookup

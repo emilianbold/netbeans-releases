@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
+  <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
+]>
+
+<api-answers
+  question-version="1.25"
+  module="Utilities"
+  author="jtulach@netbeans.org"
+>
+
+  &api-questions;
+
+ <answer id="arch-overall">
+  <p>
+    This module contains general classes needed in NetBeans, extensions to
+    basic JRE contepts, useful methods and other 
+    <api group="java" name="UtilitiesAPI" category="official" type="export" url="@TOP@/org/openide/util/doc-files/api.html" /> 
+    classes.
+  </p>
+  
+  <p>
+    Also this module defines the <a href="@TOP@/org/openide/util/Lookup.html">
+    Lookup</a> which the NetBeans way for dynamic registration 
+    and lookup of 
+    components in our modularized component system. It allows lookup and discovery 
+    of features by description of their interfaces. The classes are devided 
+    into two parts. The 
+    <api group="java" name="LookupAPI" type="export" category="official" url="@TOP@/org/openide/util/lookup/doc-files/lookup-api.html">
+    allows the discovery</api> and the 
+    <api group="java" name="LookupSPI" type="export" category="official" url="@TOP@/org/openide/util/lookup/doc-files/lookup-spi.html">
+    simplifies creation and registration of own lookup objects</api>.
+  </p>
+ </answer>
+
+
+ <answer id="arch-quality">
+  <p>
+   There is a lot of unit tests in 
+   <a href="http://www.netbeans.org/source/browse/openide/util/test/unit/src/">CVS</a>.
+  </p>
+ </answer>
+
+ <answer id="arch-time">
+  <p>
+   The module has been around since 1997 and is stilly improved
+   from time to time.
+  </p>
+ </answer>
+
+
+
+ <answer id="arch-usecases">
+  
+    There is a great introduction to Lookup and its usage in its 
+    <a href="@TOP@/org/openide/util/Lookup.html">javadoc</a>. Here is just
+    a list of frequently asked or interesting questions slowly expanding as
+    people ask them:
+    
+    <h3>Lookup faq:</h3>
+    
+    <usecase id="lookup-on-certain-platform" name="How to specify that a service in Lookup should be available only on Windows?" >
+<em><b>Q:</b>
+Most of the time I specify interfaces that I want to add to the Lookup class in the layer.xml file. 
+But, let's say I have a platform-specific interface (something on Windows only, for instance).</em>
+<p>
+<em>
+How can I specify (in the xml, or programmatically) that this service should only be added to the Lookup if the platform is Windows?
+</em>>
+</p>
+In general there are three ways to achieve this.
+<ul>
+    <li><p>It is possible to write a specific module and enable it only on windows.
+    See <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-os-specific">os specific modules</a> documentation.
+    Then you can put a registration of your instance into your module's 
+    <a href="@TOP@/org/openide/util/doc-files/api.html#service-lookup">META-INF/services</a> directory and it 
+    will be available only on Windows.</p>
+    </li>
+    
+    <li><p>Another possibility that does not require new module, but which executes 
+    a code on startup (which may have performance implications) is to use <code>methodvalue</code>
+    attribute. Register your instance in layer using <code>your-Object.instance</code> file
+    as described at 
+    <a href="@TOP@/org/openide/util/doc-files/api.html#ido-methodvalue">services
+    </a> documentation and in your factory method either return the instance 
+    your want or <code>null</code> depending on result of <a href="@TOP@/org/openide/util/Utilities.html#isWindows()">
+    Utilities.isWindows()</a> call.</p>
+    </li>
+                <li>
+                    <p>
+                        In some cases, the interface for which you will register an implementation permits a
+                        no-operation semantics. For example, <code>InstalledFileLocator.locate(...)</code> can
+                        return a valid <code>File</code>, or null. You could always register an
+                        <code>InstalledFileLocator</code> instance yet disable it on non-Windows platforms
+                        (always returning null).
+                    </p>
+                </li>
+</ul>
+
+    </usecase>
+    
+    <usecase id="lookup-extension-point" name="How shall I write an extension point for my module?" >
+    <p>
+        <em><b>Q:</b>
+        I have more modules one of them providing the core functionality and
+        few more that wish to extend it. What is the right way to do it?
+        How does the Netbeans platform declare such extension point? 
+        </em>
+    </p>
+
+    <p>
+    
+    Start with declaring an extension interface in your
+    core module and put it into the module's <em>public packages</em>. Imagine
+    for example that the core module is in JAR file <code>org-my-netbeans-coremodule.jar</code>
+    and already contains in manifests line like 
+    <code>OpenIDE-Module: org.my.netbeans.coremodule/1</code> and wants 
+    to display various tips of the day provided by other modules and thus defines:
+    </p><pre> 
+<span class="java-keywords">package</span> <span class="java-identifier">org</span><span class="java-operators">.</span><span class="java-identifier">my</span><span class="java-operators">.</span><span class="java-identifier">netbeans</span><span class="java-operators">.</span><span class="java-identifier">coremodule</span><span class="java-operators">;</span>
+
+<span class="java-keywords">public</span> <span class="java-keywords">interface</span> <span class="java-identifier">TipsOfTheDayProvider</span> <span class="java-operators">{</span>
+    <span class="java-keywords">public</span> <span class="java-identifier">String</span> <span class="java-layer-method">provideTipOfTheDay</span> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">;</span>
+<span class="java-operators">}</span>
+</pre><p>
+    And in its manifest adds line 
+    <code>OpenIDE-Module-Public-Packages: org.my.netbeans.coremodule.*</code>
+    to specify that this package contains exported API and shall be 
+    accessible to other modules.
+    </p>
+    <p>
+    When the core module is about to display the tip of the day it can ask
+    the system for all registered instances of the <code>TipsOfTheDayProvider</code>,
+    randomly select one of them:
+    </p><pre>
+<span class="java-keywords">import</span> <span class="java-identifier">java</span><span class="java-operators">.</span><span class="java-identifier">util</span><span class="java-operators">.</span><span class="java-identifier">Collection</span><span class="java-operators">;</span>
+<span class="java-keywords">import</span> <span class="java-identifier">java</span><span class="java-operators">.</span><span class="java-identifier">util</span><span class="java-operators">.</span><span class="java-identifier">Collections</span><span class="java-operators">;</span>
+<span class="java-keywords">import</span> <span class="java-identifier">org</span><span class="java-operators">.</span><span class="java-identifier">openide</span><span class="java-operators">.</span><span class="java-identifier">util</span><span class="java-operators">.</span><span class="java-identifier">Lookup</span><span class="java-operators">;</span>
+
+<a href="@TOP@org/openide/util/Lookup.Result.html"><span class="java-identifier">Lookup</span><span class="java-operators">.</span><span class="java-identifier">Result</span></a> <span class="java-identifier">result</span> <span class="java-operators">=</span> <a href="@TOP@org/openide/util/Lookup.html"><span class="java-identifier">Lookup</span></a><span class="java-operators">.</span><span class="java-layer-method">getDefault</span> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">.</span><span class="java-layer-method">lookup</span> <span class="java-operators">(</span><span class="java-keywords">new</span> <a href="@TOP@org/openide/util/Lookup.Template.html"><span class="java-identifier">Lookup</span><span class="java-operators">.</span><span class="java-layer-method">Template</span></a> <span class="java-operators">(</span><span class="java-identifier">TipsOfTheDayProvider</span><span class="java-operators">.</span><span class="java-keywords">class</span><span class="java-operators">)</span><span class="java-operators">)</span><span class="java-operators">;</span>
+<span class="java-identifier">Collection</span> <span class="java-identifier">c</span> <span class="java-operators">=</span> <span class="java-identifier">result</span><span class="java-operators">.</span><a href="@TOP@org/openide/util/Lookup.Result.html#allInstances()"><span class="java-layer-method">allInstances</span></a> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">;</span>
+<span class="java-identifier">Collections</span><span class="java-operators">.</span><span class="java-layer-method">shuffle</span> <span class="java-operators">(</span><span class="java-identifier">c</span><span class="java-operators">)</span><span class="java-operators">;</span>
+<span class="java-identifier">TipsOfTheDayProvider</span> <span class="java-identifier">selected</span> <span class="java-operators">=</span> <span class="java-operators">(</span><span class="java-identifier">TipsOfTheDayProvider</span><span class="java-operators">)</span><span class="java-identifier">c</span><span class="java-operators">.</span><span class="java-layer-method">iterator</span> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">.</span><span class="java-layer-method">next</span> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">;</span>
+</pre><p>    
+    and then display the tip. Simple, trivial, just by the usage of 
+    <a href="@TOP@org/openide/util/Lookup.html">Lookup</a> interface once 
+    creates a registry that other modules can enhance. But such enhancing 
+    of course requires work on the other side. Each module that would like
+    to register its <code>TipsOfTheDayProvider</code> needs to depend on the 
+    core module - add 
+    <code>OpenIDE-Module-Module-Dependencies: org.my.netbeans.coremodule/1</code>
+    into its manifest and write a class with its own implementation of the
+    provider:</p><pre>
+<span class="java-keywords">package</span> <span class="java-identifier">org</span><span class="java-operators">.</span><span class="java-identifier">my</span><span class="java-operators">.</span><span class="java-identifier">netbeans</span><span class="java-operators">.</span><span class="java-identifier">extramodule</span><span class="java-operators">;</span>
+
+<span class="java-keywords">class</span> <span class="java-identifier">ExtraTip</span> <span class="java-keywords">implements</span> <span class="java-identifier">TipsOfTheDayProvider</span> <span class="java-operators">{</span>
+    <span class="java-keywords">public</span> <span class="java-identifier">String</span> <span class="java-layer-method">provideTipOfTheDay</span> <span class="java-operators">(</span><span class="java-operators">)</span> <span class="java-operators">{</span>
+        <span class="java-keywords">return</span> <span class="java-string-literal">"Do you know that in order to write extension point you should use Lookup?"</span><span class="java-operators">;</span>
+    <span class="java-operators">}</span>
+<span class="java-operators">}</span>
+</pre><p>
+    Then, the only necessary thing is to register such class by using the 
+    J2SE standard <api name="ProviderRegistrationMechanism"
+  type="import"
+  category="standard"
+  group="java" /> into plain text file
+    <code>META-INF/services/org.my.netbeans.coremodule.TipsOfTheDayProvider</code>
+    in the module JAR containing just one line: </p><pre>
+org.my.netbeans.extramodule.ExtraTip
+</pre><p>    
+    and your modules are now ready to communicate
+    using your own <em>extension point</em>.
+    </p>
+    
+    </usecase>
+    
+
+ </answer>
+
+
+
+ <answer id="arch-what">
+  <p>
+    Described in the <a href="@TOP@/architecture-summary.html#answer-arch-overall">overall</a> answer.
+  </p>
+ </answer>
+
+
+
+ <answer id="compat-i18n">
+  <p>
+   There is not much things to localize in this module, so it is properly localized.
+   But it is good to note that the module adds <api name="BrandingSupport" category="official" group="property" type="export" url="@TOP@/org/openide/util/NbBundle.html">
+   which is similar to localization but also supports changes of resorces 
+   for application build on top of NetBeans. This is handled by our
+   class <a href="@TOP@/org/openide/util/NbBundle.html">NbBundle</a> which 
+   reimplements the JDK's standard <a href="@JDK@/java/util/ResourceBundle.html">ResourceBundle</a>
+   to to take branding into the consideration.
+   </api>. 
+  </p>
+ </answer>
+
+
+
+ <answer id="compat-standards">
+  <p>
+    The default lookup registration follows the JDK's 
+    <api name="ProviderRegistrationMechanism"
+      type="import"
+      category="standard"
+      url="http://java.sun.com/j2se/1.3/docs/guide/jar/jar.html#Provider%20Configuration%20File"
+      group="java" 
+    />
+    but enhances it to also support the 
+    <api 
+      name="ProviderRegistrationRemoval" 
+      type="export" 
+      category="devel" 
+      url="@TOP@/org/openide/util/doc-files/api.html#service-lookup"
+      group="java" 
+    />. 
+  </p>
+ </answer>
+
+ <answer id="compat-version">
+  <p>
+   This module has no settings. 
+  </p>
+ </answer>
+
+
+
+ <answer id="dep-jre">
+  <p>
+   Currently JRE 1.4 is needed.
+  </p>
+ </answer>
+
+
+
+ <answer id="dep-jrejdk">
+  <p>
+   JRE is enough.
+  </p>
+ </answer>
+
+
+ <answer id="dep-nb">
+  <p>
+   This module is independent of other NetBeans modules and can be used 
+   independently. For better interaction with UI parts of NetBeans it however
+   indirectly communicates with <a href="@org-openide-awt@/overview-summary.html">UI Utilities</a>
+   module using <api name="AWTBridge" category="private" group="java" type="export" 
+   url="http://www.netbeans.org/source/browse/openide/util/src/org/netbeans/modules/openide/util/AWTBridge.java">
+   a class that is looked up in <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+   and if registered can provide better UI elements for <a href="@JDK@/javax/swing/Action.html">Action</a>s.
+   </api>
+   
+  </p>
+ </answer>
+
+ <answer id="dep-non-nb">
+  <p>
+   Reexports XML APIs so needs some XML parser implementation, but as one 
+   is provided in any 1.4 java, it in fact has no dependencies except on JRE. 
+  </p>
+ </answer>
+
+ <answer id="dep-platform">
+  <p>
+   Platform independent.
+  </p>
+ </answer>
+
+
+ <answer id="deploy-dependencies">
+  <p>
+  OpenIDE-Module-Module-Dependencies: org.openide.util > @SPECIFICATION-VERSION@
+  </p>
+ </answer>
+
+
+
+ <answer id="deploy-jar">
+  <p>
+   <api category="devel" group="java.io.File" name="FileLocation" type="export" >
+   the JAR file is located in platform cluster under <code>lib/org-openide-util.jar</code>
+   </api>.
+  </p>
+ </answer>
+
+
+
+ <answer id="deploy-nbm">
+  <p>
+   No reason to not deploy nbm.
+  </p>
+ </answer>
+
+
+ <answer id="deploy-packages">
+  <p>
+   Yes, public packages declared.
+  </p>
+ </answer>
+
+
+
+ <answer id="deploy-shared">
+  <p>
+   Module is on real java classpath and as such it has to be in the shared directory.
+  </p>
+ </answer>
+
+
+ <answer id="exec-ant-tasks">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+ <answer id="exec-classloader">
+  <p>
+   No, we do not create own classloader.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="exec-component" when="impl">
+            Is execution of your code influenced by any (string) property
+            of any of your components?
+            
+            <hint>
+            Often <code>JComponent.getClientProperty</code>, <code>Action.getValue</code>
+            or <code>PropertyDescriptor.getValue</code>, etc. are used to influence
+            a behavior of some code. This of course forms an interface that should
+            be documented. Also if one depends on some interface that an object
+            implements (<code>component instanceof Runnable</code>) that forms an
+            API as well.
+            </hint>
+        </question>
+-->
+ <answer id="exec-component">
+  <ul>
+    <li><api name="HelpID" category="standard" group="property" type="export" url="@TOP@/org/openide/util/HelpCtx.html">
+        read from <a href="@JDK@/javax/swing/JComponent.html">JComponent</a>.getClientProperty
+        to simulate the standard javahelp behaviour and extract the help id for given component.
+        </api>
+    </li>
+
+    <li><api name="iconBase" category="standard" group="property" type="import" >
+        <a href="@TOP@/org/openide/util/actions/SystemAction.html">SystemAction</a> 
+        reacts to expected requests from <a href="@org-openide-awt@/overview-summary.html">UI Utilities</a>
+        module for <code>iconBase</code> property by returning value based on its
+        result of its <code>iconResource()</code> method.
+        </api>
+    </li>
+        
+    <li>
+        <api name="org.openide.util.SharedClassObject.initialize" category="private" group="property" type="export">
+        For purposes of 
+        <a href="@org-openide-options@/org/openide/options/SystemOption.html">SystemOption</a>
+        the
+        <a href="@TOP@/org/openide/util/SharedClassObject.html">SharedClassObject</a>
+        handles
+        <code>getProperty ("org.openide.util.SharedClassObject.initialize")</code> 
+        in a special way, by returning 
+        <code>null</code> if initialization is not running and <code>Boolean.TRUE</code> if 
+        it is.
+        </api>
+    </li>
+    
+    <li><api name="OpenIDE-Transmodal-Action" category="devel" group="property" type="export" >
+        <a href="@TOP@/org/openide/util/actions/CallbackSystemAction.html">CallbackSystemAction</a> 
+        checks whether <code>action.getValue("OpenIDE-Transmodal-Action")</code>
+        returns <code>Boolean.TRUE</code> to enable it in dialogs, otherwise
+        the action is disabled when there is an open dialog.
+        </api>
+    </li>
+    
+    
+  </ul>
+ </answer>
+
+
+
+<!--
+        <question id="exec-introspection" when="impl">
+            Does your module use any kind of runtime type information (<code>instanceof</code>,
+            work with <code>java.lang.Class</code>, etc.)?
+            <hint>
+            Check for cases when you have an object of type A and you also
+            expect it to (possibly) be of type B and do some special action. That
+            should be documented. The same applies on operations in meta-level
+            (Class.isInstance(...), Class.isAssignableFrom(...), etc.).
+            </hint>
+        </question>
+-->
+ <answer id="exec-introspection">
+  <p>
+   <a href="@TOP@/org/openide/util/Utilities.html">Utilities</a> provide wrapper
+   for java beans introspection.
+  </p>
+ </answer>
+
+
+
+ <answer id="exec-privateaccess">
+  <p>
+  No.
+  </p>
+ </answer>
+
+ <answer id="exec-process">
+  <p>
+   No external processes executed.
+  </p>
+ </answer>
+
+
+ <answer id="exec-property">
+  <ul>
+    <li><api type="export" group="property" name="netbeans.screen.insets" category="private">
+    Influences results of Utilities.getUsableScreenBounds</api>.</li>
+    <li><api type="export" group="property" name="netbeans.taskbar.height" category="private">
+    Influences results of Utilities.getUsableScreenBounds</api>.</li>
+    <li>
+        <api type='import' group="property" name="line.separator" category="standard" >
+        used on few places
+        </api>.
+    </li>
+    
+    <li>
+    <api type="export" group="property" name="org.openide.util.Lookup" category="devel">
+        checked by the initialization of the 
+        <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+        and can
+        contain name of a class that extends <code>org.openide.util.Lookup</code> and
+        has public constructor, that should be instantiated and returned from 
+        <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+        the class will be loaded by 
+        <a href="@JDK@/java/lang/Thread.html#getContextClassLoader()">
+        Thread.currentThread().getContextClassLoader()</a>
+        classloader the first time <code>Lookup.getDefault</code> is invoked.
+        <p/>
+        The property can also contain value <code>"-"</code> which means to completely
+        disable the lookup instantiation and return <a href="@TOP@/org/openide/util/Lookup.html#EMPTY">Lookup.EMPTY</a>
+        from <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
+        <p/>
+        If the property is unspecified, the default <code>MetaInfServicesLookup</code>
+        is constructed for <code>Thread.currentThread().getContextclassLoader()</code>
+        that implements the <a href="#answer-compat-standards">JDK's standard</a>. If, by 
+        a chance an instance of 
+        <a href="@TOP@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>
+        is found
+        in there, its lookup is returned as result. Otherwise the <code>MetaInfServicesLookup</code>
+        is the result of <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
+    </api>
+    </li>
+    
+  </ul>
+ </answer>
+
+
+
+<!--
+        <question id="exec-reflection" when="impl">
+            Does your code use Java Reflection to execute other code?
+            <hint>
+            This usually indicates a missing or insufficient API in the other
+            part of the system. If the other side is not aware of your dependency
+            this contract can be easily broken.
+            </hint>
+        </question>
+-->
+ <answer id="exec-reflection">
+  <p>
+   <api category="devel" group="java" name="SharedClassObject.setAccessible" type="export" url="@TOP@/org/openide/util/SharedClassObject.html">
+   used to instantiate subclasses. 
+   </api>. 
+   <api category="devel" group="java" name="WeakListener.setAccessible" type="export" url="@TOP@/org/openide/util/WeakListeners.html">
+   used to call the remove method using reflection
+   </api>. 
+   <api category="devel" group="java" name="Lookups.metaInfServices" type="export" url="@TOP@/org/openide/util/lookup/Lookups.html#metaInfServices(java.lang.ClassLoader)">
+   calls constructor of registered classes using reflection
+   </api>. 
+   <api category="private" group="java" name="ActionManagerInvocation" type="import" >
+    because of the API separation, <a href="@TOP@/org/openide/util/actions/CallableSystemAction.html">CallableSystemAction</a> uses reflection
+    when looking for <a href="@org-openide-actions@/org/openide/actions/ActionManager.html">org.openide.actions.ActionManager</a> implementation.
+    </api>.
+
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="exec-threading" when="impl">
+            What threading models, if any, does your module adhere to?
+            <hint>
+                If your module calls foreign APIs which have a specific threading model,
+                indicate how you comply with the requirements for multithreaded access
+                (synchronization, mutexes, etc.) applicable to those APIs.
+                If your module defines any APIs, or has complex internal structures
+                that might be used from multiple threads, declare how you protect
+                data against concurrent access, race conditions, deadlocks, etc.,
+                and whether such rules are enforced by runtime warnings, errors, assertions, etc.
+                Examples: a class might be non-thread-safe (like Java Collections); might
+                be fully thread-safe (internal locking); might require access through a mutex
+                (and may or may not automatically acquire that mutex on behalf of a client method);
+                might be able to run only in the event queue; etc.
+                Also describe when any events are fired: synchronously, asynchronously, etc.
+                Ideas: <a href="http://core.netbeans.org/proposals/threading/index.html#recommendations">Threading Recommendations</a> (in progress)
+            </hint>
+        </question>
+-->
+ <answer id="exec-threading">
+  <p>
+   XXX no answer for exec-threading
+  </p>
+ </answer>
+
+
+
+ <answer id="format-clipboard">
+  <p>
+    <a href="@TOP@/org/openide/util/datatransfer/MultiTransferObject.html">MultiTransferObject</a> can be 
+    used in <a href="@JDK@/java/awt/datatransfer/Transferable.html">Transferable</a> to represent content
+    composed of multiple independent 
+    <a href="@JDK@/java/awt/datatransfer/Transferable.html">Transferable</a>s.
+  </p>
+ </answer>
+
+
+
+ <answer id="format-dnd">
+  <p>
+  The same as for clipboard.
+  </p>
+ </answer>
+
+ <answer id="format-types">
+  <p>
+    The <a href="http://java.sun.com/j2se/1.3/docs/guide/jar/jar.html#Provider%20Configuration%20File">META-INF/services/...</a> files.
+    <api name="TranslateNames" category="official" type="export" group="java.io.File" 
+    url="@TOP@/org/openide/util/Utilities.html#translate(java.lang.String)">
+    <a href="@TOP@/org/openide/util/Utilities.html#translate(java.lang.String)">Utilities.translate</a> 
+    reads <code>META-INF/netbeans/translate.names</code> files from JARs</api>.
+  </p>
+ </answer>
+
+
+
+ <answer id="lookup-lookup">
+    <ul>
+    <li><api name="LookupInitializationLookup" category="devel" group="lookup" type="export" url="#property-org.openide.util.Lookup">
+    during 
+    initialization of the <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+    the <a href="@TOP@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>
+    is being searched</api>.
+    </li>
+    
+    <li><api name="LookupSharedClassObject" category="devel" group="lookup" type="export">
+    singleton subclasses of <a href="@TOP@/org/openide/util/SharedClassObject.html">SharedClassObject</a> 
+    are searched for using Lookup.
+    </api>.</li>
+
+    <li><api name="LookupContextGlobalProvider" category="stable" group="lookup" type="export">
+    <a href="@TOP@/org/openide/util/Utilities.html#actionsGlobalContext()">actionsGlobalContext</a>
+    searches for <a href="@TOP@/org/openide/util/ContextGlobalProvider.html">ContextGlobalProvider</a> in 
+    <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
+    The provider is usually provided by <a href="@org-openide-windows@/overview-summary.html">window 
+    system implementation</a>.
+    </api>.</li>
+
+    <li><api name="LookupEntityCatalog" category="devel" group="lookup" type="export">
+    <a href="@TOP@/org/openide/xml/EntityCatalog.html">EntityCatalog</a> 
+    delegates its methods to all instances of <a href="@TOP@/org/openide/xml/EntityCatalog.html">EntityCatalog</a>s
+    found in Lookup
+    </api>.</li>
+    
+    <li><api name="LookupErrorManager" category="devel" group="lookup" type="export">
+    <a href="@TOP@/org/openide/ErrorManager.html">ErrorManager</a> 
+    delegates its methods to all instances of <a href="@TOP@/org/openide/ErrorManager.html">ErrorManager</a>s
+    found in Lookup
+    </api>.</li>
+            
+    <li><api name="LookupClassLoader" category="devel" group="lookup" type="export">
+    Nearly all resource looking functions and reflective code
+    uses <a href="@JDK@/java/lang/ClassLoader.html">ClassLoader</a>
+    obtained from <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+    for loading system wide resources.
+    </api>.</li>
+    
+    </ul>
+ </answer>
+
+
+
+<!--
+        <question id="lookup-register" when="final">
+            Do you register anything into lookup for other code to find?
+            <hint>
+            Do you register using layer file or using <code>META-INF/services</code>?
+            Who is supposed to find your component?
+            </hint>
+        </question>
+-->
+ <answer id="lookup-register">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="lookup-remove" when="final">
+            Do you remove entries of other modules from lookup?
+            <hint>
+            Why? Of course, that is possible, but it can be dangerous. Is the module
+            your are masking resource from aware of what you are doing?
+            </hint>
+        </question>
+-->
+ <answer id="lookup-remove">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-exit" when="final">
+            Does your module run any code on exit?
+        </question>
+-->
+ <answer id="perf-exit">
+  <p>
+   Nothing.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-huge_dialogs" when="final">
+            Does your module contain any dialogs or wizards with a large number of
+            GUI controls such as combo boxes, lists, trees, or text areas?
+        </question>
+-->
+ <answer id="perf-huge_dialogs">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-limit" when="init">
+            Are there any hard-coded or practical limits in the number or size of
+            elements your code can handle?
+        </question>
+-->
+ <answer id="perf-limit">
+  <p>
+    The default implementation of the <code>MetaInfServicesLookup</code> just 
+    keeps hashmap between queried classes and their implementations. The amount
+    of memory is linear to amount of registered classes, but of course we 
+    are not counting the memory occupied by the instances which the lookup 
+    creates, that can be arbitrary.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-mem" when="final">
+            How much memory does your component consume? Estimate
+            with a relation to the number of windows, etc.
+        </question>
+-->
+ <answer id="perf-mem">
+  <p>
+   There are no big data structures. The amount of memory occupied by
+   instances of <a href="@TOP@/org/openide/util/lookup/AbstractLookup.html">AbstractLookup</a> 
+   is measured by unit tests.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-menus" when="final">
+            Does your module use dynamically updated context menus, or
+            context-sensitive actions with complicated and slow enablement logic?
+            <hint>
+                If you do a lot of tricks when adding actions to regular or context menus, you can significantly
+                slow down display of the menu, even when the user is not using your action. Pay attention to
+                actions you add to the main menu bar, and to context menus of foreign nodes or components. If
+                the action is conditionally enabled, or changes its display dynamically, you need to check the
+                impact on performance. In some cases it may be more appropriate to make a simple action that is
+                always enabled but does more detailed checks in a dialog if it is actually run.
+            </hint>
+        </question>
+-->
+ <answer id="perf-menus">
+  <p>
+   There are no menus.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-progress" when="final">
+            Does your module execute any long-running tasks?
+            
+            <hint>Long running tasks should never block 
+            AWT thread as it badly hurts the UI
+            <a href="http://performance.netbeans.org/responsiveness/issues.html">
+            responsiveness</a>.
+            Tasks like connecting over
+            network, computing huge amount of data, compilation
+            be done asynchronously (for example
+            using <code>RequestProcessor</code>), definitively it should 
+            not block AWT thread.
+            </hint>
+        </question>
+-->
+ <answer id="perf-progress">
+  <p>
+   Actions declared as <a href="@TOP@/org/openide/util/actions/CallableSystemAction.html#asynchronous()">CallableSystemAction.asynchronous()</a> 
+   are executed outside of AWT thread on a dedicated request processor one.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-scale" when="init">
+            Which external criteria influence the performance of your
+            program (size of file in editor, number of files in menu, 
+            in source directory, etc.) and how well your code scales?
+            <hint>
+            Please include some estimates, there are other more detailed 
+            questions to answer in later phases of implementation. 
+            </hint>
+        </question>
+-->
+ <answer id="perf-scale">
+  <p>
+   Lookup code scales linearily.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-spi" when="init">
+            How the performance of the plugged in code will be enforced?
+            <hint>
+            If you allow foreign code to be plugged into your own module, how
+            do you enforce that it will behave correctly and quickly and will not
+            negatively influence the performance of your own module?
+            </hint>
+        </question>
+-->
+ <answer id="perf-spi">
+  <p>
+   No enforcing is done.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-startup" when="final">
+            Does your module run any code on startup?
+        </question>
+-->
+ <answer id="perf-startup">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-wakeup" when="final">
+            Does any piece of your code wake up periodically and do something
+            even when the system is otherwise idle (no user interaction)?
+        </question>
+-->
+ <answer id="perf-wakeup">
+  <p>
+   No. 
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-file" when="final">
+            Does your module use <code>java.io.File</code> directly?
+            
+            <hint>
+            NetBeans provide a logical wrapper over plain files called 
+            <code>org.openide.filesystems.FileObject</code> that
+            provides uniform access to such resources and is the preferred
+            way that should be used. But of course there can be situations when
+            this is not suitable.
+            </hint>
+        </question>
+-->
+ <answer id="resources-file">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-layer" when="final">
+            Does your module provide own layer? Does it create any files or
+            folders in it? What it is trying to communicate by that and with which 
+            components?
+            
+            <hint>
+            NetBeans allows automatic and declarative installation of resources 
+            by module layers. Module register files into appropriate places
+            and other components use that information to perform their task
+            (build menu, toolbar, window layout, list of templates, set of
+            options, etc.). 
+            </hint>
+        </question>
+-->
+ <answer id="resources-layer">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-mask" when="final">
+            Does your module mask/hide/override any resources provided by other modules in
+            their layers?
+            
+            <hint>
+            If you mask a file provided by another module, you probably depend
+            on that and do not want the other module to (for example) change
+            the file's name. That module shall thus make that file available as an API
+            of some stability category.
+            </hint>
+        </question>
+-->
+ <answer id="resources-mask">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-read" when="final">
+            Does your module read any resources from layers? For what purpose?
+            
+            <hint>
+            As this is some kind of intermodule dependency, it is a kind of API.
+            Please describe it and classify according to 
+            <a href="http://openide.netbeans.org/tutorial/api-design.html#categories">
+            common stability categories</a>.
+            </hint>
+        </question>
+-->
+ <answer id="resources-read">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant additional rights to some other code?
+            <hint>Avoid using a class loader that adds extra
+            permissions to loaded code unless really necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            calling AccessController.doPrivileged().</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  <p>
+   No security permitions manipulated.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require modifications to the standard policy file?
+            <hint>Your code might pass control to third-party code not
+            coming from trusted domains. This could be code downloaded over the
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions need to be granted to which domains?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  <p>
+   No security permissions manipulated.
+  </p>
+ </answer>
+
+</api-answers>
