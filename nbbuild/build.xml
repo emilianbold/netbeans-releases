@@ -564,24 +564,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../contrib/bookmarks" target="netbeans"/>
   </target>
-  <target name="all-contrib/editorhints" depends="all-editor">
-    <echo message="Building module contrib/editorhints ..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../contrib/editorhints" target="netbeans"/>
-  </target>
-  <target name="all-contrib/editorhints/java" depends="all-editor,all-java,all-java/javacore,all-mdr,all-refactoring,all-contrib/editorhints">
-    <echo message="Building module contrib/editorhints/java ..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../contrib/editorhints/java" target="netbeans"/>
-  </target>
   <target name="all-contrib/htmldiff" depends="all-diff">
     <echo message="Building module htmldiff ..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -939,6 +921,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../editor/fold" target="netbeans"/>
   </target>
+  <target name="all-editor/hints" depends="all-editor">
+    <echo message="Building module editor/hints ..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../editor/hints" target="netbeans"/>
+  </target>
   <target name="all-editor/util" depends="init">
     <echo message="Building module editor/util..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -992,6 +983,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../java/errorstripe" target="netbeans"/>
+  </target>
+  <target name="all-java/hints" depends="all-editor,all-java,all-java/javacore,all-mdr,all-refactoring,all-editor/hints">
+    <echo message="Building module java/hints ..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../java/hints" target="netbeans"/>
   </target>
   <target name="all-html/editor" depends="init,all-html/editor/lib,all-editor,all-editor/lib,all-editor/util">
     <echo message="Building module html/editor..."/>
@@ -1268,7 +1268,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../latex/errorstripe" target="netbeans"/>
   </target>
-  <target name="all-latex/hints" depends="init,all-contrib/editorhints,all-latex/editor">
+  <target name="all-latex/hints" depends="init,all-editor/hints,all-latex/editor">
     <echo message="Building module latex/hints..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
