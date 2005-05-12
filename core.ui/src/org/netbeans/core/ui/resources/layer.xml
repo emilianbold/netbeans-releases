@@ -11,13 +11,7 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
-<!-- XXX still pointing to core/src/; should someday be core/ui/src/ instead: -->
-<?netbeans-stylesheet-classpath-base href="../../../../../../../src/"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-
-<!-- XML Layer for core-ui -->
-
 <filesystem>
 
     <folder name="WarmUp">
