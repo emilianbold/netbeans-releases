@@ -114,6 +114,7 @@ Constants {
         boolean italics,
         Color color
     ) {
+        if (text == null) return null;
         StringBuffer sb = new StringBuffer ();
         sb.append ("<html>");
         if (bold) sb.append ("<b>");
