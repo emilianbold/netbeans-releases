@@ -45,6 +45,7 @@ public final class Controller implements Runnable, ActionListener {
     private boolean dispatchRunning;
     private Timer timer;
     private static final int TIMER_QUANTUM = 400;
+    int minimumDiff = 0;
     /** Creates a new instance of Controller */
     public Controller(ProgressUIWorker comp) {
         component = comp;
@@ -59,6 +60,9 @@ public final class Controller implements Runnable, ActionListener {
         if (defaultInstance == null) {
             StatusLineComponent component = new StatusLineComponent();
             defaultInstance = new Controller(component);
+            // just the default instance (status bar one) should have an initial delay
+            // for placing items into UI.
+            defaultInstance.minimumDiff = InternalHandle.INITIAL_DELAY;
             component.setModel(defaultInstance.getModel());
         }
         return defaultInstance;
@@ -192,13 +196,13 @@ public final class Controller implements Runnable, ActionListener {
                 it.remove();
             }
             // now re-add the just started events into queue
-            // if they don't last longer than the InternalHandle.INITIAL_DELAY
+            // if they don't last longer than the minimumDiff 
             Iterator startIt = justStarted.iterator();
             long stamp = System.currentTimeMillis();
             while (startIt.hasNext()) {
                 InternalHandle hndl = (InternalHandle)startIt.next();
                 long diff = stamp - hndl.getTimeStampStarted();
-                if (diff > InternalHandle.INITIAL_DELAY) {
+                if (diff > minimumDiff) {
                     model.addHandle(hndl);
                 } else {
                     eventQueue.add(new ProgressEvent(hndl, ProgressEvent.TYPE_START, isWatched(hndl)));
