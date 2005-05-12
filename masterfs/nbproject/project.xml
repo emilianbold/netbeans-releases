@@ -37,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.vcscore</friend>
+                <friend>org.netbeans.modules.versioning.system.cvss</friend>
                 <package>org.netbeans.modules.masterfs.providers</package>
             </friend-packages>
             <javadoc/>
