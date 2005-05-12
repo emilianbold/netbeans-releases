@@ -82,7 +82,7 @@ is the proper place.
                      all <code>ProjectOpenedHook</code> instances in the lookup.
             </summary>
             <version major="1" minor="3"/>
-            <date day="4" month="5" year="2005"/>
+            <date day="12" month="5" year="2005"/>
             <author login="jlahoda"/>
             <compatibility semantic="incompatible" source="compatible">
                 <p>
