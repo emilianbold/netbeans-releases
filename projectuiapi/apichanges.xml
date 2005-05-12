@@ -76,6 +76,30 @@ is the proper place.
 
     <changes>
         
+        <change id="ProjectOpenedHook.fire-to-all">
+            <api name="general"/>
+            <summary>The <code>projectOpened</code> and <code>projectClosed</code> methods are called on
+                     all <code>ProjectOpenedHook</code> instances in the lookup.
+            </summary>
+            <version major="1" minor="3"/>
+            <date day="4" month="5" year="2005"/>
+            <author login="jlahoda"/>
+            <compatibility semantic="incompatible" source="compatible">
+                <p>
+                    This change is incompatible because a project type can return a lookup with several
+                    <code>ProjectOpenedHook</code>s and depend on only first one being notified on open/close.
+                    Such a code should be rewritten using <code>org.openide.util.lookup.Lookups.exclude</code>.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    The <code>projectOpened</code> and <code>projectClosed</code> methods are called on
+                    all <code>ProjectOpenedHook</code> instances found in a project's lookup.
+                </p>
+            </description>
+            <issue number="57025" />
+        </change>
+        
         <change id="OpenProjects.open-close">
             <api name="general"/>
             <summary>Added open and close methods into <code>OpenProjects</code> class</summary>

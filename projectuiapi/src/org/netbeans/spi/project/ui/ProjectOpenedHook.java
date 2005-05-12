@@ -36,6 +36,7 @@ import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
  * </p>
  * <p>
  * An instance should be placed into a project's lookup to register it.
+ * All instances found in the lookup will be notified on project open and close.
  * </p>
  * @see org.netbeans.api.project.Project#getLookup
  * @author Jesse Glick

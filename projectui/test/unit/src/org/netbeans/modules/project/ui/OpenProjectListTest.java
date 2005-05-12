@@ -30,6 +30,7 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -156,6 +157,26 @@ public class OpenProjectListTest extends NbTestCase {
         assertFalse ("Project2 is closed.", OpenProjectList.getDefault ().isOpen (project2));
     }
     
+    public void testProjectOpenedClosed() throws Exception {
+        ((TestSupport.TestProject) project1).setLookup(Lookups.fixed(new Object[] {
+            new TestProjectOpenedHookImpl(),
+            new TestProjectOpenedHookImpl(),
+        }));
+        
+        TestProjectOpenedHookImpl.opened = 0;
+        TestProjectOpenedHookImpl.closed = 0;
+        
+        OpenProjectList.getDefault().open(project1);
+        
+        assertEquals("both open hooks were called", 2, TestProjectOpenedHookImpl.opened);
+        assertEquals("no close hook was called", 0, TestProjectOpenedHookImpl.closed);
+        
+        OpenProjectList.getDefault().close(new Project[] {project1});
+        
+        assertEquals("both open hooks were called", 2, TestProjectOpenedHookImpl.opened);
+        assertEquals("both close hooks were called", 2, TestProjectOpenedHookImpl.closed);
+    }
+    
     // helper code
 
     private static class MySubprojectProvider implements SubprojectProvider {
@@ -224,4 +245,18 @@ public class OpenProjectListTest extends NbTestCase {
         }
     }
     
+    private static class TestProjectOpenedHookImpl extends ProjectOpenedHook {
+        
+        public static int opened = 0;
+        public static int closed = 0;
+        
+        protected void projectClosed() {
+            closed++;
+        }
+        
+        protected void projectOpened() {
+            opened++;
+        }
+        
+    }
 }

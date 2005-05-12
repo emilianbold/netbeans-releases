@@ -45,6 +45,7 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 
 /**
  * List of projects open in the GUI.
@@ -398,8 +399,11 @@ public final class OpenProjectList {
     
     
     private static void notifyOpened(Project p) {
-        ProjectOpenedHook hook = (ProjectOpenedHook)p.getLookup().lookup(ProjectOpenedHook.class);
-        if (hook != null) {
+        Lookup.Result result = p.getLookup().lookup(new Lookup.Template(ProjectOpenedHook.class));
+        
+        for (Iterator i = result.allInstances().iterator(); i.hasNext(); ) {
+            ProjectOpenedHook hook = (ProjectOpenedHook) i.next();
+            
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
             } catch (RuntimeException e) {
@@ -409,8 +413,11 @@ public final class OpenProjectList {
     }
     
     private static void notifyClosed(Project p) {
-        ProjectOpenedHook hook = (ProjectOpenedHook)p.getLookup().lookup(ProjectOpenedHook.class);
-        if (hook != null) {
+        Lookup.Result result = p.getLookup().lookup(new Lookup.Template(ProjectOpenedHook.class));
+        
+        for (Iterator i = result.allInstances().iterator(); i.hasNext(); ) {
+            ProjectOpenedHook hook = (ProjectOpenedHook) i.next();
+            
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectClosed(hook);
             } catch (RuntimeException e) {
