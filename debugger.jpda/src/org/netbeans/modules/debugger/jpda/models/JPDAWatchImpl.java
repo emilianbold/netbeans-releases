@@ -117,7 +117,7 @@ public class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         model.fireTableValueChangedChanged (this, null);
     }
     
-    void setInnerValue (Value v) {
+    protected void setInnerValue (Value v) {
         super.setInnerValue (v);
         exceptionDescription = null;
     }

@@ -137,6 +137,8 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
         updateColumnWidths ();
         treeTable.expandNodes (expandedPaths);
         // TODO: this is a workaround, we should find a better way later
+        /* We must not call children here - it can take a long time...
+         * the expansion is performed in TreeModelNode.TreeModelChildren.applyChildren()
         final List backupPath = new ArrayList (expandedPaths);
         if (backupPath.size () == 0)
             TreeModelNode.getRequestProcessor ().post (new Runnable () {
@@ -158,6 +160,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
                     treeTable.expandNodes (backupPath);
                 }
             });
+         */
         if (ep.size () > 0) expandedPaths = ep;
     }
     

@@ -343,11 +343,11 @@ public class AbstractVariable implements ObjectVariable {
     
     // other methods............................................................
     
-    Value getInnerValue () {
+    protected Value getInnerValue () {
         return value;
     }
     
-    void setInnerValue (Value v) {
+    protected void setInnerValue (Value v) {
         value = v;
     }
     
@@ -432,7 +432,13 @@ public class AbstractVariable implements ObjectVariable {
     }
 
     private void initFields () {
-        Type type = getInnerValue ().type ();
+        Value value = getInnerValue();
+        Type type;
+        if (value != null) {
+            type = getInnerValue ().type ();
+        } else {
+            type = null;
+        }
         if ( !(getInnerValue() instanceof ObjectReference) || 
              !(type instanceof ReferenceType)
         ) {

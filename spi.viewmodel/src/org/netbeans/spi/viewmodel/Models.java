@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,9 @@ import java.awt.event.ActionEvent;
 import java.lang.StringBuffer;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -438,11 +440,13 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    final static class CompoundTreeModel implements TreeModel {
+    final static class CompoundTreeModel implements TreeModel, ModelListener {
 
 
         private TreeModel model;
         private TreeModelFilter filter;
+        
+        private Collection modelListeners = new HashSet();
 
         
         /**
@@ -512,8 +516,13 @@ public final class Models {
          * @param l the listener to add
          */
         public void addModelListener (ModelListener l) {
-            filter.addModelListener (l);
-            model.addModelListener (l);
+            synchronized (modelListeners) {
+                if (modelListeners.size() == 0) {
+                    filter.addModelListener (this);
+                    model.addModelListener (this);
+                }
+                modelListeners.add(l);
+            }
         }
 
         /** 
@@ -522,10 +531,26 @@ public final class Models {
          * @param l the listener to remove
          */
         public void removeModelListener (ModelListener l) {
-            filter.removeModelListener (l);
-            model.removeModelListener (l);
+            synchronized (modelListeners) {
+                modelListeners.remove(l);
+                if (modelListeners.size() == 0) {
+                    filter.removeModelListener (this);
+                    model.removeModelListener (this);
+                }
+            }
         }
 
+        public void modelChanged(ModelEvent event) {
+            ModelEvent newEvent = translateEvent(event, this);
+            Collection listeners;
+            synchronized (modelListeners) {
+                listeners = new ArrayList(modelListeners);
+            }
+            for (Iterator it = listeners.iterator(); it.hasNext(); ) {
+                ((ModelListener) it.next()).modelChanged(newEvent);
+            }
+        }
+        
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }
@@ -537,6 +562,24 @@ public final class Models {
             return n + filter + "\n" + 
                    n + "  " + model;
         }
+
+    }
+    
+    private static ModelEvent translateEvent(ModelEvent event, Object newSource) {
+        ModelEvent newEvent;
+        if (event instanceof ModelEvent.NodeChanged) {
+            newEvent = new ModelEvent.NodeChanged(newSource,
+                    ((ModelEvent.NodeChanged) event).getNode());
+        } else if (event instanceof ModelEvent.TableValueChanged) {
+            newEvent = new ModelEvent.TableValueChanged(newSource,
+                    ((ModelEvent.TableValueChanged) event).getNode(),
+                    ((ModelEvent.TableValueChanged) event).getColumnID());
+        } else if (event instanceof ModelEvent.TreeChanged) {
+            newEvent = new ModelEvent.TreeChanged(newSource);
+        } else {
+            newEvent = event;
+        }
+        return newEvent;
     }
     
     /**
@@ -545,11 +588,13 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    final static class CompoundNodeModel implements NodeModel {
+    final static class CompoundNodeModel implements NodeModel, ModelListener {
 
 
         private NodeModel model;
         private NodeModelFilter filter;
+
+        private Collection modelListeners = new HashSet();
 
 
         /**
@@ -604,8 +649,13 @@ public final class Models {
          * @param l the listener to add
          */
         public void addModelListener (ModelListener l) {
-            filter.addModelListener (l);
-            model.addModelListener (l);
+            synchronized (modelListeners) {
+                if (modelListeners.size() == 0) {
+                    filter.addModelListener (this);
+                    model.addModelListener (this);
+                }
+                modelListeners.add(l);
+            }
         }
 
         /** 
@@ -614,10 +664,26 @@ public final class Models {
          * @param l the listener to remove
          */
         public void removeModelListener (ModelListener l) {
-            filter.removeModelListener (l);
-            model.removeModelListener (l);
+            synchronized (modelListeners) {
+                modelListeners.remove(l);
+                if (modelListeners.size() == 0) {
+                    filter.removeModelListener (this);
+                    model.removeModelListener (this);
+                }
+            }
         }
 
+        public void modelChanged(ModelEvent event) {
+            ModelEvent newEvent = translateEvent(event, this);
+            Collection listeners;
+            synchronized (modelListeners) {
+                listeners = new ArrayList(modelListeners);
+            }
+            for (Iterator it = listeners.iterator(); it.hasNext(); ) {
+                ((ModelListener) it.next()).modelChanged(newEvent);
+            }
+        }
+        
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }
@@ -640,11 +706,13 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    final static class CompoundTableModel implements TableModel {
+    final static class CompoundTableModel implements TableModel, ModelListener {
 
 
         private TableModel model;
         private TableModelFilter filter;
+
+        private Collection modelListeners = new HashSet();
 
 
         /**
@@ -715,8 +783,13 @@ public final class Models {
          * @param l the listener to add
          */
         public void addModelListener (ModelListener l) {
-            filter.addModelListener (l);
-            model.addModelListener (l);
+            synchronized (modelListeners) {
+                if (modelListeners.size() == 0) {
+                    filter.addModelListener (this);
+                    model.addModelListener (this);
+                }
+                modelListeners.add(l);
+            }
         }
 
         /** 
@@ -725,10 +798,26 @@ public final class Models {
          * @param l the listener to remove
          */
         public void removeModelListener (ModelListener l) {
-            filter.removeModelListener (l);
-            model.removeModelListener (l);
+            synchronized (modelListeners) {
+                modelListeners.remove(l);
+                if (modelListeners.size() == 0) {
+                    filter.removeModelListener (this);
+                    model.removeModelListener (this);
+                }
+            }
         }
 
+        public void modelChanged(ModelEvent event) {
+            ModelEvent newEvent = translateEvent(event, this);
+            Collection listeners;
+            synchronized (modelListeners) {
+                listeners = new ArrayList(modelListeners);
+            }
+            for (Iterator it = listeners.iterator(); it.hasNext(); ) {
+                ((ModelListener) it.next()).modelChanged(newEvent);
+            }
+        }
+        
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }

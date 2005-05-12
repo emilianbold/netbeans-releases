@@ -49,10 +49,17 @@ public class WatchesNodeModel extends VariablesNodeModel {
             return TreeModel.ROOT;
         if (o instanceof JPDAWatch) {
             JPDAWatch w = (JPDAWatch) o;
-            String t = w.getType ();
+            boolean evaluated;
+            synchronized (VariablesTreeModelFilter.evaluatedNodes) {
+                evaluated = VariablesTreeModelFilter.evaluatedNodes.contains(o);
+            }
+            if (!evaluated) {
+                return w.getExpression ();
+            }
             String e = w.getExceptionDescription ();
             if (e != null)
                 return w.getExpression () + " = >" + e + "<";
+            String t = w.getType ();
             if (t == null)
                 return w.getExpression () + " = " + w.getValue ();
             else

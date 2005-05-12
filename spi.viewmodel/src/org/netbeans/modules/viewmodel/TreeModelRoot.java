@@ -45,6 +45,11 @@ public class TreeModelRoot implements ModelListener {
     private TreeModelNode rootNode;
     private WeakHashMap objectToNode = new WeakHashMap ();
     private TreeTable treeTable;
+    
+    /** The children evaluator for view if this root. */
+    private TreeModelNode.LazyEvaluator childrenEvaluator;
+    /** The values evaluator for view if this root. */
+    private TreeModelNode.LazyEvaluator valuesEvaluator;
 
 
     public TreeModelRoot (Models.CompoundModel model, TreeTable treeTable) {
@@ -73,11 +78,27 @@ public class TreeModelRoot implements ModelListener {
         return (TreeModelNode) wr.get ();
     }
     
-    public void modelChanged (ModelEvent event) {
+    public void modelChanged (final ModelEvent event) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 if (model == null) 
                     return; // already disposed
+                if (event instanceof ModelEvent.TableValueChanged) {
+                    ModelEvent.TableValueChanged tvEvent = (ModelEvent.TableValueChanged) event;
+                    Object node = tvEvent.getNode();
+                    if (node != null) {
+                        TreeModelNode tmNode = findNode(node);
+                        if (tmNode != null) {
+                            String column = tvEvent.getColumnID();
+                            if (column != null) {
+                                tmNode.refreshColumn(column);
+                            } else {
+                                tmNode.refresh();
+                            }
+                            return ; // We're done
+                        }
+                    }
+                }
                 rootNode.setObject (model.getRoot ());
             }
         });
@@ -100,6 +121,20 @@ public class TreeModelRoot implements ModelListener {
 //            }
 //        });
 //    }
+    
+    synchronized TreeModelNode.LazyEvaluator getChildrenEvaluator() {
+        if (childrenEvaluator == null) {
+            childrenEvaluator = new TreeModelNode.LazyEvaluator();
+        }
+        return childrenEvaluator;
+    }
+
+    synchronized TreeModelNode.LazyEvaluator getValuesEvaluator() {
+        if (valuesEvaluator == null) {
+            valuesEvaluator = new TreeModelNode.LazyEvaluator();
+        }
+        return valuesEvaluator;
+    }
 
     public void destroy () {
         if (model != null)

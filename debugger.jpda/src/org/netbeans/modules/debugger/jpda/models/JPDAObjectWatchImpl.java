@@ -160,13 +160,13 @@ ObjectVariable {
         }
     }
     
-    void setInnerValue (Value v) {
+    protected void setInnerValue (Value v) {
         super.setInnerValue (v);
         exceptionDescription = null;
     }
     
     void setException (String exceptionDescription) {
-        setInnerValue (null);
+        super.setInnerValue (null);
         this.exceptionDescription = exceptionDescription;
     }
     

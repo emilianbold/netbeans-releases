@@ -19,6 +19,7 @@ import com.sun.jdi.Value;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
@@ -28,6 +29,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
@@ -41,6 +43,7 @@ import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
 
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 
 /**
@@ -61,6 +64,7 @@ public class WatchesModel implements TreeModel {
     private ContextProvider     lookupProvider;
     // Watch to Expression or Exception
     private WeakHashMap         watchToExpression = new WeakHashMap();
+    private Map                 watchToValue = new WeakHashMap(); // <node (expression), JPDAWatch>
 
     
     public WatchesModel (ContextProvider lookupProvider) {
@@ -96,32 +100,15 @@ public class WatchesModel implements TreeModel {
             JPDAWatch[] jws = new JPDAWatch [k];
             for (i = 0; i < k; i++) {
                 
-                // 2.1) get Expression
-                Object expression = watchToExpression.get (
-                    fws [i].getExpression ()
-                );
-                    // expression contains Expression or Exception 
-                if (expression == null) {
-                    try {
-                        expression = Expression.parse (
-                            fws [i].getExpression (), 
-                            Expression.LANGUAGE_JAVA_1_5
-                        );
-                    } catch (ParseException e) {
-                        expression = e;
-                    }
-                    watchToExpression.put (
-                        fws [i].getExpression (), 
-                        expression
-                    );
-                }
                 
-                // 2.2) create a new JPDAWatch
-                if (expression instanceof Exception)
-                    jws [i] = new JPDAWatchImpl 
-                        (this, fws [i], (Exception) expression);
-                else
-                    jws [i] = evaluate (fws [i], (Expression) expression);
+                JPDAWatch jw = (JPDAWatch) watchToValue.get(fws[i]);
+                if (jw == null) {
+                    jw = new JPDAWatchEvaluating(this, fws[i], debugger);
+                }
+                jws[i] = jw;
+                watchToValue.put(fws[i], jw);
+                
+                // The actual expressions are computed on demand in JPDAWatchEvaluating
             }
             
             if (listener == null)
@@ -157,8 +144,13 @@ public class WatchesModel implements TreeModel {
     
     public boolean isLeaf (Object node) throws UnknownTypeException {
         if (node == ROOT) return false;
-        if (node instanceof JPDAWatchImpl) 
-            return ((JPDAWatchImpl) node).isPrimitive ();
+        if (node instanceof JPDAWatchEvaluating) {
+            JPDAWatchEvaluating jwe = (JPDAWatchEvaluating) node;
+            JPDAWatch jw = jwe.getEvaluatedWatch();
+            if (jw instanceof JPDAWatchImpl) {
+                return ((JPDAWatchImpl) jw).isPrimitive ();
+            }
+        }
         return getLocalsTreeModel ().isLeaf (node);
     }
 
@@ -171,13 +163,32 @@ public class WatchesModel implements TreeModel {
     }
     
     void fireTreeChanged () {
+        synchronized (watchToValue) {
+            watchToValue.clear();
+        }
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
+        ModelEvent event = new ModelEvent.TreeChanged(this);
         for (i = 0; i < k; i++)
-            ((ModelListener) v.get (i)).modelChanged (null);
+            ((ModelListener) v.get (i)).modelChanged (event);
     }
     
     void fireTableValueChangedChanged (Object node, String propertyName) {
+        synchronized (watchToValue) {
+            for (Iterator it = watchToValue.keySet().iterator(); it.hasNext(); ) {
+                Object w = it.next();
+                if (node.equals(watchToValue.get(w))) {
+                    watchToValue.remove(w);
+                    ((JPDAWatchEvaluating) node).setEvaluated(null);
+                    break;
+                }
+            }
+            //watchToValue.remove(node);
+        }
+        fireTableValueChangedComputed(node, propertyName);
+    }
+        
+    void fireTableValueChangedComputed (Object node, String propertyName) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
@@ -202,19 +213,163 @@ public class WatchesModel implements TreeModel {
         return localsTreeModel;
     }
 
-    JPDAWatch evaluate (Watch w, Expression expr) {
-        try {
-            Value v = debugger.evaluateIn (expr);
-            if (v instanceof ObjectReference)
-                return new JPDAObjectWatchImpl (this, w, (ObjectReference) v);
-            return new JPDAWatchImpl (this, w, v);
-        } catch (InvalidExpressionException e) {
-            return new JPDAWatchImpl (this, w, e);
-        }
-    }
-
 
     // innerclasses ............................................................
+    
+    private static class JPDAWatchEvaluating extends AbstractVariable
+                                             implements JPDAWatch, Variable {//.Lazy {
+        
+        private WatchesModel model;
+        private Watch w;
+        private JPDADebuggerImpl debugger;
+        private JPDAWatch evaluatedWatch;
+        private Expression expression;
+        private boolean[] evaluating = new boolean[] { false };
+        private PropertyChangeSupport propSupp = new PropertyChangeSupport(this);
+        
+        public JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger) {
+            super(model.getLocalsTreeModel(), null, "" + w);
+            this.model = model;
+            this.w = w;
+            this.debugger = debugger;
+            parseExpression(w.getExpression());
+        }
+        
+        private void parseExpression(String exprStr) {
+            try {
+                expression = Expression.parse (
+                    exprStr, 
+                    Expression.LANGUAGE_JAVA_1_5
+                );
+            } catch (ParseException e) {
+                setEvaluated(new JPDAWatchImpl(model, w, e));
+            }
+        }
+        
+        Expression getParsedExpression() {
+            return expression;
+        }
+
+        
+        public void setEvaluated(JPDAWatch evaluatedWatch) {
+            this.evaluatedWatch = evaluatedWatch;
+            if (evaluatedWatch != null) {
+                if (evaluatedWatch instanceof JPDAWatchImpl) {
+                    setInnerValue(((JPDAWatchImpl) evaluatedWatch).getInnerValue());
+                } else if (evaluatedWatch instanceof JPDAObjectWatchImpl) {
+                    setInnerValue(((JPDAObjectWatchImpl) evaluatedWatch).getInnerValue());
+                }
+                //propSupp.firePropertyChange(PROP_INITIALIZED, null, Boolean.TRUE);
+            } else {
+                setInnerValue(null);
+            }
+            //model.fireTableValueChangedComputed(this, null);
+        }
+        
+        JPDAWatch getEvaluatedWatch() {
+            return evaluatedWatch;
+        }
+        
+        public void expressionChanged() {
+            setEvaluated(null);
+            parseExpression(w.getExpression());
+        }
+        
+        public String getExceptionDescription() {
+            if (evaluatedWatch != null) {
+                return evaluatedWatch.getExceptionDescription();
+            } else {
+                return null;
+            }
+        }
+
+        public String getExpression() {
+            if (evaluatedWatch != null) {
+                return evaluatedWatch.getExpression();
+            } else {
+                return w.getExpression();
+            }
+        }
+
+        public String getToStringValue() throws InvalidExpressionException {
+            if (evaluatedWatch == null) {
+                getValue();
+            }
+            return evaluatedWatch.getToStringValue();
+        }
+
+        public String getType() {
+            if (evaluatedWatch == null) {
+                getValue(); // To init the evaluatedWatch
+            }
+            return evaluatedWatch.getType();
+        }
+
+        public String getValue() {
+            synchronized (evaluating) {
+                if (evaluating[0]) {
+                    try {
+                        evaluating.wait();
+                    } catch (InterruptedException iex) {
+                        return null;
+                    }
+                }
+                if (evaluatedWatch != null) {
+                    return evaluatedWatch.getValue();
+                }
+                evaluating[0] = true;
+            }
+            
+            JPDAWatch jw = null;
+            try {
+                Expression expr = getParsedExpression();
+                Value v = debugger.evaluateIn (expr);
+                if (v instanceof ObjectReference)
+                    jw = new JPDAObjectWatchImpl (model, w, (ObjectReference) v);
+                jw = new JPDAWatchImpl (model, w, v);
+            } catch (InvalidExpressionException e) {
+                jw = new JPDAWatchImpl (model, w, e);
+            } finally {
+                setEvaluated(jw);
+                synchronized (evaluating) {
+                    evaluating[0] = false;
+                    evaluating.notifyAll();
+                }
+            }
+            //System.out.println("    value = "+jw.getValue());
+            return jw.getValue();
+        }
+
+        public void remove() {
+            if (evaluatedWatch != null) {
+                evaluatedWatch.remove();
+            } else {
+                w.remove ();
+            }
+        }
+
+        public void setExpression(String expression) {
+            w.setExpression (expression);
+            expressionChanged();
+        }
+
+        public void setValue(String value) throws InvalidExpressionException {
+            if (evaluatedWatch != null) {
+                evaluatedWatch.setValue(value);
+            } else {
+                throw new InvalidExpressionException("Can not set value while evaluating.");
+            }
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            propSupp.addPropertyChangeListener(l);
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            propSupp.removePropertyChangeListener(l);
+        }
+        
+    }
     
     private static class Listener extends DebuggerManagerAdapter implements 
     PropertyChangeListener {
@@ -271,26 +426,32 @@ public class WatchesModel implements TreeModel {
                 destroy ();
                 return;
             }
+            if (m.debugger.getState () == JPDADebugger.STATE_RUNNING) {
+                return ;
+            }
             
             if (evt.getSource () instanceof Watch) {
-                m.fireTreeChanged ();
-            }
-
-            if (task != null) {
-                // cancel old task
-                task.cancel ();
-                if (verbose)
-                    System.out.println("WM cancel old task " + task);
-                task = null;
+                Object node;
+                synchronized (m.watchToValue) {
+                    node = m.watchToValue.get(evt.getSource());
+                }
+                if (node != null) {
+                    m.fireTableValueChangedChanged(node, null);
+                    return ;
+                }
             }
             
-            task = RequestProcessor.getDefault ().post (new Runnable () {
-                public void run () {
-                    if (verbose)
-                        System.out.println("WM do task " + task);
-                    m.fireTreeChanged ();
-                }
-            }, 500);
+            if (task == null) {
+                task = RequestProcessor.getDefault ().create (new Runnable () {
+                    public void run () {
+                        if (verbose)
+                            System.out.println("WM do task " + task);
+                        m.fireTreeChanged ();
+                    }
+                });
+            }
+            task.schedule(100);
+
             if (verbose)
                 System.out.println("WM  create task " + task);
         }

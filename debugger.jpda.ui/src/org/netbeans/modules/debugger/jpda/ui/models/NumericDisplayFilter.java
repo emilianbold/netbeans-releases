@@ -194,6 +194,12 @@ NodeActionsProviderFilter, Constants {
     }
 
     private boolean isIntegralType (Variable v) {
+        synchronized (VariablesTreeModelFilter.evaluatedNodes) {
+            if (!VariablesTreeModelFilter.evaluatedNodes.contains(v)) {
+                return false;
+            }
+        }
+        
         String type = v.getType ();
         return type != null && 
             (type.equals ("int") || 

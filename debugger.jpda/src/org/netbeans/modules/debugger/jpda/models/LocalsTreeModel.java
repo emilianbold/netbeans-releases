@@ -161,6 +161,7 @@ public class LocalsTreeModel implements TreeModel {
         throw new UnknownTypeException (o);
     }
 
+
     public void addModelListener (ModelListener l) {
         listeners.add (l);
         if (listener == null)

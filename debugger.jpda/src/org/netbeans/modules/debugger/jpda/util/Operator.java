@@ -149,10 +149,13 @@ public class Operator {
                              }
                      } // while
                      //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
-                     if (verbose)
+                     if (verbose) {
                          System.out.println("JDI events dispatched (resume " + (resume && (!startEventOnly)) + ")");
-                     if (resume && (!startEventOnly))
+                         System.out.println("  resume = "+resume+", startEventOnly = "+startEventOnly);
+                     }
+                     if (resume && (!startEventOnly)) {
                          eventSet.resume ();
+                     }
                  }// for
              } catch (VMDisconnectedException e) {   
              } catch (InterruptedException e) {

@@ -847,6 +847,8 @@ public class Evaluator implements JavaParserVisitor {
                 Assert.error(node, "callException", e, ctx);
             } catch (InvocationException e) {
                 Assert.error(node, "calleeException", e, ctx);
+            } catch (IllegalArgumentException e) {
+                Assert.error(node, "callException", e, ctx);
             }
             finally {
                 try {
