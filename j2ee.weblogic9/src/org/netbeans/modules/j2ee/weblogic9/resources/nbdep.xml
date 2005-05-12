@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
                  Sun Public License Notice
 
@@ -12,7 +11,11 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="websphere6" default="netbeans" basedir=".">
-    <import file="../../nbbuild/templates/projectized.xml"/>
-</project>
+<netbeans-deployment>
+    <disconnected-string>deployer:WebLogic:http://localhost:7001</disconnected-string>
 
+    <web-context-root>
+        <xpath>/</xpath>
+        <prop-name>contextRoot</prop-name>
+    </web-context-root>
+</netbeans-deployment>

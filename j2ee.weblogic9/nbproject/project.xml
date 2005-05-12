@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-                Sun Public License Notice
+                 Sun Public License Notice
 
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
+ The contents of this file are subject to the Sun Public License
+ Version 1.0 (the "License"). You may not use this file except in
+ compliance with the License. A copy of the License is available at
+ http://www.sun.com/
 
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
-Microsystems, Inc. All Rights Reserved.
+ The Original Code is NetBeans. The Initial Developer of the Original
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ Microsystems, Inc. All Rights Reserved.
 -->
+
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <code-name-base>com.sun.tools.ide.modules.j2eeplugins.weblogic9</code-name-base>
-            <path>j2eeplugins/weblogic9</path>
+            <code-name-base>org.netbeans.modules.j2ee.weblogic9</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>
@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
                  get a NoClassDefFoundException at runtime.
             -->
             <public-packages>
-                <package>com.sun.tools.ide.modules.j2eeplugins.weblogic9</package>
+                <package>org.netbeans.modules.j2ee.weblogic9</package>
             </public-packages>
         </data>
     </configuration>

@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!--
+                 Sun Public License Notice
+
+ The contents of this file are subject to the Sun Public License
+ Version 1.0 (the "License"). You may not use this file except in
+ compliance with the License. A copy of the License is available at
+ http://www.sun.com/
+
+ The Original Code is NetBeans. The Initial Developer of the Original
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<filesystem>
+    <folder name="J2EE">
+        <folder name="DeploymentPlugins">
+            <folder name="WebLogic9">
+                <file name="Descriptor" url="nbdep.xml"/>
+                <file name="Factory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                <file name="RegistryNodeFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.ui.nodes.WLRegistryNodeFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
+                </file>
+                <!--
+                <file name="ConfigurationSupport.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.genericserver.GSConfigurationSupport"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
+                </file>
+                -->
+                <file name="J2eePlatformFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory"/>
+                </file>
+                <file name="OptionalFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalDeploymentManagerFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalDeploymentManagerFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
+                </file>
+                <!--
+                <file name="AppServerPlanSplitter.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentPlanSplitter"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentPlanSplitter"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
+                </file>
+                -->
+                <folder name="DeploymentFileNames">
+                    <folder name="EAR">
+                        <file name="META-INF\weblogic-application.xml"/>
+                    </folder>
+                    <folder name="WAR">
+                        <file name="WEB-INF\weblogic.xml"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
