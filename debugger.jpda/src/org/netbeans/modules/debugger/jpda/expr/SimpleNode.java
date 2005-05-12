@@ -59,16 +59,6 @@ class SimpleNode implements Node {
     return visitor.visit(this, data);
   }
 
-  /** Accept the visitor. **/
-  public Object childrenAccept(JavaParserVisitor visitor, Object data) {
-    if (children != null) {
-      for (int i = 0; i < children.length; ++i) {
-        children[i].jjtAccept(visitor, data);
-      }
-    }
-    return data;
-  }
-
   /* You can override these two methods in subclasses of SimpleNode to
      customize the way the node appears when the tree is dumped.  If
      your output uses more than one line you should override
