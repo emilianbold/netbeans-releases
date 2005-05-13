@@ -15,8 +15,8 @@ package org.netbeans.core.spi.multiview;
 
 
 /** 
- * Handles closing of the MultiView component globally. Each opened MultiViewElement
- * creates a CloseOperationState instance to notify the environment of it's internal state.
+ * Handles closing of the MultiView component globally. Each opened {@link org.netbeans.core.spi.multiview.MultiViewElement}
+ * creates a {@link org.netbeans.core.spi.multiview.CloseOperationState} instance to notify the environment of it's internal state.
  * 
  * @author  Milos Kleint
  */
@@ -26,7 +26,7 @@ public interface CloseOperationHandler {
      * Perform the closeOperation on the opened elements in the multiview topcomponent.
      * Can resolve by itself just based on the states of the elements or ask the user for
      * the decision.
-     * @param elements CloseOperationState instances of MultiViewElements that cannot be
+     * @param elements {@link org.netbeans.core.spi.multiview.CloseOperationState} instances of {@link org.netbeans.core.spi.multiview.MultiViewElement}s that cannot be
      * closed and require resolution.
      * @returns true if component can be close, false if it shall remain opened.
      */

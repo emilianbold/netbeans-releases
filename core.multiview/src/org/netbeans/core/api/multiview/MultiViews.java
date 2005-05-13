@@ -33,6 +33,7 @@ public final class MultiViews {
 
     /**
      * For advanced manupulation with Multiview component, the handler can be requested
+     * @return handle that one can use for manipulation with multiview component.
      */
     public static MultiViewHandler findMultiViewHandler(TopComponent tc) {
         if ( tc != null) {

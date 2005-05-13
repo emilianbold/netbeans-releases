@@ -17,7 +17,8 @@ import java.awt.Image;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.openide.util.HelpCtx;
 
-/** Description of multi view element. 
+/** 
+ * Description of multi view element. 
  *
  * @author Milos Kleint
  */
@@ -40,9 +41,9 @@ public final class MultiViewPerspective {
     
     /** Gets persistence type of multi view element, the TopComponent will decide
      * on it's onw persistenceType based on the sum of all it's elements.
-     * TopComponent.PERSISTENCE_ALWAYS has higher priority than TopComponent.PERSISTENCE_ONLY_OPENED
-     * and TopComponent.PERSISTENCE_NEVER has lowest priority.
-     * The TopComponent will be stored only if at least one element requesting persistence
+     * {@link org.openide.windows.TopComponent#PERSISTENCE_ALWAYS} has higher priority than {@link org.openide.windows.TopComponent#PERSISTENCE_ONLY_OPENED}
+     * and {@link org.openide.windows.TopComponent#PERSISTENCE_NEVER} has lowest priority.
+     * The {@link org.openide.windows.TopComponent} will be stored only if at least one element requesting persistence
      * was made visible.
      */
     public int getPersistenceType() {
@@ -51,13 +52,14 @@ public final class MultiViewPerspective {
 
     /** 
      * Gets localized display name of multi view element. Will be placed on the Element's toggle button.
+     * @return the display name for this view element.
      */
     public String getDisplayName() {
         return description.getDisplayName();
     }
     
     /** 
-     * Icon for the MultiViewDescription's TopComponent. Will be shown as TopComponent's icon
+     * Icon for the multi view component. Will be shown as {@link org.openide.windows.TopComponent}'s icon
      * when this element is selected.
      * @return The icon of multi view element */
     public Image getIcon () {

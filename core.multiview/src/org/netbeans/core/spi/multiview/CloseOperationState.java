@@ -18,13 +18,13 @@ import javax.swing.Action;
 
 /**
  * instances of this class describe the MultiViewElement's state when the component is
- * about to be closed. (See MultiViewElement.canCloseElement())
- * New instances are created by MultiViewFactory.createUnsafeCloseState() factory method.
+ * about to be closed. (See {@link org.netbeans.core.spi.multiview.MultiViewElement#canCloseElement})
+ * New instances are created by {@link org.netbeans.core.spi.multiview.MultiViewFactory#createUnsafeCloseState} factory method.
  */
 public final class CloseOperationState {
     
     /**
-     * Singleton instance of a close operation state, to be used whenever MultiViewElement is in consistent state
+     * Singleton instance of a close operation state, to be used whenever {@link org.netbeans.core.spi.multiview.MultiViewElement} is in consistent state
      * and can be safely closed.
      */
     public static final CloseOperationState STATE_OK = MultiViewFactory.createSafeCloseState();
@@ -43,7 +43,8 @@ public final class CloseOperationState {
     }
     
     /**
-     * The return value denotes wheather the MultiViewElement can be closed or not.
+     * The return value denotes wheather the {@link org.netbeans.core.spi.multiview.MultiViewElement} can be closed or not.
+     * @return can close element or not
      */
     
     public boolean canClose() {
@@ -52,7 +53,7 @@ public final class CloseOperationState {
     
     /**
      * A preferably unique id of the reason why the element cannot be closed.
-     * CloseOperationHandler implementation can use it when deciding about UI shown or action taken.
+     * {@link org.netbeans.core.spi.multiview.CloseOperationHandler} implementation can use it when deciding about UI shown or action taken.
      */
     
     public String getCloseWarningID() {
@@ -61,7 +62,8 @@ public final class CloseOperationState {
     
     /**
      * Action is used when user wants to complete the closing of the component without loosing changed data.
-     * Used by CloseOperationHandler.
+     * Used by {@link org.netbeans.core.spi.multiview.CloseOperationHandler}.
+     * @return action which will be triggered when user confirms changes
      */
     public Action getProceedAction() {
         return proceedAction;
@@ -69,7 +71,8 @@ public final class CloseOperationState {
 
     /**
      * Action is used when user wants to complete the closing of the component and discard any changes.
-     * Used by CloseOperationHandler.
+     * Used by {@link org.netbeans.core.spi.multiview.CloseOperationHandler}.
+     * @return action which will be triggered when user discards changes
      */
     
     public Action getDiscardAction() {
