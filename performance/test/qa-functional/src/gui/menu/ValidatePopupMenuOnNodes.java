@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -59,22 +59,30 @@ public abstract class ValidatePopupMenuOnNodes extends org.netbeans.performance.
      * than is desirable for this case.
      */
     public ComponentOperator open(){
+        /* it stopped to work after a while, see issue 58790
         java.awt.Point p = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
-        // JPopupMenu menu = JPopupMenuOperator.callPopup(dataObjectNode.tree(), p.x, p.y);
         JPopupMenu menu = callPopup(dataObjectNode.tree(), p.x, p.y, java.awt.event.InputEvent.BUTTON3_MASK);
         return new JPopupMenuOperator(menu);
+         */
+        measure_mouse_press = true;
+        return dataObjectNode.callPopup();
     }
     
+        /* it stopped to work after a while, see issue 58790
+         *  
     private JPopupMenu callPopup(final org.netbeans.jemmy.operators.ComponentOperator oper, int x, int y, int mouseButton) {
+        org.netbeans.jemmy.operators.JPopupMenuOperator popup_op = dataObjectNode.callPopup();
+        return (JPopupMenu) popup_op.getSource();
+        
         // oper.clickForPopup(x, y, mouseButton);
         
         // oper.clickForPopup -> avoid makeVisible
         // oper.clickMouse(x, y, 1, mouseButton, 0, true);
         try {
-            java.awt.Robot r = new java.awt.Robot();
-            r.mouseMove(oper.getSource().getLocationOnScreen().x+x, oper.getSource().getLocationOnScreen().y+y);
-            r.mousePress(java.awt.event.InputEvent.BUTTON3_MASK);
-            r.mouseRelease(java.awt.event.InputEvent.BUTTON3_MASK);
+//            java.awt.Robot r = new java.awt.Robot();
+//            r.mouseMove(oper.getSource().getLocationOnScreen().x+x, oper.getSource().getLocationOnScreen().y+y);
+//            r.mousePress(java.awt.event.InputEvent.BUTTON3_MASK);
+//            r.mouseRelease(java.awt.event.InputEvent.BUTTON3_MASK);
         }
         catch (Exception ex) {
             throw new Error(ex);
@@ -97,6 +105,7 @@ public abstract class ValidatePopupMenuOnNodes extends org.netbeans.performance.
         }),
         org.netbeans.jemmy.ComponentSearcher.getTrueChooser("Popup menu")));
     }
+         */
     
     /**
      * Closes the popup by sending ESC key event.
