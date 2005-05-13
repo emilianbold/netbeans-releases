@@ -167,6 +167,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
                     
                 case 2: {
                     JComboBox access = new JComboBox();
+                    access.setName("access");
                     access.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "readonly", "readwrite" }));
                     Object obj = getModel().getValueAt(row,column);
                     if(obj == null)
