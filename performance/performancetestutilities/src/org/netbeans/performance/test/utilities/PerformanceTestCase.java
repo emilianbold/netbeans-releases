@@ -14,20 +14,17 @@
 package org.netbeans.performance.test.utilities;
 
 import java.awt.Component;
-import java.awt.Robot;
 
 import java.util.HashMap;
-import java.util.ListIterator;
 
 import org.netbeans.jellytools.JellyTestCase;
 
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
-        
+
 import org.netbeans.junit.NbPerformanceTest;
 
 import org.netbeans.performance.test.guitracker.ActionTracker;
@@ -41,7 +38,9 @@ import org.netbeans.performance.test.guitracker.LoggingEventQueue;
  * This class provide methods for QA Performance measurement.
  * Implemented methods:
  * <pre>
- *          testMeasureTime()
+            doMeasurement();
+            measureTime();
+            measureMemoryUsage();
  *</pre>
  *
  *
@@ -53,7 +52,7 @@ import org.netbeans.performance.test.guitracker.LoggingEventQueue;
 public abstract class PerformanceTestCase extends JellyTestCase implements NbPerformanceTest{
     
     private static final boolean logMemory = Boolean.getBoolean("org.netbeans.performance.memory.usage.log");
-
+    
     /**
      * Constant defining maximum time delay for "ui-response" of actions that needs to react
      * quickly to keep the user's flow to stay uninterrupted. This is set to 1000ms.
@@ -109,7 +108,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     
     /** Warmup finished flag. */
     private static boolean warmupFinished = false;
-
+    
+    /** Measure from last MOUSE_PRESS event instead of MOUSE_RELEASE (usefull for dialogs invoked from popup menu */
+    protected boolean measure_mouse_press = false;
+    
     /** tracker for UI activities */
     private static ActionTracker tr;
     
@@ -162,7 +164,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     public void setUp() {
         
         checkScanFinished();
-        checkWarmup ();
+        checkWarmup();
         
         // XXX load our EQ and repaint manager
         /*
@@ -171,12 +173,16 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         rm.setEnabled(true);
         leq = new LoggingEventQueue(tr);
         leq.setEnabled(true);
-        */
+         */
         
         data = new java.util.ArrayList();
         
     }
     
+    /**
+     * Getter for LoggingRepaintManager.
+     * @return LoggingRepaintManager
+     */
     protected LoggingRepaintManager repaintManager() {
         return rm;
     }
@@ -226,7 +232,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
         long[] measuredTime = new long[repeat+1];
         
-        // issue 56091 and applied workarround on the next line 
+        // issue 56091 and applied workarround on the next line
         // JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel()|JemmyProperties.ROBOT_MODEL_MASK);
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
@@ -343,7 +349,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             // XXX export results?
         }
         
-        dumpLog ();
+        dumpLog();
         if(exceptionDuringMeasurement)
             throw new Error("Exception rises during measurement, look at appropriate log file for stack trace(s).");
         
@@ -373,7 +379,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
         useTwoOrderTypes = false;
         
-        // issue 56091 and applied workarround on the next line 
+        // issue 56091 and applied workarround on the next line
         // JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel()|JemmyProperties.ROBOT_MODEL_MASK);
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
@@ -401,14 +407,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 
                 long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
                 waitNoEvent(wait_time);
-                    
+                
                 new QueueTool().waitEmpty();
                 
             }catch(Exception exc){ // catch for prepare(), open()
-                    exc.printStackTrace(getLog());
-                    exceptionDuringMeasurement = true;
-                    getScreenshot("exception_during_open");
-                    // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
+                exc.printStackTrace(getLog());
+                exceptionDuringMeasurement = true;
+                getScreenshot("exception_during_open");
+                // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
             }finally{
                 try{
                     // Uncomment if you want to run with analyzer tool
@@ -420,9 +426,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     waitNoEvent(WAIT_AFTER_CLOSE);
                     
                 }catch(Exception e){
-                        e.printStackTrace(getLog());
-                        getScreenshot("measure");
-                        exceptionDuringMeasurement = true;
+                    e.printStackTrace(getLog());
+                    getScreenshot("measure");
+                    exceptionDuringMeasurement = true;
                 }finally{
                 }
             }
@@ -463,7 +469,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     }
     
     /**
-     * Initialize callback that is called once before the repeated sequence of 
+     * Initialize callback that is called once before the repeated sequence of
      * testet operation is perfromed.
      * Default implementation is empty.
      */
@@ -517,7 +523,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * @param value measured perofrmance value
      * @param unit unit name of measured value
      * @param runOrder order in which the data was measured (1st, 2nd, ...)
-     * @param threshold
+     * @param threshold the limit for an action, menu or dialog
      */
     public void reportPerformance(String name, long value, String unit, int runOrder, long threshold) {
         NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
@@ -546,9 +552,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     }
     
     /**
-     * Turn's off blinking of the caret in the Java editor.
+     * Turn's off blinking of the caret in the editor.
      * A method generally useful for any UI Responsiveness tests which measure actions
      * in the Java editor. This method should be called from a test's initialize() method.
+     * @param kitClass class of the editor for which you want turn off caret blinking
      */
     protected void setEditorCaretFilteringOn(Class kitClass) {
         org.netbeans.modules.editor.options.BaseOptions options = org.netbeans.modules.editor.options.BaseOptions.getOptions(kitClass);
@@ -591,6 +598,12 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         setEditorCaretFilteringOn(org.netbeans.modules.web.core.syntax.JSPKit.class);
     }
     
+    /**
+     * Log used memory size. It can help with evaluation what happend during measurement. 
+     * If the size of the memory before and after open differs :
+     * <li>if increases- there could be memory leak</li>
+     * <li>if decreases- there was an garbage collection during measurement - it prolongs the action time</li>
+     */
     protected void logMemoryUsage(){
         // log memory usage after each test case
         if (logMemory) {
@@ -600,8 +613,6 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             tr.add(tr.TRACK_APPLICATION_MESSAGE, "usedMemory size:"+ (totalMemory-freeMemory) +" total:"+totalMemory+" free:"+freeMemory);
         }
     }
-        
-        
     
     /**
      * Run Garbage Collection 3 times * number defined as a parameter for this method
@@ -620,25 +631,6 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             }catch(Exception exc){}
         }
     }
-    
-    /** Set name for performance data. Measured value is stored to database under this name.
-     * @return performance data name
-     */
-/* It is not neccessary distinguish values by diferent names
- *
- public String setPerformanceName(int i){
-        String performanceDataName = getPerformanceName();
- 
-        if(performanceDataName.equalsIgnoreCase("measureMemoryUsage"))
-            performanceDataName = this.getClass().getName();
- 
-        if(i>0){
-            return performanceDataName+"_"+(i+1);
-        }
- 
-        return performanceDataName;
-    }
- */
     
     /**
      * Set name for performance data. Measured value is stored to database under this name.
@@ -695,8 +687,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 try {
                     log("checkWarmup - waiting");
                     Thread.sleep(1000);
-                }
-                catch (InterruptedException ie) {
+                } catch (InterruptedException ie) {
                     // do nothing
                 }
             }
@@ -716,17 +707,25 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     
     
     /**
-     * Get measured time from overwritten JDK class EventQueue().</p>
-     * <p>Measuring of time starts when the event queue is awakened by mouse or
-     * key event and it can be finished when the queue is empty again and there was a
-     * paint event. If there are more paints the difference between last paint and user
-     * event is returned.</p>
+     * This method returns meaasured time, it goes through all logged data by 
+     * guitracker (LoggingEventQueue and LoggingRepaintManager).
+     * The measured time is the difference between :
+     * <ul>
+     *     <li> last START or 
+     *     <li> last MOUSE_PRESS (if the measure_mouse_press property is true)
+     *     <li> last MOUSE_RELEASE - by default (if the measure_mouse_press property is false)
+     *     <li> last KEY_PRESS
+     * </ul>
+     * and 
+     * <ul>
+     *     <li> last or expected paint
+     *     <li> last FRAME_SHOW
+     *     <li> last DIALOG_SHOW
+     *     <li> last COMPONENT_SHOW
+     * </ul>
      * @return measured time
      */
     public long getMeasuredTime(){
-        // XX read measured data, find last START tuple and last (or expected) paint time
-        // the difference is the result
-        
         EventList lst = tr.getCurrentEvents();
         ActionTracker.Tuple[] events = (ActionTracker.Tuple[]) lst.toArray(new ActionTracker.Tuple[0]);
         long start = 0L;
@@ -734,15 +733,15 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         for (int i = 0; i < events.length; i++) {
             ActionTracker.Tuple t = events[i];
             int code = t.getCode();
-            if (code == ActionTracker.TRACK_START 
-            || code == ActionTracker.TRACK_MOUSE_PRESS
-            || code == ActionTracker.TRACK_KEY_PRESS) {
+            if (code == ActionTracker.TRACK_START
+                    || (code == ActionTracker.TRACK_MOUSE_RELEASE && !measure_mouse_press)
+                    || (code == ActionTracker.TRACK_MOUSE_PRESS && measure_mouse_press)
+                    || code == ActionTracker.TRACK_KEY_PRESS) {
                 start = t.getTimeMillis();
-            }
-            else if (code == ActionTracker.TRACK_PAINT
-            || code == ActionTracker.TRACK_FRAME_SHOW
-            || code == ActionTracker.TRACK_DIALOG_SHOW
-            || code == ActionTracker.TRACK_COMPONENT_SHOW
+            } else if (code == ActionTracker.TRACK_PAINT
+                    || code == ActionTracker.TRACK_FRAME_SHOW
+                    || code == ActionTracker.TRACK_DIALOG_SHOW
+                    || code == ActionTracker.TRACK_COMPONENT_SHOW
                     ) {
                 end = t.getTimeMillis();
             }
@@ -754,19 +753,16 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     }
     
     /**
-     * Get measured time from overwritten JDK class EventQueue().</p>
-     * <p>Measuring of time starts when the event queue is awakened by mouse or
-     * key event and it can be finished when the queue is empty again and there was a
-     * paint event. If there are more paints the difference between last paint and user
-     * event is returned.</p>
-     * @return measured time
+     * Data are logged to the file, it helps with evaluation of the failure 
+     * as well as it shows what exactly is meaured (user can find the start event 
+     * and stop paint/show) .
      */
     public void dumpLog(){
         tr.stopRecording();
         try {
-            tr.exportAsXML(getLog("ActionTracker.xml"));
-        }
-        catch (Exception ex) {
+//TEMP            tr.exportAsXML(getLog("ActionTracker.xml"));
+             tr.exportAsXML();
+        } catch (Exception ex) {
             throw new Error("Exception while generating log", ex);
         }
         tr.forgetAllEvents();
@@ -866,8 +862,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         return(dialog);
     }
     
-    /** 
-     * Close dialogs 
+    /**
+     * Close dialogs
      * @param dialog find all dialogs of owner for this dialog
      * @param chooser chooser used for looking for dialogs
      */
@@ -900,7 +896,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.BW_MODE);
                 else
                     PNGEncoder.captureScreen(bounds_new,getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
-//System.err.println("XX "+rm.getRepaintedArea());                
+//System.err.println("XX "+rm.getRepaintedArea());
 //                PNGEncoder.captureScreen(rm.getRepaintedArea(),getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
             }
         } catch (Exception exc) {
@@ -909,7 +905,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         }
     }
     
-    /** 
+    /**
      * Get screenshot of whole screen if exception rised during initialize()
      * @param title title is part of the screenshot file name
      */
