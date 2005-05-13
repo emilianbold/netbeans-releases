@@ -13,23 +13,45 @@
 
 package org.netbeans.performance.test.guitracker;
 
-import java.io.*;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.JWindow;
-import javax.swing.JFrame;
+import java.awt.AWTEvent;
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.event.AWTEventListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.InvocationEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.ListIterator;
+
 import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JWindow;
 
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 /**
  * Tracks activity within a GUI program, this activity loosely being the
