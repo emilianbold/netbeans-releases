@@ -444,18 +444,31 @@ committed to CVS for legal reasons. You need to download it:
                 Classes must have both package and name specified: <xsl:value-of select="@package"/>.<xsl:value-of select="@name"/>
             </xsl:message>
         </xsl:if>
-        <a>
-            <!-- XXX these links are often broken... how to generate them only when valid?? -->
-            <xsl:attribute name="href"><xsl:value-of select="$javadoc-url-base"/>/<xsl:value-of select="translate(@package, '.', '/')"/>/<xsl:value-of select="@name"/>.html</xsl:attribute>
-            <code><!--<xsl:value-of select="@package"/>.--><xsl:value-of select="@name"/></code>
-        </a>
+        <xsl:choose>
+            <xsl:when test="@link = 'no'">
+                <code><xsl:value-of select="@package"/>.<xsl:value-of select="@name"/></code>
+            </xsl:when>
+            <xsl:otherwise>
+                <a>
+                    <xsl:attribute name="href"><xsl:value-of select="$javadoc-url-base"/>/<xsl:value-of select="translate(@package, '.', '/')"/>/<xsl:value-of select="@name"/>.html</xsl:attribute>
+                    <code><!--<xsl:value-of select="@package"/>.--><xsl:value-of select="@name"/></code>
+                </a>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <xsl:template match="package">
-        <a>
-            <xsl:attribute name="href"><xsl:value-of select="$javadoc-url-base"/>/<xsl:value-of select="translate(@name, '.', '/')"/>/package-summary.html</xsl:attribute>
-            <code><xsl:value-of select="@name"/></code>
-        </a>
+        <xsl:choose>
+            <xsl:when test="@link = 'no'">
+                <code><xsl:value-of select="@name"/></code>
+            </xsl:when>
+            <xsl:otherwise>
+                <a>
+                    <xsl:attribute name="href"><xsl:value-of select="$javadoc-url-base"/>/<xsl:value-of select="translate(@name, '.', '/')"/>/package-summary.html</xsl:attribute>
+                    <code><xsl:value-of select="@name"/></code>
+                </a>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <xsl:template match="author">
