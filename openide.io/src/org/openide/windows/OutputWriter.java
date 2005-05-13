@@ -20,7 +20,7 @@ import java.io.Writer;
 /** 
 * A PrintWriter subclass for writing to a tab in the output window.  To 
 * create hyperlinked lines, call <code>println</code>, passing an instance
-* of <code>OutputListener</code> which should be called when a line is 
+* of {@link org.openide.windows.OutputListener} which should be called when a line is 
 * clicked or the caret in the output window enters it.
 *
 * @author Ales Novak
@@ -35,7 +35,7 @@ public abstract class OutputWriter extends PrintWriter {
     }
 
     /** Print a line which will be displayed as a hyperlink, calling the 
-    * passed <code>OutputListener</code> if it is clicked, if the caret 
+    * passed {@link org.openide.windows.OutputListener} if it is clicked, if the caret 
     * enters it, or if the enter key is pressed over it.
     * 
     *
@@ -46,7 +46,7 @@ public abstract class OutputWriter extends PrintWriter {
     public abstract void println(String s, OutputListener l) throws IOException;
 
     /** Print a line which will be displayed as a hyperlink, calling the 
-     * passed <code>OutputListener</code> if it is clicked, if the caret 
+     * passed {@link org.openide.windows.OutputListener} if it is clicked, if the caret 
      * enters it, or if the enter key is pressed over it. 
      * 
      * Implementors of this class 
@@ -67,7 +67,7 @@ public abstract class OutputWriter extends PrintWriter {
     
     /** Clear the output pane.
     * Expect this method to be deprecated in a future release and an 
-    * equivalent created in <code>InputOutput</code>.  It is ambiguous what it means
+    * equivalent created in {@link org.openide.windows.InputOutput}.  It is ambiguous what it means
     * to reset stdout but not stderr, etc.  For the current implementation, reset
     * should be called on the stdout.
     * 

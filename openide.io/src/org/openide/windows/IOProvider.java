@@ -78,7 +78,7 @@ public abstract class IOProvider {
      * @see InputOutput
      * @since 1.6 <br>
      * Note: The method is non-abstract for backward compatibility reasons only. If you are
-     * extending IOProvider and implementing its abstract classes, you are encouraged to override
+     * extending <code>IOProvider</code> and implementing its abstract classes, you are encouraged to override
      * this method as well. The default implementation falls back to the <code>getIO(name, newIO)</code> method, ignoring the actions passed.
      */
     public InputOutput getIO(String name, Action[] additionalActions) {

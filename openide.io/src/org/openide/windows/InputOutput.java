@@ -26,10 +26,10 @@ import org.openide.util.io.NullInputStream;
  * getErr()</code> on the returned instance.
  * <p>
  * Generally it is preferable not to hold a reference to an instance of 
- * <code>InputOutput</code>, but rather to fetch it by name from <code>IOProvider</code> as
+ * {@link org.openide.windows.InputOutput}, but rather to fetch it by name from {@link org.openide.windows.IOProvider} as
  * needed.<p>
  * <b>Note:</b> For historical reasons, the mechanism to clear an output tab
- * is via the method <code>OutputWriter.reset()</code>, though it would have
+ * is via the method {@link org.openide.windows.OutputWriter#reset}, though it would have
  * made more sense implemented here.
  * 
  * @see OutputWriter
@@ -62,11 +62,11 @@ public interface InputOutput {
     public OutputWriter getErr();
 
     /** Closes this tab.  The effect of calling any method on an instance
-     * of InputOutput after calling closeInputOutput() on it is undefined.
+     * of InputOutput after calling <code>closeInputOutput()</code> on it is undefined.
      */
     public void closeInputOutput();
 
-    /** Test whether this tab has been closed, either by a call to closeInputOutput()
+    /** Test whether this tab has been closed, either by a call to <code>closeInputOutput()</code>
     * or by the user closing the tab in the UI.
     *
     * @see #closeInputOutput
