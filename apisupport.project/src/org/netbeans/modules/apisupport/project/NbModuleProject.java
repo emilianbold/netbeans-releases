@@ -17,8 +17,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -38,7 +36,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -69,6 +69,9 @@ final class NbModuleProject implements Project {
     private Map/*<String,String>*/ evalPredefs;
     private List/*<Map<String,String>>*/ evalDefs;
     private Map/*<FileObject,Element>*/ extraCompilationUnits;
+    
+    private String locBundlePropsPath;
+    private String infoDisplayName;
     
     NbModuleProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -148,6 +151,7 @@ final class NbModuleProject implements Project {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
+        findLocalizedBundlePath();
         lookup = Lookups.fixed(new Object[] {
             new Info(),
             helper.createAuxiliaryConfiguration(),
@@ -168,9 +172,10 @@ final class NbModuleProject implements Project {
                 "build", // NOI18N
             }),
             sourcesHelper.createSources(),
-            new AntArtifactProviderImpl (this, helper, evaluator ()),
+            new AntArtifactProviderImpl(this, helper, evaluator()),
+            new CustomizerProviderImpl(this, getHelper(), evaluator(), 
+                    locBundlePropsPath),
             // XXX need, in rough descending order of importance:
-            // CustomizerProvider - ???
         });
     }
     
@@ -210,7 +215,69 @@ final class NbModuleProject implements Project {
         }
         return null;
     }
-    
+
+    /**
+     * Search for appropriate localized bundle (i.e.
+     * OpenIDE-Module-Localizing-Bundle) entry in the manifest taking into
+     * account branding and localization.
+     * Also store display name for <code>Info</code> inner class to prevent the
+     * same search again.
+     */
+    private void findLocalizedBundlePath() {
+        if (locBundlePropsPath == null) {
+            Manifest mf = getManifest();
+            if (mf != null) {
+                String locBundleResource = mf.getMainAttributes().
+                        getValue("OpenIDE-Module-Localizing-Bundle"); // NOI18N
+                if (locBundleResource != null) {
+                    String locBundleResourceBase, locBundleResourceExt;
+                    int idx = locBundleResource.lastIndexOf('.');
+                    if (idx != -1 && idx > locBundleResource.lastIndexOf('/')) {
+                        locBundleResourceBase = locBundleResource.substring(0, idx);
+                        locBundleResourceExt = locBundleResource.substring(idx);
+                    } else {
+                        locBundleResourceBase = locBundleResource;
+                        locBundleResourceExt = "";
+                    }
+                    FileObject srcFO = getSourceDirectory();
+                    if (srcFO != null) {
+                        Iterator it = NbBundle.getLocalizingSuffixes();
+                        while (it.hasNext()) {
+                            String suffix = (String)it.next();
+                            String resource = locBundleResourceBase + suffix +
+                                    locBundleResourceExt;
+                            FileObject bundleFO = srcFO.getFileObject(resource);
+                            if (bundleFO != null) {
+                                Properties p = new Properties();
+                                try {
+                                    InputStream is = bundleFO.getInputStream();
+                                    try {
+                                        p.load(is);
+                                    } finally {
+                                        is.close();
+                                    }
+                                    String displayName = p.getProperty("OpenIDE-Module-Name"); // NOI18N
+                                    if (displayName != null) {
+                                        // we get it
+                                        String fullPath = bundleFO.getPath();
+                                        String prjPath = helper.getProjectDirectory().getPath();
+                                        this.locBundlePropsPath = fullPath.substring(prjPath.length() + 1);
+                                        // let's also store display name for Info 
+                                        // to prevent the same search again
+                                        this.infoDisplayName = displayName;
+                                        break;
+                                    }
+                                } catch (IOException e) {
+                                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+        
     public AntProjectHelper getHelper() {
         return helper;
     }
@@ -501,70 +568,23 @@ final class NbModuleProject implements Project {
     
     private final class Info implements ProjectInformation {
         
-        private String displayName;
-        
         Info() {}
         
         public String getName() {
             return getCodeNameBase();
         }
-        
+
         public String getDisplayName() {
-            if (displayName == null) {
-                Manifest mf = getManifest();
-                if (mf != null) {
-                    String locBundleResource = mf.getMainAttributes().
-                    getValue("OpenIDE-Module-Localizing-Bundle"); // NOI18N
-                    if (locBundleResource != null) {
-                        String locBundleResourceBase, locBundleResourceExt;
-                        int idx = locBundleResource.lastIndexOf('.');
-                        if (idx != -1 && idx > locBundleResource.lastIndexOf('/')) {
-                            locBundleResourceBase = locBundleResource.substring(0, idx);
-                            locBundleResourceExt = locBundleResource.substring(idx);
-                        } else {
-                            locBundleResourceBase = locBundleResource;
-                            locBundleResourceExt = "";
-                        }
-                        FileObject srcFO = getSourceDirectory();
-                        if (srcFO != null) {
-                            Iterator it = NbBundle.getLocalizingSuffixes();
-                            while (it.hasNext()) {
-                                String suffix = (String)it.next();
-                                String resource = locBundleResourceBase + suffix +
-                                locBundleResourceExt;
-                                FileObject bundleFO = srcFO.getFileObject(resource);
-                                if (bundleFO != null) {
-                                    Properties p = new Properties();
-                                    try {
-                                        InputStream is = bundleFO.getInputStream();
-                                        try {
-                                            p.load(is);
-                                        } finally {
-                                            is.close();
-                                        }
-                                        displayName = p.getProperty("OpenIDE-Module-Name"); // NOI18N
-                                        if (displayName != null) {
-                                            break;
-                                        }
-                                    } catch (IOException e) {
-                                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (displayName == null) {
-                displayName = getName();
-                if (displayName.equals("org.netbeans")) { // NOI18N
+            if (infoDisplayName == null) {
+                infoDisplayName = getName();
+                if (infoDisplayName.equals("org.netbeans")) { // NOI18N
                     // Special case.
-                    displayName = "Core Bootstrap";
+                    infoDisplayName = "Core Bootstrap";
                 }
             }
-            return displayName;
+            return infoDisplayName;
         }
-        
+
         public Icon getIcon() {
             return NB_PROJECT_ICON;
         }
