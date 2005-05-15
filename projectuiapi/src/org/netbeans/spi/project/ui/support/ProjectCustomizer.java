@@ -127,7 +127,7 @@ public final class ProjectCustomizer {
         }
         
         /** Factory method which creates new category description.
-         * @param name Prograatic name of the category
+         * @param name Programmatic name of the category
          * @param displayName Name to be shown to the user
          * @param icon Icon for given category. Will use default icon if null.
          * @param subcategories Subcategories to be shown under given category.
