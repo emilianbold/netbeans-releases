@@ -18,87 +18,88 @@ Microsystems, Inc. All Rights Reserved.
         <title>Obtaining a Database Schema</title>
         <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
     </head>
-
-    <h2>Obtaining a Database Schema</h2>
-    <p><small><a href="#seealso">See Also</a></small></p>
-    <p>The IDE allows you to capture and create a persistent database schema which can then be
-    used in other projects.</p>
-    <p>To connect to a database to retrieve a schema, the database 
-    driver first needs to be added to the IDE. Database drivers can be added in the Runtime window. For more,
-    see <a href="nbdocs:/org/netbeans/modules/db/docs/adddriver.html">Adding a New Driver</a>.</p>
+    <body>
+        <h2>Obtaining a Database Schema</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The IDE allows you to capture and create a persistent database schema which can then be
+        used in other projects.</p>
+        <p>To connect to a database to retrieve a schema, the database 
+        driver first needs to be added to the IDE. Database drivers can be added in the Runtime window. For more,
+        see <a href="nbdocs:/org/netbeans/modules/db/docs/adddriver.html">Adding a New Driver</a>.</p>
     
-    <p><b>To capture a database schema:</b> </p>
+        <p><b>To capture a database schema:</b> </p>
     
-    <ol>
-        <li>Make sure the database server is running.</li>
-        <li>Choose File&nbsp;<img src="images/arrow.gif">&nbsp;New File to open the New File 
-        wizard.</li>
-        <li>Select the Project where the schema should be saved.</li>        
-        <li>Select Database in the Categories pane.</li>
-        <li>Select Schema in the File Types pane and click Next.</li>
-        <li>For File Name, provide a name for the schema.</li>
-        <li>Specify where to save the schema or use the default location. By default the IDE saves the schema in the <tt>conf</tt> folder in the <tt>src</tt> folder of the project selected in Step 2 above.</li>
-        <li>Click Next.</li>        
-        <li>Select an existing database connection from the list or select Add Connection
-        to create a new connection. For more, see <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a>.</li>
-        <li>Click Next.       
-            <p>You may be prompted by a Connect dialog box to supply a username and password to connect to the database, if required.
-            Enter the user name and password in the Basic setting tab and click OK.</p>
-            <ul class="note"><li>When connecting to the database, the schema with the same name as the user name is 
-                set as default, but if a schema with that name does not exist, 
-                you are automatically switched to the Advanced Tab to select a schema. Choose the correct schema
-                from the combobox and click OK. </li>
-            </ul>
-        </li> 
+        <ol>
+            <li>Make sure the database server is running.</li>
+            <li>Choose File&nbsp;<img src="images/arrow.gif">&nbsp;New File to open the New File 
+            wizard.</li>
+            <li>Select the Project where the schema should be saved.</li>        
+            <li>Select Database in the Categories pane.</li>
+            <li>Select Schema in the File Types pane and click Next.</li>
+            <li>For File Name, provide a name for the schema.</li>
+            <li>Specify where to save the schema or use the default location. By default the IDE saves the schema in the <tt>conf</tt> folder in the <tt>src</tt> folder of the project selected in Step 2 above.</li>
+            <li>Click Next.</li>        
+            <li>Select an existing database connection from the list or select Add Connection
+            to create a new connection. For more, see <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a>.</li>
+            <li>Click Next.       
+                <p>You may be prompted by a Connect dialog box to supply a username and password to connect to the database, if required.
+                Enter the user name and password in the Basic setting tab and click OK.</p>
+                <ul class="note"><li>When connecting to the database, the schema with the same name as the user name is 
+                    set as default, but if a schema with that name does not exist, 
+                    you are automatically switched to the Advanced Tab to select a schema. Choose the correct schema
+                    from the combobox and click OK. </li>
+                </ul>
+            </li> 
         
         
 
-        <li>Select the tables and views you want to capture in the Available Tables 
-            and Views list on the left, then click Add to add them to your list of Selected 
-            Tables and Views on the right. Alternatively, you can click Add All to specify 
-            all tables and views. 
-            <ul class="note"><li>If you specify a table that references a table that you 
-                have not chosen to capture, both tables are captured.
+            <li>Select the tables and views you want to capture in the Available Tables 
+                and Views list on the left, then click Add to add them to your list of Selected 
+                Tables and Views on the right. Alternatively, you can click Add All to specify 
+                all tables and views. 
+                <ul class="note"><li>If you specify a table that references a table that you 
+                    have not chosen to capture, both tables are captured.
+                </li>
+                </ul>
             </li>
-            </ul>
-        </li>
-        <li>Click Finish to complete capturing the schema.</li>
-    </ol>
-    <p>The IDE displays a progress window with information about the status of the 
-    capturing of the database schema, including the table and view information 
-    it is capturing.</p>
-    <p>When schema capturing is complete, the progress window closes.</p>           
-    <p>The IDE saves the captured schema in XML format and displays the schema node 
-    (&nbsp;<img src="images/dbschemanode.gif" width="15" height="14">&nbsp;) in the Files window.</p>
+            <li>Click Finish to complete capturing the schema.</li>
+        </ol>
+        <p>The IDE displays a progress window with information about the status of the 
+        capturing of the database schema, including the table and view information 
+        it is capturing.</p>
+        <p>When schema capturing is complete, the progress window closes.</p>           
+        <p>The IDE saves the captured schema in XML format and displays the schema node 
+        (&nbsp;<img src="images/dbschemanode.gif" width="15" height="14">&nbsp;) in the Files window.</p>
     
     
-    <table>
+        <table>
 
-        <tr> 
+            <tr> 
 
-            <th colspan=2 align=left><a name="seealso">See Also</a></th>
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
 
-        </tr>
+            </tr>
 
-        <tr> 
+            <tr> 
 
-            <td width="23"></td>
+                <td width="23"></td>
 
-            <td>
-            <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a> <br>
-            
-        </tr>
+                <td>
+                    <a href="dbschema_recapture.html">Recapturing Schema From a Database</a><br>              
+                    <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a>
+                </td>
+            </tr>
 
-    </table>
+        </table>
 
-    <hr>
+        <hr>
 
-    <small><a href="credits.html">Legal Notices</a></small> 
-    <table border="0" cellpadding="20">
-        <tr><td>&nbsp;</td></tr>
-        <tr><td>&nbsp;</td></tr>
-        <tr><td>&nbsp;</td></tr>
-    </table>
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
 
     </body>
 

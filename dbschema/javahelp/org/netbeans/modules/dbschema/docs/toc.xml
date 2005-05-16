@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 <tocitem text="Servers and Databases">
 	<tocitem text="Working With Databases">
 		<tocitem text="Obtaining a Database Schema" target="dbschema"/>
+                <tocitem text="Recapturing Schema From a Database" target="dbschema_recapture"/>
 	</tocitem>
 </tocitem>
 

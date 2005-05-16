@@ -1,97 +1,104 @@
  
 <html>
 
-<!--
-  *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
-  *     Use is subject to license terms.
--->
-<head>
+    <!--
+    *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+    *     Use is subject to license terms.
+    -->
+    <head>
 
 
-<title>Calling an Enterprise Bean</title> 
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+        <title>Calling an Enterprise Bean</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
 
-</head>
-<body>
+    </head>
+    <body>
 
-<h2>Calling an Enterprise Bean</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p>Calling an enterprise bean is the process of getting a reference to the enterprise 
-  bean so that you can call its methods. You can call an enterprise bean from:</p>
-<ul>
-  <li> Any Java class in an EJB module except for an enterprise bean's interfaces.</li>
-  <li>Any Java class in a web application. You cannot call an enterprise bean 
-    from a JSP file.</li>
-</ul>
-<p><b>To call an enterprise bean:</b></p>
-<ol>
-  <li>Open the IDE project that contains the enterprise bean that you want to 
-    call. </li>
-  <li>Open the file from which you want to call the enterprise bean.</li>
-  <li>In the Source Editor, right-click anywhere in the body of the class and 
-    choose Enterprise Resources <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Call 
-    Enterprise Bean.</li>
-  <li>In the dialog box, select the enterprise bean you want to call.</li>
-  <li>Select whether to use inline lookup code or use an existing service locator 
-    class. </li>
-  <li>(Optional) Type a new name for the reference.</li>
-  <li>Specify whether to reference the local interface or the remote interface. 
-    In order to reference a bean's local interface, the class that is referencing 
-    the bean must be packaged in the same enterprise application as the enterprise 
-    bean.</li>
-  <li>Click OK.</li>
-</ol>
-<p>When you call an enterprise bean, the IDE does the following:</p>
-<ul>
-  <li>Creates a lookup method in the caller class that gets a reference to the 
-    enterprise bean.</li>
-  <li>Adds the enterprise bean project to the caller project's classpath.</li>
-  <li>Adds a reference to the entity bean to the caller project's deployment descriptor.</li>
-</ul>
-<p><b>Notes:</b></p>
-<ul>
-  <li>If you are calling an enterprise bean that is in a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-      <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
-      <param name="viewerActivator" value="javax.help.LinkLabel">
-      <param name="viewerStyle" value="javax.help.Popup">
-      <param name="viewerSize" value="400,220">
-      <param name="text" value="free-form EJB module project">
-      <param name="textFontSize" value="small">
-      <param name="textFontFamily" value="SansSerif">
-      <param name="textFontStyle" value="italic">
-      <param name="textFontWeight" value="bold">
-      <param name="textColor" value="blue">
-    </object> and you get an error that the selected bean is not specified in 
-    the distribution archive, you have to specify the EJB module project's output. 
-    Right-click the EJB module's project node, choose Properties, and specify 
-    the output JAR file in the Output panel.</li>
-  <li>You cannot call an enterprise bean from a free-form web application project.</li>
-  <li>You can only call an enterprise bean from a free-form EJB module project 
-    if the enterprise bean is located in the same project.</li>
-</ul>
-<table border="0">
-  <tr>
-    <th colspan="2" align="left" ><a name="seealso">See Also</a></th>
-  </tr>
-  <tr valign="top"> 
-    <td width="23px" nowrap>&nbsp;</td>
-    <td nowrap><a href="../../enterprise/general/add_modules_to_ent_app.html">Adding 
-      a Module to an Enterprise Application</a><br>
-      <a href="../configuring/config_ejb_dd.html">Configuring EJB Deployment Descriptors</a><br>
-      <a href="define_business_method.html">Defining a Business Method</a> <br>
-      <a href="create_ejb.html">Creating an Enterprise Bean</a> </td>
-  </tr>
-</table>
-<!-- 
-enterprise bean > calling
--->
-<hr>
-<small> <a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> <tr><td>&nbsp;</td></tr> 
-   <tr><td>&nbsp;</td></tr> 
-   <tr><td>&nbsp;</td></tr> 
-   </table> 
-</body>
+        <h2>Calling an Enterprise Bean</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>Calling an enterprise bean is the process of getting a reference to the enterprise 
+        bean so that you can call its methods. The IDE can assist you when calling an enterprise bean from 
+        any Java class in an EJB module or web application.</p>
+        <p><b>To call an enterprise bean:</b></p>
+        <ol>
+            <li>Open the IDE project that contains the enterprise bean that you want to 
+            call. </li>
+            <li>Open the file from which you want to call the enterprise bean.</li>
+            <li>In the Source Editor, right-click anywhere in the body of the class and 
+            choose Enterprise Resources <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Call 
+            Enterprise Bean.</li>
+            <li>In the dialog box, select the enterprise bean you want to call.</li>
+            <li>Select whether to use inline lookup code or use an existing service locator 
+            class. </li>
+            <li>(Optional) Type a new name for the reference.</li>
+            <li>Specify whether to reference the local interface or the remote interface. 
+            In order to reference a bean's local interface, the class that is referencing 
+            the bean must be packaged in the same enterprise application as the enterprise 
+            bean.</li>
+            <li>Click OK.</li>
+        </ol>
+        <p>When you call an enterprise bean, the following occurs:</p>
+        <ul>
+            <li>A lookup method is created in the caller class.</li>
+            <li>The enterprise bean project is added to the caller project's classpath.</li>
+            <li>A reference to the entity or session bean being called is added to the deployment descriptor of the caller project.
+                If and where the reference is added depends on which of the following applies:
+                <ul>
+                    <li>If the lookup is made from an enterprise bean implementation class, 
+                    the reference is added to the corresponding bean.</li> 
+                    <li>If the lookup is made from any class of a web application,
+                    the reference is added to the web application.</li> 
+                    <li>If the lookup is made from a plain Java class of an EJB module, 
+                    no reference is added. In this case, the reference has to be added manually 
+                    to the bean calling the plain Java class.</li> 
+                </ul>
+            </li>
+        </ul>
+        <p><b>Notes:</b></p>
+        <ul>
+            <li>If you are calling an enterprise bean that is in a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+                <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
+                <param name="viewerActivator" value="javax.help.LinkLabel">
+                <param name="viewerStyle" value="javax.help.Popup">
+                <param name="viewerSize" value="400,220">
+                <param name="text" value="free-form EJB module project">
+                <param name="textFontSize" value="small">
+                <param name="textFontFamily" value="SansSerif">
+                <param name="textFontStyle" value="italic">
+                <param name="textFontWeight" value="bold">
+                <param name="textColor" value="blue">
+            </object> and you get an error that the selected bean is not specified in 
+            the distribution archive, you have to specify the EJB module project's output. 
+            Right-click the EJB module's project node, choose Properties, and specify 
+            the output JAR file in the Output panel.</li>
+            <li>The IDE cannot assist you when calling an enterprise bean from 
+            a free-form web application project.</li>
+            <li>You can only call an enterprise bean from a free-form EJB module project 
+            if the enterprise bean is located in the same project.</li>
+        </ul>
+        <table border="0">
+            <tr>
+                <th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+            </tr>
+            <tr valign="top"> 
+                <td width="23px" nowrap>&nbsp;</td>
+                <td nowrap><a href="../../enterprise/general/add_modules_to_ent_app.html">Adding 
+                a Module to an Enterprise Application</a><br>
+                <a href="../configuring/config_ejb_dd.html">Configuring EJB Deployment Descriptors</a><br>
+                <a href="define_business_method.html">Defining a Business Method</a> <br>
+                <a href="create_ejb.html">Creating an Enterprise Bean</a> </td>
+            </tr>
+        </table>
+        <!-- 
+        enterprise bean > calling
+        -->
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
 
 </html>

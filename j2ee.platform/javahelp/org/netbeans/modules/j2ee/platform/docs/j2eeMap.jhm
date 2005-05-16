@@ -252,6 +252,7 @@
 
     <mapID target="about_ent_apps" url="enterprise/general/about_ent_apps.html" />
     <mapID target="ent_app_process" url="enterprise/general/ent_app_process.html" />
+    <mapID target="ent_app_quickref" url="enterprise/general/ent_app_quickref.html" />
     <mapID target="ent_app_creating" url="enterprise/general/ent_app_creating.html" />
     <mapID target="add_modules_to_ent_app" url="enterprise/general/add_modules_to_ent_app.html" />
     <mapID target="add_resources_to_ent_app" url="enterprise/general/add_resources_to_ent_app.html" />
@@ -297,7 +298,7 @@
     <mapID target="build_ejb" url="ejb/deploy/build_ejb.html" />
 
     <mapID target="deploy_ejb" url="ejb/deploy/deploy_ejb.html" />
-    <mapID target="debug_ejb_freeform" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" />
+    <mapID target="debug_ejb_freeform" url="ejb/debug/debug_ejb_freeform.html" />
     <mapID target="test_ejb" url="ejb/debug/test_ejb.html" />
     <mapID target="debug_ejb" url="ejb/debug/debug_ejb.html" />
 

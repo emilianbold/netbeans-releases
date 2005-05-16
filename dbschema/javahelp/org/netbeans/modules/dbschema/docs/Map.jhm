@@ -23,5 +23,5 @@ Microsystems, Inc. All Rights Reserved.
 
 <mapID target="dbschema" url="dbschema.html" />
 <mapID target="dbschema_ctxhelp_wizard" url="dbschema.html" />
-
+<mapID target="dbschema_recapture" url="dbschema_recapture.html" />
 </map>

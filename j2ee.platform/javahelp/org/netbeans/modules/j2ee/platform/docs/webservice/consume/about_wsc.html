@@ -17,14 +17,14 @@ The way in which a web service client consumes a web service depends on the way 
 	<li>The provider distributes a WSDL file, which is available to you on your local filesystem.</li>
 </ul>
 <p>There are two types of web service clients:</p>
-<ul><li><b>J2EE 1.4 (JSR-109).</b> 
+<ul><li><b>J2EE Container-generated static stub.</b> 
 This type is based on JSR-109, which enhances JSR-101 by defining the packaging
 of web services into standard J2EE modules, including a new deployment descriptor,
 and defining web services that are implemented as session beans or servlets.
 This is the recommended and portable (via J2EE 1.4 specification) type.
 When you choose this type, the IDE adds deployment information in the 
  deployment descriptors and the container does the generation of the stub and other artifacts.</li>
- <li><b>JAX-RPC Static Stub.</b> 
+ <li><b>IDE-generated static stub.</b> 
 This type is based on JSR-101, which defines the mapping of WSDL to Java and vice versa.
 It also defines a client API to invoke a remote web service and a runtime environment 
 on the server to host a web service. This type is not portable.

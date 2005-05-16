@@ -20,7 +20,7 @@
 <p>Deployment descriptors are XML-based text files whose elements 
 describe how to assemble and deploy a module to a specific environment. 
 The elements also contain behavioral information about components not included directly in code.</p>
-<p>For web applications, there are four types of deployment descriptors:</p>
+<p>For web services, there are the following types of deployment descriptors:</p>
 <ul><li><b><tt>webservices.xml.</tt></b>
 The web service deployment descriptor that configures 
 web services.</li>
@@ -30,12 +30,30 @@ The deployment descriptor processed by the <tt>wscompile</tt> tool to
 
 <p><b>To edit <tt>webservices.xml</tt>:</b> </p>
 <ol>
-<li>to come</li>
+  <li>In the Projects window, expand the Configuration Files node for your project.</li>
+  <li>Double-click <tt>webservices.xml</tt> to open it in the Source Editor. 
+    <li>Edit the deployment descriptor as necessary. </li>
+  <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Save 
+    to save your changes.</li>
 </ol>
+<ul class="note">
+  <li>If you enter any XML syntax errors the IDE automatically alerts you. To 
+    fully ensure your changes have not cause any errors, you should verify the 
+    web application. </li>
+</ul>
 <p><b>To edit <i>filename</i>-config.xml</tt>:</b></p>
 <ol>
-  <li>to come</li>
+  <li>In the Projects window, expand the Source Packages node for your project.</li>
+  <li>Double-click <tt><i>filename</i>-config.xml</tt> to open it in the Source Editor. 
+    <li>Edit the configuration file as necessary. </li>
+  <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Save 
+    to save your changes.</li>
 </ol>
+<ul class="note">
+  <li>If you enter any XML syntax errors the IDE automatically alerts you. To 
+    fully ensure your changes have not cause any errors, you should verify the 
+    web application. </li>
+</ul>
 
 <table>
 <tr>

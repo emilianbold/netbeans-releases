@@ -9,28 +9,30 @@
 <meta name="lastupdated" content="4Feb04">
 <!-- p1 -->
 
-<title>Accessing a Tomcat Connection Pool from a JSP Page</title>
+<title>Accessing a Connection Pool from a JSP Page</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Accessing a Tomcat Connection Pool from a JSP Page</h2>
+<h2>Accessing a Connection Pool from a JSP Page</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
 
 <p>There are many ways of using a 
-<a href="tomcat_setup_tdcp.html">JDBC resource</a> (also known as a data source) in a web application. The simplest 
+<a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/server_aboutdbconnect.html">JDBC resource</a> (also known as a data source) in a web application. The simplest 
 way is to access your JDBC resource directly from a JSP file using the JSTL 1.1 tag library. You are recommended
  to use this method for
  testing purposes and in small web applications only.</p>
 <p><b>To set up a JSP file to use the JSTL 1.1 tag library to access a data source:</b></p>
 <ol>
-<li><a href="tomcat_setup_tdcp.html">Set up a Tomcat Database Connection Pool</a>.</li>
+	<li> Set up a <a href="tomcat_setup_tdcp.html">Tomcat connection pool</a>
+	 or a <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">SJS Application Server connection pool</a>.</li>
 <li>Put the JSTL 1.1 tag library on the web project's 
 <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_classpath.html">classpath</a>. When you do so,
-make sure that the Deploy checkbox is selected so that the library is packaged with the web project
+make sure that the Package checkbox in the Project Properties dialog box's Libraries page is selected 
+so that the library is packaged with the web project
  when you build it.
 <li>Expand the project node and the Web Pages node 
 and double-click the default index.jsp node. (Instead of using the
@@ -38,7 +40,7 @@ and double-click the default index.jsp node. (Instead of using the
  <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/create/jsp/jsp_create.html">create</a> your own JSP file.)
  The JSP file opens in the Source Editor.
 Now modify the JSP file to do the following:</p>
-<ul><li>Let the Tomcat Web Server know that the JSP page uses tags from JSTL's <tt>CORE</tt> 
+<ul><li>Let the server know that the JSP page uses tags from JSTL's <tt>CORE</tt> 
 	component and JSTL's <tt>SQL</tt> component. Paste or type the following near the top of
         the JSP file, but below the <tt>page</tt> directives:
           
@@ -68,8 +70,8 @@ To do so, paste or type code similar to the following below the taglib directive
    &lt;/c:forEach&gt;
   &lt;/table&gt;</pre>
  </li></ul>
-<li>Make the database driver available to Tomcat connection pooling 
-by copying the database driver's JAR file
+ <li>Make the database driver available to connection pooling. 
+ For example, to use Tomcat connection pooling, copy the database driver's JAR file
 into Tomcat's <tt>common/lib</tt> folder, within
 the IDE's installation folder.</p>
 <table cellpadding="3" cellspacing="0" border="0">

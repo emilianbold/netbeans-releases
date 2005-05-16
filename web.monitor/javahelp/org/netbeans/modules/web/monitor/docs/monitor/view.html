@@ -24,6 +24,10 @@ rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
+<p>After you have setup the HTTP Monitor, you can use it to debug your web
+application by observing data flow from your JSP page and servlet execution on the server.
+The HTTP Monitor records data about each incoming request.</p>
+<b>To analyze session data:</b>
 <ol>
 <li>Run a web application.</li>
 <li>Click the HTTP Monitor.</li>
@@ -36,7 +40,55 @@ request records.</p>
 <h3>The tree view</h3>
 In the tree view, the All Records category contains two subcategories: Current 
 Records and Saved Records. Individual HTTP request records reside in either 
-of these subcategories. Requests resulting in an internal dispatch cause nested 
+of these subcategories. They are accompanied by the following icons:</p>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr align="left"> 
+    <th scope="col"><b>Icon</b></th>
+    <th scope="col"><b>Description</b></th>
+  </tr>
+  <tr> 
+    <td><img src="../images/get.gif"></td>
+    <td>Get method.</td>
+  </tr>
+  <tr> 
+    <td><img src="../images/post.gif"></td>
+    <td>Post method.</td>
+  </tr> 
+</table>
+<p>Each method icon includes a badge based upon the value of the response status code: 
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr align="left"> 
+    <th scope="col"><b>Badge</b></th>
+    <th scope="col"><b>Description</b></th>
+  </tr>
+ <tr> 
+    <td><img src="../images/infoBadge.gif"></td>
+    <td>1xx - Information</td>
+  </tr>
+  <tr> 
+	  <td>None</td>
+	  <td>2xx or the value could not be determined. <br>In the latter case,
+	   this normally means that the request has succeeded (200 - OK)</td>
+  </tr>
+  <tr> 
+	  <td><img src="../images/warningBadge.gif"></td>
+	  <td>3xx - Warning</td>
+  </tr>
+  <tr> 
+    <td><img src="../images/errorBadge.gif"></td>
+    <td>400 - Error</td>
+  </tr>
+ 
+</table>
+<p>The request's method type and status code are also displayed in the display panel's Request tab.
+A full description of each of the status codes is provided below:<p>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">
+        <param name="text" value="<html><u>http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+</object>
+<p>Requests resulting in an internal dispatch cause nested 
 nodes on servers that support this functionality. The forwarded or included 
 requests are nested under the node corresponding to the main requests. </p>
 <p>Entries in Current Records are available only during the current IDE session. 
@@ -45,36 +97,36 @@ cleared whenever you exit the IDE, or when you explicitly delete them. Entries
 in Saved Records persist until you delete them. Records in all 
 categories can be sorted according to various criteria using the buttons above 
 the tree view:</p>
-<table width="100%" border="1">
-  <tr valign="top"> 
-    <td width="7%" height="38"><img src="../images/reload.gif" width="25" 
-height="25" alt="reload icon"></td>
-    <td width="93%" height="38">Reloads all the HTTP request records stored on 
-      the client</td>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr align="left"> 
+    <th scope="col"><b>Icon</b></th>
+    <th scope="col"><b>Description</b></th>
   </tr>
-  <tr valign="top"> 
-    <td width="7%" height="40"><img src="../images/sort.gif" width="25" 
-height="25" alt="sort in descending order icon"></td>
-    <td width="93%" height="44">Sorts the HTTP request records by timestamp in 
-      descending order</td>
+  <tr> 
+    <td><img src="../images/reload.gif"></td>
+    <td>Reloads all the HTTP request records stored on 
+      the client.</td>
   </tr>
-  <tr valign="top"> 
-    <td width="7%" height="38"><img src="../images/sortasc.gif" width="25" 
-height="25" alt="sort in ascending order icon"></td>
-    <td width="93%" height="44">Sorts the HTTP request records by timestamp in 
-      ascending order</td>
+  <tr> 
+    <td><img src="../images/sort.gif"></td>
+    <td>Sorts the HTTP request records by timestamp in 
+      descending order.</td>
   </tr>
-  <tr valign="top"> 
-    <td width="7%" height="38"><img src="../images/image6.gif" width="25" 
-height="25" alt="sort alphabetically icon"></td>
-    <td width="93%" height="38">Sorts the HTTP request records alphabetically</td>
+  <tr> 
+    <td><img src="../images/sortasc.gif"></td>
+    <td>Sorts the HTTP request records by timestamp in 
+      ascending order.</td>
   </tr>
-  <tr valign="top">
-    <td width="7%" height="38"><img src="../images/time.gif" width="25" 
-height="25" alt="show or hide timestamps icon"></td>
-    <td width="93%" height="44">Shows or hides the time stamps in the list of 
-      HTTP request records.</td>
+  <tr> 
+    <td><img src="../images/image6.gif"></td>
+    <td>Sorts the HTTP request records alphabetically.</td>
   </tr>
+  <tr> 
+    <td><img src="../images/time.gif"></td>
+    <td>Shows or hides the time stamps in the list of 
+      HTTP request records..</td>
+  </tr>
+ 
 </table>
 
 <table cellpadding="3" cellspacing="0" border="0">
@@ -83,7 +135,7 @@ height="25" alt="show or hide timestamps icon"></td>
     <td> If the HTTP Monitor does not show the HTTP request records for a running web 
       module, verify that the monitor is enabled for your web server by 
       right-clicking 
-      your web server's node in the Runtime window's Server Registry node
+      your web server's node in the Runtime window's Servers node
       and choosing Properties from the 
       contextual menu. The Enable HTTP Monitor checkbox should be selected.</td>
   </tr>

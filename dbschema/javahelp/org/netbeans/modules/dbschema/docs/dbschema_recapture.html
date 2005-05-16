@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+    <head>
+        <title>Recapturing Schema From a Database</title>
+        <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Recapturing Schema From a Database</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>When you modify your database, such as by adding or deleting fields or changing relationships,
+        you may need to recapture the database schema so that the changes are also available to your project.</p>
+         
+        <p><b>To recapture the database schema from the database:</b></p>    
+        <ol>
+            <li>Make sure the database server is running.</li>
+            <li>Locate the database schema node (&nbsp;<img src="images/dbschemanode.gif">&nbsp;). The current database schema can be found in the following locations:
+                <ul>
+                    <li>in the Configuration Files node in the Projects window</li>
+                    <li>in the conf folder in the src folder in the Files window</li>
+                </ul>
+            </li>
+            <li>Right-click the database schema node and select Recapture Schema from Database from the contextual menu.</li>
+            <li>Enter the username and passwod, if necessary.</li>
+            <li>Click OK.</li>
+        </ol>
+        <p>The Recapturing Database Schema progress box opens and displays the recapturing progress, 
+        including the table and view information it is capturing. 
+        After recapturing the database schema, you can <a href="nbdocs:/org/netbeans/modules/db/docs/browstruct.html">explore the structure</a> of the new database schema 
+        by expanding the schema in the Projects or Files windows. You can also explore the
+        recaptured schema and <a href="nbdocs:/org/netbeans/modules/db/docs/viewdata.html">view the data</a> in the Runtime window.</p>    
+
+        <table>
+
+            <tr> 
+
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+
+            </tr>
+
+            <tr> 
+
+                <td width="23"></td>
+
+                <td>
+                <a href="dbschema.html">Obtaining a Database Schema</a><br>
+                <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a> </td>
+            
+            </tr>
+
+        </table>
+
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>

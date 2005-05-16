@@ -57,12 +57,19 @@
   <li>In the tree view on the left side of the HTTP Monitor, right-click the HTTP request 
       record that you want to edit and replay.</li>
   <li>Choose Edit and Replay from the contextual menu. The Edit and Replay dialog 
-  box appears. In the dialog box, you can edit the following:</li>
-<table width="100%" border="1">
+  box appears. In the dialog box, you can do the following:</li>
+
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
   <tr valign="top"> 
-    <td width="7%" height="38">Queries</td>
-    <td width="93%" height="38">
-  <ol><li>Click the Query tab.</li>
+    <th scope="col" align="left">To perform this task</th>
+    <th scope="col" align="left">Follow these steps</th>
+  </tr>
+  <tr valign="top"> 
+	  <td>Edit queries.</td>
+    <td> 
+       <ol><li>Click the Query tab.</li>
   <li>Edit the query:</li>
   <ul><li>To add a parameter to the query, click Add Parameter. The Add Parameter 
     dialog box appears. Type in a name and value, and click OK. The query parameters 
@@ -70,28 +77,29 @@
   <li>To edit a query parameter, click the ellipsis (...) button next to the parameter. 
   <li>To delete a query parameter, select the parameter and click Delete 
     Parameters. Use the Shift or Control key to select multiple parameters
-    for deletion.</li></ul>
-  </ul>
-  <li>Click Send HTTP Request.</li></ol></td>
+    for deletion.</li></ol>
+    </td>
   </tr>
   <tr valign="top"> 
-    <td width="7%" height="40">Requests</td>
-    <td width="93%" height="44"><ol>
+    <td>Edit requests.</td>
+    <td> 
+     <ol>
   <li>Click the Request tab.
-  <li>Edit the query:</li>
+  <li>Edit the request:</li>
   <ul><li>To edit the Request URI parameter or the Protocol parameter, click the ellipsis 
     (...) button next to the parameter. </li>
   <li>To change the request method, select the desired method from the combo box 
   in the Method parameter. For instance, change <tt>GET</tt> to <tt>POST</tt>.</li></ul>
   <li>Click Send HTTP Request.</li>
-</ol></td>
+</ol>
+    </td>
   </tr>
   <tr valign="top"> 
-    <td width="7%" height="38">Cookies</td>
-    <td width="93%" height="44">
+    <td>Edit cookies.</td>
+    <td> 
 <ol>
   <li>Click the Cookies tab.</li>
-  <li>Edit the query:</li>
+  <li>Edit the cookie:</li>
   <ul>
   <li>To add a cookie, click Add Cookie. The Add Cookie dialog box appears. Type 
     a name and value, and click OK.</li>
@@ -105,28 +113,32 @@
 when the record was recorded, and the server uses the cookie that 
 the browser generates. If the record header does not include a session 
 cookie, the browser does not send a cookie. Although you can edit session cookies, 
-but the changes do not take effect on most servers. The reason is because
+ the changes do not take effect on most servers. The reason is because
 the session's cookie ID is read before the request enters the servlet container.</li>
-</ol></td>
+</ol>
+    </td>
   </tr>
-  <tr valign="top">
-    <td width="7%" height="38">Servers</td>
-    <td width="93%" height="44"><ol>
+  <tr valign="top"> 
+	  <td>Edit servers.</td>
+    <td> 
+ <ol>
   <li>Click the Server tab.</li>
-  <li>Edit the query:</li>
+  <li>Edit the server:</li>
   <ul>
     <li>To change a parameter's value,  such as the hostname of servlet engine 
     or the port number of an HTTP service click the ellipsis (...) button 
     next to the parameter.</li>
   </ul>
   <li>Click Send HTTP Request.</li>
-</ol></td>
+</ol>
+    </td>
   </tr>
- <tr valign="top"> 
-    <td width="7%" height="38">Headers</td>
-    <td width="93%" height="38"><ol>
+  <tr valign="top"> 
+    <td>Edit headers.</td>
+    <td> 
+<ol>
   <li>Click the Headers tab.</li>
-  <li>Edit the query:</li>
+  <li>Edit the header:</li>
   <ul><li>To add a header, click Add Header. 
     The Add Header dialog box appears. Type in a name and value and click OK.</li>
   <li>To edit a header parameter such as Accept, Connection, Host, or User-Agent, 
@@ -135,10 +147,10 @@ the session's cookie ID is read before the request enters the servlet container.
     Control key to select multiple headers for deletion.</li></ul>
   <li>Click Send HTTP Request.</li>
 </ol>
-  </td>
+    </td>
   </tr>
+  
 </table>
-</ol>
 
 <table>
 

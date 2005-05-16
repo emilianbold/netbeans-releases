@@ -38,7 +38,7 @@
         <tocitem text="About Enterprise Applications" >
             <tocitem text="About Enterprise Applications" target="about_ent_apps" />
             <tocitem text="Working With Enterprise Applications" target="ent_app_process" />
-            <tocitem text="Enterprise Application Tasks: Quick Reference" target="tbd" />
+            <tocitem text="Enterprise Application Tasks: Quick Reference" target="ent_app_quickref" />
         </tocitem>
         <tocitem text="Creating and Configuring Enterprise Applications" >
             <tocitem text="Creating an Enterprise Application Project" target="ent_app_creating" />
@@ -85,7 +85,7 @@
           </tocitem>
 	  <tocitem text="Accessing a Custom Tag from a JSP Page" target="jsp_usetaglib"/>
           <tocitem text="Accessing an Applet from a JSP Page" target="jsp_useapplet"/>
-	  <tocitem text="Accessing a Tomcat Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>
+	  <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>
           <tocitem text="Compiling a JSP File" target="jsp_compile" />
           <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
           <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
@@ -225,7 +225,7 @@
         </tocitem>
         <tocitem text="Debugging and Testing EJB Modules" >
             <tocitem text="Debugging an EJB Module" target="debug_ejb" />
-            <tocitem text="Writing A Debug Target for a Free-Form J2EE Module Project" target="debug_ejb_freeform" />
+            <tocitem text="Writing A Debug Target for a Free-Form EJB Module Project" target="debug_ejb_freeform" />
             <tocitem text="Testing an EJB Module" target="test_ejb" />
         </tocitem>
 </tocitem>
