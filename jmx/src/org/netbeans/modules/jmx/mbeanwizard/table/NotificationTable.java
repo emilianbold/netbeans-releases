@@ -66,6 +66,8 @@ public class NotificationTable extends JTable {
             nameField.addItem(WizardConstants.NOTIFICATION);
             nameField.addItem(WizardConstants.ATTRIBUTECHANGE_NOTIFICATION);
             nameField.setName("notifClassBox");
+            nameField.setEditable(true);
+            nameField.setEnabled(true);
             Object o = getModel().getValueAt(row,column);
             nameField.setSelectedItem(o);
             
@@ -130,6 +132,8 @@ public class NotificationTable extends JTable {
         
             if (column == 0) {
                 JComboBox nameField = new JComboBox();
+                nameField.setEnabled(true);
+                nameField.setEditable(true);
                 nameField.addItem(WizardConstants.NOTIFICATION);
                 nameField.addItem(WizardConstants.ATTRIBUTECHANGE_NOTIFICATION);
                 return new ComboBoxRenderer(nameField);
