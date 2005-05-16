@@ -38,9 +38,9 @@ import org.netbeans.performance.test.guitracker.LoggingEventQueue;
  * This class provide methods for QA Performance measurement.
  * Implemented methods:
  * <pre>
-            doMeasurement();
-            measureTime();
-            measureMemoryUsage();
+ * doMeasurement();
+ * measureTime();
+ * measureMemoryUsage();
  *</pre>
  *
  *
@@ -599,7 +599,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     }
     
     /**
-     * Log used memory size. It can help with evaluation what happend during measurement. 
+     * Log used memory size. It can help with evaluation what happend during measurement.
      * If the size of the memory before and after open differs :
      * <li>if increases- there could be memory leak</li>
      * <li>if decreases- there was an garbage collection during measurement - it prolongs the action time</li>
@@ -707,16 +707,16 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     
     
     /**
-     * This method returns meaasured time, it goes through all logged data by 
+     * This method returns meaasured time, it goes through all logged data by
      * guitracker (LoggingEventQueue and LoggingRepaintManager).
      * The measured time is the difference between :
      * <ul>
-     *     <li> last START or 
+     *     <li> last START or
      *     <li> last MOUSE_PRESS (if the measure_mouse_press property is true)
      *     <li> last MOUSE_RELEASE - by default (if the measure_mouse_press property is false)
      *     <li> last KEY_PRESS
      * </ul>
-     * and 
+     * and
      * <ul>
      *     <li> last or expected paint
      *     <li> last FRAME_SHOW
@@ -753,15 +753,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     }
     
     /**
-     * Data are logged to the file, it helps with evaluation of the failure 
-     * as well as it shows what exactly is meaured (user can find the start event 
+     * Data are logged to the file, it helps with evaluation of the failure
+     * as well as it shows what exactly is meaured (user can find the start event
      * and stop paint/show) .
      */
     public void dumpLog(){
         tr.stopRecording();
         try {
-//TEMP            tr.exportAsXML(getLog("ActionTracker.xml"));
-             tr.exportAsXML();
+            tr.exportAsXML(getLog("ActionTracker.xml"));
         } catch (Exception ex) {
             throw new Error("Exception while generating log", ex);
         }
