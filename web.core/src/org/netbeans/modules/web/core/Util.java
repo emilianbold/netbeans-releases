@@ -35,6 +35,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+//import java.io.*;
+import org.xml.sax.*;
+//import java.util.*;
 
 /** Utility class
 * @author  Petr Jiricka
@@ -220,7 +223,70 @@ public class Util {
         }
         return result;
     }
+    
+    /** Parsing to get Set of Strings that correpond to tagName valeus inside elName, e.g.:
+     *  to get all <servlet-name> values inside the <servlet> elements (in web.xml)
+    */    
+    public static Set getTagValues (java.io.InputStream is, String elName, String tagName) throws java.io.IOException, SAXException {
+        return getTagValues(is,new String[]{elName},tagName);
+    }
+    /** Parsing to get Set of Strings that correpond to tagName valeus inside elNames, e.g.:
+     *  to get all <name> values inside the <tag> and <tag-file> elements (in TLD)
+    */
+    public static Set getTagValues (java.io.InputStream is, String[] elNames, String tagName) throws java.io.IOException, SAXException {
+        javax.xml.parsers.SAXParserFactory fact = javax.xml.parsers.SAXParserFactory.newInstance();
+        fact.setValidating(false);
+        try {
+            javax.xml.parsers.SAXParser parser = fact.newSAXParser();
+            XMLReader reader = parser.getXMLReader();
+            TLDVersionHandler handler = new TLDVersionHandler(elNames,tagName);
+            reader.setContentHandler(handler);
+            try {
+                reader.parse(new InputSource(is));
+            } catch (SAXException ex) {
+                String message = ex.getMessage();
+            }
+            return handler.getValues();
+        } catch(javax.xml.parsers.ParserConfigurationException ex) {
+            return new java.util.HashSet();
+        }
+    }
+    
+    private static class TLDVersionHandler extends org.xml.sax.helpers.DefaultHandler {
+        private String tagName;
+        private Set elNames;
+        private Set values;
+        private boolean insideEl, insideTag;
 
-    // end of copy/paste block
+        TLDVersionHandler(String[] elNames, String tagName) {
+            this.elNames=new java.util.HashSet();
+            for (int i=0;i<elNames.length;i++) {
+                this.elNames.add(elNames[i]);
+            }
+            this.tagName=tagName;
+            values = new HashSet();
+        }
+        public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
+            if (elNames.contains(rawName)) insideEl=true;
+            else if (tagName.equals(rawName) && insideEl) { //NOI18N
+                insideTag=true;
+            }
+        }
+        public void endElement(String uri, String localName, String rawName) throws SAXException {
+            if (elNames.contains(rawName)) insideEl=false;
+            else if (tagName.equals(rawName) && insideEl) { //NOI18N
+                insideTag=false;
+            }
+        }
+        
+        public void characters(char[] ch,int start,int length) throws SAXException {
+            if (insideTag) {
+                values.add(String.valueOf(ch,start,length).trim());
+            }
+        }
+        public Set getValues() {
+            return values;
+        }
+    }
     
 }
