@@ -89,6 +89,11 @@ public final class ActionsManager {
     private boolean                 destroy = false;
 
     
+    /**
+     * Create a new instance of ActionManager.
+     * This is called from synchronized blocks of other classes that need to have
+     * just one instance of this. Therefore do not put any foreign calls here.
+     */
     ActionsManager (Lookup lookup) {
         this.lookup = lookup;
     }

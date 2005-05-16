@@ -179,7 +179,7 @@ public final class DebuggerEngine {
     // main public methods .....................................................
 
 
-    public ActionsManager getActionsManager () {
+    public synchronized ActionsManager getActionsManager () {
         if (actionsManager == null)
             actionsManager = new ActionsManager (lookup);
         return actionsManager;

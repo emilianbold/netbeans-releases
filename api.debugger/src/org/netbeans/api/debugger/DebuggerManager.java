@@ -152,7 +152,7 @@ public final class DebuggerManager {
      *
      * @return default instance of DebuggerManager
      */
-    public static DebuggerManager getDebuggerManager () {
+    public static synchronized DebuggerManager getDebuggerManager () {
         if (debuggerManager == null) 
             debuggerManager = new DebuggerManager ();
         return debuggerManager;
@@ -160,6 +160,7 @@ public final class DebuggerManager {
 
     /**
      * Creates a new instance of DebuggerManager.
+     * It's called from a synchronized block, do not call any foreign code from here.
      */
     private DebuggerManager () {
     }
