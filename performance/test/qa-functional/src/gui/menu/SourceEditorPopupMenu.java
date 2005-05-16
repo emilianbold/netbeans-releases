@@ -13,6 +13,8 @@
 
 package gui.menu;
 
+import org.netbeans.performance.test.guitracker.ActionTracker;
+
 import java.awt.event.KeyEvent;
 
 import org.netbeans.jellytools.EditorOperator;
@@ -43,6 +45,7 @@ public class SourceEditorPopupMenu extends org.netbeans.performance.test.utiliti
         super(testName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 100;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
     
     /** Creates a new instance of SourceEditorPopupMenu */
@@ -50,6 +53,7 @@ public class SourceEditorPopupMenu extends org.netbeans.performance.test.utiliti
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 100;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
     
     public static NbTestSuite suite() {

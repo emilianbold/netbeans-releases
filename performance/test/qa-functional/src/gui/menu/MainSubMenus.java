@@ -13,6 +13,8 @@
 
 package gui.menu;
 
+import org.netbeans.performance.test.guitracker.ActionTracker;
+
 import javax.swing.JMenuItem;
 
 import org.netbeans.jellytools.MainWindowOperator;
@@ -41,6 +43,7 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         super(testName);
         expectedTime = 250;
         WAIT_AFTER_OPEN = 500;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_MOVED;
     }
     
     
@@ -49,6 +52,7 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         this(testName);
         expectedTime = 250;
         WAIT_AFTER_OPEN = 500;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_MOVED;
         setTestCaseName(testName, performanceDataName);
     }
     

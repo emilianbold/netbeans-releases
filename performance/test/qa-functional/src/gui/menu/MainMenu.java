@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.menu;
 
+import org.netbeans.performance.test.guitracker.ActionTracker;
 
 import org.netbeans.jellytools.MainWindowOperator;
 
@@ -41,6 +42,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         super(testName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 100;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
     
     
@@ -49,6 +51,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         this(testName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 100;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
         setTestCaseName(testName, performanceDataName);
     }
     

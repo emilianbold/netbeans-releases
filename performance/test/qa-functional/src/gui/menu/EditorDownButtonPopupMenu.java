@@ -13,6 +13,8 @@
 
 package gui.menu;
 
+import org.netbeans.performance.test.guitracker.ActionTracker;
+        
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -33,12 +35,14 @@ public class EditorDownButtonPopupMenu extends org.netbeans.performance.test.uti
     public EditorDownButtonPopupMenu(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
     
     /** Test of popup menu on Editor's 'Down Button' */
     public EditorDownButtonPopupMenu(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
     
     

@@ -13,11 +13,12 @@
 
 package gui.menu;
 
+import org.netbeans.performance.test.guitracker.ActionTracker;
+
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-
 
 import java.awt.Component;
 import java.awt.Container;
@@ -37,6 +38,7 @@ public abstract class ValidatePopupMenuOnNodes extends org.netbeans.performance.
         super(testName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 300;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
     
     /** Creates a new instance of ValidatePopupMenuOnNodes */
@@ -44,6 +46,7 @@ public abstract class ValidatePopupMenuOnNodes extends org.netbeans.performance.
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 300;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
     
     /**
@@ -64,7 +67,6 @@ public abstract class ValidatePopupMenuOnNodes extends org.netbeans.performance.
         JPopupMenu menu = callPopup(dataObjectNode.tree(), p.x, p.y, java.awt.event.InputEvent.BUTTON3_MASK);
         return new JPopupMenuOperator(menu);
          */
-        measure_mouse_press = true;
         return dataObjectNode.callPopup();
     }
     
