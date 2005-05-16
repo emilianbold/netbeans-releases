@@ -17,7 +17,23 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
-<change id="NotifyDescriptor.getDefaultValue">
+    <change id="AsynchronousValidatingPanel">
+           <api name="dialogs"/>
+           <summary>Interface <code>AsynchronousValidationgPanel</code> added</summary>
+           <version major="5" minor="999999999"/>
+           <date day="16" month="5" year="2005"/>
+           <author login="pkuzel"/>
+           <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+           <description>
+             The <code>AsynchronousValidatingPanel</code> allows to implement
+             background validation that does not block UI thread. I.e. UI
+             thread can be used to render validation progress.
+           </description>
+           <class package="org.openide" name="WizardDescriptor"/>
+           <issue number="58530"/>
+    </change>
+
+    <change id="NotifyDescriptor.getDefaultValue">
        <api name="dialogs"/>
        <summary>Add method <code>NotifyDescriptor.getDefaultValue()</code> </summary>
        <version major="5" minor="999999999"/>

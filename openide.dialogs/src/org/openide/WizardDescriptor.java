@@ -256,6 +256,8 @@ public class WizardDescriptor extends DialogDescriptor {
     private Map properties;
     ResourceBundle bundle = NbBundle.getBundle(WizardDescriptor.class);
 
+    private Thread backgroundValidationTask;
+
     {
         // button init
         ResourceBundle b = NbBundle.getBundle("org.openide.Bundle"); // NOI18N
@@ -1087,34 +1089,56 @@ public class WizardDescriptor extends DialogDescriptor {
         );
     }
 
-    private boolean lazyValidate(WizardDescriptor.Panel panel) {
-        if (panel instanceof ValidatingPanel) {
-            ValidatingPanel v = (ValidatingPanel) panel;
+    private void lazyValidate(final WizardDescriptor.Panel panel, final Runnable onValidPerformer) {
 
-            try {
-                // try validation current panel
-                v.validate();
-            } catch (WizardValidationException wve) {
-                // cannot continue, notify user
-                if (wizardPanel != null) {
-                    wizardPanel.setErrorMessage(wve.getLocalizedMessage());
-                }
+        Runnable validationPeformer = new Runnable() {
+            public void run() {
+                ValidatingPanel v = (ValidatingPanel) panel;
 
-                // focus source of this problem
-                if (wve.getSource() != null) {
-                    final JComponent comp = (JComponent) wve.getSource();
+                try {
+                    // try validation current panel
+                    v.validate();
 
-                    if (comp.isFocusable()) {
-                        comp.requestFocus();
+                    // validation succesfull
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            setValid(true);
+                            onValidPerformer.run();
+                        }
+                    });
+
+                } catch (WizardValidationException wve) {
+                    // cannot continue, notify user
+                    if (wizardPanel != null) {
+                        wizardPanel.setErrorMessage(wve.getLocalizedMessage());
                     }
+
+                    // focus source of this problem
+                    if (wve.getSource() != null) {
+                        final JComponent comp = (JComponent) wve.getSource();
+
+                        if (comp.isFocusable()) {
+                            comp.requestFocus();
+                        }
+                    }
+
                 }
 
-                // lazy validation failed
-                return false;
             }
+        };
+
+        if (panel instanceof AsynchronousValidatingPanel) {
+            AsynchronousValidatingPanel p = (AsynchronousValidatingPanel) panel;
+            setValid(false);  // disable Next> Finish buttons
+            p.prepareValidation();
+            backgroundValidationTask = new Thread(validationPeformer);
+            backgroundValidationTask.start();
+        } else if (panel instanceof ValidatingPanel) {
+            validationPeformer.run();
+        } else {
+            onValidPerformer.run();
         }
 
-        return true;
     }
 
     // helper methods which call to InstantiatingIterator
@@ -1348,6 +1372,38 @@ public class WizardDescriptor extends DialogDescriptor {
         public void validate() throws WizardValidationException;
     }
 
+
+    /**
+     * A special interface for panels that need to do additional
+     * asynchronous validation when Next or Finish button is clicked.
+     *
+     * <p>During backround validation is Next or Finish button
+     * disabled. On validation success wizard automatically
+     * progress to next panel or finishes.
+     *
+     * <p>During backround validation Cancel button is hooked
+     * to signal the validation thread using interrupt().
+     */
+    public interface AsynchronousValidatingPanel extends ValidatingPanel {
+
+        /**
+         * Called synchronously from UI thread when Next
+         * of Finish buttons clicked. It allows to lock user
+         * input to assure official data for background validation.
+         */
+        public void prepareValidation();
+
+        /**
+         * Is called in separate thread when Next of Finish buttons
+         * are clicked and allows deeper check to find out that panel
+         * is in valid state and it is ok to leave it.
+         *
+         * @throws WizardValidationException when validation fails
+         */
+        public void validate() throws WizardValidationException;
+    }
+
+
     /** A special interface for panel that needs to dynamically enabled
      * Finish button.
      * @since 4.28
@@ -1512,34 +1568,32 @@ public class WizardDescriptor extends DialogDescriptor {
             }
 
             if (ev.getSource() == nextButton) {
-                Dimension previousSize = panels.current().getComponent().getSize();
+                final Dimension previousSize = panels.current().getComponent().getSize();
+                Runnable onValidPerformer = new Runnable() {
+                    public void run() {
+                        panels.nextPanel();
 
-                // do lazy validation
-                if (!lazyValidate(panels.current())) {
-                    // if validation failed => cannot move to next panel
-                    return;
-                }
+                        try {
+                            // change UI to show next step, show wait cursor during
+                            // the change
+                            goToNextStep(previousSize);
+                        } catch (IllegalStateException ise) {
+                            panels.previousPanel();
 
-                panels.nextPanel();
+                            if (ise.getMessage() != null) {
+                                // this is only for backward compatitility
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ise.getMessage()));
+                            } else {
+                                // this should be used (it checks for exception
+                                // annotations and severity)
+                                ErrorManager.getDefault().notify(ise);
+                            }
 
-                try {
-                    // change UI to show next step, show wait cursor during
-                    // the change
-                    goToNextStep(previousSize);
-                } catch (IllegalStateException ise) {
-                    panels.previousPanel();
-
-                    if (ise.getMessage() != null) {
-                        // this is only for backward compatitility
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ise.getMessage()));
-                    } else {
-                        // this should be used (it checks for exception
-                        // annotations and severity)
-                        ErrorManager.getDefault().notify(ise);
+                            updateState();
+                        }
                     }
-
-                    updateState();
-                }
+                };
+                lazyValidate(panels.current(), onValidPerformer);
             }
 
             if (ev.getSource() == previousButton) {
@@ -1550,42 +1604,44 @@ public class WizardDescriptor extends DialogDescriptor {
             }
 
             if (ev.getSource() == finishButton) {
-                // do lazy validation
-                if (!lazyValidate(panels.current())) {
-                    // if validation failed => cannot move to next panel
-                    return;
-                }
+                Runnable onValidPerformer = new Runnable() {
+                    public void run() {
+                        // do instantiate
+                        try {
+                            callInstantiate();
+                        } catch (IOException ioe) {
+                            // notify to log
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
 
-                // do instantiate
-                try {
-                    callInstantiate();
-                } catch (IOException ioe) {
-                    // notify to log
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                            setValueWithoutPCH(NEXT_OPTION);
+                            updateStateWithFeedback();
 
-                    setValueWithoutPCH(NEXT_OPTION);
-                    updateStateWithFeedback();
+                            // notify user by the wizard's status line
+                            putProperty(PROP_ERROR_MESSAGE, ioe.getLocalizedMessage());
 
-                    // notify user by the wizard's status line
-                    putProperty(PROP_ERROR_MESSAGE, ioe.getLocalizedMessage());
+                            // if validation failed => cannot move to next panel
+                            return;
+                        }
 
-                    // if validation failed => cannot move to next panel
-                    return;
-                }
+                        // all is OK
+                        // close wizrad
+                        finishOption.fireActionPerformed();
 
-                // all is OK
-                // close wizrad
-                finishOption.fireActionPerformed();
+                        Object oldValue = getValue();
+                        setValueWithoutPCH(OK_OPTION);
 
-                Object oldValue = getValue();
-                setValueWithoutPCH(OK_OPTION);
+                        resetWizard();
 
-                resetWizard();
-
-                firePropertyChange(PROP_VALUE, oldValue, OK_OPTION);
+                        firePropertyChange(PROP_VALUE, oldValue, OK_OPTION);
+                    }
+                };
+                lazyValidate(panels.current(), onValidPerformer);
             }
 
             if (ev.getSource() == cancelButton) {
+                if (backgroundValidationTask != null) {
+                    backgroundValidationTask.interrupt();
+                }
                 Object oldValue = getValue();
                 setValueWithoutPCH(CANCEL_OPTION);
 
