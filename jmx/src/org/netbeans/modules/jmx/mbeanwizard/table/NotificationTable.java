@@ -53,7 +53,7 @@ public class NotificationTable extends JTable {
         this.ancestorPanel = ancestorPanel;
     }
     
-    public TableCellEditor getCellEditor(int row, int column) {
+    public TableCellEditor getCellEditor(final int row, int column) {
         
         if(row >= getRowCount())
             return null;
@@ -76,13 +76,13 @@ public class NotificationTable extends JTable {
                 public void itemStateChanged(ItemEvent evt) {
                     
                     if (evt.getItem().toString().equals(WizardConstants.ATTRIBUTECHANGE_NOTIFICATION)) {
-                        if (table.getSelectedRow() != -1) 
-                            model.setValueAt(WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE,
-                                    table.getSelectedRow(), model.IDX_NOTIF_TYPE);
+                        model.setValueAt(WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE,
+                                    row, model.IDX_NOTIF_TYPE);
                     } else {
                         model.setValueAt(WizardConstants.NOTIF_TYPE_DEFVALUE,
-                                table.getSelectedRow(), model.IDX_NOTIF_TYPE);
+                                        row, model.IDX_NOTIF_TYPE);
                     }
+                    
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             model.fireTableDataChanged();
