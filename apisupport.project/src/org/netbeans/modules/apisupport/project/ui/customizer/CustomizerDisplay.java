@@ -56,7 +56,8 @@ final class CustomizerDisplay extends JPanel {
     }
     
     private String getCategory() {
-        return bundleProps.getProperty("OpenIDE-Module-Display-Category");
+        String category = bundleProps.getProperty("OpenIDE-Module-Display-Category"); // NOI18N
+        return category != null ? category : ""; // NOI18N
     }
     
     private void storeToProperties() {

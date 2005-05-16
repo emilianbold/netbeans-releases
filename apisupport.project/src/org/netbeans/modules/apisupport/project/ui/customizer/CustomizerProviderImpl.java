@@ -22,16 +22,20 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.core.ui.ModuleBean;
+import org.netbeans.modules.apisupport.project.ModuleList;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -50,6 +54,9 @@ import org.openide.util.NbBundle;
  */
 public final class CustomizerProviderImpl implements CustomizerProvider {
     
+    public static final ErrorManager err = ErrorManager.getDefault().getInstance(
+        "org.netbeans.modules.apisupport.project.ui.customizer"); // NOI18N
+
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -80,22 +87,23 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         this.locBundlePropsPath = locBundlePropsPath;
     }
     
-    /** Returns all known categories. */
+    /** Returns all known categories in the project's universe. */
     private Set getModuleCategories() {
         if (modCategories == null || modCategories.isEmpty()) {
-            ModuleBean.AllModulesBean.getDefault().waitForModules().waitFinished();
-            ModuleBean[] allBeans = ModuleBean.AllModulesBean.getDefault().getModules();
-            if (allBeans.length == 0) {
-                allBeans = ModuleBean.AllModulesBean.getDefault().getModules();
-            }
-            TreeSet/*<String>*/ allCategories = new TreeSet();
-            for (int i = 0; i < allBeans.length; i++) {
-                String cat = allBeans[i].getCategory();
-                if (cat != null) {
-                    allCategories.add(cat);
+            try {
+                ModuleList ml = ModuleList.getModuleList(
+                    FileUtil.toFile(project.getProjectDirectory()));
+                TreeSet/*<String>*/ allCategories = new TreeSet();
+                for (Iterator it = ml.getAllEntries().iterator(); it.hasNext(); ) {
+                    String cat = ((ModuleList.Entry) it.next()).getCategory();
+                    if (cat != null) {
+                        allCategories.add(cat);
+                    }
                 }
+                modCategories = Collections.unmodifiableSortedSet(allCategories);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
-            modCategories = Collections.unmodifiableSortedSet(allCategories);
         }
         return modCategories;
     }
@@ -151,6 +159,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     // Names of categories
     private static final String SOURCES = "Sources"; // NOI18N
     private static final String DISPLAY = "Display"; // NOI18N
+    private static final String LIBRARIES = "Libraries"; // NOI18N
     
     private void init() {
         ResourceBundle bundle = NbBundle.getBundle(CustomizerProviderImpl.class);
@@ -159,15 +168,19 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 bundle.getString("LBL_ConfigSources")); // NOI18N
         ProjectCustomizer.Category display = createCategory(DISPLAY,
                 bundle.getString("LBL_ConfigDisplay")); // NOI18N
+        ProjectCustomizer.Category libraries = createCategory(LIBRARIES,
+                bundle.getString("LBL_ConfigLibraries")); // NOI18N
 
         categories = new ProjectCustomizer.Category[] { 
-            sources, display
+            sources, display, libraries
         };
 
         Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
         panels.put(sources, new CustomizerSources(moduleProps,
                 FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath()));
+        
         panels.put(display, new CustomizerDisplay(locBundleProps, getModuleCategories()));
+        panels.put(libraries, new CustomizerLibraries(createSubModuleListModel()));
         panelProvider = new PanelProvider(panels);
     }
     
@@ -187,7 +200,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         }
         
         public JComponent create(ProjectCustomizer.Category category) {
-            JComponent panel = (JComponent)panels.get(category);
+            JComponent panel = (JComponent) panels.get(category);
             return panel == null ? EMPTY_PANEL : panel;
         }
     }
@@ -243,5 +256,31 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+    }
+
+    // XXX simple info list - will move to clever dedicated (inner) class
+    // XXX will be probably lazy loaded semi-cached model
+    private DefaultListModel createSubModuleListModel() {
+        SubprojectProvider spp = (SubprojectProvider) project.
+            getLookup().lookup(SubprojectProvider.class);
+        Set set = new TreeSet();
+        for (Iterator it = spp.getSubprojects().iterator(); it.hasNext(); ) {
+            Project subProject = (Project) it.next();
+            ProjectInformation info = (ProjectInformation) subProject.
+                getLookup().lookup(ProjectInformation.class);
+            if (info != null) {
+                set.add(info.getDisplayName());
+            } else {
+                err.log(ErrorManager.WARNING, "Project in " + project.getProjectDirectory() + // NOI18N
+                    " doesn't register ProjectInformation in its lookup."); // NOI18N
+                set.add(project.getProjectDirectory()); // better than nothing
+            }
+        }
+        
+        DefaultListModel modulesModel = new DefaultListModel();
+        for (Iterator it = set.iterator(); it.hasNext(); ) {
+            modulesModel.addElement(it.next());
+        }
+        return modulesModel;
     }
 }

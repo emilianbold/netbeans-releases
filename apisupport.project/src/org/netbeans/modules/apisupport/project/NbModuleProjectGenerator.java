@@ -224,7 +224,7 @@ public class NbModuleProjectGenerator {
                 pw.println("Manifest-Version: 1.0"); // NOI18N
                 pw.println("OpenIDE-Module: " + cnb); // NOI18N
                 pw.println("OpenIDE-Module-Specification-Version: 1.0"); // NOI18N
-                pw.println("OpenIDE-Module-Localizing-Bundle: " + bundlePath); // NOI18N
+                pw.println(ModuleList.LOCALIZING_BUNDLE_ATTR + ": " + bundlePath); // NOI18N
                 pw.println("OpenIDE-Module-Layer: " + layerPath); // NOI18N
                 pw.println();
             } finally {

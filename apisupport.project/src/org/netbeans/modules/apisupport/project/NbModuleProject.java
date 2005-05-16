@@ -60,7 +60,8 @@ import org.w3c.dom.Element;
  */
 final class NbModuleProject implements Project {
     
-    private static final Icon NB_PROJECT_ICON = new ImageIcon(Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif")); // NOI18N
+    private static final Icon NB_PROJECT_ICON = new ImageIcon(
+        Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif")); // NOI18N
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -228,7 +229,7 @@ final class NbModuleProject implements Project {
             Manifest mf = getManifest();
             if (mf != null) {
                 String locBundleResource = mf.getMainAttributes().
-                        getValue("OpenIDE-Module-Localizing-Bundle"); // NOI18N
+                        getValue(ModuleList.LOCALIZING_BUNDLE_ATTR);
                 if (locBundleResource != null) {
                     String locBundleResourceBase, locBundleResourceExt;
                     int idx = locBundleResource.lastIndexOf('.');
