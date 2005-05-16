@@ -109,8 +109,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     /** Warmup finished flag. */
     private static boolean warmupFinished = false;
     
-    /** Measure from last MOUSE_PRESS event instead of MOUSE_RELEASE (usefull for dialogs invoked from popup menu */
-    protected boolean measure_mouse_press = false;
+    /** Measure from last MOUSE event, you can define your own , by default it's MOUSE_RELEASE */
+    protected int track_mouse_event = ActionTracker.TRACK_MOUSE_RELEASE;
     
     /** tracker for UI activities */
     private static ActionTracker tr;
@@ -734,8 +734,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             ActionTracker.Tuple t = events[i];
             int code = t.getCode();
             if (code == ActionTracker.TRACK_START
-                    || (code == ActionTracker.TRACK_MOUSE_RELEASE && !measure_mouse_press)
-                    || (code == ActionTracker.TRACK_MOUSE_PRESS && measure_mouse_press)
+                    // it could be ActionTracker.TRACK_MOUSE_RELEASE (by default) or ActionTracker.TRACK_MOUSE_PRESS or ActionTracker.TRACK_MOUSE_MOVE
+                    || code == track_mouse_event    
                     || code == ActionTracker.TRACK_KEY_PRESS) {
                 start = t.getTimeMillis();
             } else if (code == ActionTracker.TRACK_PAINT
