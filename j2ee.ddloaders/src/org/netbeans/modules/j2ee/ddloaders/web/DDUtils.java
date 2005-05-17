@@ -93,7 +93,6 @@ public class DDUtils {
         if (WebApp.VERSION_2_4.equals(version)) {
             webApp = org.netbeans.modules.j2ee.dd.impl.web.model_2_4.WebApp.createGraph(doc);
         } else {
-            //webApp = org.netbeans.modules.web.dd.model_2_3.WebApp.createGraph(fo.getInputStream());
             webApp = org.netbeans.modules.j2ee.dd.impl.web.model_2_3.WebApp.createGraph(doc);
         }
         return webApp;
