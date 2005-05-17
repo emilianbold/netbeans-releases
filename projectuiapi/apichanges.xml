@@ -91,7 +91,9 @@ is the proper place.
                     <li><code>Templates.getExitingSourcesFolder</code> method</li>
                 </ul>                
             </description>
-            <issue number="58489" />
+            <class package="org.netbeans.spi.project.ui.support" name="CommonProjectActions"/>
+            <class package="org.netbeans.spi.project.ui.templates.support" name="Templates"/>
+            <issue number="58489" />            
         </change>
             
         <change id="ProjectOpenedHook.fire-to-all">
