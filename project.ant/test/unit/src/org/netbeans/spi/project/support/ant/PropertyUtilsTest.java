@@ -52,14 +52,6 @@ public class PropertyUtilsTest extends NbTestCase {
         super(name);
     }
     
-    static {
-        PropertyUtilsTest.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("netbeans.user", System.getProperty("java.io.tmpdir"));
-        assertEquals("correct build.properties location",
-            FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir"), "build.properties")),
-            PropertyUtils.USER_BUILD_PROPERTIES);
-    }
-    
     public void run(final TestResult result) {
         ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
@@ -67,13 +59,6 @@ public class PropertyUtilsTest extends NbTestCase {
                 return null;
             }
         });
-    }
-    
-    protected void setUp() throws Exception {
-        super.setUp();
-        if (PropertyUtils.USER_BUILD_PROPERTIES.exists() && !PropertyUtils.USER_BUILD_PROPERTIES.delete()) {
-            throw new IOException("Deleting: " + PropertyUtils.USER_BUILD_PROPERTIES);
-        }
     }
     
     private static PropertyEvaluator evaluator(Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
@@ -243,19 +228,22 @@ public class PropertyUtilsTest extends NbTestCase {
     }
     
     public void testGlobalProperties() throws Exception {
-        assertFalse("no build.properties yet", PropertyUtils.USER_BUILD_PROPERTIES.exists());
+        clearWorkDir();
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        File ubp = new File(getWorkDir(), "build.properties");
+        assertFalse("no build.properties yet", ubp.exists());
         assertEquals("no properties to start", Collections.EMPTY_MAP, PropertyUtils.getGlobalProperties());
         EditableProperties p = new EditableProperties();
         p.setProperty("key1", "val1");
         p.setProperty("key2", "val2");
         PropertyUtils.putGlobalProperties(p);
-        assertTrue("now have build.properties", PropertyUtils.USER_BUILD_PROPERTIES.isFile());
+        assertTrue("now have build.properties", ubp.isFile());
         p = PropertyUtils.getGlobalProperties();
         assertEquals("two definitions now", 2, p.size());
         assertEquals("key1 correct", "val1", p.getProperty("key1"));
         assertEquals("key2 correct", "val2", p.getProperty("key2"));
         Properties p2 = new Properties();
-        InputStream is = new FileInputStream(PropertyUtils.USER_BUILD_PROPERTIES);
+        InputStream is = new FileInputStream(ubp);
         try {
             p2.load(is);
         } finally {
@@ -280,7 +268,7 @@ public class PropertyUtilsTest extends NbTestCase {
         assertFalse("no spurious changes", l.expect());
         // Test changes made using Filesystems API.
         p.setProperty("key1", "val1a");
-        FileObject fo = FileUtil.toFileObject(PropertyUtils.USER_BUILD_PROPERTIES);
+        FileObject fo = FileUtil.toFileObject(ubp);
         assertNotNull("there is USER_BUILD_PROPERTIES on disk", fo);
         FileLock lock = fo.lock();
         OutputStream os = fo.getOutputStream(lock);
@@ -294,10 +282,10 @@ public class PropertyUtilsTest extends NbTestCase {
         /*
         Thread.sleep(1000);
         p.setProperty("key2", "val2a");
-        OutputStream os = new FileOutputStream(PropertyUtils.USER_BUILD_PROPERTIES);
+        OutputStream os = new FileOutputStream(ubp);
         p.store(os);
         os.close();
-        FileUtil.toFileObject(PropertyUtils.USER_BUILD_PROPERTIES).getFileSystem().refresh(false);
+        FileUtil.toFileObject(ubp).getFileSystem().refresh(false);
         Thread.sleep(1000);
         assertTrue("got a change from disk", l.expect());
         assertEquals("still have 3 defs", 3, gpp.getProperties().size());

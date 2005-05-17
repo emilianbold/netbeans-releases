@@ -408,7 +408,7 @@ final class ProjectProperties {
         if (userPropertiesFile != null) {
             // Have some defined global properties file, so read it and listen to changes in it.
             File f = helper.resolveFile(userPropertiesFile);
-            if (f.equals(PropertyUtils.USER_BUILD_PROPERTIES)) {
+            if (f.equals(PropertyUtils.userBuildProperties())) {
                 // Just to share the cache.
                 return PropertyUtils.globalPropertyProvider();
             } else {

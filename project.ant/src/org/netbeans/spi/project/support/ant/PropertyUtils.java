@@ -66,17 +66,16 @@ public class PropertyUtils {
      * Location in user directory of per-user global properties.
      * May be null if <code>netbeans.user</code> is not set.
      */
-    static final File USER_BUILD_PROPERTIES;
-    static {
+    static File userBuildProperties() {
         String nbuser = System.getProperty("netbeans.user"); // NOI18N
         if (nbuser != null) {
-            USER_BUILD_PROPERTIES = FileUtil.normalizeFile(new File(nbuser, "build.properties")); // NOI18N
+            return FileUtil.normalizeFile(new File(nbuser, "build.properties")); // NOI18N
         } else {
-            USER_BUILD_PROPERTIES = null;
+            return null;
         }
     }
     
-    private static Reference/*<GlobalPropertyProvider>*/ globalPropertyProvider = null;
+    private static Map/*<File,Reference<GlobalPropertyProvider>>*/ globalPropertyProviders = new HashMap();
     
     /**
      * Load global properties defined by the IDE in the user directory.
@@ -90,10 +89,10 @@ public class PropertyUtils {
     public static EditableProperties getGlobalProperties() {
         return (EditableProperties)ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                if (USER_BUILD_PROPERTIES != null && USER_BUILD_PROPERTIES.isFile() &&
-                        USER_BUILD_PROPERTIES.canRead()) {
+                File ubp = userBuildProperties();
+                if (ubp != null && ubp.isFile() && ubp.canRead()) {
                     try {
-                        InputStream is = new FileInputStream(USER_BUILD_PROPERTIES);
+                        InputStream is = new FileInputStream(ubp);
                         try {
                             EditableProperties properties = new EditableProperties(true);
                             properties.load(is);
@@ -123,14 +122,15 @@ public class PropertyUtils {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    if (USER_BUILD_PROPERTIES != null) {
-                        FileObject bp = FileUtil.toFileObject(USER_BUILD_PROPERTIES);
+                    File ubp = userBuildProperties();
+                    if (ubp != null) {
+                        FileObject bp = FileUtil.toFileObject(ubp);
                         if (bp == null) {
-                            USER_BUILD_PROPERTIES.getParentFile().mkdirs();
-                            new FileOutputStream(USER_BUILD_PROPERTIES).close();
-                            assert USER_BUILD_PROPERTIES.isFile() : "Did not actually make " + USER_BUILD_PROPERTIES;
-                            bp = FileUtil.toFileObject(USER_BUILD_PROPERTIES);
-                            assert bp != null : "Could not make " + USER_BUILD_PROPERTIES + "; no masterfs?";
+                            ubp.getParentFile().mkdirs();
+                            new FileOutputStream(ubp).close();
+                            assert ubp.isFile() : "Did not actually make " + ubp;
+                            bp = FileUtil.toFileObject(ubp);
+                            assert bp != null : "Could not make " + ubp + "; no masterfs?";
                         }
                         FileLock lock = bp.lock();
                         try {
@@ -162,20 +162,21 @@ public class PropertyUtils {
      * @return a property producer
      */
     public static synchronized PropertyProvider globalPropertyProvider() {
-        if (globalPropertyProvider != null) {
-            PropertyProvider pp = (PropertyProvider)globalPropertyProvider.get();
-            if (pp != null) {
-                return pp;
+        File ubp = userBuildProperties();
+        if (ubp != null) {
+            Reference/*<PropertyProvider>*/ globalPropertyProvider = (Reference) globalPropertyProviders.get(ubp);
+            if (globalPropertyProvider != null) {
+                PropertyProvider pp = (PropertyProvider) globalPropertyProvider.get();
+                if (pp != null) {
+                    return pp;
+                }
             }
-        }
-        PropertyProvider gpp;
-        if (USER_BUILD_PROPERTIES != null) {
-            gpp = propertiesFilePropertyProvider(USER_BUILD_PROPERTIES);
+            PropertyProvider gpp = propertiesFilePropertyProvider(ubp);
+            globalPropertyProviders.put(ubp, new SoftReference(gpp));
+            return gpp;
         } else {
-            gpp = fixedPropertyProvider(Collections.EMPTY_MAP);
+            return fixedPropertyProvider(Collections.EMPTY_MAP);
         }
-        globalPropertyProvider = new SoftReference(gpp);
-        return gpp;
     }
 
     /**
