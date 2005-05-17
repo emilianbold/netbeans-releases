@@ -26,37 +26,17 @@ public class CommonProjectActionsTest extends TestCase {
         super(testName);
     }
 
-    public static Test suite() {
-        TestSuite suite = new TestSuite(CommonProjectActionsTest.class);
-        
-        return suite;
-    }
-
-    public void testSetAsMainProjectAction() {
-    }
-
-    public void testCustomizeProjectAction() {
-    }
-
-    public void testOpenSubprojectsAction() {
-    }
-
-    public void testCloseProjectAction() {
-    }
-
-    public void testNewFileAction() {
-    }
 
     /**
      * Assure that two clients do not interact.
      */
     public void testNewProjectAction() {
         Action client1 = CommonProjectActions.newProjectAction();
-        File exitingSources = new Object();
-        client1.setValue(CommonProjectActions.EXISTING_SOURCES_FOLDER, exitingSources);
+        Object existingSources = new Object();
+        client1.putValue(CommonProjectActions.EXISTING_SOURCES_FOLDER, existingSources);
         Action client2 = CommonProjectActions.newProjectAction();
         Object o = client2.getValue(CommonProjectActions.EXISTING_SOURCES_FOLDER);
-        assertTrue(o != exitingSources);
+        assertTrue(o != existingSources);
     }
     
 }
