@@ -99,6 +99,8 @@ public class GtkLFCustoms extends LFCustoms {
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createEmptyBorder(),
 
             TOOLBAR_UI, "org.netbeans.swing.plaf.gtk.GtkToolbarUI", //NOI18N
+                    
+            PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_linux_mac.png"),
             
         };
         return result;

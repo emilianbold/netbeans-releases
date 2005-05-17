@@ -290,6 +290,8 @@ public abstract class LFCustoms {
     public static final String SUBFONT = "subFont"; //NOI18N
     public static final String LISTFONT = "List.font"; //NOI18N
     public static final String TREEFONT = "Tree.font"; //NOI18N
-    public static final String PANELFONT = "Panel.font"; //NOI18N    
-
+    public static final String PANELFONT = "Panel.font"; //NOI18N  
+    
+    // keys used by the progressbar api module.
+    public static final String PROGRESS_CANCEL_BUTTON_ICON = "nb.progress.cancel.icon";
 }

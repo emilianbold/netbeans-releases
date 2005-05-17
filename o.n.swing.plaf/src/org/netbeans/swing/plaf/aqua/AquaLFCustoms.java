@@ -115,6 +115,9 @@ public final class AquaLFCustoms extends LFCustoms {
             "floatingBorder", new DropShadowBorder(),
                     
             TAB_ACTIVE_SELECTION_FOREGROUND, new GuaranteedValue ("textText", Color.BLACK),
+                    
+            PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_linux_mac.png"),
+                    
         }; //NOI18N
         return result;
     }

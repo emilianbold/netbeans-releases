@@ -20,6 +20,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import org.netbeans.swing.plaf.util.UIUtils;
 
 /** Default system-provided customizer for Metal LF
  * Public only to be accessible by ProxyLazyValue, please don't abuse.
@@ -86,6 +87,9 @@ public final class MetalLFCustoms extends LFCustoms {
             
             //#48951 invisible unfocused selection background in Metal L&F
             "nb.explorer.unfocusedSelBg", unfocusedSelBg,
+                    
+            PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_win_linux_mac.png"),
+                    
 
         }; //NOI18N
         return result;

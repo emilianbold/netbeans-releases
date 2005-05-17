@@ -80,6 +80,8 @@ public final class WindowsLFCustoms extends LFCustoms {
                 //Work around a bug in windows which sets the text area font to
                 //"MonoSpaced", causing all accessible dialogs to have monospaced text
                 "TextArea.font", new GuaranteedValue ("Label.font", new Font("Dialog", Font.PLAIN, fontsize)), //NOI18N
+                        
+                        
             };
         } else {
             result = new Object[] {
@@ -121,7 +123,9 @@ public final class WindowsLFCustoms extends LFCustoms {
             EDITOR_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.WinClassicEditorTabDisplayerUI",
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.WindowsSlidingButtonUI",
             VIEW_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI",
-            
+
+            PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_win_classic.png"),
+                    
             //XXX convert to derived colors
             "tab_unsel_fill", UIUtils.adjustColor (
                 new GuaranteedValue("InternalFrame.inactiveTitleGradient",
