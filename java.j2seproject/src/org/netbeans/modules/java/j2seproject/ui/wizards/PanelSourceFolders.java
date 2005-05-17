@@ -102,7 +102,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
         // #58489 honor existing source folder
         File currentDirectory = null;
-        FileObject folder = Templates.getExitingSourcesFolder(wizardDescriptor);
+        FileObject folder = Templates.getExistingSourcesFolder(wizardDescriptor);
         if (folder != null) {
             currentDirectory = FileUtil.toFile(folder);
         }        

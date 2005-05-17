@@ -113,7 +113,7 @@ public class Templates {
      *
      * @since 1.3 (17th May 2005)
      */
-    public static FileObject getExitingSourcesFolder( WizardDescriptor wizardDescriptor ) {         
+    public static FileObject getExistingSourcesFolder( WizardDescriptor wizardDescriptor ) {         
         return (FileObject) wizardDescriptor.getProperty( CommonProjectActions.EXISTING_SOURCES_FOLDER );
     }    
     /**
