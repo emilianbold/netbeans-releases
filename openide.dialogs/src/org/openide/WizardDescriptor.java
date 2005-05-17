@@ -1383,6 +1383,8 @@ public class WizardDescriptor extends DialogDescriptor {
      *
      * <p>During backround validation Cancel button is hooked
      * to signal the validation thread using interrupt().
+     *
+     * @since 6.2 (16 May 2005)
      */
     public interface AsynchronousValidatingPanel extends ValidatingPanel {
 

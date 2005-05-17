@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     <change id="AsynchronousValidatingPanel">
            <api name="dialogs"/>
            <summary>Interface <code>AsynchronousValidationgPanel</code> added</summary>
-           <version major="5" minor="999999999"/>
+           <version major="6" minor="2"/>
            <date day="16" month="5" year="2005"/>
            <author login="pkuzel"/>
            <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
