@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
@@ -70,8 +71,12 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
 
     protected void refresh( Lookup context ) {
-        setEnabled( OpenProjectList.getDefault().getOpenProjects().length > 0 );
-        setDisplayName( NAME );
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                setEnabled(OpenProjectList.getDefault().getOpenProjects().length > 0);
+                setDisplayName(NAME);
+            }
+        });
     }
 
     public JMenuItem getPopupPresenter() {
