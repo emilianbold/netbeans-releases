@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,7 @@ package org.netbeans.modules.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.io.CharConversionException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,16 +24,12 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.project.ui.actions.Actions;
-import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
@@ -42,7 +38,6 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.filesystems.FileObject;
@@ -50,12 +45,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 /**
  * Support for creating logical views.
@@ -103,7 +96,7 @@ public class PhysicalView {
                     
         // Create the nodes
         ArrayList nodesList = new ArrayList( groups.length );
-        nodesList.add( new GroupNode( p, projectDirGroup, true, DataFolder.findFolder( projectDirGroup.getRootFolder() ) ) );
+        nodesList.add(new GroupContainmentFilterNode(new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(projectDirGroup.getRootFolder())), projectDirGroup));
         
         for( int i = 0; i < groups.length; i++ ) {
             
@@ -111,7 +104,7 @@ public class PhysicalView {
                 continue;
             }
             
-            nodesList.add( new GroupNode( p, groups[i], false, DataFolder.findFolder( groups[i].getRootFolder() ) ) );
+            nodesList.add(new GroupContainmentFilterNode(new GroupNode(p, groups[i], false, DataFolder.findFolder(groups[i].getRootFolder())), groups[i]));
         }
         
         Node nodes[] = new Node[ nodesList.size() ];
@@ -291,7 +284,62 @@ public class PhysicalView {
         }
 
     }
+    
+    /**
+     * Specially displays nodes corresponding to files which are not contained in this source group.
+     */
+    private static final class GroupContainmentFilterNode extends FilterNode {
         
+        private final SourceGroup g;
+        
+        public GroupContainmentFilterNode(Node orig, SourceGroup g) {
+            super(orig, orig.isLeaf() ? Children.LEAF : new GroupContainmentFilterChildren(orig, g));
+            this.g = g;
+        }
+        
+        public String getHtmlDisplayName() {
+            Node orig = getOriginal();
+            DataObject d = (DataObject) orig.getCookie(DataObject.class);
+            assert d != null : orig;
+            FileObject f = d.getPrimaryFile();
+            String barename = orig.getHtmlDisplayName();
+            if (!FileUtil.isParentOf(g.getRootFolder(), f) || g.contains(f)) {
+                // Leave it alone.
+                return barename;
+            }
+            // Try to grey it out.
+            if (barename == null) {
+                try {
+                    barename = XMLUtil.toElementContent(orig.getDisplayName());
+                } catch (CharConversionException e) {
+                    // Never mind.
+                    return null;
+                }
+            }
+            return "<font color='!Label.disabledForeground'>" + barename + "</font>"; // NOI18N
+        }
+        
+        private static final class GroupContainmentFilterChildren extends FilterNode.Children {
+            
+            private final SourceGroup g;
+            
+            public GroupContainmentFilterChildren(Node orig, SourceGroup g) {
+                super(orig);
+                this.g = g;
+            }
+            
+            protected Node copyNode(Node node) {
+                if (original.getCookie(DataFolder.class) != null && node.getCookie(DataObject.class) != null) {
+                    return new GroupContainmentFilterNode(node, g);
+                } else {
+                    return super.copyNode(node);
+                }
+            }
+            
+        }
+        
+    }
+    
     public static class PathFinder {
         
         private SourceGroup group;
