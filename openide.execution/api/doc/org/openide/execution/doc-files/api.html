@@ -65,11 +65,11 @@ engine (see below), using
 
 on the task returned from
 
-<a href="../ExecutionEngine.html#execute(java.lang.String, java.lang.Runnable, org.openide.windows.InputOutput)"><code>ExecutionEngine.execute(...)</code></a>,
+<a href="../ExecutionEngine.html#execute(java.lang.String,%20java.lang.Runnable,%20org.openide.windows.InputOutput)"><code>ExecutionEngine.execute(...)</code></a>,
 
 and then
 
-<a href="@OPENIDE/IO@/org/openide/windows/InputOutput.html#getOut()"><code>InputOutput.getOut()</code></a>
+<a href="@org-openide-io@/org/openide/windows/InputOutput.html#getOut()"><code>InputOutput.getOut()</code></a>
 
 and so on. Now you can just copy characters from one stream to the
 other.
@@ -146,7 +146,7 @@ coverage of executed code.
 
 <p>First it is necessary to describe the
 
-<a href="@OPENIDE/IO@/org/openide/windows/InputOutput.html"><code>InputOutput</code></a>
+<a href="@org-openide-io@/org/openide/windows/InputOutput.html"><code>InputOutput</code></a>
 
 interface which is common to both forms of support. This interface is
 essentially an abstract description of the public capabilities of an
@@ -162,14 +162,14 @@ implementation:
 
 <li>You may use
 
-<a href="@OPENIDE/IO@/org/openide/windows/IOProvider.html#getIO(java.lang.String, boolean)"><code>IOProvider.getIO(String,boolean)</code></a>
+<a href="@org-openide-io@/org/openide/windows/IOProvider.html#getIO(java.lang.String,%20boolean)"><code>IOProvider.getIO(String,boolean)</code></a>
 
 to create an Output Window tab with a specified name and return its
 <code>InputOutput</code> representative. Or, try to reuse an existing tab of the same name, if there is one.
 
 <li>If
 
-<a href="../ExecutionEngine.html#execute(java.lang.String, java.lang.Runnable, org.openide.windows.InputOutput)"><code>ExecutionEngine.execute(...,InputOutput)</code></a>
+<a href="../ExecutionEngine.html#execute(java.lang.String,%20java.lang.Runnable,%20org.openide.windows.InputOutput)"><code>ExecutionEngine.execute(...,InputOutput)</code></a>
 
 is called and its third argument is <code>null</code>, this signifies
 that the engine itself should choose an appropriate Output Window tab,
@@ -181,7 +181,7 @@ probably named after the supplied task name. The returned
 
 <li>You may use the constant
 
-<a href="@OPENIDE/IO@/org/openide/windows/InputOutput.html#NULL"><code>InputOutput.NULL</code></a>
+<a href="@org-openide-io@/org/openide/windows/InputOutput.html#NULL"><code>InputOutput.NULL</code></a>
 
 to indicate that no I/O at all is desired for a task - that is, its I/O
 streams will be trapped, but writes will be discarded and reads will
@@ -205,7 +205,7 @@ be trapped.
 
 <ol>
 
-<li><a href="../ExecutionEngine.html#execute(java.lang.String, java.lang.Runnable, org.openide.windows.InputOutput)"><code>ExecutionEngine.execute(...)</code></a>
+<li><a href="../ExecutionEngine.html#execute(java.lang.String,%20java.lang.Runnable,%20org.openide.windows.InputOutput)"><code>ExecutionEngine.execute(...)</code></a>
 
 is the primitive means for providing I/O services to a block of code
 using dynamic scope.
