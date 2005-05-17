@@ -108,10 +108,7 @@ implements Runnable {
                 }
             }
         } catch (VMDisconnectedException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.USER,
-                ErrorManager.getDefault().annotate(ex,
-                    NbBundle.getMessage(PauseActionProvider.class,
-                        "VMDisconnected")));
+            // The VM can be disconnected at any time
         }
         setEnabled (
             ActionsManager.ACTION_PAUSE,
