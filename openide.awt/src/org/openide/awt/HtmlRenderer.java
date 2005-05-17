@@ -158,9 +158,13 @@ import javax.swing.tree.TreeCellRenderer;
  * situation.
  * <P>
  *
+ * <P>
+ * <B>Example usages:</B><BR>
+ * <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getHtmlDisplayName()">org.openide.nodes.Node.getHtmlDisplayName</a><BR>
+ * <a href="@org-openide-filesystems@/org/openide/filesystems/FileSystem.HtmlStatus.html">org.openide.filesystems.FileSystem.HtmlStatus</a>
+ * </P>
+ *
  * @since 4.30
- * @see org.openide.nodes.Node#getHtmlDisplayName
- * @see org.openide.filesystems.FileSystem.HtmlStatus
  * @author  Tim Boudreau
  */
 public final class HtmlRenderer {

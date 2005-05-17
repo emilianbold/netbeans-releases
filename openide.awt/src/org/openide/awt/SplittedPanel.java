@@ -819,7 +819,10 @@ public class SplittedPanel extends JComponent implements Accessible {
         public void splitChanged(SplitChangeEvent evt);
     }
 
-    /** An event that describes a split point change */
+    /** An event that describes a split point change
+      * @deprecated This class does nothing interesting that cannot be done with a JSplitPane.
+      * Use a JSplitPane instead.
+     */
     public static class SplitChangeEvent extends java.util.EventObject {
         /** generated Serialized Version UID */
         static final long serialVersionUID = 6748966611210836878L;
@@ -847,7 +850,9 @@ public class SplittedPanel extends JComponent implements Accessible {
     }
 
     /** The EmptySplitter is an empty splitter component with specified width.
-    * It can be used as the splitter via setSplitterComponent.
+     * It can be used as the splitter via setSplitterComponent.
+     * @deprecated This class does nothing interesting that cannot be done with a JSplitPane.
+     * Use a JSplitPane instead.
     */
     public static class EmptySplitter extends JComponent implements Accessible {
         /** generated Serialized Version UID */

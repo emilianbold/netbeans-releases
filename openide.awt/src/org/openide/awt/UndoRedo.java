@@ -22,14 +22,18 @@ import javax.swing.undo.*;
 
 
 /** Undo and Redo manager for top components and workspace elements.
-* It allows <code>UndoAction</code> and <code>RedoAction</code> to listen to editing changes of active
-* components and to changes in their ability to do undo and redo.
-*
-* @see org.openide.actions.UndoAction
-* @see org.openide.actions.RedoAction
-* @see org.openide.windows.TopComponent#getUndoRedo
-*
-* @author Jaroslav Tulach
+ * It allows <code>UndoAction</code> and <code>RedoAction</code> to listen to editing changes of active
+ * components and to changes in their ability to do undo and redo.
+ *
+ * <p>
+ * <b>Related links:</b>
+ * <ul>
+ *   <li><a href="@org-openide-actions@/org/openide/actions/UndoAction.html">org.openide.actions.UndoAction</a></li>
+ *   <li><a href="@org-openide-actions@/org/openide/actions/RedoAction.html">org.openide.actions.RedoAction</a></li>
+ *   <li><a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getUndoRedo()">org.openide.windows.TopComponent.getUndoRedo()</a></li>
+ * </ul> 
+ *
+ * @author Jaroslav Tulach
 */
 public interface UndoRedo {
     /** Empty implementation that does not allow
