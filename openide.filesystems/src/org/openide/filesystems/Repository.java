@@ -152,7 +152,7 @@ public class Repository implements Serializable {
     * filesystem was really added in Repository, then test that <code>FileSystem</code>
     * is valid.
     * @param fs filesystem to add
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final void addFileSystem(FileSystem fs) {
         boolean fireIt = false;
@@ -202,7 +202,7 @@ public class Repository implements Serializable {
 
     /** Removes a filesystem from the pool.
     * @param fs filesystem to remove
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final void removeFileSystem(FileSystem fs) {
         boolean fireIt = false;
@@ -246,7 +246,7 @@ public class Repository implements Serializable {
      * For example, if there are three filesystems, <code>new int[] {2, 0, 1}</code> cycles the filesystems forwards.
     * @param perm an array of integers
     * @throws IllegalArgumentException if the array is not a permutation, or is not the same length as the current number of filesystems in the pool
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final void reorder(int[] perm) {
         synchronized (this) {
@@ -303,7 +303,7 @@ public class Repository implements Serializable {
 
     /** Returns enumeration of all filesystems.
     * @return enumeration of type {@link FileSystem}
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final Enumeration getFileSystems() {
         ArrayList tempFileSystems = fileSystemsClone;
@@ -313,7 +313,7 @@ public class Repository implements Serializable {
 
     /** Returns enumeration of all filesystems.
     * @return enumeration of type {@link FileSystem}
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final Enumeration fileSystems() {
         return getFileSystems();
@@ -322,7 +322,7 @@ public class Repository implements Serializable {
     /**
      * Returns a sorted array of filesystems.
      * @return a sorted array of filesystems
-     * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
     public final FileSystem[] toArray() {
         ArrayList tempFileSystems = fileSystemsClone;
@@ -337,7 +337,7 @@ public class Repository implements Serializable {
     * @param systemName {@link FileSystem#getSystemName name} of the filesystem
     * @return the filesystem or <CODE>null</CODE> if there is no such
     *   filesystem
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final FileSystem findFileSystem(String systemName) {
         FileSystem fs = (FileSystem) names.get(systemName);
@@ -442,7 +442,7 @@ public class Repository implements Serializable {
     *
     * @return {@link FileObject} that represents file with given name or
     *   <CODE>null</CODE> if the file does not exist
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final FileObject find(String aPackage, String name, String ext) {
         assert FileUtil.assertDeprecatedMethod();
@@ -466,7 +466,7 @@ public class Repository implements Serializable {
     * @see FileSystem#findResource
     * @param name a name of the resource
     * @return file object or <code>null</code> if the resource can not be found
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final FileObject findResource(String name) {
         assert FileUtil.assertDeprecatedMethod();
@@ -489,7 +489,7 @@ public class Repository implements Serializable {
     /** Searches for the given resource among all filesystems, returning all matches.
     * @param name name of the resource
     * @return enumeration of {@link FileObject}s
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final Enumeration findAllResources(String name) {
         assert FileUtil.assertDeprecatedMethod();
@@ -519,7 +519,7 @@ public class Repository implements Serializable {
     *    a package and not a file name
     *
     * @return enumeration of {@link FileObject}s
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final Enumeration findAll(String aPackage, String name, String ext) {
         assert FileUtil.assertDeprecatedMethod();
@@ -574,7 +574,7 @@ public class Repository implements Serializable {
 
     /** Adds new listener.
     * @param list the listener
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final void addRepositoryListener(RepositoryListener list) {
         listeners.put(list, list);
@@ -582,7 +582,7 @@ public class Repository implements Serializable {
 
     /** Removes listener.
     * @param list the listener
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final void removeRepositoryListener(RepositoryListener list) {
         listeners.remove(list);

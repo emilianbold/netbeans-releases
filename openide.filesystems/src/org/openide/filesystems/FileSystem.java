@@ -301,7 +301,7 @@ public abstract class FileSystem implements java.io.Serializable {
     *
     * @return a file object that represents a file with the given name or
     *   <CODE>null</CODE> if the file does not exist
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead, or use {@link #findResource} if you are not interested in classpaths.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead, or use {@link #findResource} if you are not interested in classpaths.
     */
     public FileObject find(String aPackage, String name, String ext) {
         assert FileUtil.assertDeprecatedMethod();
@@ -382,7 +382,7 @@ public abstract class FileSystem implements java.io.Serializable {
     * @param env the environment to setup
     * @exception EnvironmentNotSupportedException if external execution
     *    and compilation cannot be supported
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public void prepareEnvironment(Environment env) throws EnvironmentNotSupportedException {
         throw new EnvironmentNotSupportedException(this);
@@ -833,7 +833,7 @@ public abstract class FileSystem implements java.io.Serializable {
     /** Interface that allows filesystems to set up the Java environment
     * for external execution and compilation.
     * Currently just used to append entries to the external class path.
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public static abstract class Environment extends Object {
         public Environment() {
@@ -842,7 +842,7 @@ public abstract class FileSystem implements java.io.Serializable {
 
         /** Adds one element to the class path environment variable.
         * @param classPathElement string representing the one element
-        * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+        * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         public void addClassPath(String classPathElement) {
         }

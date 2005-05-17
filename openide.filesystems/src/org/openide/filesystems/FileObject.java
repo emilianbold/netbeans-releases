@@ -176,7 +176,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @param separatorChar char to separate folders and files
     * @param extSepChar char to separate extension
     * @return the fully-qualified filename
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public String getPackageNameExt(char separatorChar, char extSepChar) {
         assert FileUtil.assertDeprecatedMethod();
@@ -204,7 +204,7 @@ public abstract class FileObject extends Object implements Serializable {
     * Like {@link #getPackageNameExt} but omits the extension.
     * @param separatorChar char to separate folders and files
     * @return the fully-qualified filename
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public String getPackageName(char separatorChar) {
         assert FileUtil.assertDeprecatedMethod();

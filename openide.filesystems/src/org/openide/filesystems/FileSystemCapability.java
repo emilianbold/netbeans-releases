@@ -41,22 +41,22 @@ public class FileSystemCapability extends Object {
         };
 
     /** Well known capability of being compiled.
-     * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
     public static final FileSystemCapability COMPILE = new FileSystemCapability();
 
     /** Well known ability to be executed.
-     * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
     public static final FileSystemCapability EXECUTE = new FileSystemCapability();
 
     /** Well known ability to be debugged.
-     * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
     public static final FileSystemCapability DEBUG = new FileSystemCapability();
 
     /** Well known ability to contain documentation files
-     * @deprecated Please use <a href="@JAVA/API@/org/netbeans/api/queries/JavadocForBinaryQuery.html"><code>JavadocForBinaryQuery</code></a> instead.
+     * @deprecated Please use <a href="@org-netbeans-api-java@/org/netbeans/api/queries/JavadocForBinaryQuery.html"><code>JavadocForBinaryQuery</code></a> instead.
      */
     public static final FileSystemCapability DOC = new FileSystemCapability();
 
@@ -84,7 +84,7 @@ public class FileSystemCapability extends Object {
 
     /** All filesystems that are capable of this capability.
     * @return enumeration of FileSystems that satifies this capability
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public Enumeration fileSystems() {
         class FFS implements org.openide.util.Enumerations.Processor {
@@ -100,7 +100,7 @@ public class FileSystemCapability extends Object {
 
     /** Find a resource in repository, ignoring not capable filesystems.
     * @param resName name of the resource
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public FileObject findResource(String resName) {
         Enumeration en = fileSystems();
@@ -122,7 +122,7 @@ public class FileSystemCapability extends Object {
     * that satifies this capability, returning all matches.
     * @param name name of the resource
     * @return enumeration of {@link FileObject}s
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public Enumeration findAllResources(String name) {
         Vector v = new Vector(8);
@@ -153,7 +153,7 @@ public class FileSystemCapability extends Object {
     *
     * @return {@link FileObject} that represents file with given name or
     *   <CODE>null</CODE> if the file does not exist
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final FileObject find(String aPackage, String name, String ext) {
         Enumeration en = fileSystems();
@@ -182,7 +182,7 @@ public class FileSystemCapability extends Object {
     *    a package and not a file name
     *
     * @return enumeration of {@link FileObject}s
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final Enumeration findAll(String aPackage, String name, String ext) {
         Enumeration en = fileSystems();
@@ -276,14 +276,14 @@ public class FileSystemCapability extends Object {
         }
 
         /** Getter for value of compiling capability.
-         * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         public boolean getCompile() {
             return compilation;
         }
 
         /** Setter for allowing compiling capability.
-         * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         public void setCompile(boolean val) {
             if (val != compilation) {
@@ -299,14 +299,14 @@ public class FileSystemCapability extends Object {
         }
 
         /** Getter for value of executiong capability.
-         * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         public boolean getExecute() {
             return execution;
         }
 
         /** Setter for allowing executing capability.
-         * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         public void setExecute(boolean val) {
             if (val != execution) {
@@ -322,14 +322,14 @@ public class FileSystemCapability extends Object {
         }
 
         /** Getter for value of debugging capability.
-         * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         public boolean getDebug() {
             return debug;
         }
 
         /** Setter for allowing debugging capability.
-         * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         public void setDebug(boolean val) {
             if (val != debug) {
@@ -345,14 +345,14 @@ public class FileSystemCapability extends Object {
         }
 
         /** Getter for value of doc capability.
-         * @deprecated Please use <a href="@JAVA/API@/org/netbeans/api/queries/JavadocForBinaryQuery.html"><code>JavadocForBinaryQuery</code></a> instead.
+         * @deprecated Please use <a href="@org-netbeans-api-java@/org/netbeans/api/queries/JavadocForBinaryQuery.html"><code>JavadocForBinaryQuery</code></a> instead.
         */
         public boolean getDoc() {
             return doc;
         }
 
         /** Setter for allowing debugging capability.
-         * @deprecated Please use <a href="@JAVA/API@/org/netbeans/api/queries/JavadocForBinaryQuery.html"><code>JavadocForBinaryQuery</code></a> instead.
+         * @deprecated Please use <a href="@org-netbeans-api-java@/org/netbeans/api/queries/JavadocForBinaryQuery.html"><code>JavadocForBinaryQuery</code></a> instead.
         */
         public void setDoc(boolean val) {
             if (val != doc) {
