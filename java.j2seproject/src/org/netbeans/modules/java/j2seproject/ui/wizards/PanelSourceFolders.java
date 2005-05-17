@@ -25,6 +25,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -99,11 +100,11 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             ((FolderList)this.testsPanel).setFiles (testRoot);
         }
 
-        // honor current directory property
+        // #58489 honor existing source folder
         File currentDirectory = null;
-        Action action = (Action) wizardDescriptor.getProperty("javax.swing.Action"); // NOI18N
-        if (action != null) {
-            currentDirectory = (File) action.getValue(INITIAL_SOURCE_ROOT); // NOI18N
+        FileObject folder = Templates.getExitingSourcesFolder(wizardDescriptor);
+        if (folder != null) {
+            currentDirectory = FileUtil.toFile(folder);
         }        
         if (currentDirectory != null && currentDirectory.isDirectory()) {       
             ((FolderList)sourcePanel).setLastUsedDir(currentDirectory);
