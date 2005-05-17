@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="Performance Test Utilities" basedir="." default="jar">
 
-    <property name="nball.dir" location="../../../nb_all"/>
+    <property name="nball.dir" location="../.."/>
     <property file="${nball.dir}/performance/performancetestutilities/dist/performance-tests.properties"/>
     <property name="build.compiler.debug" value="true"/>
 

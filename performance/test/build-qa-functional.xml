@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="QA performance tests" basedir="." default="all">
 
     <!-- Root folders -->
-    <property name="nball.dir" location="../../../nb_all"/>
+    <property name="nball.dir" location="../.."/>
     <property name="nbextra.dir" location="../../../nbextra"/>
     
     <!-- Imports defaults for Performance testing. -->
