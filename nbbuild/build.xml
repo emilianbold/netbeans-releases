@@ -392,7 +392,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../core/output2" target="netbeans"/>
   </target> 
-  <target name="all-core/ui" depends="all-openide">
+  <target name="all-core/ui" depends="all-openide,all-core/progress">
     <echo message="Building module core/ui..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
