@@ -23,8 +23,8 @@ import org.netbeans.modules.project.uiapi.Utilities;
 public class CommonProjectActions {
     
     /**
-     * {@link FileObject} value honored by newProjectAction that defines
-     * existing sources directory (compare to project directory).
+     * {@link FileObject} value honored by {@link #newProjectAction}
+     * that defines initial value for existing sources directory choosers.
      *
      * @since 1.3 (17th May 2005)
      */
@@ -100,8 +100,14 @@ public class CommonProjectActions {
     
     /**
      * Creates action that invokes new project wizard.
-     * It honors {@link #EXISTING_SOURCES_DIRECTORY}.
-     *
+     * 
+     * <p>{@link #EXISTING_SOURCES_DIRECTORY} keyed action
+     * value can carry {@link FileObject} that points
+     * to existing sources folder. Set this value
+     * if you open the wizard and you know user
+     * expectations about initial value for wizard
+     * choosers that refers to existing sources location.
+     * 
      * @return an action
      * @see org.netbeans.spi.project.ui.PrivilegedTemplates
      * @see org.netbeans.spi.project.ui.RecommendedTemplates
