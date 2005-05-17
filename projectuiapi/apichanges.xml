@@ -88,7 +88,7 @@ is the proper place.
                 <ul>
                     <li><code>CommonProjectActions.newProjectAction</code> method</li>
                     <li><code>CommonProjectActions.EXISTING_SOURCES_FOLDER</code> property</li>
-                    <li><code>Templates.getExitingSourcesFolder</code> method</li>
+                    <li><code>Templates.getExistingSourcesFolder</code> method</li>
                 </ul>                
             </description>
             <class package="org.netbeans.spi.project.ui.support" name="CommonProjectActions"/>
