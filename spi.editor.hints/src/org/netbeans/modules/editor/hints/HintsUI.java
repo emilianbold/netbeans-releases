@@ -52,7 +52,6 @@ public class HintsUI implements MouseListener, KeyListener {
     private static int WINDOW_GAP = 2;
     
     private Popup listPopup = null;
-    private FadeComponent textHint = null;
     private JLabel hintIcon = null;
     private ScrollCompletionPane hintListComponent = null;
     
@@ -79,7 +78,7 @@ public class HintsUI implements MouseListener, KeyListener {
         setComponent (comp);
         if (show) {
             boolean popup = ((Hint) hints.get(0)).getType() == Hint.ERROR;
-            showHints(popup);
+            showHints();
             if (!popup && showPopup) {
                 showPopup();
             }
@@ -114,20 +113,8 @@ public class HintsUI implements MouseListener, KeyListener {
         if (comp == null) {
             return;
         }
-        removeTextHint();
         removeIconHint();
         removePopup();
-    }
-    
-    private void removeTextHint() {
-        if (textHint != null && textHint.getParent() != null) {
-            Container c = textHint.getParent();
-            if (c != null) {
-                Rectangle bds = textHint.getBounds();
-                c.remove (textHint);
-                c.repaint (bds.x, bds.y, bds.width, bds.height);
-            }
-        }
     }
     
     private void removeIconHint() {
@@ -149,18 +136,12 @@ public class HintsUI implements MouseListener, KeyListener {
     }
     
     boolean isKnownComponent(Component c) {
-        return c == comp || c == hintIcon || c == hintListComponent || c == textHint;
+        return c == comp || c == hintIcon || c == hintListComponent;
     }
     
-    private void showHints(boolean suggest) {
+    private void showHints() {
         if (comp == null || !comp.isDisplayable() || !comp.isShowing()) {
             return;
-        }
-        if (suggest) {
-            String hint = NbBundle.getMessage(HintsUI.class, 
-                    "FMT_Hint", hints.get(0).toString());
-            getTextHint().setText (hint);
-            configureBounds (getTextHint(), true);
         }
         configureBounds (getHintIcon(), false);
     }
@@ -221,13 +202,6 @@ public class HintsUI implements MouseListener, KeyListener {
         return hintIcon;
     }
     
-    private FadeComponent getTextHint() {
-        if (textHint == null) {
-            textHint = new FadeComponent();
-        }
-        return textHint;
-    }
-    
     void showPopup() {
         if (comp == null || hints.isEmpty()) {
             return;
@@ -247,7 +221,6 @@ public class HintsUI implements MouseListener, KeyListener {
             listPopup = getPopupFactory().getPopup(
                     comp, hintListComponent, p.x, p.y);
             listPopup.show();
-            removeTextHint();
         } catch (BadLocationException ble) {
             ErrorManager.getDefault().notify (ble);
             setHints (null, null, false);
@@ -303,7 +276,6 @@ public class HintsUI implements MouseListener, KeyListener {
 
     public void mousePressed(java.awt.event.MouseEvent e) {
         if (e.getSource() instanceof JLabel) {
-            removeTextHint();
             if (!isPopupActive()) {
                 showPopup();
             }
@@ -315,9 +287,8 @@ public class HintsUI implements MouseListener, KeyListener {
     
     public boolean isActive() {
         boolean bulbShowing = hintIcon != null && hintIcon.isShowing();
-        boolean textShowing = textHint != null && textHint.isShowing();
         boolean popupShowing = hintListComponent != null && hintListComponent.isShowing();
-        return bulbShowing || textShowing || popupShowing;
+        return bulbShowing || popupShowing;
     }
     
     public boolean isPopupActive() {
@@ -329,12 +300,11 @@ public class HintsUI implements MouseListener, KeyListener {
             return;
         }
         boolean bulbShowing = hintIcon != null && hintIcon.isShowing();
-        boolean textShowing = textHint != null && textHint.isShowing();
         boolean popupShowing = hintListComponent != null && hintListComponent.isShowing();
         boolean multipleHints = hints.size() > 1;
         if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
             if ( e.getModifiersEx() == KeyEvent.ALT_DOWN_MASK ) {
-                if (textShowing && !multipleHints) {
+                if (!multipleHints) {
                     invokeHint ((Hint) hints.get(0));
                     e.consume();
                 } else if ( bulbShowing && !popupShowing) {
@@ -349,9 +319,6 @@ public class HintsUI implements MouseListener, KeyListener {
                 }
             }
         } else if ( e.getKeyCode() == KeyEvent.VK_ESCAPE ) {
-            if ( textShowing ) {
-                removeTextHint();
-            }
             if ( popupShowing ) {
                 removePopup();
             }
