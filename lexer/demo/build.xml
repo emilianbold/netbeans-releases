@@ -15,7 +15,6 @@ Microsystems, Inc. All Rights Reserved.
 <project name="lexer-gen" default="compile-src" basedir=".">
 
   <property name="lexer.module.root" location=".."/>
-  <property name="lexerjar" location="${lexer.module.root}/netbeans/modules/lexer.jar"/>
   <property name="src.demo" location="src/org/netbeans/modules/lexer/demo"/>
   <!-- <property name="build.compiler.debug" value="on"/> -->
   <!-- <property name="build.compiler.deprecation" value="on"/> -->
@@ -26,12 +25,12 @@ Microsystems, Inc. All Rights Reserved.
   </target>
                
   <target name="compile-src" depends="compile-base">
-    <javac srcdir="src" destdir="src"
+    <mkdir dir="build/classes"/>
+    <javac srcdir="src" destdir="build/classes"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">
       <classpath>
-        <pathelement location="${lexer.module.root}/tmp"/>
-        <pathelement location="${lexerjar}"/>
+        <pathelement location="${lexer.module.root}/build/classes"/>
         <fileset id="antlr.runtime" dir="${lexer.module.root}/external">
           <include name="antlr*.jar"/>
         </fileset>
@@ -80,9 +79,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="clean-src">
     <delete quiet="true">
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
+      <fileset dir="build"/>
     </delete>
   </target>
 

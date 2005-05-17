@@ -34,7 +34,6 @@ Microsystems, Inc. All Rights Reserved.
              at http://lexer.netbeans.org/doc/antlr.html.
       -->
     <property name="antlr.home" location="${lexer.module.root}/external"/>
-    <property name="xml-apis" location="${lexer.module.root}/../core/external/xml-apis.jar"/>
 
     <property name="grammar.srcname" value="${grammar.name}.g"/>
     <property name="lexer.name" value="${grammar.name}Lexer"/>
@@ -134,7 +133,7 @@ Microsystems, Inc. All Rights Reserved.
       </delete>
 
       <taskdef name="stringReplace" classname="org.netbeans.lexer.gen.StringReplace"
-               classpath="${lexer.module.root}/gen/antsrc"/>
+               classpath="${lexer.module.root}/gen/build/antclasses"/>
 
       <stringReplace replaceWhat="." replaceWith="/" replaceIn="${grammar.pkg}" property="grammar.pkgslash"/>
 
@@ -147,12 +146,11 @@ Microsystems, Inc. All Rights Reserved.
       <taskdef name="generateLanguageSource"
                classname="org.netbeans.lexer.gen.AntlrGenerateLanguageSource">
         <classpath>
-          <pathelement path="${lexer.module.root}/gen/antsrc"/>
-          <pathelement location="${lexer.module.root}/gen/src"/>
-          <pathelement location="${lexer.module.root}/src"/>
+          <pathelement path="${lexer.module.root}/gen/build/antclasses"/>
+          <pathelement location="${lexer.module.root}/gen/build/classes"/>
+          <pathelement location="${lexer.module.root}/build/classes"/>
           <pathelement location="${lexer.module.root}/tmp"/>
           <pathelement location="${grammar.root}"/>
-          <pathelement location="${xml-apis}"/>
           <fileset dir="${antlr.home}">
             <include name="antlr*.jar"/>
             <include name="lexer-gen-antlr*.jar"/>
@@ -173,7 +171,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="generate-language">
       <taskdef name="stringReplace" classname="org.netbeans.lexer.gen.StringReplace"
-               classpath="${lexer.module.root}/gen/antsrc"/>
+               classpath="${lexer.module.root}/gen/build/antclasses"/>
 
       <stringReplace replaceWhat="." replaceWith="/" replaceIn="${grammar.pkg}" property="grammar.pkgslash"/>
 
@@ -182,8 +180,7 @@ Microsystems, Inc. All Rights Reserved.
              deprecation="${build.compiler.deprecation}"
              debug="${build.compiler.debug}">
         <classpath>
-          <pathelement location="${xml-apis}"/>
-          <pathelement location="${lexer.module.root}/src"/>
+          <pathelement location="${lexer.module.root}/build/classes"/>
           <pathelement location="${lexer.module.root}/tmp"/>
           <pathelement location="${grammar.root}"/>
           <fileset dir="${antlr.home}">
@@ -198,8 +195,8 @@ Microsystems, Inc. All Rights Reserved.
         <arg value="${lang.classname}"/>
         <arg value="${demo.inputfile}"/>
         <classpath>
-          <pathelement location="${lexer.module.root}/src"/>
-          <pathelement location="${lexer.module.root}/demo/src"/>
+          <pathelement location="${lexer.module.root}/build/classes"/>
+          <pathelement location="${lexer.module.root}/demo/build/classes"/>
           <pathelement location="${grammar.root}"/>
           <fileset dir="${antlr.home}">
             <include name="antlr*.jar"/>
@@ -212,8 +209,8 @@ Microsystems, Inc. All Rights Reserved.
       <java classname="org.netbeans.modules.lexer.demo.LexerRandomTest" dir="${basedir}" fork="true">
         <arg value="${test.desc.classname}"/>
         <classpath>
-          <pathelement location="${lexer.module.root}/src"/>
-          <pathelement location="${lexer.module.root}/demo/src"/>
+          <pathelement location="${lexer.module.root}/build/classes"/>
+          <pathelement location="${lexer.module.root}/demo/build/classes"/>
           <pathelement location="${grammar.root}"/>
           <fileset dir="${antlr.home}">
             <include name="antlr*.jar"/>
@@ -226,9 +223,9 @@ Microsystems, Inc. All Rights Reserved.
       <taskdef name="generateLanguageDescription"
                classname="org.netbeans.lexer.gen.AntlrGenerateLanguageDescription">
         <classpath>
-          <pathelement path="${lexer.module.root}/gen/antsrc"/>
-          <pathelement location="${lexer.module.root}/gen/src"/>
-          <pathelement location="${lexer.module.root}/src"/>
+          <pathelement path="${lexer.module.root}/gen/build/antclasses"/>
+          <pathelement location="${lexer.module.root}/gen/build/classes"/>
+          <pathelement location="${lexer.module.root}/build/classes"/>
           <pathelement location="${grammar.root}"/>
         </classpath>
       </taskdef>

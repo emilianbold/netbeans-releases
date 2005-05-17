@@ -38,8 +38,6 @@ Microsystems, Inc. All Rights Reserved.
              The language source file must then be created and maintained
              manually.
       -->
-    <property name="xml-apis" location="${lexer.module.root}/../core/external/xml-apis.jar"/>
-
     <property name="lexer.name" value="${grammar.name}Lexer"/>
     <property name="lexer.classname" value="${grammar.pkg}.${lexer.name}"/>
     <property name="lexer.srcname" value="${lexer.name}.java"/>
@@ -71,18 +69,17 @@ Microsystems, Inc. All Rights Reserved.
             description="Generate Language class source">
 
       <taskdef name="stringReplace" classname="org.netbeans.lexer.gen.StringReplace"
-               classpath="${lexer.module.root}/gen/antsrc"/>
+               classpath="${lexer.module.root}/gen/build/antclasses"/>
 
       <stringReplace replaceWhat="." replaceWith="/" replaceIn="${grammar.pkg}" property="grammar.pkgslash"/>
 
       <taskdef name="generateLanguageSource"
                classname="org.netbeans.lexer.gen.HandcodedGenerateLanguageSource">
         <classpath>
-          <pathelement path="${lexer.module.root}/gen/antsrc"/>
-          <pathelement location="${lexer.module.root}/gen/src"/>
-          <pathelement location="${lexer.dir}/modules/org-netbeans-modules-lexer.jar"/>
+          <pathelement path="${lexer.module.root}/gen/build/antclasses"/>
+          <pathelement location="${lexer.module.root}/gen/build/classes"/>
+          <pathelement location="${lexer.module.root}/build/classes"/>
           <pathelement location="${grammar.root}"/>
-          <pathelement location="${xml-apis}"/>
         </classpath>
       </taskdef>
 
@@ -97,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="generate-language">
       <taskdef name="stringReplace" classname="org.netbeans.lexer.gen.StringReplace"
-               classpath="${lexer.module.root}/gen/antsrc"/>
+               classpath="${lexer.module.root}/gen/build/antclasses"/>
 
       <stringReplace replaceWhat="." replaceWith="/" replaceIn="${grammar.pkg}" property="grammar.pkgslash"/>
 
@@ -106,8 +103,7 @@ Microsystems, Inc. All Rights Reserved.
              deprecation="${build.compiler.deprecation}"
              debug="${build.compiler.debug}">
         <classpath>
-          <pathelement location="${xml-apis}"/>
-          <pathelement location="${lexer.dir}/modules/org-netbeans-modules-lexer.jar"/>
+          <pathelement location="${lexer.module.root}/build/classes"/>
           <pathelement location="${grammar.root}"/>
         </classpath>
       </javac>
@@ -118,8 +114,8 @@ Microsystems, Inc. All Rights Reserved.
         <arg value="${lang.classname}"/>
         <arg value="${demo.inputfile}"/>
         <classpath>
-          <pathelement location="${lexer.module.root}/src"/>
-          <pathelement location="${lexer.module.root}/demo/src"/>
+          <pathelement location="${lexer.module.root}/build/classes"/>
+          <pathelement location="${lexer.module.root}/demo/build/classes"/>
           <pathelement location="${grammar.root}"/>
         </classpath>
       </java>
@@ -129,8 +125,8 @@ Microsystems, Inc. All Rights Reserved.
       <java classname="org.netbeans.modules.lexer.demo.LexerRandomTest" dir="${basedir}" fork="true">
         <arg value="${test.desc.classname}"/>
         <classpath>
-          <pathelement location="${lexer.module.root}/src"/>
-          <pathelement location="${lexer.module.root}/demo/src"/>
+          <pathelement location="${lexer.module.root}/build/classes"/>
+          <pathelement location="${lexer.module.root}/demo/build/classes"/>
           <pathelement location="${grammar.root}"/>
         </classpath>
       </java>
