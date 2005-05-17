@@ -34,6 +34,8 @@ public interface ActionsFactory {
     public Action closeProjectAction();
     
     public Action newFileAction();
+    
+    public Action newProjectAction();
             
     // Actions sensitive to project selection
     

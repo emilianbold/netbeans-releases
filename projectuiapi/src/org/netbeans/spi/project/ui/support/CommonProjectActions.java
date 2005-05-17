@@ -22,6 +22,14 @@ import org.netbeans.modules.project.uiapi.Utilities;
  */
 public class CommonProjectActions {
     
+    /**
+     * {@link FileObject} value honored by newProjectAction that defines
+     * existing sources directory (compare to project directory).
+     *
+     * @since 1.3 (17th May 2005)
+     */
+    public static final String EXISTING_SOURCES_FOLDER = "existingSourcesFolder";
+    
     private CommonProjectActions() {}
         
     /**
@@ -90,4 +98,17 @@ public class CommonProjectActions {
         return Utilities.getActionsFactory().newFileAction();
     }
     
+    /**
+     * Creates action that invokes new project wizard.
+     * It honors {@link #EXISTING_SOURCES_DIRECTORY}.
+     *
+     * @return an action
+     * @see org.netbeans.spi.project.ui.PrivilegedTemplates
+     * @see org.netbeans.spi.project.ui.RecommendedTemplates
+     *
+     * @since 1.3 (17th May 2005)
+     */
+    public static Action newProjectAction() {
+        return Utilities.getActionsFactory().newProjectAction();
+    }    
 }

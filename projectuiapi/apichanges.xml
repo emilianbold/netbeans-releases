@@ -75,7 +75,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        
+
+        <change id="CommonProjectActions.EXISTING_SOURCES_FOLDER">
+            <api name="general"/>
+            <summary>New Project Wizard Action</summary>
+            <version major="1" minor="3"/>
+            <date day="17" month="5" year="2005"/>
+            <author login="pkuzel"/>
+            <compatibility source="compatible"/>
+            <description>            
+                Introduced:
+                <ul>
+                    <li><code>CommonProjectActions.newProjectAction</code> method</li>
+                    <li><code>CommonProjectActions.EXISTING_SOURCES_FOLDER</code> property</li>
+                    <li><code>Templates.getExitingSourcesFolder</code> method</li>
+                </ul>                
+            </description>
+            <issue number="58489" />
+        </change>
+            
         <change id="ProjectOpenedHook.fire-to-all">
             <api name="general"/>
             <summary>The <code>projectOpened</code> and <code>projectClosed</code> methods are called on

@@ -84,6 +84,11 @@ public class Actions implements ActionsFactory {
         return NEW_FILE;
     }    
     
+    public synchronized Action newProjectAction() {
+        return new NewProject();
+    }
+    
+    
     public Action projectCommandAction(String command, String namePattern, Icon icon ) {
         return new ProjectAction( command, namePattern, icon, null );
     }

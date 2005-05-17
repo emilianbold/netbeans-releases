@@ -18,6 +18,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.modules.project.uiapi.Utilities;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -98,7 +99,23 @@ public class Templates {
             return (FileObject) wizardDescriptor.getProperty( ProjectChooserFactory.WIZARD_KEY_TARGET_FOLDER );
         }
     }
-    
+
+    /**
+     * Find the existing sources folder selected for a custom template wizard iterator.
+     * <p class="nonnormative">
+     * This may not be set, unless you have CommonProjectActions.newProjectAction
+     * with CommonProjectActions.EXISTING_SOURCES_FOLDER value.
+     * <p>
+     *
+     * @param wizardDescriptor the wizard as passed to {@link WizardDescriptor.InstantiatingIterator#initialize}
+     *                         or {@link TemplateWizard.Iterator#initialize}
+     * @return the existing sources folder from which the user has requested this iterator to create a project
+     *
+     * @since 1.3 (17th May 2005)
+     */
+    public static FileObject getExitingSourcesFolder( WizardDescriptor wizardDescriptor ) {         
+        return (FileObject) wizardDescriptor.getProperty( CommonProjectActions.EXISTING_SOURCES_FOLDER );
+    }    
     /**
      * Stores a target folder so that it can be remembered later using {@link #getTargetFolder}.
      * @param wizardDescriptor a template wizard

@@ -14,6 +14,7 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -26,6 +27,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.NewProjectWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectUtilities;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -68,9 +70,7 @@ public class NewProject extends BasicAction {
         }
     }    
         
-    private void doPerform () {
-        
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N                
+    /*T9Y*/ NewProjectWizard prepareWizardDescriptor(FileObject fo) {
         NewProjectWizard wizard = new NewProjectWizard(fo);
             
         if ( isPreselect ) {
@@ -83,6 +83,17 @@ public class NewProject extends BasicAction {
             wizard.putProperty( "PRESELECT_TEMPLATE", null ); 
         }
 
+        FileObject folder = (FileObject) getValue(CommonProjectActions.EXISTING_SOURCES_FOLDER);
+        if (folder != null) {
+            wizard.putProperty(CommonProjectActions.EXISTING_SOURCES_FOLDER, folder);
+        }
+        return wizard;
+    }
+    
+    private void doPerform () {
+        
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N                
+        NewProjectWizard wizard = prepareWizardDescriptor(fo);
         
         try {
                         
