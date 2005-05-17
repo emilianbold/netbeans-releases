@@ -53,7 +53,8 @@ public class LocalsTreeModel implements TreeModel {
         (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
         (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('l') >= 0);
     
-    private static final int MAX_ARRAY_LENGTH = 50; // Display just the first 50 elements of arrays
+    /** Nest array elements when array length is bigger then this. */
+    private static final int ARRAY_CHILDREN_NESTED_LENGTH = 100;
     
     
     private JPDADebuggerImpl    debugger;
@@ -79,17 +80,20 @@ public class LocalsTreeModel implements TreeModel {
             } else
             if (o instanceof AbstractVariable) { // ThisVariable & FieldVariable
                 AbstractVariable abstractVariable = (AbstractVariable) o;
+                boolean isArray =
+                        abstractVariable.getInnerValue () instanceof ArrayReference;
+                if (isArray) {
+                    to = abstractVariable.getFieldsCount ();
+                    // We need to reset it for arrays, to get the full array
+                }
                 Object[] avs = abstractVariable.getFields (from, to);
-                if ( (abstractVariable.getInnerValue () instanceof 
-                        ArrayReference) &&
-                     (avs.length >= (MAX_ARRAY_LENGTH + 1))
-                ) {
-                    Object[] avs2 = new Object [to - from];
-                    System.arraycopy (avs, 0, avs2, 0, to - from);
-                    avs2 [MAX_ARRAY_LENGTH] = "More";
-                    avs = avs2;
+                if (isArray && avs.length > ARRAY_CHILDREN_NESTED_LENGTH) {
+                    return new ArrayChildrenNode(avs).getChildren();
                 }
                 return avs;
+            } else
+            if (o instanceof ArrayChildrenNode) {
+                return ((ArrayChildrenNode) o).getChildren();
             } else
             throw new UnknownTypeException (o);
         } catch (VMDisconnectedException ex) {
@@ -140,8 +144,11 @@ public class LocalsTreeModel implements TreeModel {
                 if (abstractVariable.getInnerValue () instanceof 
                     ArrayReference
                 ) 
-                    return Math.min (abstractVariable.getFieldsCount (), MAX_ARRAY_LENGTH + 1);
+                    return Math.min (abstractVariable.getFieldsCount (), ARRAY_CHILDREN_NESTED_LENGTH);
                 return abstractVariable.getFieldsCount ();
+            } else
+            if (node instanceof ArrayChildrenNode) {
+                return ((ArrayChildrenNode) node).getChildren().length;
             } else
             throw new UnknownTypeException (node);
         } catch (VMDisconnectedException ex) {
@@ -154,8 +161,9 @@ public class LocalsTreeModel implements TreeModel {
             return false;
         if (o instanceof AbstractVariable)
             return !(((AbstractVariable) o).getInnerValue () instanceof ObjectReference);
-        if (o.equals ("More")) // NOI18N
-            return true;
+        if (o.toString().startsWith("SubArray")) {
+            return false;
+        }
         if (o.equals ("NoInfo")) // NOI18N
             return true;
         throw new UnknownTypeException (o);
@@ -390,5 +398,64 @@ public class LocalsTreeModel implements TreeModel {
                 task = null;
             }
         }
+    }
+    
+    /**
+     * The hierarchical representation of nested array elements.
+     * Used for arrays longer then {@link #ARRAY_CHILDREN_NESTED_LENGTH}.
+     */
+    private static final class ArrayChildrenNode {
+        
+        private Object[] allChildren;
+        private int from = 0;
+        private int length;
+        
+        public ArrayChildrenNode(Object[] allChildren) {
+            this(allChildren, 0, allChildren.length);
+        }
+        
+        private ArrayChildrenNode(Object[] allChildren, int from, int length) {
+            this.allChildren = allChildren;
+            this.from = from;
+            this.length = length;
+        }
+        
+        private static int pow(int a, int b) {
+            if (b == 0) return 1;
+            int p = a;
+            for (int i = 1; i < b; i++) {
+                p *= a;
+            }
+            return p;
+        }
+        
+        public Object[] getChildren() {
+            if (length > ARRAY_CHILDREN_NESTED_LENGTH) {
+                int depth = (int) Math.ceil(Math.log(length)/Math.log(ARRAY_CHILDREN_NESTED_LENGTH) - 1);
+                int n = pow(ARRAY_CHILDREN_NESTED_LENGTH, depth);
+                int numCh = (int) Math.ceil(length/((double) n));
+                
+                // We have 'numCh' children, each with 'n' sub-children (or possibly less for the last one)
+                Object[] ch = new Object[numCh];
+                for (int i = 0; i < numCh; i++) {
+                    int chLength = n;
+                    if (i == (numCh - 1)) {
+                        chLength = length % n;
+                        if (chLength == 0) chLength = n;
+                    }
+                    ch[i] = new ArrayChildrenNode(allChildren, from + i*n, chLength);
+                }
+                return ch;
+            } else {
+                Object[] ch = new Object[length];
+                System.arraycopy(allChildren, from, ch, 0, length);
+                return ch;
+            }
+        }
+        
+        public String toString() {
+            return "SubArray"+from+"-"+(from + length - 1); // NOI18N
+        }
+        
     }
 }

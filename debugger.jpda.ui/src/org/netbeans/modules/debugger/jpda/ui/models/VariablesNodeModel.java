@@ -61,22 +61,26 @@ public class VariablesNodeModel implements NodeModel {
         if (o == TreeModel.ROOT)
             return NbBundle.getBundle (VariablesNodeModel.class).getString 
                 ("CTL_LocalsModel_Column_Name_Name");
-        if (o.equals ("More")) // NOI18N
-            return NbBundle.getBundle (VariablesNodeModel.class).getString 
-                ("CTL_LocalsModel_Column_Name_MoreItems");
         if (o instanceof Field)
             return ((Field) o).getName ();
         if (o instanceof LocalVariable)
             return ((LocalVariable) o).getName ();
         if (o instanceof Super)
-            return "super";
+            return "super"; // NOI18N
         if (o instanceof This)
-            return "this";
-        if (o instanceof This)
-            return "this";
-        if (o.equals ("NoInfo"))
+            return "this"; // NOI18N
+        if (o.equals ("NoInfo")) // NOI18N
             return NbBundle.getBundle (VariablesNodeModel.class).getString 
                 ("CTL_No_Info");
+        String str = o.toString();
+        if (str.startsWith("SubArray")) { // NOI18N
+            int index = str.indexOf('-');
+            //int from = Integer.parseInt(str.substring(8, index));
+            //int to = Integer.parseInt(str.substring(index + 1));
+            return NbBundle.getMessage (VariablesNodeModel.class,
+                    "CTL_LocalsModel_Column_Name_SubArray",
+                    str.substring(8, index), str.substring(index + 1));
+        }
         throw new UnknownTypeException (o);
     }
     
@@ -137,8 +141,13 @@ public class VariablesNodeModel implements NodeModel {
             } catch (InvalidExpressionException ex) {
                 return ex.getLocalizedMessage ();
             }
-        if (o.equals ("More")) // NOI18N
-            return null;
+        String str = o.toString();
+        if (str.startsWith("SubArray")) { // NOI18N
+            int index = str.indexOf('-');
+            return NbBundle.getMessage (VariablesNodeModel.class,
+                    "CTL_LocalsModel_Column_Descr_SubArray",
+                    str.substring(8, index), str.substring(index + 1));
+        }
         if (o.equals ("NoInfo"))
             return null;
         throw new UnknownTypeException (o);
@@ -159,8 +168,8 @@ public class VariablesNodeModel implements NodeModel {
             return SUPER;
         if (o instanceof This)
             return FIELD;
-        if (o.equals ("More")) // NOI18N
-            return null;
+        if (o.toString().startsWith("SubArray")) // NOI18N
+            return LOCAL;
         if (o.equals ("NoInfo")) // NOI18N
             return null;
         throw new UnknownTypeException (o);

@@ -76,6 +76,9 @@ public class VariablesTableModel implements TableModel, Constants {
             if (row instanceof Variable)
                 return ((Variable) row).getValue ();
         }
+        if (row.toString().startsWith("SubArray")) { // NOI18N
+            return ""; // NOI18N
+        }
         throw new UnknownTypeException (row);
     }
     
@@ -99,6 +102,9 @@ public class VariablesTableModel implements TableModel, Constants {
                 )
                     return false;
             }
+        }
+        if (row.toString().startsWith("SubArray")) {
+            return true;
         }
         throw new UnknownTypeException (row);
     }

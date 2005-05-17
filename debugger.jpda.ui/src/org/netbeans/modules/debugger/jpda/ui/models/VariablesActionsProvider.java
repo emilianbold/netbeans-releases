@@ -63,7 +63,7 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         if (node instanceof Variable)
             return new Action [] {
             };
-        if (node.equals ("More")) // NOI18N
+        if (node.toString().startsWith ("SubArray")) // NOI18N
             return new Action [] {
             };
         if (node.equals ("NoInfo")) // NOI18N
@@ -79,8 +79,8 @@ public class VariablesActionsProvider implements NodeActionsProvider {
             goToSource ((Field) node);
             return;
         }
-        if (node.equals ("More")) // NOI18N
-            return;
+        if (node.toString().startsWith ("SubArray")) // NOI18N
+            return ;
         if (node.equals ("NoInfo")) // NOI18N
             return;
         throw new UnknownTypeException (node);
