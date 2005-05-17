@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle"
                     stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardIterator" 
-              methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>
+              methodvalue="org.netbeans.modules.web.wizards.PageIterator.createJspIterator"/>
         <attr name="templateCategory" stringvalue="web-types"/>
       </file>
       <!--  JSP Document --> 
@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagFile.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardIterator" 
-            methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createTagIterator"/>
+            methodvalue="org.netbeans.modules.web.wizards.PageIterator.createTagIterator"/>
         <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>
       <!--  Tag File Document --> 
@@ -62,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Servlet.java" url="templates/Servlet.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet.html"/>
-          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createServletIterator"/>
+          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.ServletIterator.createServletIterator"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="org.netbeans.modules.web.IsServletFile" boolvalue="true"/>
           <attr name="templateCategory" stringvalue="servlet-types"/>
@@ -73,14 +73,14 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
          <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createHtmlIterator"/>
+                methodvalue="org.netbeans.modules.web.wizards.PageIterator.createHtmlIterator"/>
          <attr name="templateCategory" stringvalue="web-types"/>
       </file>
       <!-- Servlet Listener --> 
       <file name="ServletListener.java" url="templates/ServletListener.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ServletListener.html"/>
-          <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
+          <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.wizards.ListenerIterator"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>
@@ -90,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagLibrary.html"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createTagLibraryIterator"/>
+                methodvalue="org.netbeans.modules.web.wizards.PageIterator.createTagLibraryIterator"/>
           <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>
       <!--  Tag Library 1.2 --> 
@@ -100,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SimpleFilter.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createFilterIterator"/>
+        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.ServletIterator.createFilterIterator"/>
         <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>      
       <file name="AdvancedFilter.java" url="templates/AdvancedFilter.template"/>
@@ -109,7 +109,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagHandler.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-        <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.TagHandlerIterator"/>
+        <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.wizards.TagHandlerIterator"/>
         <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>      
       <file name="BodyTagHandler.java" url="templates/BodyTagHandler.template"/>
