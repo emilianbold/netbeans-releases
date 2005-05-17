@@ -54,12 +54,14 @@ Microsystems, Inc. All Rights Reserved.
         
     </folder> <!-- Services -->          
 
-    <!-- Registrations accesible with dedicated FolderLookups -->        
-    <!--folder name="Plugins">
+    <!-- Registrations accesible with dedicated FolderLookups -->
+    <folder name="Plugins">
         <folder name="XML">
             <folder name="GrammarQueryManagers">
-                &schema-grammar-registration;
-            </folder>
+                <!-- register semantics grammar for XMLSchema due to code completion -->
+                <file name="org-netbeans-modules-xml-xsd-SchemaGrammarQueryManager.instance"/>
+                <attr name="org-netbeans-modules-xml-xsd-SchemaGrammarQueryManager.instance/semantics-grammar-to-generic-grammar-separator" boolvalue="true"/>
+            </folder> <!-- GrammarQueryManagers -->
         </folder>
-    </folder-->    
+    </folder>
 </filesystem>
