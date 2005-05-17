@@ -1100,13 +1100,17 @@ public class WizardDescriptor extends DialogDescriptor {
                     v.validate();
 
                     // validation succesfull
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            setValid(true);
-                            onValidPerformer.run();
-                        }
-                    });
-
+                    if (SwingUtilities.isEventDispatchThread ()) {
+                        setValid(true);
+                        onValidPerformer.run();
+                    } else {
+                        SwingUtilities.invokeLater (new Runnable () {
+                            public void run () {
+                                setValid(true);
+                                onValidPerformer.run();
+                            } 
+                        });
+                    }
                 } catch (WizardValidationException wve) {
                     // cannot continue, notify user
                     if (wizardPanel != null) {
