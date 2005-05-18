@@ -224,7 +224,7 @@ supplied runnable; it will all be handled. Runnable-spawned code which
 is destined for other thread groups will not be handled, however; for
 example,
 
-<a href="@OPENIDE@/org/openide/util/RequestProcessor.html#post(java.lang.Runnable)"><code>RequestProcessor.post(Runnable)</code></a>
+<a href="@org-openide-util@/org/openide/util/RequestProcessor.html#post(java.lang.Runnable)"><code>RequestProcessor.post(Runnable)</code></a>
 
 will execute code in the IDE's main thread group, not the one created
 by the execution engine.
@@ -326,7 +326,7 @@ is subject to the security manager. Such "untrusted" code is probably
 restricted from security-sensitive calls (but do not count on it).
 Such code can still call
 
-<a href="@OPENIDE@/org/openide/LifecycleManager.html#exit()"><code>LifecycleManager.exit()</code></a>
+<a href="@org-openide-dialogs@/org/openide/LifecycleManager.html#exit()"><code>LifecycleManager.exit()</code></a>
 
 to explicitly exit the IDE.
 
