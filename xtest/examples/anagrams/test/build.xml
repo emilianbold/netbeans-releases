@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="anagram/test" basedir="." default="all">
+
+    <!-- Path to Jemmy library -->
+    <path id="jemmy.path" location="jemmy.jar"/>
+    
+    <!-- Points to directory with IDE to test-->
+    <property name="netbeans.dest.dir" location="../../nbbuild/netbeans"/>
+    
+    <!-- Name of tested module -->
+    <property name="xtest.module" value="AnagramGameWithXTest"/>
+    
+    <!-- Home of XTest -->
+    <property name="xtest.home" location="../../xtest"/>
+
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
+    <property name="xtest.testtype" value="unit"/>
+    <property name="xtest.attribs" value="stable"/>
+    <!--
+    <property name="xtest.testtype" value="functional"/>
+    <property name="xtest.attribs" value="stable,validation"/>
+    -->
+    
+    <!--
+    *****************************************************
+    ** You should not change anything after this comment,
+    **    unless you really know what you are doing
+    ******************************************************
+    -->
+    
+    <!-- Ant property. Value 'ignore' means that system classpath is ignored
+         and only classpath specified in build file is used. -->
+    <property name="build.sysclasspath" value="ignore"/>
+
+    <!-- Points to antfile with module's harness. 
+         Targets from that antfile is called from this build.xml -->
+    <property name="xtest.module_harness.antfile" location="${xtest.home}/lib/module_harness.xml"/>
+
+    <!-- before using xtest task, it has to be defined -->
+    <taskdef name="xtest" classname="org.netbeans.xtest.usertasks.XTestActionTask" 
+                 classpath="${xtest.home}/lib/xtest.jar"/>  
+    
+    <!-- ============ -->
+    <!-- Main targets -->
+    <!-- ============ -->
+    
+    <target name="all" depends="runtests"/>
+    
+    <!-- This calls target which will call compilers according to cfg file.
+         You should not change this target unless you realy know what you are doing -->
+    <target name="buildtests">
+       <xtest executeAction="buildTests"/>
+    </target>
+    
+    <!-- This calls common clean process. This cleans the tests -->
+    <!-- You can write your own if you need something special -->
+    <target name="cleantests">
+       <xtest executeAction="cleanTests"/>
+    </target> 
+
+    <!-- This target runs tests. You should not change this --> 
+    <!-- target unless you realy know what you are doing -->
+    <target name="runtests" depends="buildtests">
+        <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
+        <xtest executeAction="runTests"/>
+    </target>
+    
+    <!-- This target cleans results -->
+    <target name="cleanresults">
+        <xtest executeAction="cleanResults"/>
+    </target>
+    
+    <!-- This target cleans both tests and results -->
+    <target name="realclean">
+        <xtest executeAction="cleanAll"/>
+    </target>
+    
+    <!-- This target prints out default xtest configuration which will be used to run the tests -->
+    <target name="printconfig">
+        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
+    </target>
+    
+</project>
+

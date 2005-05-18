@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="anagrams/test-unit" basedir="." default="all">
+
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="default-compiler">
+        <!-- Build application before tests -->
+        <ant dir=".." target="jar"/>
+        <buildTests srcdir="unit/src" compileexcludes="**/data/**">
+            <classpath>
+                <!-- Add classpath elements needed to compile tests -->
+                <pathelement location="../dist/anagrams.jar"/>
+            </classpath>
+        </buildTests>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <target name="run-unit-test">
+        <executeTests pluginname="jvm">
+            <classpath>
+                <!-- Add classpath elements needed to run tests -->
+                <pathelement location="../dist/anagrams.jar"/>
+            </classpath>
+        </executeTests>
+    </target>
+    
+</project>
+
