@@ -67,8 +67,9 @@ public interface TabLayoutModel {
     /**
      * Get the index of the tab in the data model for the supplied point.
      *
-     * @param p A point representing a set of pixel coordinate in the space
+     * @param x X coordinate of a point representing a set of pixel coordinate in the space
      *          modeled by this layout model
+     * @param y Y coordinate
      * @return The index into the data model of the tab displayed at the passed
      *         point or -1
      */

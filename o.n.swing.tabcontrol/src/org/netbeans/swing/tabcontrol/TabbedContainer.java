@@ -761,7 +761,7 @@ public class TabbedContainer extends JComponent {
      *        model will always return the exact indication of that tab's position.
      *
      * @param location A point
-     * @return
+     * @return Drop indication drawing
      */
     public Shape getDropIndication(Object dragged, Point location) {
         int ix;

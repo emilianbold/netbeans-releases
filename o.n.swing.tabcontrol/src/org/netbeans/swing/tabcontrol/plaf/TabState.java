@@ -955,8 +955,8 @@ public abstract class TabState {
      * The default implementation in BasicTabDisplayerUI simply ignores the tab argument and returns a
      * single policy for all tabs created in <code>BasicTabDisplayerUI.createRepaintPolicy()</code>
      *
-     * @param tab
-     * @return
+     * @param tab Index of tab in question 
+     * @return Type of repaint policy for given tab
      */
     public abstract int getRepaintPolicy(int tab);
 }

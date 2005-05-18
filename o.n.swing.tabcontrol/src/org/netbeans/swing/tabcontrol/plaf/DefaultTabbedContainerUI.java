@@ -677,7 +677,8 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
     
     /** Checks the position of the tabbed container relative to its parent
      * window, and potentially updates its orientation client property.
-     * @see TabDisplayer.PROP_ORIENTATION
+     *
+     * @see org.netbeans.swing.tabcontrol.TabDisplayer.PROP_ORIENTATION
      */
     protected final void updateOrientation() {
         if (!container.isDisplayable()) {

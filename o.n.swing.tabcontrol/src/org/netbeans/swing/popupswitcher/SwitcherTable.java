@@ -41,7 +41,6 @@ import org.openide.util.Utilities;
  * and inteligently consider number of rows and columns to be used.
  *
  * @see SwitcherTableItem
- * @see SwitcherTableModel
  *
  * @author mkrauskopf
  */

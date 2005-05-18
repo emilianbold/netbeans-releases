@@ -49,7 +49,8 @@ public final class SlidingButton extends JToggleButton {
      
     /** Create a new button representing TabData from the model.
      *
-     * @param data Tab data as text, icon, tooltip etc.
+     * @param buttonData Tab data as text, icon, tooltip etc.
+     * @param orientation horizontal/vertical orientation of the button
      */
     public SlidingButton(TabData buttonData, int orientation) {
         super(buttonData.getText(), buttonData.getIcon(), false);

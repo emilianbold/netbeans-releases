@@ -22,7 +22,7 @@ import java.awt.Component;
  * Tab control uses location info to provide look and feel that is changing
  * as global location of tab control changes. Icon of pin button is an example.  
  *
- * @see TabbedContainer#setLocationInformer
+ * @see TabbedContainer#TabbedContainer
  *
  * @author Dafe Simonek
  */
