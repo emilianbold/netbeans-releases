@@ -23,11 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     "**/*Hid.*"
 -->
 
-<mconfig name="openide unit test config">
-
-    <!-- Tests which should be run before commit to validate IDE. -->
-   
-    
+<mconfig name="openide/loaders unit test config">
     <testbag testattribs="stable" executor="code" name="all openide code unit tests">
         <testset dir="">
             <patternset>
@@ -36,13 +32,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    
-    <!--<executor name="code" antfile="build.xml" target="runcodetest"/>
-    <executor name="ide" antfile="build.xml" target="runidetest"/>-->
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
-    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
-    
-    <!--<compiler name="unit-compiler" antfile="build.xml" target="unit-compiler" default="true"/>-->
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     
 </mconfig>

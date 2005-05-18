@@ -12,13 +12,9 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="all" name="build-unit">
-    <import file="../../../nbbuild/default.xml"/>
+    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
 
-    <path id="compiletest.classpath">   
-        <pathelement location="${openide.dir}/core/openide.jar"/>
-        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-    </path>
-    
+    <!--
     <path id="codetest.classpath">
         <pathelement location="${core.dir}/core/org-netbeans-swing-plaf.jar"/>
         <pathelement location="${core.dir}/modules/org-netbeans-swing-tabcontrol.jar"/>
@@ -36,20 +32,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${core.dir}/lib/boot.jar"/>
     </path>
     
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-    
-    <target name="unit-compiler">
-        <buildTests srcDir="unit/src" compileexcludes="**/data/**">
-            <classpath refid="compiletest.classpath"/>
-        </buildTests>
-    </target>
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
     <target name="runidetest">
         <executeTests pluginName="ide">
             <classpath/>
@@ -61,5 +43,5 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="codetest.classpath"/>
         </executeTests>
     </target>
-    
+   -->    
 </project>
