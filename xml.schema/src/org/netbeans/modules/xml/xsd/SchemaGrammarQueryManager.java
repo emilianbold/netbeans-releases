@@ -25,7 +25,10 @@ import org.netbeans.api.xml.services.UserCatalog;
  */
 public class SchemaGrammarQueryManager extends org.netbeans.modules.xml.api.model.GrammarQueryManager
 {
-    private static final String SCHEMA_ROOT="xsd:schema"; //NOI18N
+    // actually code completion works only for xsd: and xs: prefixes
+    private static final String SCHEMA_ROOT_XSD="xsd:schema"; //NOI18N
+    private static final String SCHEMA_ROOT_XS="xs:schema"; //NOI18N
+    private String prefix;
        
     public java.util.Enumeration enabled(org.netbeans.modules.xml.api.model.GrammarEnvironment ctx) {
         if (ctx.getFileObject() == null) return null;
@@ -37,9 +40,14 @@ public class SchemaGrammarQueryManager extends org.netbeans.modules.xml.api.mode
             } else if (next.getNodeType() == next.ELEMENT_NODE) {
                 Element element = (Element) next;
                 String tagName = element.getTagName();
-                if (SCHEMA_ROOT.equals(tagName)) {  // NOI18N
+                if (SCHEMA_ROOT_XSD.equals(tagName)) {  // NOI18N
+                    prefix = SCHEMA_ROOT_XSD;
+                    return org.openide.util.Enumerations.singleton (next);
+                } else if (SCHEMA_ROOT_XS.equals(tagName)) {  // NOI18N
+                    prefix = SCHEMA_ROOT_XS;
                     return org.openide.util.Enumerations.singleton (next);
                 }
+                
             }
         }
         
@@ -53,7 +61,12 @@ public class SchemaGrammarQueryManager extends org.netbeans.modules.xml.api.mode
     /** Returns DTD for code completion
     */
     public org.netbeans.modules.xml.api.model.GrammarQuery getGrammar(org.netbeans.modules.xml.api.model.GrammarEnvironment ctx) {
-        InputSource inputSource = new InputSource("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema.dtd"); //NOI18N
+        InputSource inputSource = null;
+        if (SCHEMA_ROOT_XSD.equals(prefix))
+            inputSource = new InputSource("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema_xsd.dtd"); //NOI18N
+        else if (SCHEMA_ROOT_XS.equals(prefix))
+            inputSource = new InputSource("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema_xs.dtd"); //NOI18N
+        
         if (inputSource!=null) {
             DTDParser dtdParser = new DTDParser(true);
             return dtdParser.parse(inputSource);
