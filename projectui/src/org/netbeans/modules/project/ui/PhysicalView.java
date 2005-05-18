@@ -96,7 +96,7 @@ public class PhysicalView {
                     
         // Create the nodes
         ArrayList nodesList = new ArrayList( groups.length );
-        nodesList.add(new GroupContainmentFilterNode(new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(projectDirGroup.getRootFolder())), projectDirGroup));
+        nodesList.add(/*new GroupContainmentFilterNode(*/new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(projectDirGroup.getRootFolder()))/*, projectDirGroup)*/);
         
         for( int i = 0; i < groups.length; i++ ) {
             
@@ -104,7 +104,7 @@ public class PhysicalView {
                 continue;
             }
             
-            nodesList.add(new GroupContainmentFilterNode(new GroupNode(p, groups[i], false, DataFolder.findFolder(groups[i].getRootFolder())), groups[i]));
+            nodesList.add(/*new GroupContainmentFilterNode(*/new GroupNode(p, groups[i], false, DataFolder.findFolder(groups[i].getRootFolder()))/*, groups[i])*/);
         }
         
         Node nodes[] = new Node[ nodesList.size() ];
@@ -285,9 +285,10 @@ public class PhysicalView {
 
     }
     
+    /* XXX disabled for now pending resolution of interaction with planned VCS annotations (color only):
     /**
      * Specially displays nodes corresponding to files which are not contained in this source group.
-     */
+     * /
     private static final class GroupContainmentFilterNode extends FilterNode {
         
         private final SourceGroup g;
@@ -339,6 +340,7 @@ public class PhysicalView {
         }
         
     }
+     */
     
     public static class PathFinder {
         
