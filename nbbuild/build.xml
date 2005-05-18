@@ -2176,6 +2176,26 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../utilities/loaderswitcher" target="netbeans"/>
   </target>
 
+  <target name="all-xtest/examples" depends="init,all-java/api,all-java/j2seproject">
+      <echo message="Building module xtest/examples..."/>
+    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+      <ant dir="../xtest/examples" target="netbeans"/>
+  </target>
+
+  <target name="all-xtest/module" depends="init,all-xtest">
+      <echo message="Building module xtest/module..."/>
+    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+      <ant dir="../xtest/module" target="netbeans"/>
+  </target>
+  
   <target name="all-xtest/nbjunit" depends="init,all-java/j2seproject,all-projects/projectui,all-java/javacore">
       <echo message="Building module xtest/nbjunit..."/>
     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
