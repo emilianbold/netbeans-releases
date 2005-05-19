@@ -28,7 +28,12 @@ public class SchemaGrammarQueryManager extends org.netbeans.modules.xml.api.mode
     // actually code completion works only for xsd: and xs: prefixes
     private static final String SCHEMA_ROOT_XSD="xsd:schema"; //NOI18N
     private static final String SCHEMA_ROOT_XS="xs:schema"; //NOI18N
-    private String prefix;
+
+    private static final String NS_JAXB="xmlns:jaxb"; //NOI18N
+    private static final String NS_JXB="xmlns:jxb"; //NOI18N
+    private static final String PUBLIC_JAXB="http://java.sun.com/xml/ns/jaxb"; //NOI18N
+    
+    private String prefix, ns_jaxb;
        
     public java.util.Enumeration enabled(org.netbeans.modules.xml.api.model.GrammarEnvironment ctx) {
         if (ctx.getFileObject() == null) return null;
@@ -42,9 +47,27 @@ public class SchemaGrammarQueryManager extends org.netbeans.modules.xml.api.mode
                 String tagName = element.getTagName();
                 if (SCHEMA_ROOT_XSD.equals(tagName)) {  // NOI18N
                     prefix = SCHEMA_ROOT_XSD;
+                    String attr = element.getAttribute(NS_JAXB);
+                    if (PUBLIC_JAXB.equals(attr)) {
+                        ns_jaxb=NS_JAXB;
+                    } else {
+                        attr = element.getAttribute(NS_JXB);
+                        if (PUBLIC_JAXB.equals(attr)) {
+                            ns_jaxb=NS_JXB;
+                        }
+                    }
                     return org.openide.util.Enumerations.singleton (next);
                 } else if (SCHEMA_ROOT_XS.equals(tagName)) {  // NOI18N
                     prefix = SCHEMA_ROOT_XS;
+                    String attr = element.getAttribute(NS_JAXB);
+                    if (PUBLIC_JAXB.equals(attr)) {
+                        ns_jaxb=NS_JAXB;
+                    } else {
+                        attr = element.getAttribute(NS_JXB);
+                        if (PUBLIC_JAXB.equals(attr)) {
+                            ns_jaxb=NS_JXB;
+                        }
+                    }
                     return org.openide.util.Enumerations.singleton (next);
                 }
                 
@@ -62,11 +85,21 @@ public class SchemaGrammarQueryManager extends org.netbeans.modules.xml.api.mode
     */
     public org.netbeans.modules.xml.api.model.GrammarQuery getGrammar(org.netbeans.modules.xml.api.model.GrammarEnvironment ctx) {
         InputSource inputSource = null;
-        if (SCHEMA_ROOT_XSD.equals(prefix))
-            inputSource = new InputSource("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema_xsd.dtd"); //NOI18N
-        else if (SCHEMA_ROOT_XS.equals(prefix))
+        if (SCHEMA_ROOT_XSD.equals(prefix)) {
+            if (NS_JAXB.equals(ns_jaxb))
+                inputSource = new InputSource("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema_xsd_jaxb.dtd"); //NOI18N
+            else if (NS_JXB.equals(ns_jaxb))
+                inputSource = new InputSource("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema_xsd_jxb.dtd"); //NOI18N
+            else
+                inputSource = new InputSource("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema_xsd.dtd"); //NOI18N
+        } else if (SCHEMA_ROOT_XS.equals(prefix)) {
+            if (NS_JAXB.equals(ns_jaxb))
+                inputSource = new InputSource("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema_xs_jaxb.dtd"); //NOI18N
+            else if (NS_JXB.equals(ns_jaxb))
+                inputSource = new InputSource("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema_xs_jxb.dtd"); //NOI18N
+            else
             inputSource = new InputSource("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema_xs.dtd"); //NOI18N
-        
+        }
         if (inputSource!=null) {
             DTDParser dtdParser = new DTDParser(true);
             return dtdParser.parse(inputSource);
