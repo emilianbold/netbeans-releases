@@ -300,7 +300,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     if(measuredTime[i] > 0)
                         reportPerformance(performanceDataName, measuredTime[i], "ms", i, expectedTime);
                     else
-                        fail("Measured value ["+measuredTime+"] is not > 0 !");
+                        throw new Exception("Measured value ["+measuredTime[i]+"] is not > 0 !");
                     
                     getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
                     
@@ -657,7 +657,12 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         for(int i=1; i<measuredValues.length; i++){
             measuredValuesString = measuredValuesString + " " + measuredValues[i];
             
-            if(measuredValues[i] > expectedTime)
+            if( (i>1  && measuredValues[i] > expectedTime) || 
+                (i==1 && measuredValues.length==1 && measuredValues[i] > expectedTime) )
+                // fail if it's subsequent usage and it's over expected time or it's first usage without any other usages and it's over expected time
+                fail = true;
+            else if(i==1 && measuredValues.length > 1 && measuredValues[i] > 2*expectedTime)
+                // fail if it's first usage and it isn't the last one and it's over 2-times expected time
                 fail = true;
         }
         
