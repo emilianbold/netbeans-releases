@@ -301,13 +301,9 @@ public class HintsUI implements MouseListener, KeyListener {
         }
         boolean bulbShowing = hintIcon != null && hintIcon.isShowing();
         boolean popupShowing = hintListComponent != null && hintListComponent.isShowing();
-        boolean multipleHints = hints.size() > 1;
         if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
             if ( e.getModifiersEx() == KeyEvent.ALT_DOWN_MASK ) {
-                if (!multipleHints) {
-                    invokeHint ((Hint) hints.get(0));
-                    e.consume();
-                } else if ( bulbShowing && !popupShowing) {
+                if ( bulbShowing && !popupShowing) {
                     showPopup();
                     e.consume();
                 }
