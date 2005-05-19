@@ -228,8 +228,8 @@ final class NbModuleProject implements Project {
         if (locBundlePropsPath == null) {
             Manifest mf = getManifest();
             if (mf != null) {
-                String locBundleResource = mf.getMainAttributes().
-                        getValue(ModuleList.LOCALIZING_BUNDLE_ATTR);
+                String locBundleResource =
+                        ManifestManager.getInstance(mf).getLocalizingBundle();
                 if (locBundleResource != null) {
                     String locBundleResourceBase, locBundleResourceExt;
                     int idx = locBundleResource.lastIndexOf('.');
