@@ -163,10 +163,10 @@ public class ProgressHandleTest extends TestCase {
     
     private class FailingUI implements ProgressUIWorker {
             public void processProgressEvent(ProgressEvent event) {
-                fail("How come we are processing a short one");
+                fail("How come we are processing a short one - " + event.getSource().getDisplayName());
             }
             public void processSelectedProgressEvent(ProgressEvent event) {
-                fail("How come we are processing a short one");
+                fail("How come we are processing a short one - " + event.getSource().getDisplayName());
             }
     }
   

@@ -143,7 +143,6 @@ public final class Controller implements Runnable, ActionListener {
         synchronized (this) {
             eventQueue.add(event);
             if (!dispatchRunning) {
-                timer.setDelay(InternalHandle.INITIAL_DELAY);
                 timer.start();
                 dispatchRunning = true;
             }
@@ -211,7 +210,7 @@ public final class Controller implements Runnable, ActionListener {
                         eventQueue.add(evnt);
                     }
                     hasShortOne = true;
-                    minDiff = (minDiff > diff ? diff : minDiff);
+                    minDiff = Math.min(minDiff, diff);
                 }
             }
  
@@ -228,10 +227,11 @@ public final class Controller implements Runnable, ActionListener {
         }
         timer.stop();
         if (hasShortOne) {
-                timer.setDelay((int)Math.max(100, minDiff));
-                timer.start();
+            timer.setDelay((int)Math.max(100, minDiff));
+            timer.start();
         } else {
             dispatchRunning = false;
+            timer.setDelay(TIMER_QUANTUM);
         }
     }
 

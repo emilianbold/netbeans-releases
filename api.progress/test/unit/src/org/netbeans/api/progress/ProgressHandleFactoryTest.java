@@ -14,8 +14,11 @@
 
 package org.netbeans.api.progress;
 
+import javax.swing.JComponent;
+import javax.swing.JProgressBar;
 import junit.framework.*;
 import org.netbeans.progress.module.InternalHandle;
+import org.netbeans.progress.module.ui.NbProgressBar;
 import org.openide.util.Cancellable;
 
 
@@ -66,11 +69,42 @@ public class ProgressHandleFactoryTest extends TestCase {
     }
 
     
-    private static class TestCancel implements Cancellable {
-        public boolean cancel() {
-            return true;
+    public void testCustomComponentIsInitialized() {
+        ProgressHandle handle = ProgressHandleFactory.createHandle("task 1");
+        JComponent component = ProgressHandleFactory.createProgressComponent(handle);
+        
+        handle.start(15);
+        handle.progress(2);
+        try {
+            // need to sleep longer than is the cycle..
+            Thread.sleep(600);
+        } catch (Exception exc) {
+            
         }
+        assertEquals(15, ((NbProgressBar) component).getMaximum());
+        assertEquals(2, ((NbProgressBar) component).getValue());
+        
+        handle = ProgressHandleFactory.createHandle("task 2");
+        component = ProgressHandleFactory.createProgressComponent(handle);
+        
+        handle.start(20);
+        try {
+            // need to sleep longer than is the cycle..
+            Thread.sleep(600);
+        } catch (Exception exc) {
+            
+        }
+        assertEquals(20, ((NbProgressBar) component).getMaximum());
+        assertEquals(0, ((NbProgressBar) component).getValue());
         
     }
+     
+     private static class TestCancel implements Cancellable {
+         public boolean cancel() {
+             return true;
+         }
+         
+   }
+   
     
 }
