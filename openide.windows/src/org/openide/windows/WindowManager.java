@@ -31,8 +31,8 @@ import javax.swing.SwingUtilities;
 
 /**
  * Manages window system.
- * Allows the work with window system components, i.e. <code>Mode</code>S, <code>TopComponentGroup</code>S
- * and provides handling of operations privided over <code>TopComponent</code>S.
+ * Allows the work with window system components, i.e. <code>Mode</code>s, <code>TopComponentGroup</code>s
+ * and provides handling of operations provided over <code>TopComponent</code>s.
  * <p><p>
  * <b><font color="red"><em>Important note: Do not provide implementation of this abstract class unless you are window system provider!</em></font></b>
  *

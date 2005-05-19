@@ -178,11 +178,11 @@ may be
 
 and components
 
-<a href="@JDK@/java/awt/Container.html#add(java.awt.Component, java.lang.Object)">added</a>
+<a href="@JDK@/java/awt/Container.html#add(java.awt.Component,java.lang.Object)">added</a>
 
 to it. For example,
 
-<a href="../../explorer/ExplorerPanel.html"><code>ExplorerPanel</code></a>
+<a href="@org-openide-compat@/org/openide/explorer/ExplorerPanel.html"><code>ExplorerPanel</code></a>
 
 is a subclass of <code>TopComponent</code> that uses a
 <code>BorderLayout</code> and may have arbitrary components placed
@@ -224,7 +224,7 @@ popup menu, e.g. on a tab for the component. The system should
 provide a few standard actions such as "Close"; you may want to add
 more (for example, "Save" for an Editor pane). The
 
-<a href="../../actions/doc-files/api.html">Actions API</a>
+<a href="@org-openide-actions@/org/openide/actions/doc-files/api.html">Actions API</a>
 
 describes how to write these.
 
@@ -351,16 +351,16 @@ correspondingly finds the last-activated component.
 Finally, each top component may have associated with it a <em>node
 selection</em>, which is simply a list of
 
-<a href="../../nodes/Node.html"><code>Node</code></a>s
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html"><code>Node</code></a>s
 
 that it decides to treat as "active". The node selection will have
 effects on other parts of the system - for example,
 
-<a href="../../util/actions/NodeAction.html"><code>NodeAction</code></a>s
+<a href="@org-openide-nodes@/org/openide/util/actions/NodeAction.html"><code>NodeAction</code></a>s
 
 and
 
-<a href="../../util/actions/CookieAction.html"><code>CookieAction</code></a>s
+<a href="@org-openide-nodes@/org/openide/util/actions/CookieAction.html"><code>CookieAction</code></a>s
 
 pay attention to it.
 
@@ -370,7 +370,7 @@ pay attention to it.
 
 <p>Explorer views embedded in an
 
-<a href="../../explorer/ExplorerPanel.html"><code>ExplorerPanel</code></a>
+<a href="@org-openide-compat@/org/openide/explorer/ExplorerPanel.html"><code>ExplorerPanel</code></a>
 
 automatically make the node selection track user selections in the
 view, as you would expect. Also, any top component associated with
@@ -414,7 +414,7 @@ you wish to store is some piece of serializable data that you are
 not completely confident can be deserialized without error, please
 instead store a
 
-<a href="../../util/io/NbMarshalledObject.html"><code>NbMarshalledObject</code></a>
+<a href="@org-openide-util@/org/openide/util/io/NbMarshalledObject.html"><code>NbMarshalledObject</code></a>
 
 wrapping the data, which will protect the object streams from being
 corrupted just because of one component. For example:
@@ -1284,10 +1284,10 @@ system filesystem of the IDE, under <B>system/</B> subdirectory.</p>
 </div>
 
 <p>Modules can work with system filesystem at runtime using the
-<a href="../../filesystems/doc-files/api.html">Filesystems API</A>.
+<a href="@org-openide-filesystems@/org/openide/filesystems/doc-files/api.html">Filesystems API</A>.
 Moreover, the window system defines special data objects for modes, modes,
 and top component references, so that modes layout modifications can be done using
-<a href="@OPENIDE/LOADERS@/org/openide/loaders/doc-files/api.html">Datasystems API</a> on a higher level.
+<a href="@org-openide-loaders@/org/openide/loaders/doc-files/api.html">Datasystems API</a> on a higher level.
 Top component data is stored according to general settings mechanisms which also
 permits both modes of access.
 </P>

@@ -198,7 +198,7 @@ Microsystems, Inc. All Rights Reserved.
         It is String property and can contain description why the wizard panel is invalid. Non-null
         value of this property is automatically displayed at the bottom of the wizard panel.
      </description>
-     <class package="org.openide" name="WizardDescriptor"/>
+     <class link="no" package="org.openide" name="WizardDescriptor"/>
      <issue number="28466"/>
     </change>
 <change>
@@ -318,61 +318,61 @@ Microsystems, Inc. All Rights Reserved.
           Upgrade Guide.
         </p>
       </description>
-      <class package="org.openide" name="DialogDisplayer"/>
-      <class package="org.openide" name="LifecycleManager"/>
-      <class package="org.openide" name="Places"/>
-      <class package="org.openide" name="TopManager"/>
-      <class package="org.openide.actions" name="AddWatchAction"/>
-      <class package="org.openide.actions" name="BuildProjectAction"/>
-      <class package="org.openide.actions" name="CompileProjectAction"/>
-      <class package="org.openide.actions" name="DebugProjectAction"/>
-      <class package="org.openide.actions" name="ExecuteProjectAction"/>
-      <class package="org.openide.actions" name="FinishDebuggerAction"/>
-      <class package="org.openide.actions" name="GoAction"/>
-      <class package="org.openide.actions" name="GoToCursorAction"/>
-      <class package="org.openide.actions" name="HelpAction"/>
-      <class package="org.openide.actions" name="OpenProjectAction"/>
-      <class package="org.openide.actions" name="SaveProjectAction"/>
-      <class package="org.openide.actions" name="StartDebuggerAction"/>
-      <class package="org.openide.actions" name="StepOutAction"/>
-      <class package="org.openide.actions" name="ToggleBreakpointAction"/>
-      <class package="org.openide.actions" name="TraceIntoAction"/>
-      <class package="org.openide.actions" name="TraceOverAction"/>
-      <class package="org.openide.awt" name="HtmlBrowser"/>
-      <class package="org.openide.awt" name="StatusDisplayer"/>
-      <class package="org.openide.cookies" name="DebuggerCookie"/>
-      <class package="org.openide.cookies" name="ElementCookie"/>
-      <class package="org.openide.cookies" name="ProjectCookie"/>
-      <class package="org.openide.cookies" name="SourceCookie"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="ChoicePropertyEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="DirectoryOnlyEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="ElementFormatEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="ExternalCompiler"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="FileEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="FileOnlyEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="IconEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="IdentifierArrayEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="MethodParameterArrayEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="ModifierEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomizable"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="StringArrayEditor"/>
-      <class package="org.openide.explorer.propertysheet.editors" name="TypeEditor"/>
-      <class package="org.openide.loaders" name="DataObjectFilter"/>
-      <class package="org.openide.loaders" name="ExecSupport"/>
-      <class package="org.openide.loaders" name="ExecutionSupport"/>
-      <class package="org.openide.loaders" name="ExtensionListEditor"/>
-      <class package="org.openide.loaders" name="RepositoryNodeFactory"/>
-      <class package="org.openide.modules" name="IllegalModuleException"/>
-      <class package="org.openide.modules" name="ManifestSection"/>
-      <class package="org.openide.modules" name="ModuleDescription"/>
-      <class package="org.openide.nodes" name="NodeOperation"/>
-      <class package="org.openide.options" name="ControlPanel"/>
-      <class package="org.openide.util.actions" name="ProjectSensitiveAction"/>
-      <class package="org.openide.windows" name="IOProvider"/>
-      <package name="org.openide.debugger"/>
-      <package name="org.openide.src"/>
-      <package name="org.openide.src.nodes"/>
+      <class link="no" package="org.openide" name="DialogDisplayer"/>
+      <class link="no" package="org.openide" name="LifecycleManager"/>
+      <class link="no" package="org.openide" name="Places"/>
+      <class link="no" package="org.openide" name="TopManager"/>
+      <class link="no" package="org.openide.actions" name="AddWatchAction"/>
+      <class link="no" package="org.openide.actions" name="BuildProjectAction"/>
+      <class link="no" package="org.openide.actions" name="CompileProjectAction"/>
+      <class link="no" package="org.openide.actions" name="DebugProjectAction"/>
+      <class link="no" package="org.openide.actions" name="ExecuteProjectAction"/>
+      <class link="no" package="org.openide.actions" name="FinishDebuggerAction"/>
+      <class link="no" package="org.openide.actions" name="GoAction"/>
+      <class link="no" package="org.openide.actions" name="GoToCursorAction"/>
+      <class link="no" package="org.openide.actions" name="HelpAction"/>
+      <class link="no" package="org.openide.actions" name="OpenProjectAction"/>
+      <class link="no" package="org.openide.actions" name="SaveProjectAction"/>
+      <class link="no" package="org.openide.actions" name="StartDebuggerAction"/>
+      <class link="no" package="org.openide.actions" name="StepOutAction"/>
+      <class link="no" package="org.openide.actions" name="ToggleBreakpointAction"/>
+      <class link="no" package="org.openide.actions" name="TraceIntoAction"/>
+      <class link="no" package="org.openide.actions" name="TraceOverAction"/>
+      <class link="no" package="org.openide.awt" name="HtmlBrowser"/>
+      <class link="no" package="org.openide.awt" name="StatusDisplayer"/>
+      <class link="no" package="org.openide.cookies" name="DebuggerCookie"/>
+      <class link="no" package="org.openide.cookies" name="ElementCookie"/>
+      <class link="no" package="org.openide.cookies" name="ProjectCookie"/>
+      <class link="no" package="org.openide.cookies" name="SourceCookie"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="ChoicePropertyEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="DirectoryOnlyEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="ElementFormatEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="ExternalCompiler"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="FileEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="FileOnlyEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="IconEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="IdentifierArrayEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="MethodParameterArrayEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="ModifierEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="StringArrayCustomizable"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="StringArrayEditor"/>
+      <class link="no" package="org.openide.explorer.propertysheet.editors" name="TypeEditor"/>
+      <class link="no" package="org.openide.loaders" name="DataObjectFilter"/>
+      <class link="no" package="org.openide.loaders" name="ExecSupport"/>
+      <class link="no" package="org.openide.loaders" name="ExecutionSupport"/>
+      <class link="no" package="org.openide.loaders" name="ExtensionListEditor"/>
+      <class link="no" package="org.openide.loaders" name="RepositoryNodeFactory"/>
+      <class link="no" package="org.openide.modules" name="IllegalModuleException"/>
+      <class link="no" package="org.openide.modules" name="ManifestSection"/>
+      <class link="no" package="org.openide.modules" name="ModuleDescription"/>
+      <class link="no" package="org.openide.nodes" name="NodeOperation"/>
+      <class link="no" package="org.openide.options" name="ControlPanel"/>
+      <class link="no" package="org.openide.util.actions" name="ProjectSensitiveAction"/>
+      <class link="no" package="org.openide.windows" name="IOProvider"/>
+      <package link="no" name="org.openide.debugger"/>
+      <package link="no" name="org.openide.src"/>
+      <package link="no" name="org.openide.src.nodes"/>
       <issue number="19443"/>
       <issue number="20898"/>
     </change>
@@ -523,27 +523,27 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
           </li>
         </ul>
       </description>
-      <class package="org.openide.actions" name="AbstractCompileAction"/>
-      <class package="org.openide.actions" name="BuildAction"/>
-      <class package="org.openide.actions" name="BuildAllAction"/>
-      <class package="org.openide.actions" name="CleanAction"/>
-      <class package="org.openide.actions" name="CleanAllAction"/>
-      <class package="org.openide.actions" name="CompileAction"/>
-      <class package="org.openide.actions" name="CompileAllAction"/>
-      <class package="org.openide.actions" name="ExecuteAction"/>
-      <class package="org.openide.cookies" name="ArgumentsCookie"/>
-      <class package="org.openide.cookies" name="CompilerCookie"/>
-      <class package="org.openide.cookies" name="ExecCookie"/>
-      <class package="org.openide.filesystems" name="FileUtil"/>
-      <class package="org.openide.loaders" name="CompilerSupport"/>
-      <class package="org.openide.loaders" name="ExecutionSupport"/>
-      <class package="org.openide.windows" name="IOProvider"/>
-      <class package="org.openide.windows" name="InputOutput"/>
-      <class package="org.openide.windows" name="OutputEvent"/>
-      <class package="org.openide.windows" name="OutputListener"/>
-      <class package="org.openide.windows" name="OutputWriter"/>
-      <package name="org.openide.compiler"/>
-      <package name="org.openide.execution"/>
+      <class link="no" package="org.openide.actions" name="AbstractCompileAction"/>
+      <class link="no" package="org.openide.actions" name="BuildAction"/>
+      <class link="no" package="org.openide.actions" name="BuildAllAction"/>
+      <class link="no" package="org.openide.actions" name="CleanAction"/>
+      <class link="no" package="org.openide.actions" name="CleanAllAction"/>
+      <class link="no" package="org.openide.actions" name="CompileAction"/>
+      <class link="no" package="org.openide.actions" name="CompileAllAction"/>
+      <class link="no" package="org.openide.actions" name="ExecuteAction"/>
+      <class link="no" package="org.openide.cookies" name="ArgumentsCookie"/>
+      <class link="no" package="org.openide.cookies" name="CompilerCookie"/>
+      <class link="no" package="org.openide.cookies" name="ExecCookie"/>
+      <class link="no" package="org.openide.filesystems" name="FileUtil"/>
+      <class link="no" package="org.openide.loaders" name="CompilerSupport"/>
+      <class link="no" package="org.openide.loaders" name="ExecutionSupport"/>
+      <class link="no" package="org.openide.windows" name="IOProvider"/>
+      <class link="no" package="org.openide.windows" name="InputOutput"/>
+      <class link="no" package="org.openide.windows" name="OutputEvent"/>
+      <class link="no" package="org.openide.windows" name="OutputListener"/>
+      <class link="no" package="org.openide.windows" name="OutputWriter"/>
+      <package link="no" name="org.openide.compiler"/>
+      <package link="no" name="org.openide.execution"/>
       <issue number="19443"/>
     </change>
 <change>
@@ -570,7 +570,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
         provided by the previous panels are not OK and that the panel wants the
         wizard to go back one panel.
       </description>
-      <class package="org.openide" name="WizardDescriptor"/>
+      <class link="no" package="org.openide" name="WizardDescriptor"/>
     </change>
 <change>
       <api name="winsys"/>
@@ -584,7 +584,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
         <code>((JComponent)WizardDescriptor.current().getComponent()).putClientProperty()</code>
         or <code>WizardDescriptor.putProperty()</code>.
       </description>
-      <class package="org.openide" name="WizardDescriptor"/>
+      <class link="no" package="org.openide" name="WizardDescriptor"/>
     </change>
 <change>
       <api name="winsys"/>
@@ -596,7 +596,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
         property name String constant <code>PROP_VALID</code>. It can be used to
         change validity (enable/disable) of standard OK button in dialog.
       </description>
-      <class package="org.openide" name="NotifyDescriptor"/>
+      <class link="no" package="org.openide" name="NotifyDescriptor"/>
     </change>
 <change>
       <api name="winsys"/>
@@ -674,7 +674,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
         In fact they were meant to be package-private and were only public due to
         a quirk of Java's syntax (default modifier inside interfaces is public).
       </description>
-      <class package="org.openide.windows" name="InputOutput"/>
+      <class link="no" package="org.openide.windows" name="InputOutput"/>
     </change>
 </changes>
 <htmlcontents>
