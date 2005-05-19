@@ -297,10 +297,11 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     
                     log("Measured Time ["+performanceDataName+" | "+i+"] = " +measuredTime[i]);
                     
-                    if(measuredTime[i] > 0)
-                        reportPerformance(performanceDataName, measuredTime[i], "ms", i, expectedTime);
-                    else
-                        throw new Exception("Measured value ["+measuredTime[i]+"] is not > 0 !");
+                    // the measured time could be 0 (on Windows averything under 7-8 ms is logged as 0), but it shouldn't be under 0
+                    if(measuredTime[i] < 0)
+                        throw new Exception("Measured value ["+measuredTime[i]+"] < 0 !!!");
+                    
+                    reportPerformance(performanceDataName, measuredTime[i], "ms", i, expectedTime);
                     
                     getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
                     
@@ -668,7 +669,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
         if(fail){
             captureScreen = false;
-            fail("One of the measuredTime(s) ["+measuredValuesString+" ] > expectedTime["+expectedTime+"] - performance issue.");
+            fail("One of the measuredTime(s) ["+measuredValuesString+" ] > expectedTime["+expectedTime+"] - performance issue (it's ok if the first usage is in boundary <0,2*expectedTime>) .");
         }
     }
     
