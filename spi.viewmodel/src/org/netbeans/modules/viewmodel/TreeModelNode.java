@@ -690,6 +690,9 @@ public class TreeModelNode extends AbstractNode {
     
     /** The single-threaded evaluator of lazy models. */
     static class LazyEvaluator implements Runnable {
+        
+        /** Release the evaluator task after this time. */
+        private static final long EXPIRE_TIME = 60000L;
 
         private List objectsToEvaluate = new LinkedList();
         private Evaluable currentlyEvaluating;
@@ -720,8 +723,11 @@ public class TreeModelNode extends AbstractNode {
                     synchronized (objectsToEvaluate) {
                         while (objectsToEvaluate.size() == 0) {
                             try {
-                                objectsToEvaluate.wait();
+                                objectsToEvaluate.wait(EXPIRE_TIME);
                             } catch (InterruptedException iex) {
+                                return ;
+                            }
+                            if (objectsToEvaluate.size() == 0) { // Expired
                                 return ;
                             }
                         }
