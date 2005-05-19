@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
 
             <!-- Some tests extend openide/text tests -->
-            <pathelement location="${nb_all}/openide/build/test/unit/classes"/>
+            <pathelement location="${nb_all}/openide/text/build/test/unit/classes"/>
 
             <pathelement location="${core.dir}/core/core.jar"/>
             <pathelement location="${core.dir}/lib/boot.jar"/>
@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
 
             <!-- Some tests extend openide/text tests -->
-            <pathelement location="${nb_all}/openide/build/test/unit/classes"/>
+            <pathelement location="${nb_all}/openide/text/build/test/unit/classes"/>
 
             <pathelement location="${core.dir}/core/core.jar"/>
             <pathelement location="${core.dir}/lib/boot.jar"/>
