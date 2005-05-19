@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- You can override default qa-functional-compiler if you need something special -->
 
-    <target name="qa-functional-compiler">
+    <target name="qa-functional-compiler" depends="init-cp">
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**,org/netbeans/test/editor/app/**">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
         </buildTests>
     </target>
          
-    <target name="qa-functional-compiler-completion">
+    <target name="qa-functional-compiler-completion" depends="init-cp">
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**,org/netbeans/test/editor/app/**">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
          If you need to customize it, you can uncomment the following and override it.
          -->
-    <target name="runidetest">        
+    <target name="runidetest" depends="init-cp">        
         <executeTests  pluginName="ide">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>  
