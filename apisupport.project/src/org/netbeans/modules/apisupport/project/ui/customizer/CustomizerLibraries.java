@@ -13,10 +13,13 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import javax.swing.DefaultListModel;
+import java.awt.Dialog;
+import java.util.Arrays;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Libraries</em> panel in Netbeans Module customizer.
@@ -25,10 +28,18 @@ import org.openide.NotifyDescriptor;
  */
 public class CustomizerLibraries extends JPanel {
     
+    private ComponentFactory.ModuleListModel subModules;
+    private ComponentFactory.ModuleListModel universeModules;
+
     /** Creates new form CustomizerLibraries */
-    public CustomizerLibraries(DefaultListModel modulesModel) {
+    public CustomizerLibraries(
+            ComponentFactory.ModuleListModel subModules, 
+            ComponentFactory.ModuleListModel universeModules) {
         initComponents();
-        dependencyList.setModel(modulesModel);
+        this.subModules = subModules;
+        this.universeModules = universeModules;
+        dependencyList.setModel(subModules);
+        dependencyList.setCellRenderer(ComponentFactory.getModuleCellRenderer());
     }
     
     /** This method is called from within the constructor to
@@ -44,7 +55,7 @@ public class CustomizerLibraries extends JPanel {
         depButtonPanel = new javax.swing.JPanel();
         addDepButton = new javax.swing.JButton();
         removeDepButton = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        dependencySP = new javax.swing.JScrollPane();
         dependencyList = new javax.swing.JList();
 
         setLayout(new java.awt.GridBagLayout());
@@ -87,7 +98,7 @@ public class CustomizerLibraries extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(depButtonPanel, gridBagConstraints);
 
-        jScrollPane1.setViewportView(dependencyList);
+        dependencySP.setViewportView(dependencyList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -96,28 +107,30 @@ public class CustomizerLibraries extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(jScrollPane1, gridBagConstraints);
+        add(dependencySP, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
     
     private void removeModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModuleDependency
-        // XXX
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-            "Not Implemented Yet")); // NOI18N
+        subModules.removeModule(Arrays.asList(dependencyList.getSelectedValues()));
+        dependencyList.clearSelection();
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        // XXX
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-            "Not Implemented Yet")); // NOI18N
+        AddModulePanel addPanel = new AddModulePanel(universeModules);
+        DialogDescriptor descriptor = new DialogDescriptor(addPanel, 
+                NbBundle.getMessage(CustomizerLibraries.class, 
+                "CTL_AddModuleDependencyTitle")); // NOI18N
+        Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
+        d.setVisible(true);
     }//GEN-LAST:event_addModuleDependency
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDepButton;
     private javax.swing.JPanel depButtonPanel;
     private javax.swing.JList dependencyList;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane dependencySP;
     private javax.swing.JLabel modDepLabel;
     private javax.swing.JButton removeDepButton;
     // End of variables declaration//GEN-END:variables

@@ -22,12 +22,14 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
@@ -46,6 +48,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Element;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 
 /**
  * Adding ability for a NetBeans modules to provide a GUI customizer.
@@ -57,12 +61,22 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     public static final ErrorManager err = ErrorManager.getDefault().getInstance(
         "org.netbeans.modules.apisupport.project.ui.customizer"); // NOI18N
 
+    private static final JPanel EMPTY_PANEL = new JPanel();
+    
+    private final ComponentFactory modelFactory;
+    
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final String locBundlePropsPath;
+    private ProjectXMLManager projectXMLManipulator;
+    
     private Set/*<String>*/ modCategories;
-
+    private Set/*<ModuleList.Entry>*/ universeModules;
+    private Set/*<ModuleList.Entry>*/ subModules;
+    
+    private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
+    
     private NbModuleProperties moduleProps;
     private EditableProperties locBundleProps;
     
@@ -77,35 +91,111 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private static final String COMMAND_OK = "OK"; // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL"; // NOI18N
     
-    private static Map/*<Project,Dialog>*/ project2Dialog = new HashMap();
-    
+    // Keeps already displayed dialogs
+    private static Map/*<Project,Dialog>*/ displayedDialogs = new HashMap();
+
+    // models
+    private ComponentFactory.ModuleListModel subModulesListModel;
+    private ComponentFactory.ModuleListModel universeModulesListModel;
+
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
             PropertyEvaluator evaluator, String locBundlePropsPath) {
         this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
         this.locBundlePropsPath = locBundlePropsPath;
+        this.modelFactory = ComponentFactory.getInstance(project);
+    }
+    
+    /** Returns all known subModules in the project's universe. */
+    private Set/*<ModuleList.Entry>*/ getSubModules() {
+        if (subModules == null) {
+            try {
+                subModules = getProjectXMLManipulator().getDirectDependencies();
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
+            }
+        }
+        return subModules;
+//        if (subModules == null) {
+//            try {
+//                SubprojectProvider spp = (SubprojectProvider) project.getLookup().
+//                        lookup(SubprojectProvider.class);
+//                Set/*<Project>*/ subProjects = spp.getSubprojects();
+//                if (subProjects == null || subProjects.isEmpty()) {
+//                    subModules = Collections.EMPTY_SET;
+//                    return subModules;
+//                }
+//                
+//                Map/*<String, ModuleList.Entry>*/ sortedModules = new TreeMap();
+//                for (Iterator it = subProjects.iterator(); it.hasNext(); ) {
+//                    Project subProject = (Project) it.next();
+//                    ProjectInformation info = (ProjectInformation) subProject.
+//                            getLookup().lookup(ProjectInformation.class);
+//                    ModuleList.Entry me = getModuleList().getEntry(info.getName());
+//                    // XXX should instead reset ModuleList and try again
+//                    // -- see NbModuleProject constructor
+//                    assert me != null : "Cannot find Entry for " + info.getName(); // NOI18N
+//                    sortedModules.put(me.getLocalizedName(), me);
+//                }
+//                Set ordered = new LinkedHashSet(sortedModules.size());
+//                for (Iterator it = sortedModules.values().iterator(); it.hasNext(); ) {
+//                    ordered.add(it.next());
+//                }
+//                subModules = Collections.unmodifiableSet(ordered);
+//            } catch (IOException e) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+//            }
+//        }
+//        return subModules;
+    }
+    
+    /** Returns all known modules in the project's universe. */
+    private Set/*<ModuleList.Entry>*/ getUniverseModules() {
+        if (universeModules == null) {
+            loadModuleListInfo();
+        }
+        return universeModules;
     }
     
     /** Returns all known categories in the project's universe. */
-    private Set getModuleCategories() {
-        if (modCategories == null || modCategories.isEmpty()) {
-            try {
-                ModuleList ml = ModuleList.getModuleList(
-                    FileUtil.toFile(project.getProjectDirectory()));
-                TreeSet/*<String>*/ allCategories = new TreeSet();
-                for (Iterator it = ml.getAllEntries().iterator(); it.hasNext(); ) {
-                    String cat = ((ModuleList.Entry) it.next()).getCategory();
-                    if (cat != null) {
-                        allCategories.add(cat);
-                    }
-                }
-                modCategories = Collections.unmodifiableSortedSet(allCategories);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
+    private Set/*<String>*/ getModuleCategories() {
+        if (modCategories == null) {
+            loadModuleListInfo();
         }
         return modCategories;
+    }
+    
+    private ModuleList getModuleList() throws IOException {
+        return ModuleList.getModuleList(FileUtil.toFile(project.getProjectDirectory()));
+    }
+    
+    /**
+     * Prepare all ModuleList.Entries from this module's universe. Also prepare 
+     * all categories.
+     */
+    private void loadModuleListInfo() {
+        try {
+            ModuleList ml = getModuleList();
+            Map/*<String, ModuleList.Entry>*/ sortedModules = new TreeMap();
+            TreeSet/*<String>*/ allCategories = new TreeSet();
+            for (Iterator it = ml.getAllEntries().iterator(); it.hasNext(); ) {
+                ModuleList.Entry me = (ModuleList.Entry) it.next();
+                sortedModules.put(me.getLocalizedName(), me);
+                String cat = me.getCategory();
+                if (cat != null) {
+                    allCategories.add(cat);
+                }
+            }
+            modCategories = Collections.unmodifiableSortedSet(allCategories);
+            Set orderedModules = new LinkedHashSet(sortedModules.size());
+            for (Iterator it = sortedModules.values().iterator(); it.hasNext(); ) {
+                orderedModules.add(it.next());
+            }
+            universeModules = Collections.unmodifiableSet(orderedModules);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
     }
     
     public void showCustomizer() {
@@ -119,7 +209,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     
     /** Show customizer with preselected category and subcategory. */
     public void showCustomizer(String preselectedCategory, String preselectedSubCategory) {
-        Dialog dialog = (Dialog)project2Dialog.get(project);
+        Dialog dialog = (Dialog) displayedDialogs.get(project);
         if (dialog != null) {
             dialog.setVisible(true);
             return;
@@ -127,7 +217,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             this.moduleProps = new NbModuleProperties(helper);
             this.locBundleProps = helper.getProperties(locBundlePropsPath); // NOI18N
             init();
-            OptionListener listener = new OptionListener();
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {
                     if (preselectedCategory.equals(categories[i].getName())) {
@@ -140,6 +229,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                     }
                 }
             }
+            OptionListener listener = new OptionListener();
             dialog = ProjectCustomizer.createCustomizerDialog(categories, 
                     panelProvider, preselectedCategory, listener, null);
             dialog.addWindowListener(listener);
@@ -147,7 +237,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizerTitle"), // NOI18N
                     new Object[] { ProjectUtils.getInformation(project).getDisplayName() }));
                     
-            project2Dialog.put(project, dialog);
+            displayedDialogs.put(project, dialog);
             dialog.setVisible(true);
         }
     }
@@ -156,7 +246,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         public void showSubCategory(String name);
     }
     
-    // Names of categories
+    // Programmatic names of categories
     private static final String SOURCES = "Sources"; // NOI18N
     private static final String DISPLAY = "Display"; // NOI18N
     private static final String LIBRARIES = "Libraries"; // NOI18N
@@ -171,70 +261,81 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         ProjectCustomizer.Category libraries = createCategory(LIBRARIES,
                 bundle.getString("LBL_ConfigLibraries")); // NOI18N
 
-        categories = new ProjectCustomizer.Category[] { 
+        categories = new ProjectCustomizer.Category[] {
             sources, display, libraries
         };
-
-        Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
-        panels.put(sources, new CustomizerSources(moduleProps,
-                FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath()));
         
+        // sources customizer
+        panels.put(sources, new CustomizerSources(moduleProps,
+            FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath()));
+        
+        // display customizer
         panels.put(display, new CustomizerDisplay(locBundleProps, getModuleCategories()));
-        panels.put(libraries, new CustomizerLibraries(createSubModuleListModel()));
-        panelProvider = new PanelProvider(panels);
+        
+        // libraries customizer
+        subModulesListModel = modelFactory.createModuleListModel(new LinkedHashSet(getSubModules()));
+        universeModulesListModel = modelFactory.createModuleListModel(new LinkedHashSet(getUniverseModules()));
+        panels.put(libraries, new CustomizerLibraries(
+                subModulesListModel, universeModulesListModel));
+
+        panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
+            public JComponent create(ProjectCustomizer.Category category) {
+                JComponent panel = (JComponent) panels.get(category);
+                return panel == null ? EMPTY_PANEL : panel;
+            }
+        };
     }
     
-    public ProjectCustomizer.Category createCategory(
+    /** Creates a category without subcategories. */
+    private ProjectCustomizer.Category createCategory(
             String progName, String displayName) {
         return ProjectCustomizer.Category.create(
                 progName, displayName, null, null);
     }
-    
-    private static class PanelProvider implements ProjectCustomizer.CategoryComponentProvider {
-        private static final JPanel EMPTY_PANEL = new JPanel();
-        
-        private Map /*<Category,JPanel>*/ panels;
-        
-        PanelProvider(Map panels) {
-            this.panels = panels;
-        }
-        
-        public JComponent create(ProjectCustomizer.Category category) {
-            JComponent panel = (JComponent) panels.get(category);
-            return panel == null ? EMPTY_PANEL : panel;
-        }
-    }
-    
+
     /** Listens to the actions on the Customizer's option buttons */
     private class OptionListener extends WindowAdapter implements ActionListener {
 
         // Listening to OK button ----------------------------------------------
         public void actionPerformed(ActionEvent e) {
             // Store the properties into project
+            for (Iterator it = panels.values().iterator(); it.hasNext(); ) {
+                Object panel = (Object) it.next();
+                if (panel instanceof ComponentFactory.StoragePanel) {
+                    ((ComponentFactory.StoragePanel) panel).store();
+                }
+            }
             save();
             
             // Close & dispose the the dialog
-            Dialog dialog = (Dialog)project2Dialog.get(project);
+            Dialog dialog = (Dialog) displayedDialogs.get(project);
             if (dialog != null) {
                 dialog.setVisible(false);
                 dialog.dispose();
             }
         }
         
-        // Listening to window events ------------------------------------------
+        // remove dialog for this customizer's project
         public void windowClosed(WindowEvent e) {
-            project2Dialog.remove(project);
+            displayedDialogs.remove(project);
         }
         
         public void windowClosing(WindowEvent e) {
             // Dispose the dialog otherwsie the 
             // {@link WindowAdapter#windowClosed} may not be called
-            Dialog dialog = (Dialog)project2Dialog.get(project);
+            Dialog dialog = (Dialog) displayedDialogs.get(project);
             if (dialog != null) {
                 dialog.setVisible(false);
                 dialog.dispose();
             }
         }
+    }
+    
+    private ProjectXMLManager getProjectXMLManipulator() {
+        if (projectXMLManipulator == null) {
+            projectXMLManipulator = new ProjectXMLManager(helper, project);
+        }
+        return projectXMLManipulator;
     }
     
     public void save() {
@@ -243,7 +344,19 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
                     moduleProps.storeProperties();
+                    // store localized info
                     helper.putProperties(locBundlePropsPath,  locBundleProps);
+                    // store module dependencies
+                    if (subModulesListModel.isChanged()) {
+                        ProjectXMLManager pxm = getProjectXMLManipulator();
+                        Set toDelete = new HashSet(getSubModules());
+                        Set keep = subModulesListModel.getSubModules();
+                        toDelete.removeAll(keep);
+                        for (Iterator it = toDelete.iterator(); it.hasNext(); ) {
+                            ModuleList.Entry me = (ModuleList.Entry) it.next();
+                            pxm.removeDependency(me.getCodeNameBase());
+                        }
+                    }
                     return Boolean.TRUE;
                 }
             });
@@ -256,31 +369,5 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-    }
-
-    // XXX simple info list - will move to clever dedicated (inner) class
-    // XXX will be probably lazy loaded semi-cached model
-    private DefaultListModel createSubModuleListModel() {
-        SubprojectProvider spp = (SubprojectProvider) project.
-            getLookup().lookup(SubprojectProvider.class);
-        Set set = new TreeSet();
-        for (Iterator it = spp.getSubprojects().iterator(); it.hasNext(); ) {
-            Project subProject = (Project) it.next();
-            ProjectInformation info = (ProjectInformation) subProject.
-                getLookup().lookup(ProjectInformation.class);
-            if (info != null) {
-                set.add(info.getDisplayName());
-            } else {
-                err.log(ErrorManager.WARNING, "Project in " + project.getProjectDirectory() + // NOI18N
-                    " doesn't register ProjectInformation in its lookup."); // NOI18N
-                set.add(project.getProjectDirectory()); // better than nothing
-            }
-        }
-        
-        DefaultListModel modulesModel = new DefaultListModel();
-        for (Iterator it = set.iterator(); it.hasNext(); ) {
-            modulesModel.addElement(it.next());
-        }
-        return modulesModel;
     }
 }

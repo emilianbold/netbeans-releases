@@ -23,7 +23,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
  *
  * @author mkrauskopf
  */
-final class CustomizerDisplay extends JPanel {
+final class CustomizerDisplay extends JPanel implements ComponentFactory.StoragePanel {
     
     private EditableProperties bundleProps;
     
@@ -43,9 +43,8 @@ final class CustomizerDisplay extends JPanel {
         readFromProperties();
     }
     
-    public void removeNotify() {
+    public void store() {
         storeToProperties();
-        super.removeNotify();
     }
     
     private void readFromProperties() {
@@ -181,5 +180,4 @@ final class CustomizerDisplay extends JPanel {
     private javax.swing.JLabel shortDesc;
     private javax.swing.JTextField shortDescValue;
     // End of variables declaration//GEN-END:variables
-    
 }
