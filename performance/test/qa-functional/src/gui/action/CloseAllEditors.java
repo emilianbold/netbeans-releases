@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -69,9 +69,10 @@ public class CloseAllEditors extends org.netbeans.performance.test.utilities.Per
     }
     
     public void prepare(){
-        for(int i=0; i<openFileNodes.length; i++) {
-            new OpenAction().performAPI(openFileNodes[i]); // fix for mdr+java, opening all files at once causes never ending loop
-        }
+//        for(int i=0; i<openFileNodes.length; i++) {
+//            new OpenAction().performAPI(openFileNodes[i]); // fix for mdr+java, opening all files at once causes never ending loop
+//        }
+        new OpenAction().performAPI(openFileNodes);
     }
     
     public ComponentOperator open(){
@@ -91,6 +92,13 @@ public class CloseAllEditors extends org.netbeans.performance.test.utilities.Per
         for(int i=0; i<files_path.length; i++) {
                 openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"), gui.Utilities.SOURCE_PACKAGES + '|' +  files_path[i][0] + '|' + files_path[i][1]);
         }
+    }
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new CloseAllEditors("measureTime"));
     }
     
 }

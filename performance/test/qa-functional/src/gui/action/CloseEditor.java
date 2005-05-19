@@ -92,4 +92,12 @@ public class CloseEditor extends org.netbeans.performance.test.utilities.Perform
         return null;
     }
     
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new CloseEditor("testClosing20kBJavaFile"));
+        //junit.textui.TestRunner.run(new CloseEditor("testClosing20kBFormFile"));
+    }
+    
 }

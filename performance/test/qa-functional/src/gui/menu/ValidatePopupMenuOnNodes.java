@@ -67,7 +67,11 @@ public abstract class ValidatePopupMenuOnNodes extends org.netbeans.performance.
         JPopupMenu menu = callPopup(dataObjectNode.tree(), p.x, p.y, java.awt.event.InputEvent.BUTTON3_MASK);
         return new JPopupMenuOperator(menu);
          */
-        return dataObjectNode.callPopup();
+        
+        java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
+        int button = dataObjectNode.tree().getPopupMouseButton();
+        dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
+        return new JPopupMenuOperator();
     }
     
         /* it stopped to work after a while, see issue 58790

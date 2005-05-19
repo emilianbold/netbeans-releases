@@ -13,6 +13,8 @@
 
 package gui.menu;
 
+import org.netbeans.performance.test.guitracker.ActionTracker;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
@@ -34,12 +36,14 @@ public class ToolsMenu extends MainMenu {
     public ToolsMenu(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
     
     /** Creates a new instance of ToolsMenu */
     public ToolsMenu(String testName, String performanceDataName) {
         this(testName);
         expectedTime = UI_RESPONSE;
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
         setTestCaseName(testName, performanceDataName);
     }
     
