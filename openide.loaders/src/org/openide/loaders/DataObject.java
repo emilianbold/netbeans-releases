@@ -984,7 +984,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         * @return array of objects
         */
         public DataObject[] getModified () {
-            return (DataObject[])modified.toArray (new DataObject[modified.size()]);
+            return (DataObject[])syncModified.toArray (new DataObject[0]);
         }
     }
 
