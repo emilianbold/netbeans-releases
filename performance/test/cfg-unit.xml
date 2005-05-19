@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="measure_ide or measure_memory or measure_complex_memory" prio="21" executor="measure_ide_memory_consumption_with_opened_project" name="Measure baseline memory footprint with opened project">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="memory/MeasureBaselineMemoryFootprint.class/testMemoryFootprintAfterStart"/>		
+		<include name="memory/MeasureBaselineMemoryFootprint.class/testMemoryFootprintAfterStartWithOpenedFiles"/>		
 	    </patternset>
 	</testset>
     </testbag>
