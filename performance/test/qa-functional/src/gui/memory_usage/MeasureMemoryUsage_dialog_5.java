@@ -33,7 +33,6 @@ public class MeasureMemoryUsage_dialog_5 {
         
         suite.addTest(new AddJDBCDriverDialog("doMeasurement", "Add JDBC Driver dialog open"));
         suite.addTest(new NewDatabaseConnectionDialog("doMeasurement", "New Database Connection dialog open"));
-        suite.addTest(new AddNewServerInstanceDialog("doMeasurement", "Add Server Instance dialog open"));
         suite.addTest(new SetDefaultServerDialog("doMeasurement", "Set Default Server dialog open"));
         suite.addTest(new MountXMLCatalogDialog("doMeasurement", "Mount XML Catalog dialog open"));
          
