@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -17,7 +17,15 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Performance unit tests config">
 
 
-    <testbag testattribs="measure_ide or measure_startup or temp" prio="1" executor="measure_startup" name="Measure IDE startup time">
+    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_memory or measure_complex_memory" prio="1" executor="prepare_ide" name="Prepare IDE for measure startup time or memory consumption with opened files">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="prepare/PrepareIDEForComplexMeasurements.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_ide or measure_startup" prio="10" executor="measure_startup" name="Measure IDE startup time">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDE"/>
@@ -25,15 +33,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup" prio="3" executor="measure_startup_opened_files_prepare" name="Prepare IDE for measure startup time with opened files">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="startup/MeasureIDEStartupTimeOpenedFilesPrepare.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-    
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup" prio="4" executor="measure_startup_opened_files" name="Measure IDE startup time">
+    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup" prio="11" executor="measure_startup_opened_files" name="Measure IDE startup time">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_ide or measure_memory" prio="2" executor="measure_ide_memory_consumption" name="Measure baseline memory footprint">
+    <testbag testattribs="measure_ide or measure_memory" prio="20" executor="measure_ide_memory_consumption" name="Measure baseline memory footprint">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="memory/MeasureBaselineMemoryFootprint.class/testMemoryFootprintAfterStart"/>		
@@ -49,22 +49,34 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_ide or measure_warmup" prio="2" executor="measure_warmup" name="Measure warm up">
+    <testbag testattribs="measure_ide or measure_memory or measure_complex_memory" prio="21" executor="measure_ide_memory_consumption_with_opened_project" name="Measure baseline memory footprint with opened project">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="memory/MeasureBaselineMemoryFootprint.class/testMemoryFootprintAfterStart"/>		
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_ide or measure_warmup" prio="30" executor="measure_warmup" name="Measure warm up">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureWarmUp.class/testWarmUp"/>		
 	    </patternset>
 	</testset>
     </testbag>
+
+        
+<!-- Executors for Memory, Startup and Warmup testing -->
     
-<!-- END Property Editors testbag -->
+    <executor name="prepare_ide" antfile="build-unit.xml" target="prepare_ide_for_complex_measurements"/>
     
     <executor name="measure_startup" antfile="build-unit.xml" target="runcodetest_measure_startup"/>
-    <executor name="measure_startup_opened_files_prepare" antfile="build-unit.xml" target="runcodetest_measure_complex_startup_prepare"/>
     <executor name="measure_startup_opened_files" antfile="build-unit.xml" target="runcodetest_measure_complex_startup"/>
+    
     <executor name="measure_warmup" antfile="build-unit.xml" target="runcodetest_measure_warmup"/>
     
     <executor name="measure_ide_memory_consumption" antfile="build-unit.xml" target="runidetest_measure_memory"/>
+    <executor name="measure_ide_memory_consumption_with_opened_project" antfile="build-unit.xml" target="runidetest_measure_memory_with_opened_project"/>
     
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
     
