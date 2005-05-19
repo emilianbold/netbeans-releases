@@ -310,8 +310,7 @@ public class ActionTracker {
             MouseEvent me = (MouseEvent) event;
             int mod = me.getModifiers();
             int id = me.getID();
-            if ((mod & MouseEvent.BUTTON1_MASK) != 0
-             && (id == MouseEvent.MOUSE_PRESSED
+            if ((id == MouseEvent.MOUSE_PRESSED
               || id == MouseEvent.MOUSE_RELEASED)) {
                 
                 String mr = id == MouseEvent.MOUSE_PRESSED
