@@ -68,7 +68,6 @@ public class MeasureDialogs  {
         
         suite.addTest(new AddJDBCDriverDialog("measureTime", "Add JDBC Driver dialog open"));
         suite.addTest(new NewDatabaseConnectionDialog("measureTime", "New Database Connection dialog open"));
-//TODO        suite.addTest(new AddNewServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
         //remove from test run for NB4.1        suite.addTest(new SetDefaultServerDialog("measureTime", "Set Default Server dialog open"));
         suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
         
