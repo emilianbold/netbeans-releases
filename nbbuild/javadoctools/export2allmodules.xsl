@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
         <TR>
         <TD NOWRAP=""><FONT CLASS="FrameItemFont">
             <xsl:for-each select="//module[not (@name = '_no module_')]" >
-                <xsl:sort order="ascendant" select="@name" />
+                <xsl:sort order="ascending" select="@name" />
                 <xsl:call-template name="module" />
             </xsl:for-each>
         </FONT></TD>

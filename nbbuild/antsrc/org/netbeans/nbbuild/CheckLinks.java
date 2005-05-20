@@ -99,6 +99,7 @@ public class CheckLinks extends MatchingTask {
     
     private static Pattern hrefOrAnchor = Pattern.compile("<(a|img)(\\s+shape=\"rect\")?\\s+(href|name|src)=\"([^\"#]*)(#[^\"]+)?\"(\\s+shape=\"rect\")?>", Pattern.CASE_INSENSITIVE);
     private static Pattern lineBreak = Pattern.compile("^", Pattern.MULTILINE);
+    private static Pattern nbRef = Pattern.compile("http://.*netbeans.org/.*", Pattern.CASE_INSENSITIVE);
     
     /**
      * Scan for broken links.
@@ -147,6 +148,14 @@ public class CheckLinks extends MatchingTask {
             task.log(normalize(referrer, mappers) + referrerLocation + ": broken link (already reported): " + u, Project.MSG_WARN);
             return;
         }
+        
+        if (nbRef.matcher (u.toString ()).matches ()) {
+            task.log("External link to http://netbeans.org: " + u, Project.MSG_VERBOSE);
+            badurls.add(base);
+            badurls.add(u);
+            return;
+        }
+        
         if (! checkexternal && ! "file".equals(u.getScheme())) {
             task.log("Skipping external link: " + base, Project.MSG_VERBOSE);
             cleanurls.add(base);

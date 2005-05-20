@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <TD NOWRAP=""><FONT CLASS="FrameItemFont">
         
             <xsl:for-each select="//class" >
-                <xsl:sort order="ascendant" select="@name" />
+                <xsl:sort order="ascending" select="@name" />
                 <xsl:call-template name="class" />
             </xsl:for-each>
             
