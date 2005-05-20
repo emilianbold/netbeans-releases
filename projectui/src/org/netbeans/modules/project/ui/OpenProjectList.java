@@ -23,10 +23,14 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -142,6 +146,7 @@ public final class OpenProjectList {
         Collection projectsOpened = new LinkedHashSet(); // Collects all project opened by the call
                                                        
         synchronized ( this ) {
+            Map/*<Project,Set<Project>>*/ subprojectsCache = new HashMap(); // #59098
             for (int i=0; i<projects.length; i++) {
                 assert projects[i] != null : "Projects can't be null";
                 
@@ -152,7 +157,7 @@ public final class OpenProjectList {
                     
                 }
                 if ( openSubprojects ) {
-                    recentProjectsChanged |= openSubprojects( projects[i], projectsOpened );
+                    recentProjectsChanged |= openSubprojects(projects[i], projectsOpened, subprojectsCache);
                 }
             }
             saveProjectList( openProjects );
@@ -429,24 +434,28 @@ public final class OpenProjectList {
     /** Will recursively open subprojects of given project.
      * @return True if the recent projects list has changed
      */
-    private synchronized boolean openSubprojects( Project p, Collection projectsOpened ) {
-        
-        SubprojectProvider spp = (SubprojectProvider)p.getLookup().lookup( SubprojectProvider.class );
-        
-        if ( spp == null ) {
-            return false;
+    private synchronized boolean openSubprojects(Project p, Collection projectsOpened, Map/*<Project,Set<Project>>*/ subprojectsCache) {
+        Set/*<Project>*/ subprojects = (Set) subprojectsCache.get(p);
+        if (subprojects == null) {
+            SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
+            if (spp != null) {
+                subprojects = spp.getSubprojects();
+            } else {
+                subprojects = Collections.EMPTY_SET;
+            }
+            subprojectsCache.put(p, subprojects);
         }
         
         boolean recentProjectsChanged = false;
         
-        for( Iterator/*<Project>*/ it = spp.getSubprojects().iterator(); it.hasNext(); ) {
+        for (Iterator/*<Project>*/ it = subprojects.iterator(); it.hasNext(); ) {
             Project sp = (Project)it.next(); 
             if ( !openProjects.contains( sp ) ) {
                 openProjects.add( sp );
                 recentProjectsChanged |= recentProjects.remove( sp );
                 projectsOpened.add( sp );
             }
-            recentProjectsChanged |= openSubprojects( sp, projectsOpened );            
+            recentProjectsChanged |= openSubprojects(sp, projectsOpened, subprojectsCache);
         }
         
         return recentProjectsChanged;

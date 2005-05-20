@@ -23,8 +23,11 @@ import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -56,6 +59,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     private ModelUpdater modelUpdater;
     
     private Boolean tempSetAsMain;
+    
+    private final Map/*<Project,Set<Project>>*/ subprojectsCache = new HashMap(); // #59098
     
     /** Creates new form ProjectChooserAccessory */
     public ProjectChooserAccessory( JFileChooser chooser, boolean isOpenSubprojects, boolean isOpenAsMain ) {
@@ -328,20 +333,23 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         
     /** Gets all subprojects recursively
      */
-    private void addSubprojects( Project p, List result ) {
-        
-        SubprojectProvider spp = (SubprojectProvider)p.getLookup().lookup( SubprojectProvider.class );
-        
-        if ( spp == null ) {
-            return;
+    private void addSubprojects(Project p, List/*<Project>*/ result, Map/*<Project,Set<Project>>*/ cache) {
+        Set/*<Project>*/ subprojects = (Set) cache.get(p);
+        if (subprojects == null) {
+            SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
+            if (spp != null) {
+                subprojects = spp.getSubprojects();
+            } else {
+                subprojects = Collections.EMPTY_SET;
+            }
+            cache.put(p, subprojects);
         }
-        
-        for( Iterator/*<Project>*/ it = spp.getSubprojects().iterator(); it.hasNext(); ) {
+        for (Iterator/*<Project>*/ it = subprojects.iterator(); it.hasNext(); ) {
             Project sp = (Project)it.next(); 
             if ( !result.contains( sp ) ) {
                 result.add( sp );
             }
-            addSubprojects( sp, result );            
+            addSubprojects(sp, result, cache);
         }
         
     }
@@ -574,10 +582,10 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 }
 
                 jListSubprojects.setListData (new String [] {NbBundle.getMessage (ProjectChooserAccessory.class, "MSG_PrjChooser_WaitMessage")});
-                
-                ArrayList subprojects = new ArrayList( 5 * currentProjects.size() );
+
+                List/*<Project>*/ subprojects = new ArrayList(currentProjects.size() * 5);
                 for( Iterator it = currentProjects.iterator(); it.hasNext(); ) {
-                    addSubprojects( (Project)it.next(), subprojects ); // Find the projects recursively
+                    addSubprojects((Project) it.next(), subprojects, subprojectsCache); // Find the projects recursively
                 }
                 
                 if ( !subprojects.isEmpty() ) {
