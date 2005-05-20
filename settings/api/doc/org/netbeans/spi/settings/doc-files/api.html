@@ -83,7 +83,7 @@ a public identifier defining grammar used for entity registrations.
 <p>
 First you should register an entity beneath <code>xml/entities</code> according to public identifier
 in the module layer. That registration has to be in the shape recognizable by a
-<a href="@OPENIDE@/org/openide/xml/EntityCatalog.html">system entity resolver</a>.
+<a href="@org-openide-util@/org/openide/xml/EntityCatalog.html">system entity resolver</a>.
 <pre>
 &lt;<font class="function-name">folder</font> name=<font class="string">"xml"</font>&gt;
   &lt;<font class="function-name">folder</font> name=<font class="string">"entities"</font>&gt;
@@ -155,7 +155,7 @@ associated with a proper entity registration.
 </pre>
 
 To create a persistent instance use method
-<a href="@OPENIDE@/org/openide/loaders/InstanceDataObject.html#create(org.openide.loaders.DataFolder, java.lang.String, java.lang.Object, org.openide.modules.ModuleInfo)">
+<a href="@org-openide-loaders@/org/openide/loaders/InstanceDataObject.html#create(org.openide.loaders.DataFolder, java.lang.String, java.lang.Object, org.openide.modules.ModuleInfo)">
 org.openide.loaders.InstanceDataObject.create</a>. The framework will
 look up the provider registration for the exact class of the object passed
 into the method.
@@ -226,12 +226,12 @@ elements, arbitrary complex.
 </p>
 
 <h2><a name="find">Finding Settings</a></h2>
-To find out your setting you can use the <a href="@OPENIDE@/org/openide/doc-files/services-api.html#service-lookup">
+To find out your setting you can use the <a href="@org-openide-loaders@/org/openide/loaders/doc-files/services-api.html#lookup">
 lookup system</a>. In such case you have to place your .settings file under
 <code>Services</code> folder. This is useful for settings shared among modules.
 <p>
 Otherwise you can place the file under own folder and use
-<a href="@OPENIDE@/org/openide/loaders/doc-files/api.html">DataSystem API
+<a href="@org-openide-loaders@/org/openide/loaders/doc-files/api.html">DataSystem API
 </a> to get the object.
 <pre>
 <font class="type">FileSystem</font> <font class="variable-name">fs</font> = Repository.getDefault().getDefaultFileSystem();
