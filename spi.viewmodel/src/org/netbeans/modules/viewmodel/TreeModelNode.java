@@ -239,15 +239,16 @@ public class TreeModelNode extends AbstractNode {
                 public void run () {
                     refreshNode ();
                     fireShortDescriptionChange(null, null);
+                    
+                    // 3) refresh children
+                    Children ch = getChildren ();
+                    if (ch instanceof TreeModelChildren)
+                        ((TreeModelChildren) ch).refreshChildren ();
                 }
             });
         }
         task.schedule(0);
         
-        // 3) refresh children
-        Children ch = getChildren ();
-        if (ch instanceof TreeModelChildren)
-            ((TreeModelChildren) ch).refreshChildren ();
     }
     
     private static RequestProcessor requestProcessor;
@@ -461,8 +462,13 @@ public class TreeModelNode extends AbstractNode {
                     int i, k = ch.length;
                     for (i = 0; i < k; i++)
                         try {
-                            if (model.isExpanded (ch [i]))
-                                treeModelRoot.getTreeTable ().expandNode (ch [i]);
+                            if (model.isExpanded (ch [i])) {
+                                TreeTable treeTable = treeModelRoot.getTreeTable ();
+                                if (treeTable.isExpanded(object)) {
+                                    // Expand the child only if the parent is expanded
+                                    treeTable.expandNode (ch [i]);
+                                }
+                            }
                         } catch (UnknownTypeException ex) {
                         }
                 }
@@ -642,12 +648,6 @@ public class TreeModelNode extends AbstractNode {
                 synchronized (properties) {
                     ret = properties.get(id);
                 }
-                //System.out.println("  Got value without timeout: "+ret);
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        refreshTheChildren();
-                    }
-                });
             }
             
             return ret;
@@ -721,7 +721,7 @@ public class TreeModelNode extends AbstractNode {
                 try {
                     Evaluable eval;
                     synchronized (objectsToEvaluate) {
-                        while (objectsToEvaluate.size() == 0) {
+                        if (objectsToEvaluate.size() == 0) {
                             try {
                                 objectsToEvaluate.wait(EXPIRE_TIME);
                             } catch (InterruptedException iex) {
