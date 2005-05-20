@@ -43,6 +43,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages>
+                <package>org.openide.cookies</package>
                 <package>org.openide.nodes</package>
                 <package>org.openide.util.actions</package>
             </public-packages>
