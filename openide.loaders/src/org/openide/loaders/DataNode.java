@@ -503,7 +503,7 @@ public class DataNode extends AbstractNode {
     *
     * @return {@link org.openide.util.datatransfer.ExTransferable.Single} with one copy flavor
     * @throws IOException if it could not copy
-    * @see NodeTransfer
+    * @see org.openide.nodes.NodeTransfer
     */
     public Transferable clipboardCopy () throws IOException {
         ExTransferable t = ExTransferable.create (super.clipboardCopy ());
@@ -518,7 +518,7 @@ public class DataNode extends AbstractNode {
     *
     * @return {@link org.openide.util.datatransfer.ExTransferable.Single} with one cut flavor
     * @throws IOException if it could not cut
-    * @see NodeTransfer
+    * @see org.openide.nodes.NodeTransfer
     */
     public Transferable clipboardCut () throws IOException {
         ExTransferable t = ExTransferable.create (super.clipboardCut ());
