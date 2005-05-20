@@ -131,6 +131,10 @@ public final class ProjectXMLManager {
                 runDepEl.appendChild(createModuleElement(
                         doc, "release-version", me.getReleaseVersion())); // NOI18N
             }
+            if (me.getSpecificationVersion() != null) {
+                runDepEl.appendChild(createModuleElement(
+                        doc, "specification-version", me.getSpecificationVersion())); // NOI18N
+            }
         }
         helper.putPrimaryConfigurationData(confData, true);
     }
