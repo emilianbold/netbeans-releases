@@ -13,10 +13,9 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.Dimension;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.apisupport.project.ModuleList;
 
 /**
  * Represents panel for adding new dependency for a module. Shown after
@@ -43,6 +42,10 @@ final class AddModulePanel extends JPanel {
     
     private void showDescriptionFor(int index) {
         descValue.setText(universeModules.getModuleAt(index).getLongDescription());
+    }
+    
+    ModuleList.Entry getSelectedModule() {
+        return universeModules.getModuleAt(moduleList.getSelectedIndex());
     }
     
     /** This method is called from within the constructor to

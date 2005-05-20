@@ -33,11 +33,9 @@ import java.util.TreeSet;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.ModuleList;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -48,7 +46,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 
 /**
@@ -349,13 +346,17 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                     // store module dependencies
                     if (subModulesListModel.isChanged()) {
                         ProjectXMLManager pxm = getProjectXMLManipulator();
-                        Set toDelete = new HashSet(getSubModules());
-                        Set keep = subModulesListModel.getSubModules();
-                        toDelete.removeAll(keep);
+                        
+                        // process removed modules
+                        Set toDelete = subModulesListModel.getRemovedModules();
+                        Set cnbsToDelete = new HashSet(toDelete.size());
                         for (Iterator it = toDelete.iterator(); it.hasNext(); ) {
-                            ModuleList.Entry me = (ModuleList.Entry) it.next();
-                            pxm.removeDependency(me.getCodeNameBase());
+                            cnbsToDelete.add(((ModuleList.Entry) it.next()).getCodeNameBase());
                         }
+                        pxm.removeDependencies(cnbsToDelete);
+                        
+                        // process added modules
+                        pxm.addDependencies(subModulesListModel.getAddedModules());
                     }
                     return Boolean.TRUE;
                 }

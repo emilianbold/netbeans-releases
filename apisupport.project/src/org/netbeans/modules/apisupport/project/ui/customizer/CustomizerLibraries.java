@@ -16,7 +16,6 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.awt.Dialog;
 import java.util.Arrays;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -30,10 +29,10 @@ public class CustomizerLibraries extends JPanel {
     
     private ComponentFactory.ModuleListModel subModules;
     private ComponentFactory.ModuleListModel universeModules;
-
+    
     /** Creates new form CustomizerLibraries */
     public CustomizerLibraries(
-            ComponentFactory.ModuleListModel subModules, 
+            ComponentFactory.ModuleListModel subModules,
             ComponentFactory.ModuleListModel universeModules) {
         initComponents();
         this.subModules = subModules;
@@ -119,11 +118,15 @@ public class CustomizerLibraries extends JPanel {
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
         AddModulePanel addPanel = new AddModulePanel(universeModules);
-        DialogDescriptor descriptor = new DialogDescriptor(addPanel, 
-                NbBundle.getMessage(CustomizerLibraries.class, 
+        DialogDescriptor descriptor = new DialogDescriptor(addPanel,
+                NbBundle.getMessage(CustomizerLibraries.class,
                 "CTL_AddModuleDependencyTitle")); // NOI18N
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         d.setVisible(true);
+        if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
+            subModules.addModule(addPanel.getSelectedModule());
+        }
+        d.dispose();
     }//GEN-LAST:event_addModuleDependency
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
