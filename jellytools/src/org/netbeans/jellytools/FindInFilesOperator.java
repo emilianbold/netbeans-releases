@@ -281,7 +281,7 @@ public class FindInFilesOperator extends NbDialogOperator {
         nameOper.clearText();
         nameOper.typeText(name);
         new JButtonOperator(saveDialog,
-                            Bundle.getString("org.netbeans.core.Bundle",
+                            Bundle.getString("org.netbeans.core.windows.services.Bundle",
                                              "OK_OPTION_CAPTION")).
             push();
     }
@@ -298,7 +298,7 @@ public class FindInFilesOperator extends NbDialogOperator {
                                                  "TEXT_LABEL_RESTORE_CRITERION"));
         new JComboBoxOperator(restoreDialog).selectItem(name);
         new JButtonOperator(restoreDialog,
-                            Bundle.getString("org.netbeans.core.Bundle",
+                            Bundle.getString("org.netbeans.core.windows.services.Bundle",
                                              "OK_OPTION_CAPTION")).
             push();
     }

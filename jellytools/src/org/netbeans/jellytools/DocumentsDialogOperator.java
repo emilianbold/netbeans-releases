@@ -105,7 +105,7 @@ public class DocumentsDialogOperator extends NbDialogOperator {
      */
     public JButtonOperator btClose() {
         if (_btClose == null) {
-            String closeCaption = Bundle.getString("org.netbeans.core.Bundle", 
+            String closeCaption = Bundle.getString("org.netbeans.core.windows.services.Bundle", 
                                                    "CLOSED_OPTION_CAPTION");
             // need to set exact matching comparator becouse Close button can 
             // be mistaken for Close Document(s) button

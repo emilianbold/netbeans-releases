@@ -56,7 +56,7 @@ public class NbDialogOperator extends JDialogOperator {
      */
     public JButtonOperator btYes() {
         if (_btYes == null) {
-            String yesCaption = Bundle.getString("org.netbeans.core.Bundle", "YES_OPTION_CAPTION");
+            String yesCaption = Bundle.getString("org.netbeans.core.windows.services.Bundle", "YES_OPTION_CAPTION");
             _btYes = new JButtonOperator(this, yesCaption);
         }
         return _btYes;
@@ -67,7 +67,7 @@ public class NbDialogOperator extends JDialogOperator {
      */
     public JButtonOperator btNo() {
         if (_btNo == null) {
-            String noCaption = Bundle.getString("org.netbeans.core.Bundle", "NO_OPTION_CAPTION");
+            String noCaption = Bundle.getString("org.netbeans.core.windows.services.Bundle", "NO_OPTION_CAPTION");
             _btNo = new JButtonOperator(this, noCaption);
         }
         return _btNo;
@@ -78,7 +78,7 @@ public class NbDialogOperator extends JDialogOperator {
      */
     public JButtonOperator btOK() {
         if (_btOK == null) {
-            String oKCaption = Bundle.getString("org.netbeans.core.Bundle", "OK_OPTION_CAPTION");
+            String oKCaption = Bundle.getString("org.netbeans.core.windows.services.Bundle", "OK_OPTION_CAPTION");
             _btOK = new JButtonOperator(this, oKCaption);
         }
         return _btOK;
@@ -89,7 +89,7 @@ public class NbDialogOperator extends JDialogOperator {
      */
     public JButtonOperator btCancel() {
         if (_btCancel == null) {
-            String cancelCaption = Bundle.getString("org.netbeans.core.Bundle", "CANCEL_OPTION_CAPTION");
+            String cancelCaption = Bundle.getString("org.netbeans.core.windows.services.Bundle", "CANCEL_OPTION_CAPTION");
             _btCancel = new JButtonOperator(this, cancelCaption);
         }
         return _btCancel;
@@ -100,7 +100,7 @@ public class NbDialogOperator extends JDialogOperator {
      */
     public JButtonOperator btClose() {
         if (_btClose == null) {
-            String closeCaption = Bundle.getString("org.netbeans.core.Bundle", "CLOSED_OPTION_CAPTION");
+            String closeCaption = Bundle.getString("org.netbeans.core.windows.services.Bundle", "CLOSED_OPTION_CAPTION");
             _btClose = new JButtonOperator(this, closeCaption);
         }
         return _btClose;
@@ -111,7 +111,7 @@ public class NbDialogOperator extends JDialogOperator {
      */
     public JButtonOperator btHelp() {
         if (_btHelp == null) {
-            String helpCaption = Bundle.getString("org.netbeans.core.Bundle", "HELP_OPTION_CAPTION");
+            String helpCaption = Bundle.getString("org.netbeans.core.windows.services.Bundle", "HELP_OPTION_CAPTION");
             _btHelp = new JButtonOperator(this, helpCaption);
         }
         return _btHelp;
