@@ -123,18 +123,18 @@ state. For this purpose, it is possible to manually keep static variables
 with the current state, and manually fire property change events; but
 it is more convenient to use the automatically-managed state provided by
 
-<a href="../../util/SharedClassObject.html"><code>SharedClassObject</code></a>:
+<a href="@org-openide-util@/org/openide/util/SharedClassObject.html"><code>SharedClassObject</code></a>:
 
 <pre>
 public Color getForeground () {
   // Retrieves from class-wide state:
-  return (Color) <a href="../../util/SharedClassObject.html#getProperty(java.lang.Object)">getProperty</a> (PROPERTY_FOREGROUND);
+  return (Color) <a href="@org-openide-util@/org/openide/util/SharedClassObject.html#getProperty(java.lang.Object)">getProperty</a> (PROPERTY_FOREGROUND);
 }
 public void setForeground (Color fg) {
   // make sure it is sane...
   if (fg == null) throw new NullPointerException ();
   // Stores in class-wide state and fires property changes if needed:
-  <a href="../../util/SharedClassObject.html#putProperty(java.lang.String, java.lang.Object, boolean)">putProperty</a> (PROPERTY_FOREGROUND, fg, true);
+  <a href="@org-openide-util@/org/openide/util/SharedClassObject.html#putProperty(java.lang.String,%20java.lang.Object,%20boolean)">putProperty</a> (PROPERTY_FOREGROUND, fg, true);
 }
 </pre>
 
@@ -146,11 +146,11 @@ be called during project save and restore; instead, the actual property value yo
 stored will be serialized and deserialized. This is convenient for some purposes, e.g.
 you may make a property of declared type
 
-<a href="../../ServiceType.html"><code>ServiceType</code></a>
+<a href="@org-openide-util@/org/openide/ServiceType.html"><code>ServiceType</code></a>
 
 (and have a pleasant default property editor) while actually storing the correct
 
-<a href="../../ServiceType.Handle.html"><code>ServiceType.Handle</code></a>
+<a href="@org-openide-util@/org/openide/ServiceType.Handle.html"><code>ServiceType.Handle</code></a>
 
 in the project. <strong>However</strong>, it can be dangerous in some cases, e.g.
 if you are associating some sort of runtime service configuration with the property
@@ -243,7 +243,7 @@ and be prepared to revoke the change if a veto occurs.
 <p>Options can be installed via module manifest, but are better
 installed as settings using the
 
-<a href="../../doc-files/services-api.html#settings">Services API</a>.</p>
+<a href="@org-openide-loaders@/org/openide/loaders/doc-files/services-api.html#settings">Services API</a>.</p>
 
 <div class="nonnormative">
 
@@ -259,7 +259,7 @@ made by the user in the Control Panel.
 <p>If it necessary to access some other option, you may use:
 
 <pre>
-OtherOption oo = (OtherOption) <a href="../../util/SharedClassObject.html#findObject(java.lang.Class, boolean)">SystemOption.findObject</a>(OtherOption.class, true);
+OtherOption oo = (OtherOption) <a href="@org-openide-util@/org/openide/util/SharedClassObject.html#findObject(java.lang.Class,%20boolean)">SystemOption.findObject</a>(OtherOption.class, true);
 </pre>
 
 You may also use this method to obtain the default instance for local use.

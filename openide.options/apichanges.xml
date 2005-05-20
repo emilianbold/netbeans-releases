@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
         Methods <code>ControlPanel.add(SystemOption)</code> and
         <code>ControlPanel.remove(SystemOption)</code> are deprecated now.
       </description>
-      <class package="org.openide.options" name="ControlPanel"/>
+      <class link="no" package="org.openide.options" name="ControlPanel"/>
     </change>
 </changes>
 <htmlcontents>
