@@ -247,12 +247,21 @@ final class ViewHelper {
      * look like this (A | B | Y | Z) with split weights 0.25, 0.25, 0.25, and 0.25
      * If the new split weight for A being corrected is 0.3 then the corrected value will be (0.3 / 0.5)
      *
+     * Another problems is that the parent split may have a different orientation
+     * but contains one visible child only (i.e. does not show in the split hierarchy).
+     * In this case the split weight must be corrected in one level up in the split hierarchy.
+     *
      * @return New split weight corrected as described above or the original value if the
      * split does not have a parent split with the same orientation.
      */
     private static double correctNestedSplitWeight( ModeStructureSnapshot.SplitSnapshot split, double splitWeight ) {
+        int nestedSplitOrientation = split.getOrientation();
         ModeStructureSnapshot.SplitSnapshot parentSplit = split.getParent();
-        if( null != parentSplit && parentSplit.getOrientation() == split.getOrientation() ) {
+        while( null != parentSplit && !parentSplit.isVisibleInSplit() ) { //issue #59103
+            split = parentSplit;
+            parentSplit = parentSplit.getParent();
+        }
+        if( null != parentSplit && parentSplit.getOrientation() == nestedSplitOrientation ) {
             double parentSplitWeight = parentSplit.getChildSnapshotSplitWeight( split );
             if( parentSplit.getVisibleChildSnapshots().size() > 1 && parentSplitWeight > 0.0 )
                 splitWeight /= parentSplitWeight;
