@@ -147,7 +147,7 @@ available, introspected properties, and so on.
 
 Using the
 
-<a href="../../explorer/doc-files/api.html">Explorer API</a>,
+<a href="@org-openide-explorer@/org/openide/explorer/doc-files/api.html">Explorer API</a>,
 
 the IDE (or any module) can create a variety of different
 <em>presentations</em> for any tree or subtree of the Nodes
@@ -430,7 +430,7 @@ descriptors, and so may have internal and display names, etc.
 
 <p>Naturally, common node implementation classes such as
 
-<a href="@OPENIDE/LOADERS@/org/openide/loaders/DataNode.html"><code>DataNode</code></a>
+<a href="@org-openide-loaders@/org/openide/loaders/DataNode.html"><code>DataNode</code></a>
 
 may automatically create a sheet with some useful properties on it;
 then this sheet should generally be appended to by overriding
@@ -577,15 +577,15 @@ One important ability provided by the Nodes API is to associate
 cookies and actions with nodes. What cookies are and how to create
 them is explained in the
 
-<a href="@OPENIDE/LOADERS@/org/openide/loaders/doc-files/api.html#cookie">Datasystems API</a>
+<a href="@org-openide-loaders@/org/openide/loaders/doc-files/api.html#cookie">Datasystems API</a>
 
 Actions in general are likewise described by the
 
-<a href="../../actions/doc-files/api.html">Actions API</a>.
+<a href="@org-openide-actions@/org/openide/actions/doc-files/api.html">Actions API</a>.
 
 <p>(If your node is actually a
 
-<a href="@OPENIDE/LOADERS@/org/openide/loaders/DataNode.html"><code>DataNode</code></a>
+<a href="@org-openide-loaders@/org/openide/loaders/DataNode.html"><code>DataNode</code></a>
 
 representing a data object, there are already some conventions for
 attaching actions and cookies to the node, which prepopulate certain
@@ -683,7 +683,7 @@ Nodes of type <samp>Root</samp> should be
 placed in the <samp>Windows/Components/</samp> folder using <samp>*.settings</samp> syntax, 
 defining org.openide.explorer.ExplorerPanel type of component. Use ability of 
 <samp>*.settings</samp> file to specify creator method to asociate explorer panel
-with your root node. Consult <a href="../../windows/doc-files/api.html#xml">Winsys API,
+with your root node. Consult <a href="@org-openide-windows@/org/openide/windows/doc-files/api.html#xml">Winsys API,
 xml layers section</a> for details.</p></li>
 
 <li><p>Session nodes, appropriate to items which are neither transient nor
@@ -695,7 +695,7 @@ placed in the <samp>UI/Services/</samp> folder, again using
 </ul>
 
 <p>The basic definition of how settings in layers work is given in the
-<a href="../../doc-files/services-api.html#settings">Services API</a>.
+<a href="@org-openide-util@/org/openide/util/doc-files/api.html#settings">Services API</a>.
 
 
 <h2><a name="special">Special Node Usage</a></h2>
@@ -731,7 +731,7 @@ reconstructing your root from scratch, and return it from
 
 <p>The methods in <code>NodeOp</code> such as
 
-<a href="../NodeOp.html#findPath(org.openide.nodes.Node, java.lang.String[])"><code>NodeOp.findPath(...)</code></a>
+<a href="../NodeOp.html#findPath(org.openide.nodes.Node,%20java.lang.String[])"><code>NodeOp.findPath(...)</code></a>
 
 may also be used for general-purpose navigation along the hierarchy,
 should this be necessary.
@@ -766,7 +766,7 @@ customized like any other node, including creating node hierarchies
 (even for non-folder data objects), there are special considerations
 and supports for creating these. Please refer to the
 
-<a href="@OPENIDE/LOADERS@/org/openide/loaders/doc-files/api.html#delegate">Datasystems API</a>
+<a href="@org-openide-loaders@/org/openide/loaders/doc-files/api.html#delegate">Datasystems API</a>
 
 for details.
 
@@ -867,11 +867,11 @@ action after the fact, if that suffices.)
 to provide a list of new types of data which can be created under your
 node. Each of these should implement
 
-<a href="../../util/datatransfer/NewType.html#create()"><code>NewType.create()</code></a>
+<a href="@org-openide-util@/org/openide/util/datatransfer/NewType.html#create()"><code>NewType.create()</code></a>
 
 to actually create a new child. Make sure that you include
 
-<a href="../../actions/NewAction.html"><code>NewAction</code></a>
+<a href="@org-openide-actions@/org/openide/actions/NewAction.html"><code>NewAction</code></a>
 
 in your
 
@@ -885,7 +885,7 @@ not provide any particular hookup between the two sides.
 
 <p>Certain standard subclasses of <code>AbstractNode</code> (such as the
 
-<a href="@OPENIDE/LOADERS@/org/openide/loaders/DataNode.html"><code>DataNode</code></a>
+<a href="@org-openide-loaders@/org/openide/loaders/DataNode.html"><code>DataNode</code></a>
 
 commonly used to represent data objects) already have special
 implementations of data transfer appropriate to your task (such as
@@ -901,7 +901,7 @@ or if you are debugging such an implementation, you will want to
 understand the flow of control, which is fairly subtle. This section
 will also be helpful for understanding the NetBeans
 
-<a href="@OPENIDE/LOADERS@/org/openide/loaders/doc-files/api.html#clipboard">data-transfer system</a>
+<a href="@org-openide-loaders@/org/openide/loaders/doc-files/api.html#clipboard">data-transfer system</a>
 
 in general.
 
@@ -918,7 +918,7 @@ arbitrary Node A.
 
 <li>The user selects node A. The action
 
-<a href="../../actions/CopyAction.html">Copy</a>
+<a href="@org-openide-actions@/org/openide/actions/CopyAction.html">Copy</a>
 
 is enabled (from a context menu, the Edit menu, etc.), because node A
 indicated it could be copied using
@@ -929,11 +929,11 @@ indicated it could be copied using
 
 Note that
 
-<a href="../../explorer/ExplorerActions.html"><code>ExplorerActions</code></a>
+<a href="@org-openide-explorer@/org/openide/explorer/ExplorerUtils.html"><code>ExplorerUtils</code></a>
 
-provides the regular implementation of <code>CopyAction</code> for
+provides the regular implementation of <code>CopyAction</code> for any
 
-<a href="../../explorer/ExplorerPanel.html"><code>ExplorerPanel</code></a>s.
+<a href="@org-openide-windows@/org/openide/windows/TopComponent.html"><code>TopComponent</code></a>.
 
 <li>The user invokes the Copy action.
 
@@ -943,18 +943,18 @@ is called. It creates a transferable supporting only one flavor, which is invisi
 to the APIs. The creation of this transferable is done by a special utility method which
 hides the data flavor and transferables contents:
 
-<a href="../NodeTransfer.html#transferable(org.openide.nodes.Node, int)"><code>NodeTransfer.transferable(...)</code></a>.
+<a href="../NodeTransfer.html#transferable(org.openide.nodes.Node,%20int)"><code>NodeTransfer.transferable(...)</code></a>.
 
 The copy action
 
-<a href="@JDK@/java/awt/datatransfer/Clipboard.html#setContents(java.awt.datatransfer.Transferable, java.awt.datatransfer.ClipboardOwner)">sets</a>
+<a href="@JDK@/java/awt/datatransfer/Clipboard.html#setContents(java.awt.datatransfer.Transferable,%20java.awt.datatransfer.ClipboardOwner)">sets</a>
 
 that transferable to the clipboard.
 
 <li>Some time later, the user selects node B, a node capable of
 holding children. One effect of the change in selection is that the
 
-<a href="../../actions/PasteAction.html">Paste</a>
+<a href="@org-openide-actions@/org/openide/actions/PasteAction.html">Paste</a>
 
 action checks to see if it should be enabled. To do so, it checks node
 B's
@@ -963,7 +963,7 @@ B's
 
 which in turns calls
 
-<a href="../AbstractNode.html#createPasteTypes(java.awt.datatransfer.Transferable, java.util.List)"><code>AbstractNode.createPasteTypes(...)</code></a>
+<a href="../AbstractNode.html#createPasteTypes(java.awt.datatransfer.Transferable,%20java.util.List)"><code>AbstractNode.createPasteTypes(...)</code></a>
 
 to do the work.
 
@@ -1111,13 +1111,13 @@ or added as an alternate flavor to any transferable already there.
 pasted to from nodes may do so by accepting transferables in the
 clipboard satisfying
 
-<a href="../NodeTransfer.html#node(java.awt.datatransfer.Transferable, int)"><code>NodeTransfer.node(...)</code></a>,
+<a href="../NodeTransfer.html#node(java.awt.datatransfer.Transferable,%20int)"><code>NodeTransfer.node(...)</code></a>,
 
-<a href="../NodeTransfer.html#nodes(java.awt.datatransfer.Transferable, int)"><code>NodeTransfer.nodes(...)</code></a>,
+<a href="../NodeTransfer.html#nodes(java.awt.datatransfer.Transferable,%20int)"><code>NodeTransfer.nodes(...)</code></a>,
 
 or
 
-<a href="../NodeTransfer.html#cookie(java.awt.datatransfer.Transferable, int, java.lang.Class)"><code>NodeTransfer.cookie(...)</code></a>;
+<a href="../NodeTransfer.html#cookie(java.awt.datatransfer.Transferable,%20int,%20java.lang.Class)"><code>NodeTransfer.cookie(...)</code></a>;
 
 then no special
 cooperation is required from the node (provided it is an

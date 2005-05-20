@@ -393,7 +393,7 @@ public abstract class Children extends Object {
      * If you do so, the <code>Node</code> will be unable to update its state
      * before you leave the <code>readAccess()</code>.
      *
-     * @since OpenAPI version 2.17
+     * @since 2.17
      *
      * @param optimalResult whether to try to get a fully initialized array
      * or to simply delegate to {@link #getNodes()}
