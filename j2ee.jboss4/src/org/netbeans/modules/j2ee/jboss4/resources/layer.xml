@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="J2EE">
+        <folder name="DeploymentPlugins">
+            <folder name="JBoss4">
+                <file name="Descriptor" url="nbdep.xml"/>
+                
+                <file name="Factory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                
+                <file name="RegistryNodeFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.jboss4.nodes.JBRegistryNodeFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.nodes.JBRegistryNodeFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
+                </file>
+
+              
+                <file name="J2eePlatformFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory"/>
+                </file>
+                <file name="OptionalFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.jboss4.ide.JBOptionalDeploymentManagerFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.ide.JBOptionalDeploymentManagerFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
+                </file>
+                                
+                 <file name="JBPlanSplitter.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.jboss4.JBPlanSplitter"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.JBPlanSplitter"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
+                </file>
+                
+                
+                <folder name="DeploymentFileNames">
+                    <folder name="WAR">
+                       <file name="WEB-INF\jboss-web.xml"/>                         
+                    </folder>
+                    <folder name="EJB">
+			<file name="META-INF\jboss1.xml"/>
+                    </folder>
+		    <folder name="EAR">
+			<file name="META-INF\jboss2.xml"/>
+                    </folder>
+                </folder>
+                
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
