@@ -24,11 +24,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -60,8 +59,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
 
     private static final JPanel EMPTY_PANEL = new JPanel();
     
-    private final ComponentFactory modelFactory;
-    
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -82,11 +79,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     
     // Option indexes
     private static final int OPTION_OK = 0;
-    private static final int OPTION_CANCEL = OPTION_OK + 1;
-    
-    // Option command names
-    private static final String COMMAND_OK = "OK"; // NOI18N
-    private static final String COMMAND_CANCEL = "CANCEL"; // NOI18N
     
     // Keeps already displayed dialogs
     private static Map/*<Project,Dialog>*/ displayedDialogs = new HashMap();
@@ -101,7 +93,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         this.helper = helper;
         this.evaluator = evaluator;
         this.locBundlePropsPath = locBundlePropsPath;
-        this.modelFactory = ComponentFactory.getInstance(project);
     }
     
     /** Returns all known subModules in the project's universe. */
@@ -173,23 +164,17 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
      */
     private void loadModuleListInfo() {
         try {
-            ModuleList ml = getModuleList();
-            Map/*<String, ModuleList.Entry>*/ sortedModules = new TreeMap();
-            TreeSet/*<String>*/ allCategories = new TreeSet();
-            for (Iterator it = ml.getAllEntries().iterator(); it.hasNext(); ) {
+            SortedSet/*<String>*/ allCategories = new TreeSet();
+            Set allEntries = getModuleList().getAllEntries();
+            for (Iterator it = allEntries.iterator(); it.hasNext(); ) {
                 ModuleList.Entry me = (ModuleList.Entry) it.next();
-                sortedModules.put(me.getLocalizedName(), me);
                 String cat = me.getCategory();
                 if (cat != null) {
                     allCategories.add(cat);
                 }
             }
             modCategories = Collections.unmodifiableSortedSet(allCategories);
-            Set orderedModules = new LinkedHashSet(sortedModules.size());
-            for (Iterator it = sortedModules.values().iterator(); it.hasNext(); ) {
-                orderedModules.add(it.next());
-            }
-            universeModules = Collections.unmodifiableSet(orderedModules);
+            universeModules = Collections.unmodifiableSortedSet(new TreeSet(allEntries));
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
@@ -270,8 +255,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         panels.put(display, new CustomizerDisplay(locBundleProps, getModuleCategories()));
         
         // libraries customizer
-        subModulesListModel = modelFactory.createModuleListModel(new LinkedHashSet(getSubModules()));
-        universeModulesListModel = modelFactory.createModuleListModel(new LinkedHashSet(getUniverseModules()));
+        subModulesListModel = ComponentFactory.createModuleListModel(new TreeSet(getSubModules()));
+        universeModulesListModel = ComponentFactory.createModuleListModel(getUniverseModules());
         panels.put(libraries, new CustomizerLibraries(
                 subModulesListModel, universeModulesListModel));
 

@@ -18,7 +18,6 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 
 /**
  * @author mkrauskopf

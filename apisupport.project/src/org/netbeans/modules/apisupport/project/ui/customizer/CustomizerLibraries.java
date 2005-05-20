@@ -15,6 +15,8 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Dialog;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.JPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -27,16 +29,16 @@ import org.openide.util.NbBundle;
  */
 public class CustomizerLibraries extends JPanel {
     
-    private ComponentFactory.ModuleListModel subModules;
-    private ComponentFactory.ModuleListModel universeModules;
+    private ComponentFactory.ModuleListModel subModulesModel;
+    private ComponentFactory.ModuleListModel universeModulesModel;
     
     /** Creates new form CustomizerLibraries */
     public CustomizerLibraries(
             ComponentFactory.ModuleListModel subModules,
             ComponentFactory.ModuleListModel universeModules) {
         initComponents();
-        this.subModules = subModules;
-        this.universeModules = universeModules;
+        this.subModulesModel = subModules;
+        this.universeModulesModel = universeModules;
         dependencyList.setModel(subModules);
         dependencyList.setCellRenderer(ComponentFactory.getModuleCellRenderer());
     }
@@ -112,19 +114,23 @@ public class CustomizerLibraries extends JPanel {
     // </editor-fold>//GEN-END:initComponents
     
     private void removeModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModuleDependency
-        subModules.removeModule(Arrays.asList(dependencyList.getSelectedValues()));
+        subModulesModel.removeModule(Arrays.asList(dependencyList.getSelectedValues()));
         dependencyList.clearSelection();
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        AddModulePanel addPanel = new AddModulePanel(universeModules);
+        Set modulesToAdd = new TreeSet(universeModulesModel.getSubModules());
+        modulesToAdd.removeAll(subModulesModel.getSubModules());
+        ComponentFactory.ModuleListModel model =
+                ComponentFactory.createModuleListModel(modulesToAdd);
+        AddModulePanel addPanel = new AddModulePanel(model);
         DialogDescriptor descriptor = new DialogDescriptor(addPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,
                 "CTL_AddModuleDependencyTitle")); // NOI18N
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-            subModules.addModule(addPanel.getSelectedModule());
+            subModulesModel.addModule(addPanel.getSelectedModule());
         }
         d.dispose();
     }//GEN-LAST:event_addModuleDependency

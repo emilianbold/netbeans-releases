@@ -36,7 +36,6 @@ final class ManifestManager {
     private String layer;
     private String classPath;
     
-    private static final String MANIFEST_VERSION = "Manifest-Version"; // NOI18N
     private static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
     private static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
     private static final String OPENIDE_MODULE_LAYER = "OpenIDE-Module-Layer"; // NOI18N

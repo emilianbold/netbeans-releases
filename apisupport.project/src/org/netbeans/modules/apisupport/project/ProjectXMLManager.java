@@ -16,9 +16,9 @@ package org.netbeans.modules.apisupport.project;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
@@ -36,7 +36,7 @@ public final class ProjectXMLManager {
     private AntProjectHelper helper;
     private Project project;
     
-    private Set moduleList;
+    private Set directDeps;
     
     /** Creates a new instance of ProjectXMLManager */
     public ProjectXMLManager(AntProjectHelper helper, Project project) {
@@ -45,14 +45,13 @@ public final class ProjectXMLManager {
     }
     
     public Set/*<ModuleList.Entry>*/ getDirectDependencies() throws IOException {
-        if (moduleList != null) {
-            return moduleList;
+        if (directDeps != null) {
+            return directDeps;
         }
-        moduleList = new LinkedHashSet();
+        directDeps = new TreeSet();
         Element confData = helper.getPrimaryConfigurationData(true);
         Element moduleDependencies = findModuleDependencies(confData);
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
-        StringBuffer cp = new StringBuffer();
         ModuleList ml = getModuleList();
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             Element dep = (Element)it.next();
@@ -60,9 +59,9 @@ public final class ProjectXMLManager {
                     NbModuleProjectType.NAMESPACE_SHARED_NEW);
             String cnb = Util.findText(cnbEl);
             ModuleList.Entry me = ml.getEntry(cnb);
-            moduleList.add(me);
+            directDeps.add(me);
         }
-        return moduleList;
+        return directDeps;
     }
     
     /** Remove given dependency from the configuration data. */
