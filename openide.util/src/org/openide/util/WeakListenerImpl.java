@@ -117,7 +117,6 @@ abstract class WeakListenerImpl implements java.util.EventListener {
     }
 
     /** Weak property change listener
-    * @deprecated use appropriate method instead
     */
     static class PropertyChange extends WeakListenerImpl implements PropertyChangeListener {
         /** Constructor.
@@ -157,7 +156,6 @@ abstract class WeakListenerImpl implements java.util.EventListener {
     }
 
     /** Weak vetoable change listener
-    * @deprecated use appropriate method instead
     */
     static class VetoableChange extends WeakListenerImpl implements VetoableChangeListener {
         /** Constructor.
@@ -192,7 +190,6 @@ abstract class WeakListenerImpl implements java.util.EventListener {
     /** Weak document modifications listener.
     * This class if final only for performance reasons,
     * can be happily unfinaled if desired.
-    * @deprecated use appropriate method instead
     */
     static final class Document extends WeakListenerImpl implements DocumentListener {
         /** Constructor.
@@ -262,7 +259,6 @@ abstract class WeakListenerImpl implements java.util.EventListener {
     /** Weak swing change listener.
     * This class if final only for performance reasons,
     * can be happily unfinaled if desired.
-    * @deprecated use appropriate method instead
     */
     static final class Change extends WeakListenerImpl implements ChangeListener {
         /** Constructor.
@@ -295,7 +291,6 @@ abstract class WeakListenerImpl implements java.util.EventListener {
     /** Weak version of focus listener.
     * This class if final only for performance reasons,
     * can be happily unfinaled if desired.
-    * @deprecated use appropriate method instead
     */
     static final class Focus extends WeakListenerImpl implements FocusListener {
         /** Constructor.
