@@ -65,6 +65,10 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                     generatePublicPackages (o.file);
                     continue;
                 }
+                if ("shared-packages".equals (o.type.getValue ())) {
+                    generateSharedPackages (o.file);
+                    continue;
+                }
                 if ("modules".equals (o.type.getValue ())) {
                     generateListOfModules (o.file);                    
                     continue;
@@ -359,6 +363,75 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         w.close ();
     }
 
+    private void generateSharedPackages (File output) throws BuildException, IOException {
+        TreeMap packages = new TreeMap ();
+        
+        Iterator it = modules.iterator ();
+        while (it.hasNext ()) {
+            ModuleInfo m = (ModuleInfo)it.next ();
+
+            HashSet pkgs = new HashSet ();
+            iterateSharedPackages (m.file, pkgs);
+            
+            Iterator j = pkgs.iterator ();
+            while (j.hasNext ()) {
+                String s = (String)j.next ();
+                int[] now = (int[])packages.get (s);
+                if (now != null) {
+                    now[0]++;
+                } else {
+                    packages.put (s, new int[1]);
+                }
+            }
+        }
+
+        PrintWriter w = new PrintWriter (new FileWriter (output));
+        it = packages.entrySet ().iterator ();
+        while (it.hasNext ()) {
+            Map.Entry entry = (Map.Entry)it.next ();
+            String out = (String)entry.getKey ();
+            int[] cnt = (int[])entry.getValue ();
+            if (cnt[0] > 0) {
+                w.println (out.replace ('/', '.'));
+            }
+        }
+        w.close ();
+    }
+    
+    private void iterateSharedPackages (File f, Set myPkgs) throws IOException {
+        JarFile file = new JarFile (f);
+        Enumeration en = file.entries ();
+        LOOP: while (en.hasMoreElements ()) {
+            JarEntry e = (JarEntry)en.nextElement ();
+            if (e.getName ().endsWith ("/")) {
+                continue;
+            }
+            if (e.getName ().startsWith ("META-INF/")) {
+                continue;
+            }
+            
+            int last = e.getName ().lastIndexOf ('/');
+            String pkg = last == -1 ? "" : e.getName ().substring (0, last);
+            myPkgs.add (pkg);
+        }
+        
+        java.util.jar.Manifest m = file.getManifest ();
+        if (m != null) {
+            String value = m.getMainAttributes ().getValue ("Class-Path");
+            if (value != null) {
+                StringTokenizer tok = new StringTokenizer (value, " ");
+                while (tok.hasMoreElements ()) {
+                    File sub = new File (f.getParentFile (), tok.nextToken ());
+                    if (sub.isFile ()) {
+                        iterateSharedPackages (sub, myPkgs);
+                    }
+                }
+            }
+        }
+        
+        file.close ();
+    }
+    
     private void generateDependencies (File output, boolean implementationOnly) throws BuildException, IOException {
         PrintWriter w = new PrintWriter (new FileWriter (output));
         Iterator it = modules.iterator ();
@@ -533,6 +606,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         public String[] getValues () {
             return new String[] { 
                 "public-packages",
+                "shared-packages",
                 "modules",
                 "dependencies",
                 "implementation-dependencies",

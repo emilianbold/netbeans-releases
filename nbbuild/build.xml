@@ -3649,6 +3649,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     all-verification,
     check-files-layout,
     check-public-packages,
+    check-shared-packages,
     check-modules,
     check-dependencies,
     check-implementation-dependencies,
@@ -3787,6 +3788,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <output type="dependencies" file="${generated.files.dir}/deps.txt" />
       <output type="implementation-dependencies" file="${generated.files.dir}/impl-deps.txt" />
       <output type="public-packages" file="${generated.files.dir}/public-packages.txt" />
+      <output type="shared-packages" file="${generated.files.dir}/shared-packages.txt" />
       <output type="external-libraries" file="${generated.files.dir}/external-libraries.txt" />
     </deps>
   </target>
@@ -3826,6 +3828,53 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     your review and want to change the list of public packages, then please
     update the golden file at 
     ${check.public.packages.golden}
+    and run the test once again. 
+    
+    Read more about the Verification Framework:
+    http://openide.netbeans.org/proposals/arch/clusters.html#verify
+    
+    Look at for information about reviews:
+    http://openide.netbeans.org/tutorial/review-steps.html
+    
+    Check the page about APIs:
+    http://openide.netbeans.org/tutorial/api-design.html#api
+    </fail>
+  </target>
+  
+  <target name="check-shared-packages" depends="generate-golden-files" >
+    <property name="check.shared.packages.golden" location="${golden.files.dir}/shared-packages.txt" />
+    <property name="check.shared.packages.template" location="${template.files.dir}/shared-packages.txt" />
+    <property name="check.shared.packages.generated" location="${generated.files.dir}/shared-packages.txt" />
+  
+    <condition property="check-shared-packages-are-they-the-same" >
+        <filesmatch file1="${check.shared.packages.template}" file2="${check.shared.packages.generated}" />
+    </condition>
+    
+    
+    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
+      <arg value="-u" />
+      <arg value="${check.shared.packages.template}" />
+      <arg value="${check.shared.packages.generated}" />
+    </exec>
+    
+    <fail unless="check-shared-packages-are-they-the-same" >!
+    *** Shared packages has changed! ***
+    
+    Differences were found while comparing file 
+    ${check.shared.packages.template}
+    with 
+    ${check.shared.packages.generated}
+    
+    This means that the set of shared packages changed since the previously known one.
+    Some packages may have been added, some of them may have been removed 
+    Either by changing manifest of a module or by adding or removing a class file
+    from a module package.
+    
+    
+    Removing shared packages is ok. Adding shared packages is silly, complicates
+    and slows down module system and startup of the application. Do not do that!
+    If you are removing a shared package please update 
+    ${check.shared.packages.golden}
     and run the test once again. 
     
     Read more about the Verification Framework:

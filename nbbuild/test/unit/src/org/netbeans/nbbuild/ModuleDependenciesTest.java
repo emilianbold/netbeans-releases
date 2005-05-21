@@ -843,6 +843,58 @@ public class ModuleDependenciesTest extends NbTestCase {
         
     }
     
+    public void testPrintNamesOfPackagesSharedBetweenMoreModules () throws Exception {
+        File notAModule = generateJar (new String[] { "org/shared/not/X.class", "org/shared/yes/X.html" }, createManifest ());
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
+        File withoutPkgs = generateJar (new String[] { "org/shared/yes/Bla.class", "org/shared/not/sub/MyClass.class", }, m);
+        
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
+        m.getMainAttributes ().putValue ("Class-Path", notAModule.getName ());
+        File withPkgs = generateJar (new String[] { "org/shared/not/res/X.jpg"}, m);
+        
+        File parent = notAModule.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
+        assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
+        
+        
+        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        output.delete ();
+        assertFalse ("Is gone", output.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <deps>" +
+            "    <input name=\"ahoj\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + notAModule.getName () + "\" />" +
+            "        <include name=\"" + withoutPkgs.getName () + "\" />" +
+            "        <include name=\"" + withPkgs.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"shared-packages\" file=\"" + output + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertTrue ("Result generated", output.exists ());
+        
+        String res = readFile (output);
+        
+        assertEquals ("No not package", -1, res.indexOf ("not"));
+        assertEquals ("No default pkg", -1, res.indexOf ("\n\n"));
+        assertEquals ("No ork pkg", -1, res.indexOf ("org\n"));
+        assertEquals ("No ork pkg", -1, res.indexOf ("org/shared\n"));
+        assertTrue ("Shared is there: " + res, res.indexOf ("org.shared.yes\n") >= 0);
+        assertEquals ("No META-INF pkg", -1, res.indexOf ("META"));
+    }
+
     
     private static String readFile (File f) throws IOException {
         FileReader r = new FileReader (f);
