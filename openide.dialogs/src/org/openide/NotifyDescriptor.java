@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide;
@@ -768,7 +768,7 @@ public class NotifyDescriptor extends Object {
     /**
     * Provides a description of an exception that occurred during
     * execution of the IDE.
-    * @deprecated Better to use {@link ErrorManager#notify}.
+    * @deprecated Better to use {@link org.openide.ErrorManager#notify}
     */
     public static final class Exception extends Confirmation {
         static final long serialVersionUID = -3387516993124229948L;

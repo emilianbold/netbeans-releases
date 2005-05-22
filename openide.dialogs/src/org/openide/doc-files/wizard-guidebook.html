@@ -59,7 +59,7 @@ set initialization properties.
 <h3>Wizard panel initialization</h3>
 
 Use 
-<a href="../WizardDescriptor.html#putProperty(java.lang.String, java.lang.Object)">
+<a href="../WizardDescriptor.html#putProperty(java.lang.String,%20java.lang.Object)">
 <code>WizardDescriptor.putProperty()</code></a> to set following initialization 
 properties.
 <ul>
@@ -169,7 +169,7 @@ Set subtitle (!!!) format with
 <li><tt>
 Set title of the wizard with 
 
-<a href="../WizardDescriptor.html#setTitle(java.lang.String)">
+<a href="../NotifyDescriptor.html#setTitle(java.lang.String)">
 <code>WizardDescriptor.setTitle()</code></a>. 
 </tt></li>
 <br><br>
@@ -226,14 +226,14 @@ is
 </ul>
 
 All properties could be set with
-both alternatives (<a href="../WizardDescriptor.html#putProperty(java.lang.String, java.lang.Object)"><code>WizardDescriptor.putProperty()</code></a> or 
+both alternatives (<a href="../WizardDescriptor.html#putProperty(java.lang.String,%20java.lang.Object)"><code>WizardDescriptor.putProperty()</code></a> or 
 <code>JComponent.putClientProperty()</code>)
 except <b><code>"WizardPanel_helpURL"</code></b> which can be set only with 
 <code>JComponent.putClientProperty()</code> and the property <b><code>"WizardPanel_errorMessage"</code></b> which can be set only by
-<a href="../WizardDescriptor.html#putProperty(java.lang.String, java.lang.Object)"><code>WizardDescriptor.putProperty()</code></a>.
+<a href="../WizardDescriptor.html#putProperty(java.lang.String,%20java.lang.Object)"><code>WizardDescriptor.putProperty()</code></a>.
 <br>
 If both are used at the same time then 
-<a href="../WizardDescriptor.html#putProperty(java.lang.String, java.lang.Object)">
+<a href="../WizardDescriptor.html#putProperty(java.lang.String,%20java.lang.Object)">
 <code>WizardDescriptor.putProperty()</code></a> matters.
 <a href="../WizardDescriptor.html">
 <code>WizardDescriptor</code></a> listens on property changes of not initialization properties
