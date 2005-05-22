@@ -376,12 +376,12 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
             Iterator j = pkgs.iterator ();
             while (j.hasNext ()) {
                 String s = (String)j.next ();
-                int[] now = (int[])packages.get (s);
-                if (now != null) {
-                    now[0]++;
-                } else {
-                    packages.put (s, new int[1]);
+                List l = (List)packages.get(s);
+                if (l == null) {
+                    l = new ArrayList();
+                    packages.put(s, l);
                 }
+                l.add (m);
             }
         }
 
@@ -390,9 +390,15 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         while (it.hasNext ()) {
             Map.Entry entry = (Map.Entry)it.next ();
             String out = (String)entry.getKey ();
-            int[] cnt = (int[])entry.getValue ();
-            if (cnt[0] > 0) {
+            List cnt = (List)entry.getValue ();
+            if (cnt.size() > 1) {
                 w.println (out.replace ('/', '.'));
+                log("Package " + out + " is shared between:", org.apache.tools.ant.Project.MSG_VERBOSE);
+                Iterator j = cnt.iterator ();
+                while (j.hasNext ()) {
+                    ModuleInfo m = (ModuleInfo)j.next ();
+                    log ("   " + m.codebasename, org.apache.tools.ant.Project.MSG_VERBOSE);
+                }
             }
         }
         w.close ();
