@@ -66,10 +66,12 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
             <pathelement path="${cp.extra}"/>
             <pathelement path="${test.unit.cp.extra}"/>
+            <pathelement path="${netbeans.dest.dir}/platform5/core/openide.jar"/> 
         </path>
         <path id="test.unit.run.cp">
             <path refid="test.unit.compile.cp"/>
             <pathelement path="${test.unit.run.cp.extra}"/>
+            <pathelement path="${netbeans.dest.dir}/platform5/core/openide.jar"/> 
         </path>
     </target>
     
