@@ -98,7 +98,6 @@ public class NbModuleProjectGeneratorTest extends NbTestCase {
         
         NbModuleProjectGenerator.createExternalProject(
                 prjDir, "Testing Module", "org.company.example.testModule", 
-                "testModule", 
                 "org/company/example/testModule/resources/Bundle.properties",
                 "org/company/example/testModule/resources/layer.xml",
                 suiteDir.getPath());

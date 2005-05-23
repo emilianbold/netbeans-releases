@@ -13,6 +13,20 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.URL;
+import java.security.Permission;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 
@@ -30,9 +44,8 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project xmlns=\"http://www.netbeans.org/ns/project/1\">" +
             "   <type>org.netbeans.modules.apisupport.project</type>" +
-            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/1\">" +
+            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">" +
             "       <code-name-base>org.netbeans.modules.scripting.bsf</code-name-base>" +
-            "       <path>scripting/bsf</path>" +
             "       <public-packages>" +
             "           <package>org,org.apache.bsf</package>" +
             "       </public-packages>" +
@@ -53,9 +66,8 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project xmlns=\"http://www.netbeans.org/ns/project/1\">" +
             "   <type>org.netbeans.modules.apisupport.project</type>" +
-            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/1\">" +
+            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">" +
             "       <code-name-base>org.netbeans.modules.scripting.bsf</code-name-base>" +
-            "       <path>scripting/bsf</path>" +
             "       <public-packages>" +
             "           <package>org.**</package>" +
             "       </public-packages>" +
@@ -76,9 +88,8 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project xmlns=\"http://www.netbeans.org/ns/project/1\">" +
             "   <type>org.netbeans.modules.apisupport.project</type>" +
-            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/1\">" +
+            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">" +
             "       <code-name-base>org.netbeans.modules.scripting.bsf</code-name-base>" +
-            "       <path>scripting/bsf</path>" +
             "       <public-packages>" +
             "           <pkgs>org.hello</pkgs>" +
             "       </public-packages>" +
@@ -99,9 +110,8 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project xmlns=\"http://www.netbeans.org/ns/project/1\">" +
             "   <type>org.netbeans.modules.apisupport.project</type>" +
-            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/1\">" +
+            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">" +
             "       <code-name-base>org.netbeans.modules.scripting.bsf</code-name-base>" +
-            "       <path>scripting/bsf</path>" +
             "       <public-packages>" +
             "           <subpackages>org.hello</subpackages>" +
             "       </public-packages>" +
@@ -118,9 +128,8 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project xmlns=\"http://www.netbeans.org/ns/project/1\">" +
             "   <type>org.netbeans.modules.apisupport.project</type>" +
-            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/1\">" +
+            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">" +
             "       <code-name-base>org.netbeans.modules.scripting.bsf</code-name-base>" +
-            "       <path>scripting/bsf</path>" +
             "       <public-packages>" +
             "           <subpackages>org.hello</subpackages>" +
             "       </public-packages>" +
@@ -142,9 +151,8 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project xmlns=\"http://www.netbeans.org/ns/project/1\">" +
             "   <type>org.netbeans.modules.apisupport.project</type>" +
-            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/1\">" +
+            "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">" +
             "       <code-name-base>org.netbeans.modules.scripting.bsf</code-name-base>" +
-            "       <path>scripting/bsf</path>" +
             "       <public-packages>" +
             "           <subpackages>org.hello</subpackages>" +
             "       </public-packages>" +
@@ -155,12 +163,12 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         execute ("GarbageUnderPackages.xml", new String[] { "-Djavadoc.pac=some",  "-Dproject.file=" + f, "withjavadoc" });
     }
     
-    final static java.io.File extractString (String res) throws Exception {
-        java.io.File f = java.io.File.createTempFile ("res", ".xml");
+    final static File extractString (String res) throws Exception {
+        File f = File.createTempFile("res", ".xml");
         f.deleteOnExit ();
         
-        java.io.FileOutputStream os = new java.io.FileOutputStream (f);
-        java.io.InputStream is = new java.io.ByteArrayInputStream (res.getBytes ("utf-8"));
+        FileOutputStream os = new FileOutputStream(f);
+        InputStream is = new ByteArrayInputStream(res.getBytes("UTF-8"));
         for (;;) {
             int ch = is.read ();
             if (ch == -1) break;
@@ -171,15 +179,15 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         return f;
     }
     
-    final static java.io.File extractResource (String res) throws Exception {
-        java.net.URL u = PublicPackagesInProjectizedXMLTest.class.getResource (res);
+    final static File extractResource(String res) throws Exception {
+        URL u = PublicPackagesInProjectizedXMLTest.class.getResource(res);
         assertNotNull ("Resource should be found " + res, u);
         
-        java.io.File f = java.io.File.createTempFile ("res", ".xml");
+        File f = File.createTempFile("res", ".xml");
         f.deleteOnExit ();
         
-        java.io.FileOutputStream os = new java.io.FileOutputStream (f);
-        java.io.InputStream is = u.openStream ();
+        FileOutputStream os = new FileOutputStream(f);
+        InputStream is = u.openStream();
         for (;;) {
             int ch = is.read ();
             if (ch == -1) break;
@@ -194,10 +202,10 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         execute (extractResource (res), args);
     }
     
-    private static java.io.ByteArrayOutputStream out;
-    private static java.io.ByteArrayOutputStream err;
+    private static ByteArrayOutputStream out;
+    private static ByteArrayOutputStream err;
     
-    final static void execute (java.io.File f, String[] args) throws Exception {
+    final static void execute(File f, String[] args) throws Exception {
         // we need security manager to prevent System.exit
         if (! (System.getSecurityManager () instanceof MySecMan)) {
             out = new java.io.ByteArrayOutputStream ();
@@ -224,10 +232,10 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         // for me now, I leave it for the time when somebody really 
         // needs that...
         
-        java.util.ArrayList arr = new java.util.ArrayList ();
+        List arr = new ArrayList();
         arr.add ("-f");
         arr.add (f.toString ());
-        arr.addAll (java.util.Arrays.asList (args));
+        arr.addAll(Arrays.asList(args));
         
         
         out.reset ();
@@ -266,9 +274,9 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
     private static class MySecExc extends SecurityException {
         public void printStackTrace() {
         }
-        public void printStackTrace(java.io.PrintStream ps) {
+        public void printStackTrace(PrintStream ps) {
         }
-        public void printStackTrace(java.io.PrintWriter ps) {
+        public void printStackTrace(PrintWriter ps) {
         }
     }
     
@@ -280,12 +288,12 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             throw new MySecExc ();
         }
 
-        public void checkPermission (java.security.Permission perm, Object context) {
+        public void checkPermission(Permission perm, Object context) {
         }
 
-        public void checkPermission (java.security.Permission perm) {
+        public void checkPermission(Permission perm) {
         /*
-            if (perm instanceof java.lang.RuntimePermission) {
+            if (perm instanceof RuntimePermission) {
                 if (perm.getName ().equals ("setIO")) {
                     throw new MySecExc ();
                 }
@@ -293,7 +301,7 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
          */
         }
 
-        public void checkMulticast (java.net.InetAddress maddr) {
+        public void checkMulticast(InetAddress maddr) {
         }
 
         public void checkAccess (ThreadGroup g) {
@@ -326,16 +334,16 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         public void checkSecurityAccess (String target) {
         }
 
-        public void checkWrite (java.io.FileDescriptor fd) {
+        public void checkWrite(FileDescriptor fd) {
         }
 
         public void checkListen (int port) {
         }
 
-        public void checkRead (java.io.FileDescriptor fd) {
+        public void checkRead(FileDescriptor fd) {
         }
 
-        public void checkMulticast (java.net.InetAddress maddr, byte ttl) {
+        public void checkMulticast(InetAddress maddr, byte ttl) {
         }
 
         public void checkAccess (Thread t) {

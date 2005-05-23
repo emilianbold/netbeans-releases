@@ -17,6 +17,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -38,6 +40,9 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -48,6 +53,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -59,6 +65,10 @@ import org.w3c.dom.Element;
  */
 final class NbModuleProject implements Project {
     
+    public static final int TYPE_NETBEANS_ORG = 0;
+    public static final int TYPE_SUITE_COMPONENT = 1;
+    public static final int TYPE_STANDALONE = 2;
+    
     private static final Icon NB_PROJECT_ICON = new ImageIcon(
         Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif")); // NOI18N
     
@@ -69,12 +79,14 @@ final class NbModuleProject implements Project {
     private Map/*<String,String>*/ evalPredefs;
     private List/*<Map<String,String>>*/ evalDefs;
     private Map/*<FileObject,Element>*/ extraCompilationUnits;
+    private final GeneratedFilesHelper genFilesHelper;
     
     private String locBundlePropsPath;
     private String infoDisplayName;
     
     NbModuleProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
+        genFilesHelper = new GeneratedFilesHelper(helper);
         Util.err.log("Loading project in " + getProjectDirectory());
         if (getCodeNameBase() == null) {
             throw new IOException("Misconfigured project in " + getProjectDirectory() + " has no defined <code-name-base>"); // NOI18N
@@ -156,7 +168,7 @@ final class NbModuleProject implements Project {
             new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
-            //new SavedHook(),
+            new SavedHook(),
             new OpenedHook(),
             new Actions(this),
             new ClassPathProviderImpl(this),
@@ -191,8 +203,15 @@ final class NbModuleProject implements Project {
         return helper.getProjectDirectory();
     }
     
-    public Element getPrimarySharedConfigurationData() {
-        return getHelper().getPrimaryConfigurationData(true);
+    public int getModuleType() {
+        Element data = getHelper().getPrimaryConfigurationData(true);
+        if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED_NEW) != null) {
+            return TYPE_SUITE_COMPONENT;
+        } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED_NEW) != null) {
+            return TYPE_STANDALONE;
+        } else {
+            return TYPE_NETBEANS_ORG;
+        }
     }
     
     public FileObject getManifestFile() {
@@ -291,7 +310,9 @@ final class NbModuleProject implements Project {
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         Map/*<String,String>*/ stock = new HashMap();
         File dir = FileUtil.toFile(getProjectDirectory());
+        int type = getModuleType();
         File nbroot = ModuleList.findNetBeansOrg(dir);
+        assert type == TYPE_NETBEANS_ORG ^ nbroot == null : dir;
         if (nbroot != null) {
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
         }
@@ -331,16 +352,33 @@ final class NbModuleProject implements Project {
         defaults.put("test.qa-performance.src.dir", "test/qa-performance/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
         defaults.put("javac.source", "1.4");
-        //defaults.put("netbeans.javadoc.dir", nbroot != null ? "${nb_all}/nbbuild/build/javadoc" : "build/javadoc"); // NOI18N
         List/*<PropertyProvider>*/ providers = new ArrayList();
         providers.add(PropertyUtils.fixedPropertyProvider(stock));
-        if (nbroot == null) {
-            providers.add(helper.getPropertyProvider("nbproject/suite-locator.properties")); // NOI18N
+        // XXX should listen to changes in values of properties which refer to property files:
+        if (type == TYPE_SUITE_COMPONENT) {
+            providers.add(helper.getPropertyProvider("nbproject/private/suite-private.properties")); // NOI18N
+            providers.add(helper.getPropertyProvider("nbproject/suite.properties")); // NOI18N
             PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-            String suiteProperties = baseEval.getProperty("suite.properties"); // NOI18N
-            // XXX should listen to changes in the value of this property...
-            if (suiteProperties != null) {
-                providers.add(PropertyUtils.propertiesFilePropertyProvider(PropertyUtils.resolveFile(dir, suiteProperties)));
+            String suiteDirS = baseEval.getProperty("suite.dir"); // NOI18N
+            if (suiteDirS != null) {
+                File suiteDir = PropertyUtils.resolveFile(dir, suiteDirS);
+                providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(suiteDir, "nbproject" + File.separatorChar + "private" + File.separatorChar + "platform-private.properties"))); // NOI18N
+                providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(suiteDir, "nbproject" + File.separatorChar + "platform.properties"))); // NOI18N
+            }
+        } else if (type == TYPE_STANDALONE) {
+            providers.add(helper.getPropertyProvider("nbproject/private/platform-private.properties")); // NOI18N
+            providers.add(helper.getPropertyProvider("nbproject/platform.properties")); // NOI18N
+        }
+        if (type == TYPE_SUITE_COMPONENT || type == TYPE_STANDALONE) {
+            PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+            String buildS = baseEval.getProperty("user.properties.file"); // NOI18N
+            if (buildS != null) {
+                providers.add(PropertyUtils.propertiesFilePropertyProvider(PropertyUtils.resolveFile(dir, buildS)));
+            }
+            baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+            String platformS = baseEval.getProperty("nbplatform.active"); // NOI18N
+            if (platformS != null) {
+                providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"))); // NOI18N
             }
         }
         providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
@@ -479,13 +517,15 @@ final class NbModuleProject implements Project {
             return nbroot;
         } else {
             // OK, not it.
-            String text = evaluator().getProperty("netbeans.sources"); // NOI18N
-            if (text != null) {
-                String[] path = PropertyUtils.tokenizePath(text);
-                for (int i = 0; i < path.length; i++) {
-                    File f = FileUtil.normalizeFile(new File(path[i]));
-                    if (ModuleList.isNetBeansOrg(f)) {
-                        return f;
+            NbPlatform platform = getPlatform();
+            if (platform != null) {
+                URL[] roots = platform.getSourceRoots();
+                for (int i = 0; i < roots.length; i++) {
+                    if (roots[i].getProtocol().equals("file")) { // NOI18N
+                        File f = new File(URI.create(roots[i].toExternalForm()));
+                        if (ModuleList.isNetBeansOrg(f)) {
+                            return f;
+                        }
                     }
                 }
             }
@@ -517,7 +557,11 @@ final class NbModuleProject implements Project {
     }
     
     public NbPlatform getPlatform() {
-        return null;// XXX
+        String prop = evaluator().getProperty("netbeans.dest.dir"); // NOI18N
+        if (prop == null) {
+            return null;
+        }
+        return NbPlatform.getPlatformByDestDir(getHelper().resolveFile(prop));
     }
     
     public boolean supportsJavadoc() {
@@ -612,6 +656,36 @@ final class NbModuleProject implements Project {
             assert source != null : "No SOURCE path";
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             assert compile != null : "No COMPILE path";
+            // write user.properties.file to $userdir/build.properties
+            ProjectManager.mutex().writeAccess(new Mutex.Action() {
+                public Object run() {
+                    EditableProperties ep = getHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
+                    getHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    try {
+                        ProjectManager.getDefault().saveProject(NbModuleProject.this);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                    return null;
+                }
+            });
+            // refresh build.xml and build-impl.xml for external modules
+            if (getModuleType() != TYPE_NETBEANS_ORG) {
+                try {
+                    genFilesHelper.refreshBuildScript(
+                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                        NbModuleProject.class.getResource("resources/build-impl.xsl"),
+                        true);
+                    genFilesHelper.refreshBuildScript(
+                        GeneratedFilesHelper.BUILD_XML_PATH,
+                        NbModuleProject.class.getResource("resources/build.xsl"),
+                        true);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
         }
         
         protected void projectClosed() {
@@ -631,6 +705,26 @@ final class NbModuleProject implements Project {
             boot = null;
             source = null;
             compile = null;
+        }
+        
+    }
+    
+    private final class SavedHook extends ProjectXmlSavedHook {
+        
+        SavedHook() {}
+        
+        protected void projectXmlSaved() throws IOException {
+            // refresh build.xml and build-impl.xml for external modules
+            if (getModuleType() != TYPE_NETBEANS_ORG) {
+                genFilesHelper.refreshBuildScript(
+                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                    NbModuleProject.class.getResource("resources/build-impl.xsl"),
+                    false);
+                genFilesHelper.refreshBuildScript(
+                    GeneratedFilesHelper.BUILD_XML_PATH,
+                    NbModuleProject.class.getResource("resources/build.xsl"),
+                    false);
+            }
         }
         
     }

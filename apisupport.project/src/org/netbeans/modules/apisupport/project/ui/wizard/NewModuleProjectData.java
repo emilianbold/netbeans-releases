@@ -82,10 +82,6 @@ final class NewModuleProjectData {
         this.codeNameBase = codeNameBase;
     }
     
-    String getPath() {
-        return getProjectFolder().substring(getSuiteRoot().length() + 1);
-    }
-
     String getPlatform() {
         return platform;
     }

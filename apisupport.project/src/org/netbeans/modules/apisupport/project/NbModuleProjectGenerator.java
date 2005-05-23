@@ -67,13 +67,13 @@ public class NbModuleProjectGenerator {
     // we will see, anyway it is not possible to return anything in the time of
     // writing this --> TBD
     public static void createExternalProject(File projectDir, String name,
-            String cnb, String path, String bundlePath, String layerPath, 
+            String cnb, String bundlePath, String layerPath, 
             String suiteRoot) throws IOException {
         final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
-        NbModuleProjectGenerator.createProjectXML(dirFO, cnb, path);
+        NbModuleProjectGenerator.createProjectXML(dirFO, cnb);
         NbModuleProjectGenerator.createSuiteLocator(dirFO, suiteRoot);
         NbModuleProjectGenerator.createBuildScript(dirFO);
         NbModuleProjectGenerator.createManifest(dirFO, cnb, bundlePath, layerPath);
@@ -86,7 +86,7 @@ public class NbModuleProjectGenerator {
      * <code>AntProjectHelper.PROJECT_XML_PATH</code> is pointing to.
      */
     private static void createProjectXML(FileObject projectDir,
-            String cnb, String path) throws IOException {
+            String cnb) throws IOException {
         FileObject projectXml = projectDir.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
         if (projectXml != null) {
             throw new IllegalArgumentException("Already a " + projectXml); // NOI18N
@@ -110,11 +110,6 @@ public class NbModuleProjectGenerator {
         Element el = dataDoc.createElementNS(
                 NbModuleProjectType.NAMESPACE_SHARED_NEW, "code-name-base"); // NOI18N
         el.appendChild(dataDoc.createTextNode(cnb));
-        dataEl.appendChild(el);
-        
-        el = dataDoc.createElementNS(
-                NbModuleProjectType.NAMESPACE_SHARED_NEW, "path"); // NOI18N
-        el.appendChild(dataDoc.createTextNode(path));
         dataEl.appendChild(el);
         
         el = prjDoc.createElement("module-dependencies"); // NOI18N

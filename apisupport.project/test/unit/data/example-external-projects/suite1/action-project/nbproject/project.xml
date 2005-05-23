@@ -4,7 +4,7 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.examples.modules.action</code-name-base>
-            <path>action-project</path>
+            <suite-component/>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>

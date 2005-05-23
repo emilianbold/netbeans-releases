@@ -4,7 +4,7 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.examples.modules.dummy</code-name-base>
-            <path>dummy-project</path>
+            <standalone/>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.beans</code-name-base>

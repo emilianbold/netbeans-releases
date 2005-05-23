@@ -41,11 +41,12 @@ import org.xml.sax.SAXException;
  */
 public final class ParseProjectXml extends Task {
 
-    static final String PROJECT_NS = "http://www.netbeans.org/ns/project/1"; //NOI18N
-    static final String[] NBM_NS_1_AND_2 = {
-        "http://www.netbeans.org/ns/nb-module-project/1",
-        "http://www.netbeans.org/ns/nb-module-project/2",
-    };
+    static final String PROJECT_NS = "http://www.netbeans.org/ns/project/1";
+    static final String NBM_NS = "http://www.netbeans.org/ns/nb-module-project/2";
+    
+    static final int TYPE_NB_ORG = 0;
+    static final int TYPE_SUITE = 1;
+    static final int TYPE_STANDALONE = 2;
 
     private File project;
     /**
@@ -66,7 +67,7 @@ public final class ParseProjectXml extends Task {
         if (projectFile != null) {
             return projectFile;
         }
-        return new File(new File(project, "nbproject"), "project.xml"); //NOI18N
+        return new File(new File(project, "nbproject"), "project.xml");
     }
 
     private String publicPackagesProperty;
@@ -190,30 +191,30 @@ public final class ParseProjectXml extends Task {
                             b.append(sep);
                             
                             String name = pkgs[i].name;
-                            if (name.indexOf (',') >= 0) { //NOI18N
+                            if (name.indexOf (',') >= 0) {
                                 throw new BuildException ("Package name cannot contain ',' as " + pkgs[i], getLocation ());
                             }
-                            if (name.indexOf ('*') >= 0) { //NOI18N
+                            if (name.indexOf ('*') >= 0) {
                                 throw new BuildException ("Package name cannot contain '*' as " + pkgs[i], getLocation ());
                             }
                             
                             b.append(name);
                             if (pkgs[i].subpackages) {
-                                b.append (".**"); //NOI18N
+                                b.append (".**");
                             } else {
-                                b.append(".*"); //NOI18N
+                                b.append(".*");
                             }
-                            sep = ", "; //NOI18N
+                            sep = ", ";
                         }
                         val = b.toString();
                     } else {
-                        val = "-"; //NOI18N
+                        val = "-";
                     }
                     define(publicPackagesProperty, val);
                 }
                 NO_JAVA_DOC_PROPERTY_SET: if (javadocPackagesProperty != null) {
                     if (pkgs.length > 0) {
-                        String sep = ", "; //NOI18N
+                        String sep = ", ";
                         StringBuffer b = new StringBuffer();
                         for (int i = 0; i < pkgs.length; i++) {
                             b.append(sep);
@@ -226,7 +227,7 @@ public final class ParseProjectXml extends Task {
                                 break NO_JAVA_DOC_PROPERTY_SET;
                             }
                             b.append(pkgs[i].name);
-                            sep = ", "; //NOI18N
+                            sep = ", ";
                         }
                         define(javadocPackagesProperty, b.toString());
                     }
@@ -248,14 +249,14 @@ public final class ParseProjectXml extends Task {
             ModuleListParser modules = null;
             if (moduleDependenciesProperty != null || moduleClassPathProperty != null) {
                 String nball = getProject().getProperty("nb_all");
-                modules = new ModuleListParser(getProject().getProperties(), getPath(pDoc, false), getProject());
+                modules = new ModuleListParser(getProject().getProperties(), getModuleType(pDoc), getProject());
             }
             if (ideDependenciesProperty != null || moduleDependenciesProperty != null) {
                 Dep[] deps = getDeps(pDoc);
                 if (ideDependenciesProperty != null) {
                     Dep ide = null;
                     for (int i = 0; i < deps.length; i++) {
-                        if (deps[i].codenamebase.equals("IDE")) { //NOI18N
+                        if (deps[i].codenamebase.equals("IDE")) {
                             ide = deps[i];
                             break;
                         }
@@ -267,11 +268,11 @@ public final class ParseProjectXml extends Task {
                 if (moduleDependenciesProperty != null) {
                     StringBuffer b = new StringBuffer();
                     for (int i = 0; i < deps.length; i++) {
-                        if (deps[i].codenamebase.equals("IDE")) { //NOI18N
+                        if (deps[i].codenamebase.equals("IDE")) {
                             continue;
                         }
                         if (b.length() > 0) {
-                            b.append(", "); //NOI18N
+                            b.append(", ");
                         }
                         b.append(deps[i].toString(modules));
                     }
@@ -282,11 +283,11 @@ public final class ParseProjectXml extends Task {
             }
             if (codeNameBaseDashesProperty != null) {
                 String cnb = getCodeNameBase(pDoc);
-                define(codeNameBaseDashesProperty, cnb.replace('.', '-')); //NOI18N
+                define(codeNameBaseDashesProperty, cnb.replace('.', '-'));
             }
             if (codeNameBaseSlashesProperty != null) {
                 String cnb = getCodeNameBase(pDoc);
-                define(codeNameBaseSlashesProperty, cnb.replace('.', '/')); //NOI18N
+                define(codeNameBaseSlashesProperty, cnb.replace('.', '/'));
             }
             if (moduleClassPathProperty != null) {
                 String cp = computeClasspath(pDoc, modules);
@@ -295,7 +296,7 @@ public final class ParseProjectXml extends Task {
                 }
             }
             if (domainProperty != null) {
-                if (getPath(pDoc, true) != null) {
+                if (getModuleType(pDoc) != TYPE_NB_ORG) {
                     throw new BuildException("Cannot set " + domainProperty + " for a non-netbeans.org module", getLocation());
                 }
                 File nball = new File(getProject().getProperty("nb_all"));
@@ -328,11 +329,11 @@ public final class ParseProjectXml extends Task {
 
     private Element getConfig(Document pDoc) throws BuildException {
         Element e = pDoc.getDocumentElement();
-        Element c = XMLUtil.findElement(e, "configuration", PROJECT_NS); //NOI18N
+        Element c = XMLUtil.findElement(e, "configuration", PROJECT_NS);
         if (c == null) {
             throw new BuildException("No <configuration>", getLocation());
         }
-        Element d = XMLUtil.findElement(c, "data", NBM_NS_1_AND_2); //NOI18N
+        Element d = XMLUtil.findElement(c, "data", NBM_NS);
         if (d == null) {
             throw new BuildException("No <data>", getLocation());
         }
@@ -351,9 +352,9 @@ public final class ParseProjectXml extends Task {
 
     private PublicPackage[] getPublicPackages(Document d) throws BuildException {
         Element cfg = getConfig(d);
-        Element pp = XMLUtil.findElement(cfg, "public-packages", NBM_NS_1_AND_2); //NOI18N
+        Element pp = XMLUtil.findElement(cfg, "public-packages", NBM_NS);
         if (pp == null) {
-            pp = XMLUtil.findElement(cfg, "friend-packages", NBM_NS_1_AND_2[1]); // NOI18N
+            pp = XMLUtil.findElement(cfg, "friend-packages", NBM_NS);
         }
         if (pp == null) {
             throw new BuildException("No <public-packages>", getLocation());
@@ -364,11 +365,11 @@ public final class ParseProjectXml extends Task {
         while (it.hasNext()) {
             Element p = (Element)it.next();
             boolean sub = false;
-            if ("friend".equals(p.getNodeName())) { // NOI18N
+            if ("friend".equals(p.getNodeName())) {
                 continue;
             }
-            if (!"package".equals (p.getNodeName ())) { //NOI18N
-                if (!("subpackages".equals (p.getNodeName ()))) { //NOI18N
+            if (!"package".equals (p.getNodeName ())) {
+                if (!("subpackages".equals (p.getNodeName ()))) {
                     throw new BuildException ("Strange element name, should be package or subpackages: " + p.getNodeName (), getLocation ());
                 }
                 sub = true;
@@ -385,7 +386,7 @@ public final class ParseProjectXml extends Task {
     
     private String[] getFriends(Document d) throws BuildException {
         Element cfg = getConfig(d);
-        Element pp = XMLUtil.findElement(cfg, "friend-packages", NBM_NS_1_AND_2[1]); // NOI18N
+        Element pp = XMLUtil.findElement(cfg, "friend-packages", NBM_NS);
         if (pp == null) {
             return null;
         }
@@ -395,7 +396,7 @@ public final class ParseProjectXml extends Task {
         boolean other = false;
         while (it.hasNext()) {
             Element p = (Element) it.next();
-            if ("friend".equals(p.getNodeName())) { // NOI18N
+            if ("friend".equals(p.getNodeName())) {
                 String t = XMLUtil.findText(p);
                 if (t == null) {
                     throw new BuildException("No text in <friend>", getLocation());
@@ -423,11 +424,11 @@ public final class ParseProjectXml extends Task {
         public String toString(ModuleListParser modules) throws IOException, BuildException {
             StringBuffer b = new StringBuffer(codenamebase);
             if (release != null) {
-                b.append('/'); //NOI18N
+                b.append('/');
                 b.append(release);
             }
             if (spec != null) {
-                b.append(" > "); //NOI18N
+                b.append(" > ");
                 b.append(spec);
                 assert !impl;
             }
@@ -457,7 +458,7 @@ public final class ParseProjectXml extends Task {
 
     private Dep[] getDeps(Document pDoc) throws BuildException {
         Element cfg = getConfig(pDoc);
-        Element md = XMLUtil.findElement(cfg, "module-dependencies", NBM_NS_1_AND_2); //NOI18N
+        Element md = XMLUtil.findElement(cfg, "module-dependencies", NBM_NS);
         if (md == null) {
             throw new BuildException("No <module-dependencies>", getLocation());
         }
@@ -467,7 +468,7 @@ public final class ParseProjectXml extends Task {
         while (it.hasNext()) {
             Element dep = (Element)it.next();
             Dep d = new Dep();
-            Element cnb = XMLUtil.findElement(dep, "code-name-base", NBM_NS_1_AND_2); //NOI18N
+            Element cnb = XMLUtil.findElement(dep, "code-name-base", NBM_NS);
             if (cnb == null) {
                 throw new BuildException("No <code-name-base>", getLocation());
             }
@@ -475,13 +476,13 @@ public final class ParseProjectXml extends Task {
             if (t == null) {
                 throw new BuildException("No text in <code-name-base>", getLocation());
             }
-            if (t.equals("org.openide")) { //NOI18N
-                t = "IDE"; //NOI18N
+            if (t.equals("org.openide")) {
+                t = "IDE";
             }
             d.codenamebase = t;
-            Element rd = XMLUtil.findElement(dep, "run-dependency", NBM_NS_1_AND_2); //NOI18N
+            Element rd = XMLUtil.findElement(dep, "run-dependency", NBM_NS);
             if (rd != null) {
-                Element rv = XMLUtil.findElement(rd, "release-version", NBM_NS_1_AND_2);
+                Element rv = XMLUtil.findElement(rd, "release-version", NBM_NS);
                 if (rv != null) {
                     t = XMLUtil.findText(rv);
                     if (t == null) {
@@ -489,7 +490,7 @@ public final class ParseProjectXml extends Task {
                     }
                     d.release = t;
                 }
-                Element sv = XMLUtil.findElement(rd, "specification-version", NBM_NS_1_AND_2); //NOI18N
+                Element sv = XMLUtil.findElement(rd, "specification-version", NBM_NS);
                 if (sv != null) {
                     t = XMLUtil.findText(sv);
                     if (t == null) {
@@ -498,7 +499,7 @@ public final class ParseProjectXml extends Task {
                     d.spec = t;
                 }
                 // <implementation-version> added in /2:
-                Element iv = XMLUtil.findElement(rd, "implementation-version", NBM_NS_1_AND_2[1]); //NOI18N
+                Element iv = XMLUtil.findElement(rd, "implementation-version", NBM_NS);
                 if (iv != null) {
                     d.impl = true;
                 }
@@ -510,7 +511,7 @@ public final class ParseProjectXml extends Task {
 
     private String getCodeNameBase(Document d) throws BuildException {
         Element data = getConfig(d);
-        Element name = XMLUtil.findElement(data, "code-name-base", NBM_NS_1_AND_2); //NOI18N
+        Element name = XMLUtil.findElement(data, "code-name-base", NBM_NS);
         if (name == null) {
             throw new BuildException("No <code-name-base>", getLocation());
         }
@@ -521,36 +522,32 @@ public final class ParseProjectXml extends Task {
         return t;
     }
 
-    private String getPath(Document d, boolean ns2only) throws BuildException {
+    private int getModuleType(Document d) throws BuildException {
         Element data = getConfig(d);
-        Element path = ns2only ?
-            XMLUtil.findElement(data, "path", NBM_NS_1_AND_2[1]) : //NOI18N
-            XMLUtil.findElement(data, "path", NBM_NS_1_AND_2); //NOI18N
-        if (path == null) {
-            return null;
+        if (XMLUtil.findElement(data, "suite-component", NBM_NS) != null) {
+            return TYPE_SUITE;
+        } else if (XMLUtil.findElement(data, "standalone", NBM_NS) != null) {
+            return TYPE_STANDALONE;
+        } else {
+            return TYPE_NB_ORG;
         }
-        String t = XMLUtil.findText(path);
-        if (t == null) {
-            throw new BuildException("No text in <path>", getLocation());
-        }
-        return t;
     }
 
     private String computeClasspath(Document pDoc, ModuleListParser modules) throws BuildException, IOException, SAXException {
         Element data = getConfig(pDoc);
-        Element moduleDependencies = XMLUtil.findElement(data, "module-dependencies", NBM_NS_1_AND_2); //NOI18N
+        Element moduleDependencies = XMLUtil.findElement(data, "module-dependencies", NBM_NS);
         List/*<Element>*/ deps = XMLUtil.findSubElements(moduleDependencies);
         StringBuffer cp = new StringBuffer();
         Iterator it = deps.iterator();
         while (it.hasNext()) {
             Element dep = (Element)it.next();
-            if (XMLUtil.findElement(dep, "compile-dependency", NBM_NS_1_AND_2) == null) { //NOI18N
+            if (XMLUtil.findElement(dep, "compile-dependency", NBM_NS) == null) {
                 continue;
             }
             if (cp.length() > 0) {
                 cp.append(':');
             }
-            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", NBM_NS_1_AND_2); //NOI18N
+            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", NBM_NS);
             String cnb = XMLUtil.findText(cnbEl);
             cp.append(computeClasspathModuleLocation(modules, cnb).getAbsolutePath());
             // #52354: look for <class-path-extension>s in dependent modules.
@@ -596,7 +593,7 @@ public final class ParseProjectXml extends Task {
             if (!ext.getLocalName().equals("class-path-extension")) {
                 continue;
             }
-            Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", NBM_NS_1_AND_2[1]);
+            Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", NBM_NS);
             if (runtimeRelativePath == null) {
                 throw new BuildException("Have malformed <class-path-extension> in " + getProjectFile(), getLocation());
             }

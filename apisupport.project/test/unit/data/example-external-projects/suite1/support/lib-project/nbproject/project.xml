@@ -4,13 +4,15 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.examples.modules.lib</code-name-base>
-            <path>support/lib-project</path>
+            <suite-component/>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.examples.modules.misc</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>

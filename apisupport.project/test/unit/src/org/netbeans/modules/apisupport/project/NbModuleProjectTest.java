@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
-import java.util.Arrays;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -94,10 +93,6 @@ public class NbModuleProjectTest extends TestBase {
         eval = loadersProject.evaluator();
         assertEquals("right module JAR", file("nbbuild/netbeans/platform5/core/openide-loaders.jar"),
             loadersProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
-        /*
-        assertEquals("right netbeans.javadoc.dir", file("nbbuild/build/javadoc"),
-            loadersProject.getHelper().resolveFile(eval.getProperty("netbeans.javadoc.dir")));
-         */
     }
     
     /** #56457 */
@@ -129,18 +124,9 @@ public class NbModuleProjectTest extends TestBase {
             cpS.append(file("nbbuild/netbeans/" + cp[i]).getAbsolutePath());
         }
         assertEquals("right module.classpath", cpS.toString(), eval.getProperty("module.classpath"));
-        String nbsources = eval.getProperty("netbeans.sources");
-        assertNotNull("netbeans.sources defined", nbsources);
-        String[] pieces = PropertyUtils.tokenizePath(nbsources);
-        File[] piecesF = new File[pieces.length];
-        for (int i = 0; i < pieces.length; i++) {
-            piecesF[i] = PropertyUtils.resolveFile(FileUtil.toFile(action), pieces[i]);
-        }
-        assertEquals("correct netbeans.sources",
-            Arrays.asList(new File[] {
-                nbrootF,
-                FileUtil.toFile(extexamples.getFileObject("suite2")),
-            }), Arrays.asList(piecesF));
+        String nbdestdir = eval.getProperty("netbeans.dest.dir");
+        assertNotNull("defined netbeans.dest.dir", nbdestdir);
+        assertEquals("right netbeans.dest.dir", file("nbbuild/netbeans"), PropertyUtils.resolveFile(FileUtil.toFile(action), nbdestdir));
         FileObject suite3 = extexamples.getFileObject("suite3");
         FileObject dummy = suite3.getFileObject("dummy-project");
         NbModuleProject dummyProject = (NbModuleProject) ProjectManager.getDefault().findProject(dummy);
@@ -157,11 +143,20 @@ public class NbModuleProjectTest extends TestBase {
             cpS.append(file(extexamplesF, "suite3/nbplatform/" + cp[i]).getAbsolutePath());
         }
         assertEquals("right module.classpath", cpS.toString(), eval.getProperty("module.classpath"));
-        /*
-        assertEquals("right netbeans.javadoc.dir", file(extexamplesF, "suite3/dummy-project/build/javadoc"),
-            dummyProject.getHelper().resolveFile(eval.getProperty("netbeans.javadoc.dir")));
-         */
+        assertEquals("right netbeans.dest.dir", file(extexamplesF, "suite3/nbplatform"), PropertyUtils.resolveFile(FileUtil.toFile(dummy), eval.getProperty("netbeans.dest.dir")));
         // XXX more...
+    }
+    
+    public void testGetType() throws Exception {
+        assertEquals(NbModuleProject.TYPE_NETBEANS_ORG, javaProjectProject.getModuleType());
+        FileObject suite1 = extexamples.getFileObject("suite1");
+        FileObject action = suite1.getFileObject("action-project");
+        NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(action);
+        assertEquals(NbModuleProject.TYPE_SUITE_COMPONENT, actionProject.getModuleType());
+        FileObject suite3 = extexamples.getFileObject("suite3");
+        FileObject dummy = suite3.getFileObject("dummy-project");
+        NbModuleProject dummyProject = (NbModuleProject) ProjectManager.getDefault().findProject(dummy);
+        assertEquals(NbModuleProject.TYPE_STANDALONE, dummyProject.getModuleType());
     }
     
 }

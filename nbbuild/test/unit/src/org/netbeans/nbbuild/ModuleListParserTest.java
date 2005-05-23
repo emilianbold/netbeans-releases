@@ -18,6 +18,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import junit.framework.TestCase;
+import org.apache.tools.ant.BuildEvent;
+import org.apache.tools.ant.BuildListener;
+import org.apache.tools.ant.Project;
 
 /**
  * Test {@link ModuleListParser}.
@@ -55,7 +58,7 @@ public class ModuleListParserTest extends TestCase {
         properties.put("nb.cluster.foo.dir", "foodir");
         properties.put("nb.cluster.bar", "core");
         properties.put("nb.cluster.bar.dir", "bardir");
-        ModuleListParser p = new ModuleListParser(properties, null, null);
+        ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_NB_ORG, null);
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.modules.beans");
         assertNotNull(e);
         assertEquals("org.netbeans.modules.beans", e.getCnb());
@@ -96,11 +99,26 @@ public class ModuleListParserTest extends TestCase {
         }), Arrays.asList(e.getClassPathExtensions()));
     }
     
-    public void testScanSourcesAndBinariesForExternalModule() throws Exception {
+    public void testScanSourcesAndBinariesForExternalSuite() throws Exception {
+        Project fakeproj = new Project();
+        fakeproj.addBuildListener(new BuildListener() {
+            public void messageLogged(BuildEvent buildEvent) {
+                if (buildEvent.getPriority() <= Project.MSG_VERBOSE) {
+                    System.err.println(buildEvent.getMessage());
+                }
+            }
+            public void taskStarted(BuildEvent buildEvent) {}
+            public void taskFinished(BuildEvent buildEvent) {}
+            public void targetStarted(BuildEvent buildEvent) {}
+            public void targetFinished(BuildEvent buildEvent) {}
+            public void buildStarted(BuildEvent buildEvent) {}
+            public void buildFinished(BuildEvent buildEvent) {}
+        });
         Hashtable properties = new Hashtable();
         properties.put("netbeans.dest.dir", filePath(nball, "nbbuild/netbeans"));
         properties.put("basedir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite1/action-project"));
-        ModuleListParser p = new ModuleListParser(properties, "action-project", null);
+        properties.put("suite.dir", "..");
+        ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_SUITE, fakeproj);
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.examples.modules.action");
         assertNotNull("found myself", e);
         assertEquals("org.netbeans.examples.modules.action", e.getCnb());
@@ -110,10 +128,12 @@ public class ModuleListParserTest extends TestCase {
         assertNotNull("found sister project in suite", e);
         assertEquals("org.netbeans.examples.modules.lib", e.getCnb());
         assertEquals(file(nball, "nbbuild/netbeans/devel/modules/org-netbeans-examples-modules-lib.jar"), e.getJar());
+        File jar = file(nball, "nbbuild/netbeans/ide5/modules/org-netbeans-libs-xerces.jar");
+        assertTrue("Build all-libs/xerces first!", jar.isFile());
         e = p.findByCodeNameBase("org.netbeans.libs.xerces");
         assertNotNull("found netbeans.org module by its binary", e);
         assertEquals("org.netbeans.libs.xerces", e.getCnb());
-        assertEquals(file(nball, "nbbuild/netbeans/ide5/modules/org-netbeans-libs-xerces.jar"), e.getJar());
+        assertEquals(jar, e.getJar());
         assertEquals("correct CP extensions (using Class-Path header in manifest)", Arrays.asList(new File[] {
             file(nball, "nbbuild/netbeans/ide5/modules/ext/xerces-2.6.2.jar"),
             file(nball, "nbbuild/netbeans/ide5/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
@@ -128,13 +148,30 @@ public class ModuleListParserTest extends TestCase {
         assertEquals("org.netbeans.bootstrap", e.getCnb());
         assertEquals(file(nball, "nbbuild/netbeans/platform5/lib/boot.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
+        jar = file(nball, "nbbuild/netbeans/ide5/modules/autoload/xml-tax.jar");
+        assertTrue("Build all-xml/tax first!", jar.isFile());
         e = p.findByCodeNameBase("org.netbeans.modules.xml.tax");
         assertNotNull(e);
         assertEquals("org.netbeans.modules.xml.tax", e.getCnb());
-        assertEquals(file(nball, "nbbuild/netbeans/ide5/modules/autoload/xml-tax.jar"), e.getJar());
+        assertEquals(jar, e.getJar());
         assertEquals(Arrays.asList(new File[] {
             file(nball, "nbbuild/netbeans/ide5/modules/autoload/ext/tax.jar"),
         }), Arrays.asList(e.getClassPathExtensions()));
+    }
+    
+    public void testScanSourcesAndBinariesForExternalStandaloneModule() throws Exception {
+        Hashtable properties = new Hashtable();
+        properties.put("netbeans.dest.dir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform"));
+        properties.put("basedir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite3/dummy-project"));
+        ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_STANDALONE, null);
+        ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.examples.modules.dummy");
+        assertNotNull("found myself", e);
+        assertEquals("org.netbeans.examples.modules.dummy", e.getCnb());
+        assertEquals(file(nball, "apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform/devel/modules/org-netbeans-examples-modules-dummy.jar"), e.getJar());
+        assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
+        e = p.findByCodeNameBase("org.netbeans.modules.beans");
+        assertNotNull("found (fake) netbeans.org module by its binary", e);
+        assertEquals("org.netbeans.modules.beans", e.getCnb());
     }
     
 }

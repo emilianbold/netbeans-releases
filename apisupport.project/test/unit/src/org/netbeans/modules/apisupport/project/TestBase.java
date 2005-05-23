@@ -7,12 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.Properties;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -33,6 +36,7 @@ abstract class TestBase extends NbTestCase {
     protected FileObject nbroot;
     protected File extexamplesF;
     protected FileObject extexamples;
+    protected File apisZip;
     protected void setUp() throws Exception {
         super.setUp();
         nbrootF = new File(System.getProperty("test.nbroot"));
@@ -44,6 +48,46 @@ abstract class TestBase extends NbTestCase {
         assertTrue("there is a dir " + extexamplesF, extexamplesF.isDirectory());
         extexamples = FileUtil.toFileObject(extexamplesF);
         assertNotNull("have a file object for extexamples", extexamples);
+        // Need to set up private locations in extexamples, as if they were opened in the IDE.
+        clearWorkDir();
+        // For PropertyUtils.userBuildProperties():
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        File userPropertiesFile = new File(getWorkDir(), "build.properties");
+        Properties p = new Properties();
+        p.setProperty("nbplatform.default.netbeans.dest.dir", file("nbbuild/netbeans").getAbsolutePath());
+        p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness");
+        p.setProperty("nbplatform.custom.netbeans.dest.dir", file(extexamplesF, "suite3/nbplatform").getAbsolutePath());
+        // Nonexistent path, just for JavadocForBuiltModuleTest:
+        apisZip = new File(getWorkDir(), "apis.zip");
+        p.setProperty("nbplatform.default.netbeans.javadoc", apisZip.getAbsolutePath());
+        // Make source association work to find misc-project from its binary:
+        p.setProperty("nbplatform.default.netbeans.sources", nbrootF.getAbsolutePath() + ":" + file(extexamplesF, "suite2").getAbsolutePath());
+        OutputStream os = new FileOutputStream(userPropertiesFile);
+        try {
+            p.store(os, null);
+        } finally {
+            os.close();
+        }
+        String[] suites = {
+            // Suite projects:
+            "suite1",
+            "suite2",
+            // Standalone module projects:
+            "suite3/dummy-project",
+        };
+        for (int i = 0; i < suites.length; i++) {
+            File platformPrivate = file(extexamplesF, suites[i] + "/nbproject/private/platform-private.properties");
+            p = new Properties();
+            p.setProperty("user.properties.file", userPropertiesFile.getAbsolutePath());
+            platformPrivate.getParentFile().mkdirs();
+            os = new FileOutputStream(platformPrivate);
+            try {
+                p.store(os, null);
+            } finally {
+                os.close();
+            }
+        }
+        NbPlatform.reset();
     }
     
     protected File file(File root, String path) {

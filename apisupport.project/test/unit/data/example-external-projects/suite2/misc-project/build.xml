@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="misc-project" default="netbeans" basedir=".">
-    <property file="nbproject/suite-locator.properties"/>
-    <property file="${suite.properties}"/>
-    <fail unless="netbeans.dest.dir">You must set suite.properties to a file defining netbeans.dest.dir</fail>
-    <import file="${harness.dir}/build.xml"/>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.netbeans.examples.modules.misc" default="default" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.examples.modules.misc.</description>
+    <import file="nbproject/build-impl.xml"/>
 </project>

@@ -20,6 +20,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Mutex;
 
@@ -30,14 +31,27 @@ import org.openide.util.Mutex;
 public final class Install extends ModuleInstall {
 
     public void restored() {
+        // XXX probably a better way to do this with InstalledFileLocator... assuming that clusters are ${netbeans.home}/../*
         String nbhome = System.getProperty("netbeans.home");
         if (nbhome != null) {
             final File install = FileUtil.normalizeFile(new File(nbhome).getParentFile());
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
                     EditableProperties p = PropertyUtils.getGlobalProperties();
-                    p.setProperty("netbeans.dest.dir", install.getAbsolutePath()); // NOI18N
-                    p.setProperty("harness.dir", "${netbeans.dest.dir}/harness"); // NOI18N
+                    p.setProperty("nbplatform.default.netbeans.dest.dir", install.getAbsolutePath()); // NOI18N
+                    p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
+                    final File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
+                    if (apidocsZip != null) {
+                        // XXX OK to overwrite any existing config? not sure...
+                        p.setProperty("nbplatform.default.netbeans.javadoc", FileUtil.normalizeFile(apidocsZip).getAbsolutePath()); // NOI18N
+                    } else {
+                        // XXX remove any existing binding?
+                    }
+                    {// XXX temporary, to clean up userdirs from old system
+                        p.remove("netbeans.dest.dir"); // NOI18N
+                        p.remove("harness.dir"); // NOI18N
+                        p.remove("netbeans.javadoc"); // NOI18N
+                    }
                     try {
                         PropertyUtils.putGlobalProperties(p);
                     } catch (IOException e) {
