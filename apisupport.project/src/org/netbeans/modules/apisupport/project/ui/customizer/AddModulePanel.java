@@ -19,16 +19,17 @@ import org.netbeans.modules.apisupport.project.ModuleList;
 
 /**
  * Represents panel for adding new dependency for a module. Shown after
- * <em>Add</em> button on the <code>CustomizerLibraries</code> has been pushed.
+ * <em>Add</em> button on the <code>CustomizerLibraries</code> panel has been
+ * pushed.
  *
  * @author  mkrauskopf
  */
 final class AddModulePanel extends JPanel {
     
-    private ComponentFactory.ModuleListModel universeModules;
+    private ComponentFactory.DependencyListModel universeModules;
     
     /** Creates new form AddModulePanel */
-    AddModulePanel(ComponentFactory.ModuleListModel universeModules) {
+    AddModulePanel(ComponentFactory.DependencyListModel universeModules) {
         this.universeModules = universeModules;
         initComponents();
         moduleList.setModel(universeModules);
@@ -41,11 +42,11 @@ final class AddModulePanel extends JPanel {
     }
     
     private void showDescriptionFor(int index) {
-        descValue.setText(universeModules.getModuleAt(index).getLongDescription());
+        descValue.setText(universeModules.getDependency(index).getModuleEntry().getLongDescription());
     }
     
-    ModuleList.Entry getSelectedModule() {
-        return universeModules.getModuleAt(moduleList.getSelectedIndex());
+    ModuleDependency getSelectedModule() {
+        return universeModules.getDependency(moduleList.getSelectedIndex());
     }
     
     /** This method is called from within the constructor to

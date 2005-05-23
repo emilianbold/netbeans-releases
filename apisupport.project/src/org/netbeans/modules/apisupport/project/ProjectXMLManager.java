@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -44,7 +45,7 @@ public final class ProjectXMLManager {
         this.project = project;
     }
     
-    public Set/*<ModuleList.Entry>*/ getDirectDependencies() throws IOException {
+    public Set/*<ModuleDependency>*/ getDirectDependencies() throws IOException {
         if (directDeps != null) {
             return directDeps;
         }
@@ -54,12 +55,35 @@ public final class ProjectXMLManager {
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
         ModuleList ml = getModuleList();
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
-            Element dep = (Element)it.next();
-            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
+            Element depEl = (Element)it.next();
+
+            Element cnbEl = Util.findElement(depEl, "code-name-base", // NOI18N
                     NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             ModuleList.Entry me = ml.getEntry(cnb);
-            directDeps.add(me);
+
+            Element runDepEl = Util.findElement(depEl, "run-dependency", // NOI18N
+                    NbModuleProjectType.NAMESPACE_SHARED);
+            if (runDepEl == null) {
+                directDeps.add(new ModuleDependency(me));
+                continue;
+            }
+            
+            Element relVerEl = Util.findElement(runDepEl, "release-version", // NOI18N
+                    NbModuleProjectType.NAMESPACE_SHARED);
+            String relVer = null;
+            if (relVerEl != null) {
+                relVer = Util.findText(relVerEl);
+            }
+            
+            Element specVerEl = Util.findElement(runDepEl, "specification-version", // NOI18N
+                    NbModuleProjectType.NAMESPACE_SHARED);
+            String specVer = null;
+            if (specVerEl != null) {
+                specVer = Util.findText(specVerEl);
+            }
+            
+            directDeps.add(new ModuleDependency(me, relVer, specVer));
         }
         return directDeps;
     }
@@ -108,35 +132,66 @@ public final class ProjectXMLManager {
         helper.putPrimaryConfigurationData(confData, true);
     }
     
-    /**
-     * Adds given modules as module-dependencies for the project.
-     */
-    public void addDependencies(Set/*<ModuleList.Entry>*/ toAdd) {
+    public void editDependency(ModuleDependency origDep, ModuleDependency newDep) {
         Element confData = helper.getPrimaryConfigurationData(true);
         Element moduleDependencies = findModuleDependencies(confData);
-        Document doc = confData.getOwnerDocument();
-        for (Iterator it = toAdd.iterator(); it.hasNext(); ) {
-            ModuleList.Entry me = (ModuleList.Entry) it.next();
-            Element modDepEl = createModuleElement(doc, "dependency"); // NOI18N
-            moduleDependencies.appendChild(modDepEl);
-            
-            modDepEl.appendChild(createModuleElement(doc, "code-name-base", me.getCodeNameBase()));
-            modDepEl.appendChild(createModuleElement(doc, "build-prerequisite")); // NOI18N;
-            modDepEl.appendChild(createModuleElement(doc, "compile-dependency")); // NOI18N
-            
-            Element runDepEl = createModuleElement(doc, "run-dependency");
-            modDepEl.appendChild(runDepEl); // NOI18N
-            
-            if (me.getReleaseVersion() != null) {
-                runDepEl.appendChild(createModuleElement(
-                        doc, "release-version", me.getReleaseVersion())); // NOI18N
-            }
-            if (me.getSpecificationVersion() != null) {
-                runDepEl.appendChild(createModuleElement(
-                        doc, "specification-version", me.getSpecificationVersion())); // NOI18N
+        List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
+        for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
+            Element dep = (Element) it.next();
+            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
+                    NbModuleProjectType.NAMESPACE_SHARED);
+            String cnb = Util.findText(cnbEl);
+            if (cnb.equals(origDep.getModuleEntry().getCodeNameBase())) {
+                moduleDependencies.removeChild(dep);
+//                ModuleDependency next = (ModuleDependency) it.next();
+                createModuleDependencyElement(moduleDependencies, newDep);
+//                if (next != null) {
+//                    // TODO insert it here
+//                }
             }
         }
         helper.putPrimaryConfigurationData(confData, true);
+    }
+    
+    /**
+     * Adds given modules as module-dependencies for the project.
+     */
+    public void addDependencies(Set/*<ModuleDependency>*/ toAdd) {
+        Element confData = helper.getPrimaryConfigurationData(true);
+        Element moduleDependencies = findModuleDependencies(confData);
+        Document doc = moduleDependencies.getOwnerDocument();
+        for (Iterator it = toAdd.iterator(); it.hasNext(); ) {
+            ModuleDependency md = (ModuleDependency) it.next();
+            createModuleDependencyElement(moduleDependencies, md);
+        }
+        helper.putPrimaryConfigurationData(confData, true);
+    }
+    
+    private void createModuleDependencyElement(
+            Element moduleDependencies, ModuleDependency md) {
+        
+        Document doc = moduleDependencies.getOwnerDocument();
+        Element modDepEl = createModuleElement(doc, "dependency"); // NOI18N
+        moduleDependencies.appendChild(modDepEl);
+        
+        modDepEl.appendChild(createModuleElement(doc, "code-name-base",
+                md.getModuleEntry().getCodeNameBase()));
+        modDepEl.appendChild(createModuleElement(doc, "build-prerequisite")); // NOI18N;
+        modDepEl.appendChild(createModuleElement(doc, "compile-dependency")); // NOI18N
+        
+        Element runDepEl = createModuleElement(doc, "run-dependency");
+        modDepEl.appendChild(runDepEl); // NOI18N
+        
+        String rv = md.getReleaseVersion();
+        if (rv != null) {
+            runDepEl.appendChild(createModuleElement(
+                    doc, "release-version", rv)); // NOI18N
+        }
+        String sv = md.getSpecificationVersion();
+        if (sv != null) {
+            runDepEl.appendChild(createModuleElement(
+                    doc, "specification-version", sv)); // NOI18N
+        }
     }
     
     private Element findModuleDependencies(Element confData) {

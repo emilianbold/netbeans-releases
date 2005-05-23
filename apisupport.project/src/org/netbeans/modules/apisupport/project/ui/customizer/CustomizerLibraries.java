@@ -29,16 +29,18 @@ import org.openide.util.NbBundle;
  */
 public class CustomizerLibraries extends JPanel {
     
-    private ComponentFactory.ModuleListModel subModulesModel;
-    private ComponentFactory.ModuleListModel universeModulesModel;
+    private ComponentFactory.DependencyListModel moduleDeps;
+    private ComponentFactory.DependencyListModel universeModulesModel;
+    private NbModuleProperties moduleProps;
     
     /** Creates new form CustomizerLibraries */
-    public CustomizerLibraries(
-            ComponentFactory.ModuleListModel subModules,
-            ComponentFactory.ModuleListModel universeModules) {
+    public CustomizerLibraries(final NbModuleProperties moduleProps,
+            final ComponentFactory.DependencyListModel subModules,
+            final ComponentFactory.DependencyListModel universeModules) {
         initComponents();
-        this.subModulesModel = subModules;
+        this.moduleDeps = subModules;
         this.universeModulesModel = universeModules;
+        this.moduleProps = moduleProps;
         dependencyList.setModel(subModules);
         dependencyList.setCellRenderer(ComponentFactory.getModuleCellRenderer());
     }
@@ -56,6 +58,8 @@ public class CustomizerLibraries extends JPanel {
         depButtonPanel = new javax.swing.JPanel();
         addDepButton = new javax.swing.JButton();
         removeDepButton = new javax.swing.JButton();
+        space1 = new javax.swing.JLabel();
+        editDepButton = new javax.swing.JButton();
         dependencySP = new javax.swing.JScrollPane();
         dependencyList = new javax.swing.JList();
 
@@ -71,7 +75,7 @@ public class CustomizerLibraries extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(modDepLabel, gridBagConstraints);
 
-        depButtonPanel.setLayout(new java.awt.GridLayout(2, 1));
+        depButtonPanel.setLayout(new java.awt.GridLayout(4, 1));
 
         addDepButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_AddButton_Mnem").charAt(0));
         addDepButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_AddButton"));
@@ -93,6 +97,18 @@ public class CustomizerLibraries extends JPanel {
 
         depButtonPanel.add(removeDepButton);
 
+        depButtonPanel.add(space1);
+
+        editDepButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_EditButton_Mnem").charAt(0));
+        editDepButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_EditButton"));
+        editDepButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editModuleDependency(evt);
+            }
+        });
+
+        depButtonPanel.add(editDepButton);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -113,15 +129,30 @@ public class CustomizerLibraries extends JPanel {
     }
     // </editor-fold>//GEN-END:initComponents
     
+    private void editModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModuleDependency
+        ModuleDependency md = moduleDeps.getDependency(
+                dependencyList.getSelectedIndex());
+        EditDependencyPanel editPanel = new EditDependencyPanel(md);
+        DialogDescriptor descriptor = new DialogDescriptor(editPanel,
+                NbBundle.getMessage(CustomizerLibraries.class,
+                "CTL_EditModuleDependencyTitle")); // NOI18N
+        Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
+        d.setVisible(true);
+        if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
+            moduleDeps.editDependency(md, editPanel.getEditedDependency());
+        }
+        d.dispose();
+    }//GEN-LAST:event_editModuleDependency
+    
     private void removeModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModuleDependency
-        subModulesModel.removeModule(Arrays.asList(dependencyList.getSelectedValues()));
+        moduleDeps.removeModule(Arrays.asList(dependencyList.getSelectedValues()));
         dependencyList.clearSelection();
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        Set modulesToAdd = new TreeSet(universeModulesModel.getSubModules());
-        modulesToAdd.removeAll(subModulesModel.getSubModules());
-        ComponentFactory.ModuleListModel model =
+        Set modulesToAdd = new TreeSet(universeModulesModel.getDependencies());
+        modulesToAdd.removeAll(moduleDeps.getDependencies());
+        ComponentFactory.DependencyListModel model =
                 ComponentFactory.createModuleListModel(modulesToAdd);
         AddModulePanel addPanel = new AddModulePanel(model);
         DialogDescriptor descriptor = new DialogDescriptor(addPanel,
@@ -130,7 +161,7 @@ public class CustomizerLibraries extends JPanel {
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-            subModulesModel.addModule(addPanel.getSelectedModule());
+            moduleDeps.addModule(addPanel.getSelectedModule());
         }
         d.dispose();
     }//GEN-LAST:event_addModuleDependency
@@ -140,8 +171,10 @@ public class CustomizerLibraries extends JPanel {
     private javax.swing.JPanel depButtonPanel;
     private javax.swing.JList dependencyList;
     private javax.swing.JScrollPane dependencySP;
+    private javax.swing.JButton editDepButton;
     private javax.swing.JLabel modDepLabel;
     private javax.swing.JButton removeDepButton;
+    private javax.swing.JLabel space1;
     // End of variables declaration//GEN-END:variables
     
 }

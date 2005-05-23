@@ -84,8 +84,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private static Map/*<Project,Dialog>*/ displayedDialogs = new HashMap();
 
     // models
-    private ComponentFactory.ModuleListModel subModulesListModel;
-    private ComponentFactory.ModuleListModel universeModulesListModel;
+    private ComponentFactory.DependencyListModel subModulesListModel;
+    private ComponentFactory.DependencyListModel universeModulesListModel;
 
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
             PropertyEvaluator evaluator, String locBundlePropsPath) {
@@ -165,16 +165,17 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private void loadModuleListInfo() {
         try {
             SortedSet/*<String>*/ allCategories = new TreeSet();
-            Set allEntries = getModuleList().getAllEntries();
-            for (Iterator it = allEntries.iterator(); it.hasNext(); ) {
+            SortedSet/*<ModuleDependency>*/ allDependencies = new TreeSet();
+            for (Iterator it = getModuleList().getAllEntries().iterator(); it.hasNext(); ) {
                 ModuleList.Entry me = (ModuleList.Entry) it.next();
+                allDependencies.add(new ModuleDependency(me));
                 String cat = me.getCategory();
                 if (cat != null) {
                     allCategories.add(cat);
                 }
             }
             modCategories = Collections.unmodifiableSortedSet(allCategories);
-            universeModules = Collections.unmodifiableSortedSet(new TreeSet(allEntries));
+            universeModules = Collections.unmodifiableSortedSet(new TreeSet(allDependencies));
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
@@ -197,6 +198,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             return;
         } else {
             this.moduleProps = new NbModuleProperties(helper);
+            // XXX check if the locBundlePropsPath was found (i.e. != null)
+            // what to do then --> UI spec should be updated?
             this.locBundleProps = helper.getProperties(locBundlePropsPath); // NOI18N
             init();
             if (preselectedCategory != null && preselectedSubCategory != null) {
@@ -257,7 +260,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         // libraries customizer
         subModulesListModel = ComponentFactory.createModuleListModel(new TreeSet(getSubModules()));
         universeModulesListModel = ComponentFactory.createModuleListModel(getUniverseModules());
-        panels.put(libraries, new CustomizerLibraries(
+        panels.put(libraries, new CustomizerLibraries(moduleProps,
                 subModulesListModel, universeModulesListModel));
 
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
@@ -333,15 +336,27 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                         ProjectXMLManager pxm = getProjectXMLManipulator();
                         
                         // process removed modules
-                        Set toDelete = subModulesListModel.getRemovedModules();
+                        Set toDelete = subModulesListModel.getRemovedDependencies();
                         Set cnbsToDelete = new HashSet(toDelete.size());
                         for (Iterator it = toDelete.iterator(); it.hasNext(); ) {
-                            cnbsToDelete.add(((ModuleList.Entry) it.next()).getCodeNameBase());
+                            cnbsToDelete.add(((ModuleDependency) it.next()).
+                                    getModuleEntry().getCodeNameBase());
                         }
+                        // XXX should accept ModuleDependency collection
                         pxm.removeDependencies(cnbsToDelete);
                         
                         // process added modules
-                        pxm.addDependencies(subModulesListModel.getAddedModules());
+                        pxm.addDependencies(subModulesListModel.getAddedDependencies());
+                        
+                        // process edited modules
+                        Map/*<ModuleDependency, ModuleDependency>*/ toEdit 
+                                = subModulesListModel.getEditedDetails();
+                        for (Iterator it = toEdit.entrySet().iterator(); it.hasNext(); ) {
+                            Map.Entry entry = (Map.Entry) it.next();
+                            pxm.editDependency(
+                                    (ModuleDependency) entry.getKey(), // orig
+                                    (ModuleDependency) entry.getValue()); // new
+                        }
                     }
                     return Boolean.TRUE;
                 }
