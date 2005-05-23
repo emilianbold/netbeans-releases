@@ -12,8 +12,14 @@
 -->
 
 <netbeans-deployment>
+    <!--
+        URL for the disconnected deployment manager
+    -->
     <disconnected-string>deployer:WebLogic:http://localhost:7001</disconnected-string>
 
+    <!--
+        Web module's context root xpath
+    -->
     <web-context-root>
         <xpath>/</xpath>
         <prop-name>contextRoot</prop-name>

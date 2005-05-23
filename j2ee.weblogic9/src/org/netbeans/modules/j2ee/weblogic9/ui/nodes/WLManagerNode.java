@@ -12,26 +12,31 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
-import org.openide.nodes.AbstractNode;
+import java.awt.*;
+
+import javax.enterprise.deploy.spi.*;
+
+import org.openide.util.*;
 import org.openide.nodes.*;
-import org.openide.util.Lookup;
-import java.awt.Image;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+
+import org.netbeans.modules.j2ee.weblogic9.*;
 
 /**
+ * Node that will appear in the Server Registry and represent a concrete server 
+ * instance.
  *
  * @author Kirill Sorokin
  */
 public class WLManagerNode extends AbstractNode implements Node.Cookie {
     
+    /**
+     * The associated deployment manager, i.e. the plugin's wrapper for
+     * the server implementation of the DEploymentManager interface
+     */
     private WLDeploymentManager deploymentManager;
     
+    // properties names
     private static final String DISPLAY_NAME = "displayName"; // NOI18N
     private static final String URL = "url"; // NOI18N
     private static final String USERNAME = "username"; // NOI18N
@@ -40,41 +45,81 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     private static final String DOMAIN_ROOT = "domainRoot"; // NOI18N
     private static final String DEBUGGER_PORT = "debuggerPort"; // NOI18N
     
+    /**
+     * Path to the node's icon that should reside in the class path
+     */
     private static final String ICON = "org/netbeans/modules/j2ee/weblogic9/resources/16x16.gif"; // NOI18N
     
+    /**
+     * Creates a new instance of the WSManagerNode.
+     * 
+     * @param children the node's children
+     * @param lookup a lookup object that contains the objects required for 
+     *      node's customization, such as the deployment manager
+     */
     public WLManagerNode(Children children, Lookup lookup) {
         super(children);
         
+        // get the deployment manager from the lookup and save it
         this.deploymentManager = (WLDeploymentManager) lookup.lookup(DeploymentManager.class);
                 
+        // add the node itself to its cookie list
         getCookieSet().add(this);
     }
     
+    /**
+     * Returns the node's tooltip
+     * 
+     * @return the node's tooltip
+     */
     public String getDisplayName() {
         return deploymentManager.getInstanceProperties().getProperty(InstanceProperties.URL_ATTR);
     }
     
+    /**
+     * Returns the node's icon when the node is in closed state
+     * 
+     * @return the node's icon
+     */
     public Image getIcon(int type) {
         return Utilities.loadImage(ICON);
     }
     
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("j2eeplugins_property_sheet_server_node_weblogic"); //NOI18N
-    }
-    
+    /**
+     * Returns the node's icon when the node is in open state
+     * 
+     * @return the node's icon
+     */
     public Image getOpenedIcon(int type) {
         return Utilities.loadImage(ICON);
     }
     
+    /**
+     * Returns the node's associated help article pointer
+     * 
+     * @return the node's help article
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("j2eeplugins_property_sheet_server_node_weblogic"); //NOI18N
+    }
+    
+    /**
+     * Creates and returns the node's properties sheet
+     * 
+     * @return the node's properties sheet
+     */
     protected Sheet createSheet() {
+        // create a new sheet
         Sheet sheet = super.createSheet();
         
+        // get the sheet's properties' set object
         Sheet.Set properties = sheet.get(Sheet.PROPERTIES);       
         if (properties == null) {
 	    properties = Sheet.createPropertiesSet();
             sheet.put(properties);
 	}
         
+        // declare the new property object and start adding the properties
         Node.Property property;
         
         // DISPLAY NAME
@@ -189,10 +234,18 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
         return sheet;
     }
     
+    /**
+     * A fake implementation of the Object's hashCode() method, in order to 
+     * avoid FindBugsTool's warnings
+     */
     public int hashCode() {
         return super.hashCode();
     }
     
+    /**
+     * A fake implementation of the Object's equals() method, in order to 
+     * avoid FindBugsTool's warnings
+     */
     public boolean equals(Object obj) {
         return super.equals(obj);
     }

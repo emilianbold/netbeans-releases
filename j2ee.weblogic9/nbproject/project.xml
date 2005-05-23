@@ -17,7 +17,7 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
             <code-name-base>org.netbeans.modules.j2ee.weblogic9</code-name-base>
-	    <path>serverplugins/weblogic9</path>
+            <path>serverplugins/weblogic9</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>

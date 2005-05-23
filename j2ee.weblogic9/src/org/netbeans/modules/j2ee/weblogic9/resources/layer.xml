@@ -17,38 +17,77 @@
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
             <folder name="WebLogic9">
+                <!--
+                    The additional deployment information supplied to NetBeans,
+                    Currently we define only two things: the web module's 
+                    context root xpath and the URL for the disconnected 
+                    deployment manager
+                -->
                 <file name="Descriptor" url="nbdep.xml"/>
+                
+                <!-- 
+                    An instance of the class implementing the DeploymentFactory 
+                    interface, it will be used as the main entry point for the
+                    plugin
+                -->
                 <file name="Factory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory.create"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
+                
+                <!--
+                    An instance of the factory for creating the nodes that will 
+                    appear in the Server Registry, namely the Manager (Instance)
+                    node and the Target node
+                -->
                 <file name="RegistryNodeFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.ui.nodes.WLRegistryNodeFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
                 </file>
+                
                 <!--
                 <file name="ConfigurationSupport.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.genericserver.GSConfigurationSupport"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
                 </file>
                 -->
+                
+                <!--
+                    An instance of the class implementing the 
+                    J2eeDeploymentFactory interface, it will be used to create 
+                    objects that describe the environment that exists on a 
+                    particular instance of the server
+                -->
                 <file name="J2eePlatformFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory"/>
                 </file>
+                
+                <!--
+                    A factory that creates objects that provide optional 
+                    functionality for the plugin, i.e. starting/stopping the
+                    server, getting a custom wizard for instance registration, 
+                    etc.
+                -->
                 <file name="OptionalFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalDeploymentManagerFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalDeploymentManagerFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
                 </file>
+                
                 <!--
                 <file name="AppServerPlanSplitter.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentPlanSplitter"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentPlanSplitter"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
                 </file>
+                -->
+                
+                <!--
+                    Server-specific deployment configuration files' names, 
+                    grouped by module type
                 -->
                 <folder name="DeploymentFileNames">
                     <folder name="EAR">

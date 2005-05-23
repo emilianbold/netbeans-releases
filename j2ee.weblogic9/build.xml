@@ -14,30 +14,5 @@
 
 <project name="weblogic9" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra">
-        <locjar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}">
-            <branding name="jse"/>
-            <fileset dir="src">
-                <patternset>
-                    <include name="**/*"/>
-                </patternset>
-            </fileset>
-        </locjar>
-
-        <property name="locale.dir" value="${netbeans.dest.dir}/${cluster.dir}/modules/locale"/>
-    </target>
-    
-    <target name="jar-with-module-deps" if="module.dependencies">
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
-            <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
-                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
-                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
-            </manifest>
-            <fileset dir="${build.classes.dir}"/>
-        </jar>
-    </target>
 </project>
 
