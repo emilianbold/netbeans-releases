@@ -111,6 +111,7 @@ public class JarWithModuleAttributes extends Jar {
                         specVersBase += "." + implVersI;
                     } catch (NumberFormatException e) {
                         // OK, ignore it, not numeric.
+                        // XXX provide explanatory URLs for all these warnings...
                         getProject().log(manifestFile + ": warning: use of spec.version.base with non-integer OpenIDE-Module-Implementation-Version", Project.MSG_WARN);
                     }
                 }
