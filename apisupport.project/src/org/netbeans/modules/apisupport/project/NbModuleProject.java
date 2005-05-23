@@ -152,7 +152,7 @@ final class NbModuleProject implements Project {
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
             Element ecu = (Element) entry.getValue();
-            Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
+            Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
             String pkgrootS = Util.findText(pkgrootEl);
             FileObject pkgroot = (FileObject) entry.getKey();
             sourcesHelper.addTypedSourceRoot(pkgrootS, JavaProjectConstants.SOURCES_TYPE_JAVA, /* XXX should schema incl. display name? */pkgroot.getNameExt(), null, null);
@@ -205,9 +205,9 @@ final class NbModuleProject implements Project {
     
     public int getModuleType() {
         Element data = getHelper().getPrimaryConfigurationData(true);
-        if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED_NEW) != null) {
+        if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) {
             return TYPE_SUITE_COMPONENT;
-        } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED_NEW) != null) {
+        } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null) {
             return TYPE_STANDALONE;
         } else {
             return TYPE_NETBEANS_ORG;
@@ -374,6 +374,8 @@ final class NbModuleProject implements Project {
             String buildS = baseEval.getProperty("user.properties.file"); // NOI18N
             if (buildS != null) {
                 providers.add(PropertyUtils.propertiesFilePropertyProvider(PropertyUtils.resolveFile(dir, buildS)));
+            } else {
+                providers.add(PropertyUtils.globalPropertyProvider());
             }
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
             String platformS = baseEval.getProperty("nbplatform.active"); // NOI18N
@@ -396,7 +398,7 @@ final class NbModuleProject implements Project {
     private String computeModuleClasspath(PropertyEvaluator baseEval) {
         Element data = getHelper().getPrimaryConfigurationData(true);
         Element moduleDependencies = Util.findElement(data,
-            "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
+            "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
         Iterator it = deps.iterator();
         StringBuffer cp = new StringBuffer();
@@ -404,11 +406,11 @@ final class NbModuleProject implements Project {
         while (it.hasNext()) {
             Element dep = (Element)it.next();
             if (Util.findElement(dep, "compile-dependency", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED_NEW) == null) {
+                    NbModuleProjectType.NAMESPACE_SHARED) == null) {
                 continue;
             }
             Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                NbModuleProjectType.NAMESPACE_SHARED_NEW);
+                NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             ModuleList.Entry module = ml.getEntry(cnb);
             if (module == null) {
@@ -490,7 +492,7 @@ final class NbModuleProject implements Project {
     
     public String getCodeNameBase() {
         Element config = getHelper().getPrimaryConfigurationData(true);
-        Element cnb = Util.findElement(config, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
+        Element cnb = Util.findElement(config, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         if (cnb != null) {
             return Util.findText(cnb);
         } else {
@@ -574,7 +576,7 @@ final class NbModuleProject implements Project {
     
     private boolean supportsFeature(String name) {
         Element config = getHelper().getPrimaryConfigurationData(true);
-        return Util.findElement(config, name, NbModuleProjectType.NAMESPACE_SHARED_NEW) != null;
+        return Util.findElement(config, name, NbModuleProjectType.NAMESPACE_SHARED) != null;
     }
     
     /**
@@ -588,7 +590,7 @@ final class NbModuleProject implements Project {
             while (ecuEls.hasNext()) {
                 Element ecu = (Element) ecuEls.next();
                 if (ecu.getLocalName().equals("extra-compilation-unit")) { // NOI18N
-                    Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED_NEW); // NOI18N
+                    Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
                     String pkgrootS = Util.findText(pkgrootEl);
                     String pkgrootEval = evaluator().evaluate(pkgrootS);
                     FileObject pkgroot = getHelper().resolveFileObject(pkgrootEval);
@@ -656,21 +658,25 @@ final class NbModuleProject implements Project {
             assert source != null : "No SOURCE path";
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             assert compile != null : "No COMPILE path";
-            // write user.properties.file to $userdir/build.properties
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
-                    EditableProperties ep = getHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
-                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
-                    getHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    try {
-                        ProjectManager.getDefault().saveProject(NbModuleProject.this);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+            // write user.properties.file=$userdir/build.properties to platform-private.properties
+            if (getModuleType() == TYPE_STANDALONE) {
+                ProjectManager.mutex().writeAccess(new Mutex.Action() {
+                    public Object run() {
+                        String path = "nbproject/private/platform-private.properties"; // NOI18N
+                        EditableProperties ep = getHelper().getProperties(path);
+                        File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+                        ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
+                        getHelper().putProperties(path, ep);
+                        try {
+                            ProjectManager.getDefault().saveProject(NbModuleProject.this);
+                        } catch (IOException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
+                        return null;
                     }
-                    return null;
-                }
-            });
+                });
+            }
+            // XXX for suite component modules, this should be done to the suite project when it is opened...
             // refresh build.xml and build-impl.xml for external modules
             if (getModuleType() != TYPE_NETBEANS_ORG) {
                 try {

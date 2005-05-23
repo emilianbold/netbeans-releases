@@ -102,13 +102,13 @@ public class NbModuleProjectGenerator {
         prjDoc.getDocumentElement().appendChild(confEl);
         
         Element dataEl = confEl.getOwnerDocument().createElementNS(
-                NbModuleProjectType.NAMESPACE_SHARED_NEW, "data"); // NOI18N
+                NbModuleProjectType.NAMESPACE_SHARED, "data"); // NOI18N
         confEl.appendChild(dataEl);
         
         Document dataDoc = dataEl.getOwnerDocument();
         
         Element el = dataDoc.createElementNS(
-                NbModuleProjectType.NAMESPACE_SHARED_NEW, "code-name-base"); // NOI18N
+                NbModuleProjectType.NAMESPACE_SHARED, "code-name-base"); // NOI18N
         el.appendChild(dataDoc.createTextNode(cnb));
         dataEl.appendChild(el);
         

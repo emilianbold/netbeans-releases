@@ -56,7 +56,7 @@ public final class ProjectXMLManager {
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             Element dep = (Element)it.next();
             Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED_NEW);
+                    NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             ModuleList.Entry me = ml.getEntry(cnb);
             directDeps.add(me);
@@ -72,7 +72,7 @@ public final class ProjectXMLManager {
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element)it.next();
             Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED_NEW);
+                    NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             if (cnbToRemove.equals(cnb)) {
                 moduleDependencies.removeChild(dep);
@@ -92,7 +92,7 @@ public final class ProjectXMLManager {
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element)it.next();
             Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED_NEW);
+                    NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             if (toDelete.remove(cnb)) {
                 moduleDependencies.removeChild(dep);
@@ -141,11 +141,11 @@ public final class ProjectXMLManager {
     
     private Element findModuleDependencies(Element confData) {
         return Util.findElement(confData, "module-dependencies", // NOI18N
-                NbModuleProjectType.NAMESPACE_SHARED_NEW);
+                NbModuleProjectType.NAMESPACE_SHARED);
     }
     
     private Element createModuleElement(Document doc, String name) {
-        return doc.createElementNS(NbModuleProjectType.NAMESPACE_SHARED_NEW, name); // NOI18N
+        return doc.createElementNS(NbModuleProjectType.NAMESPACE_SHARED, name); // NOI18N
     }
     
     private Element createModuleElement(Document doc, String name, String innerText) {
