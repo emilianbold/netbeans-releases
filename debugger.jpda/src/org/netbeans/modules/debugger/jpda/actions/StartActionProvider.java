@@ -33,6 +33,7 @@ import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
+import org.openide.ErrorManager;
 
 
 /**
@@ -84,6 +85,7 @@ public class StartActionProvider extends ActionsProvider {
         final AbstractDICookie cookie = (AbstractDICookie) lookupProvider.
             lookupFirst (null, AbstractDICookie.class);
         
+        // TODO: WHY a new Thread? use RequestProcessor instead!
         Thread startingThread = new Thread (
             new Runnable () {
                 public void run () {
@@ -129,6 +131,8 @@ public class StartActionProvider extends ActionsProvider {
                                 "doAction ().thread end: exception " + ex
                             );
                         debuggerImpl.setException (ex);
+                        // Notify! Otherwise bugs in the code can not be located!!!
+                        ErrorManager.getDefault().notify(ex);
                         ((Session) lookupProvider.lookupFirst 
                             (null, Session.class)).kill ();
                     }
