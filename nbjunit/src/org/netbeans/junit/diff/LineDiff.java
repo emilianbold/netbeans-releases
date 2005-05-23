@@ -136,6 +136,7 @@ public class LineDiff implements Diff {
             tmp.add(testLine);
         }
         first.close();
+        match&=(firstFile.length() == secondFile.length());
         if (match) {
             return false;
         }
@@ -208,28 +209,38 @@ public class LineDiff implements Diff {
         //forward
         for (int i=0;i < passindicies.length-1;i++) {
             if (passindicies[i].size() < 1) continue;
-            IndexValue better=(IndexValue)(passindicies[i].get(0));
-            IndexValue nextbetter=null;
-            if (passindicies[i+1].size() > 0)
-                nextbetter=(IndexValue)(passindicies[i+1].get(0));
-            if (nextbetter != null && nextbetter.value > better.value) {
-                if ((nextbetter.index-nextbetter.passIndex) < (better.index-better.passIndex)) {
-                    passindicies[i].remove(better);
+            boolean once=false;
+            do {
+                once=false;
+                IndexValue better=(IndexValue)(passindicies[i].get(0));
+                IndexValue nextbetter=null;
+                if (passindicies[i+1].size() > 0)
+                    nextbetter=(IndexValue)(passindicies[i+1].get(0));
+                if (nextbetter != null && nextbetter.value > better.value) {
+                    if ((nextbetter.index-nextbetter.passIndex) < (better.index-better.passIndex)) {
+                        passindicies[i].remove(better);
+                        once=true;
+                    }
                 }
-            }
+            } while (once && passindicies[i].size() > 0);
         }
         //backward
         for (int i=passindicies.length-1;i >= 1;i--) {
             if (passindicies[i].size() < 1) continue;
-            IndexValue better=(IndexValue)(passindicies[i].get(0));
-            IndexValue prebetter=null;
-            if (passindicies[i-1].size() > 0)
-                prebetter=(IndexValue)(passindicies[i-1].get(0));
-            if (prebetter != null && prebetter.value > better.value) {
-                if ((prebetter.index-prebetter.passIndex) > (better.index-better.passIndex)) {
-                    passindicies[i].remove(better);
+            boolean once=false;
+            do {
+                once=false;
+                IndexValue better=(IndexValue)(passindicies[i].get(0));
+                IndexValue prebetter=null;
+                if (passindicies[i-1].size() > 0)
+                    prebetter=(IndexValue)(passindicies[i-1].get(0));
+                if (prebetter != null && prebetter.value > better.value) {
+                    if ((prebetter.index-prebetter.passIndex) > (better.index-better.passIndex)) {
+                        passindicies[i].remove(better);
+                        once=true;
+                    }
                 }
-            }
+            } while (once && passindicies[i].size() > 0);
         }
         //generate result list
         ArrayList result=new ArrayList();
@@ -263,10 +274,10 @@ public class LineDiff implements Diff {
                 ps.println(result.get(i));
             }
             ps.close();
-            return true;
+            //return true;
         }
         
-        return false;
+        return !match;
     }
     
     public String formatOutput(boolean positive, int lineIndex, String line) {
@@ -304,8 +315,8 @@ public class LineDiff implements Diff {
             File dir=new File("/tmp/diff");
             for (int i=1;i < 10;i++) {
                 File subdir=new File(dir, String.valueOf(i));
-                File golden=new File(subdir, "test.pass");
-                File test=new File(subdir, "test.ref");
+                File golden=new File(subdir, "old.txt");
+                File test=new File(subdir, "new.txt");
                 if (golden.exists() && test.exists()) {
                     System.out.println("make diff of "+i);
                     diff.diff(test, golden, new File(subdir, "test.diff"));
