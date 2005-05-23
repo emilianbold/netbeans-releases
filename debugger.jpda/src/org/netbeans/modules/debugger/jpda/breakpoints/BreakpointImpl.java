@@ -134,7 +134,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         r.enable ();
     }
 
-    private void removeAllEventRequests () {
+    synchronized private void removeAllEventRequests () {
         if (requests.size () == 0) return;
         if (getDebugger ().getVirtualMachine () == null) return; 
         int i, k = requests.size ();
