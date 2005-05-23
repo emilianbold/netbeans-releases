@@ -259,7 +259,7 @@ public class HintsUI implements MouseListener, KeyListener {
     }
 
     public void mouseClicked(java.awt.event.MouseEvent e) {
-        if (e.getSource() == hintListComponent || e.getSource() instanceof ListCompletionView && e.getClickCount() >= 2) {
+        if (e.getSource() == hintListComponent || e.getSource() instanceof ListCompletionView) {
             Hint h = (Hint) hintListComponent.getView().getSelectedValue();
             if (h != null) {
                 invokeHint (h);
