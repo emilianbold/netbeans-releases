@@ -781,8 +781,36 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             return PackageDisplayUtils.getToolTip(folder, path.replace('/', '.'));
         }
 
+        public java.awt.Image getIcon (int type) {
+            java.awt.Image img = getMyIcon (type);
+
+            try {
+                FileObject fo = dataFolder.getPrimaryFile();
+                Set set = Collections.singleton(fo);
+                img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, set);
+            } catch (FileStateInvalidException e) {
+                // no fs, do nothing
+            }
+
+            return img;
+        }
+
+        public java.awt.Image getOpenedIcon (int type) {
+            java.awt.Image img = getMyOpenedIcon(type);
+
+            try {
+                FileObject fo = dataFolder.getPrimaryFile();
+                Set set = Collections.singleton(fo);                
+                img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, set);
+            } catch (FileStateInvalidException e) {
+                // no fs, do nothing
+            }
+
+            return img;
+        }
         
-        public Image getIcon(int type) {
+        
+        private Image getMyIcon(int type) {
             FileObject folder = dataFolder.getPrimaryFile();
             String path = FileUtil.getRelativePath(root, folder);
             if (path == null) {
@@ -792,7 +820,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             return PackageDisplayUtils.getIcon(folder, path.replace('/', '.'), isLeaf() );
         }
         
-        public Image getOpenedIcon(int type) {
+        private Image getMyOpenedIcon(int type) {
             return getIcon(type);
         }
         
