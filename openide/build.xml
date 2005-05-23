@@ -11,7 +11,6 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="openide" default="netbeans" basedir=".">
   <import file="../nbbuild/default.xml"/>
 
@@ -102,7 +101,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="openide.jar" value="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar" />
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/core"/>
     <copy file="manifest.mf" tofile="build/manifest-subst.mf" filtering="on"/>
-    <!-- To find overlaps, use: zipinfo netbeans/lib/openide.jar|fgrep stor|cut -c21-29,54-|sort -k2|uniq|uniq -d -s9 -->
     <jar jarfile="${openide.jar}" manifest="build/manifest-subst.mf" compress="false" duplicate="fail" >
       <fileset dir="actions/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="awt/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
@@ -127,8 +125,6 @@ Microsystems, Inc. All Rights Reserved.
         <patternset refID="openide.files"/>
       </fileset>
     </delete>
-    <delete dir="javadoc"/>
-    <!-- ant dir="api/examples" target="clean"/ -->
   </target>
 
     <!-- support for testing under main trunk version of the ide -->
