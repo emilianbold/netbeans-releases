@@ -132,6 +132,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
     private boolean isReallyRunning(){
         ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
         URLClassLoader loader = ((JBDeploymentFactory)JBDeploymentFactory.create()).getJBClassLoader();
+                
         Thread.currentThread().setContextClassLoader(loader);
         java.util.Hashtable env = new java.util.Hashtable();
         
@@ -139,6 +140,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort( InstanceProperties.getInstanceProperties(dm.getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR)));
         env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
         env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
+        env.put("jnp.disableDiscovery", Boolean.TRUE); // NOI18N
         
         try{
             InitialContext ctx = new InitialContext(env);
