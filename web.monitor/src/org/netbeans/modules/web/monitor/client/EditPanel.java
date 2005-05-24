@@ -281,16 +281,9 @@ class EditPanel extends javax.swing.JPanel implements
 //		    NbBundle.getBundle(EditPanel.class).getString("MON_OK"),
 		};
 
-		Object[] args = {
-		    monitorData.getServerName(),
-		};
-		
-		MessageFormat msgFormat = new MessageFormat
-		    (NbBundle.getBundle(EditPanel.class).getString("MON_Exec_server_wrong")); 
-
 		NotifyDescriptor noServerDialog = 
 		    new NotifyDescriptor
-			(msgFormat.format(args),
+			(NbBundle.getMessage(EditPanel.class, "MON_Exec_server_wrong", monitorData.getServerName()),
 			 NbBundle.getBundle(EditPanel.class).getString("MON_Exec_server"),
 			 NotifyDescriptor.DEFAULT_OPTION,
 			 NotifyDescriptor.INFORMATION_MESSAGE,
@@ -311,12 +304,9 @@ class EditPanel extends javax.swing.JPanel implements
 		    monitorData.getServerPortAsString(), 
 		};
 
-		MessageFormat msgFormat = new MessageFormat
-		    (NbBundle.getBundle(EditPanel.class).getString("MON_Exec_server_start")); 
-
 		NotifyDescriptor noServerDialog = 
 		    new NotifyDescriptor
-			(msgFormat.format(args),
+			(NbBundle.getMessage(EditPanel.class, "MON_Exec_server_start", args),
 			 NbBundle.getBundle(EditPanel.class).getString("MON_Exec_server"),
 			 NotifyDescriptor.DEFAULT_OPTION,
 			 NotifyDescriptor.INFORMATION_MESSAGE,

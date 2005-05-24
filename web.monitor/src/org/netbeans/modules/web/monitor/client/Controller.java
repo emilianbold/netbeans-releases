@@ -478,14 +478,8 @@ class Controller  {
 		NbBundle.getBundle(Controller.class).getString("MON_OK"),
 	    };
 
-	    Object[] args = {
-		md.getServerName(),
-	    };
-	    
-	    MessageFormat msgFormat = new MessageFormat
-		(NbBundle.getBundle(Controller.class).getString("MON_Exec_server_no_host"));  
 	    NotifyDescriptor noServerDialog = 
-		new NotifyDescriptor(msgFormat.format(args),
+		new NotifyDescriptor(NbBundle.getMessage(Controller.class, "MON_Exec_server_no_host", md.getServerName()),
 				     NbBundle.getBundle(Controller.class).getString("MON_Exec_server"),
 				     NotifyDescriptor.DEFAULT_OPTION,
 				     NotifyDescriptor.INFORMATION_MESSAGE,
@@ -506,15 +500,8 @@ class Controller  {
 		NbBundle.getBundle(Controller.class).getString("MON_OK"),
 	    };
 
-	    Object[] args = {
-		md.getServerAndPort(),
-	    };
-
-	    MessageFormat msgFormat = new MessageFormat
-		(NbBundle.getBundle(Controller.class).getString("MON_Exec_server_start")); 
-
 	    NotifyDescriptor noServerDialog = 
-		new NotifyDescriptor(msgFormat.format(args), 
+		new NotifyDescriptor(NbBundle.getMessage(Controller.class, "MON_Exec_server_start", md.getServerAndPort()), 
 				     NbBundle.getBundle(Controller.class).getString("MON_Exec_server"),
 				     NotifyDescriptor.DEFAULT_OPTION,
 				     NotifyDescriptor.INFORMATION_MESSAGE,
