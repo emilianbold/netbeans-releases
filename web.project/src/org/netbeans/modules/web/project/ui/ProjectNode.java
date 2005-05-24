@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -82,7 +81,7 @@ class ProjectNode extends AbstractNode {
     public String getDisplayName () {        
         ProjectInformation info = getProjectInformation();        
         if (info != null) {
-            return MessageFormat.format(NbBundle.getMessage(ProjectNode.class,"TXT_ProjectArtifactFormat"),
+            return NbBundle.getMessage(ProjectNode.class,"TXT_ProjectArtifactFormat",
                     new Object[] {info.getDisplayName(), artifactLocation.toString()});
         }
         else {
