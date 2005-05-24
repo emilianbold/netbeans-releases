@@ -14,7 +14,6 @@
 package org.netbeans.modules.editor.options;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -55,16 +54,11 @@ public class AllOptionsFolder{
     public static final String FOLDER = "Editors"; // NOI18N
     public static final String OPTION_FILE_NAME = "Settings.settings"; // NOI18N
     
-    /** Global Multi Property Folders registration map */
-    private static Map globalMPFolder = new HashMap();
-    
     /** instance of this class */
     private static AllOptionsFolder settingsFolder;
     
     private static boolean baseInitialized = false;
     
-    private static Map subFolders = new Hashtable();
-    private static Map defaultKeyBindings;
     private static DataFolder folder;
     private static MIMEOptionFolder mimeFolder;
     
@@ -193,9 +187,7 @@ public class AllOptionsFolder{
                     public void run() {
                         NotifyDescriptor msg = new NotifyDescriptor.Message(
                         
-                        MessageFormat.format(
-                        NbBundle.getMessage( AllOptionsFolder.class, "ERR_NoContentTypeDefined"), //NOI18N
-                        new Object[] {kitClazz}),
+                        NbBundle.getMessage( AllOptionsFolder.class, "ERR_NoContentTypeDefined", kitClazz),
                         NotifyDescriptor.WARNING_MESSAGE
                         );
                         
@@ -293,7 +285,6 @@ public class AllOptionsFolder{
             while (i.hasNext()){
                 Object obj = i.next();
                 if(obj instanceof Class){
-                    Class clz = (Class)obj;
                     if (!updatedInstalledOptions.contains(obj)){
                         installedOptions.remove(obj);
                         return (Class)obj;

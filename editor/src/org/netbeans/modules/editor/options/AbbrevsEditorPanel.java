@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,7 +27,6 @@ import org.openide.*;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.NotifyDescriptor;
-import java.text.MessageFormat;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -269,9 +268,7 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
                     
                     String[] existingPair = model.getPair(existingKeyPosition);
                     NotifyDescriptor NDConfirm = new NotifyDescriptor.Confirmation(
-                    MessageFormat.format(
-                    getBundleString("AEP_Overwrite"), //NOI18N
-                    new Object[] {retVal[0], existingPair[1], retVal[1]}),
+                    NbBundle.getMessage(AbbrevsEditorPanel.class, "AEP_Overwrite", new Object[] {retVal[0], existingPair[1], retVal[1]}),
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE
                     );

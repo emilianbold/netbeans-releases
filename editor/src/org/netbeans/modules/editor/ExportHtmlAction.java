@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.editor;
@@ -35,9 +35,7 @@ import java.io.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.net.URL;
 import java.net.MalformedURLException;
-import java.text.MessageFormat;
 
 public class ExportHtmlAction extends CookieAction {
 
@@ -99,9 +97,7 @@ public class ExportHtmlAction extends CookieAction {
                 overwrite = true;
                 if ( dd.getValue() == DialogDescriptor.OK_OPTION && new File(p.getFileName()).exists()){
                     NotifyDescriptor NDConfirm = new NotifyDescriptor.Confirmation(
-                    MessageFormat.format(
-                    NbBundle.getBundle( org.netbeans.modules.editor.ExportHtmlAction.class ).getString("MSG_FileExists"),
-                    new Object[] {p.getFileName()}),
+                    NbBundle.getMessage( org.netbeans.modules.editor.ExportHtmlAction.class, "MSG_FileExists", p.getFileName()),
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE
                     );
@@ -148,7 +144,7 @@ public class ExportHtmlAction extends CookieAction {
                                         ErrorManager.getDefault().notify (mue);
                                 } catch (IOException ioe) {
                                     NotifyDescriptor nd = new NotifyDescriptor.Message (
-                                            MessageFormat.format (NbBundle.getMessage(ExportHtmlAction.class,"ERR_IOError"),
+                                            NbBundle.getMessage(ExportHtmlAction.class,"ERR_IOError",
                                                     new Object[]{((DataObject)bdoc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile().getNameExt()
                                             +HTML_EXT,file}),    //NOI18N
                                             NotifyDescriptor.ERROR_MESSAGE);

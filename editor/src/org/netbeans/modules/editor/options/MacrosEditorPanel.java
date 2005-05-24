@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,7 +19,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Window;
 import java.awt.event.*;
-import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -270,9 +269,7 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
                     
                     String[] existingPair = model.getPair(existingKeyPosition);
                     NotifyDescriptor NDConfirm = new NotifyDescriptor.Confirmation(
-                    MessageFormat.format(
-                    getBundleString("MEP_Overwrite"), //NOI18N
-                    new Object[] {retVal[0]}),
+                    NbBundle.getMessage(MacrosEditorPanel.class, "MEP_Overwrite", retVal[0] ),
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE
                     );

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,13 +18,11 @@ import java.awt.event.*;
 import java.awt.Dialog;
 import java.awt.Component;
 import javax.swing.*;
-import java.text.MessageFormat;
 import java.util.*;
 
 import org.openide.*;
 import org.openide.util.NbBundle;
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -506,7 +504,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
                     KeyStroke[] s1 = ((KeySequence)iter.next()).getKeyStrokes();
                     if( isOverlapingSequence( s1, seq ) ) {
                         Object[] values = { Utilities.keySequenceToString( s1 ), acts[i] };
-                        return MessageFormat.format( getBundleString("KBEP_FMT_Collision" ), values );
+                        return NbBundle.getMessage(KeyBindingsEditorPanel.class, "KBEP_FMT_Collision" , values );
                     }
                 }
             }

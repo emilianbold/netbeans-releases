@@ -17,7 +17,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -442,9 +441,7 @@ public class NbEditorKit extends ExtKit {
             
             protected int showConfirmDialog(String macroName){
                 NotifyDescriptor confirm = new NotifyDescriptor.Confirmation(
-                MessageFormat.format(
-                NbBundle.getMessage(MacrosEditorPanel.class,"MEP_Overwrite"), //NOI18N
-                new Object[] {macroName}),
+                NbBundle.getMessage(MacrosEditorPanel.class,"MEP_Overwrite", macroName),
                 NotifyDescriptor.YES_NO_CANCEL_OPTION,
                 NotifyDescriptor.WARNING_MESSAGE
                 );
