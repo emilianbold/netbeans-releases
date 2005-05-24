@@ -36,10 +36,9 @@ public class ResultViewOpenAction extends AbstractAction {
         String name = NbBundle.getMessage(
                 ResultViewOpenAction.class,
                 "TEXT_ACTION_SEARCH_RESULTS");                          //NOI18N
-        Icon icon = new ImageIcon(Utilities.loadImage(
-                "org/netbeans/modules/search/res/find.gif", true));     //NOI18N
         putValue(NAME, name);
-        putValue(SMALL_ICON, icon);
+        putValue("iconBase",                                            //NOI18N
+                 "org/netbeans/modules/search/res/find.gif");           //NOI18N
     }
     
     /**
