@@ -10,11 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * CreateTestAction.java
- *
- * Created on January 19, 2001, 1:00 PM
- */
 
 package org.netbeans.modules.junit;
 
@@ -27,16 +22,13 @@ import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.cookies.SaveCookie;
-import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -44,7 +36,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.*;
@@ -109,8 +100,6 @@ public class CreateTestAction extends TestAction {
          *         selection is ok
          */
          private static String checkNodesValidity(Node[] nodes) {
-             String problem = null;
-             
              FileObject [] files = getFiles(nodes);
              
              Project project = getProject(files);
