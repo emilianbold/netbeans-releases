@@ -24,10 +24,10 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:comment> If you delete this file and reopen the project it will be recreated. </xsl:comment>
         <xsl:variable name="codenamebase" select="/project:project/project:configuration/nbmproject:data/nbmproject:code-name-base"/>
         <project name="{$codenamebase}">
-            <xsl:attribute name="default">default</xsl:attribute>
+            <xsl:attribute name="default">netbeans</xsl:attribute>
             <xsl:attribute name="basedir">.</xsl:attribute>
             <description>Builds, tests, and runs the project <xsl:value-of select="$codenamebase"/>.</description>
             <import file="nbproject/build-impl.xml"/>
         </project>
     </xsl:template>
-</xsl:stylesheet> 
+</xsl:stylesheet>
