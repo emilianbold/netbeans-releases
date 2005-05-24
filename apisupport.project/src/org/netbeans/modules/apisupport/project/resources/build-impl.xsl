@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
                     <property file="nbproject/platform.properties"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:message terminate="true">
+                    <xsl:message terminate="yes">
                         Cannot generate build-impl.xml for a netbeans.org module!
                     </xsl:message>
                 </xsl:otherwise>
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
                     <fail unless="nbplatform.active">You must set platform.properties to name your active NB platform</fail>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:message terminate="true">
+                    <xsl:message terminate="yes">
                         Cannot generate build-impl.xml for a netbeans.org module!
                     </xsl:message>
                 </xsl:otherwise>
