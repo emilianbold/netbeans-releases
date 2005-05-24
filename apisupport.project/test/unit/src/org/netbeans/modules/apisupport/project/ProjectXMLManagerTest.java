@@ -68,99 +68,97 @@ public class ProjectXMLManagerTest extends TestBase {
         }
         assertTrue("following dependencies were found: " + assumed, assumed.isEmpty());
     }
-
-    // XXX why the ProjectManager.getDefault().saveProject(actionProject); works
-    // only under 1.5.x and not under 1.4.x JDKs?
-//    public void testRemoveDependency() throws Exception {
-//        // apply and save project
-//        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-//            public Object run() throws IOException {
-//                pxm.removeDependency("org.openide");
-//                return Boolean.TRUE;
-//            }
-//        });
-//        assertTrue("removing dependency", result.booleanValue());
-//        ProjectManager.getDefault().saveProject(actionProject);
-//        
-//        final Set newDeps = pxm.getDirectDependencies();
-//        assertEquals("number of dependencies", new Integer(1), new Integer(newDeps.size()));
-//        Set assumed = new HashSet();
-//        assumed.add("org.netbeans.examples.modules.lib");
-//        for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
-//            ModuleDependency md = (ModuleDependency) it.next();
-//            assertTrue("unknown dependency", assumed.remove(md.getModuleEntry().getCodeNameBase()));
-//        }
-//        assertTrue("following dependencies were found: " + assumed, assumed.isEmpty());
-//    }
     
-//    /** TODO */
-//    public void testRemoveDependencies() {
-//    }
+    public void testRemoveDependency() throws Exception {
+        // apply and save project
+        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws IOException {
+                pxm.removeDependency("org.openide");
+                return Boolean.TRUE;
+            }
+        });
+        assertTrue("removing dependency", result.booleanValue());
+        ProjectManager.getDefault().saveProject(actionProject);
+        
+        final Set newDeps = pxm.getDirectDependencies();
+        assertEquals("number of dependencies", new Integer(1), new Integer(newDeps.size()));
+        Set assumed = new HashSet();
+        assumed.add("org.netbeans.examples.modules.lib");
+        for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
+            ModuleDependency md = (ModuleDependency) it.next();
+            assertTrue("unknown dependency", assumed.remove(md.getModuleEntry().getCodeNameBase()));
+        }
+        assertTrue("following dependencies were found: " + assumed, assumed.isEmpty());
+    }
     
-//    public void testEditDependency() throws Exception {
-//        final Set deps = pxm.getDirectDependencies();
-//        
-//        ModuleDependency origDep;
-//        // apply and save project
-//        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-//            public Object run() throws IOException {
-//                for (Iterator it = deps.iterator(); it.hasNext(); ) {
-//                    ModuleDependency origDep = (ModuleDependency) it.next();
-//                    if ("org.openide".equals(origDep.getModuleEntry().getCodeNameBase())) {
-//                        ModuleDependency newDep = new ModuleDependency(
-//                                origDep.getModuleEntry(), "2", origDep.getSpecificationVersion());
-//                        pxm.editDependency(origDep, newDep);
-//                    }
-//                }
-//                return Boolean.TRUE;
-//            }
-//        });
-//        assertTrue("editing dependencies", result.booleanValue());
-//        ProjectManager.getDefault().saveProject(actionProject);
-//        // XXX this refresh shouldn't be needed
-//        this.pxm = new ProjectXMLManager(actionProject.getHelper(), actionProject);
-//
-//        final Set newDeps = pxm.getDirectDependencies();
-//        for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
-//            ModuleDependency md = (ModuleDependency) it.next();
-//            if ("org.openide".equals(md.getModuleEntry().getCodeNameBase())) {
-//                assertEquals("edited release version", "2", md.getReleaseVersion());
-//                assertEquals("unedited specification version", "5.9", md.getSpecificationVersion());
-//                break;
-//            }
-//        }
-//    }
-//    
-//    public void testAddDependencies() throws Exception {
-//        final Set newDeps = new HashSet();
-//        ModuleList.Entry me =
-//                actionProject.getModuleList().getEntry("org.netbeans.modules.java.project");
-//        newDeps.add(new ModuleDependency(me));
-//        
-//        // apply and save project
-//        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-//            public Object run() throws IOException {
-//                pxm.addDependencies(newDeps);
-//                return Boolean.TRUE;
-//            }
-//        });
-//        assertTrue("adding dependencies", result.booleanValue());
-//        ProjectManager.getDefault().saveProject(actionProject);
-//        
-//        Set deps = pxm.getDirectDependencies();
-//        assertEquals("number of dependencies", new Integer(deps.size()), new Integer(3));
-//        
-//        Set assumed = new HashSet();
-//        assumed.add("org.netbeans.examples.modules.lib");
-//        assumed.add("org.openide");
-//        assumed.add("org.netbeans.modules.java.project");
-//        for (Iterator it = deps.iterator(); it.hasNext(); ) {
-//            ModuleDependency dep = (ModuleDependency) it.next();
-//            assertTrue("unknown dependency",
-//                    assumed.remove(dep.getModuleEntry().getCodeNameBase()));
-//        }
-//        assertTrue("following dependencies were found: " + assumed, assumed.isEmpty());
-//    }
+    /** TODO */
+    public void testRemoveDependencies() {
+    }
+    
+    public void testEditDependency() throws Exception {
+        final Set deps = pxm.getDirectDependencies();
+        
+        ModuleDependency origDep;
+        // apply and save project
+        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws IOException {
+                for (Iterator it = deps.iterator(); it.hasNext(); ) {
+                    ModuleDependency origDep = (ModuleDependency) it.next();
+                    if ("org.openide".equals(origDep.getModuleEntry().getCodeNameBase())) {
+                        ModuleDependency newDep = new ModuleDependency(
+                                origDep.getModuleEntry(), "2", origDep.getSpecificationVersion());
+                        pxm.editDependency(origDep, newDep);
+                    }
+                }
+                return Boolean.TRUE;
+            }
+        });
+        assertTrue("editing dependencies", result.booleanValue());
+        ProjectManager.getDefault().saveProject(actionProject);
+        // XXX this refresh shouldn't be needed
+        this.pxm = new ProjectXMLManager(actionProject.getHelper(), actionProject);
+        
+        final Set newDeps = pxm.getDirectDependencies();
+        for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
+            ModuleDependency md = (ModuleDependency) it.next();
+            if ("org.openide".equals(md.getModuleEntry().getCodeNameBase())) {
+                assertEquals("edited release version", "2", md.getReleaseVersion());
+                assertEquals("unedited specification version", "5.9", md.getSpecificationVersion());
+                break;
+            }
+        }
+    }
+    
+    public void testAddDependencies() throws Exception {
+        final Set newDeps = new HashSet();
+        ModuleList.Entry me =
+                actionProject.getModuleList().getEntry("org.netbeans.modules.java.project");
+        newDeps.add(new ModuleDependency(me));
+        
+        // apply and save project
+        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws IOException {
+                pxm.addDependencies(newDeps);
+                return Boolean.TRUE;
+            }
+        });
+        assertTrue("adding dependencies", result.booleanValue());
+        ProjectManager.getDefault().saveProject(actionProject);
+        
+        Set deps = pxm.getDirectDependencies();
+        assertEquals("number of dependencies", new Integer(deps.size()), new Integer(3));
+        
+        Set assumed = new HashSet();
+        assumed.add("org.netbeans.examples.modules.lib");
+        assumed.add("org.openide");
+        assumed.add("org.netbeans.modules.java.project");
+        for (Iterator it = deps.iterator(); it.hasNext(); ) {
+            ModuleDependency dep = (ModuleDependency) it.next();
+            assertTrue("unknown dependency",
+                    assumed.remove(dep.getModuleEntry().getCodeNameBase()));
+        }
+        assertTrue("following dependencies were found: " + assumed, assumed.isEmpty());
+    }
     
     
     private FileObject prepareSuiteRepo(FileObject what) throws Exception {
