@@ -13,7 +13,11 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.text.BreakIterator;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import javax.swing.JPanel;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -62,11 +66,25 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
     private void storeToProperties() {
         bundleProps.setProperty("OpenIDE-Module-Name", nameValue.getText().trim()); // NOI18N
         bundleProps.setProperty("OpenIDE-Module-Short-Description", shortDescValue.getText().trim()); // NOI18N
-        bundleProps.setProperty("OpenIDE-Module-Long-Description", longDescValue.getText().trim()); // NOI18N
+        bundleProps.setProperty("OpenIDE-Module-Long-Description", splitBySentence(longDescValue.getText().trim())); // NOI18N
         String selectedCat = (String) categoryValue.getSelectedItem();
         if (selectedCat != null) {
             bundleProps.setProperty("OpenIDE-Module-Display-Category", selectedCat); // NOI18N
         }
+    }
+    
+    private static String[] splitBySentence(String text) {
+        List/*<String>*/ sentences = new ArrayList();
+        // Use Locale.US since the customizer is setting the default (US) locale text only:
+        BreakIterator it = BreakIterator.getSentenceInstance(Locale.US);
+        it.setText(text);
+        int start = it.first();
+        int end;
+        while ((end = it.next()) != BreakIterator.DONE) {
+            sentences.add(text.substring(start, end));
+            start = end;
+        }
+        return (String[]) sentences.toArray(new String[sentences.size()]);
     }
     
     /** This method is called from within the constructor to
@@ -80,10 +98,10 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
 
         name = new javax.swing.JLabel();
         nameValue = new javax.swing.JTextField();
-        categoryValue = new javax.swing.JComboBox();
-        shortDescValue = new javax.swing.JTextField();
         category = new javax.swing.JLabel();
+        categoryValue = new javax.swing.JComboBox();
         shortDesc = new javax.swing.JLabel();
+        shortDescValue = new javax.swing.JTextField();
         longDesc = new javax.swing.JLabel();
         hackPanel = new javax.swing.JPanel();
         longDescValueSP = new javax.swing.JScrollPane();
@@ -92,12 +110,13 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         setLayout(new java.awt.GridBagLayout());
 
         name.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_DisplayName_Mnem").charAt(0));
+        name.setLabelFor(nameValue);
         name.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_DisplayName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(name, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -105,52 +124,61 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(nameValue, gridBagConstraints);
+
+        category.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_DisplayCategory_Mnem").charAt(0));
+        category.setLabelFor(categoryValue);
+        category.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_DisplayCategory"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
+        add(category, gridBagConstraints);
 
         categoryValue.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(categoryValue, gridBagConstraints);
+
+        shortDesc.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ShortDescription_Mnem").charAt(0));
+        shortDesc.setLabelFor(shortDescValue);
+        shortDesc.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ShortDescription"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
+        add(shortDesc, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(shortDescValue, gridBagConstraints);
 
-        category.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_DisplayCategory_Mnem").charAt(0));
-        category.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_DisplayCategory"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(category, gridBagConstraints);
-
-        shortDesc.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ShortDescription_Mnem").charAt(0));
-        shortDesc.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ShortDescription"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(shortDesc, gridBagConstraints);
-
         longDesc.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_LongDescription_Mnem").charAt(0));
+        longDesc.setLabelFor(longDescValue);
         longDesc.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_LongDescription"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(longDesc, gridBagConstraints);
 
         hackPanel.setLayout(new java.awt.BorderLayout());
 
+        longDescValue.setLineWrap(true);
         longDescValue.setRows(4);
+        longDescValue.setWrapStyleWord(true);
         longDescValueSP.setViewportView(longDescValue);
 
         hackPanel.add(longDescValueSP, java.awt.BorderLayout.NORTH);
