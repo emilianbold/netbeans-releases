@@ -89,7 +89,7 @@ final class NbModuleProject implements Project {
         genFilesHelper = new GeneratedFilesHelper(helper);
         Util.err.log("Loading project in " + getProjectDirectory());
         if (getCodeNameBase() == null) {
-            throw new IOException("Misconfigured project in " + getProjectDirectory() + " has no defined <code-name-base>"); // NOI18N
+            throw new IOException("Misconfigured project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " has no defined <code-name-base>"); // NOI18N
         }
         moduleList = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
         // XXX should instead reset ModuleList and try again:
@@ -187,7 +187,6 @@ final class NbModuleProject implements Project {
             new AntArtifactProviderImpl(this, helper, evaluator()),
             new CustomizerProviderImpl(this, getHelper(), evaluator(), 
                     locBundlePropsPath),
-            // XXX need, in rough descending order of importance:
         });
     }
     
@@ -676,7 +675,6 @@ final class NbModuleProject implements Project {
                     }
                 });
             }
-            // XXX for suite component modules, this should be done to the suite project when it is opened...
             // refresh build.xml and build-impl.xml for external modules
             if (getModuleType() != TYPE_NETBEANS_ORG) {
                 try {

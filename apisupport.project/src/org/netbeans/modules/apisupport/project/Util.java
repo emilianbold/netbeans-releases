@@ -31,7 +31,7 @@ import org.w3c.dom.Text;
  * Utility methods for the module.
  * @author Jesse Glick
  */
-class Util {
+public class Util {
     
     private Util() {}
     
