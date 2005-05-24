@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="Configuration of DDLoaders Unit Test">
+
+    <testbag testattribs="stable" executor="ide" name="DDLoaders tests">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/j2ee/ddloaders/web/test/DDEditorTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+ 
+    <testbag testattribs="dev" executor="ide" name="DDLoaders Unit Test - under development">
+        <testset dir="unit/src">
+            <patternset>
+            </patternset>
+        </testset>
+    </testbag>    
+
+    <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
+                        Similarly as with code executor, you can create your own to 
+                        prepare some neccessary stuff before running tests. -->
+    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>    
+
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+</mconfig>
+
