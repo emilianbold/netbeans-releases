@@ -46,18 +46,16 @@ public class Installer extends org.openide.modules.ModuleInstall {
             File f ;
 	    InstalledFileLocator fff= InstalledFileLocator.getDefault();
 
-         /*   f = fff.locate("modules/ext/appserv-jsr88.jar", null, true);
+            f = fff.locate("modules/ext/appsrvbridge.jar", null, true);
             if (f!=null){
 		loader.addURL(f);
                 loadLocaleSpecificJars(f, loader);
             }
 	    else
-		System.out.println("cannot locate file modules/ext/appserv-jsr88.jar");
-*/
-            
-            
-            f = new File("C:\\acvs\\nb_all\\serverplugins\\sun\\appsrvbridge\\dist\\appsrvbridge.jar");
-            loader.addURL(f);
+		System.out.println("cannot locate file modules/ext/appsrvbridge.jar");
+
+                      
+
             f = new File(installRoot+"/lib/appserv-admin.jar");
             loader.addURL(f);
             f = new File(installRoot+"/lib/appserv-ext.jar");

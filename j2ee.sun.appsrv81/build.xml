@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     <target depends="init" name="compile">
 	<antcall target="projectized-common.compile"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy file="../appsrvbridge/dist/appsrvbridge.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy file="../../external/jmxri.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy file="../../external/org-netbeans-modules-j2ee-sun-ide.jar" todir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
         <!--copy file="external/org-netbeans-modules-j2ee-sun-dd.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/-->
