@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="release" depends="init">
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}"/>
         <copy file="harness-build.xml" tofile="${netbeans.dest.dir}/${cluster.dir}/build.xml"/>
+        <copy file="suite-build.xml" tofile="${netbeans.dest.dir}/${cluster.dir}/suite.xml"/>
         <copy file="${nb_all}/nbbuild/templates/common.xml" tofile="${netbeans.dest.dir}/${cluster.dir}/common.xml"/>
         <copy file="README" tofile="${netbeans.dest.dir}/${cluster.dir}/README"/>
     </target>
