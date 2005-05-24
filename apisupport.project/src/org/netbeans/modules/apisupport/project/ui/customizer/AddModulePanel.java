@@ -15,7 +15,6 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.apisupport.project.ModuleList;
 
 /**
  * Represents panel for adding new dependency for a module. Shown after
@@ -115,7 +114,6 @@ final class AddModulePanel extends JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         add(hackPanel, gridBagConstraints);
 
     }

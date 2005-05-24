@@ -28,11 +28,21 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * TODO
+ * Convenient class for managing project's <em>project.xml</em> file.
  *
  * @author mkrauskopf
  */
 public final class ProjectXMLManager {
+    
+    // elements constants
+    private static final String CODE_NAME_BASE = "code-name-base"; // NOI18N
+    private static final String MODULE_DEPENDENCIES = "module-dependencies"; // NOI18N
+    private static final String DEPENDENCY = "dependency"; // NOI18N
+    private static final String RUN_DEPENDENCY = "run-dependency"; // NOI18N
+    private static final String COMPILE_DEPENDENCY = "compile-dependency"; // NOI18N
+    private static final String RELEASE_VERSION = "release-version"; // NOI18N
+    private static final String SPECIFICATION_VERSION = "specification-version"; // NOI18N
+    private static final String BUILD_PREREQUISITE = "build-prerequisite"; // NOI18N
     
     private AntProjectHelper helper;
     private Project project;
@@ -45,6 +55,7 @@ public final class ProjectXMLManager {
         this.project = project;
     }
     
+    /** Returns direct module dependencies. */
     public Set/*<ModuleDependency>*/ getDirectDependencies() throws IOException {
         if (directDeps != null) {
             return directDeps;
@@ -57,26 +68,26 @@ public final class ProjectXMLManager {
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             Element depEl = (Element)it.next();
 
-            Element cnbEl = Util.findElement(depEl, "code-name-base", // NOI18N
+            Element cnbEl = Util.findElement(depEl, ProjectXMLManager.CODE_NAME_BASE,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             ModuleList.Entry me = ml.getEntry(cnb);
 
-            Element runDepEl = Util.findElement(depEl, "run-dependency", // NOI18N
+            Element runDepEl = Util.findElement(depEl, ProjectXMLManager.RUN_DEPENDENCY,
                     NbModuleProjectType.NAMESPACE_SHARED);
             if (runDepEl == null) {
                 directDeps.add(new ModuleDependency(me));
                 continue;
             }
             
-            Element relVerEl = Util.findElement(runDepEl, "release-version", // NOI18N
+            Element relVerEl = Util.findElement(runDepEl, ProjectXMLManager.RELEASE_VERSION,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String relVer = null;
             if (relVerEl != null) {
                 relVer = Util.findText(relVerEl);
             }
             
-            Element specVerEl = Util.findElement(runDepEl, "specification-version", // NOI18N
+            Element specVerEl = Util.findElement(runDepEl, ProjectXMLManager.SPECIFICATION_VERSION,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String specVer = null;
             if (specVerEl != null) {
@@ -95,7 +106,7 @@ public final class ProjectXMLManager {
         List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element)it.next();
-            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
+            Element cnbEl = Util.findElement(dep, ProjectXMLManager.CODE_NAME_BASE,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             if (cnbToRemove.equals(cnb)) {
@@ -115,7 +126,7 @@ public final class ProjectXMLManager {
         List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element)it.next();
-            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
+            Element cnbEl = Util.findElement(dep, ProjectXMLManager.CODE_NAME_BASE,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             if (toDelete.remove(cnb)) {
@@ -138,7 +149,7 @@ public final class ProjectXMLManager {
         List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element) it.next();
-            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
+            Element cnbEl = Util.findElement(dep, ProjectXMLManager.CODE_NAME_BASE,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             if (cnb.equals(origDep.getModuleEntry().getCodeNameBase())) {
@@ -171,36 +182,36 @@ public final class ProjectXMLManager {
             Element moduleDependencies, ModuleDependency md) {
         
         Document doc = moduleDependencies.getOwnerDocument();
-        Element modDepEl = createModuleElement(doc, "dependency"); // NOI18N
+        Element modDepEl = createModuleElement(doc, ProjectXMLManager.DEPENDENCY);
         moduleDependencies.appendChild(modDepEl);
         
-        modDepEl.appendChild(createModuleElement(doc, "code-name-base",
+        modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.CODE_NAME_BASE,
                 md.getModuleEntry().getCodeNameBase()));
-        modDepEl.appendChild(createModuleElement(doc, "build-prerequisite")); // NOI18N;
-        modDepEl.appendChild(createModuleElement(doc, "compile-dependency")); // NOI18N
+        modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.BUILD_PREREQUISITE));
+        modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.COMPILE_DEPENDENCY));
         
-        Element runDepEl = createModuleElement(doc, "run-dependency");
-        modDepEl.appendChild(runDepEl); // NOI18N
+        Element runDepEl = createModuleElement(doc, ProjectXMLManager.RUN_DEPENDENCY);
+        modDepEl.appendChild(runDepEl);
         
         String rv = md.getReleaseVersion();
         if (rv != null) {
             runDepEl.appendChild(createModuleElement(
-                    doc, "release-version", rv)); // NOI18N
+                    doc, ProjectXMLManager.RELEASE_VERSION, rv));
         }
         String sv = md.getSpecificationVersion();
         if (sv != null) {
             runDepEl.appendChild(createModuleElement(
-                    doc, "specification-version", sv)); // NOI18N
+                    doc, ProjectXMLManager.SPECIFICATION_VERSION, sv));
         }
     }
     
     private Element findModuleDependencies(Element confData) {
-        return Util.findElement(confData, "module-dependencies", // NOI18N
+        return Util.findElement(confData, ProjectXMLManager.MODULE_DEPENDENCIES,
                 NbModuleProjectType.NAMESPACE_SHARED);
     }
     
     private Element createModuleElement(Document doc, String name) {
-        return doc.createElementNS(NbModuleProjectType.NAMESPACE_SHARED, name); // NOI18N
+        return doc.createElementNS(NbModuleProjectType.NAMESPACE_SHARED, name);
     }
     
     private Element createModuleElement(Document doc, String name, String innerText) {

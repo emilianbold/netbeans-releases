@@ -350,7 +350,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                         
                         // process edited modules
                         Map/*<ModuleDependency, ModuleDependency>*/ toEdit 
-                                = subModulesListModel.getEditedDetails();
+                                = subModulesListModel.getEditedDependencies();
                         for (Iterator it = toEdit.entrySet().iterator(); it.hasNext(); ) {
                             Map.Entry entry = (Map.Entry) it.next();
                             pxm.editDependency(
@@ -365,6 +365,9 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             if (result == Boolean.TRUE) {
                 ProjectManager.getDefault().saveProject(project);
             }
+            // reset
+            this.subModules = null;
+            this.projectXMLManipulator = null;
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
         } catch (IOException ex) {

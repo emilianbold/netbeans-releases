@@ -13,9 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.io.File;
 import javax.swing.JPanel;
-import org.netbeans.modules.apisupport.project.ModuleList;
 
 /**
  * Represents panel for editing dependency details. Shown after <em>Edit</em>

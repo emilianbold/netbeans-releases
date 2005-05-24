@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.JPanel;
+import javax.swing.event.ListSelectionListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -41,8 +42,23 @@ public class CustomizerLibraries extends JPanel {
         this.moduleDeps = subModules;
         this.universeModulesModel = universeModules;
         this.moduleProps = moduleProps;
+        updateEnabled();
         dependencyList.setModel(subModules);
         dependencyList.setCellRenderer(ComponentFactory.getModuleCellRenderer());
+        dependencyList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    updateEnabled();
+                }
+            }
+        });
+    }
+    
+    private void updateEnabled() {
+        // if there is no selection disable edit/remove buttons
+        boolean enabled = dependencyList.getSelectedIndex() != -1;
+        editDepButton.setEnabled(enabled);
+        removeDepButton.setEnabled(enabled);
     }
     
     /** This method is called from within the constructor to
@@ -130,16 +146,18 @@ public class CustomizerLibraries extends JPanel {
     // </editor-fold>//GEN-END:initComponents
     
     private void editModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModuleDependency
-        ModuleDependency md = moduleDeps.getDependency(
+        ModuleDependency origDep = moduleDeps.getDependency(
                 dependencyList.getSelectedIndex());
-        EditDependencyPanel editPanel = new EditDependencyPanel(md);
+        ModuleDependency editedDep = moduleDeps.findEdited(origDep);
+        EditDependencyPanel editPanel = new EditDependencyPanel(
+                editedDep == null ? origDep : editedDep);
         DialogDescriptor descriptor = new DialogDescriptor(editPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,
                 "CTL_EditModuleDependencyTitle")); // NOI18N
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-            moduleDeps.editDependency(md, editPanel.getEditedDependency());
+            moduleDeps.editDependency(origDep, editPanel.getEditedDependency());
         }
         d.dispose();
     }//GEN-LAST:event_editModuleDependency

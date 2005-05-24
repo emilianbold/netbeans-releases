@@ -34,7 +34,7 @@ public final class ModuleDependency implements Comparable {
     public ModuleDependency(ModuleList.Entry me, String releaseVersion, String specVersion) {
         this.me = me;
         
-        // reset version to null if contain the same value as the entry
+        // set versions to null if contain the same value as the given entry
         this.releaseVersion =
                 releaseVersion != null && releaseVersion.equals(me.getReleaseVersion()) ?
                     null : releaseVersion;
