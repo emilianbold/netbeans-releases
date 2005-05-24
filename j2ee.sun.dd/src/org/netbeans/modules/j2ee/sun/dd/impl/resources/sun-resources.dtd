@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+
+<!-- 
+XML DTD for resources 
+
+Copyright (c) 2003 by Sun Microsystems, Inc. All Rights Reserved.
+-->
+
+<!ELEMENT resources ((custom-resource | external-jndi-resource | jdbc-resource |
+     mail-resource | persistence-manager-factory-resource |
+      admin-object-resource | connector-resource |  resource-adapter-config |
+        jdbc-connection-pool | connector-connection-pool | jms-resource)*)>
+
+<!-- Textual description of a configured entity -->
+<!ELEMENT description (#PCDATA)>
+
+<!-- Syntax for supplying properties as name value pairs -->
+<!ELEMENT property (description?)>
+
+<!ATTLIST property  name  CDATA  #REQUIRED
+                      value CDATA  #REQUIRED >
+
+<!ELEMENT custom-resource (description? , property*)>
+<!ATTLIST custom-resource jndi-name     CDATA  #REQUIRED
+                          res-type      CDATA  #REQUIRED
+                          factory-class CDATA  #REQUIRED
+                          enabled       CDATA "true">
+
+<!ELEMENT external-jndi-resource (description? , property*)>
+<!ATTLIST external-jndi-resource  jndi-name        CDATA  #REQUIRED
+                                    jndi-lookup-name CDATA  #REQUIRED
+                                    res-type         CDATA  #REQUIRED
+                                    factory-class    CDATA  #REQUIRED 
+                                    enabled          CDATA "true">
+
+<!ELEMENT jdbc-resource (description? , property*)>
+<!ATTLIST jdbc-resource    jndi-name      CDATA #REQUIRED
+                           pool-name      CDATA  #REQUIRED 
+			   object-type    CDATA "user"
+                           enabled        CDATA "true">
+
+
+<!ELEMENT mail-resource (description? , property*)>
+<!ATTLIST mail-resource    jndi-name                CDATA  #REQUIRED
+                           store-protocol           CDATA  "imap"
+                           store-protocol-class     CDATA  "com.sun.mail.imap.IMAPStore"
+                           transport-protocol       CDATA  "smtp"
+                           transport-protocol-class CDATA  "com.sun.mail.smtp.SMTPTransport"
+                           host                     CDATA  #REQUIRED
+                           user                     CDATA  #REQUIRED
+                           from                     CDATA  #REQUIRED
+                           debug                    CDATA  "false" 
+                           enabled                  CDATA  "true">
+
+<!ELEMENT persistence-manager-factory-resource (description? , property*)>
+<!ATTLIST persistence-manager-factory-resource
+      jndi-name               CDATA  #REQUIRED
+      factory-class           CDATA  
+          "com.sun.jdo.spi.persistence.support.sqlstore.impl.PersistenceManagerFactoryImpl"
+      jdbc-resource-jndi-name CDATA  #IMPLIED 
+      enabled                 CDATA  "true">
+
+<!ELEMENT admin-object-resource (description?, property*)>
+<!ATTLIST admin-object-resource  jndi-name     CDATA  #REQUIRED
+                                 res-type      CDATA  #REQUIRED
+                                 res-adapter   CDATA  #REQUIRED
+                                 enabled       CDATA  "true">
+
+<!ELEMENT connector-resource (description?, property*)>
+<!ATTLIST connector-resource  jndi-name         CDATA #REQUIRED
+                              pool-name         CDATA  #REQUIRED
+                              object-type       CDATA  "user"
+                              enabled           CDATA "true">
+               
+<!ELEMENT resource-adapter-config (property*)>
+<!ATTLIST resource-adapter-config      name CDATA #IMPLIED
+                thread-pool-ids CDATA  #IMPLIED
+                resource-adapter-name CDATA #REQUIRED>
+                                                   
+
+                       
+<!ELEMENT connector-connection-pool (description?, security-map*, property*)>
+<!ATTLIST connector-connection-pool  name                          CDATA      #REQUIRED
+                                resource-adapter-name              CDATA      #REQUIRED
+                                connection-definition-name         CDATA      #REQUIRED
+                                steady-pool-size                   CDATA      "8"
+                                max-pool-size                      CDATA      "32"
+                                max-wait-time-in-millis            CDATA      "60000"
+                                pool-resize-quantity               CDATA      "2"
+                                idle-timeout-in-seconds            CDATA      "300"
+                                fail-all-connections               CDATA      "false">
+<!ELEMENT security-map ((principal | user-group)+, backend-principal)>
+<!ATTLIST security-map name  CDATA #REQUIRED>
+
+<!-- Principal of the Servlet and EJB client -->
+<!ELEMENT principal (#PCDATA)>
+
+<!-- Group of user -->
+<!ELEMENT user-group (#PCDATA)>
+
+<!-- Backend EIS principal -->
+<!ELEMENT backend-principal EMPTY>
+<!ATTLIST backend-principal user-name  CDATA #REQUIRED
+                            password   CDATA #IMPLIED>
+
+<!ELEMENT jdbc-connection-pool (description? , property*)>
+
+<!ATTLIST jdbc-connection-pool    name                              CDATA  #REQUIRED
+                                  datasource-classname              CDATA  #REQUIRED
+                                  res-type                          CDATA  #IMPLIED
+                                  steady-pool-size                  CDATA  "8"
+                                  max-pool-size                     CDATA  "32"
+                                  max-wait-time-in-millis           CDATA  "60000"
+                                  pool-resize-quantity              CDATA  "2"
+                                  idle-timeout-in-seconds           CDATA  "300"
+                                  transaction-isolation-level        CDATA  #IMPLIED
+                                  is-isolation-level-guaranteed      CDATA  "true"
+                                  is-connection-validation-required  CDATA  "false" 
+                                  connection-validation-method       (auto-commit | 
+                                                                      meta-data | 
+                                                                      table )  "auto-commit"
+                                  validation-table-name             CDATA  #IMPLIED
+                                  fail-all-connections              CDATA  "false"  >
+
+<!ELEMENT jms-resource (description? , property*)>
+<!ATTLIST jms-resource jndi-name     CDATA  #REQUIRED
+                       res-type      CDATA  #REQUIRED
+                       enabled       CDATA "true">

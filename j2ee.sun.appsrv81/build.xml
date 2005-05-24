@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="appsrv-plugin" default="netbeans" basedir=".">
+  <import file="../../../nbbuild/templates/projectized.xml"/>
+
+   <property name="extnl" location="../../../nbbuild/external"/>
+   
+
+
+    
+    <target depends="init" name="compile">
+	<antcall target="projectized-common.compile"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy file="../../external/jmxri.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy file="../../external/org-netbeans-modules-j2ee-sun-ide.jar" todir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
+        <!--copy file="external/org-netbeans-modules-j2ee-sun-dd.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/-->
+        <copy file="../../external/persistence-tool-support.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+    </target>
+
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+
+       <taskdef name="scramble" classname="org.netbeans.nbbuild.Scramble" classpath="${extnl}/scrambler.jar"/>
+
+       <scramble>
+           <binary clear="../../external/appsrvjars.zip" scrambled="../../external/appsrvjars.zip.scrambled" license="../../external/appsrv81license.txt"/>
+       </scramble>
+        
+    </target>    
+
+ 
+   
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+            <include name="modules/ext/jmxri.jar"/>
+            <include name="ant/nblib/org-netbeans-modules-j2ee-sun-ide.jar"/>
+            <include name="modules/ext/validation.jar"/>
+            <include name="modules/ext/persistence-tool-support.jar"/>
+            <include name="modules/ext/appserv-libapi.jar"/>          
+            <include name="modules/ext/appserv-jsr88.jar"/>
+            
+        </patternset>
+    </target>    
+
+
+
+
+
+
+
+
+
+    <target name="javahelp" depends="init,unjar-extra-help">
+        <antcall target="projectized.javahelp"/>
+        <delete dir="javahelp/com"/>
+    </target>
+
+    <target name="unjar-extra-help">
+        <unjar src="../../external/persistence-help.jar" dest="javahelp"/>
+        <delete dir="javahelp/META-INF"/>
+    </target>
+    
+    <target name="jar-with-module-deps" if="module.dependencies">
+        <property file="spec-ver.properties"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
+            </manifest>
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
+</project>

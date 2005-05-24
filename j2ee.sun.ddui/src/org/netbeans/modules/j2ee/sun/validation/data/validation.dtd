@@ -1,0 +1,86 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+    Document   : validation.dtd
+    Author     : Rajeshwar Patil
+    Description:
+        XML DTD for validation xml.
+        validation.xml is used to specify validations to be applied
+        to the given elements.
+-->
+
+
+<!--
+This is the root element
+-->
+<!ELEMENT validation  (element*) >
+<!ATTLIST validation
+        validate    CDATA        (true | false)     "true">
+
+
+<!--
+This element represents, the set of Constraints to be applied to
+the given element.
+-->
+<!ELEMENT element (name, check*)>
+
+
+<!--
+This element represents, a particular Constraint.
+Note : Information about this Constraint must be provided through
+corresponding <check-info> object in constraints.xml Sub element
+<name> should match with <name> of corresponding <check-info>
+element defined in constraints.xml.
+-->
+<!ELEMENT check (name, parameters?)>
+
+
+<!--
+This element represent, Constraint parameters.
+Number of sub elements, <parameter> should match with the number
+of <argument> sub elements, of corresponding <arguments> element
+in constraints.xml
+-->
+<!ELEMENT parameters (parameter+)>
+
+
+<!--
+This element represents, a Constraint parameter.
+Sub elements <name> should match with the <name> sub element of
+corresponding <argument> element in constraints.xml
+<value> could be one or more. In case of an variable array
+argument, multiple <value> elements will be used.
+Example : InConstraint
+-->
+<!ELEMENT parameter (name, value+)>
+
+
+<!--
+Used in elements : <element>, <check> and <parameter>
+In <element> , it represents the name(xpath - complete absolute
+name of an element(leaf).
+In <check> , it represents name of a Constraint. This is the
+linking element for <check> element in validation.xml and
+<check-info> element in constraints.xml.
+In <parameter>, it represents name of parameter. This is the
+linking element for <parameter> element in validation.xml and
+<argument> element in constraints.xml.
+-->
+<!ELEMENT name (#PCDATA)>
+
+
+<!--
+This element represents the value of a parameter.
+-->
+<!ELEMENT value (#PCDATA)>

@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+	This is the root of the java-wsdl-mapping deployment descriptor.
+
+      -->
+<!ELEMENT java-wsdl-mapping (package-mapping+, java-xml-type-mapping*, exception-mapping*, (service-interface-mapping?, service-endpoint-interface-mapping+)*)>
+<!--version: 
+
+	  The required value for the version is 1.1.
+
+	-->
+<!ATTLIST java-wsdl-mapping
+	version CDATA #REQUIRED
+	id ID #IMPLIED
+>
+<!--
+
+	The package-mapping indicates the mapping between java-package-name
+	and XML namespace in the WSDL document.
+
+	Used in: java-wsdl-mapping
+
+      -->
+<!ELEMENT package-mapping (package-type, namespaceURI)>
+<!ATTLIST package-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	The java-xml-type-mapping element contains a java-type that is the
+	fully qualified name of the Java class, primitive type, or array
+	type, QName of the XML root type or anonymous type, the WSDL type
+	scope the QName applies to and the set of variable mappings for
+	each public variable within the Java class.
+
+	Used in: java-wsdl-mapping
+
+      -->
+<!ELEMENT java-xml-type-mapping (java-type, (root-type-qname | anonymous-type-qname), qname-scope, variable-mapping*)>
+<!ATTLIST java-xml-type-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	The exception-mapping element defines the mapping between the
+	service specific exception types and wsdl faults and
+	SOAP headerfaults.
+
+	This element should be interpreted with respect to the
+	mapping between a method and an operation which provides the
+	mapping context.
+
+	Used in: service-endpoint-method-mapping
+
+      -->
+<!ELEMENT exception-mapping (exception-type, wsdl-message, wsdl-message-part-name?, constructor-parameter-order?)>
+<!ATTLIST exception-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	The service-interface-mapping element defines how a Java type for
+	the service interface maps to a WSDL service.
+
+	Used in: java-wsdl-mapping
+
+      -->
+<!ELEMENT service-interface-mapping (service-interface, wsdl-service-name, port-mapping*)>
+<!ATTLIST service-interface-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	The service-endpoint-interface-mapping defines a tuple
+	to specify Service Endpoint Interfaces to
+	WSDL port types and WSDL bindings.
+
+	An interface may be mapped to a port-type and binding multiple
+	times. This happens rarely.
+
+	Used in: java-wsdl-mapping
+
+      -->
+<!ELEMENT service-endpoint-interface-mapping (service-endpoint-interface, wsdl-port-type, wsdl-binding, service-endpoint-method-mapping*)>
+<!ATTLIST service-endpoint-interface-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	    The package-type indicates the Java package name. It must be a fully
+	    qualified package name, even though the XML schema type is
+	    fully-qualified-classType.
+
+	  -->
+<!ELEMENT package-type (#PCDATA)>
+<!ATTLIST package-type
+	id ID #IMPLIED
+>
+<!--
+
+	    The namespaceURI element indicates a URI.
+
+	  -->
+<!ELEMENT namespaceURI (#PCDATA)>
+<!ATTLIST namespaceURI
+	id ID #IMPLIED
+>
+<!--
+
+	    The java-type element is the fully qualified class name of
+	    a Java class, primitive, or array type.
+
+	  -->
+<!ELEMENT java-type (#PCDATA)>
+<!ATTLIST java-type
+	id ID #IMPLIED
+>
+<!--
+
+	      The root-type-qname identifies the WSDL QName of an XML type.
+
+	    -->
+<!ELEMENT root-type-qname (#PCDATA)>
+<!ATTLIST root-type-qname
+	id ID #IMPLIED
+>
+<!--
+
+	      The anonymous-type-qname identifies the WSDL QName of an
+	      anonymous XML type.
+
+	    -->
+<!ELEMENT anonymous-type-qname (#PCDATA)>
+<!ATTLIST anonymous-type-qname
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT qname-scope (#PCDATA)>
+<!ATTLIST qname-scope
+	id ID #IMPLIED
+>
+<!--
+
+	The variable-mapping element defines the correlation between a
+	Java class data member or JavaBeans property to an XML element
+	or attribute name of an XML root type. If the data-member
+	element is present, the Java variable name is a public data
+	member.  If data-member	is not present, the Java variable name
+	is a JavaBeans property.
+
+	Used in: java-xml-type-mapping
+
+      -->
+<!ELEMENT variable-mapping (java-variable-name, data-member?, (xml-attribute-name | xml-element-name | xml-wildcard))>
+<!ATTLIST variable-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	    The exception-type element defines Java type of the exception.
+	    It may be a service specific exception.
+
+	    It must be a fully qualified class name.
+
+	  -->
+<!ELEMENT exception-type (#PCDATA)>
+<!ATTLIST exception-type
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:QName.
+
+      -->
+<!ELEMENT wsdl-message (#PCDATA)>
+<!ATTLIST wsdl-message
+	id ID #IMPLIED
+>
+<!--
+
+            The wsdl-message-part-name element is required only
+            when the message referenced by the wsdl-message element
+            has more than one part.
+
+            This only occurs when multiple headerfaults use the
+            same message.
+
+	  -->
+<!ELEMENT wsdl-message-part-name (#PCDATA)>
+<!ATTLIST wsdl-message-part-name
+	id ID #IMPLIED
+>
+<!--
+
+	The constructor-parameter-order element defines the order
+	that complexType element values are applied to a Java
+	exception constructor. Element names are specified for each
+	parameter of the constructor, including element names of
+	inherited types if necessary.
+
+	Used in: exception-mapping
+
+      -->
+<!ELEMENT constructor-parameter-order (element-name+)>
+<!ATTLIST constructor-parameter-order
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-interface element defines the Java type for the service.
+	    For static services, it is javax.xml.rpc.Service interface. For
+	    generated service, it would be the generated interface name.
+
+	    The name must be a fully qualified class name.
+
+	  -->
+<!ELEMENT service-interface (#PCDATA)>
+<!ATTLIST service-interface
+	id ID #IMPLIED
+>
+<!--
+
+	    The wsdl-service-name element defines the wsdl service name
+	    by a QNAME which uniquely identifies  the service.
+
+	  -->
+<!ELEMENT wsdl-service-name (#PCDATA)>
+<!ATTLIST wsdl-service-name
+	id ID #IMPLIED
+>
+<!--
+
+	The port-mapping defines the mapping of the WSDL port name attribute
+	to the Java name used to generate the Generated Service Interface
+	method get{java-name}.
+
+	Used in: service-interface-mapping
+
+      -->
+<!ELEMENT port-mapping (port-name, java-port-name)>
+<!ATTLIST port-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-endpoint-interface element defines the Java
+	    type for the endpoint interface. The name must be a fully
+	    qualified class name.
+
+	  -->
+<!ELEMENT service-endpoint-interface (#PCDATA)>
+<!ATTLIST service-endpoint-interface
+	id ID #IMPLIED
+>
+<!--
+
+	    The wsdl-port-type element defines the wsdl port type
+	    by a QNAME which uniquely identifies  the port type.
+
+	  -->
+<!ELEMENT wsdl-port-type (#PCDATA)>
+<!ATTLIST wsdl-port-type
+	id ID #IMPLIED
+>
+<!--
+
+	    The wsdl-binding element defines the wsdl binding
+	    by a QNAME which uniquely identifies  the binding.
+
+	  -->
+<!ELEMENT wsdl-binding (#PCDATA)>
+<!ATTLIST wsdl-binding
+	id ID #IMPLIED
+>
+<!--
+
+	The service-endpoint-method-mapping element defines the mapping of
+	Java methods to operations (which are not uniquely qualified by
+	qnames).
+
+	The wsdl-operation should be interpreted with respect to the
+	portType and binding in which this definition is embedded within.
+	See the definitions for service-endpoint-interface-mapping and
+	service-interface-mapping to acquire the proper context.  The
+	wrapped-element indicator should only be specified when a WSDL
+	message wraps an element type.  The wsdl-return-value-mapping is
+	not specified for one-way operations.
+
+	Used in: service-endpoint-interface-mapping
+
+      -->
+<!ELEMENT service-endpoint-method-mapping (java-method-name, wsdl-operation, wrapped-element?, method-param-parts-mapping*, wsdl-return-value-mapping?)>
+<!ATTLIST service-endpoint-method-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	    The java-variable-name defines the name of a public data member or
+	    JavaBeans property within a Java class.
+
+	  -->
+<!ELEMENT java-variable-name (#PCDATA)>
+<!ATTLIST java-variable-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The data-member element is a boolean indicator that a Java
+	    variable is a public data member and not a JavaBeans property.
+
+	  -->
+<!ELEMENT data-member EMPTY>
+<!ATTLIST data-member
+	id ID #IMPLIED
+>
+<!--
+
+	      The xml-attribute-name element defines name attribute value
+	      of a WSDL attribute element within a root type.  The value
+	      of an xml-attribute-name element must match the value of
+	      the ref attribute if mapping an attribute reference.
+
+	    -->
+<!ELEMENT xml-attribute-name (#PCDATA)>
+<!ATTLIST xml-attribute-name
+	id ID #IMPLIED
+>
+<!--
+
+	      The xml-element-name element defines name attribute value of
+	      a WSDL element within a root type.  The value of an
+	      xml-element-name element must match the value of the ref
+	      attribute if mapping an element reference.
+
+	  -->
+<!ELEMENT xml-element-name (#PCDATA)>
+<!ATTLIST xml-element-name
+	id ID #IMPLIED
+>
+<!--
+
+	      The xml-wildcard element associates the variable-mapping with
+	      an xsd:any element within a root type.
+
+	    -->
+<!ELEMENT xml-wildcard EMPTY>
+<!ATTLIST xml-wildcard
+	id ID #IMPLIED
+>
+<!--
+
+	    The element-name element defines the name of a complexType
+	    element name attribute value.
+
+	  -->
+<!ELEMENT element-name (#PCDATA)>
+<!ATTLIST element-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The port-mapping defines the mapping of the WSDL port name
+	    attribute to the Java name used to generate the Generated
+	    Service Interface method get{java-name}.
+
+	  -->
+<!ELEMENT port-name (#PCDATA)>
+<!ATTLIST port-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The java-port-name element is the string to use as the port
+	    name in Java.  It is used in generating the Generated
+	    Service Interface method get{java-port-name}.
+
+	  -->
+<!ELEMENT java-port-name (#PCDATA)>
+<!ATTLIST java-port-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The java-method-name element defines the name of a Java method
+	    within an interface.
+
+	  -->
+<!ELEMENT java-method-name (#PCDATA)>
+<!ATTLIST java-method-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The wsdl-operation element defines an operation within a WSDL
+	    document.  It must be interpreted with respect to a port type.
+
+	  -->
+<!ELEMENT wsdl-operation (#PCDATA)>
+<!ATTLIST wsdl-operation
+	id ID #IMPLIED
+>
+<!--
+
+	    The wrapped-element element is defined when a WSDL message
+	    with a single part is used to wrap an element type and the
+	    element's name matches the operation name.
+
+	  -->
+<!ELEMENT wrapped-element EMPTY>
+<!ATTLIST wrapped-element
+	id ID #IMPLIED
+>
+<!--
+
+	The method-param-parts-mapping element defines the mapping between a
+	Java method parameters and a wsdl-message.
+
+	Used in: service-endpoint-method-mapping
+
+      -->
+<!ELEMENT method-param-parts-mapping (param-position, param-type, wsdl-message-mapping)>
+<!ATTLIST method-param-parts-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	The wsdl-return-value-mapping  element defines the mapping for the
+	method's return value. It defines the mapping to a specific message
+	and its part.  Together they define uniquely the mapping for a
+	specific parameter. Parts within a message context are uniquely
+	identified with their names. The wsdl-message-part-name is not
+	specified if there is no return value or OUT parameters.
+
+	Used in: service-endpoint-method-mapping
+
+      -->
+<!ELEMENT wsdl-return-value-mapping (method-return-value, wsdl-message, wsdl-message-part-name?)>
+<!ATTLIST wsdl-return-value-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	    The param-position element defines the position of a
+	    parameter within a Java method.  It must be an integer
+	    starting from 0.
+
+	  -->
+<!ELEMENT param-position (#PCDATA)>
+<!ATTLIST param-position
+	id ID #IMPLIED
+>
+<!--
+
+	    The param-type element defines the fully qualified
+	    class name of a Java class, primitive, or array type.
+
+	  -->
+<!ELEMENT param-type (#PCDATA)>
+<!ATTLIST param-type
+	id ID #IMPLIED
+>
+<!--
+
+	The wsdl-message-mapping element defines the mapping to a
+	specific message and its part. Together they define uniquely
+	the mapping for a specific parameter. Parts within a message
+	context are uniquely identified with their names.
+
+	The parameter-mode is defined by the mapping to indicate
+	whether the mapping will be IN, OUT, or INOUT..  The presence
+	of the soap-header element indicates that the parameter is
+	mapped to a soap header only.  When absent, it means that the
+	wsdl-message is mapped to a Java parameter. The soap headers
+	are interpreted in the order they are provided in the mapping.
+
+	Used in: method-param-parts-mapping
+
+      -->
+<!ELEMENT wsdl-message-mapping (wsdl-message, wsdl-message-part-name, parameter-mode, soap-header?)>
+<!ATTLIST wsdl-message-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	    The method-return-value  element defines a fully qualified
+	    class name or void type for the method's return value
+	    type.
+
+	  -->
+<!ELEMENT method-return-value (#PCDATA)>
+<!ATTLIST method-return-value
+	id ID #IMPLIED
+>
+
+
+
+
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT parameter-mode (#PCDATA)>
+<!ATTLIST parameter-mode
+	id ID #IMPLIED
+>
+<!--
+
+	    The soap-header element is a boolean element indicating that
+	    a parameter is mapped to a SOAP header.
+
+	  -->
+<!ELEMENT soap-header EMPTY>
+<!ATTLIST soap-header
+	id ID #IMPLIED
+>
+

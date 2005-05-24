@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>         
+<!DOCTYPE helpctx PUBLIC
+"-//NetBeans//DTD Help Context 1.0//EN"
+"http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+<!-- Give the help ID to open. By default shows master help set. -->
+<!-- You can instead show just this help set if you prefer. -->
+<helpctx id="aboutplugin"  />

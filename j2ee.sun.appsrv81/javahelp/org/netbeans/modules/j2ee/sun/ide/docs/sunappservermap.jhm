@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN" "http://java.sun.com/products/javahelp/map_1_0.dtd">
+<map version="1.0">
+    <mapID target="BLANK"            				url="general/blank.html" />
+    <mapID target="credits"             			url="credits.html" />
+    <mapID target="aboutplugin"      				url="general/aboutplugin.html" />
+    <mapID target="register_appserver"                          url="general/register_appserver.html" />
+    <mapID target="def_connpool"      				url="general/def_connpool.html" />
+    <mapID target="def_jdbcresource"      			url="general/def_jdbcresource.html" />
+    <mapID target="def_persistence"      			url="general/def_persistence.html" />
+    <mapID target="def_javamail"      				url="general/def_javamail.html" />
+    <mapID target="def_jms"      				url="general/def_jms.html" />
+    <mapID target="working_withsjs"          			url="general/working_withSJS.html" />
+    <mapID target="register_resource"                           url="general/register_resource.html" /> 
+    <mapID target="sjs_quickref"                                url="general/sjs_quickref.html" />
+    <mapID target="sjs_undeploy"                                url="general/sjs_undeploy.html" />
+    <mapID target="sjs_jvm"                                     url="general/JVM.html" />
+    <mapID target="adminconsole"                                url="general/adminconsole.html" />
+    <mapID target="lookup_jms"                                  url="general/def_jms_lookup.html" />
+    <mapID target="lookup_jdbc"                                 url="general/def_jdbcresource_lookup.html" />
+    <mapID target="tbd"                                         url="tbd.html" />
+    
+    
+    
+    <!-- sun-web.xml DD editor CSH: -->
+    <mapID target="AS_CFG_ConfigurationEditor"			url="configeditors/ConfigurationEditor.html"  />
+    <mapID target="AS_CFG_WebAppGeneral"			url="configeditors/WebAppGeneral.html"  />
+    <mapID target="AS_CFG_WebAppJspConfigProperty" 		url="configeditors/WebAppJspConfigProperty.html"  />
+    <mapID target="AS_CFG_WebAppProperty" 			url="configeditors/WebAppProperty.html"  />
+    <mapID target="AS_CFG_WebAppServices" 			url="configeditors/WebAppServices.html"  />
+    <mapID target="AS_CFG_WebAppMessageDestination" 		url="configeditors/WebAppMessages.html"  />
+    <mapID target="AS_CFG_WebAppWebserviceDescription" 		url="configeditors/WebAppServices.html"  />
+    <mapID target="AS_CFG_WebAppLocale" 			url="configeditors/WebAppLocale.html"  />
+    <mapID target="AS_CFG_WebAppLocaleCharsetMapping" 		url="configeditors/WebAppLocaleCharsetMapping.html"  />
+    <mapID target="AS_CFG_WebAppCacheGeneral" 			url="configeditors/WebAppCacheGeneral.html"  />
+    <mapID target="AS_CFG_WebAppCacheProperty" 			url="configeditors/WebAppCacheGeneral.html"  />
+    <mapID target="AS_CFG_WebAppCacheHelpers" 			url="configeditors/WebAppCacheHelpers.html"  />
+    <mapID target="AS_CFG_WebAppCacheHelperDefinition" 		url="configeditors/WebAppCacheHelpers.html"  />
+    <mapID target="AS_CFG_WebAppCacheHelperProperty" 		url="configeditors/WebAppCacheHelpers.html"  />
+    <mapID target="AS_CFG_WebAppCacheMapping" 			url="configeditors/WebAppCacheMapping.html"  />
+    <mapID target="AS_CFG_WebAppCacheMappingPolicy" 		url="configeditors/WebAppCacheMappingPolicy.html"  />
+    <mapID target="AS_CFG_WebAppCacheMappingKeyField" 		url="configeditors/WebAppCacheMappingPolicy.html"  />
+    <mapID target="AS_CFG_WebAppCacheMappingConstraintField" 		url="configeditors/WebAppCacheMappingConstraintField.html"  />
+    <mapID target="AS_CFG_WebAppCacheMappingConstraintFieldValue" 	url="configeditors/WebAppCacheMappingConstraintField.html"  />
+    <mapID target="AS_CFG_WebAppMessages"           		url="configeditors/WebAppMessages.html"  />
+    <mapID target="AS_CFG_SessionConfigurationManager" 			url="configeditors/SessionConfigurationManager.html"  />
+    <mapID target="AS_CFG_SessionConfigurationManagerProperty" 		url="configeditors/SessionConfigurationManager.html"  />
+    <mapID target="AS_CFG_SessionConfigurationStoreProperty" 		url="configeditors/SessionConfigurationManager.html"  />
+    <mapID target="AS_CFG_SessionConfigurationCookie" 			url="configeditors/SessionConfigurationManager.html"  />
+    <mapID target="AS_CFG_SessionConfigurationCookieProperty" 		url="configeditors/SessionConfigurationManager.html"  />
+    <mapID target="AS_CFG_Servlet" 				url="configeditors/Servlet.html"  />
+    <mapID target="AS_CFG_EjbRef" 				url="configeditors/EjbRef.html"  />
+    <mapID target="AS_CFG_ResourceRef" 				url="configeditors/ResourceRef.html"  />
+    <mapID target="AS_CFG_ResourceEnvRef" 			url="configeditors/ResourceEnvRef.html"  />
+    <mapID target="AS_CFG_ServiceRefGeneral" 			url="configeditors/ServiceRefGeneral.html"  />
+    <mapID target="AS_CFG_ServiceRefCallProperty" 		url="configeditors/ServiceRefCallProperty.html"  />
+    <mapID target="AS_CFG_ServiceRefPortInfo" 			url="configeditors/ServiceRefPortInfo.html"  />
+    <mapID target="AS_CFG_ServiceRefPortInfoStubProperty" 	url="configeditors/ServiceRefPortInfoStubProperty.html"  />
+    <mapID target="AS_CFG_ServiceRefPortInfoCallProperty" 	url="configeditors/ServiceRefPortInfoCallProperty.html"  />
+
+   <!-- Sun Resource New File wizard and property sheet CSH pages: -->
+   <mapID target="AS_Wiz_ConnPool_chooseDB" 		url="resourcewizards/ConnPool_chooseDB.html"  />
+   <mapID target="AS_Wiz_ConnPool_props" 		url="resourcewizards/ConnPool_props.html"  />
+   <mapID target="AS_Wiz_ConnPool_poolSettings" 	url="resourcewizards/ConnPool_poolSettings.html"  />
+   <mapID target="AS_Wiz_DataSource_general" 		url="resourcewizards/DataSource_general.html"  />
+   <mapID target="AS_Wiz_DataSource_props" 		url="resourcewizards/DataSource_props.html"  />
+   <mapID target="AS_Wiz_JMS_general" 		url="resourcewizards/JMS_general.html"  />
+   <mapID target="AS_Wiz_JMS_props" 		url="resourcewizards/JMS_props.html"  />
+   <mapID target="AS_Wiz_PMF_general" 		url="resourcewizards/PMF_general.html"  />
+   <mapID target="AS_Wiz_Mail_general" 		url="resourcewizards/Mail_general.html"  />
+   <mapID target="AS_Wiz_Mail_props" 		url="resourcewizards/Mail_props.html"  />
+
+  <mapID target="AS_RegServ_Choose" 		url="runtimetab/RegServ_Choose.html"  />
+  <mapID target="AS_RegServ_Create" 		url="runtimetab/RegServ_Create.html"  />
+  <mapID target="AS_RegServ_UserDef" 		url="runtimetab/RegServ_UserDef.html"  />
+  <mapID target="AS_RegServ_Remote" 		url="runtimetab/RegServ_Remote.html"  />
+  
+    <!-- sun-ejb-jar.xml DD editor CSH: -->
+  <mapID target="AS_CFG_EjbJarRoot"                				url="ejbconfigeditors/sunconfig.html" />
+  <mapID target="AS_CFG_StatefulEjb"            				url="ejbconfigeditors/sessionbean.html" />
+  <mapID target="AS_CFG_StatelessEjb"            				url="ejbconfigeditors/sessionbean.html" />
+  <mapID target="AS_CFG_EntityEjb"              				url="ejbconfigeditors/entitybean.html" />
+  <mapID target="AS_CFG_CmpEntityEjb"            				url="ejbconfigeditors/entitybean.html" />
+  <mapID target="AS_CFG_MDEjb"                  				url="ejbconfigeditors/messagebean.html" />
+  <mapID target="AS_CFG_MessageDestination"            				url="ejbconfigeditors/sun-msgdestination.html" />
+  <mapID target="AS_CFG_OneOneFinder"            				url="ejbconfigeditors/ent-finder.html" />
+  <mapID target="AS_CFG_PmDescriptor"            				url="ejbconfigeditors/sun-pmdescriptor.html" />
+  <mapID target="AS_CFG_Cmp_Resource_Property"            			url="ejbconfigeditors/sun-cmpproperty.html" />
+  <mapID target="AS_CFG_Schema_Generator_Property"            			url="ejbconfigeditors/sun-schemagen.html" />
+  <mapID target="AS_CFG_Activation_Config_Property"            			url="ejbconfigeditors/mes_activate.html" />
+  <mapID target="AS_CFG_WebserviceDescription"            			url="ejbconfigeditors/sun-webservice.html" />
+  <mapID target="AS_CFG_WebserviceEndpoint"                             	url="ejbconfigeditors/ses-webendpoint.html" />
+  <mapID target="AS_CFG_MessageSecurityBinding"            			url="general/blank.html" />
+
+  <!-- sun-application.xml DD editor CSH: -->
+  <mapID target="AS_CFG_Application"                    			url="appconfigeditors/sunapplication.html" />
+  <mapID target="AS_CFG_ModuleRef"                                       	url="appconfigeditors/sunj2eemodreference.html" />
+  <mapID target="AS_CFG_WebAppRef"                      			url="appconfigeditors/sunwebmodreference.html" />
+</map>
+
+  
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+

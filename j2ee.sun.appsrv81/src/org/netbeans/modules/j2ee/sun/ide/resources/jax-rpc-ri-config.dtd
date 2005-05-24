@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+            The top-level element. It must contain one out of three possible elements,
+            corresponding to three different ways to feed service information to the tool.
+            
+            Elements: (mutually exclusive)
+                "service" - a service description based on a set of service endpoint interfaces;
+                "wsdl" - a WSDL document to import and process;
+                "modelfile" - a previously saved model file (-model option in wscompile).
+                "j2eeMappingFile" - J2EE mapping information defined by JSR 109
+            -->
+<!ELEMENT configuration ((service | wsdl | modelfile | j2eeMappingFile))>
+<!--
+            A description of a service based on a set of Java interfaces (called "service endpoint
+            interfaces" in the spec).
+            
+            Attributes:
+                "name" - service name;
+                "targetNamespace" - target namespace for the generated WSDL document;
+                "typeNamespace" - target namespace for the XML Schema embedded in the generated WSDL document;
+                "packageName" - name of the Java package to use by default.
+                
+            Elements:
+                "interface"* - a sequence of service endpoint interface descriptions;
+                "typeMappingRegistry"? - the type mapping registry to use for this service;
+                "handlerChains"? - default handler chains for the endpoints in this service;
+                "namespaceMappingRegistry"? - XML namespace to Java package mapping information.
+            -->
+<!ELEMENT service (interface*, typeMappingRegistry?, handlerChains?, namespaceMappingRegistry?)>
+<!ATTLIST service
+	name CDATA #REQUIRED
+	targetNamespace CDATA #REQUIRED
+	typeNamespace CDATA #REQUIRED
+	packageName CDATA #REQUIRED
+>
+<!--
+            A description of a service based on an existing WSDL document.
+            
+            Attributes:
+                "location" - URL of the WSDL document;
+                "packageName" - name of the Java package to use by default.
+                
+            Elements:
+                "typeMappingRegistry"? - the type mapping registry to use for this service;
+                "handlerChains"? - default handler chains for the endpoints in this service;
+                "namespaceMappingRegistry"? - XML namespace to Java package mapping information.
+            -->
+<!ELEMENT wsdl (typeMappingRegistry?, handlerChains?, namespaceMappingRegistry?)>
+<!ATTLIST wsdl
+	location CDATA #REQUIRED
+	packageName CDATA #REQUIRED
+>
+<!--
+            A description of a service based on an existing model file.
+            
+            Attributes:
+                "location" - URL of the model file (typically ending in .xml.gz);
+            -->
+<!ELEMENT modelfile (#PCDATA)>
+<!ATTLIST modelfile
+	location CDATA #REQUIRED
+>
+<!--
+            
+            Attirbutes:
+                "location" - the J2EE mapping file URL
+                "wsdlLocation" - the wsdl file URL
+                
+            -->
+<!ELEMENT j2eeMappingFile EMPTY>
+<!ATTLIST j2eeMappingFile
+	location CDATA #REQUIRED
+	wsdlLocation CDATA #REQUIRED
+>
+<!--
+            An endpoint definition based on a service endpoint interface.
+            
+            Attributes:
+                "name" - name of the service endpoint interface (a Java interface);
+                "servantName" (optional) - name of the service endpoint implementation class;
+                "soapAction" (optional) - SOAPAction string to use for all operations in the interface;
+                "soapActionBase" (optional) - base URI for the SOAPAction string; the SOAPAction for
+                    a given operation will be obtained by appending the operation name to the value provided
+                    here; this attribute is exclusive with the "soapAction" one.
+                    
+            Elements:
+                "handlerChains" - specifies the handler chains for this endpoint.
+            -->
+<!ELEMENT interface (handlerChains?)>
+<!ATTLIST interface
+	name CDATA #REQUIRED
+	servantName CDATA #IMPLIED
+	soapAction CDATA #IMPLIED
+	soapActionBase CDATA #IMPLIED
+>
+<!--
+            A type mapping registry.
+            
+            Elements:
+                "import"? - a list of XML Schema documents that describe user-defined types.
+                "typeMapping"* - a sequence of type mappings, one per encoding.
+                "additionalTypes"? - a list of additional Java types that should be processed even if
+                    don't appear in the interfaces for the service.
+            -->
+<!ELEMENT typeMappingRegistry (import?, typeMapping*, additionalTypes?)>
+<!--
+            A set of handlerChains.
+            -->
+<!ELEMENT handlerChains (chain*)>
+<!--
+            A registry mapping XML namespace to/from Java packages.
+            
+            Elements:
+                "namespaceMapping"* - a list of mappings.
+            -->
+<!ELEMENT namespaceMappingRegistry (namespaceMapping*)>
+
+
+
+
+<!--
+            A list of schema documents to import, usually describing schema types used
+            by pluggable serializers.
+            
+            Elements:
+                "schema"* - a list of schema documents to import.
+            -->
+<!ELEMENT import (schema*)>
+<!--
+            A type mapping for a particular encoding.
+            
+            Attributes:
+                "encodingStyle" - the URI denoting the encoding.
+            
+            Elements:
+                "entry"* - a list of type mapping entries.
+            -->
+<!ELEMENT typeMapping (entry*)>
+<!ATTLIST typeMapping
+	encodingStyle CDATA #REQUIRED
+>
+<!--
+            A list of additional Java types to be processed by the tool..
+            
+            Elements:
+                "class"* - a list of classes to be processed.
+            -->
+<!ELEMENT additionalTypes (class*)>
+<!--
+            A handler chain.
+            
+            Attributes:
+                "runAt" - specifies whether the chain must run on the client or the server;
+                "roles" - the SOAP roles for the chain.
+                
+            Elements:
+                "handler"* - a sequence of handlers that form this chain.
+            -->
+<!ELEMENT chain (handler*)>
+<!ATTLIST chain
+	runAt (client | server) #REQUIRED
+	roles CDATA #IMPLIED
+>
+<!--
+            One XML namespace to/from Java package mapping.
+            
+            Attributes:
+                "namespace" - XML namespace name;
+                "packageName" - Java package name.
+            -->
+<!ELEMENT namespaceMapping (#PCDATA)>
+<!ATTLIST namespaceMapping
+	namespace CDATA #REQUIRED
+	packageName CDATA #REQUIRED
+>
+<!--
+            One schema document to be imported.
+            Attributes:
+                "namespace" - the namespace that the document describes;
+                "location" - a URL pointing to the schema document.
+            -->
+<!ELEMENT schema (#PCDATA)>
+<!ATTLIST schema
+	namespace CDATA #REQUIRED
+	location CDATA #REQUIRED
+>
+<!--
+            An entry in a type mapping.
+            
+            Attributes:
+                "schemaType" - the name of a schema type;
+                "javaType" - the name of the corresponding Java class;
+                "serializerFactory" - the name of the serializer factory class to use for this type;
+                "deserializerFactory" - the name of the deserializer factory class to use for this type.
+            -->
+<!ELEMENT entry (#PCDATA)>
+<!ATTLIST entry
+	schemaType CDATA #REQUIRED
+	javaType CDATA #REQUIRED
+	serializerFactory CDATA #REQUIRED
+	deserializerFactory CDATA #REQUIRED
+>
+<!--
+            A Java class description.
+            
+            Attributes:
+                "class" - the name of the class.
+            -->
+<!ELEMENT class (#PCDATA)>
+<!ATTLIST class
+	name CDATA #REQUIRED
+>
+<!--
+            A handler description.
+            
+            Attributes:
+                "className" - the name of the handler's class;
+                "headers" - the names of the headers consumed by this handler.
+            
+            Elements:
+                "property"* - initialization properties for this handler.
+            -->
+<!ELEMENT handler (property*)>
+<!ATTLIST handler
+	className CDATA #REQUIRED
+	headers CDATA #IMPLIED
+>
+<!--
+            An initialization property for a handler.
+            
+            Attributes:
+                "name" - the name of the property;
+                "value" - its value.
+            -->
+<!ELEMENT property (#PCDATA)>
+<!ATTLIST property
+	name CDATA #REQUIRED
+	value CDATA #REQUIRED
+>
+

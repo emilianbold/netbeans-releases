@@ -1,0 +1,204 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+	<folder name="J2EE">
+	    <folder name="DeploymentPlugins">
+		    <folder name="J2EE">
+			    <file name="Descriptor" url="nbdep.xml"/>
+				<file name="Factory.instance">
+					<attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.Installer.create"/>
+					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.Installer"/>
+	            		</file>
+				<file name="RegistryNodeFactory.instance">
+					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.NodeFactory"/>
+					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
+				</file>
+				<file name="ConfigurationSupport.instance">
+					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.ConfigurationSupportFacade"/>
+					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
+				</file>
+				<file name="J2eeVerifierSupport.instance">
+					<attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.VerifierImpl"/>
+					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.VerifierImpl"/>
+					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.VerifierSupport"/>
+				</file>
+				<file name="J2eePlatformFactory.instance">
+					<attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformFactory"/>
+					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformFactory"/>
+					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory"/>
+				</file>
+				<file name="OptionalFactory.instance">
+					<attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
+					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
+					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
+				</file>
+				<file name="AppServerPlanSplitter.instance">
+					<attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy.DirectoryDeploymentFacade"/>
+					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy.DirectoryDeploymentFacade"/>
+					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
+				</file>
+				<file name="DConfigBeanUIManager.instance">
+					<attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.DConfigBeanUIFactoryImpl"/>
+					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.DConfigBeanUIFactoryImpl"/>
+					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DConfigBeanUIFactory"/>
+				</file>
+				<folder name="DeploymentFileNames">
+					<folder name="WAR">
+						<file name="WEB-INF\sun-web.xml"/>
+					</folder>
+					<folder name="EJB">
+						<file name="META-INF\sun-ejb-jar.xml"/>
+						<file name="META-INF\sun-cmp-mappings.xml"/>
+					</folder>
+					<folder name="EAR">
+						<file name="META-INF\sun-application.xml"/>
+					</folder>
+					<folder name="RAR">
+						<file name="META-INF\sun-connector.xml"/>
+					</folder>
+
+					<folder name="CAR">
+						<file name="META-INF\sun-client-application.xml"/>
+					</folder>
+
+
+				</folder>
+			</folder>
+		</folder>
+ 
+	</folder>
+  <folder name="Templates">
+    <attr name="Classes/SunResources" boolvalue="true"/>
+    <attr name="Databases/SunResources" boolvalue="true"/>
+    <attr name="J2EE/SunResources" boolvalue="true"/>
+    <attr name="JSP_Servlet/SunResources" boolvalue="true"/>
+    <attr name="WebServices/SunResources" boolvalue="true"/>
+    <folder name="SunResources">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+      <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/WizardInformation.html" />
+      <!--attr name="templateType_Web" boolvalue="true"/-->
+      <file name="JDBC_Connection_Pool">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ConnPoolWizard.create" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/ConnectionPoolWizardInfo.html"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+     </file>
+     <file name="JDBC_Resource">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.DataSourceWizard.create" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/DataSourceWizardInfo.html"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+      </file>
+      <file name="Persistence_Resource">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.PMFWizard.create" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/PersistenceWizardInfo.html"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+     </file>
+     <file name="JavaMail_Resource">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.MailWizard.create" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/JavaMailWizardInfo.html"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+     </file>
+     <file name="JMS_Resource">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.JMSWizard.create" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/JavaMessageWizardInfo.html"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+     </file>
+    </folder>
+  </folder>
+
+
+
+
+
+
+  <folder name="Services">
+
+     <!-- Register the HelpSet in lookup: -->
+     <folder name="JavaHelp">
+        <!-- Merge after Core IDE Help: -->
+        <attr name="org-netbeans-modules-usersguide-above-regular.txt/com-sun-enterprise-tools-studio-j2ee-helpset.xml" boolvalue="true"/>
+        <!-- Merge it after the Server Plugin Integration online help: -->
+        <attr name="org-netbeans-modules-j2ee-server-above-regular.txt/com-sun-enterprise-tools-studio-j2ee-helpset.xml"
+                   boolvalue="true"/>
+        <!-- The following file supplies the IDE with the name of the helpset: -->
+        <file name="com-sun-enterprise-tools-studio-j2ee-helpset.xml" url="com-sun-enterprise-tools-studio-j2ee-helpset.xml"/>
+        <!-- Merge it before the last group of helpset TOC entries: -->
+        <attr name="com-sun-enterprise-tools-studio-j2ee-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" 
+                   boolvalue="true"/>
+     </folder>
+     
+     <folder name="J2EEServers">
+        <file name="PluginOptions.settings" url="PluginOptions.xml">
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle"/>
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad.gif"/>
+        </file>
+     </folder>
+
+  </folder>
+
+
+    <!-- actions -->
+    <folder name="Actions">
+        <folder name="Help">
+            <file name="com-sun-enterprise-tools-studio-j2ee-mainpage.xml" url="com-sun-enterprise-tools-studio-j2ee-mainpage.xml">
+            	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle"/> 
+            </file>
+        </folder>        
+    </folder>
+
+
+  <folder name="Menu">
+        <folder name="Tools">
+            <folder name="PointbaseMenu">
+                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.db.Bundle" />
+                <file name="StartServer.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.db.StartAction"/>
+                </file>
+                <file name="StopServer.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.db.StopAction"/>
+                </file>
+
+            </folder>
+        </folder>
+
+  </folder>
+  
+    <folder name="Plugins">
+      <!-- Register XML module catalog plugin -->
+        <folder name="XML">
+            <folder name="UserCatalogs">
+            
+                <file name="org-netbeans-modules-j2ee-sun-ide-j2ee-RunTimeDDCatalog.instance">
+                    <attr name="instanceCreate" 
+                        methodvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog.getRunTimeDDCatalog"/>
+                    <attr name="instanceOf" 
+                        stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+            <folder name="GrammarQueryManagers">
+                <!-- register semantics grammar for ejb-jar.xml(2.1)  due to code completion -->
+                <file name="org-netbeans-modules-j2ee-sun-ide-j2ee-RunTimeDDCatalog.instance"/>
+                <attr name="org-netbeans-modules-j2ee-sun-ide-j2ee-RunTimeDDCatalog.instance/semantics-grammar-to-generic-grammar-separator" boolvalue="true"/>
+            </folder> <!-- GrammarQueryManagers -->
+
+            
+        </folder>
+     </folder>
+
+           
+</filesystem>

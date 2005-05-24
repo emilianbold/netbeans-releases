@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+    <head>
+        <title>Undeploying an Application or Module from the SJS Application Server</title>
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+    </head>
+
+    <h2>Undeploying an Application or Module from the SJS Application Server</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>When the SJS Application Server is running, you can undeploy, enable, and disable an application 
+    or module in the Runtime window of the IDE.
+    By default, applications and modules are automatically registered, deployed and made available on the
+    Application Server when you run a project, and are automatically redeployed when they have been modified in the IDE.</p>    
+    <p>Deployed applications are visible in the Runtime window in the server instance node under
+    Enterprise Applications or Web Applications. Deployed EJB Modules are visible in the EJB Modules node.
+    When you undeploy an application or module, the archive file (<tt>ear</tt>, <tt>war</tt>, <tt>jar</tt>) 
+    is removed from the server and is no longer visible in the Runtime window.</p>
+    <p><b>To undeploy an application or module:</b></p>
+    <ol>
+        <li>Ensure the Application Server is running.</li>
+        <li>In the Runtime window, expand the Sun Java System Application Server instance 
+        and the node containing the application or module.</li>
+        <li>Right-click the application or module and choose Undeploy from the contextual menu.</li>
+    </ol>
+    
+    <p>The following options are also available as contextual menu items:</p>
+    <ul>
+        <li><b>Disable.</b> Disabling the application makes the archive file unavailable but it remains on the server. 
+        In order to use the application you need to enable it.</li>
+        <li><b>Enable.</b> Enabling an application that has been disabled makes the application available.</li>
+        <li><b>Properties.</b> Choosing properties opens the properties window.
+        Some of the properties can be modified through the properties window.</li>
+    </ul>
+    
+    
+    
+    <table>
+        <tr> 
+            <th colspan=2 align=left><a name="seealso">See Also</a></th>
+        </tr>
+        <tr> 
+            <td width="23"></td>
+            <td>
+            <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/deploy/deploy_ejb.html">Deploying and Undeploying an EJB Module</a></td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <small><a href="credits.html">Legal Notices</a></small> 
+    <table border="0" cellpadding="20">
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+    </table>
+
+    </body>
+
+</html>

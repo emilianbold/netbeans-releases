@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<validation>
+  <element>
+    <name>/root-element/object-eight/child-object-one/property-one</name>
+    <check>
+      <name>Boolean Constraint</name>
+    </check>   
+  </element>
+  <element>
+    <name>/root-element/non-zero-length-property</name>
+    <check>
+      <name>NonZeroLength Constraint</name>
+    </check>
+  </element>
+  <element>
+    <name>/root-element/object-one/property-two</name>
+    <check>
+      <name>ZeroToMaxInteger Constraint</name>
+    </check>
+  </element>
+  <element>
+    <name>/root-element/object-one/property-one</name>
+    <check>
+      <name>NonBlank Constraint</name>
+    </check>
+  </element>
+  <element>
+    <name>/root-element/number-property</name>
+    <check>
+      <name>Number Constraint</name>
+    </check>
+    <check>
+      <name>IntegerGreaterThan Constraint</name>
+      <parameters>
+        <parameter>
+            <name>value</name>
+            <value>100</value>
+        </parameter>
+      </parameters>
+    </check>
+  </element>
+  <element>
+    <name>/root-element/boolean-property</name>
+    <check>
+      <name>Boolean Constraint</name>
+    </check>   
+  </element>
+  <element>
+    <name>/root-element/enumeration-property</name>
+    <check>
+      <name>Enumeration Constraint</name>
+      <parameters>
+        <parameter>
+            <name>enumeration-value</name>
+            <value>red</value>
+            <value>green</value>
+            <value>blue</value>
+        </parameter>
+      </parameters>
+    </check>
+  </element>
+  <element>
+    <name>/root-element/range-property</name>
+    <check>
+      <name>Range Constraint</name>
+      <parameters>
+        <parameter>
+            <name>range-start</name>
+            <value>100</value>
+        </parameter>
+        <parameter>
+            <name>range-end</name>
+            <value>800</value>
+        </parameter>
+      </parameters>
+    </check>   
+    <check>
+      <name>Number Constraint</name>
+    </check>   
+  </element>
+</validation>

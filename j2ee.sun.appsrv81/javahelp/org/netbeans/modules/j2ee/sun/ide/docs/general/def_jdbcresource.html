@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+    <head>
+        <title>Setting up a JDBC Resource on the SJS Application Server</title>
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+    </head>
+
+    <h2>Setting up a JDBC Resource on the SJS Application Server</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>A JDBC resource (data source) provides applications with a means of connecting
+    to a database through a connection pool. Typically, there is at least one JDBC
+    resource for each database accessed by an application deployed in a
+    domain. It is possible to have more than one JDBC resource for a
+    database.</p>
+    <ul class="note">
+        <li>A JDBC resource connects to a JDBC connection pool. If you have not already
+        created the JDBC connection pool, you can create it in the wizard while you are creating the
+        resource.</li>
+    </ul>
+    <p>When you <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/editing/generate_cmp_beans.html">generate CMP entity beans from a database</a> 
+    or use the Enterprise Resources&nbsp;<img src="../images/arrow.gif" alt="and choose">&nbsp;Use Database command 
+    to generate lookup code for a database, the JDBC data sources are generated automatically.</p>
+    <p><b>To create a JDBC resource:</b></p>
+    <ol>
+        <li>Ensure the SJS Application Server is running.</li>
+        <li>Go to File <img src="../images/arrow.gif" alt="and choose">&nbsp;New (Ctrl-N).</li>
+        <li>In the Project combo box, choose either your EJB module or Web module.</li>
+        <li>Select Sun Resources in the Categories pane, JDBC Resource in the File Types pane, and click Next.</li>
+        <li>Select an existing connection pool or create a new one.</li>
+        <li>(required) Enter a JNDI name for the resource.</li>
+        <li>Enable or disable the resource by choosing true or false.</li>
+        <li>Enter a description and click Next.</li>
+        <li>Enter any properties for the resource.</li>
+        <li>Click Finish.</li>
+    </ol>
+    
+    <p>Once you have created a JDBC resource in your project, the resource needs to be registered with the server
+    to make it available to all applications and resources. The resource is automatically registered when the project is
+    deployed. Alternatively, you can manually <a href="register_resource.html">register the
+    resource with the server</a> without deploying or redeploying the project. 
+    Ensure the SJS Application Server is running before manually registering the resource with the server.</p>
+    
+    <table>
+        <tr> 
+            <th colspan=2 align=left><a name="seealso">See Also</a></th>
+        </tr>
+        <tr> 
+            <td width="23"></td>
+            <td>        
+            <a href="register_resource.html">Registering a Resource with the SJS Application Server</a> <br>
+            <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a> <br>
+            <a href="nbdocs:/org/netbeans/modules/db/docs/server_aboutdbconnect.html">About Connection Pools</a></td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <small><a href="credits.html">Legal Notices</a></small> 
+    <table border="0" cellpadding="20">
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+    </table>
+
+    </body>
+
+</html>

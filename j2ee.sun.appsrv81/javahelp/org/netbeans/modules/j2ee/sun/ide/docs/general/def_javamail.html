@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+    <head>
+        <title>Setting up a JavaMail Resource on the SJS Application Server</title>
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+    </head>
+
+    <h2>Setting up a JavaMail Resource on the SJS Application Server</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>The JavaMail API is a set of abstract APIs that model a mail system. 
+    The API provides a platform-independent and protocol-independent framework to 
+    build mail and messaging applications. The JavaMail API provides facilities 
+    for reading and sending email. Service providers implement particular protocols.</p>
+
+    <p>The JavaMail API is implemented as a Java platform optional package and is also
+    available as part of the J2EE platform.</p>
+    
+    
+    <p><b>To create a JavaMail resource:</b></p>
+    <ol>
+        <li>Go to File <img src="../images/arrow.gif" alt="and choose">&nbsp;New (Ctrl-N).</li>
+        <li>In the Project combo box, choose either your EJBModule or WebModule.</li>
+        <li>Select Sun Resources in the Categories pane, JavaMail Resource in the File Types pane, and click Next.</li>
+        <li>(required) Enter a JNDI name for the resource.</li>
+        <li>(required) In the mail host field, enter the DNS name of the default mail server.</li>           
+        <li>(required) In the default user field, enter the user name to use when connecting to the mail server.</li>        
+        <li>(required) In the Default Return Address field, enter the email address of the default user, in the form <tt>username@host.domain</tt>.</li>          
+        <li>Enable or disable the resource by choosing true or false.</li>
+        <li>Enter a description.</li>        
+        <li>In the Advanced area, change the field values only if the SJS Application Server's mail 
+        provider has been reconfigured to use a nondefault store or transport protocol.
+        Select Tru for Debug Enabled for extra debugging output.</li>        
+        <li>Click Next.</li>
+        <li>Enter any properties for the resource.</li>
+        <li>Click Finish.</li>
+    </ol>
+    
+    <p>Once you have created the object in your project, you need to register the 
+    resource with the server.</p>
+    <p>For more on the Sun J2EE JavaMail API, see:</p>
+    <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://java.sun.com/products/javamail/">
+        <param name="text" value="<html><u>http://java.sun.com/products/javamail/</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object> 
+    <table>
+        <tr> 
+            <th colspan=2 align=left><a name="seealso">See Also</a></th>
+        </tr>
+        <tr> 
+            <td width="23"></td>
+            <td>
+           <a href="register_resource.html">Registering a Resource with the SJS Application Server</a></td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <small><a href="credits.html">Legal Notices</a></small> 
+    <table border="0" cellpadding="20">
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+    </table>
+
+    </body>
+
+</html>

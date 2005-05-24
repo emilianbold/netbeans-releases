@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<metaDD>
+        <extends>org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean</extends>
+	<meta-element>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.SecurityRoleMapping</import>
+		<dtd-name>sun-application</dtd-name>
+		<bean-name>SunApplication</bean-name>
+		<implements>org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication</implements>
+		<user-code>
+                    public void setVersion(java.math.BigDecimal value) {
+                    }
+                    public java.math.BigDecimal getVersion() {
+                        return new java.math.BigDecimal("1.30");
+                    }
+                    public void setRealm(String value) {
+                    }
+                    public String getRealm() {
+                        return null;
+                    }
+                </user-code>
+	</meta-element>
+	<meta-element>
+		<dtd-name>web</dtd-name>
+		<bean-name>Web</bean-name>
+		<implements>org.netbeans.modules.j2ee.sun.dd.api.app.Web</implements>
+	</meta-element>
+	<meta-element>
+		<dtd-name>pass-by-reference</dtd-name>
+		<bean-name>PassByReference</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>unique-id</dtd-name>
+		<bean-name>UniqueId</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+                <skip-generation/>
+		<dtd-name>security-role-mapping</dtd-name>
+		<bean-name>SecurityRoleMapping</bean-name>
+		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping</implements>
+	</meta-element>
+	<meta-element>
+		<dtd-name>role-name</dtd-name>
+		<bean-name>RoleName</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>principal-name</dtd-name>
+		<bean-name>PrincipalName</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>group-name</dtd-name>
+		<bean-name>GroupName</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>#PCDATA</dtd-name>
+		<bean-name>Pcdata</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>web-uri</dtd-name>
+		<bean-name>WebUri</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>context-root</dtd-name>
+		<bean-name>ContextRoot</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+</metaDD>

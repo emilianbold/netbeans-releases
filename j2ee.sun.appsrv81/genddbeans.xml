@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="GenerateDDBeans" default="generateddbeans" basedir=".">
+    <description>Builds DDBeans for SJSAS server specific deployment descriptors</description>
+	<import file="../../../../../../f4j_all/cdpbuild/templates/cdpprojectized.xml"/>
+
+	<target name="s2binit" depends="build-init">
+		<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+			<classpath>
+				<pathelement path="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
+				<pathelement path="${schema2beans/dev.dir}/${nb.modules/autoload.dir}/schema2beansdev.jar" />
+				<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
+			</classpath>
+		</taskdef>
+		
+		<!-- properties used by all targets -->
+		<property name="packageAsPath" value="org/netbeans/modules/j2ee/sun/common/dd"/>
+		<property name="basePackage" value="org.netbeans.modules.j2ee.sun.common.dd"/>
+		<property name="rootDir" value="libddbeans"/>
+	</target>
+	
+	<target name="ddbeans_dependencies" depends="s2binit">
+		<uptodate property="common.uptodate" targetfile="${rootDir}/${packageAsPath}/EjbRef.java">
+			<srcfiles dir= "${rootDir}/${packageAsPath}" includes="**/common_elements.*"/>			
+		</uptodate>
+		<uptodate property="appclient.uptodate" targetfile="${rootDir}/${packageAsPath}/appclient/SunApplicationClient.java">
+			<srcfiles dir= "${rootDir}/${packageAsPath}/appclient" includes="**/sun-application-client_1_4-1.*"/>
+		</uptodate>
+		<uptodate property="application.uptodate" targetfile="${rootDir}/${packageAsPath}/application/SunApplication.java">
+			<srcfiles dir= "${rootDir}/${packageAsPath}/application" includes="**/sun-application_1_4-0.*"/>
+		</uptodate>
+		<uptodate property="connector.uptodate" targetfile="${rootDir}/${packageAsPath}/connector/SunConnector.java">
+			<srcfiles dir= "${rootDir}/${packageAsPath}/connector" includes="**/sun-connector_1_0-0.*"/>
+		</uptodate>
+		<uptodate property="cmpmapping.uptodate" targetfile="${rootDir}/${packageAsPath}/cmpmapping/SunCmpMapping.java">
+			<srcfiles dir= "${rootDir}/${packageAsPath}/cmpmapping" includes="**/sun-cmp-mapping_1_2.*"/>
+		</uptodate>
+		<uptodate property="ejb.uptodate" targetfile="${rootDir}/${packageAsPath}/ejb/SunEjbJar.java">
+			<srcfiles dir= "${rootDir}/${packageAsPath}/ejb" includes="**/sun-ejb-jar_2_1-1.*"/>
+		</uptodate>
+		<uptodate property="webapp.uptodate" targetfile="${rootDir}/${packageAsPath}/webapp/SunWebApp.java">
+			<srcfiles dir= "${rootDir}/${packageAsPath}/webapp" includes="**/sun-web-app_2_4-1.*"/>
+		</uptodate>
+	</target>
+
+	<target name="gen_common" depends="ddbeans_dependencies" unless="common.uptodate">
+		<echo message="Generating common DDBeans"/>
+		<property name="common_res_root" value="${rootDir}/${packageAsPath}"/>
+		<schema2beans 
+			schema="${common_res_root}/common_elements.dtd"
+			mddFile="${common_res_root}/common_elements.mdd"
+			docRoot="dummy"
+			package="${basePackage}"
+			rootDir="${rootDir}"
+			throwErrors="true"
+			validate="true"
+			attrProp="true"/>
+	</target>
+	
+	<target name="gen_appclient" depends="ddbeans_dependencies" unless="appclient.uptodate">
+		<echo message="Generating DDBeans for sun-application-client." />
+		<property name="appclient_res_root" value="${rootDir}/${packageAsPath}/appclient"/>
+		<schema2beans 
+			schema="${appclient_res_root}/sun-application-client_1_4-1.dtd"
+			mddFile="${appclient_res_root}/sun-application-client_1_4-1.mdd"
+			docRoot="sun-application-client"
+			package="${basePackage}.appclient"
+			rootDir="${rootDir}"
+			throwErrors="true"
+			validate="true"
+			attrProp="true"/>
+		<replace dir="${appclient_res_root}">
+			<include name="**/*.java"/>
+			<replacefilter token="${basePackage}.appclient.EjbRef" value="${basePackage}.EjbRef"/>
+			<replacefilter token="${basePackage}.appclient.ResourceRef" value="${basePackage}.ResourceRef"/>
+			<replacefilter token="${basePackage}.appclient.ResourceEnvRef" value="${basePackage}.ResourceEnvRef"/>
+			<replacefilter token="${basePackage}.appclient.ServiceRef" value="${basePackage}.ServiceRef"/>
+			<replacefilter token="${basePackage}.appclient.MessageDestination" value="${basePackage}.MessageDestination"/>
+		</replace>
+	</target>
+
+	<target name="gen_application" depends="ddbeans_dependencies" unless="application.uptodate">
+		<echo message="Generating DDBeans for sun-application." />
+		<property name="application_res_root" value="${rootDir}/${packageAsPath}/application"/>
+		<schema2beans 
+			schema="${application_res_root}/sun-application_1_4-0.dtd"
+			mddFile="${application_res_root}/sun-application_1_4-0.mdd"
+			docRoot="sun-application"
+			package="${basePackage}.application"
+			rootDir="${rootDir}"
+			throwErrors="true"
+			validate="true"
+			attrProp="true"/>
+		<replace dir="${application_res_root}">
+			<include name="**/*.java"/>
+			<replacefilter token="${basePackage}.application.SecurityRoleMapping" value="${basePackage}.SecurityRoleMapping"/>
+		</replace>
+	</target>
+	
+	<target name="gen_connector" depends="ddbeans_dependencies" unless="connector.uptodate">
+		<echo message="Generating DDBeans for sun-connector." />
+		<property name="connector_res_root" value="${rootDir}/${packageAsPath}/connector"/>
+		<schema2beans 
+			schema="${connector_res_root}/sun-connector_1_0-0.dtd"
+			mddFile="${connector_res_root}/sun-connector_1_0-0.mdd"
+			docRoot="sun-connector"
+			package="${basePackage}.connector"
+			rootDir="${rootDir}"
+			throwErrors="true"
+			validate="true"
+			attrProp="true"/>
+	</target>
+	
+	<target name="gen_cmpmapping" depends="ddbeans_dependencies" unless="cmpmapping.uptodate">
+		<echo message="Generating DDBeans for sun-cmp-mapping." />
+		<property name="cmpmapping_res_root" value="${rootDir}/${packageAsPath}/cmpmapping"/>
+		<schema2beans 
+			schema="${cmpmapping_res_root}/sun-cmp-mapping_1_2.dtd"
+			mddFile="${cmpmapping_res_root}/sun-cmp-mapping_1_2.mdd"
+			docRoot="sun-cmp-mappings"
+			package="${basePackage}.cmpmapping"
+			rootDir="${rootDir}"
+			throwErrors="true"
+			validate="true"
+			attrProp="true"/>
+	</target>
+	
+	<target name="gen_ejb" depends="ddbeans_dependencies" unless="ejb.uptodate">
+		<echo message="Generating DDBeans for sun-ejb-jar." />
+		<property name="ejb_res_root" value="${rootDir}/${packageAsPath}/ejb"/>
+		<schema2beans 
+			schema="${ejb_res_root}/sun-ejb-jar_2_1-1.dtd"
+			mddFile="${ejb_res_root}/sun-ejb-jar_2_1-1.mdd"
+			docRoot="sun-ejb-jar"
+			package="${basePackage}.ejb"
+			rootDir="${rootDir}"
+			throwErrors="true"
+			validate="true"
+			attrProp="true"/>
+		<replace dir="${ejb_res_root}">
+			<include name="**/*.java"/>
+			<replacefilter token="${basePackage}.ejb.SecurityRoleMapping" value="${basePackage}.SecurityRoleMapping"/>
+			<replacefilter token="${basePackage}.ejb.EjbRef" value="${basePackage}.EjbRef"/>
+			<replacefilter token="${basePackage}.ejb.ResourceRef" value="${basePackage}.ResourceRef"/>
+			<replacefilter token="${basePackage}.ejb.ResourceEnvRef" value="${basePackage}.ResourceEnvRef"/>
+			<replacefilter token="${basePackage}.ejb.ServiceRef" value="${basePackage}.ServiceRef"/>
+			<replacefilter token="${basePackage}.ejb.MessageDestination" value="${basePackage}.MessageDestination"/>
+			<replacefilter token="${basePackage}.ejb.WebserviceDescription" value="${basePackage}.WebserviceDescription"/>
+			<replacefilter token="${basePackage}.ejb.WebserviceEndpoint" value="${basePackage}.WebserviceEndpoint"/>
+		</replace>
+	</target>
+	
+	<target name="gen_webapp" depends="ddbeans_dependencies" unless="webapp.uptodate">
+		<echo message="Generating DDBeans for sun-web-app." />
+		<property name="webapp_res_root" value="${rootDir}/${packageAsPath}/webapp"/>
+		<schema2beans 
+			schema="${webapp_res_root}/sun-web-app_2_4-1.dtd"
+			mddFile="${webapp_res_root}/sun-web-app_2_4-1.mdd"
+			docRoot="sun-web-app"
+			package="${basePackage}.webapp"
+			rootDir="${rootDir}"
+			throwErrors="true"
+			validate="true"
+			attrProp="true"/>
+		<replace dir="${webapp_res_root}">
+			<include name="**/*.java"/>
+			<replacefilter token="${basePackage}.webapp.SecurityRoleMapping" value="${basePackage}.SecurityRoleMapping"/>
+			<replacefilter token="${basePackage}.webapp.EjbRef" value="${basePackage}.EjbRef"/>
+			<replacefilter token="${basePackage}.webapp.ResourceRef" value="${basePackage}.ResourceRef"/>
+			<replacefilter token="${basePackage}.webapp.ResourceEnvRef" value="${basePackage}.ResourceEnvRef"/>
+			<replacefilter token="${basePackage}.webapp.ServiceRef" value="${basePackage}.ServiceRef"/>
+			<replacefilter token="${basePackage}.webapp.MessageDestination" value="${basePackage}.MessageDestination"/>
+			<replacefilter token="${basePackage}.webapp.WebserviceDescription" value="${basePackage}.WebserviceDescription"/>
+			<replacefilter token="${basePackage}.webapp.WebserviceEndpoint" value="${basePackage}.WebserviceEndpoint"/>
+		</replace>
+	</target>
+	
+	<target name="generateddbeans" depends="gen_common, gen_appclient, gen_application, gen_connector, gen_cmpmapping, gen_ejb, gen_webapp">
+		<!-- All java files generated.  Now add copyrights. -->
+		<replace dir="${rootDir}/${packageAsPath}">
+			<include name="**/*.java"/>
+			<replacetoken>	This generated bean class</replacetoken>
+			<replacevalue>  Copyright 2003 - 2004 Sun Microsystems, Inc. All rights reserved.
+ *  SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ *
+ *  This generated bean class</replacevalue>
+		</replace>
+	</target>
+				
+	<target name="clean" depends="s2binit">
+		<delete>
+			<fileset dir="${rootDir}/${packageAsPath}">
+				<include name="**/*.java"/>
+				<exclude name="**/SunBaseBean.java"/>
+				<exclude name="**/*.dtd"/>
+				<exclude name="**/*.mdd"/>
+			</fileset>
+		</delete>		
+	</target>
+
+</project>

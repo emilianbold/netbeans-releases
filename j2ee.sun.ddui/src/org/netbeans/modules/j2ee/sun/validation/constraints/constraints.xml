@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<constraints>
+  <check-info>
+    <name>Boolean Constraint</name>
+    <classname>org.netbeans.modules.j2ee.sun.validation.constraints.BooleanConstraint</classname>
+  </check-info>
+  <check-info>
+    <name>Cardinal Constraint</name>
+    <classname>org.netbeans.modules.j2ee.sun.validation.constraints.CardinalConstraint</classname>
+      <arguments>
+	  <argument>
+	    <name>cardinal</name>
+	    <type>java.lang.String</type>
+	  </argument>
+      </arguments>
+  </check-info>
+  <check-info>
+    <name>Mandatory Constraint</name>
+    <classname>org.netbeans.modules.j2ee.sun.validation.constraints.MandatoryConstraint</classname>
+  </check-info>
+  <check-info>
+    <name>NonZeroLength Constraint</name>
+    <classname>org.netbeans.modules.j2ee.sun.validation.constraints.NonZeroLengthConstraint</classname>
+  </check-info>
+  <check-info>
+    <name>Number Constraint</name>
+    <classname>org.netbeans.modules.j2ee.sun.validation.constraints.NumberConstraint</classname>
+  </check-info>
+  <check-info>
+    <name>Range Constraint</name>
+    <classname>org.netbeans.modules.j2ee.sun.validation.constraints.RangeConstraint</classname>
+      <arguments>
+	  <argument>
+	    <name>range-start</name>
+	    <type>java.lang.String</type>
+	  </argument>
+	  <argument>
+	    <name>range-end</name>
+	    <type>java.lang.String</type>
+	  </argument>
+      </arguments>
+  </check-info>
+  <check-info>
+    <name>Enumeration Constraint</name>
+    <classname>org.netbeans.modules.j2ee.sun.validation.constraints.InConstraint</classname>
+      <arguments>
+	  <argument>
+	    <name>enumeration-value</name>
+	    <type>java.lang.String[]</type>
+          </argument>
+      </arguments>
+  </check-info>
+  <check-info>
+    <name>NonBlank Constraint</name>
+    <classname>org.netbeans.modules.j2ee.sun.validation.constraints.NonBlankConstraint</classname>
+  </check-info>
+  <check-info>
+    <name>ZeroToMaxInteger Constraint</name>
+    <classname>org.netbeans.modules.j2ee.sun.validation.constraints.ZeroToMaxIntegerConstraint</classname>
+  </check-info>
+  <check-info>
+    <name>IntegerGreaterThan Constraint</name>
+    <classname>org.netbeans.modules.j2ee.sun.validation.constraints.IntegerGreaterThanConstraint</classname>
+      <arguments>
+	  <argument>
+	    <name>value</name>
+	    <type>java.lang.String</type>
+	  </argument>
+      </arguments>
+  </check-info>
+</constraints>

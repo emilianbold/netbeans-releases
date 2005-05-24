@@ -1,0 +1,1659 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+	This is the root of the ejb-jar deployment descriptor.
+
+      -->
+<!ELEMENT ejb-jar ((description*, display-name*, icon*), enterprise-beans, relationships?, assembly-descriptor?, ejb-client-jar?)>
+<!--version: 
+
+	  The version specifies the version of the
+	  EJB specification that the instance document must
+	  comply with. This information enables deployment tools
+	  to validate a particular EJB Deployment
+	  Descriptor with respect to a specific version of the EJB
+	  schema.
+
+	-->
+<!ATTLIST ejb-jar
+	version CDATA #REQUIRED
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT display-name (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST display-name
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	The icon type contains small-icon and large-icon elements
+	that specify the file names for small and large GIF or
+	JPEG icon images used to represent the parent element in a
+	GUI tool.
+
+	The xml:lang attribute defines the language that the
+	icon file names are provided in. Its value is "en" (English)
+	by default.
+
+      -->
+<!ELEMENT icon (small-icon?, large-icon?)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST icon
+	lang CDATA #IMPLIED
+	id ID #IMPLIED
+>
+<!--
+
+	The enterprise-beansType declares one or more enterprise
+	beans. Each bean can be a session, entity or message-driven
+	bean.
+
+      -->
+<!ELEMENT enterprise-beans (session | entity | message-driven)+>
+<!ATTLIST enterprise-beans
+	id ID #IMPLIED
+>
+<!--
+
+	The relationshipsType describes the relationships in
+	which entity beans with container-managed persistence
+	participate. The relationshipsType contains an optional
+	description; and a list of ejb-relation elements, which
+	specify the container managed relationships.
+
+      -->
+<!ELEMENT relationships (description*, ejb-relation+)>
+<!ATTLIST relationships
+	id ID #IMPLIED
+>
+<!--
+
+	    Providing an assembly-descriptor in the deployment
+	    descriptor is optional for the ejb-jar file
+	    producer.
+
+	  -->
+<!ELEMENT assembly-descriptor (security-role*, method-permission*, container-transaction*, message-destination*, exclude-list?)>
+<!ATTLIST assembly-descriptor
+	id ID #IMPLIED
+>
+<!ELEMENT ejb-client-jar (#PCDATA)>
+<!ATTLIST ejb-client-jar
+	id ID #IMPLIED
+>
+<!ELEMENT small-icon (#PCDATA)>
+<!ATTLIST small-icon
+	id ID #IMPLIED
+>
+<!ELEMENT large-icon (#PCDATA)>
+<!ATTLIST large-icon
+	id ID #IMPLIED
+>
+<!--
+
+	The session-beanType declares an session bean. The
+	declaration consists of:
+
+	    - an optional description
+	    - an optional display name
+	    - an optional icon element that contains a small and a large
+	      icon file name
+	    - a name assigned to the enterprise bean
+	      in the deployment description
+	    - the names of the session bean's remote home and
+	      remote interfaces, if any
+	    - the names of the session bean's local home and
+	      local interfaces, if any
+	    - the name of the session bean's web service endpoint
+	      interface, if any
+	    - the session bean's implementation class
+	    - the session bean's state management type
+	    - the session bean's transaction management type
+	    - an optional declaration of the bean's
+	      environment entries
+	    - an optional declaration of the bean's EJB references
+	    - an optional declaration of the bean's local
+	      EJB references
+	    - an optional declaration of the bean's web
+	      service references
+	    - an optional declaration of the security role
+	      references
+	    - an optional declaration of the security identity
+	      to be used for the execution of the bean's methods
+	    - an optional declaration of the bean's resource
+	      manager connection factory references
+	    - an optional declaration of the bean's resource
+	      environment references.
+	    - an optional declaration of the bean's message
+	      destination references
+
+	The elements that are optional are "optional" in the sense
+	that they are omitted when if lists represented by them are
+	empty.
+
+	Either both the local-home and the local elements or both
+	the home and the remote elements must be specified for the
+	session bean.
+
+	The service-endpoint element may only be specified if the
+	bean is a stateless session bean.
+
+      -->
+<!ELEMENT session (description*, display-name*, icon*, ejb-name, home?, remote?, local-home?, local?, service-endpoint?, ejb-class, session-type, transaction-type, 
+                   (env-entry*, ejb-ref*, ejb-local-ref*, service-ref*, resource-ref*, resource-env-ref*, message-destination-ref*), 
+                   security-role-ref*, security-identity?)>
+<!ATTLIST session
+	id ID #IMPLIED
+>
+<!--
+
+	The entity-beanType declares an entity bean. The declaration
+	consists of:
+
+	    - an optional description
+	    - an optional display name
+	    - an optional icon element that contains a small and a large
+	      icon file name
+	    - a unique name assigned to the enterprise bean
+	      in the deployment descriptor
+	    - the names of the entity bean's remote home
+	      and remote interfaces, if any
+	    - the names of the entity bean's local home and local
+	      interfaces, if any
+	    - the entity bean's implementation class
+	    - the entity bean's persistence management type
+	    - the entity bean's primary key class name
+	    - an indication of the entity bean's reentrancy
+	    - an optional specification of the
+	      entity bean's cmp-version
+	    - an optional specification of the entity bean's
+	      abstract schema name
+	    - an optional list of container-managed fields
+	    - an optional specification of the primary key
+	      field
+	    - an optional declaration of the bean's environment
+	      entries
+	    - an optional declaration of the bean's EJB
+	      references
+	    - an optional declaration of the bean's local
+	      EJB references
+	    - an optional declaration of the bean's web
+	      service references
+	    - an optional declaration of the security role
+	      references
+	    - an optional declaration of the security identity
+	      to be used for the execution of the bean's methods
+	    - an optional declaration of the bean's
+	      resource manager connection factory references
+	    - an optional declaration of the bean's
+	      resource environment references
+	    - an optional declaration of the bean's message
+	      destination references
+	    - an optional set of query declarations
+	      for finder and select methods for an entity
+	      bean with cmp-version 2.x.
+
+	The optional abstract-schema-name element must be specified
+	for an entity bean with container-managed persistence and
+	cmp-version 2.x.
+
+	The optional primkey-field may be present in the descriptor
+	if the entity's persistence-type is Container.
+
+	The optional cmp-version element may be present in the
+	descriptor if the entity's persistence-type is Container. If
+	the persistence-type is Container and the cmp-version
+	element is not specified, its value defaults to 2.x.
+
+	The optional home and remote elements must be specified if
+	the entity bean cmp-version is 1.x.
+
+	The optional home and remote elements must be specified if
+	the entity bean has a remote home and remote interface.
+
+	The optional local-home and local elements must be specified
+	if the entity bean has a local home and local interface.
+
+	Either both the local-home and the local elements or both
+	the home and the remote elements must be specified.
+
+	The optional query elements must be present if the
+	persistence-type is Container and the cmp-version is 2.x and
+	query methods other than findByPrimaryKey have been defined
+	for the entity bean.
+
+	The other elements that are optional are "optional" in the
+	sense that they are omitted if the lists represented by them
+	are empty.
+
+	At least one cmp-field element must be present in the
+	descriptor if the entity's persistence-type is Container and
+	the cmp-version is 1.x, and none must not be present if the
+	entity's persistence-type is Bean.
+
+      -->
+<!ELEMENT entity (description*, display-name*, icon*, ejb-name, home?, remote?, local-home?, local?, ejb-class, persistence-type, prim-key-class, reentrant, cmp-version?, abstract-schema-name?, cmp-field*, primkey-field?, 
+           (env-entry*, ejb-ref*, ejb-local-ref*, service-ref*, resource-ref*, resource-env-ref*, message-destination-ref*), 
+           security-role-ref*, security-identity?, query*)>
+<!ATTLIST entity
+	id ID #IMPLIED
+>
+<!--
+
+	The message-driven element declares a message-driven
+	bean. The declaration consists of:
+
+	    - an optional description
+	    - an optional display name
+	    - an optional icon element that contains a small and a large
+	      icon file name.
+	    - a name assigned to the enterprise bean in
+	      the deployment descriptor
+	    - the message-driven bean's implementation class
+	    - an optional declaration of the bean's messaging
+	      type
+	    - the message-driven bean's transaction management type
+	    - an optional declaration of the bean's
+	      message-destination-type
+	    - an optional declaration of the bean's
+	      message-destination-link
+	    - an optional declaration of the message-driven bean's
+	      activation configuration properties
+	    - an optional declaration of the bean's environment
+	      entries
+	    - an optional declaration of the bean's EJB references
+	    - an optional declaration of the bean's local EJB
+	      references
+	    - an optional declaration of the bean's web service
+	      references
+	    - an optional declaration of the security
+	      identity to be used for the execution of the bean's
+	      methods
+	    - an optional declaration of the bean's
+	      resource manager connection factory
+	      references
+	    - an optional declaration of the bean's resource
+	      environment references.
+	    - an optional declaration of the bean's message
+	      destination references
+
+      -->
+<!ELEMENT message-driven (description*, display-name*, icon*, ejb-name, ejb-class, messaging-type?, transaction-type, message-destination-type?, message-destination-link?, activation-config?, (env-entry*, ejb-ref*, ejb-local-ref*, service-ref*, resource-ref*, resource-env-ref*, message-destination-ref*), security-identity?)>
+<!ATTLIST message-driven
+	id ID #IMPLIED
+>
+
+<!--
+
+	The ejb-relationType describes a relationship between two
+	entity beans with container-managed persistence.  It is used
+	by ejb-relation elements. It contains a description; an
+	optional ejb-relation-name element; and exactly two
+	relationship role declarations, defined by the
+	ejb-relationship-role elements. The name of the
+	relationship, if specified, is unique within the ejb-jar
+	file.
+
+      -->
+<!ELEMENT ejb-relation (description*, ejb-relation-name?, ejb-relationship-role, ejb-relationship-role)>
+<!ATTLIST ejb-relation
+	id ID #IMPLIED
+>
+<!ELEMENT security-role (description*, role-name)>
+<!ATTLIST security-role
+	id ID #IMPLIED
+>
+<!--
+
+	The method-permissionType specifies that one or more
+	security roles are allowed to invoke one or more enterprise
+	bean methods. The method-permissionType consists of an
+	optional description, a list of security role names or an
+	indicator to state that the method is unchecked for
+	authorization, and a list of method elements.
+
+	The security roles used in the method-permissionType
+	must be defined in the security-role elements of the
+	deployment descriptor, and the methods must be methods
+	defined in the enterprise bean's home, component and/or web
+	service endpoint interfaces.
+
+      -->
+<!ELEMENT method-permission (description*, (role-name+ | unchecked), method+)>
+<!ATTLIST method-permission
+	id ID #IMPLIED
+>
+<!--
+
+	The container-transactionType specifies how the container
+	must manage transaction scopes for the enterprise bean's
+	method invocations. It defines an optional description, a
+	list of method elements, and a transaction attribute. The
+	transaction attribute is to be applied to all the specified
+	methods.
+
+      -->
+<!ELEMENT container-transaction (description*, method+, trans-attribute)>
+<!ATTLIST container-transaction
+	id ID #IMPLIED
+>
+<!ELEMENT message-destination (description*, display-name*, icon*, message-destination-name)>
+<!ATTLIST message-destination
+	id ID #IMPLIED
+>
+<!--
+
+	The exclude-listType specifies one or more methods which
+	the Assembler marks to be uncallable.
+
+	If the method permission relation contains methods that are
+	in the exclude list, the Deployer should consider those
+	methods to be uncallable.
+
+      -->
+<!ELEMENT exclude-list (description*, method+)>
+<!ATTLIST exclude-list
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:NMTOKEN.
+
+      -->
+<!ELEMENT ejb-name (#PCDATA)>
+<!ATTLIST ejb-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT home (#PCDATA)>
+<!ATTLIST home
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT remote (#PCDATA)>
+<!ATTLIST remote
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT local-home (#PCDATA)>
+<!ATTLIST local-home
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT local (#PCDATA)>
+<!ATTLIST local
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-endpoint element contains the
+	    fully-qualified name of the enterprise bean's web
+	    service endpoint interface. The service-endpoint
+	    element may only be specified for a stateless
+	    session bean. The specified interface must be a
+	    valid JAX-RPC service endpoint interface.
+
+	  -->
+<!ELEMENT service-endpoint (#PCDATA)>
+<!ATTLIST service-endpoint
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT ejb-class (#PCDATA)>
+<!ATTLIST ejb-class
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT session-type (#PCDATA)>
+<!ATTLIST session-type
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT transaction-type (#PCDATA)>
+<!ATTLIST transaction-type
+	id ID #IMPLIED
+>
+<!--
+
+	The env-entryType is used to declare an application's
+	environment entry. The declaration consists of an optional
+	description, the name of the environment entry, and an
+	optional value.  If a value is not specified, one must be
+	supplied during deployment.
+
+	It is used by env-entry elements.
+
+      -->
+<!ELEMENT env-entry (description*, env-entry-name, env-entry-type, env-entry-value?)>
+<!ATTLIST env-entry
+	id ID #IMPLIED
+>
+<!--
+
+	The ejb-refType is used by ejb-ref elements for the
+	declaration of a reference to an enterprise bean's home. The
+	declaration consists of:
+
+	    - an optional description
+	    - the EJB reference name used in the code of
+	      the Deployment Component that's referencing the enterprise
+	      bean
+	    - the expected type of the referenced enterprise bean
+	    - the expected home and remote interfaces of the referenced
+	      enterprise bean
+	    - optional ejb-link information, used to specify the
+	      referenced enterprise bean
+
+      -->
+<!ELEMENT ejb-ref (description*, ejb-ref-name, ejb-ref-type, home, remote, ejb-link?)>
+<!ATTLIST ejb-ref
+	id ID #IMPLIED
+>
+<!--
+
+	The ejb-local-refType is used by ejb-local-ref elements for
+	the declaration of a reference to an enterprise bean's local
+	home. The declaration consists of:
+
+	    - an optional description
+	    - the EJB reference name used in the code of the Deployment
+	      Component that's referencing the enterprise bean
+	    - the expected type of the referenced enterprise bean
+	    - the expected local home and local interfaces of the
+	      referenced enterprise bean
+	    - optional ejb-link information, used to specify the
+	      referenced enterprise bean
+
+      -->
+<!ELEMENT ejb-local-ref (description*, ejb-ref-name, ejb-ref-type, local-home, local, ejb-link?)>
+<!ATTLIST ejb-local-ref
+	id ID #IMPLIED
+>
+<!--
+
+	The service-ref element declares a reference to a Web
+	service. It contains optional description, display name and
+	icons, a declaration of the required Service interface,
+	an optional WSDL document location, an optional set
+	of JAX-RPC mappings, an optional QName for the service element,
+	an optional set of Service Endpoint Interfaces to be resolved
+	by the container to a WSDL port, and an optional set of handlers.
+
+      -->
+<!ELEMENT service-ref (description*, display-name*, icon*, service-ref-name, service-interface, wsdl-file?, jaxrpc-mapping-file?, service-qname?, port-component-ref*, handler*)>
+<!ATTLIST service-ref
+	id ID #IMPLIED
+>
+<!ELEMENT resource-ref (description*, res-ref-name, res-type, res-auth, res-sharing-scope?)>
+<!ATTLIST resource-ref
+	id ID #IMPLIED
+>
+<!ELEMENT resource-env-ref (description*, resource-env-ref-name, resource-env-ref-type)>
+<!ATTLIST resource-env-ref
+	id ID #IMPLIED
+>
+<!ELEMENT message-destination-ref (description*, message-destination-ref-name, message-destination-type, message-destination-usage, message-destination-link?)>
+<!ATTLIST message-destination-ref
+	id ID #IMPLIED
+>
+<!--
+
+	The security-role-refType contains the declaration of a
+	security role reference in a component's or a
+	Deployment Component's code. The declaration consists of an
+	optional description, the security role name used in the
+	code, and an optional link to a security role. If the
+	security role is not specified, the Deployer must choose an
+	appropriate security role.
+
+      -->
+<!ELEMENT security-role-ref (description*, role-name, role-link?)>
+<!ATTLIST security-role-ref
+	id ID #IMPLIED
+>
+<!--
+
+	The security-identityType specifies whether the caller's
+	security identity is to be used for the execution of the
+	methods of the enterprise bean or whether a specific run-as
+	identity is to be used. It contains an optional description
+	and a specification of the security identity to be used.
+
+      -->
+<!ELEMENT security-identity (description*, (use-caller-identity | run-as))>
+<!ATTLIST security-identity
+	id ID #IMPLIED
+>
+
+
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT persistence-type (#PCDATA)>
+<!ATTLIST persistence-type
+	id ID #IMPLIED
+>
+<!--
+
+	    The prim-key-class element contains the
+	    fully-qualified name of an
+	    entity bean's primary key class.
+
+	    If the definition of the primary key class is
+	    deferred to deployment time, the prim-key-class
+	    element should specify java.lang.Object.
+
+	  -->
+<!ELEMENT prim-key-class (#PCDATA)>
+<!ATTLIST prim-key-class
+	id ID #IMPLIED
+>
+<!--
+
+	    The reentrant element specifies whether an entity
+	    bean is reentrant or not.
+
+	    The reentrant element must be one of the two
+	    following: true or false
+
+	  -->
+<!ELEMENT reentrant (#PCDATA)>
+<!ATTLIST reentrant
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT cmp-version (#PCDATA)>
+<!ATTLIST cmp-version
+	id ID #IMPLIED
+>
+<!--
+
+	    The abstract-schema-name element specifies the name
+	    of the abstract schema type of an entity bean with
+	    cmp-version 2.x. It is used in EJB QL queries.
+
+	    For example, the abstract-schema-name for an entity
+	    bean whose local interface is
+	    com.acme.commerce.Order might be Order.
+
+	  -->
+<!ELEMENT abstract-schema-name (#PCDATA)>
+<!ATTLIST abstract-schema-name
+	id ID #IMPLIED
+>
+<!--
+
+	The cmp-fieldType describes a container-managed field. The
+	cmp-fieldType contains an optional description of the field,
+	and the name of the field.
+
+      -->
+<!ELEMENT cmp-field (description*, field-name)>
+<!ATTLIST cmp-field
+	id ID #IMPLIED
+>
+<!--
+
+	    The primkey-field element is used to specify the
+	    name of the primary key field for an entity with
+	    container-managed persistence.
+
+	    The primkey-field must be one of the fields declared
+	    in the cmp-field element, and the type of the field
+	    must be the same as the primary key type.
+
+	    The primkey-field element is not used if the primary
+	    key maps to multiple container-managed fields
+	    (i.e. the key is a compound key). In this case, the
+	    fields of the primary key class must be public, and
+	    their names must correspond to the field names of
+	    the entity bean class that comprise the key.
+
+	  -->
+<!ELEMENT primkey-field (#PCDATA)>
+<!ATTLIST primkey-field
+	id ID #IMPLIED
+>
+
+<!--
+
+	The queryType defines a finder or select
+	query. It contains
+	    - an optional description of the query
+	    - the specification of the finder or select
+	      method it is used by
+		- an optional specification of the result type
+		  mapping, if the query is for a select method
+		  and entity objects are returned.
+		- the EJB QL query string that defines the query.
+
+	Queries that are expressible in EJB QL must use the ejb-ql
+	element to specify the query. If a query is not expressible
+	in EJB QL, the description element should be used to
+	describe the semantics of the query and the ejb-ql element
+	should be empty.
+
+	The result-type-mapping is an optional element. It can only
+	be present if the query-method specifies a select method
+	that returns entity objects.  The default value for the
+	result-type-mapping element is "Local".
+
+      -->
+<!ELEMENT query (description?, query-method, result-type-mapping?, ejb-ql)>
+<!ATTLIST query
+	id ID #IMPLIED
+>
+
+
+<!--
+
+	    The messaging-type element specifies the message
+	    listener interface of the message-driven bean. If
+	    the messaging-type element is not specified, it is
+	    assumed to be javax.jms.MessageListener.
+
+	  -->
+<!ELEMENT messaging-type (#PCDATA)>
+<!ATTLIST messaging-type
+	id ID #IMPLIED
+>
+
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT message-destination-type (#PCDATA)>
+<!ATTLIST message-destination-type
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT message-destination-link (#PCDATA)>
+<!ATTLIST message-destination-link
+	id ID #IMPLIED
+>
+<!--
+
+	The activation-configType defines information about the
+	expected configuration properties of the message-driven bean
+	in its operational environment. This may include information
+	about message acknowledgement, message selector, expected
+	destination type, etc.
+
+	The configuration information is expressed in terms of
+	name/value configuration properties.
+
+	The properties that are recognized for a particular
+	message-driven bean are determined by the messaging type.
+
+      -->
+<!ELEMENT activation-config (description*, activation-config-property+)>
+<!ATTLIST activation-config
+	id ID #IMPLIED
+>
+
+
+<!--
+
+	    The ejb-relation-name element provides a unique name
+	    within the ejb-jar file for a relationship.
+
+	  -->
+<!ELEMENT ejb-relation-name (#PCDATA)>
+<!ATTLIST ejb-relation-name
+	id ID #IMPLIED
+>
+<!ELEMENT ejb-relationship-role (description*, ejb-relationship-role-name?, multiplicity, cascade-delete?, relationship-role-source, cmr-field?)>
+<!ATTLIST ejb-relationship-role
+	id ID #IMPLIED
+>
+
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT role-name (#PCDATA)>
+<!ATTLIST role-name
+	id ID #IMPLIED
+>
+
+
+<!--
+
+	      The unchecked element specifies that a method is
+	      not checked for authorization by the container
+	      prior to invocation of the method.
+
+	    -->
+<!ELEMENT unchecked EMPTY>
+<!ATTLIST unchecked
+	id ID #IMPLIED
+>
+<!ELEMENT method (description*, ejb-name, method-intf?, method-name, method-params?)>
+<!ATTLIST method
+	id ID #IMPLIED
+>
+
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT trans-attribute (#PCDATA)>
+<!ATTLIST trans-attribute
+	id ID #IMPLIED
+>
+<!--
+
+	    The message-destination-name element specifies a
+	    name for a message destination.  This name must be
+	    unique among the names of message destinations
+	    within the Deployment File.
+
+	  -->
+<!ELEMENT message-destination-name (#PCDATA)>
+<!ATTLIST message-destination-name
+	id ID #IMPLIED
+>
+
+<!ELEMENT env-entry-name (#PCDATA)>
+<!ATTLIST env-entry-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT env-entry-type (#PCDATA)>
+<!ATTLIST env-entry-type
+	id ID #IMPLIED
+>
+<!ELEMENT env-entry-value (#PCDATA)>
+<!ATTLIST env-entry-value
+	id ID #IMPLIED
+>
+
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT ejb-ref-name (#PCDATA)>
+<!ATTLIST ejb-ref-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT ejb-ref-type (#PCDATA)>
+<!ATTLIST ejb-ref-type
+	id ID #IMPLIED
+>
+
+
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT ejb-link (#PCDATA)>
+<!ATTLIST ejb-link
+	id ID #IMPLIED
+>
+
+
+<!--
+
+	    The service-ref-name element declares logical name that the
+	    components in the module use to look up the Web service. It
+	    is recommended that all service reference names start with
+	    "service/".
+
+	  -->
+<!ELEMENT service-ref-name (#PCDATA)>
+<!ATTLIST service-ref-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-interface element declares the fully qualified class
+	    name of the JAX-RPC Service interface the client depends on.
+	    In most cases the value will be javax.xml.rpc.Service.  A JAX-RPC
+	    generated Service Interface class may also be specified.
+
+	  -->
+<!ELEMENT service-interface (#PCDATA)>
+<!ATTLIST service-interface
+	id ID #IMPLIED
+>
+<!--
+
+	    The wsdl-file element contains the URI location of a WSDL
+	    file. The location is relative to the root of the module.
+
+	  -->
+<!ELEMENT wsdl-file (#PCDATA)>
+<!ATTLIST wsdl-file
+	id ID #IMPLIED
+>
+<!--
+
+	    The jaxrpc-mapping-file element contains the name of a file that
+	    describes the JAX-RPC mapping between the Java interaces used by
+	    the application and the WSDL description in the wsdl-file.  The
+	    file name is a relative path within the module file.
+
+	  -->
+<!ELEMENT jaxrpc-mapping-file (#PCDATA)>
+<!ATTLIST jaxrpc-mapping-file
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-qname element declares the specific WSDL service
+	    element that is being refered to.  It is not specified if no
+	    wsdl-file is declared.
+
+	  -->
+<!ELEMENT service-qname (#PCDATA)>
+<!ATTLIST service-qname
+	id ID #IMPLIED
+>
+<!--
+
+	    The port-component-ref element declares a client dependency
+	    on the container for resolving a Service Endpoint Interface
+	    to a WSDL port. It optionally associates the Service Endpoint
+	    Interface with a particular port-component. This is only used
+	    by the container for a Service.getPort(Class) method call.
+
+	  -->
+<!ELEMENT port-component-ref (service-endpoint-interface, port-component-link?)>
+<!ATTLIST port-component-ref
+	id ID #IMPLIED
+>
+<!--
+
+	    Declares the handler for a port-component. Handlers can
+	    access the init-param name/value pairs using the
+	    HandlerInfo interface. If port-name is not specified, the
+	    handler is assumed to be associated with all ports of the
+	    service.
+
+	  -->
+<!ELEMENT handler (description*, display-name*, icon*, handler-name, handler-class, init-param*, soap-header*, soap-role*, port-name*)>
+<!ATTLIST handler
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The res-ref-name element specifies the name of a
+	    resource manager connection factory reference.
+	    The name is a JNDI name relative to the
+	    java:comp/env context.
+	    The name must be unique within a Deployment File.
+
+	  -->
+<!ELEMENT res-ref-name (#PCDATA)>
+<!ATTLIST res-ref-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The res-type element specifies the type of the data
+	    source. The type is specified by the fully qualified
+	    Java language class or interface
+	    expected to be implemented by the data source.
+
+	  -->
+<!ELEMENT res-type (#PCDATA)>
+<!ATTLIST res-type
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT res-auth (#PCDATA)>
+<!ATTLIST res-auth
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT res-sharing-scope (#PCDATA)>
+<!ATTLIST res-sharing-scope
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The resource-env-ref-name element specifies the name
+	    of a resource environment reference; its value is
+	    the environment entry name used in
+	    the Deployment Component code.  The name is a JNDI
+	    name relative to the java:comp/env context and must
+	    be unique within a Deployment Component.
+
+	  -->
+<!ELEMENT resource-env-ref-name (#PCDATA)>
+<!ATTLIST resource-env-ref-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The resource-env-ref-type element specifies the type
+	    of a resource environment reference.  It is the
+	    fully qualified name of a Java language class or
+	    interface.
+
+	  -->
+<!ELEMENT resource-env-ref-type (#PCDATA)>
+<!ATTLIST resource-env-ref-type
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The message-destination-ref-name element specifies
+	    the name of a message destination reference; its
+	    value is the environment entry name used in
+	    Deployment Component code.  The name is a JNDI name
+	    relative to the java:comp/env context and must be
+	    unique within an ejb-jar (for enterprise beans) or a
+	    Deployment File (for others).
+
+	  -->
+<!ELEMENT message-destination-ref-name (#PCDATA)>
+<!ATTLIST message-destination-ref-name
+	id ID #IMPLIED
+>
+
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT message-destination-usage (#PCDATA)>
+<!ATTLIST message-destination-usage
+	id ID #IMPLIED
+>
+
+
+<!--
+
+	    The role-link element is a reference to a defined
+	    security role. The role-link element must contain
+	    the name of one of the security roles defined in the
+	    security-role elements.
+
+	  -->
+<!ELEMENT role-link (#PCDATA)>
+<!ATTLIST role-link
+	id ID #IMPLIED
+>
+
+<!--
+
+	      The use-caller-identity element specifies that
+	      the caller's security identity be used as the
+	      security identity for the execution of the
+	      enterprise bean's methods.
+
+	    -->
+<!ELEMENT use-caller-identity EMPTY>
+<!ATTLIST use-caller-identity
+	id ID #IMPLIED
+>
+<!--
+
+	The run-asType specifies the run-as identity to be
+	used for the execution of a component. It contains an
+	optional description, and the name of a security role.
+
+      -->
+<!ELEMENT run-as (description*, role-name)>
+<!ATTLIST run-as
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The field-name element specifies the name of a
+	    container managed field.
+
+	    The name of the cmp-field of an entity bean with
+	    cmp-version 2.x must begin with a lowercase
+	    letter. This field is accessed by methods whose
+	    names consists of the name of the field specified by
+	    field-name in which the first letter is uppercased,
+	    prefixed by "get" or "set".
+
+	    The name of the cmp-field of an entity bean with
+	    cmp-version 1.x must denote a public field of the
+	    enterprise bean class or one of its superclasses.
+
+	  -->
+<!ELEMENT field-name (#PCDATA)>
+<!ATTLIST field-name
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!ELEMENT query-method (method-name, method-params)>
+<!ATTLIST query-method
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT result-type-mapping (#PCDATA)>
+<!ATTLIST result-type-mapping
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT ejb-ql (#PCDATA)>
+<!ATTLIST ejb-ql
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	The activation-config-propertyType contains a name/value
+	configuration property pair for a message-driven bean.
+
+	The properties that are recognized for a particular
+	message-driven bean are determined by the messaging type.
+
+      -->
+<!ELEMENT activation-config-property (activation-config-property-name, activation-config-property-value)>
+<!ATTLIST activation-config-property
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	    The ejb-relationship-role-name element defines a
+	    name for a role that is unique within an
+	    ejb-relation. Different relationships can use the
+	    same name for a role.
+
+	  -->
+<!ELEMENT ejb-relationship-role-name (#PCDATA)>
+<!ATTLIST ejb-relationship-role-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT multiplicity (#PCDATA)>
+<!ATTLIST multiplicity
+	id ID #IMPLIED
+>
+<!--
+
+	    The cascade-delete element specifies that, within a
+	    particular relationship, the lifetime of one or more
+	    entity beans is dependent upon the lifetime of
+	    another entity bean. The cascade-delete element can
+	    only be specified for an ejb-relationship-role
+	    element contained in an ejb-relation element in
+	    which the other ejb-relationship-role
+	    element specifies a multiplicity of One.
+
+	  -->
+<!ELEMENT cascade-delete EMPTY>
+<!ATTLIST cascade-delete
+	id ID #IMPLIED
+>
+<!--
+
+	The relationship-role-sourceType designates the source of a
+	role that participates in a relationship. A
+	relationship-role-sourceType is used by
+	relationship-role-source elements to uniquely identify an
+	entity bean.
+
+      -->
+<!ELEMENT relationship-role-source (description*, ejb-name)>
+<!ATTLIST relationship-role-source
+	id ID #IMPLIED
+>
+<!--
+
+	The cmr-fieldType describes the bean provider's view of
+	a relationship. It consists of an optional description, and
+	the name and the class type of a field in the source of a
+	role of a relationship. The cmr-field-name element
+	corresponds to the name used for the get and set accessor
+	methods for the relationship. The cmr-field-type element is
+	used only for collection-valued cmr-fields. It specifies the
+	type of the collection that is used.
+
+      -->
+<!ELEMENT cmr-field (description*, cmr-field-name, cmr-field-type?)>
+<!ATTLIST cmr-field
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:NMTOKEN.
+
+      -->
+<!ELEMENT ejb-name (#PCDATA)>
+<!ATTLIST ejb-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT method-intf (#PCDATA)>
+<!ATTLIST method-intf
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT method-name (#PCDATA)>
+<!ATTLIST method-name
+	id ID #IMPLIED
+>
+<!--
+
+	The method-paramsType defines a list of the
+	fully-qualified Java type names of the method parameters.
+
+      -->
+<!ELEMENT method-params (method-param*)>
+<!ATTLIST method-params
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-endpoint-interface element defines a fully qualified
+	    Java class that represents the Service Endpoint Interface of a
+	    WSDL port.
+
+	  -->
+<!ELEMENT service-endpoint-interface (#PCDATA)>
+<!ATTLIST service-endpoint-interface
+	id ID #IMPLIED
+>
+<!--
+
+	    The port-component-link element links a port-component-ref
+	    to a specific port-component required to be made available
+	    by a service reference.
+
+	    The value of a port-component-link must be the
+	    port-component-name of a port-component in the same module
+	    or another module in the same application unit. The syntax
+	    for specification follows the syntax defined for ejb-link
+	    in the EJB 2.0 specification.
+
+	  -->
+<!ELEMENT port-component-link (#PCDATA)>
+<!ATTLIST port-component-link
+	id ID #IMPLIED
+>
+<!--
+
+	    Defines the name of the handler. The name must be unique
+	    within the module.
+
+	  -->
+<!ELEMENT handler-name (#PCDATA)>
+<!ATTLIST handler-name
+	id ID #IMPLIED
+>
+<!--
+
+	    Defines a fully qualified class name for the handler
+	    implementation.
+
+	  -->
+<!ELEMENT handler-class (#PCDATA)>
+<!ATTLIST handler-class
+	id ID #IMPLIED
+>
+<!--
+
+	This type is a general type that can be used to declare
+	parameter/value lists.
+
+      -->
+<!ELEMENT init-param (description*, param-name, param-value)>
+<!ATTLIST init-param
+	id ID #IMPLIED
+>
+<!--
+
+	    Defines the QName of a SOAP header that will be processed
+	    by the handler.
+
+	  -->
+<!ELEMENT soap-header (#PCDATA)>
+<!ATTLIST soap-header
+	id ID #IMPLIED
+>
+<!--
+
+	    The soap-role element contains a SOAP actor definition that
+	    the Handler will play as a role.
+
+	  -->
+<!ELEMENT soap-role (#PCDATA)>
+<!ATTLIST soap-role
+	id ID #IMPLIED
+>
+<!--
+
+	    The port-name element defines the WSDL port-name that a
+	    handler should be associated with.
+
+	  -->
+<!ELEMENT port-name (#PCDATA)>
+<!ATTLIST port-name
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT role-name (#PCDATA)>
+<!ATTLIST role-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT method-name (#PCDATA)>
+<!ATTLIST method-name
+	id ID #IMPLIED
+>
+<!--
+
+	The method-paramsType defines a list of the
+	fully-qualified Java type names of the method parameters.
+
+      -->
+<!ELEMENT method-params (method-param*)>
+<!ATTLIST method-params
+	id ID #IMPLIED
+>
+<!--
+
+	    The activation-config-property-name element contains
+	    the name for an activation configuration property of
+	    a message-driven bean.
+
+	    For JMS message-driven beans, the following property
+	    names are recognized: acknowledgeMode,
+	    messageSelector, destinationType, subscriptionDurability
+
+	  -->
+<!ELEMENT activation-config-property-name (#PCDATA)>
+<!ATTLIST activation-config-property-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The activation-config-property-value element
+	    contains the value for an activation configuration
+	    property of a message-driven bean.
+
+	  -->
+<!ELEMENT activation-config-property-value (#PCDATA)>
+<!ATTLIST activation-config-property-value
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:NMTOKEN.
+
+      -->
+<!ELEMENT ejb-name (#PCDATA)>
+<!ATTLIST ejb-name
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	    The cmr-field-name element specifies the name of a
+	    logical relationship field in the entity bean
+	    class. The name of the cmr-field must begin with a
+	    lowercase letter. This field is accessed by methods
+	    whose names consist of the name of the field
+	    specified by cmr-field-name in which the first
+	    letter is uppercased, prefixed by "get" or "set".
+
+	  -->
+<!ELEMENT cmr-field-name (#PCDATA)>
+<!ATTLIST cmr-field-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT cmr-field-type (#PCDATA)>
+<!ATTLIST cmr-field-type
+	id ID #IMPLIED
+>
+<!--
+
+	    The method-param element contains a primitive
+	    or a fully-qualified Java type name of a method
+	    parameter.
+
+	  -->
+<!ELEMENT method-param (#PCDATA)>
+<!ATTLIST method-param
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	    The param-name element contains the name of a
+	    parameter.
+
+	  -->
+<!ELEMENT param-name (#PCDATA)>
+<!ATTLIST param-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The param-value element contains the value of a
+	    parameter.
+
+	  -->
+<!ELEMENT param-value (#PCDATA)>
+<!ATTLIST param-value
+	id ID #IMPLIED
+>
+

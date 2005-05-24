@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+    Document   : sample.dtd
+    Created on : May 8, 2003, 11:18 AM
+    Author     : Rajeshwar Patil
+    Description:
+        Sample dtd used for verification of validation framework.
+-->
+
+
+<!--
+-->
+<!ELEMENT root-element (non-zero-length-property, number-property+,
+    boolean-property*, range-property?, enumeration-property,
+    object-one, object-two?, object-three?, object-four,
+    object-five*, object-six+, object-seven*,object-eight*)>
+
+<!--
+-->
+<!ELEMENT object-one (property-one, property-two?)>
+
+
+<!--
+-->
+<!ELEMENT object-two (property-one, property-two)>
+
+
+<!--
+-->
+<!ELEMENT object-three (property-one, property-two?,
+    property-three+, property-four*)>
+
+
+<!--
+-->
+<!ELEMENT object-four (property-one?, property-two?)>
+
+
+<!--
+-->
+<!ELEMENT object-five (property-one, property-two?)>
+
+
+<!--
+-->
+<!ELEMENT object-six (property-one?, property-two?)>
+
+
+<!--
+-->
+<!ELEMENT object-seven (property-one, property-two)>
+
+
+<!--
+-->
+<!ELEMENT object-eight (property-one, property-two?, child-object-one,
+    child-object-two?, child-object-three*, child-object-four+)>
+
+
+<!--
+-->
+<!ELEMENT child-object-one (property-one, property-two?)>
+
+
+<!--
+-->
+<!ELEMENT child-object-two (property-one, property-two)>
+
+
+<!--
+-->
+<!ELEMENT child-object-three (property-one?, property-two?)>
+
+
+<!--
+-->
+<!ELEMENT child-object-four (property-one, property-two?,
+    property-three+, property-four*)>
+
+
+<!ELEMENT boolean-property (#PCDATA)>
+<!ELEMENT number-property (#PCDATA)>
+<!ELEMENT non-zero-length-property (#PCDATA)>
+<!ELEMENT range-property (#PCDATA)>
+<!ELEMENT enumeration-property (#PCDATA)>
+<!ELEMENT property-one (#PCDATA)>
+<!ELEMENT property-two (#PCDATA)>
+<!ELEMENT property-three (#PCDATA)>
+<!ELEMENT property-four (#PCDATA)>

@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+    <!--
+    * Copyright &copy; 2004 Sun Microsystems, Inc. 
+
+    * All rights reserved. Use is subject to license terms.
+    -->
+
+    <head>
+        <title>Registering an SJS Application Server Instance</title>
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Registering an SJS Application Server Instance</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>To begin developing enterprise applications you must first register an instance of the 
+        SJS Application Server with the IDE.</p>
+
+        <p>If you deploy your applications to a remote instance of the
+        SJS Application Server, those libraries are available at runtime. However, during 
+        development, to compile your project you need a local instance of this server and libraries.</p>
+        <p>You can have multiple instances of the SJS Application Server registered with the 
+        IDE, but you must first specify the local folder that contains the local installation of 
+        the SJS Application Server. You only need to specify the location of the local installation once.</p>
+    
+        <p><b>To register an instance of the SJS Application Server:</b></p>
+        <ol>
+            <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Server Manager.</li>
+            <li>In the Server Manager, click Add Server to start the Add Server wizard.
+            <ul class="note">
+                <li>Alternatively, right-click the Servers node in the Runtime window and choose 
+                Add Server from the contextual menu. </li>
+            </ul></li>
+            <li>Select the Sun Java System Application Server 8.1 from the combo box.</li>
+            <li>Enter a name for the server instance. This name is used to identify the server in the IDE.</li>
+            <li>Click Next.</li>
+            <li>Supply the installation location of the Sun Java System Application Server 8.1 and click Next. 
+            You only need to specify the location the first time you register an instance of the server. 
+            This step in the wizard is skipped when you register additional instances of the server.</li>
+            <li>Enter the location (host:port) or select one from the combo box.</li>
+            <li>Specify the Domains Folder and Instance Name, if necessary.</li>
+            <li>(optional) Enter the username and password.</li>
+            <li>Click Finish to return to the Server Manager dialog box.</li>
+            <li>Click Close.</li>
+        </ol>
+        <ul class="note">
+            <li>If you do not enter the username and password when you register the server, 
+            when the server starts a dialog box appears asking for the username and password.</li>
+        </ul>
+        <p>Once a server instance is registered with the IDE, its node is visible in the Runtime 
+        window under the Servers node. 
+        You can perform the following tasks by right-clicking 
+        the server instance node and choosing from the contextual menu:</p> 
+        <ul>
+            <li>Start and stop the SJS Application Server instance.</li>
+            <li>Remove the instance of the SJS Application Server.</li> 
+            <li>Open the SJS Application Server admin console.</li> 
+            <li>View SJS Application Server log file.</li> 
+            <li>View the SJS Application Server properties.</li>
+        </ul>
+        <p><b>To remove an instance of the SJS Application Server:</b></p>
+        <ol>
+            <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Server Manager.</li>
+            <li>In the Server Manager, select the SJS Application Server from the list of servers in the left pane.</li>
+            <li>Click Remove.</li>
+            <li>Click Close.</li>
+        </ol>
+        <ul class="note">
+            <li>
+                Alternatively, right-click the server instance in the Runtime window and 
+                choose Remove from the contextual menu.
+            </li>
+        </ul>
+        <table>
+            <tr> 
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr> 
+                <td width="23"></td>
+                <td>
+                <a href="working_withSJS.html">Working with the SJS Application Server</a></td>
+            </tr>
+        </table>
+        <hr>
+
+        <small><a href="../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+

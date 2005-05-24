@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+	The application-client element is the root element of an
+	application client deployment descriptor.  The application
+	client deployment descriptor describes the EJB components
+	and external resources referenced by the application
+	client.
+
+      -->
+<!ELEMENT application-client ((description*, display-name*, icon*), env-entry*, ejb-ref*, ((service-ref*)), resource-ref*, resource-env-ref*, message-destination-ref*, callback-handler?, message-destination*)>
+<!--version: 
+
+	  The required value for the version is 1.4.
+
+	-->
+<!ATTLIST application-client
+	version CDATA #REQUIRED
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT display-name (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST display-name
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	The icon type contains small-icon and large-icon elements
+	that specify the file names for small and large GIF or
+	JPEG icon images used to represent the parent element in a
+	GUI tool.
+
+	The xml:lang attribute defines the language that the
+	icon file names are provided in. Its value is "en" (English)
+	by default.
+
+      -->
+<!ELEMENT icon (small-icon?, large-icon?)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST icon
+	lang CDATA #IMPLIED
+	id ID #IMPLIED
+>
+<!--
+
+	The env-entryType is used to declare an application's
+	environment entry. The declaration consists of an optional
+	description, the name of the environment entry, and an
+	optional value.  If a value is not specified, one must be
+	supplied during deployment.
+
+	It is used by env-entry elements.
+
+      -->
+<!ELEMENT env-entry (description*, env-entry-name, env-entry-type, env-entry-value?)>
+<!ATTLIST env-entry
+	id ID #IMPLIED
+>
+<!--
+
+	The ejb-refType is used by ejb-ref elements for the
+	declaration of a reference to an enterprise bean's home. The
+	declaration consists of:
+
+	    - an optional description
+	    - the EJB reference name used in the code of
+	      the Deployment Component that's referencing the enterprise
+	      bean
+	    - the expected type of the referenced enterprise bean
+	    - the expected home and remote interfaces of the referenced
+	      enterprise bean
+	    - optional ejb-link information, used to specify the
+	      referenced enterprise bean
+
+      -->
+<!ELEMENT ejb-ref (description*, ejb-ref-name, ejb-ref-type, home, remote, ejb-link?)>
+<!ATTLIST ejb-ref
+	id ID #IMPLIED
+>
+<!--
+
+	The service-ref element declares a reference to a Web
+	service. It contains optional description, display name and
+	icons, a declaration of the required Service interface,
+	an optional WSDL document location, an optional set
+	of JAX-RPC mappings, an optional QName for the service element,
+	an optional set of Service Endpoint Interfaces to be resolved
+	by the container to a WSDL port, and an optional set of handlers.
+
+      -->
+<!ELEMENT service-ref ((description*, display-name*, icon*), service-ref-name, service-interface, wsdl-file?, jaxrpc-mapping-file?, service-qname?, port-component-ref*, handler*)>
+<!ATTLIST service-ref
+	id ID #IMPLIED
+>
+<!ELEMENT resource-ref (description*, res-ref-name, res-type, res-auth, res-sharing-scope?)>
+<!ATTLIST resource-ref
+	id ID #IMPLIED
+>
+<!ELEMENT resource-env-ref (description*, resource-env-ref-name, resource-env-ref-type)>
+<!ATTLIST resource-env-ref
+	id ID #IMPLIED
+>
+<!ELEMENT message-destination-ref (description*, message-destination-ref-name, message-destination-type, message-destination-usage, message-destination-link?)>
+<!ATTLIST message-destination-ref
+	id ID #IMPLIED
+>
+<!--
+
+	    The callback-handler element names a class provided by
+	    the application.  The class must have a no args
+	    constructor and must implement the
+	    javax.security.auth.callback.CallbackHandler
+	    interface.  The class will be instantiated by the
+	    application client container and used by the container
+	    to collect authentication information from the user.
+
+	  -->
+<!ELEMENT callback-handler (#PCDATA)>
+<!ATTLIST callback-handler
+	id ID #IMPLIED
+>
+<!ELEMENT message-destination ((description*, display-name*, icon*), message-destination-name)>
+<!ATTLIST message-destination
+	id ID #IMPLIED
+>
+<!ELEMENT small-icon (#PCDATA)>
+<!ATTLIST small-icon
+	id ID #IMPLIED
+>
+<!ELEMENT large-icon (#PCDATA)>
+<!ATTLIST large-icon
+	id ID #IMPLIED
+>
+
+<!ELEMENT env-entry-name (#PCDATA)>
+<!ATTLIST env-entry-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT env-entry-type (#PCDATA)>
+<!ATTLIST env-entry-type
+	id ID #IMPLIED
+>
+<!ELEMENT env-entry-value (#PCDATA)>
+<!ATTLIST env-entry-value
+	id ID #IMPLIED
+>
+
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT ejb-ref-name (#PCDATA)>
+<!ATTLIST ejb-ref-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT ejb-ref-type (#PCDATA)>
+<!ATTLIST ejb-ref-type
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT home (#PCDATA)>
+<!ATTLIST home
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT remote (#PCDATA)>
+<!ATTLIST remote
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT ejb-link (#PCDATA)>
+<!ATTLIST ejb-link
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-ref-name element declares logical name that the
+	    components in the module use to look up the Web service. It
+	    is recommended that all service reference names start with
+	    "service/".
+
+	  -->
+<!ELEMENT service-ref-name (#PCDATA)>
+<!ATTLIST service-ref-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-interface element declares the fully qualified class
+	    name of the JAX-RPC Service interface the client depends on.
+	    In most cases the value will be javax.xml.rpc.Service.  A JAX-RPC
+	    generated Service Interface class may also be specified.
+
+	  -->
+<!ELEMENT service-interface (#PCDATA)>
+<!ATTLIST service-interface
+	id ID #IMPLIED
+>
+<!--
+
+	    The wsdl-file element contains the URI location of a WSDL
+	    file. The location is relative to the root of the module.
+
+	  -->
+<!ELEMENT wsdl-file (#PCDATA)>
+<!ATTLIST wsdl-file
+	id ID #IMPLIED
+>
+<!--
+
+	    The jaxrpc-mapping-file element contains the name of a file that
+	    describes the JAX-RPC mapping between the Java interaces used by
+	    the application and the WSDL description in the wsdl-file.  The
+	    file name is a relative path within the module file.
+
+	  -->
+<!ELEMENT jaxrpc-mapping-file (#PCDATA)>
+<!ATTLIST jaxrpc-mapping-file
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-qname element declares the specific WSDL service
+	    element that is being refered to.  It is not specified if no
+	    wsdl-file is declared.
+
+	  -->
+<!ELEMENT service-qname (#PCDATA)>
+<!ATTLIST service-qname
+	id ID #IMPLIED
+>
+<!--
+
+	    The port-component-ref element declares a client dependency
+	    on the container for resolving a Service Endpoint Interface
+	    to a WSDL port. It optionally associates the Service Endpoint
+	    Interface with a particular port-component. This is only used
+	    by the container for a Service.getPort(Class) method call.
+
+	  -->
+<!ELEMENT port-component-ref (service-endpoint-interface, port-component-link?)>
+<!ATTLIST port-component-ref
+	id ID #IMPLIED
+>
+<!--
+
+	    Declares the handler for a port-component. Handlers can
+	    access the init-param name/value pairs using the
+	    HandlerInfo interface. If port-name is not specified, the
+	    handler is assumed to be associated with all ports of the
+	    service.
+
+	  -->
+<!ELEMENT handler ((description*, display-name*, icon*), handler-name, handler-class, init-param*, soap-header*, soap-role*, port-name*)>
+<!ATTLIST handler
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The res-ref-name element specifies the name of a
+	    resource manager connection factory reference.
+	    The name is a JNDI name relative to the
+	    java:comp/env context.
+	    The name must be unique within a Deployment File.
+
+	  -->
+<!ELEMENT res-ref-name (#PCDATA)>
+<!ATTLIST res-ref-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The res-type element specifies the type of the data
+	    source. The type is specified by the fully qualified
+	    Java language class or interface
+	    expected to be implemented by the data source.
+
+	  -->
+<!ELEMENT res-type (#PCDATA)>
+<!ATTLIST res-type
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT res-auth (#PCDATA)>
+<!ATTLIST res-auth
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT res-sharing-scope (#PCDATA)>
+<!ATTLIST res-sharing-scope
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The resource-env-ref-name element specifies the name
+	    of a resource environment reference; its value is
+	    the environment entry name used in
+	    the Deployment Component code.  The name is a JNDI
+	    name relative to the java:comp/env context and must
+	    be unique within a Deployment Component.
+
+	  -->
+<!ELEMENT resource-env-ref-name (#PCDATA)>
+<!ATTLIST resource-env-ref-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The resource-env-ref-type element specifies the type
+	    of a resource environment reference.  It is the
+	    fully qualified name of a Java language class or
+	    interface.
+
+	  -->
+<!ELEMENT resource-env-ref-type (#PCDATA)>
+<!ATTLIST resource-env-ref-type
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The message-destination-ref-name element specifies
+	    the name of a message destination reference; its
+	    value is the environment entry name used in
+	    Deployment Component code.  The name is a JNDI name
+	    relative to the java:comp/env context and must be
+	    unique within an ejb-jar (for enterprise beans) or a
+	    Deployment File (for others).
+
+	  -->
+<!ELEMENT message-destination-ref-name (#PCDATA)>
+<!ATTLIST message-destination-ref-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT message-destination-type (#PCDATA)>
+<!ATTLIST message-destination-type
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT message-destination-usage (#PCDATA)>
+<!ATTLIST message-destination-usage
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT message-destination-link (#PCDATA)>
+<!ATTLIST message-destination-link
+	id ID #IMPLIED
+>
+<!--
+
+	    The message-destination-name element specifies a
+	    name for a message destination.  This name must be
+	    unique among the names of message destinations
+	    within the Deployment File.
+
+	  -->
+<!ELEMENT message-destination-name (#PCDATA)>
+<!ATTLIST message-destination-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-endpoint-interface element defines a fully qualified
+	    Java class that represents the Service Endpoint Interface of a
+	    WSDL port.
+
+	  -->
+<!ELEMENT service-endpoint-interface (#PCDATA)>
+<!ATTLIST service-endpoint-interface
+	id ID #IMPLIED
+>
+<!--
+
+	    The port-component-link element links a port-component-ref
+	    to a specific port-component required to be made available
+	    by a service reference.
+
+	    The value of a port-component-link must be the
+	    port-component-name of a port-component in the same module
+	    or another module in the same application unit. The syntax
+	    for specification follows the syntax defined for ejb-link
+	    in the EJB 2.0 specification.
+
+	  -->
+<!ELEMENT port-component-link (#PCDATA)>
+<!ATTLIST port-component-link
+	id ID #IMPLIED
+>
+<!--
+
+	    Defines the name of the handler. The name must be unique
+	    within the module.
+
+	  -->
+<!ELEMENT handler-name (#PCDATA)>
+<!ATTLIST handler-name
+	id ID #IMPLIED
+>
+<!--
+
+	    Defines a fully qualified class name for the handler
+	    implementation.
+
+	  -->
+<!ELEMENT handler-class (#PCDATA)>
+<!ATTLIST handler-class
+	id ID #IMPLIED
+>
+<!--
+
+	This type is a general type that can be used to declare
+	parameter/value lists.
+
+      -->
+<!ELEMENT init-param (description*, param-name, param-value)>
+<!ATTLIST init-param
+	id ID #IMPLIED
+>
+<!--
+
+	    Defines the QName of a SOAP header that will be processed
+	    by the handler.
+
+	  -->
+<!ELEMENT soap-header (#PCDATA)>
+<!ATTLIST soap-header
+	id ID #IMPLIED
+>
+<!--
+
+	    The soap-role element contains a SOAP actor definition that
+	    the Handler will play as a role.
+
+	  -->
+<!ELEMENT soap-role (#PCDATA)>
+<!ATTLIST soap-role
+	id ID #IMPLIED
+>
+<!--
+
+	    The port-name element defines the WSDL port-name that a
+	    handler should be associated with.
+
+	  -->
+<!ELEMENT port-name (#PCDATA)>
+<!ATTLIST port-name
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The param-name element contains the name of a
+	    parameter.
+
+	  -->
+<!ELEMENT param-name (#PCDATA)>
+<!ATTLIST param-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The param-value element contains the value of a
+	    parameter.
+
+	  -->
+<!ELEMENT param-value (#PCDATA)>
+<!ATTLIST param-value
+	id ID #IMPLIED
+>
+

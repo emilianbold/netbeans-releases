@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN" "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+<toc version="1.0">
+<tocitem text="Servers and Databases">
+    <tocitem text="Servers">
+        <tocitem text="Sun Java System Application Server Platform Edition">
+            <tocitem text="About the Sun Java System Application Server"  target="aboutplugin"/>
+            <tocitem text="Working with the SJS Application Server"  target="working_withsjs"/>
+            <tocitem text="SJS Application Server Tasks: Quick Reference"  target="sjs_quickref"/>
+            <tocitem text="Registering an SJS Application Server Instance"  target="register_appserver"/>
+            <tocitem text="Accessing the SJS Application Server Admin Console"  target="adminconsole"/>
+            <tocitem text="Modifying JVM Properties of the SJS Application Server"  target="sjs_jvm"/>
+            <tocitem text="Setting up a Connection Pool on the SJS Application Server"  target="def_connpool"/>
+            <tocitem text="Setting up a JDBC Resource on the SJS Application Server"  target="def_jdbcresource"/>
+            <tocitem text="Setting up a JMS Resource on the SJS Application Server"  target="def_jms"/>
+            <tocitem text="Setting up a JavaMail Resource on the SJS Application Server"  target="def_javamail"/>
+            <tocitem text="Setting up a Persistence Manager Resource on the SJS Application Server"  target="def_persistence"/>
+            <tocitem text="Generating Database Lookup Code"  target="lookup_jdbc"/>
+            <tocitem text="Generating JMS Send Message Code"  target="lookup_jms"/>
+            <tocitem text="Registering a Resource with the SJS Application Server"  target="register_resource"/>
+        </tocitem>
+    </tocitem>
+</tocitem>

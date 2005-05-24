@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <folder name="Templates">
+    <attr name="Classes/SunResources" boolvalue="true"/>
+    <attr name="Databases/SunResources" boolvalue="true"/>
+    <attr name="J2EE/SunResources" boolvalue="true"/>
+    <attr name="JSP_Servlet/SunResources" boolvalue="true"/>
+    <attr name="WebServices/SunResources" boolvalue="true"/>
+    <folder name="SunResources">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+      <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/WizardInformation.html" />
+      <!--attr name="templateType_Web" boolvalue="true"/-->
+      <file name="JDBC_Connection_Pool">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ConnPoolWizard.create" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/ConnectionPoolWizardInfo.html"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+     </file>
+     <file name="JDBC_Resource">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.DataSourceWizard.create" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/DataSourceWizardInfo.html"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+      </file>
+      <file name="Persistence_Resource">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.PMFWizard.create" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/PersistenceWizardInfo.html"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+     </file>
+     <file name="JavaMail_Resource">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.MailWizard.create" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/JavaMailWizardInfo.html"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+     </file>
+     <file name="JMS_Resource">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.JMSWizard.create" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/JavaMessageWizardInfo.html"/>
+        <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+     </file>
+    </folder>
+  </folder>
+
+
+
+
+
+
+
+           
+</filesystem>

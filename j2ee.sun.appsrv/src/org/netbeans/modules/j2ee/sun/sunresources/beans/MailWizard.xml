@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wizard>
+<wizard>
+    <name>mail-resource</name>
+    <field-group>
+        <name>general</name>
+        <field field-type="string" required="true">
+            <name>jndi-name</name>
+            <field-value>
+                <default-field-value>mail/</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string" required="true">
+            <name>host</name>
+            <field-value>
+                <default-field-value></default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string" required="true">
+            <name>user</name>
+            <field-value>
+                <default-field-value></default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string" required="true">
+            <name>from</name>
+            <field-value>
+                <default-field-value></default-field-value>
+            </field-value>
+        </field>
+        <field field-type="list">
+            <name>enabled</name>
+            <field-value>
+                <default-field-value>true</default-field-value>
+            </field-value>
+            <tag>
+                <tag-item>true</tag-item>
+                <tag-item>false</tag-item>
+            </tag>
+        </field>
+        <field field-type="textarea">
+            <name>description</name>
+            <field-value>
+                <default-field-value></default-field-value>
+            </field-value>
+        </field>
+    </field-group>
+    <field-group>
+        <name>advanced</name>
+        <field field-type="string">
+            <name>store-protocol</name>
+            <field-value>
+                <default-field-value>imap</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>store-protocol-class</name>
+            <field-value>
+                <default-field-value>com.sun.mail.imap.IMAPStore</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>transport-protocol</name>
+            <field-value>
+                <default-field-value>smtp</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>transport-protocol-class</name>
+            <field-value>
+                <default-field-value>com.sun.mail.smtp.SMTPTransport</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="list">
+            <name>debug</name>
+            <field-value>
+                <default-field-value>false</default-field-value>
+            </field-value>
+            <tag>
+                <tag-item>true</tag-item>
+                <tag-item>false</tag-item>
+            </tag>
+        </field>
+    </field-group>
+    <field-group>
+        <name>properties</name>
+        <field field-type="string">
+            <name>imqDestinationName</name>
+            <field-value>
+                <default-field-value></default-field-value>
+            </field-value>
+        </field>
+    </field-group>
+</wizard>
+

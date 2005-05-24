@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+    <head>
+        <title>Registering a Resource with the SJS Application Server</title>
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+    </head>
+
+    <h2>Registering a Resource with the SJS Application Server</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>Once you have created a resource object, it needs to be registered with the server. Once registered, the object
+    is available to all the applications and resources.</p>
+    <p>Resources are automatically 
+    registered with the server when the project is deployed. Using the contextual menu in the IDE
+    you can also register resources individually without deploying or redeploying the project.</p>
+
+    <p>When you create a resource object for a project with the New File wizard, 
+    the resource is added to the project and appears in two places:</p>
+    <ul><li>In the Server Resources node in the Projects window.</li>
+        <li>In the setup folder in the Files window.</li>
+    </ul>
+    
+    <p><b>To register an individual resource through the contextual menu:</b></p>
+    <ol>
+        <li>Locate the object in the Projects window or Files window.</li>
+        <li>Right-click on the object and select Register from the contextual menu.</li>
+        <li>In the Java Message Service Resource Registration dialog box, 
+        check to make sure the JNDI resource name and the server instance are correct.</li>
+        <li>Click Register.</li>
+        <li>Click Close when you get the registration successful message.</li>
+    </ol> 
+    <p>After the object is registered with the server it is visible in the Runtime window under the Servers node
+    under the node corresponding to the type of resource. You can modify some of the properties of the resource 
+    object by opening the properties window for the object.</p>
+    
+    <p><b>To delete a resource from the server:</b></p>
+    <ol>
+        <li>Locate the object you wish to delete in the Runtime window.</li>
+        <li>Right-click on the object and select Delete from the contextual menu.</li>
+    </ol> 
+    <p>When you delete a resource from the server it is no longer visible in the Runtime window.</p>
+    <p><b>Notes:</b></p>    
+    <ul>
+        <li>After a resource has been removed from the server, it is still listed as a resource in your project.
+        Unless you delete the resource from your project, when you deploy your application
+        the resource will be registered again. To completely delete the resource and ensure that it is not
+        registered again, delete the resource using the contextual menu in the Files window or the Projects window.</li>
+    
+    
+        <li>The JNDI name for a resource must be unique. If the JNDI name is already taken by another resource,
+        an error message will appear in the dialog box when you try to register the resource. To change the JNDI name,
+        right click on the resource in the Files or Projects window and choose Properties from the contextual menu and change
+        the JNDI name.</li>
+    </ul>
+    <table>
+        <tr> 
+            <th colspan=2 align=left><a name="seealso">See Also</a></th>
+        </tr>
+        <tr> 
+            <td width="23"></td>
+            <td>
+            <a href="working_withSJS.html">Working with the SJS Application Server</a></td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <small><a href="credits.html">Legal Notices</a></small> 
+    <table border="0" cellpadding="20">
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+    </table>
+
+    </body>
+
+</html>

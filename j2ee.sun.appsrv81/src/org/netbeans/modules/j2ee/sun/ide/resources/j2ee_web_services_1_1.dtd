@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+	The webservices element is the root element for the web services
+	deployment descriptor.  It specifies the set of web service
+	descriptions that are to be deployed into the J2EE Application Server
+	and the dependencies they have on container resources and services.
+
+	Used in: webservices.xml
+
+      -->
+<!ELEMENT webservices ((description*, display-name*, icon*), webservice-description+)>
+<!--version: 
+
+	  The required value for the version is 1.1.
+
+	-->
+<!ATTLIST webservices
+	version CDATA #REQUIRED
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT display-name (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST display-name
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	The icon type contains small-icon and large-icon elements
+	that specify the file names for small and large GIF or
+	JPEG icon images used to represent the parent element in a
+	GUI tool.
+
+	The xml:lang attribute defines the language that the
+	icon file names are provided in. Its value is "en" (English)
+	by default.
+
+      -->
+<!ELEMENT icon (small-icon?, large-icon?)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST icon
+	lang CDATA #IMPLIED
+	id ID #IMPLIED
+>
+<!--
+
+	The webservice-description element defines a WSDL document file
+	and the set of Port components associated with the WSDL ports
+	defined in the WSDL document.  There may be multiple
+	webservice-descriptions defined within a module.
+
+	All WSDL file ports must have a corresponding port-component element
+	defined.
+
+	Used in: webservices
+
+      -->
+<!ELEMENT webservice-description (description?, display-name?, icon?, webservice-description-name, wsdl-file, jaxrpc-mapping-file, port-component+)>
+<!ATTLIST webservice-description
+	id ID #IMPLIED
+>
+<!ELEMENT small-icon (#PCDATA)>
+<!ATTLIST small-icon
+	id ID #IMPLIED
+>
+<!ELEMENT large-icon (#PCDATA)>
+<!ATTLIST large-icon
+	id ID #IMPLIED
+>
+
+
+<!--
+
+	    The webservice-description-name identifies the collection of
+	    port-components associated with a WSDL file and JAX-RPC
+	    mapping. The name must be unique within the deployment descriptor.
+
+	  -->
+<!ELEMENT webservice-description-name (#PCDATA)>
+<!ATTLIST webservice-description-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The wsdl-file element contains the name of a WSDL file in the
+	    module.  The file name is a relative path within the module.
+
+	  -->
+<!ELEMENT wsdl-file (#PCDATA)>
+<!ATTLIST wsdl-file
+	id ID #IMPLIED
+>
+<!--
+
+	    The jaxrpc-mapping-file element contains the name of a file that
+	    describes the JAX-RPC mapping between the Java interaces used by
+	    the application and the WSDL description in the wsdl-file.  The
+	    file name is a relative path within the module.
+
+	  -->
+<!ELEMENT jaxrpc-mapping-file (#PCDATA)>
+<!ATTLIST jaxrpc-mapping-file
+	id ID #IMPLIED
+>
+<!--
+
+	The port-component element associates a WSDL port with a web service
+	interface and implementation.  It defines the name of the port as a
+	component, optional description, optional display name, optional iconic
+	representations, WSDL port QName, Service Endpoint Interface, Service
+	Implementation Bean.
+
+      -->
+<!ELEMENT port-component (description?, display-name?, icon?, port-component-name, wsdl-port, service-endpoint-interface, service-impl-bean, handler*)>
+<!ATTLIST port-component
+	id ID #IMPLIED
+>
+
+
+
+<!ELEMENT port-component-name (#PCDATA)>
+<!ATTLIST port-component-name
+	id ID #IMPLIED
+>
+<!--
+
+	    Defines the name space and local name part of the WSDL port QName.
+
+	  -->
+<!ELEMENT wsdl-port (#PCDATA)>
+<!ATTLIST wsdl-port
+	id ID #IMPLIED
+>
+<!ELEMENT service-endpoint-interface (#PCDATA)>
+<!ATTLIST service-endpoint-interface
+	id ID #IMPLIED
+>
+<!--
+
+	The service-impl-bean element defines the web service implementation.
+	A service implementation can be an EJB bean class or JAX-RPC web
+	component.  Existing EJB implementations are exposed as a web service
+	using an ejb-link.
+
+	Used in: port-component
+
+      -->
+<!ELEMENT service-impl-bean (ejb-link | servlet-link)>
+<!ATTLIST service-impl-bean
+	id ID #IMPLIED
+>
+<!--
+
+	Declares the handler for a port-component. Handlers can access the
+	init-param name/value pairs using the HandlerInfo interface.
+
+	Used in: port-component
+
+      -->
+<!ELEMENT handler ((description*, display-name*, icon*), handler-name, handler-class, init-param*, soap-header*, soap-role*)>
+<!ATTLIST handler
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT ejb-link (#PCDATA)>
+<!ATTLIST ejb-link
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT servlet-link (#PCDATA)>
+<!ATTLIST servlet-link
+	id ID #IMPLIED
+>
+<!--
+
+	    Defines the name of the handler. The name must be unique within the
+	    module.
+
+	  -->
+<!ELEMENT handler-name (#PCDATA)>
+<!ATTLIST handler-name
+	id ID #IMPLIED
+>
+<!--
+
+	    Defines a fully qualified class name for the handler implementation.
+
+	  -->
+<!ELEMENT handler-class (#PCDATA)>
+<!ATTLIST handler-class
+	id ID #IMPLIED
+>
+<!--
+
+	This type is a general type that can be used to declare
+	parameter/value lists.
+
+      -->
+<!ELEMENT init-param (description*, param-name, param-value)>
+<!ATTLIST init-param
+	id ID #IMPLIED
+>
+<!--
+
+	    Defines the QName of a SOAP header that will be processed by the
+	    handler.
+
+	  -->
+<!ELEMENT soap-header (#PCDATA)>
+<!ATTLIST soap-header
+	id ID #IMPLIED
+>
+<!--
+
+	    The soap-role element contains a SOAP actor definition that the
+	    Handler will play as a role.
+
+	  -->
+<!ELEMENT soap-role (#PCDATA)>
+<!ATTLIST soap-role
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The param-name element contains the name of a
+	    parameter.
+
+	  -->
+<!ELEMENT param-name (#PCDATA)>
+<!ATTLIST param-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The param-value element contains the value of a
+	    parameter.
+
+	  -->
+<!ELEMENT param-value (#PCDATA)>
+<!ATTLIST param-value
+	id ID #IMPLIED
+>
+

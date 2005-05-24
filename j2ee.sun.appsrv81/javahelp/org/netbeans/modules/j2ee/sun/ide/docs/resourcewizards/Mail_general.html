@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+
+    <head>
+
+        <!--
+
+        * Copyright &copy; 2004 Sun Microsystems, Inc. 
+
+        * All rights reserved. Use is subject to license terms.
+
+        -->
+
+        <title>JavaMail Session: General Attributes</title>
+
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+    </head>
+
+    <body>
+
+        <h2>JavaMail Session: General Attributes</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You see this page of the New File wizard when you are <a href="../general/def_javamail.html">defining a JavaMail resource</a>. 
+        On this page you specify general and advanced configuration information for a JavaMail Session resource
+        and specify the JNDI name of the resource.</p> 
+        
+        <p>Use this page as follows:</p>
+        <ol>
+            <li>Supply the general information for the resource. 
+            The following information is required and must be supplied before you can Finish or 
+            proceed to the next screen:</p>
+            <ul>
+                <li><b>JNDI name.</b> The JNDI must be unique to the resource. JavaMail resources are usually placed withing the <tt>mail</tt> naming subcontext.</li>
+                <li><b>Mail host name.</b> The host name is the DNS name of the default mail server. 
+                The name must be resolvable to an actual host name.</li>
+                <li><b>Default user name.</b> Enter the user name to use when connecting to the mail server.</li>
+                <li><b>Default return address.</b> Enter the email address of the default user, in the form <tt>username@host.domain</tt>.</li>
+            </ul></li>
+            <li>Advanced information is optional. It is best to leave the advanced settings at their default values unless 
+            the Application Server's mail provider has been reconfigured to 
+            use a nondefault store or transport protocol.
+            <ul class="note">
+                <li>Setting Debug Enabled to True, enables extra debugging output. including 
+                a protocol trace, for this mail session. If the JavaMail log level
+                is set to FINE or finer, the debugging output is generated and is included 
+                in the system log file. See "Configuring Log Levels" for 
+                information about setting the log level.</li>
+            </ul></li>
+            <li>Click Finish to create the resource.<br>
+            Click Next to proceed to the advanced properties screen.</li>
+        </ol>
+        <p>The JavaMail Session resource is created in the setup directory in the Files window.
+        You can change the properties of the resource in the properties window. The resource
+        needs to be registered with the server to make it available. After the resource is 
+        registered, the resource appears in the JavaMail Resources node in the Application Server
+        instance node in the Runtime window.</p> 
+        
+        <p>For more on the Sun J2EE JavaMail API, see:</p>
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://java.sun.com/products/javamail/">
+            <param name="text" value="<html><u>http://java.sun.com/products/javamail/</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object> 
+
+        <table>
+            <tr> 
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr> 
+                <td width="23"></td>
+                <td>
+                <a href="../general/def_javamail.html">Defining a JavaMail Resource</a></td>
+            
+            </tr>
+        </table>
+
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+

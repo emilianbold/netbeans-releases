@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+
+    <head>
+
+        <!--
+
+        * Copyright &copy; 2004 Sun Microsystems, Inc. 
+
+        * All rights reserved. Use is subject to license terms.
+
+        -->
+
+        <title>Add Connection Pool Optional Settings</title>
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+        <h2>Add Connection Pool Optional Settings</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>This page of the New File wizard for defining a connection pool 
+        allows you to modify the default values for 
+        pool settings, transaction isolation, and connection validation. It is best to 
+        leave these settings at their default values and modify them later
+        in the connection pool properties window.</p>
+        <p>The following settings can be modified in this screen:</p> 
+        <h3>Pool Settings</h3>
+        <p>A set of physical database connections reside in the pool. 
+        When an application requests a connection, the connection is 
+        removed from the pool, and when the application releases the 
+        connection, it is returned to the pool.</p>        
+        <ul>
+            <li><b>Steady Pool Size.</b> An integer value representing the number of
+            connections in the pool at any given moment. Usually, this is the
+            minimum connections in the pool.</li>
+            <li><b>Max Pool Size.</b> An integer value representing the maximum number
+            of connections in the pool.</li>
+            <li><b>Max Wait time.</b> An integer value representing the maximum wait
+            time in milliseconds.</li>
+            <li><b>Pool Resize Quantity.</b> Connection pools, as they shrink to the
+            minimum pool size, are resized in batches. This number represents the
+            number of connections in the batch for resizing the pool. A batch size
+            that is too large may delay connection recycling, while a batch size
+            too small may be less efficient.</li>
+            <li><b>Idle Timeout (seconds).</b> An integer value representing the maximum
+            idle timeout length in seconds. This is the amount of time that a
+            connection may remain idle in the pool. Connections that remain idle
+            for longer than this time are closed.</li>
+        </ul>
+
+        <h3>Transaction Isolation</h3>
+        <p>Because a database is usually accessed by many users 
+        concurrently, one transaction might update data while another 
+        attempts to read the same data. The isolation level of a 
+        transaction defines the degree to which the data being updated 
+        is visible to other transactions. For details on isolation levels, 
+        refer to the documentation of the database vendor.</p>        
+        <ul>
+            <li><b>Transaction Isolation.</b> Select one of the following 
+            from the combobox: read-uncommitted, read-committed, 
+            repeatable-read, serializable.</li>
+            <li><b>Guarantee Isolation Level.</b> Set to true or false.
+            If you set to true, all connections taken from the pool have 
+            the same isolation level. For example, if the isolation level 
+            for the connection is changed programatically 
+            (with con.setTransactionIsolation) when last used, 
+            this mechanism changes the status back to the specified 
+            isolation level.</li>
+        </ul>
+
+        <h3>Connection Validation</h3>
+        <p>The application server can validate connections before 
+        they are passed to applications. Validation allows the application 
+        server to automatically re-establish database connections if the 
+        database becomes unavailable due to network failure or database 
+        server crash. Validation of connections incurs additional 
+        overhead and slightly reduces performance.</p>        
+        <ul>
+            <li><b>Connection Validation Required.</b> Set to true or false. When set to
+            true, the application server validates connections before they are sent
+            to an application. When validation is in force, the application
+            server can automatically reinstate connections to databases that fail
+            due to network or database server failures.</li>
+            <li><b>Validation Method.</b> Select the validation method from the
+                pull-down list. There are three valid methods: auto-commit, meta-data,
+                and table.
+                <ul>
+                    <li><b>auto-commit</b> and <b>meta-data.</b> The application server validates a
+                    connection by calling the con.getAutoCommit() and con.getMetaData()
+                    methods. However, since the results of
+                    these calls may be cached, they do not always provide reliable
+                    validations.</li>
+                    <li><b>table</b> The application queries a database table you&#8217;ve
+                    specified, using the query: select (count *) from &lt;table-name&gt;.
+                    While the table must exist and be accessible, it need not have any rows. Do not
+                    use an existing table that has a large number of rows or
+                    a table that is already frequently accessed.</li>
+                </ul>
+            </li>
+            <li><b>Table Name.</b> This is the name of the connection validation table. Set the table
+            name if you selected table as the validation method.</li>
+            <li><b>Fail All Connections.</b> Set to true or false. When set to
+            true, if a single connection fails, the application server closes all
+            connections in the pool and then reestablishes them. When set to
+            false, only individual connections are reestablished.</li>
+        </ul>
+
+        <table>
+            <tr> 
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr> 
+                <td width="23"></td>
+                <td>
+                <a href="../general/def_connpool.html">Defining a Connection Pool</a> <br>
+                <a href="ConnPool_chooseDB.html">Choose Database Connection</a><br>
+                <a href="ConnPool_props.html">Add Connection Pool Properties</a></td>
+            </tr>
+        </table>
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+

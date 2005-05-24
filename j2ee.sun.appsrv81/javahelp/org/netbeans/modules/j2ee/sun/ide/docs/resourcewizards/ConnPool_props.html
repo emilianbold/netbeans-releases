@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+
+    <head>
+
+        <!--
+
+        * Copyright &copy; 2004 Sun Microsystems, Inc. 
+
+        * All rights reserved. Use is subject to license terms.
+
+        -->
+
+        <title>Add Connection Pool Properties</title>
+
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+    </head>
+
+    <body>
+        <h2>Add Connection Pool Properties</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You see this page of the New File wizard when you are 
+        defining a connection pool and you 
+        have already named the connection pool and selected the database connection.</p>        
+        <p>On this (and the <a href="ConnPool_poolSettings.html"> Connection Pool Optional Settings</a> page) 
+        you specify the properties of the connection pool. After
+        entering the property values, you can do one of the following:</p>
+        <ul>
+            <li>Click Next if you want to further customize the optional pool properties such as pool size and connection validation.</li>
+            <li>Click Finish to create the connection pool, leaving the optional settings at their default values.</li>
+        </ul>
+        <p>Note that connection pool properties can be modified later in the properties 
+        sheet for the connection pool in the Runtime window.</p>
+        
+        <h3>Datasource classname</h3>
+        <p>The datasource class name is the JDBC driver that implements the APIs
+        for the datasource. This name is provided according to the database connection selected in the previous screen.
+        If you selected Other as the connection in the previous screen, you may need to add the datasource classname manually.</p>
+        
+        <h3>Resource type</h3>
+        <p>The resource type reflects whether the connection pool enables XA
+        global transactions or is restricted to local transactions.
+        Return to the previous screen to change the resource type.</p>
+            
+        <h3>Description</h3>
+        <p>You can enter a description of this connection pool.</p>
+        
+        <h3>Properties</h3>
+        <p>Connection pool properties may vary according to the database vendor.
+        Common properties include the datasource URL, user name, and password, but other
+        properties may be suggested or required depending on the database connection.
+        If you selected an existing source in the previous screen, some of the property values may already
+        be provided.</p>
+
+        <p>Properties may be changed or removed and additional
+        properties may be added, but each property in the Properties area must have a value
+        entered before you can proceed to the next screen or finish
+        the connection pool configuration.</p>
+
+        <p><b>To change a property:</b></p>
+        <ol>
+            <li>Click a box in the Properties Name column and select a new property from the combobox.</li>
+            <li>Add a value for that property.</li>
+        </ol>        
+        <p><b>To add a new property:</b></p>
+        <ol>
+            <li>Click the Add button. A new row appears in the properties box.</li>            
+            <li>In the new row, click the box in the Properties Name column and select a property from the combobox.</li>
+            <li>Add a value for that property.</li>
+        </ol>
+
+        <p><b>To remove a property:</b></p>
+        <ol>
+            <li>Click the row containing the property to delete.</li>
+            <li>Click the Remove button.</li>
+        </ol>
+        
+        
+        <table>
+            <tr> 
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr> 
+                <td width="23"></td>
+                <td>
+                <a href="../general/def_connpool.html">Defining a Connection Pool</a><br>
+                <a href="ConnPool_chooseDB.html">Choose Database Connection</a><br>
+                <a href="ConnPool_poolSettings.html">Add Connection Pool Optional Settings</a></td>
+            </tr>
+        </table>
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+

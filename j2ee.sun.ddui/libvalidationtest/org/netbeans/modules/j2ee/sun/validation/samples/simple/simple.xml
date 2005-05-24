@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<root-element>
+    <!-- pass -->
+    <non-existence-element>sdfsdfsdfsdfsdfsefsedfsdf</non-existence-element>
+    <non-zero-length-property>fsdfsadfsdf</non-zero-length-property>
+    <!-- <number-property>20</number-property> 
+    <boolean-property>rajeshwar</boolean-property>
+    <boolean-property>false</boolean-property>
+--> 
+    <range-property>700</range-property>
+    <enumeration-property>red</enumeration-property>
+
+    <!--  <non-zero-length-property></non-zero-length-property> -->
+
+    <number-property>201</number-property>
+    <!-- <boolean-property>fail</boolean-property> -->
+
+    <object-one>
+        <property-one>  </property-one>
+        <property-two>12324</property-two>
+    </object-one>
+
+    <object-two>
+        <property-one>mandatory</property-one>  
+        <property-two>mandatory</property-two>
+    </object-two>
+     
+
+        <!-- optional -->
+    <object-three>
+        <property-one>madatory</property-one>
+        <property-two>optional</property-two>
+        <property-three>plus0</property-three>
+        <property-three>plus1</property-three>      
+        <property-four>star0</property-four>
+        <property-four>star1</property-four>
+        <property-four>star2</property-four>
+    </object-three>
+
+    <!-- madatory -->
+    <object-four>
+    </object-four>
+
+    <!-- star -->
+    <object-five>
+        <property-one>madatory</property-one>
+        <property-two>optional</property-two>
+    </object-five>
+    <object-five>
+        <property-one>madatory</property-one>
+    </object-five>
+    <object-five>
+        <property-two>optional</property-two>
+    </object-five>
+    
+    
+    <object-six>
+    </object-six>
+    <object-six>
+        <property-one>optional</property-one>
+        <property-two>optional</property-two>
+    </object-six>
+    <object-six>
+        <property-one>optional</property-one>
+    </object-six>
+         
+    <!-- star -->
+    <object-seven>
+ <!--        <property-one>mandatory</property-one> -->
+        <property-two>mandatory</property-two>
+        
+    </object-seven>
+    <object-seven>
+        <property-one></property-one>
+    </object-seven>
+    <object-seven>
+        <property-one></property-one>
+        <property-two>mandatory</property-two>
+    </object-seven>
+
+    <!-- star -->
+    <object-eight>
+        <!-- <property-one>mandatory</property-one> -->
+        <property-one>TRUE</property-one>
+        <property-two>optional</property-two>
+        <!-- mandatory -->
+        <child-object-one>
+            <property-one>true</property-one>
+            <!--
+            <property-two>mandatory</property-two>
+            -->
+        </child-object-one>
+        <!-- optional -->
+        <child-object-two>
+            <!-- <property-one>madatory</property-one> -->
+            <property-two>mandatory</property-two>
+        </child-object-two>
+        <!-- star -->
+        <child-object-three>
+            <property-one>optional</property-one>
+            <property-two>optional</property-two>
+        </child-object-three>
+        <child-object-three>
+            <property-one></property-one>
+            <property-two></property-two>
+        </child-object-three>
+        <child-object-three>
+        </child-object-three>
+        <child-object-three>
+            <property-one>optional</property-one>
+        </child-object-three>
+        <!-- plus -->
+        <child-object-four>
+            <property-one>madatory</property-one>
+            <property-two>optional</property-two>
+            <property-three>plus0</property-three>
+            <property-three>plus1</property-three>      
+            <property-four>star0</property-four>
+            <property-four>star1</property-four>
+            <property-four>star2</property-four>
+        </child-object-four>
+        <child-object-four>
+            <property-one>madatory</property-one>
+            <property-two>optional</property-two>
+            <property-three>plus0</property-three>
+            <property-three>plus1</property-three>      
+        </child-object-four>
+        <child-object-four>
+            <property-one>madatory</property-one>
+            <property-three>plus0</property-three>
+            <property-three>plus1</property-three>      
+        </child-object-four>
+        <child-object-four>
+            <property-two>optional</property-two>
+            <property-four>star0</property-four>
+            <property-four>star1</property-four>
+            <property-four>star2</property-four>
+        </child-object-four>
+    </object-eight>  
+</root-element>

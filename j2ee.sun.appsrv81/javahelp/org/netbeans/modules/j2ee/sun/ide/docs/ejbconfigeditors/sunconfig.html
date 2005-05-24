@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+
+    <head>
+
+        <!--
+
+        * Copyright &copy; 2004 Sun Microsystems, Inc.
+
+        * All rights reserved. Use is subject to license terms.
+
+        -->
+
+        <title>sun-ejb-jar.xml Visual Editor: Sun Configuration</title>
+
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+    </head>
+
+    <h2><tt>sun-ejb-jar.xml</tt> Visual Editor: Sun Configuration</h2>
+    <p><small><a href="#seealso">See Also</a></small></p> 
+    <p>You open the visual editor by expanding your project's Configuration Files node in 
+    the Projects window and double-clicking the <tt>sun-ejb-jar.xml</tt> file or the <tt>sun-cmp-mappings.xml</tt> file. 
+    The Sun Configuration pane of the visual editor enables you to set <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/editing/define_cmp_field.html">CMP resource 
+    properties</a> and properties for the persistent manager and Java messaging. Additional properties can be
+    set in the <a href="sunconfig_tabs.html">Sun configuration tabs in the visual editor</a>.</p>
+    <p>The visual editor displays a tree in the left pane with the configurable beans displayed below
+    the Sun Configuration node (&nbsp;<img src="../images/dd.gif">&nbsp;).  The following bean types may be visible in the tree:</p>
+    <ul>
+        <li><a href="sessionbean.html">Session Bean</a>. A session bean (&nbsp;<img src="../images/SessionNodeIcon.gif">&nbsp;)
+        provides a service to a particular user session. A session bean can be one of two types: stateless or stateful.</li>
+        <li><a href="entitybean.html">Entity Bean</a>. An entity bean (&nbsp;<img src="../images/EntityNodeIcon.gif">&nbsp;) 
+        represents data that is typically stored in a database. Each entity bean represents a set of data, such as the fields in a database record.
+        There are two types of persistence for entity beans: bean-managed and container-managed.</li>
+        <li><a href="messagebean.html">Message Bean</a>. A message bean (&nbsp;<img src="../images/MessageNodeIcon.gif">&nbsp;)
+        enables J2EE applications to process messages asynchronously.</li>
+    </ul>
+
+    <p>Clicking on a bean node opens the 
+    configuration panel for the selected bean in the visual editor.
+    The configuration panes vary according to the type of bean, and 
+    there may be multiple tabs in the pane for configuring complex
+    elements. </p>
+    <!--<p>If any configuration information for an enterprise bean is not specified 
+    in the sun-ejb-jar.xml file, it defaults to a corresponding setting in the EJB 
+    container if an equivalency exists.</p>-->
+
+    <p>For a complete list of configurable properties for
+    all J2EE module types, see "Appendix A
+    Deployment Descriptor Files" in
+    the Sun Java System Application Server Platform Edition 8 Developer's
+    Guide. </p>
+    <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://docs.sun.com/source/819-0079/dgdesc.html">
+        <param name="text" value="<html><u>http://docs.sun.com/source/819-0079/dgdesc.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object>
+    
+    <h3>Sun Configuration Properties</h3>
+    <p>The Sun Configuration pane is where you can modify the container properties for EJB beans. The following properties
+    are visible in the Sun Configuration pane:</p>
+    <ul>
+        <li><b>Name.</b> (optional) This field contains the name of the module.</li>
+        <li><b>Unique ID.</b> This field cannot be modified in the visual editor.</li>
+        <li><b>CMP resource properties.</b> The CMP resource specifies the database to be used for storing CMP beans. The JNDI
+	name is required. You can modify the following resource elements in the visual editor:</p>
+        <ul>
+            <li><b>JNDI Name.</b> Specifies the absolute <tt>jndi-name</tt> of a JDBC resource or a Persistence Manager resource.</li>
+            <li><b>Default Resource Principal Name.</b> Specifies the default principal (user) for the resource.</li>
+            <li><b>Default Resource Principal Password.</b> Specifies password of the default resource principal.</li>    
+            <li><b>Create Table at Deploy.</b> Select True to create database tables for beans 
+            that are automatically mapped by the EJB container when the EJB JAR file is deployed.
+            If you select True you must supply a database vendor name.</li>
+            <li><b>Drop Tables at Undeploy.</b> Select True to specify 
+            that database tables that were automatically created when the
+            bean(s) were last deployed are dropped when the bean(s) are undeployed.</li>
+            <li><b>Database Vendor Name.</b> Specifies the name of the database vendor for which tables can be created.
+            Allowed values are <tt>db2</tt>, <tt>mssql</tt>, <tt>oracle</tt>, <tt>pointbase</tt>, and <tt>sybase</tt> (case-insensitive).
+            If no value is specified, a connection is made to the resource specified by the <tt>jndi-name</tt> subelement of the <tt>cmp-resource</tt> element
+            in the <tt>sun-ejb-jar.xml</tt> file, and the database vendor name is retrieved from there. 
+            If the connection cannot be established, or if the value is not recognized, SQL-92 compliance is presumed.</li>
+        </ul></li>
+        <li><b>PM in use.</b> This element has been deprecated. Do not use.</li>
+    </ul>
+    
+    <table>
+        <tr> 
+            <th colspan=2 align=left><a name="seealso">See Also</a></th>
+        </tr>
+        <tr> 
+            <td width="23"></td>
+                        <td><tt>sun-ejb-jar.xml</tt> Visual Editor<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sunconfig_tabs.html">Sun Configuration Tabs</a><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sessionbean.html">Session Bean</a><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="entitybean.html">Entity Bean</a><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="messagebean.html">Message Bean</a><br>
+            <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a> <br>                
+            <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/config_ejb_dd.html">Configuring EJB Deployment Descriptors</a></td>              
+        </tr>
+    </table>
+    <hr>
+
+    <small><a href="credits.html">Legal Notices</a></small> 
+    <table border="0" cellpadding="20">
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+    </table>
+
+    </body>
+
+</html>
+

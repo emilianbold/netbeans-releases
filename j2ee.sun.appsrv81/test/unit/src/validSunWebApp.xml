@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : validFile2.xml
+    Created on : December 24, 2003, 12:08 PM
+    Author     : vkraemer
+    Description:
+        Purpose of the document follows.
+-->
+
+<sun-web-app>
+    <context-root>fooBar</context-root>
+</sun-web-app>

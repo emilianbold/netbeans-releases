@@ -1,0 +1,36 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: 2.2
+OpenIDE-Module-Layer: org/netbeans/modules/j2ee/sun/ide/j2ee/layer.xml
+OpenIDE-Module-Install: org/netbeans/modules/j2ee/sun/ide/Installer.class
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/ide/j2ee/Bundle.properties
+OpenIDE-Module-Module-Dependencies: 
+ org.netbeans.modules.j2ee.sun.ddui/1 = 1,
+ org.netbeans.modules.j2ee.sun.appsrv/1 = 1,
+ org.netbeans.modules.javahelp/1 > 1.0,
+ org.openide.io, org.openide.execution > 1.3,
+ org.netbeans.modules.j2eeserver/3 > 1.5,
+ org.netbeans.modules.schema2beans/1,
+ org.netbeans.modules.j2eeapis/1, 
+ org.netbeans.modules.db/1 = 2, 
+ org.netbeans.modules.xml.catalog/2 > 0.9 , 
+ org.netbeans.modules.xml.core/2 = 4, 
+ org.netbeans.api.xml/1 , 
+ org.netbeans.api.debugger/1, 
+ org.netbeans.api.debugger.jpda/1, 
+ org.netbeans.modules.projectapi/1, 
+ org.netbeans.modules.projectuiapi/1, 
+ org.netbeans.modules.j2ee.dd/1 > 1.3, 
+ org.openide.src > 1.5, 
+ org.netbeans.api.java/1, 
+ org.netbeans.modules.dbschema/1 = 2,
+ org.netbeans.modules.project.libraries/1,
+ org.netbeans.libs.xerces/1,
+ org.netbeans.modules.j2ee.sun.dd/1 = 1
+OpenIDE-Module: org.netbeans.modules.j2ee.sun.ide/1
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.30
+OpenIDE-Module-Implementation-Version: 1
+Class-Path:  docs/org-netbeans-modules-j2ee-sun-ide.jar 
+   ext/jmxri.jar  
+
+Name: org/netbeans/modules/j2ee/sun/ide/j2ee/runtime/actions/RunASVerifierAction.class
+OpenIDE-Module-Class: Action

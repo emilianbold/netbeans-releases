@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+	The application element is the root element of a J2EE
+	application deployment descriptor.
+
+      -->
+<!ELEMENT application ((description*, display-name*, icon*), module+, security-role*)>
+<!--version: 
+
+	  The required value for the version is 1.4.
+
+	-->
+<!ATTLIST application
+	version CDATA #REQUIRED
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT display-name (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST display-name
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	The icon type contains small-icon and large-icon elements
+	that specify the file names for small and large GIF or
+	JPEG icon images used to represent the parent element in a
+	GUI tool.
+
+	The xml:lang attribute defines the language that the
+	icon file names are provided in. Its value is "en" (English)
+	by default.
+
+      -->
+<!ELEMENT icon (small-icon?, large-icon?)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST icon
+	lang CDATA #IMPLIED
+	id ID #IMPLIED
+>
+<!--
+
+	    The application deployment descriptor must have one
+	    module element for each J2EE module in the
+	    application package. A module element is defined
+	    by moduleType definition.
+
+	  -->
+<!ELEMENT module ((connector | ejb | java | web), alt-dd?)>
+<!ATTLIST module
+	id ID #IMPLIED
+>
+<!ELEMENT security-role (description*, role-name)>
+<!ATTLIST security-role
+	id ID #IMPLIED
+>
+<!ELEMENT small-icon (#PCDATA)>
+<!ATTLIST small-icon
+	id ID #IMPLIED
+>
+<!ELEMENT large-icon (#PCDATA)>
+<!ATTLIST large-icon
+	id ID #IMPLIED
+>
+<!--
+
+	      The connector element specifies the URI of a
+	      resource adapter archive file, relative to the
+	      top level of the application package.
+
+	    -->
+<!ELEMENT connector (#PCDATA)>
+<!ATTLIST connector
+	id ID #IMPLIED
+>
+<!--
+
+	      The ejb element specifies the URI of an ejb-jar,
+	      relative to the top level of the application
+	      package.
+
+	    -->
+<!ELEMENT ejb (#PCDATA)>
+<!ATTLIST ejb
+	id ID #IMPLIED
+>
+<!--
+
+	      The java element specifies the URI of a java
+	      application client module, relative to the top
+	      level of the application package.
+
+	    -->
+<!ELEMENT java (#PCDATA)>
+<!ATTLIST java
+	id ID #IMPLIED
+>
+<!--
+
+	The webType defines the web-uri and context-root of
+	a web application module.
+
+      -->
+<!ELEMENT web (web-uri, context-root)>
+<!ATTLIST web
+	id ID #IMPLIED
+>
+<!--
+
+	    The alt-dd element specifies an optional URI to the
+	    post-assembly version of the deployment descriptor
+	    file for a particular J2EE module.  The URI must
+	    specify the full pathname of the deployment
+	    descriptor file relative to the application's root
+	    directory. If alt-dd is not specified, the deployer
+	    must read the deployment descriptor from the default
+	    location and file name required by the respective
+	    component specification.
+
+	  -->
+<!ELEMENT alt-dd (#PCDATA)>
+<!ATTLIST alt-dd
+	id ID #IMPLIED
+>
+
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT role-name (#PCDATA)>
+<!ATTLIST role-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The web-uri element specifies the URI of a web
+	    application file, relative to the top level of the
+	    application package.
+
+	  -->
+<!ELEMENT web-uri (#PCDATA)>
+<!ATTLIST web-uri
+	id ID #IMPLIED
+>
+<!--
+
+	    The context-root element specifies the context root
+	    of a web application.
+
+	  -->
+<!ELEMENT context-root (#PCDATA)>
+<!ATTLIST context-root
+	id ID #IMPLIED
+>
+

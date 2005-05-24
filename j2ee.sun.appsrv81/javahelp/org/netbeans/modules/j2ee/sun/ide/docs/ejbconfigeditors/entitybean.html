@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+
+    <head>
+
+        <!--
+
+        * Copyright &copy; 2004 Sun Microsystems, Inc.
+
+        * All rights reserved. Use is subject to license terms.
+
+        -->
+
+        <title>Visual Editor: Entity Bean</title>
+
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+    </head>
+    <body>
+        <h2><tt>sun-ejb-jar.xml</tt> Visual Editor: Entity Bean</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You get to this pane by expanding the <a href="sunconfig.html">Sun Configuration node</a> in the <tt>sun-ejb-jar.xml</tt>
+        visual editor and clicking the entity bean node (&nbsp;<img src="../images/EntityNodeIcon.gif">&nbsp;).</p>
+        <p>This pane lets you edit the <tt>sun-ejb-jar.xml</tt> deployment descriptor entries 
+        for entity beans. </p>
+        <p>In addition to the general bean settings, the pane contains the following configuration tabs:</p>
+        <ul>
+            <li><a href=entitybean_tabs.html">IOR Security Config tab</a></li>
+            <li><a href=entitybean_tabs.html#poo">Bean Pool tab</a></li>
+            <li><a href=entitybean_tabs.html#cac">Bean Cache tab</a></li>
+        </ul>
+        <p>If the Entity Bean uses container-managed persistence (CMP), the pane 
+        contains the following additional configuration tabs:</p>
+        <ul>            
+            <li><a href=entitybean_tabs.html#cmp">Cmp Mapping</a></li>
+            <li><a href=entitybean_tabs.html#que">EJB1.1 Finder Queries tab</a></li>
+            <li><a href=entitybean_tabs.html#pre">Prefetch Disabled tab</a></li>
+        </ul>
+
+    
+        <h3>General Bean Properties</h3>
+        <p>Each EJB has the following elements:</p>
+        <ul>
+            <li><b>Name.</b> The name field contains the name of the bean. This name cannot be changed in the visual editor.</li>
+            <li><b> JINDI name.</b>
+            This specifies the JNDI name of the entity bean. In the case of session beans, this name
+            specifies the global JNDI name of the EJBHome object. This name is required if the session bean exposes a remote view.</li>
+            <li><b>Pass by Reference.</b>
+                This specifies the passing method used by the enterprise bean 
+                calling a remote interface method in another bean co-located within the same process. 
+		The following three options are available:</p>
+                <ul>
+                    <li><b>No value set</b> (empty). When no value is set, the default passing method is used. The default is pass-by-value.</li>
+                    <li><b>True.</b> When set to True, pass-by-reference semantics is used.</li>
+                    <li><b>False.</b> When set to False, the enterprise bean uses pass-by-value semantics for calls to remote interfaces.</li>
+                </ul>
+                <ul class="note"><li>Use of the Pass by Reference feature results in non-portable applications. </li></ul>
+            </li>
+        </ul>
+        <h3>Entity Bean Properties</h3>
+        <p>The following entity bean settings can also be modified:</p> 
+        <ul>
+            <li><b>Is Read Only Bean.</b> Selecting True specifies that the bean is a read-only bean that is never 
+            modified by an Enterprise Bean client. If not defined, the default value of False is used.</li>
+            <li><b>Refresh Period In Seconds.</b> This specifies the rate at which a read-only bean must be
+            refreshed from the JDBC datasource. Values are 0 (never refreshed)and positive number 
+            (refreshed at specified intervals). This rate is just a hint to the container. The Default value is 0.</li>            
+            <li><b>Commit Option.</b> This specifies the commit option used on transaction completion. 
+            For the Sun Java System Application Server, the valid values are B or C. The default value is B. 
+            (Commit option A is not supported for the current release of the Sun Java System Application Server.)</li>
+            <li><b>Mapping Properties.</b> This property is currently not used.</li>
+        </ul>
+       
+    
+        <table>
+            <tr> 
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr> 
+                <td width="23"></td>
+                <td><tt>sun-ejb-jar.xml</tt> Visual Editor<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="entitybean_tabs.html">Entity Bean Configuration Tabs</a><br>          
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sessionbean.html">Session Bean</a><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="messagebean.html">Message Bean</a><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sunconfig.html">Sun Configuration</a><br>
+                <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_entity_beans.html">About Entity Beans</a> <br>
+                <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/editing/define_cmp_field.html">Defining a CMP Field</a> <br>
+                <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/config_ejb_dd.html">Configuring EJB Deployment Descriptors</a>  </td>             
+            </tr>
+        </table>
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+

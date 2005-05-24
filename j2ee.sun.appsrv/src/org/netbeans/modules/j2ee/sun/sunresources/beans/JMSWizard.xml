@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE wizard>
+
+<wizard>
+    <name>jms-resource</name>
+    <field-group>
+        <name>general</name>
+        <field field-type="string" required="true">
+            <name>jndi-name</name>
+            <field-value>
+                <default-field-value>jms/</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="list">
+            <name>enabled</name>
+            <field-value>
+                <default-field-value>true</default-field-value>
+            </field-value>
+            <tag>
+                <tag-item>true</tag-item>
+                <tag-item>false</tag-item>
+            </tag>
+        </field>
+        <field field-type="textarea">
+            <name>description</name>
+            <field-value>
+                <default-field-value></default-field-value>
+            </field-value>
+        </field>
+    </field-group>
+    <field-group>
+        <name>properties</name>
+        <field field-type="string">
+            <name>imqDestinationName</name>
+            <field-value>
+                <default-field-value></default-field-value>
+            </field-value>
+        </field>
+    </field-group>
+    <field-group>
+        <name>properties2</name>
+        <field field-type="string">
+            <name>imqBrokerHostName</name>
+            <field-value>
+                <default-field-value>localhost</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>imqBrokerHostPort</name>
+            <field-value>
+                <default-field-value>7676</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>imqConfiguredClientID</name>
+            <field-value>
+                <default-field-value></default-field-value>
+            </field-value>
+        </field>
+    </field-group>
+</wizard>
+

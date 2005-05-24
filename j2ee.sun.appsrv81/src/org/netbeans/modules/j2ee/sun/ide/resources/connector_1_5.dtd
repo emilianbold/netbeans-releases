@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+	The connector element is the root element of the deployment
+	descriptor for the resource adapter. This element includes
+	general information - vendor name, resource adapter version,
+	icon - about the resource adapter module. It also includes
+	information specific to the implementation of the resource
+	adapter library as specified through the element
+	resourceadapter.
+
+      -->
+<!ELEMENT connector ((description*, display-name*, icon*), vendor-name, eis-type, resourceadapter-version, license?, resourceadapter)>
+<!--version: 
+
+	  The version specifies the version of the
+	  connector architecture specification that is
+	  supported by this resource adapter. This information
+	  enables deployer to configure the resource adapter to
+	  support deployment and runtime requirements of the
+	  corresponding connector architecture specification.
+
+	-->
+<!ATTLIST connector
+	version CDATA #REQUIRED
+	id ID #IMPLIED
+>
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT description (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST description
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT display-name (#PCDATA)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST display-name
+	id ID #IMPLIED
+	lang CDATA #IMPLIED
+>
+<!--
+
+	The icon type contains small-icon and large-icon elements
+	that specify the file names for small and large GIF or
+	JPEG icon images used to represent the parent element in a
+	GUI tool.
+
+	The xml:lang attribute defines the language that the
+	icon file names are provided in. Its value is "en" (English)
+	by default.
+
+      -->
+<!ELEMENT icon (small-icon?, large-icon?)>
+<!--lang: In due course, we should install the relevant ISO 2- and 3-letter
+         codes as the enumerated possible values . . .-->
+<!ATTLIST icon
+	lang CDATA #IMPLIED
+	id ID #IMPLIED
+>
+<!--
+
+	    The element vendor-name specifies the name of
+	    resource adapter provider vendor.
+
+	  -->
+<!ELEMENT vendor-name (#PCDATA)>
+<!ATTLIST vendor-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The element eis-type contains information about the
+	    type of the EIS. For example, the type of an EIS can
+	    be product name of EIS independent of any version
+	    info.
+
+	    This helps in identifying EIS instances that can be
+	    used with this resource adapter.
+
+	  -->
+<!ELEMENT eis-type (#PCDATA)>
+<!ATTLIST eis-type
+	id ID #IMPLIED
+>
+<!--
+
+	    The element resourceadapter-version specifies a string-based version
+	    of the resource adapter from the resource adapter
+	    provider.
+
+	  -->
+<!ELEMENT resourceadapter-version (#PCDATA)>
+<!ATTLIST resourceadapter-version
+	id ID #IMPLIED
+>
+<!--
+
+	The licenseType specifies licensing requirements for the
+	resource adapter module. This type specifies whether a
+	license is required to deploy and use this resource adapter,
+	and an optional description of the licensing terms
+	(examples: duration of license, number of connection
+	restrictions). It is used by the license element.
+
+      -->
+<!ELEMENT license (description*, license-required)>
+<!ATTLIST license
+	id ID #IMPLIED
+>
+<!--
+
+	The resourceadapterType specifies information about the
+	resource adapter. The information includes fully qualified
+	resource adapter Java class name, configuration properties,
+	information specific to the implementation of the resource
+	adapter library as specified through the
+	outbound-resourceadapter and inbound-resourceadapter
+	elements, and an optional set of administered objects.
+
+      -->
+<!ELEMENT resourceadapter (resourceadapter-class?, config-property*, outbound-resourceadapter?, inbound-resourceadapter?, adminobject*, security-permission*)>
+<!ATTLIST resourceadapter
+	id ID #IMPLIED
+>
+<!ELEMENT small-icon (#PCDATA)>
+<!ATTLIST small-icon
+	id ID #IMPLIED
+>
+<!ELEMENT large-icon (#PCDATA)>
+<!ATTLIST large-icon
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The element license-required specifies whether a
+	    license is required to deploy and use the
+	    resource adapter. This element must be one of
+	    the following, "true" or "false".
+
+	  -->
+<!ELEMENT license-required (#PCDATA)>
+<!ATTLIST license-required
+	id ID #IMPLIED
+>
+<!--
+
+	    The element resourceadapter-class specifies the
+	    fully qualified name of a Java class that implements
+	    the javax.resource.spi.ResourceAdapter
+	    interface. This Java class is provided as part of
+	    resource adapter's implementation of connector
+	    architecture specified contracts. The implementation
+	    of this class is required to be a JavaBean.
+
+	  -->
+<!ELEMENT resourceadapter-class (#PCDATA)>
+<!ATTLIST resourceadapter-class
+	id ID #IMPLIED
+>
+<!--
+
+	The config-propertyType contains a declaration of a single
+	configuration property that may be used for providing
+	configuration information.
+
+	The declaration consists of an optional description, name,
+	type and an optional value of the configuration property. If
+	the resource adapter provider does not specify a value than
+	the deployer is responsible for providing a valid value for
+	a configuration property.
+
+	Any bounds or well-defined values of properties should be
+	described in the description element.
+
+      -->
+<!ELEMENT config-property (description*, config-property-name, config-property-type, config-property-value?)>
+<!ATTLIST config-property
+	id ID #IMPLIED
+>
+<!--
+
+	The outbound-resourceadapterType specifies information about
+	an outbound resource adapter. The information includes fully
+	qualified names of classes/interfaces required as part of
+	the connector architecture specified contracts for
+	connection management, level of transaction support
+	provided, one or more authentication mechanisms supported
+	and additional required security permissions.
+
+	If there is no authentication-mechanism specified as part of
+	resource adapter element then the resource adapter does not
+	support any standard security authentication mechanisms as
+	part of security contract. The application server ignores
+	the security part of the system contracts in this case.
+
+      -->
+<!ELEMENT outbound-resourceadapter (connection-definition+, transaction-support, authentication-mechanism*, reauthentication-support)>
+<!ATTLIST outbound-resourceadapter
+	id ID #IMPLIED
+>
+<!--
+
+	The inbound-resourceadapterType specifies information
+	about an inbound resource adapter. This contains information
+	specific to the implementation of the resource adapter
+	library as specified through the messageadapter element.
+
+      -->
+<!ELEMENT inbound-resourceadapter (messageadapter?)>
+<!ATTLIST inbound-resourceadapter
+	id ID #IMPLIED
+>
+<!--
+
+	The adminobjectType specifies information about an
+	administered object.  Administered objects are specific to a
+	messaging style or message provider.  This contains
+	information on the Java type of the interface implemented by
+	an administered object, its Java class name and its
+	configuration properties.
+
+      -->
+<!ELEMENT adminobject (adminobject-interface, adminobject-class, config-property*)>
+<!ATTLIST adminobject
+	id ID #IMPLIED
+>
+<!--
+
+	The security-permissionType specifies a security
+	permission that is required by the resource adapter code.
+
+	The security permission listed in the deployment descriptor
+	are ones that are different from those required by the
+	default permission set as specified in the connector
+	specification. The optional description can mention specific
+	reason that resource adapter requires a given security
+	permission.
+
+      -->
+<!ELEMENT security-permission (description*, security-permission-spec)>
+<!ATTLIST security-permission
+	id ID #IMPLIED
+>
+
+<!--
+
+	This type adds an "id" attribute to xsd:string.
+
+      -->
+<!ELEMENT config-property-name (#PCDATA)>
+<!ATTLIST config-property-name
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT config-property-type (#PCDATA)>
+<!ATTLIST config-property-type
+	id ID #IMPLIED
+>
+<!ELEMENT config-property-value (#PCDATA)>
+<!ATTLIST config-property-value
+	id ID #IMPLIED
+>
+<!--
+
+	The connection-definitionType defines a set of connection
+	interfaces and classes pertaining to a particular connection
+	type. This also includes configurable properties for
+	ManagedConnectionFactory instances that may be produced out
+	of this set.
+
+      -->
+<!ELEMENT connection-definition (managedconnectionfactory-class, config-property*, connectionfactory-interface, connectionfactory-impl-class, connection-interface, connection-impl-class)>
+<!ATTLIST connection-definition
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT transaction-support (#PCDATA)>
+<!ATTLIST transaction-support
+	id ID #IMPLIED
+>
+<!--
+
+	The authentication-mechanismType specifies an authentication
+	mechanism supported by the resource adapter. Note that this
+	support is for the resource adapter and not for the
+	underlying EIS instance. The optional description specifies
+	any resource adapter specific requirement for the support of
+	security contract and authentication mechanism.
+
+	Note that BasicPassword mechanism type should support the
+	javax.resource.spi.security.PasswordCredential interface.
+	The Kerbv5 mechanism type should support the
+	org.ietf.jgss.GSSCredential interface or the deprecated
+	javax.resource.spi.security.GenericCredential interface.
+
+      -->
+<!ELEMENT authentication-mechanism (description*, authentication-mechanism-type, credential-interface)>
+<!ATTLIST authentication-mechanism
+	id ID #IMPLIED
+>
+<!--
+
+	    The element reauthentication-support specifies
+	    whether the resource adapter implementation supports
+	    re-authentication of existing Managed- Connection
+	    instance. Note that this information is for the
+	    resource adapter implementation and not for the
+	    underlying EIS instance. This element must have
+	    either a "true" or "false" value.
+
+	  -->
+<!ELEMENT reauthentication-support (#PCDATA)>
+<!ATTLIST reauthentication-support
+	id ID #IMPLIED
+>
+<!--
+
+	The messageadapterType specifies information about the
+	messaging capabilities of the resource adapter. This
+	contains information specific to the implementation of the
+	resource adapter library as specified through the
+	messagelistener element.
+
+      -->
+<!ELEMENT messageadapter (messagelistener+)>
+<!ATTLIST messageadapter
+	id ID #IMPLIED
+>
+<!ELEMENT adminobject-interface (#PCDATA)>
+<!ATTLIST adminobject-interface
+	id ID #IMPLIED
+>
+<!ELEMENT adminobject-class (#PCDATA)>
+<!ATTLIST adminobject-class
+	id ID #IMPLIED
+>
+
+<!--
+
+	    The element security-permission-spec specifies a security
+	    permission based on the Security policy file
+	    syntax. Refer to the following URL for Sun's
+	    implementation of the security permission
+	    specification:
+
+	    http://java.sun.com/products/jdk/1.4/docs/guide/security/PolicyFiles.html#FileSyntax
+	  -->
+<!ELEMENT security-permission-spec (#PCDATA)>
+<!ATTLIST security-permission-spec
+	id ID #IMPLIED
+>
+<!ELEMENT managedconnectionfactory-class (#PCDATA)>
+<!ATTLIST managedconnectionfactory-class
+	id ID #IMPLIED
+>
+
+<!ELEMENT connectionfactory-interface (#PCDATA)>
+<!ATTLIST connectionfactory-interface
+	id ID #IMPLIED
+>
+<!ELEMENT connectionfactory-impl-class (#PCDATA)>
+<!ATTLIST connectionfactory-impl-class
+	id ID #IMPLIED
+>
+<!ELEMENT connection-interface (#PCDATA)>
+<!ATTLIST connection-interface
+	id ID #IMPLIED
+>
+<!ELEMENT connection-impl-class (#PCDATA)>
+<!ATTLIST connection-impl-class
+	id ID #IMPLIED
+>
+
+<!ELEMENT authentication-mechanism-type (#PCDATA)>
+<!ATTLIST authentication-mechanism-type
+	id ID #IMPLIED
+>
+<!--
+
+	This is a special string datatype that is defined by J2EE as
+	a base type for defining collapsed strings. When schemas
+	require trailing/leading space elimination as well as
+	collapsing the existing whitespace, this base type may be
+	used.
+
+      -->
+<!ELEMENT credential-interface (#PCDATA)>
+<!ATTLIST credential-interface
+	id ID #IMPLIED
+>
+<!--
+
+	The messagelistenerType specifies information about a
+	specific message listener supported by the messaging
+	resource adapter. It contains information on the Java type
+	of the message listener interface and an activation
+	specification.
+
+      -->
+<!ELEMENT messagelistener (messagelistener-type, activationspec)>
+<!ATTLIST messagelistener
+	id ID #IMPLIED
+>
+<!ELEMENT messagelistener-type (#PCDATA)>
+<!ATTLIST messagelistener-type
+	id ID #IMPLIED
+>
+<!--
+
+	The activationspecType specifies an activation
+	specification.  The information includes fully qualified
+	Java class name of an activation specification and a set of
+	required configuration property names.
+
+      -->
+<!ELEMENT activationspec (activationspec-class, required-config-property*)>
+<!ATTLIST activationspec
+	id ID #IMPLIED
+>
+<!ELEMENT activationspec-class (#PCDATA)>
+<!ATTLIST activationspec-class
+	id ID #IMPLIED
+>
+<!ELEMENT required-config-property (description*, config-property-name)>
+<!ATTLIST required-config-property
+	id ID #IMPLIED
+>
+
+
+

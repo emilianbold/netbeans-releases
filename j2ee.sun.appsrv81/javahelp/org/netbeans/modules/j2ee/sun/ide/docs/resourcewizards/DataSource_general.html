@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+
+    <head>
+
+        <!--
+
+        * Copyright &copy; 2004 Sun Microsystems, Inc. 
+
+        * All rights reserved. Use is subject to license terms.
+
+        -->
+
+        <title>JDBC Resource: General Attributes</title>
+
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+
+        <h2>JDBC Resource: General Attributes</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You see this page of the New File wizard when you are <a href="../general/def_jdbcresource.html">defining a JDBC resource</a>. 
+        On this page you choose a connection pool and specify the JNDI name of the resource.</p>
+        
+        <p>When making a connection to a relational database, the application calls up the JDBC resource using the JNDI 
+        resource name. The JDBC resource (datasource) specifies the connection pool used to connect to a database.</p>
+        <p>Use this page as follows:</p>
+        <ol>
+            <li>To create a JDBC resource, you first need to define a connection pool. Choose one of the following connection pool options:</p>
+            <ul>
+                <li><b>Use Existing JDBC Connection Pool.</b> The combobox lists connection pools 
+                already registered with the default server instance.
+                If the connection pool you want does not appear in the list, ensure that it is 
+                registered with the default server instance. If no connection pools are listed and you see
+                &lt;No JDBC Connection Pool&gt; in the combobox, ensure that the server instance is running.</li>
+                <li><b>Create New JDBC Connection Pool.</b> Select this option to create a new connection pool in the 
+                wizard. You can also click Back and select JDBC Connection Pool in the first screen of the
+                New File wizard.</li>
+            </ul></li>
+            <li>Enter values for the following fields:
+            <ul>
+                <li><b>JNDI name.</b> The JNDI name for the resource is required and must be unique to this JDBC resource.
+                The JNDI name of a JDBC resource is expected in the <tt>java:comp/env/jdbc</tt> subcontext. 
+                For example, the JNDI name for the resource of a payroll database could 
+                be <tt>java:comp/env/jdbc/payrolldb</tt>. Because all resource JNDI names are in 
+                the <tt>java:comp/env</tt> subcontext, when you specify the JNDI name of a JDBC 
+                resource enter only jdbc/name. For example, for a payroll database, specify <tt>jdbc/payrolldb</tt>.</li>
+                <li><b>Object-types.</b> The type of the object. A resource object may be
+                user, system-all, system-admin, or system-instance.</li>
+                <li><b>Enabled.</b> Set to true to enable the resource, or false to disable the resource.</li>
+                <li><b>Description.</b> Description of the resource (optional).</li>
+            </ul></li>
+            <li>Click Next.</li>
+        </ol>
+
+        <table>
+            <tr> 
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr> 
+                <td width="23"></td>
+                <td>
+                <a href="../general/def_jdbcresource.html">Defining a JDBC Resource</a><br>
+                <a href="DataSource_props.html">JDBC Resource Additional Properties</a></td>
+            </tr>
+        </table>
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>

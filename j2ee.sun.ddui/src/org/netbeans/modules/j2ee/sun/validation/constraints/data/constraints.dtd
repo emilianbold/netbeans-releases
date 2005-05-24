@@ -1,0 +1,85 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+    Document   : constraints.dtd
+    Author     : Rajeshwar Patil
+    Description:
+        XML DTD for for constraints xml.
+        constraints.xml is used to specify provide information of the
+        Constraints to the Validation framework.
+-->
+
+
+<!--
+This is the root element.
+-->
+<!ELEMENT constraints (check-info*)>
+
+
+<!--
+This represents an information, about a particular Constraint.
+Provides information of a Constraint represented by corresponding
+<check> element in validation.xml.
+Sub element <name> is used to link this element with the
+corresponding <check> element in validation.xml.
+-->
+<!ELEMENT check-info (name, classname, arguments?)>
+
+
+<!--
+This element represents information of a Constraint class arguments.
+Number of sub elements, <argument> should match with the number
+of <parameter> sub elements, of corresponding <arguments> element
+in validation.xml
+-->
+<!ELEMENT arguments (argument+)>
+
+
+<!--
+This element represents information of a single Constraint class
+argument.
+Sub elements <name> should match with the <name> sub element of
+corresponding <parameter> element in constraints.xml
+-->
+<!ELEMENT argument (name, type?)>
+
+
+<!--
+Used in two elements <check-info> and <argument>
+In <check-info>, it represents a Constraint name and is the linking
+element between <check> element in validation.xml and <check-info>
+element in constraints.xml.
+In <argument>, it represents argument name and is the linking element
+between <parameter> element in validation.xml and <argument> element
+in constraints.xml.
+-->
+<!ELEMENT name (#PCDATA)>
+
+
+<!--
+This element represents Constraint class name.
+Constraint class should provide the constructor with no arguments.
+Constraint class should also provide the set* methods for all the
+required arguments.
+Constraint class is always created using default constructor and
+then the arguments are set using set* methods.
+-->
+<!ELEMENT classname (#PCDATA)>
+
+
+<!--
+This element represents the type of an argument.
+If not specified, it defaults to java.lang.String
+-->
+<!ELEMENT type (#PCDATA)>

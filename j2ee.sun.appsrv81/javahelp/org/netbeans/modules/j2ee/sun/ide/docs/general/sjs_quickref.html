@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+    <!--
+    * Copyright &copy; 2004 Sun Microsystems, Inc. 
+
+    * All rights reserved. Use is subject to license terms.
+    -->
+
+    <head>
+        <title>SJS Application Server Tasks: Quick Reference</title>
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>SJS Application Server Tasks: Quick Reference</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>This topic describes common tasks you can perform with applications and 
+        resources on the SJS Application Server. For more detailed information, click the links in the right column.</p>
+
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+            task name. The right column lists the steps to perform.">
+            <tr valign="top"> 
+                <th scope="col" align="left">To perform this task</th>
+                <th scope="col" align="left">Follow these steps</th>
+            </tr>
+            <tr valign="top"> 
+                <td>Register the SJS Application Server with the IDE.</td>
+                <td> 
+                    <ol>
+                        <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Server Manager.</li>
+                        <li>Click Add Server to start the Add Server wizard.</li>
+                        <li>Choose the server type, give the server instance a name and click Next.</li>
+                        <li>Define the server instance properties and click Finish.</li>
+                    </ol>
+                    <p>For more information, see <a href="register_appserver.html">Registering the SJS Application Server</a>.</p>
+                </td>
+            </tr>            
+            <tr valign="top"> 
+                <td>Start or stop the server.</td>
+                <td> 
+                    <ol>
+                        <li>In the Runtime window, right-click the SJS Application Server
+                        node and choose Start / Stop Server.</li>
+                        <li>Click Start Server or Stop Server in the dialog box.</li>
+                    </ol>
+                </td>
+            </tr>            
+            <tr valign="top"> 
+                <td>Create a JDBC connection pool.</td>
+                <td> 
+                    <ol>
+                        <li>Choose File <img src="../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
+                         (Ctrl-N) to open the New File wizard.</li>
+                        <li>Choose the EJB module from the project combo box.</li>
+                        <li>Select JDBC Connection Pool from the Sun Resources category and click Next.</li>
+                        <li>Choose a connection and enter details for the connection pool.</li>
+                        <li>Click Finish.</li>
+                    </ol>
+                    <p>For more information, see <a href="def_connpool.html">Setting up a Connection Pool on the SJS Application Server</a>.</p>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Add a JDBC resource.</td>
+                <td> 
+                    <ol>
+                        <li>Choose File <img src="../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
+                        (Ctrl-N) to open the New File wizard.</li>
+                        <li>Choose the EJB module from the combo box.</li>
+                        <li>Select JDBC Resource from the Sun Resources category and click Next.</li>
+                        <li>Select to use an existing connection pool or create a new one.</li>
+                        <li>Enter a JNDI name and any other details.</li>
+                        <li>Click Finish.</li>
+                    </ol>
+                    <p>For more information, see <a href="def_jdbcresource.html">Setting up a JDBC Resource on the SJS Application Server</a>.</p>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Add a JMS resource.</td>
+                <td> 
+                    <ol>
+                        <li>Choose File <img src="../images/arrow.gif" alt="and choose">&nbsp;New (Ctrl-N) to open the New File wizard..</li>
+                        <li>Choose the EJB module from the combo box.</li>
+                        <li>Select JMS Resource from the Sun Resources category and click Next.</li>
+                        <li>Enter a JNDI name for the resource and any other details.</li>
+                        <li>Choose a resource type and click Next.</li>
+                        <li>Enter any resource properties.</li>
+                        <li>Click Finish.</li>
+                    </ol>
+                    <p>For more information, see <a href="def_jms.html">Setting up a JMS Resource on the SJS Application Server</a>.</p>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Add a JavaMail resource.</td>
+                <td> 
+                    <ol>
+                        <li>Choose File <img src="../images/arrow.gif" alt="and choose">&nbsp;New (Ctrl-N) to open the New File wizard..</li>
+                        <li>Choose the EJB module from the combo box.</li>
+                        <li>Select JavaMail Resource from the Sun Resources category and click Next.</li>
+                        <li>Enter a JNDI name and the server and user details.</li>       
+                        <li>Click Finish.</li>
+                    </ol>
+                    <p>For more information, see <a href="def_javamail.html">Setting up a JavaMail Resource on the SJS Application Server</a>.</p>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Add a persistence resource.</td>
+                <td> 
+                    <ol>
+                        <li>Choose File <img src="../images/arrow.gif" alt="and choose">&nbsp;New (Ctrl-N) to open the New File wizard..</li>
+                        <li>Choose the EJB module from the combo box.</li>
+                        <li>Select Persistence Resource from the Sun Resources category and click Next.</li>
+                        <li>Select to use an existing JDBC resource or create a new one.</li>
+                        <li>Enter a JNDI name and any other details.</li>
+                        <li>Click Finish.</li>
+                    </ol>
+                    <p>For more information, see <a href="def_persistence.html">Setting up a Persistence Manager Resource on the SJS Application Server</a>.</p>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Undeploy an application.</td>
+                <td> 
+                    <ol>
+                        <li>Expand the Sun Java System Application Server instance and the Applications node in the Runtime window.</li>
+                        <li>Expand the node which contains the type of application to undeploy.</li>
+                        <li>Right-click the application and choose Undeploy from the contextual menu.</li>
+                    </ol>
+                    <p>For more information on undeploying an application and other contextual menu items, see <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/server_remove.html">Removing an Application from a Server</a>.
+                </td>
+            </tr>
+           
+        </table>
+
+        <hr>
+
+        <small><a href="../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+
