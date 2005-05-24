@@ -71,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
             <attribute name="http://apache.org/xml/features/validation/schema" value="true"/>
             <attribute name="http://xml.org/sax/features/namespaces" value="true"/>
-            <property name="http://apache.org/xml/properties/schema/external-schemaLocation" value="http://www.netbeans.org/ns/project/1 file:${nbroot}/ant/project/src/org/netbeans/modules/project/ant/project.xsd http://www.netbeans.org/ns/nb-module-project/1 file:${nbroot}/apisupport/project/src/org/netbeans/modules/apisupport/project/resources/nb-module-project.xsd"/>
+            <property name="http://apache.org/xml/properties/schema/external-schemaLocation" value="http://www.netbeans.org/ns/project/1 file:${nbroot}/ant/project/src/org/netbeans/modules/project/ant/project.xsd [etc.]"/>
         </xmlvalidate>
     </target>
     -->
