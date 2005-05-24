@@ -25,6 +25,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 
 /**
+ * Tests ProjectXMLManager class.
  *
  * @author Martin Krauskopf
  */
@@ -91,9 +92,9 @@ public class ProjectXMLManagerTest extends TestBase {
         assertTrue("following dependencies were found: " + assumed, assumed.isEmpty());
     }
     
-    /** TODO */
-    public void testRemoveDependencies() {
-    }
+//    /** TODO */
+//    public void testRemoveDependencies() {
+//    }
     
     public void testEditDependency() throws Exception {
         final Set deps = pxm.getDirectDependencies();
@@ -106,7 +107,10 @@ public class ProjectXMLManagerTest extends TestBase {
                     ModuleDependency origDep = (ModuleDependency) it.next();
                     if ("org.openide".equals(origDep.getModuleEntry().getCodeNameBase())) {
                         ModuleDependency newDep = new ModuleDependency(
-                                origDep.getModuleEntry(), "2", origDep.getSpecificationVersion());
+                                origDep.getModuleEntry(),
+                                "2",
+                                origDep.getSpecificationVersion(),
+                                origDep.hasImplementationDepedendency());
                         pxm.editDependency(origDep, newDep);
                     }
                 }
@@ -134,6 +138,8 @@ public class ProjectXMLManagerTest extends TestBase {
         ModuleList.Entry me =
                 actionProject.getModuleList().getEntry("org.netbeans.modules.java.project");
         newDeps.add(new ModuleDependency(me));
+        me = actionProject.getModuleList().getEntry("org.netbeans.modules.java.j2seplatform");
+        newDeps.add(new ModuleDependency(me, "1", null, true));
         
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
@@ -146,20 +152,26 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(actionProject);
         
         Set deps = pxm.getDirectDependencies();
-        assertEquals("number of dependencies", new Integer(deps.size()), new Integer(3));
         
         Set assumed = new HashSet();
         assumed.add("org.netbeans.examples.modules.lib");
         assumed.add("org.openide");
         assumed.add("org.netbeans.modules.java.project");
+        assumed.add("org.netbeans.modules.java.j2seplatform");
+        
+        assertEquals("number of dependencies",
+                new Integer(deps.size()), new Integer(assumed.size()));
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
-            ModuleDependency dep = (ModuleDependency) it.next();
+            ModuleDependency md = (ModuleDependency) it.next();
             assertTrue("unknown dependency",
-                    assumed.remove(dep.getModuleEntry().getCodeNameBase()));
+                    assumed.remove(md.getModuleEntry().getCodeNameBase()));
+            if ("org.netbeans.modules.java.j2seplatform".equals(md.getModuleEntry().getCodeNameBase())) {
+                assertEquals("edited release version", "1", md.getReleaseVersion());
+                assertTrue("has implementation depedendency", md.hasImplementationDepedendency());
+            }
         }
         assertTrue("following dependencies were found: " + assumed, assumed.isEmpty());
     }
-    
     
     private FileObject prepareSuiteRepo(FileObject what) throws Exception {
         int srcFolderLen = what.getPath().length();

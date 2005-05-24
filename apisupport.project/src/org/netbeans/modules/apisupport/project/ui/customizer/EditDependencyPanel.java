@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 
 /**
  * Represents panel for editing dependency details. Shown after <em>Edit</em>
@@ -37,12 +38,15 @@ final class EditDependencyPanel extends JPanel {
         jarLocationValue.setText(origDep.getModuleEntry().getJarLocation().getAbsolutePath());
         releaseVersionValue.setText(origDep.getReleaseVersion());
         specVerValue.setText(origDep.getSpecificationVersion());
+        implVer.setSelected(origDep.hasImplementationDepedendency());
+        versionChanged(null);
     }
     
     ModuleDependency getEditedDependency() {
         ModuleDependency dep = new ModuleDependency(origDep.getModuleEntry(),
                 releaseVersionValue.getText().trim(),
-                specVerValue.getText().trim());
+                specVerValue.getText().trim(),
+                implVer.isSelected());
         return dep;
     }
     
@@ -125,6 +129,12 @@ final class EditDependencyPanel extends JPanel {
         specVer.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_SpecificationVersion_Mnem").charAt(0));
         specVer.setSelected(true);
         specVer.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_SpecificationVersion"));
+        specVer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                versionChanged(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -142,6 +152,12 @@ final class EditDependencyPanel extends JPanel {
         versionGroup.add(implVer);
         implVer.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ImplementationVersion_Mnem").charAt(0));
         implVer.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ImplementationVersion"));
+        implVer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                versionChanged(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -172,6 +188,10 @@ final class EditDependencyPanel extends JPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void versionChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionChanged
+        specVerValue.setEnabled(specVer.isSelected());
+    }//GEN-LAST:event_versionChanged
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

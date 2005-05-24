@@ -24,17 +24,20 @@ public final class ModuleDependency implements Comparable {
     
     private String releaseVersion;
     private String specVersion;
+    private boolean implDep;
     
     private ModuleList.Entry me;
     
     public ModuleDependency(ModuleList.Entry me) {
-        this(me, null, null);
+        this(me, null, null, false);
     }
     
-    public ModuleDependency(ModuleList.Entry me, String releaseVersion, String specVersion) {
+    public ModuleDependency(ModuleList.Entry me, String releaseVersion, 
+            String specVersion, boolean implDep) {
         this.me = me;
         
         // set versions to null if contain the same value as the given entry
+        this.implDep = implDep;
         this.releaseVersion =
                 releaseVersion != null && releaseVersion.equals(me.getReleaseVersion()) ?
                     null : releaseVersion;
@@ -58,5 +61,9 @@ public final class ModuleDependency implements Comparable {
     public int compareTo(Object o) {
         return this.getModuleEntry().getLocalizedName().compareTo(
                 ((ModuleDependency) o).getModuleEntry().getLocalizedName());
+    }
+
+    public boolean hasImplementationDepedendency() {
+        return implDep;
     }
 }

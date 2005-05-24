@@ -43,6 +43,7 @@ public final class ProjectXMLManager {
     private static final String RELEASE_VERSION = "release-version"; // NOI18N
     private static final String SPECIFICATION_VERSION = "specification-version"; // NOI18N
     private static final String BUILD_PREREQUISITE = "build-prerequisite"; // NOI18N
+    private static final String IMPLEMENTATION_VERSION = "implementation-version"; // NOI18N
     
     private AntProjectHelper helper;
     private Project project;
@@ -67,34 +68,43 @@ public final class ProjectXMLManager {
         ModuleList ml = getModuleList();
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             Element depEl = (Element)it.next();
-
-            Element cnbEl = Util.findElement(depEl, ProjectXMLManager.CODE_NAME_BASE,
+            
+            Element cnbEl = Util.findElement(depEl,
+                    ProjectXMLManager.CODE_NAME_BASE,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             ModuleList.Entry me = ml.getEntry(cnb);
-
-            Element runDepEl = Util.findElement(depEl, ProjectXMLManager.RUN_DEPENDENCY,
+            
+            Element runDepEl = Util.findElement(depEl,
+                    ProjectXMLManager.RUN_DEPENDENCY,
                     NbModuleProjectType.NAMESPACE_SHARED);
             if (runDepEl == null) {
                 directDeps.add(new ModuleDependency(me));
                 continue;
             }
             
-            Element relVerEl = Util.findElement(runDepEl, ProjectXMLManager.RELEASE_VERSION,
+            Element relVerEl = Util.findElement(runDepEl,
+                    ProjectXMLManager.RELEASE_VERSION,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String relVer = null;
             if (relVerEl != null) {
                 relVer = Util.findText(relVerEl);
             }
             
-            Element specVerEl = Util.findElement(runDepEl, ProjectXMLManager.SPECIFICATION_VERSION,
+            Element specVerEl = Util.findElement(runDepEl,
+                    ProjectXMLManager.SPECIFICATION_VERSION,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String specVer = null;
             if (specVerEl != null) {
                 specVer = Util.findText(specVerEl);
             }
             
-            directDeps.add(new ModuleDependency(me, relVer, specVer));
+            Element impleVerEl = Util.findElement(runDepEl,
+                    ProjectXMLManager.IMPLEMENTATION_VERSION,
+                    NbModuleProjectType.NAMESPACE_SHARED);
+            
+            directDeps.add(new ModuleDependency(
+                    me, relVer, specVer, impleVerEl != null));
         }
         return directDeps;
     }
@@ -198,10 +208,15 @@ public final class ProjectXMLManager {
             runDepEl.appendChild(createModuleElement(
                     doc, ProjectXMLManager.RELEASE_VERSION, rv));
         }
-        String sv = md.getSpecificationVersion();
-        if (sv != null) {
+        if (md.hasImplementationDepedendency()) {
             runDepEl.appendChild(createModuleElement(
-                    doc, ProjectXMLManager.SPECIFICATION_VERSION, sv));
+                    doc, ProjectXMLManager.IMPLEMENTATION_VERSION));
+        } else {
+            String sv = md.getSpecificationVersion();
+            if (sv != null) {
+                runDepEl.appendChild(createModuleElement(
+                        doc, ProjectXMLManager.SPECIFICATION_VERSION, sv));
+            }
         }
     }
     
