@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   <ul>
    <li>
-    <api group="dtd" name="project.xml" type="export" category="devel" url="http://www.netbeans.org/ns/nb-module-project/1.xsd">
+    <api group="dtd" name="project.xml" type="export" category="devel" url="http://www.netbeans.org/ns/nb-module-project/2.xsd">
      <p>
       Syntax for NBM <code>project.xml</code> files.
      </p>
