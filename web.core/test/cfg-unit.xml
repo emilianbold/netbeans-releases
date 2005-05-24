@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name=" Web Core unit tests">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/modules/web/dd/test/DDEditorTest.class"/>
+                <!--<include name="org/netbeans/modules/web/wizards/ServletWizardTest.class"/>-->
             </patternset>
         </testset>
     </testbag>
