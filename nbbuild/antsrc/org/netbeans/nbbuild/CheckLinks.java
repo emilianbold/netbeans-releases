@@ -93,7 +93,7 @@ public class CheckLinks extends MatchingTask {
             URI fileurl = file.toURI();
             log ("Scanning " + file, Project.MSG_VERBOSE);
             try {
-                scan(this, getLocation().toString(), "", fileurl, okurls, badurls, cleanurls, checkexternal, 1, mappers);
+                scan(this, getLocation().toString(), "", fileurl, okurls, badurls, cleanurls, checkexternal, 1, mappers, filters);
             } catch (IOException ioe) {
                 throw new BuildException("Could not scan " + file + ": " + ioe, ioe, getLocation());
             }
@@ -123,7 +123,11 @@ public class CheckLinks extends MatchingTask {
      *                2 - recurse
      * @param mappers a list of Mappers to apply to get source files from HTML files
      */
-    public void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse, List mappers) throws IOException {
+    public static void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse, List mappers) throws IOException {
+        scan (task, referrer, referrerLocation, u, okurls, badurls, cleanurls, checkexternal, recurse, mappers, Collections.EMPTY_LIST);
+    }
+    
+    private static void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse, List mappers, List filters) throws IOException {
         //task.log("scan: u=" + u + " referrer=" + referrer + " okurls=" + okurls + " badurls=" + badurls + " cleanurls=" + cleanurls + " recurse=" + recurse, Project.MSG_DEBUG);
         if (okurls.contains(u) && recurse == 0) {
             // Yes it is OK.
@@ -294,7 +298,7 @@ public class CheckLinks extends MatchingTask {
                 Map.Entry entry = (Map.Entry)it.next();
                 URI other = (URI)entry.getKey();
                 String location = (String)entry.getValue();
-                scan(task, basepath, location, other, okurls, badurls, cleanurls, checkexternal, recurse == 1 ? 0 : 2, mappers);
+                scan(task, basepath, location, other, okurls, badurls, cleanurls, checkexternal, recurse == 1 ? 0 : 2, mappers, filters);
             }
         }
     }
