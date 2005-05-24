@@ -14,11 +14,7 @@
 package org.netbeans.core.windows.view.ui.toolbars;
 
 import org.netbeans.core.NbPlaces;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.services.ToolbarFolderNode;
-import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.JPopupMenuPlus;
 import org.openide.awt.Toolbar;
 import org.openide.awt.ToolbarPool;
@@ -41,7 +37,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 import org.netbeans.core.IDESettings;
@@ -393,7 +388,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     void updatePrefWidth () {
         Iterator it = toolbarRows.iterator();
         prefWidth = 0;
-        int tryPrefWidth;
         while (it.hasNext()) {
             prefWidth = Math.max (prefWidth, ((ToolbarRow)it.next()).getPrefWidth());
         }
@@ -621,7 +615,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         ToolbarConstraints tc;
         String name;
         ToolbarRow newRow = null;
-        boolean someBarAdded = false;
         boolean smallToolbarIcons = (ToolbarPool.getDefault().getPreferredIconSize() == 16);
         for (int i = 0; i < tbs.length; i++) {
             tb = tbs[i];
@@ -643,7 +636,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 }
                 tc = new ToolbarConstraints (this, name, null, Boolean.TRUE);  /* ... there is created a new constraints. */
                 addToolbar (newRow, tc);
-                someBarAdded = true;
             }
             toolbarPanel().add (tb, tc);
         }
