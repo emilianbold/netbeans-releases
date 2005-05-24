@@ -58,7 +58,7 @@ public abstract class AnnotationProvider extends Object {
      * HTMLStatus.
      *
      * @see org.openide.awt.HtmlRenderer
-     * @see <a href="@OPENIDE/LOADERS@/org/openide/loaders/DataNode.html#getHtmlDisplayName()"><code>DataNode.getHtmlDisplayName()</code></a>
+     * @see <a href="@org-openide-loaders@/org/openide/loaders/DataNode.html#getHtmlDisplayName()"><code>DataNode.getHtmlDisplayName()</code></a>
      * @see org.openide.nodes.Node#getHtmlDisplayName
      **/
     public abstract String annotateNameHtml (String name, java.util.Set files);
