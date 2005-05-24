@@ -61,8 +61,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
             getDataObject().setModified (false);
         } catch (java.io.UnsupportedEncodingException ex) {
             // ask user what next?
-            String message = java.text.MessageFormat.format(NbBundle.getMessage(TLDEditorSupport.class,"TEXT_SAVE_AS_UTF"),
-                                                            new Object[] {enc});
+            String message = NbBundle.getMessage(TLDEditorSupport.class,"TEXT_SAVE_AS_UTF",enc);
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message);
             Object res = DialogDisplayer.getDefault().notify(descriptor);
 

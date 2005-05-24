@@ -108,11 +108,10 @@ public class JspWatchesActionsProvider implements NodeActionsProvider {
         WatchPanel wp = new WatchPanel(w.getExpression());
         JComponent panel = wp.getPanel();
 
-        ResourceBundle bundle = NbBundle.getBundle(JspWatchesActionsProvider.class);
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
             panel,
-            java.text.MessageFormat.format(bundle.getString("CTL_Edit_Watch_Dialog_Title"), // NOI18N 
-                                           new Object [] { w.getExpression() })
+            NbBundle.getMessage(JspWatchesActionsProvider.class, "CTL_Edit_Watch_Dialog_Title", // NOI18N 
+                                           w.getExpression() )
         );
         dd.setHelpCtx(new HelpCtx("debug.add.watch"));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
@@ -127,10 +126,9 @@ public class JspWatchesActionsProvider implements NodeActionsProvider {
         WatchPanel wp = new WatchPanel ("");
         JComponent panel = wp.getPanel ();
 
-        ResourceBundle bundle = NbBundle.getBundle(JspWatchesActionsProvider.class);
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
             panel,
-            bundle.getString ("CTL_New_Watch_Dialog_Title") // NOI18N
+            NbBundle.getMessage(JspWatchesActionsProvider.class, "CTL_New_Watch_Dialog_Title") // NOI18N
         );
         dd.setHelpCtx (new HelpCtx ("debug.new.watch"));
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);

@@ -13,15 +13,11 @@
 
 package org.netbeans.modules.web.debug.breakpoints;
 
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.Vector;
 
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.modules.web.debug.Context;
 
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
@@ -39,27 +35,23 @@ public class JspBreakpointsNodeModel implements NodeModel {
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o instanceof JspLineBreakpoint) {
             JspLineBreakpoint b = (JspLineBreakpoint) o;
-            return new MessageFormat (
-                NbBundle.getMessage (JspBreakpointsNodeModel.class,
-                    "CTL_Jsp_Line_Breakpoint"
-                )).format (new Object[] {
-                    Context.getFileName ((JspLineBreakpoint) o),
-                    "" + ((JspLineBreakpoint) o).getLineNumber()
-                });
+            return NbBundle.getMessage (JspBreakpointsNodeModel.class,
+                    "CTL_Jsp_Line_Breakpoint",
+                    Context.getFileName (b),
+                    "" + b.getLineNumber()
+                );
         } 
         throw new UnknownTypeException(o);
     }
     
     public String getShortDescription (Object o) throws UnknownTypeException {
         if (o instanceof JspLineBreakpoint) {
-            return new MessageFormat (
-                NbBundle.getMessage (
+            return NbBundle.getMessage (
                     JspBreakpointsNodeModel.class,
-                    "CTL_Jsp_Line_Breakpoint"
-                )).format (new Object[] {
+                    "CTL_Jsp_Line_Breakpoint",
                     Context.getFileName ((JspLineBreakpoint) o),
                     "" + ((JspLineBreakpoint) o).getLineNumber ()
-                });
+                );
         }
         throw new UnknownTypeException (o);
     }

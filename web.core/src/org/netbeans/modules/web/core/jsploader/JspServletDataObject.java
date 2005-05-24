@@ -118,12 +118,10 @@ public class JspServletDataObject extends JavaDataObject {
         if (fileIndex.startsWith("_"))  // NOI18N
             fileIndex = fileIndex.substring(1);
         if ("".equals(fileIndex)) {
-            return MessageFormat.format(NbBundle.getBundle(JspServletDataObject.class).
-                getString("LBL_ServletDisplayNameNoNumber"), new Object[] {jsp.getPrimaryFile().getName()});
+            return NbBundle.getMessage(JspServletDataObject.class, "LBL_ServletDisplayNameNoNumber", jsp.getPrimaryFile().getName());
         }
         else {
-            return MessageFormat.format(NbBundle.getBundle(JspServletDataObject.class).
-                getString("LBL_ServletDisplayName"), new Object[] {fileIndex, jsp.getPrimaryFile().getName()});
+            return NbBundle.getMessage(JspServletDataObject.class, "LBL_ServletDisplayName", new Object[] {fileIndex, jsp.getPrimaryFile().getName()});
         }
     }
 
