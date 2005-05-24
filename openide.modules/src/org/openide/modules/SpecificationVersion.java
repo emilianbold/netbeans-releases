@@ -46,12 +46,14 @@ public final class SpecificationVersion implements Comparable {
     }
 
     private static int[] parse(String version) throws NumberFormatException {
-        List l = new ArrayList(version.length());
         StringTokenizer tok = new StringTokenizer(version, ".", true); // NOI18N
-
-        if ((tok.countTokens() % 2) == 0) {
+        
+        int len = tok.countTokens();
+        if ((len % 2) == 0) {
             throw new NumberFormatException("Even number of pieces in a spec version: `" + version + "'"); // NOI18N
         }
+        int[] digits = new int[len / 2 + 1];
+        int i = 0;
 
         boolean expectingNumber = true;
 
@@ -65,7 +67,7 @@ public final class SpecificationVersion implements Comparable {
                     throw new NumberFormatException("Spec version component <0: " + piece); // NOI18N
                 }
 
-                l.add(new Integer(piece));
+                digits[i++] = piece;
             } else {
                 if (!".".equals(tok.nextToken())) { // NOI18N
                     throw new NumberFormatException("Expected dot in spec version: `" + version + "'"); // NOI18N
@@ -74,14 +76,6 @@ public final class SpecificationVersion implements Comparable {
                 expectingNumber = true;
             }
         }
-
-        int size = l.size();
-        int[] digits = new int[size];
-
-        for (int i = 0; i < size; i++) {
-            digits[i] = ((Integer) l.get(i)).intValue();
-        }
-
         return digits;
     }
 
