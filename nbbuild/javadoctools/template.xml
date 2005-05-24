@@ -347,6 +347,23 @@ cause it to fail.
             <mapper type="glob" from="${javadoc.out.dir}/apichanges.html" to="${javadoc.apichanges}"/>
             <mapper type="glob" from="${javadoc.out.dir}/architecture-summary.html" to="${javadoc.arch}"/>
             <mapper type="glob" from="${javadoc.out.dir}/*.html" to="${javadoc.docfiles}/*.html"/>
+    
+            <!-- if you find a general URL from netbeans.org site that make sence to reference, feel free
+              to add it here with accept='true' 
+              -->
+            <filter pattern="http://www.netbeans.org/source/browse/.*" accept='true' />
+            <filter pattern="http://openide.netbeans.org/versioning-policy.html.*" accept='true' />
+            <filter pattern="http://www.netbeans.org/issues/show_bug.cgi.*" accept='true' />
+            <filter pattern="http://openide.netbeans.org.*tutorial.*api-design.*" accept='true' />
+            <!-- is used in generated question from arch.xml -->
+            <filter pattern="http://www.netbeans.org/community/guidelines/q-evangelism.html" accept='true' />
+            <!-- direct link to main website is ok as well -->
+            <filter pattern="http://www.netbeans.org/" accept='true' />
+            <!-- dtd are fine they cannot change anyway -->
+            <filter pattern="http://www.netbeans.org/dtds/.*" accept='true' />
+            
+            <!-- forbid the rest of NetBeans sites -->
+            <filter pattern="http://.*netbeans.org/.*" accept='false' />
         </checklinks>
         <!-- XXX run doctorj (doctorj.sf.net) if it is installed? -->
     </target>

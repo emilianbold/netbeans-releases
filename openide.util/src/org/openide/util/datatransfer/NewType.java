@@ -18,10 +18,9 @@ import org.openide.util.NbBundle;
 import java.io.IOException;
 
 
-/** Describes a type that can be created anew.
-* @see org.openide.nodes.Node#getNewTypes
+/** Describes a type that can be created anew. Used by <a href="@org-openide-nodes/org/openide/nodes.Node#getNewTypes">Node.getNewTypes</a>.
+*
 * @author Jaroslav Tulach
-* @version 0.10, Mar 19, 1998
 */
 public abstract class NewType extends Object implements HelpCtx.Provider {
     /** Display name for the creation action. This should be

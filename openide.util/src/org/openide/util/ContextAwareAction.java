@@ -24,11 +24,10 @@ import javax.swing.Action;
  * is valid to the provided context, i.e. enablement status
  * and action performation is related to the context
  * (provided by the <code>Lookup</code>).
- * The context is typically <code>TopComponent</code>S context.
+ * The context is typically <a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getLookup()">TopComponent's context</a>.
  *
  * @author  Jaroslav Tulach, Peter Zavadsky
  *
- * @see org.openide.windows.TopComponent#getLookup
  * @see org.openide.util.Utilities#actionsToPopup
  * @since 3.29
  */

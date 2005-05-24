@@ -22,9 +22,9 @@ import org.openide.util.Lookup;
  * context aware actions (see {@link ContextAwareAction}) are being
  * manipulated for example via method {@link Utilities#actionsToPopup}, so
  * in current state it is reasonable to put there all currently active
- * {@link org.openide.nodes.Node}, their cookies and {@link javax.swing.ActionMap}.
+ * <a href="@org-openide-nodes@/org/openide/nodes/Node.html">Node</a>, their cookies and {@link javax.swing.ActionMap}.
  * By default this interface is implemented by window system to delegate
- * to currently activated {@link org.openide.windows.TopComponent}'s lookup.
+ * to currently activated <a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getLookup()">TopComponent's  lookup</a>.
  *
  * @author Jaroslav Tulach
  * @since 4.10

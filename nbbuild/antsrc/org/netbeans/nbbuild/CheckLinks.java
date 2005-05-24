@@ -40,6 +40,7 @@ public class CheckLinks extends MatchingTask {
     private boolean checkexternal = true;
     private List mappers = new LinkedList(); // List<Mapper>
     private boolean failOnError;
+    private List filters = new ArrayList ();
 
     /** Set whether to check external links (absolute URLs).
      * Local relative links are always checked.
@@ -59,6 +60,12 @@ public class CheckLinks extends MatchingTask {
      */
     public void setBasedir (File basedir) {
         this.basedir = basedir;
+    }
+    
+    public Filter createFilter () {
+        Filter f = new Filter ();
+        filters.add (f);
+        return f;
     }
 
     /**
@@ -99,7 +106,6 @@ public class CheckLinks extends MatchingTask {
     
     private static Pattern hrefOrAnchor = Pattern.compile("<(a|img)(\\s+shape=\"rect\")?\\s+(href|name|src)=\"([^\"#]*)(#[^\"]+)?\"(\\s+shape=\"rect\")?>", Pattern.CASE_INSENSITIVE);
     private static Pattern lineBreak = Pattern.compile("^", Pattern.MULTILINE);
-    private static Pattern nbRef = Pattern.compile("http://.*netbeans.org/.*", Pattern.CASE_INSENSITIVE);
     
     /**
      * Scan for broken links.
@@ -117,7 +123,7 @@ public class CheckLinks extends MatchingTask {
      *                2 - recurse
      * @param mappers a list of Mappers to apply to get source files from HTML files
      */
-    public static void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse, List mappers) throws IOException {
+    public void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse, List mappers) throws IOException {
         //task.log("scan: u=" + u + " referrer=" + referrer + " okurls=" + okurls + " badurls=" + badurls + " cleanurls=" + cleanurls + " recurse=" + recurse, Project.MSG_DEBUG);
         if (okurls.contains(u) && recurse == 0) {
             // Yes it is OK.
@@ -148,12 +154,23 @@ public class CheckLinks extends MatchingTask {
             task.log(normalize(referrer, mappers) + referrerLocation + ": broken link (already reported): " + u, Project.MSG_WARN);
             return;
         }
-        
-        if (nbRef.matcher (u.toString ()).matches ()) {
-            task.log("External link to http://netbeans.org: " + u, Project.MSG_VERBOSE);
-            badurls.add(base);
-            badurls.add(u);
-            return;
+
+        {
+            Iterator it = filters.iterator ();
+            while (it.hasNext ()) {
+                Filter f = (Filter)it.next ();
+                
+                Boolean decision = f.isOk (u);
+                if (Boolean.TRUE.equals (decision)) {
+                    break;
+                }
+                if (Boolean.FALSE.equals (decision)) {
+                    task.log(normalize(referrer, mappers) + referrerLocation + ": forbidden link: " + base, Project.MSG_WARN);
+                    badurls.add(base);
+                    badurls.add(u);
+                    return;
+                }
+            }
         }
         
         if (! checkexternal && ! "file".equals(u.getScheme())) {
@@ -163,8 +180,9 @@ public class CheckLinks extends MatchingTask {
             okurls.add(u);
             return;
         }
+        
         task.log("Checking " + u + " (recursion level " + recurse + ")", Project.MSG_VERBOSE);
-        CharSequence content;
+        String content;
         String mimeType;
         try {
             // XXX for protocol 'file', could more efficiently use a memmapped char buffer
@@ -225,7 +243,17 @@ public class CheckLinks extends MatchingTask {
                         }
                     } else {
                         // A link to some other document: href=, src=.
-                        if (others != null) {
+                        
+                        // check whether this URL is not commented out
+                        int previousCommentStart = content.lastIndexOf ("<!--", m.start (0));
+                        int previousCommentEnd = content.lastIndexOf ("-->", m.start (0));
+                        boolean commentedOut = false;
+                        if (previousCommentEnd < previousCommentStart) {
+                            // comment start is there and end is before it
+                            commentedOut = true;
+                        }
+                        
+                        if (others != null && !commentedOut) {
                             String otherbase = unescape(m.group(4));
                             String otheranchor = unescape(m.group(5));
                             String uri = (otheranchor == null) ? otherbase : otherbase + otheranchor;
@@ -340,5 +368,35 @@ public class CheckLinks extends MatchingTask {
         }
         return ":" + line + ":" + col;
     }
-    
+
+    public final class Filter extends Object {
+        private Boolean accept;
+        private Pattern pattern;
+        
+        public void setAccept (boolean a) {
+            accept = Boolean.valueOf (a);
+        }
+        
+        public void setPattern (String s) {
+            pattern = Pattern.compile (s, Pattern.CASE_INSENSITIVE);
+        }
+        
+        /** Checks whether a URI is ok. 
+         * @return null if not applicable, Boolean.TRUE if the URL is accepted, Boolean.FALSE if not
+         */
+        final Boolean isOk (URI u) throws BuildException {
+            if (accept == null) {
+                throw new BuildException ("Each filter must have accept attribute");
+            }
+            if (pattern == null) {
+                throw new BuildException ("Each filter must have pattern attribute");
+            }
+            
+            if (pattern.matcher (u.toString ()).matches ()) {
+                log ("Matched " + u + " accepted: " + accept, org.apache.tools.ant.Project.MSG_VERBOSE);
+                return accept;
+            }
+            return null;
+        }
+    }
 }

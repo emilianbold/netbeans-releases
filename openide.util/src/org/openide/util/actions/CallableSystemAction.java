@@ -26,7 +26,7 @@ import java.util.*;
 /** An action which may be called programmatically.
 * Typically a presenter will call its {@link #performAction} method,
 * which must be implemented.
-* <p>Provides default presenters using the {@link org.openide.awt.Actions} utility class.
+* <p>Provides default presenters using the <a href="@org-openide-awt@/org/openide/awt/Actions.html>Actions</a> utility class.
 *
 * @author   Ian Formanek, Jaroslav Tulach, Jan Jancura, Petr Hamernik
 */
@@ -78,7 +78,7 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
 
     /** Actually perform the action.
     * This is the method which should be called programmatically.
-    * Presenters in {@link org.openide.awt.Actions} use this.
+    * Presenters in <a href="@org-openide-awt@/org/openide/awt/Actions.html>Actions</a> use this.
     * <p>See {@link SystemAction#actionPerformed} for a note on
     * threading usage: in particular, do not access GUI components
     * without explicitly asking for the AWT event thread!

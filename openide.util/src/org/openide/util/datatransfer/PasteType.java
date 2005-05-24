@@ -20,10 +20,10 @@ import java.awt.datatransfer.*;
 import java.io.IOException;
 
 
-/** Clipboard operation providing one kind of paste action.
-* @see org.openide.nodes.Node#getPasteTypes
+/** Clipboard operation providing one kind of paste action. Used by
+* <a href="@org-openide-nodes/org/openide/nodes.Node#getPasteTypes">Node.getPasteTypes</a>.
+*
 * @author Petr Hamernik
-* @version 0.11, Jan 16, 1998
 */
 public abstract class PasteType extends Object implements HelpCtx.Provider {
     /** Display name for the paste action. This should be

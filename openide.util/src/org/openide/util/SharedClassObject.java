@@ -278,7 +278,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
      * which uses <code>putProperty(..., true)</code>, then the key used <em>must</em>
      * be named <code>foo</code> (assuming you did not override this name in a BeanInfo).
      * Otherwise various listeners may not be prepared for the property change and may just
-     * ignore it. For example, the property sheet for a {@link org.openide.nodes.BeanNode} based on a
+     * ignore it. For example, the property sheet for a <a href="@org-openide-nodes@/org/openide/nodes/BeanNode.html>BeanNode</a> based on a
      * <code>SharedClassObject</code> which stores its properties using a misnamed key
      * will probably not refresh correctly.
     * @param key name of the property
