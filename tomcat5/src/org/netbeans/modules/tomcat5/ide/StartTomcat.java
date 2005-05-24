@@ -412,6 +412,10 @@ public final class StartTomcat extends StartServer implements ProgressObject
                         tm.setTomcatProcess(p);
                         tm.logManager().closeServerLog();
                         tm.logManager().openServerLog();
+                    } else {
+                        // #58554 workaround
+                        RequestProcessor.getDefault().post(new StreamConsumer(p.getInputStream()), 0, Thread.MIN_PRIORITY);
+                        RequestProcessor.getDefault().post(new StreamConsumer(p.getErrorStream()), 0, Thread.MIN_PRIORITY);
                     }
                 } catch (java.io.IOException ioe) {
                     if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
@@ -539,6 +543,38 @@ public final class StartTomcat extends StartServer implements ProgressObject
     public void removeProgressListener (ProgressListener pl) {
         pes.removeProgressListener (pl);
     }
+    
+    /** Utility class that just "consumes" the input stream - #58554 workaround
+     */
+    private class StreamConsumer implements Runnable {
+        
+        private BufferedInputStream in;
+        
+        public StreamConsumer(InputStream is) {
+            in = new BufferedInputStream(is);
+        }
+
+        public void run() {
+            try {
+                byte buffer[] = new byte[1024];
+                while (true) {
+                    int n = in.read(buffer);
+                    if (n < 0) {
+                        break;
+                    }
+                    if (TomcatFactory.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
+                        TomcatFactory.getEM().log(ErrorManager.INFORMATIONAL, new String(buffer, 0, n));
+                    }
+                }
+            } catch (IOException ioe) {
+                if (TomcatFactory.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
+                    TomcatFactory.getEM().notify(ErrorManager.INFORMATIONAL, ioe);
+                }
+            } finally {
+                try { in.close(); } catch (IOException ioe) {};
+            }
+        }
+    };
     
     /** Format that provides value usefull for Tomcat execution. 
      * Currently this is only the name of startup wrapper.
