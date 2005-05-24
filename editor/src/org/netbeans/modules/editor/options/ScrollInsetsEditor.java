@@ -14,10 +14,8 @@
 package org.netbeans.modules.editor.options;
 
 import java.awt.Insets;
-import java.text.MessageFormat;
 import java.util.StringTokenizer;
 
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
