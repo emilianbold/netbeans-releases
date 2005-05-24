@@ -118,10 +118,9 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCo
     /** Ask and reload/close image views. */
     private void reload(FileEvent evt) {
         // ask if reload?
-        MessageFormat fmt = new MessageFormat(NbBundle.getBundle(ImageOpenSupport.class).getString("MSG_ExternalChange")); // NOI18N
         // XXX the following is a resource path in NB 3.x and a URL after build system
         // merge; better to produce something nicer (e.g. FileUtil.toFile):
-        String msg = fmt.format(new Object[] { entry.getFile() });
+        String msg = NbBundle.getMessage(ImageOpenSupport.class, "MSG_ExternalChange", entry.getFile() );
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
         Object ret = DialogDisplayer.getDefault().notify(nd);
 
