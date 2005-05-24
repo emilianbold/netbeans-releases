@@ -786,7 +786,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
 
             try {
                 FileObject fo = dataFolder.getPrimaryFile();
-                Set set = Collections.singleton(fo);
+                Set set = new NonResursiveFolderSet(fo);                
                 img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, set);
             } catch (FileStateInvalidException e) {
                 // no fs, do nothing
@@ -800,7 +800,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
 
             try {
                 FileObject fo = dataFolder.getPrimaryFile();
-                Set set = Collections.singleton(fo);                
+                Set set = new NonResursiveFolderSet(fo);                
                 img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, set);
             } catch (FileStateInvalidException e) {
                 // no fs, do nothing
@@ -1062,4 +1062,24 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         }
     }
 
+    /**
+     * FileObject set that represents package. It means
+     * that it's content must not be processed recursively.
+     */
+    private static class NonResursiveFolderSet extends HashSet implements NonRecursiveFolder {
+        
+        private final FileObject folder;
+        
+        /**
+         * Creates set with one element, the folder.
+         */
+        public NonResursiveFolderSet(FileObject folder) {
+            this.folder = folder;
+            add(folder);
+        }
+        
+        public FileObject getFolder() {
+            return folder;
+        }        
+    }
 }
