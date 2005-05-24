@@ -146,6 +146,12 @@ public class JBStartServer extends StartServer implements ProgressObject{
             InitialContext ctx = new InitialContext(env);
             ctx.lookup("/jmx/invoker/RMIAdaptor");
         }catch(Exception e){
+            if(e instanceof javax.naming.CommunicationException){
+                return false;
+            }
+            if(e instanceof javax.naming.NameNotFoundException){
+                return true;
+            }
             return false;
         } finally{
             Thread.currentThread().setContextClassLoader(oldLoader);
