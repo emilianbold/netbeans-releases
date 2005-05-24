@@ -7,12 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
 
-import java.text.MessageFormat;
 import java.io.IOException;
 import java.io.File;
 import javax.swing.*;
@@ -111,8 +110,8 @@ public final class SelectFileDialog {
                     NotifyDescriptor message = new NotifyDescriptor.Message(Util.THIS.getString("BK0001"), NotifyDescriptor.WARNING_MESSAGE);
                     DialogDisplayer.getDefault().notify(message);
                     throw new UserCancelException();
-                } else if (!!! GuiUtil.confirmAction (MessageFormat.format (Util.THIS.getString ("PROP_replaceMsg"),
-                                                                new String [] { newName, ext })) ) {
+                } else if (! GuiUtil.confirmAction (Util.THIS.getString ("PROP_replaceMsg",
+                                                                newName, ext ) )) {
                     throw new UserCancelException();
                 }
             }
