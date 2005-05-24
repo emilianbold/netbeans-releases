@@ -2753,6 +2753,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-xml" />
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-html" />
+      <antcall inheritall="true" inheritrefs="true" target="javadoc-check-broken-links" />
   </target>  
       
   <target name="javadoc-generate-xml" depends="set-config-to-javadoc,init" >
@@ -2882,6 +2883,22 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
 ]]></echo>
     
     <echo message="Javadoc index has been generated to ${netbeans.javadoc.dir}/index.html" />
+  </target>
+  
+  
+  <target name="javadoc-check-broken-links" depends="init" >
+        <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
+            <classpath>
+                <pathelement location="nbantext.jar"/>
+            </classpath>
+        </taskdef>
+        <checklinks basedir="${netbeans.javadoc.dir}" checkexternal="${javadoc.check.external.links}" failonerror="false" >
+            <include name="*/overview-summary.html"/>
+            <include name="*/apichanges.html"/>
+            <include name="*/architecture-summary.html"/>
+            <include name="*/**/package-summary.html"/>
+            <include name="*/**/doc-files/**/*.html"/>
+        </checklinks>
   </target>
 
   <target name="build-messaging" depends="init">
