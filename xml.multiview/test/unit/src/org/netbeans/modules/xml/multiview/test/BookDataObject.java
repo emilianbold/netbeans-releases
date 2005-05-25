@@ -16,6 +16,8 @@ import org.netbeans.modules.xml.multiview.test.bookmodel.*;
  * @author mkuchtiak
  */
 public class BookDataObject extends XmlMultiViewDataObject {
+    private static final int TYPE_TOOLBAR = 0;
+    private static final int TYPE_TREEPANEL = 1;
     Book book;
     
     /** Creates a new instance of BookDataObject */  
@@ -83,7 +85,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
     }
     
     protected DesignMultiViewDesc[] getMultiViewDesc() {
-        return new DesignMultiViewDesc[]{new DesignView(this)};
+        return new DesignMultiViewDesc[]{new DesignView(this,TYPE_TOOLBAR),new DesignView(this,TYPE_TREEPANEL)};
     }
     
     protected boolean isModelCreated() {
@@ -91,14 +93,16 @@ public class BookDataObject extends XmlMultiViewDataObject {
     }
     
     private static class DesignView extends DesignMultiViewDesc {
-        
-        DesignView(BookDataObject dObj) {
-            super(dObj, "Design");
+        private int type;
+        DesignView(BookDataObject dObj, int type) {
+            super(dObj, "Design"+String.valueOf(type));
+            this.type=type;
         }
 
         public org.netbeans.core.spi.multiview.MultiViewElement createElement() {
             BookDataObject dObj = (BookDataObject)getDataObject();
-            return new BookMultiViewElement(dObj);
+            if (type==TYPE_TOOLBAR) return new BookToolBarMVElement(dObj);
+            else return new BookTreePanelMVElement(dObj);
         }
         
         public java.awt.Image getIcon() {
@@ -106,7 +110,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
         }
         
         public String preferredID() {
-            return "book_multiview_design";
+            return "book_multiview_design"+String.valueOf(type);
         }
     }
     
@@ -123,7 +127,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
             final Object key=target;
             org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(new Runnable() {
                 public void run() {
-                    getActiveMultiViewElement().getSectionView().openPanel(key);
+                    getActiveMultiViewElement0().getSectionView().openPanel(key);
                 }
             });
         }
@@ -132,7 +136,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
     /** Enable to get active MultiViewElement object
      */
     public ToolBarMultiViewElement getActiveMultiViewElement0() {
-        return super.getActiveMultiViewElement();
+        return (ToolBarMultiViewElement)super.getActiveMultiViewElement();
     }
     
 }
