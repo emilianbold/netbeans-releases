@@ -185,7 +185,7 @@ public final class LineBreakpoint extends JPDABreakpoint {
     /**
      * Returns source name.
      *
-     * @return a source name
+     * @return a source name or <code>null</code> when no source name is defined.
      */
     public String getSourceName () {
         return sourceName;
@@ -194,13 +194,12 @@ public final class LineBreakpoint extends JPDABreakpoint {
     /**
      * Sets source name.
      *
-     * @param c a new source name
+     * @param c a new source name or <code>null</code>.
      */
     public void setSourceName (String sn) {
         String old;
         synchronized (this) {
-            if (sn == null) sn = "";
-            sn = sn.trim ();
+            if (sn != null) sn = sn.trim ();
             if ( (sn == sourceName) ||
                  ((sn != null) && (sourceName != null) && sourceName.equals (sn))
             ) return;
@@ -213,7 +212,7 @@ public final class LineBreakpoint extends JPDABreakpoint {
     /**
      * Returns source path.
      *
-     * @return a source path
+     * @return a source path or <code>null</code> when no source path is defined.
      *
      * @since 1.3
      */
@@ -224,7 +223,7 @@ public final class LineBreakpoint extends JPDABreakpoint {
     /**
      * Sets source path.
      *
-     * @param sp a new source path
+     * @param sp a new source path or <code>null</code>
      *
      * @since 1.3
      */
