@@ -86,12 +86,15 @@ public final class LineBreakpoint extends JPDABreakpoint {
      * @param cn a new name of class to stop on
      */
     public void setURL (String url) {
-        if (url == null) url = "";
-        if ( (url == this.url) ||
-             ((url != null) && (this.url != null) && url.equals (this.url))
-        ) return;
-        String old = url;
-        this.url = url;
+        String old;
+        synchronized (this) {
+            if (url == null) url = "";
+            if ( (url == this.url) ||
+                 ((url != null) && (this.url != null) && url.equals (this.url))
+            ) return;
+            old = url;
+            this.url = url;
+        }
         firePropertyChange (PROP_URL, old, url);
     }
     
@@ -110,13 +113,16 @@ public final class LineBreakpoint extends JPDABreakpoint {
      * @param ln a line number to stop on
      */
     public void setLineNumber (int ln) {
-        if (ln == lineNumber) return;
-        int old = lineNumber;
-        lineNumber = ln;
+        int old;
+        synchronized (this) {
+            if (ln == lineNumber) return;
+            old = lineNumber;
+            lineNumber = ln;
+        }
         firePropertyChange (
             PROP_LINE_NUMBER,
             new Integer (old),
-            new Integer (getLineNumber ())
+            new Integer (ln)
         );
     }
     
@@ -135,14 +141,17 @@ public final class LineBreakpoint extends JPDABreakpoint {
      * @param c a new condition
      */
     public void setCondition (String c) {
-        if (c == null) c = "";
-        c = c.trim ();
-        if ( (c == condition) ||
-             ((c != null) && (condition != null) && condition.equals (c))
-        ) return;
-        String old = condition;
-        condition = c;
-        firePropertyChange (PROP_CONDITION, old, condition);
+        String old;
+        synchronized (this) {
+            if (c == null) c = "";
+            c = c.trim ();
+            if ( (c == condition) ||
+                 ((c != null) && (condition != null) && condition.equals (c))
+            ) return;
+            old = condition;
+            condition = c;
+        }
+        firePropertyChange (PROP_CONDITION, old, c);
     }
     
     /**
@@ -160,14 +169,17 @@ public final class LineBreakpoint extends JPDABreakpoint {
      * @param s a new stratum
      */
     public void setStratum (String s) {
-        if (s == null) s = "";
-        s = s.trim ();
-        if ( (s == stratum) ||
-             ((s != null) && (stratum != null) && stratum.equals (s))
-        ) return;
-        String old = stratum;
-        stratum = s;
-        firePropertyChange (PROP_CONDITION, old, stratum);
+        String old;
+        synchronized (this) {
+            if (s == null) s = "";
+            s = s.trim ();
+            if ( (s == stratum) ||
+                 ((s != null) && (stratum != null) && stratum.equals (s))
+            ) return;
+            old = stratum;
+            stratum = s;
+        }
+        firePropertyChange (PROP_CONDITION, old, s);
     }
     
     /**
@@ -185,14 +197,17 @@ public final class LineBreakpoint extends JPDABreakpoint {
      * @param c a new source name
      */
     public void setSourceName (String sn) {
-        if (sn == null) sn = "";
-        sn = sn.trim ();
-        if ( (sn == sourceName) ||
-             ((sn != null) && (sourceName != null) && sourceName.equals (sn))
-        ) return;
-        String old = sourceName;
-        sourceName = sn;
-        firePropertyChange (PROP_SOURCE_NAME, old, sourceName);
+        String old;
+        synchronized (this) {
+            if (sn == null) sn = "";
+            sn = sn.trim ();
+            if ( (sn == sourceName) ||
+                 ((sn != null) && (sourceName != null) && sourceName.equals (sn))
+            ) return;
+            old = sourceName;
+            sourceName = sn;
+        }
+        firePropertyChange (PROP_SOURCE_NAME, old, sn);
     }
 
     /**
@@ -214,10 +229,16 @@ public final class LineBreakpoint extends JPDABreakpoint {
      * @since 1.3
      */
     public void setSourcePath (String sp) {
-        if (sp != null) sp = sp.trim();
-        String old = sourcePath;
-        sourcePath = sp;
-        firePropertyChange (PROP_SOURCE_PATH, old, sourcePath);
+        String old;
+        synchronized (this) {
+            if (sp != null) sp = sp.trim();
+            if (sp == sourcePath || (sp != null && sp.equals(sourcePath))) {
+                return ;
+            }
+            old = sourcePath;
+            sourcePath = sp;
+        }
+        firePropertyChange (PROP_SOURCE_PATH, old, sp);
     }
     
     /**
