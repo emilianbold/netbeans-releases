@@ -38,19 +38,28 @@ public final class Install extends ModuleInstall {
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
                     EditableProperties p = PropertyUtils.getGlobalProperties();
-                    p.setProperty("nbplatform.default.netbeans.dest.dir", install.getAbsolutePath()); // NOI18N
+                    String installS = install.getAbsolutePath();
+                    p.setProperty("nbplatform.default.netbeans.dest.dir", installS); // NOI18N
+                    String suffix = File.separatorChar + "nbbuild" + File.separatorChar + "netbeans"; // NOI18N
+                    if (installS.endsWith(suffix)) {
+                        // We're running from a build; also set source location, for convenience.
+                        p.setProperty("nbplatform.default.sources", installS.substring(0, installS.length() - suffix.length())); // NOI18N
+                    }
                     p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
                     final File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
                     if (apidocsZip != null) {
                         // XXX OK to overwrite any existing config? not sure...
-                        p.setProperty("nbplatform.default.netbeans.javadoc", FileUtil.normalizeFile(apidocsZip).getAbsolutePath()); // NOI18N
+                        p.setProperty("nbplatform.default.javadoc", FileUtil.normalizeFile(apidocsZip).getAbsolutePath()); // NOI18N
                     } else {
                         // XXX remove any existing binding?
                     }
-                    {// XXX temporary, to clean up userdirs from old system
+                    {// XXX temporary, to clean up userdirs from old revs
                         p.remove("netbeans.dest.dir"); // NOI18N
                         p.remove("harness.dir"); // NOI18N
+                        p.remove("netbeans.sources"); // NOI18N
                         p.remove("netbeans.javadoc"); // NOI18N
+                        p.remove("nbplatform.default.netbeans.sources"); // NOI18N
+                        p.remove("nbplatform.default.netbeans.javadoc"); // NOI18N
                     }
                     try {
                         PropertyUtils.putGlobalProperties(p);

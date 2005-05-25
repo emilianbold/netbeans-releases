@@ -59,9 +59,9 @@ abstract class TestBase extends NbTestCase {
         p.setProperty("nbplatform.custom.netbeans.dest.dir", file(extexamplesF, "suite3/nbplatform").getAbsolutePath());
         // Nonexistent path, just for JavadocForBuiltModuleTest:
         apisZip = new File(getWorkDir(), "apis.zip");
-        p.setProperty("nbplatform.default.netbeans.javadoc", apisZip.getAbsolutePath());
+        p.setProperty("nbplatform.default.javadoc", apisZip.getAbsolutePath());
         // Make source association work to find misc-project from its binary:
-        p.setProperty("nbplatform.default.netbeans.sources", nbrootF.getAbsolutePath() + ":" + file(extexamplesF, "suite2").getAbsolutePath());
+        p.setProperty("nbplatform.default.sources", nbrootF.getAbsolutePath() + ":" + file(extexamplesF, "suite2").getAbsolutePath());
         OutputStream os = new FileOutputStream(userPropertiesFile);
         try {
             p.store(os, null);
