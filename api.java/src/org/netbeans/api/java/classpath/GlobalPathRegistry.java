@@ -308,6 +308,7 @@ public final class GlobalPathRegistry {
         Iterator it = getSourceRoots().iterator();
         while (it.hasNext()) {
             FileObject root = (FileObject)it.next();
+            // XXX try to use java.io.File's wherever possible for the search; FileObject is too slow
             FileObject f = root.getFileObject(resource);
             if (f != null) {
                 return f;

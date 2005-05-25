@@ -181,10 +181,12 @@ public final class JavaAntLogger extends AntLogger {
             Iterator it = getCurrentSourceRootsForClasspath(data).iterator();
             while (it.hasNext()) {
                 FileObject root = (FileObject)it.next();
+                // XXX this is apparently pretty expensive; try to use java.io.File instead
                 FileObject source = root.getFileObject(resource);
                 if (source != null) {
                     // Got it!
                     hyperlink(line, session, event, source, messageLevel, sessionLevel, data, lineNumber);
+                    break;
                 }
             }
             // Also check global sourcepath (sources of open projects, and sources
@@ -192,9 +194,11 @@ public final class JavaAntLogger extends AntLogger {
             // Fallback in case a JAR file is copied to an unknown location, etc.
             // In this case we can't be sure that this source file really matches
             // the .class used in the stack trace, but it is a good guess.
-            FileObject source = GlobalPathRegistry.getDefault().findResource(resource);
-            if (source != null) {
-                hyperlink(line, session, event, source, messageLevel, sessionLevel, data, lineNumber);
+            if (!event.isConsumed()) {
+                FileObject source = GlobalPathRegistry.getDefault().findResource(resource);
+                if (source != null) {
+                    hyperlink(line, session, event, source, messageLevel, sessionLevel, data, lineNumber);
+                }
             }
         } else {
             // Track the last line which was not a stack trace - probably the exception message.
