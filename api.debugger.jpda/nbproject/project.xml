@@ -47,7 +47,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.api.debugger.jpda</package>
                 <package>org.netbeans.spi.debugger.jpda</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

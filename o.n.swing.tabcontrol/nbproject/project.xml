@@ -33,7 +33,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.swing.tabcontrol.event</package>
                 <package>org.netbeans.swing.popupswitcher</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

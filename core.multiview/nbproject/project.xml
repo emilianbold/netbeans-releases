@@ -40,7 +40,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.core.api.multiview</package>
                 <package>org.netbeans.core.spi.multiview</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

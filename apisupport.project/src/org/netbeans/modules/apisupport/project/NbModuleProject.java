@@ -567,18 +567,25 @@ final class NbModuleProject implements Project {
         }
         return NbPlatform.getPlatformByDestDir(getHelper().resolveFile(prop));
     }
-    
+
+    /**
+     * Check whether Javadoc generation is possible.
+     */
     public boolean supportsJavadoc() {
-        return supportsFeature("javadoc"); // NOI18N
+        if (evaluator().getProperty("module.javadoc.packages") != null) {
+            return true;
+        }
+        Element config = getHelper().getPrimaryConfigurationData(true);
+        Element pubPkgs = Util.findElement(config, "public-packages", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        if (pubPkgs == null) {
+            // Try <friend-packages> too.
+            pubPkgs = Util.findElement(config, "friend-packages", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        }
+        return pubPkgs != null && !Util.findSubElements(pubPkgs).isEmpty();
     }
     
     public boolean supportsUnitTests() {
         return getTestSourceDirectory() != null;
-    }
-    
-    private boolean supportsFeature(String name) {
-        Element config = getHelper().getPrimaryConfigurationData(true);
-        return Util.findElement(config, name, NbModuleProjectType.NAMESPACE_SHARED) != null;
     }
     
     /**

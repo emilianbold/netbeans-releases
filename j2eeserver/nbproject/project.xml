@@ -125,7 +125,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.deployment.plugins.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.common.api</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

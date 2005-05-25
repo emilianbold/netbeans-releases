@@ -159,4 +159,13 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals(NbModuleProject.TYPE_STANDALONE, dummyProject.getModuleType());
     }
     
+    public void testSupportsJavadoc() throws Exception {
+        assertTrue(javaProjectProject.supportsJavadoc());
+        FileObject dir = nbroot.getFileObject("beans");
+        assertNotNull("have beans checked out", dir);
+        Project p = ProjectManager.getDefault().findProject(dir);
+        NbModuleProject beansProject = (NbModuleProject) p;
+        assertFalse(beansProject.supportsJavadoc());
+    }
+    
 }

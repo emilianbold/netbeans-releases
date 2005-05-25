@@ -40,7 +40,6 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.versioning.system.cvss</friend>
                 <package>org.netbeans.modules.masterfs.providers</package>
             </friend-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

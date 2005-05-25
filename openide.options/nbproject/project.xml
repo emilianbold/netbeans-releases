@@ -29,7 +29,6 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.openide.options</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

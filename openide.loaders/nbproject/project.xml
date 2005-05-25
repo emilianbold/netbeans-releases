@@ -33,7 +33,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.openide.loaders</package>
                 <package>org.openide.text</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

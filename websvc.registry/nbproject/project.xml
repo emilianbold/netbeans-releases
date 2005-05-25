@@ -77,7 +77,6 @@ Microsystems, Inc. All Rights Reserved.
                 <built-to>build/extclasses</built-to>
                 <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/websvcregistry.jar</built-to>
             </extra-compilation-unit>
-            <javadoc/>
         </data>
     </configuration>
 </project>

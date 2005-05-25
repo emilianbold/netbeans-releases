@@ -31,7 +31,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.api.progress</package>
                 <package>org.netbeans.api.progress.aggregate</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

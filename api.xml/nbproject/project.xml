@@ -40,7 +40,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.spi.xml.cookies</package>
                 <package>org.netbeans.spi.xml.services</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

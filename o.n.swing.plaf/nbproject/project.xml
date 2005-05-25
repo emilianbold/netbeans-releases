@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.swing.plaf</code-name-base>
              <module-dependencies>
-                <!-- There is no actual dependency, this is just to enable installation in NB: -->
+                <!-- XXX remove after openide split: -->
                 <dependency>
                     <code-name-base>org.openide</code-name-base>
                     <run-dependency>
@@ -29,7 +29,6 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.netbeans.swing.plaf</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

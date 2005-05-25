@@ -19,7 +19,6 @@
             <public-packages>
                 <package>org.netbeans.examples.modules.misc</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
  </project>

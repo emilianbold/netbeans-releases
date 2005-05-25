@@ -40,7 +40,6 @@ Microsystems, Inc. All Rights Reserved.
                 <runtime-relative-path>ext/jh-2.0_02.jar</runtime-relative-path>
                 <binary-origin>../external/jh-2.0_02.jar</binary-origin>
             </class-path-extension>
-            <javadoc/>
         </data>
     </configuration>
 </project>

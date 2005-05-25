@@ -36,7 +36,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.spi.lexer.javacc</package>
                 <package>org.netbeans.spi.lexer.util</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

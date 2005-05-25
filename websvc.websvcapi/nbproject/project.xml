@@ -54,7 +54,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.websvc.api.webservices</package>
                 <package>org.netbeans.modules.websvc.spi.webservices</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

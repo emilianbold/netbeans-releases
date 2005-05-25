@@ -55,7 +55,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.dd.api.common</package>
                 <package>org.netbeans.modules.j2ee.dd.api.web</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

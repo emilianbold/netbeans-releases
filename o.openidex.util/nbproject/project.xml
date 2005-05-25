@@ -44,7 +44,6 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.openidex.search</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

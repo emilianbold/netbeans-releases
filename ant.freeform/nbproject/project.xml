@@ -94,7 +94,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.ant.freeform.spi</package>
                 <package>org.netbeans.modules.ant.freeform.spi.support</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

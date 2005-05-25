@@ -62,7 +62,6 @@ Microsystems, Inc. All Rights Reserved.
                 <built-to>build/bridge-classes</built-to>
                 <built-to>${netbeans.dest.dir}/${cluster.dir}/ant/nblib/bridge.jar</built-to>
             </extra-compilation-unit>
-            <javadoc/>
         </data>
     </configuration>
 </project>

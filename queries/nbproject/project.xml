@@ -32,7 +32,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.api.fileinfo</package>
                 <package>org.netbeans.spi.queries</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

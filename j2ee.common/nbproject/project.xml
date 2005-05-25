@@ -225,7 +225,6 @@ Microsystems, Inc. All Rights Reserved.
 		<package>org.netbeans.modules.j2ee.common.ui</package>
                 <package>org.netbeans.modules.j2ee.common.ui.nodes</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

@@ -38,7 +38,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.openide.util.io</package>
                 <package>org.openide.xml</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

@@ -46,7 +46,6 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.netbeans.spi.settings</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

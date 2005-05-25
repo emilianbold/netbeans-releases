@@ -258,7 +258,6 @@ Microsystems, Inc. All Rights Reserved.
                 <built-to>build/antclasses</built-to>
                 <built-to>${netbeans.dest.dir}/${cluster.dir}/ant/nblib/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>            
-            <javadoc/>
         </data>
     </configuration>
 </project>

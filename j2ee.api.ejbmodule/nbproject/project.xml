@@ -81,7 +81,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.api.ejbjar</package>
                 <package>org.netbeans.modules.j2ee.spi.ejbjar</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

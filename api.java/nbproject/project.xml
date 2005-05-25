@@ -48,7 +48,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.spi.java.classpath.support</package>
                 <package>org.netbeans.spi.java.queries</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

@@ -31,7 +31,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.api.debugger</package>
                 <package>org.netbeans.spi.debugger</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

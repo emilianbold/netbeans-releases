@@ -47,7 +47,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.openide.nodes</package>
                 <package>org.openide.util.actions</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

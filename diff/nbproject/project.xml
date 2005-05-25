@@ -55,7 +55,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.api.diff</package>
                 <package>org.netbeans.spi.diff</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

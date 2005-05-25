@@ -58,7 +58,6 @@ Microsystems, Inc. All Rights Reserved.
                 <runtime-relative-path>ext/resolver-1_1_nb.jar</runtime-relative-path>
                 <binary-origin>${nb_all}/xml/external/resolver-1_1_nb.jar</binary-origin>
             </class-path-extension>
-            <javadoc/>
         </data>
     </configuration>
 </project>

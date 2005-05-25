@@ -137,7 +137,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.spi.java.project.classpath</package>
                 <package>org.netbeans.spi.java.project.classpath.support</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
  </project>

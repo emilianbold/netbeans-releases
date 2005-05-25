@@ -54,7 +54,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.lib.editor.view</package>
                 <package>org.netbeans.lib.editor.hyperlink.spi</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

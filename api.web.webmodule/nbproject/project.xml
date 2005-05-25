@@ -47,7 +47,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.web.api.webmodule</package>
                 <package>org.netbeans.modules.web.spi.webmodule</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

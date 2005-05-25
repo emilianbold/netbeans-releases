@@ -61,7 +61,6 @@ Microsystems, Inc. All Rights Reserved.
                 <built-to>build/antclasses</built-to>
                 <built-to>build/tasks.jar</built-to>
             </extra-compilation-unit>
-            <javadoc/>
         </data>
     </configuration>
 </project>

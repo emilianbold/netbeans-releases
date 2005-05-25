@@ -27,7 +27,6 @@
             <public-packages>
                 <package>org.netbeans.examples.modules.lib</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
  </project>

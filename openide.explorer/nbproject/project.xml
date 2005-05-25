@@ -64,7 +64,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.openide.explorer.propertysheet.editors</package>
                 <package>org.openide.explorer.view</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

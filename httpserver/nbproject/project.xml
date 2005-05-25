@@ -46,7 +46,6 @@ Microsystems, Inc. All Rights Reserved.
                 <runtime-relative-path>ext/webserver.jar</runtime-relative-path>
                 <binary-origin>external/webserver.jar</binary-origin>
             </class-path-extension>
-            <javadoc/>
         </data>
     </configuration>
 </project>

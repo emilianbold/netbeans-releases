@@ -102,7 +102,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.openide.explorer</package>
                 <package>org.openide.util</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

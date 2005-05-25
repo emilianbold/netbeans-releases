@@ -47,7 +47,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.spi.project.ui.support</package>
                 <package>org.netbeans.spi.project.ui.templates.support</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

@@ -104,7 +104,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.java.freeform.spi</package>
                 <package>org.netbeans.modules.java.freeform.spi.support</package>
             </friend-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>
