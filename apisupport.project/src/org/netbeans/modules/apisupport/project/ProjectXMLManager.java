@@ -176,11 +176,9 @@ public final class ProjectXMLManager {
             String cnb = Util.findText(cnbEl);
             if (cnb.equals(origDep.getModuleEntry().getCodeNameBase())) {
                 moduleDependencies.removeChild(dep);
-//                ModuleDependency next = (ModuleDependency) it.next();
-                createModuleDependencyElement(moduleDependencies, newDep);
-//                if (next != null) {
-//                    // TODO insert it here
-//                }
+                Element nextDep = it.hasNext() ? (Element) it.next() : null;
+                createModuleDependencyElement(moduleDependencies, newDep, nextDep);
+                break;
             }
         }
         helper.putPrimaryConfigurationData(confData, true);
@@ -195,17 +193,17 @@ public final class ProjectXMLManager {
         Document doc = moduleDependencies.getOwnerDocument();
         for (Iterator it = toAdd.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
-            createModuleDependencyElement(moduleDependencies, md);
+            createModuleDependencyElement(moduleDependencies, md, null);
         }
         helper.putPrimaryConfigurationData(confData, true);
     }
     
     private void createModuleDependencyElement(
-            Element moduleDependencies, ModuleDependency md) {
+            Element moduleDependencies, ModuleDependency md, Element nextSibling) {
         
         Document doc = moduleDependencies.getOwnerDocument();
         Element modDepEl = createModuleElement(doc, ProjectXMLManager.DEPENDENCY);
-        moduleDependencies.appendChild(modDepEl);
+        moduleDependencies.insertBefore(modDepEl, nextSibling);
         
         modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.CODE_NAME_BASE,
                 md.getModuleEntry().getCodeNameBase()));
