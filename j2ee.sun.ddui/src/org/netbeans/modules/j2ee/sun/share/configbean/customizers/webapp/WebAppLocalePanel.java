@@ -52,7 +52,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Generic
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTablePanel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
 
-import org.netbeans.modules.j2ee.sun.api.CharsetMapping;
+import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
 
 /**
  *

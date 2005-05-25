@@ -29,7 +29,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.RegisterServerAction;
 import java.util.Collection;
-import org.netbeans.modules.j2ee.sun.api.SecurityMasterListModel;
+import org.netbeans.modules.j2ee.sun.share.SecurityMasterListModel;
 
 import java.util.Arrays;
 

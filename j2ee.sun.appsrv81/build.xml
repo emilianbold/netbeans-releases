@@ -21,12 +21,12 @@ Microsystems, Inc. All Rights Reserved.
 
     
     <target depends="init" name="compile">
+        <ant dir="../appsrvbridge" target="jar" inheritAll="false"/>
 	<antcall target="projectized-common.compile"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy file="../appsrvbridge/dist/appsrvbridge.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy file="../../external/jmxri.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy file="../../external/org-netbeans-modules-j2ee-sun-ide.jar" todir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
-        <!--copy file="external/org-netbeans-modules-j2ee-sun-dd.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/-->
         <copy file="../../external/persistence-tool-support.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
     </target>
 
@@ -49,10 +49,8 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
             <include name="modules/ext/jmxri.jar"/>
             <include name="ant/nblib/org-netbeans-modules-j2ee-sun-ide.jar"/>
-            <include name="modules/ext/validation.jar"/>
             <include name="modules/ext/persistence-tool-support.jar"/>
-            <include name="modules/ext/appserv-libapi.jar"/>          
-            <include name="modules/ext/appserv-jsr88.jar"/>
+            <include name="modules/ext/appservbridge.jar"/>
             
         </patternset>
     </target>    

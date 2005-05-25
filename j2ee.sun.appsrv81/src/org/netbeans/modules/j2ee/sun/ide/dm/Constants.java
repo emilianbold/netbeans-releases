@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.j2ee.sun.share;
+package org.netbeans.modules.j2ee.sun.ide.dm;
 
 /** Constants used in through-out the deployment
  * module
@@ -19,15 +19,7 @@ package org.netbeans.modules.j2ee.sun.share;
  */
 public interface Constants {
     
-    
     java.util.logging.Logger jsr88Logger =
         java.util.logging.Logger.getLogger("com.sun.enterprise.tools.jsr88.spi");
-	
-    
-    // Property event string
-    public static final String USER_DATA_CHANGED = "UserDataChanged";  // NOI18N
-	
-        
-        public static final String EMPTY_STRING = "";   //NOI18N
 	
 }

@@ -93,20 +93,7 @@ Microsystems, Inc. All Rights Reserved.
                             </module-dependencies>
             <public-packages>
 
-                <package>org.netbeans.modules.j2ee.sun.dd.api.ejb</package>
-                <package>org.netbeans.modules.j2ee.sun.dd.api.common</package>
             </public-packages>
-            <extra-compilation-unit>
-                <package-root>libvalidationsrc</package-root>
-                <classpath>${module.classpath}:${ant.jar}</classpath>
-                <built-to>build/validationclasses</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/${code.name.base.dashes}.jar</built-to>
-            </extra-compilation-unit>      
-            <extra-compilation-unit>
-                <package-root>libvalidationtest</package-root>
-                <classpath>${module.classpath}:${ant.jar}</classpath>
-                <built-to>build/validationclasses</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/${code.name.base.dashes}.jar</built-to>
-            </extra-compilation-unit>           </data>
+          </data>
     </configuration>
 </project>

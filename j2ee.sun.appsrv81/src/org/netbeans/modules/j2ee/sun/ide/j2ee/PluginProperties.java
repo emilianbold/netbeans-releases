@@ -23,8 +23,8 @@ import java.io.FileInputStream;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Properties;
-import org.netbeans.modules.j2ee.sun.api.SecurityMasterListModel;
-import org.netbeans.modules.j2ee.sun.api.CharsetMapping;
+import org.netbeans.modules.j2ee.sun.share.SecurityMasterListModel;
+import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
 import java.util.logging.Level;
 
 import org.openide.filesystems.FileSystem;

@@ -51,7 +51,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableDialogPanelAccessor;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.LocaleMapping;
-import org.netbeans.modules.j2ee.sun.api.CharsetMapping;
+import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
 
 /**
  *

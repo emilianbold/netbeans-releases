@@ -15,5 +15,5 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.api.java/1, 
  org.netbeans.modules.dbschema/1 = 2,
  org.netbeans.modules.j2ee.sun.dd/1 = 1
-Class-Path:      ext/validation.jar  
+Class-Path:      
    ext/persistence-tool-support.jar 

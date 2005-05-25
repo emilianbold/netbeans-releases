@@ -30,7 +30,7 @@ OpenIDE-Module: org.netbeans.modules.j2ee.sun.ide/1
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.30
 OpenIDE-Module-Implementation-Version: 1
 Class-Path:  docs/org-netbeans-modules-j2ee-sun-ide.jar 
-   ext/jmxri.jar  
+    
 
 Name: org/netbeans/modules/j2ee/sun/ide/j2ee/runtime/actions/RunASVerifierAction.class
 OpenIDE-Module-Class: Action
