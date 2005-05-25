@@ -92,8 +92,11 @@ final class NbModuleProject implements Project {
             throw new IOException("Misconfigured project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " has no defined <code-name-base>"); // NOI18N
         }
         moduleList = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
-        // XXX should instead reset ModuleList and try again:
-        assert moduleList.getEntry(getCodeNameBase()) != null : "Who am I? " + getProjectDirectory();
+        if (moduleList.getEntry(getCodeNameBase()) == null) {
+            // XXX try to give better diagnostics - as examples are discovered
+            // XXX might also try resetting ModuleList and trying again, in case it was just added
+            throw new IOException("Project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " does not appear to be listed in its own module list; some sort of misconfiguration (e.g. not listed in its own suite)"); // NOI18N
+        }
         eval = createEvaluator();
         FileBuiltQueryImplementation fileBuilt;
         // XXX could add globs for other package roots too
