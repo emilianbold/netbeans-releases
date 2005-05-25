@@ -50,7 +50,7 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
             java.util.logging.Logger.getLogger("javax.enterprise.system.tools.deployment").setLevel(java.util.logging.Level.OFF);
         } catch (Throwable e){
             //nothin to report there. The node name will indicate the config issue 
-            e.printStackTrace();
+            //e.printStackTrace();
             System.out.println("  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8 PE Location and restart.");
             
         }

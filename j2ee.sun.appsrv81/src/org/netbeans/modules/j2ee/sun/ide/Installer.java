@@ -106,7 +106,7 @@ public class Installer extends org.openide.modules.ModuleInstall {
             return facadeDF;
         }
         catch (Throwable ee){
-            ee.printStackTrace();
+           // ee.printStackTrace();
             System.out.println("-----null deploy factory because lacking app server classes");
         }
         return null;
@@ -172,7 +172,7 @@ public class Installer extends org.openide.modules.ModuleInstall {
  //              innerDF = (DeploymentFactory)Installer.getPluginLoader().loadClass("org.netbeans.modules.j2ee.sun.share.SunDeploymentFactory").newInstance();//NOI18N
             }
             catch (Throwable e){
-                e.printStackTrace();
+               // e.printStackTrace();
                 System.out.println("-----NNull deploy factory because lacking app server classes");
                 
             }
