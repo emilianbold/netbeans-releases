@@ -419,6 +419,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
             int last = e.getName ().lastIndexOf ('/');
             String pkg = last == -1 ? "" : e.getName ().substring (0, last);
             myPkgs.add (pkg);
+            log("Found package " + pkg + " in " + f, getProject().MSG_DEBUG);
         }
         
         java.util.jar.Manifest m = file.getManifest ();
