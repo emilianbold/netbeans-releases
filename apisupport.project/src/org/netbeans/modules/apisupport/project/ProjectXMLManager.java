@@ -107,12 +107,16 @@ public final class ProjectXMLManager {
                 specVer = Util.findText(specVerEl);
             }
             
+            Element compDepEl = Util.findElement(depEl,
+                    ProjectXMLManager.COMPILE_DEPENDENCY,
+                    NbModuleProjectType.NAMESPACE_SHARED);
+            
             Element impleVerEl = Util.findElement(runDepEl,
                     ProjectXMLManager.IMPLEMENTATION_VERSION,
                     NbModuleProjectType.NAMESPACE_SHARED);
             
             directDeps.add(new ModuleDependency(
-                    me, relVer, specVer, impleVerEl != null));
+                    me, relVer, specVer, compDepEl != null, impleVerEl != null));
         }
         return directDeps;
     }
@@ -206,7 +210,9 @@ public final class ProjectXMLManager {
         modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.CODE_NAME_BASE,
                 md.getModuleEntry().getCodeNameBase()));
         modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.BUILD_PREREQUISITE));
-        modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.COMPILE_DEPENDENCY));
+        if (md.hasCompileDependency()) {
+            modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.COMPILE_DEPENDENCY));
+        }
         
         Element runDepEl = createModuleElement(doc, ProjectXMLManager.RUN_DEPENDENCY);
         modDepEl.appendChild(runDepEl);

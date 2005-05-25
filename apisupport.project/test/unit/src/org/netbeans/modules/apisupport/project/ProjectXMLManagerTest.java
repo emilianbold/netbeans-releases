@@ -109,6 +109,7 @@ public class ProjectXMLManagerTest extends TestBase {
                                 origDep.getModuleEntry(),
                                 "2",
                                 origDep.getSpecificationVersion(),
+                                origDep.hasCompileDependency(),
                                 origDep.hasImplementationDepedendency());
                         actionPXM.editDependency(origDep, newDep);
                     }
@@ -138,7 +139,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 actionProject.getModuleList().getEntry("org.netbeans.modules.java.project");
         newDeps.add(new ModuleDependency(me));
         me = actionProject.getModuleList().getEntry("org.netbeans.modules.java.j2seplatform");
-        newDeps.add(new ModuleDependency(me, "1", null, true));
+        newDeps.add(new ModuleDependency(me, "1", null, false, true));
         
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
@@ -166,6 +167,7 @@ public class ProjectXMLManagerTest extends TestBase {
                     assumed.remove(md.getModuleEntry().getCodeNameBase()));
             if ("org.netbeans.modules.java.j2seplatform".equals(md.getModuleEntry().getCodeNameBase())) {
                 assertEquals("edited release version", "1", md.getReleaseVersion());
+                assertFalse("has compile depedendency", md.hasCompileDependency());
                 assertTrue("has implementation depedendency", md.hasImplementationDepedendency());
             }
         }

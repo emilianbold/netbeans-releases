@@ -43,14 +43,20 @@ final class EditDependencyPanel extends JPanel {
         specVerValue.setText(origDep.getSpecificationVersion());
         implVer.setSelected(origDep.hasImplementationDepedendency());
         ManifestManager.PackageExport[] pp = origDep.getModuleEntry().getPublicPackages();
-        if (pp != null) {
+        boolean anyAvailablePkg = pp != null && pp.length != 0;
+        includeInCP.setEnabled(anyAvailablePkg);
+        includeInCP.setSelected(origDep.hasCompileDependency());
+        availablePkg.setEnabled(anyAvailablePkg);
+        DefaultListModel model = new DefaultListModel();
+        if (anyAvailablePkg) {
             // XXX only temporary(?)
-            DefaultListModel model = new DefaultListModel();
             for (int i = 0; i < pp.length; i++) {
                 model.addElement(pp[i].getPackage());
             }
-            availablePkg.setModel(model);
+        } else {
+            model.addElement("<empty>"); // NOI18N
         }
+        availablePkg.setModel(model);
         versionChanged(null);
     }
     
@@ -58,6 +64,7 @@ final class EditDependencyPanel extends JPanel {
         ModuleDependency dep = new ModuleDependency(origDep.getModuleEntry(),
                 releaseVersionValue.getText().trim(),
                 specVerValue.getText().trim(),
+                includeInCP.isSelected(),
                 implVer.isSelected());
         return dep;
     }
@@ -179,12 +186,6 @@ final class EditDependencyPanel extends JPanel {
 
         includeInCP.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_IncludeAPIPackages_Mnem").charAt(0));
         includeInCP.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_IncludeAPIPackages"));
-        includeInCP.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                includeInCPActionPerformed(evt);
-            }
-        });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -206,11 +207,6 @@ final class EditDependencyPanel extends JPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
-    private void includeInCPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeInCPActionPerformed
-        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                "Not Implemented Yet")); // NOI18N
-    }//GEN-LAST:event_includeInCPActionPerformed
     
     private void versionChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionChanged
         specVerValue.setEnabled(specVer.isSelected());
