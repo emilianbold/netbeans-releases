@@ -58,7 +58,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private static final int HANDLE_UNPARSABLE_TIMEOUT = 2000;
     private static final long WAIT_FINISHED_TIMEOUT = 10000;
     protected boolean parseable;
-    private ToolBarMultiViewElement activeMVElement;
+    private AbstractMultiViewElement activeMVElement;
 
     final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
@@ -439,10 +439,10 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     
     /** Enable to get active MultiViewElement object
      */
-    protected ToolBarMultiViewElement getActiveMultiViewElement() {
+    protected AbstractMultiViewElement getActiveMultiViewElement() {
         return activeMVElement;
     }
-    void setActiveMultiViewElement(ToolBarMultiViewElement element) {
+    void setActiveMultiViewElement(AbstractMultiViewElement element) {
         activeMVElement = element;
     }
     /** Opens the specific view

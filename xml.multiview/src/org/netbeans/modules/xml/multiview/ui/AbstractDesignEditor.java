@@ -38,6 +38,7 @@ import org.openide.util.Lookup;
  **/
 
 public abstract class AbstractDesignEditor extends TopComponent implements ExplorerManager.Provider {
+    public static final String PROPERTY_FLUSH_DATA = "Flush Data"; // NOI18N
     
     private static final String ACTION_INVOKE_HELP = "invokeHelp"; //NOI18N
     protected JComponent structureView;
@@ -51,8 +52,11 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
     protected static final long serialVersionUID =1L;
     
     public AbstractDesignEditor() {
+        init();
+    }
+    
+    private void init() {
         manager = new ExplorerManager();
-        initComponents();
         helpAction = new HelpAction();
         final ActionMap map = AbstractDesignEditor.this.getActionMap();
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
@@ -65,6 +69,9 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         map.put("save", act); //NOI18N  
        
         associateLookup(ExplorerUtils.createLookup(manager, map));
+        
+        manager.addPropertyChangeListener(new NodeSelectedListener());
+        setLayout(new BorderLayout());
     }
 
     /**
@@ -73,7 +80,7 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
      *              and the set of panels the nodes map to.
      */
     public AbstractDesignEditor(PanelView contentView){
-        this();
+        init();
         this.contentView = contentView;
         setRootContext(contentView.getRoot());
     }
@@ -95,11 +102,18 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         ExplorerUtils.activateActions(manager, false);
     }
     
-    public AbstractDesignEditor(PanelView panel, JComponent structure){
-        this(panel);
-        structureView = structure;
+    public void componentClosed() {
+        super.componentClosed();
     }
-    
+    public void componentOpened() {
+        super.componentOpened();
+    }
+    public void componentShowing() {
+        super.componentShowing();
+    }
+    public void componentHidden() {
+        super.componentShowing();
+    }  
     
     /**
      * Sets the root context for the ExplorerManager
@@ -108,13 +122,6 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
     public void setRootContext(Node node) {
         getExplorerManager().setRootContext(node);
     }
-    
-    protected void initComponents() {
-        manager.addPropertyChangeListener(new NodeSelectedListener());
-        setLayout(new BorderLayout());
-    }
-    
-    
  
     /**
      * Used to get the JComponent used for the content pane. Usually a subclass of PanelView.
@@ -228,5 +235,10 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
             else 
                 return null;
         }
+    }
+
+    public void fireVetoableChange(String propertyName, Object oldValue, Object newValue)
+            throws PropertyVetoException {
+        super.fireVetoableChange(propertyName, oldValue, newValue);
     }
 }

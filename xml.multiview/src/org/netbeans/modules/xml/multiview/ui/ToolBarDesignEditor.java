@@ -37,7 +37,6 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
     protected JComponent designPanel;
     private ErrorPanel errorPanel;
     private Object lastActive;
-    public static final String PROPERTY_FLUSH_DATA = "Flush Data"; // NOI18N
 
     /**
      * Creates a new instance of ToolBarDesignEditor
@@ -90,18 +89,6 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
     private ErrorPanel createErrorPanel() {
         errorPanel = new ErrorPanel(this);
         return errorPanel;
-    }
-    public void componentClosed() {
-        super.componentClosed();
-    }
-    public void componentOpened() {
-        super.componentOpened();
-    }
-    public void componentShowing() {
-        super.componentShowing();
-    }
-    public void componentHidden() {
-        super.componentShowing();
     }
     
     /**
@@ -188,10 +175,4 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
     public void setLastActive(Object lastActive) {
         this.lastActive=lastActive;
     }
-
-    public void fireVetoableChange(String propertyName, Object oldValue, Object newValue)
-            throws PropertyVetoException {
-        super.fireVetoableChange(propertyName, oldValue, newValue);
-    }
-    
 }

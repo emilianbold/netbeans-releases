@@ -36,8 +36,6 @@ public class TreePanelDesignEditor extends AbstractDesignEditor {
     public static final int DEFAULT_STRUCTURE_WIDTH = 170;
     /** The default height of the ComponentInspector */
     public static final int DEFAULT_STRUCTURE_HEIGHT = 300;
-    /** The default percents of the splitting of the ComponentInspector */
-    public static final int DEFAULT_CONTENT_SPLIT = 150;
     
     /** Default icon base for control panel. */
     private static final String EMPTY_INSPECTOR_ICON_BASE =
@@ -53,6 +51,8 @@ public class TreePanelDesignEditor extends AbstractDesignEditor {
      */
     public TreePanelDesignEditor(PanelView panel) {
         super(panel);
+        initComponents();
+        panelOrientation=CONTENT_RIGHT;
     }
     
     /**
@@ -62,47 +62,22 @@ public class TreePanelDesignEditor extends AbstractDesignEditor {
      * @param orientation Determines if the content pane is on the left or the right.
      */
     public TreePanelDesignEditor(PanelView panel, int orientation){
-        super(panel);
-        panelOrientation = orientation;
-    }
-    /**
-     * Creates a new instance of ComponentPanel
-     * @param panel The PanelView which will provide the node tree for the structure view
-     *              and the set of panels the nodes map to.
-     * @param structure The JComponent that will be used in the structure pane. Should follow the
-     *			ExplorerManager protocol. Will usually be some subclass of BeanTreeView.
-     */
-    
-    public TreePanelDesignEditor(PanelView panel, JComponent structure){
-        super(panel,structure);
-    }
-    /**
-     * Creates a new instance of ComponentPanel
-     * @param panel The PanelView which will provide the node tree for the structure view
-     *              and the set of panels the nodes map to.
-     * @param structure The JComponent that will be used in the structure pane. Should follow the
-     *			ExplorerManager protocol. Will usually be some subclass of BeanTreeView.
-     * @param orientation Determines if the content pane is on the left or the right.
-     */
-    
-    public TreePanelDesignEditor(PanelView panel, JComponent structure, int orientation){
-        super(panel,structure);
+        this(panel);
         panelOrientation = orientation;
     }
     
-     protected void initComponents() {
-        super.initComponents();
-         add(BorderLayout.CENTER,createDesignPanel());
-        
-    }
+    protected void initComponents() {
+        add(BorderLayout.CENTER,createDesignPanel());
+    };
    
     protected JComponent createDesignPanel() {
-        if (panelOrientation == CONTENT_LEFT)
+        if (panelOrientation == CONTENT_LEFT) {
             split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,getContentView(), getStructureView());
-        else
+        } else {
             split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,getStructureView(), getContentView());
+        }
         split.setOneTouchExpandable(true);
-	  return split;
+	return split;
         
     }
     
@@ -116,7 +91,7 @@ public class TreePanelDesignEditor extends AbstractDesignEditor {
             structureView.getAccessibleContext().setAccessibleName("ACS_StructureView");
             structureView.getAccessibleContext().setAccessibleDescription("ACSD_StructureView");
             structureView.setMinimumSize(new Dimension(100,100));
-            structureView.setPreferredSize(new Dimension(DEFAULT_STRUCTURE_WIDTH ,DEFAULT_STRUCTURE_HEIGHT ));
+            //structureView.setPreferredSize(new Dimension(DEFAULT_STRUCTURE_WIDTH ,DEFAULT_STRUCTURE_HEIGHT ));
         }
         return structureView;
     }
