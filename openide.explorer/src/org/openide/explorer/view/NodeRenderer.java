@@ -108,7 +108,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
         //it to configure itself with the passed values
         Component result = renderer.getTreeCellRendererComponent(tree, text, sel, expanded, leaf, row, hasFocus);
 
-        result.setEnabled(true);
+        result.setEnabled(tree.isEnabled());
         renderer.setHtml(isHtml);
 
         //Do our additional configuration - set up the icon and possibly
@@ -143,7 +143,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
                 list, text, index, sel, cellHasFocus || (value == draggedOver)
             );
         renderer.setHtml(isHtml);
-        result.setEnabled(true);
+        result.setEnabled(list.isEnabled());
 
         //Do our additional configuration - set up the icon and possibly
         //do some hacks to make it look focused for TreeTableView
