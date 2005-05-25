@@ -17,6 +17,7 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequest;
+import org.openide.ErrorManager;
 
 /**
  * Listens for events coming from a remove VM and notifies registered objects.
@@ -145,7 +146,7 @@ public class Operator {
                                  //S ystem.out.println ("Operator end"); // NOI18N
                                  return;
                              } catch (Exception ex) {
-                                 ex.printStackTrace ();
+                                 ErrorManager.getDefault().notify(ex);
                              }
                      } // while
                      //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
@@ -160,7 +161,7 @@ public class Operator {
              } catch (VMDisconnectedException e) {   
              } catch (InterruptedException e) {
              } catch (Exception e) {
-                 e.printStackTrace ();
+                 ErrorManager.getDefault().notify(e);
              }
              if (finalizer != null) finalizer.run ();
              //S ystem.out.println ("Operator end"); // NOI18N
