@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.api.debugger.Breakpoint;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
@@ -92,7 +93,11 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     }
 
     public void propertyChange (PropertyChangeEvent evt) {
-        update ();
+        if (Breakpoint.PROP_DISPOSED.equals(evt.getPropertyName())) {
+            remove();
+        } else {
+            update ();
+        }
     }
 
     protected abstract void setRequests ();
