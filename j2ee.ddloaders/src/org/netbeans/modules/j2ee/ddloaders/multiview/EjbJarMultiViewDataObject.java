@@ -34,6 +34,7 @@ import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.ErrorManager;
@@ -472,7 +473,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         } else {
             openView(0);
         }
-        final SectionNodeView sectionView = (SectionNodeView) getActiveMultiViewElement().getSectionView();
+        final SectionNodeView sectionView = (SectionNodeView) getActiveMVElement().getSectionView();
         final Node root = sectionView.getRoot();
         final SectionNode node = ((SectionNode) root.getChildren().getNodes()[0]).getNodeForElement(element);
         if (node != null) {
@@ -508,7 +509,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
         public HelpCtx getHelpCtx() {
             final EjbJarMultiViewDataObject dataObject = ((EjbJarMultiViewDataObject)getDataObject());
-            return new HelpCtx(dataObject.getActiveMultiViewElement().getSectionView().getClass());
+            return new HelpCtx(dataObject.getActiveMVElement().getSectionView().getClass());
         }
 
         public Image getIcon() {
@@ -519,6 +520,12 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             return "dd_multiview_" + getDisplayName(); //NOI18N
         }
 
+    }
+    
+    /** Enable to access Active element 
+     */
+    private ToolBarMultiViewElement getActiveMVElement() {
+        return (ToolBarMultiViewElement)super.getActiveMultiViewElement();
     }
 
     private Ejb getEjbFromEjbClass(String ejbClassName) {

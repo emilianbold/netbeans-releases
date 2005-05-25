@@ -799,7 +799,7 @@ public class DDDataObject extends  XmlMultiViewDataObject
             final Object key=target;
             org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(new Runnable() {
                 public void run() {
-                    getActiveMultiViewElement().getSectionView().openPanel(key);
+                    getActiveMVElement().getSectionView().openPanel(key);
                 }
             });
         }
@@ -812,7 +812,7 @@ public class DDDataObject extends  XmlMultiViewDataObject
     /** Enable to access Active element 
      */
     public ToolBarMultiViewElement getActiveMVElement() {
-        return super.getActiveMultiViewElement();
+        return (ToolBarMultiViewElement)super.getActiveMultiViewElement();
     }
     
 }
