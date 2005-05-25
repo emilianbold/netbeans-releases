@@ -66,8 +66,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private ProjectXMLManager projectXMLManipulator;
     
     private Set/*<String>*/ modCategories;
-    private Set/*<ModuleList.Entry>*/ universeModules;
-    private Set/*<ModuleList.Entry>*/ subModules;
+    private Set/*<ModuleDependency>*/ universeModules;
+    private Set/*<ModuleDependency>*/ subModules;
     
     private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
     

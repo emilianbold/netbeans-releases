@@ -13,8 +13,11 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeListener;
+import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  * Represents panel for editing dependency details. Shown after <em>Edit</em>
@@ -39,6 +42,15 @@ final class EditDependencyPanel extends JPanel {
         releaseVersionValue.setText(origDep.getReleaseVersion());
         specVerValue.setText(origDep.getSpecificationVersion());
         implVer.setSelected(origDep.hasImplementationDepedendency());
+        ManifestManager.PackageExport[] pp = origDep.getModuleEntry().getPublicPackages();
+        if (pp != null) {
+            // XXX only temporary(?)
+            DefaultListModel model = new DefaultListModel();
+            for (int i = 0; i < pp.length; i++) {
+                model.addElement(pp[i].getPackage());
+            }
+            availablePkg.setModel(model);
+        }
         versionChanged(null);
     }
     
@@ -167,6 +179,12 @@ final class EditDependencyPanel extends JPanel {
 
         includeInCP.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_IncludeAPIPackages_Mnem").charAt(0));
         includeInCP.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_IncludeAPIPackages"));
+        includeInCP.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                includeInCPActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -189,6 +207,11 @@ final class EditDependencyPanel extends JPanel {
     }
     // </editor-fold>//GEN-END:initComponents
 
+    private void includeInCPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeInCPActionPerformed
+        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
+                "Not Implemented Yet")); // NOI18N
+    }//GEN-LAST:event_includeInCPActionPerformed
+    
     private void versionChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionChanged
         specVerValue.setEnabled(specVer.isSelected());
     }//GEN-LAST:event_versionChanged

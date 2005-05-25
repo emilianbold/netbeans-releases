@@ -17,17 +17,27 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import org.netbeans.modules.apisupport.project.ManifestManager.PackageExport;
 import org.openide.ErrorManager;
+import org.openide.modules.Dependency;
+
+// XXX a lot of code in this class is duplicated from
+// org.netbeans.core.modules.Module class. It would be nice to maintain this
+// code only once.
 
 /**
  * TODO - Comment whole code!
  *
  * @author Martin Krauskopf
  */
-final class ManifestManager {
+public final class ManifestManager {
     
     private String codeNameBase;
     private String releaseVersion;
@@ -35,35 +45,42 @@ final class ManifestManager {
     private String localizingBundle;
     private String layer;
     private String classPath;
+    private PackageExport[] publicPackages;
     
     private static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
     private static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
     private static final String OPENIDE_MODULE_LAYER = "OpenIDE-Module-Layer"; // NOI18N
     private static final String OPENIDE_MODULE_LOCALIZING_BUNDLE = "OpenIDE-Module-Localizing-Bundle"; // NOI18N
+    private static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
+    private static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
     private static final String CLASS_PATH = "Class-Path"; // NOI18N
+    
+    static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
     
     static final ManifestManager NULL_INSTANCE = new ManifestManager();
     
     private ManifestManager() {}
     
     private ManifestManager(String cnb, String releaseVersion, String specVer,
-            String locBundle, String layer, String classPath) {
+            String locBundle, String layer, String classPath,
+            PackageExport[] publicPackages) {
         this.codeNameBase = cnb;
         this.releaseVersion = releaseVersion;
         this.specificationVersion = specVer;
         this.localizingBundle = locBundle;
         this.layer = layer;
         this.classPath = classPath;
+        this.publicPackages = publicPackages;
     }
     
-    static ManifestManager getInstance(File manifest) {
+    static ManifestManager getInstance(File manifest, boolean loadPublicPackages) {
         ManifestManager mm = null;
         InputStream mis = null;
         try {
             if (manifest.exists()) {
                 mis = new FileInputStream(manifest); // NOI18N
                 Manifest mf = new Manifest(mis);
-                mm = ManifestManager.getInstance(mf);
+                mm = ManifestManager.getInstance(mf, loadPublicPackages);
             }
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
@@ -82,7 +99,7 @@ final class ManifestManager {
         JarFile jf = null;
         try {
             jf = new JarFile(jar);
-            mm = ManifestManager.getInstance(jf.getManifest());
+            mm = ManifestManager.getInstance(jf.getManifest(), true);
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         } finally {
@@ -95,7 +112,7 @@ final class ManifestManager {
         return mm;
     }
     
-    static ManifestManager getInstance(Manifest manifest) {
+    static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages) {
         Attributes attr = manifest.getMainAttributes();
         String codename = attr.getValue(OPENIDE_MODULE);
         String codenamebase = null;
@@ -109,13 +126,60 @@ final class ManifestManager {
                 releaseVersion = codename.substring(slash + 1);
             }
         }
+        PackageExport[] publicPackages = null;
+        if (loadPublicPackages) {
+            publicPackages = EMPTY_EXPORTED_PACKAGES;
+            String pp = attr.getValue(OPENIDE_MODULE_PUBLIC_PACKAGES);
+            if (pp == null) {
+                Util.err.log(ErrorManager.WARNING, "Warning: module " + codenamebase +
+                        " does not declare OpenIDE-Module-Public-Packages in its manifest, so all packages are considered public by default: http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages");
+            } else {
+                publicPackages = parseExportedPackages(pp);
+            }
+        }
         ManifestManager mm = new ManifestManager(
                 codenamebase, releaseVersion,
                 attr.getValue(OPENIDE_MODULE_SPECIFICATION_VERSION),
                 attr.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE),
                 attr.getValue(OPENIDE_MODULE_LAYER),
-                attr.getValue(CLASS_PATH));
+                attr.getValue(CLASS_PATH),
+                publicPackages);
         return mm;
+    }
+    
+    private static PackageExport[] parseExportedPackages(String exportsS) {
+        PackageExport[] exportedPackages = null;
+        if (exportsS.trim().equals("-")) { // NOI18N
+            exportedPackages = EMPTY_EXPORTED_PACKAGES;
+        } else {
+            StringTokenizer tok = new StringTokenizer(exportsS, ", "); // NOI18N
+            List exports = new ArrayList(Math.max(tok.countTokens(), 1)); // List<PackageExport>
+            while (tok.hasMoreTokens()) {
+                String piece = tok.nextToken();
+                if (piece.endsWith(".*")) { // NOI18N
+                    String pkg = piece.substring(0, piece.length() - 2);
+                    Dependency.create(Dependency.TYPE_MODULE, pkg);
+                    if (pkg.lastIndexOf('/') != -1) {
+                        throw new IllegalArgumentException("Illegal OpenIDE-Module-Public-Packages: " + exportsS); // NOI18N
+                    }
+                    exports.add(new PackageExport(pkg, false));
+                } else if (piece.endsWith(".**")) { // NOI18N
+                    String pkg = piece.substring(0, piece.length() - 3);
+                    Dependency.create(Dependency.TYPE_MODULE, pkg);
+                    if (pkg.lastIndexOf('/') != -1) {
+                        throw new IllegalArgumentException("Illegal OpenIDE-Module-Public-Packages: " + exportsS); // NOI18N
+                    }
+                    exports.add(new PackageExport(pkg, true));
+                } else {
+                    throw new IllegalArgumentException("Illegal OpenIDE-Module-Public-Packages: " + exportsS); // NOI18N
+                }
+            }
+            if (exports.isEmpty()) {
+                throw new IllegalArgumentException("Illegal OpenIDE-Module-Public-Packages: " + exportsS); // NOI18N
+            }
+            exportedPackages = (PackageExport[])exports.toArray(new PackageExport[exports.size()]);
+        }
+        return exportedPackages;
     }
     
     String getCodeNameBase() {
@@ -140,5 +204,37 @@ final class ManifestManager {
     
     String getClassPath() {
         return classPath;
+    }
+    
+    ManifestManager.PackageExport[] getPublicPackages() {
+        return publicPackages;
+    }
+    
+    /**
+     * Struct representing a package exported from a module.
+     */
+    public static final class PackageExport {
+        private final String pkg;
+        private final boolean recursive;
+        
+        /** Create a package export struct with the named parameters. */
+        public PackageExport(String pkg, boolean recursive) {
+            this.pkg = pkg;
+            this.recursive = recursive;
+        }
+        
+        /** Package to export, in the form <samp>org.netbeans.modules.foo</samp>. */
+        public String getPackage() {
+            return pkg;
+        }
+        
+        /** If true, exports subpackages also. */
+        public boolean isRecursive() {
+            return recursive;
+        }
+        
+        public String toString() {
+            return "PackageExport[" + pkg + (recursive ? "**/" : "") + "]"; // NOI18N
+        }
     }
 }

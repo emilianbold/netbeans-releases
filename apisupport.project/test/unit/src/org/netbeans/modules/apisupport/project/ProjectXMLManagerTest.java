@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -32,10 +33,8 @@ import org.openide.util.Mutex;
 public class ProjectXMLManagerTest extends TestBase {
     
     private FileObject suiteRepoFO;
-    private FileObject suite1FO;
-    private FileObject actionFO;
     
-    private ProjectXMLManager pxm;
+    private ProjectXMLManager actionPXM;
     private NbModuleProject actionProject;
     
     public ProjectXMLManagerTest(String testName) {
@@ -46,14 +45,14 @@ public class ProjectXMLManagerTest extends TestBase {
         clearWorkDir();
         super.setUp();
         suiteRepoFO = prepareSuiteRepo(extexamples);
-        suite1FO = suiteRepoFO.getFileObject("suite1");
-        actionFO = suite1FO.getFileObject("action-project");
+        FileObject suite1FO = suiteRepoFO.getFileObject("suite1");
+        FileObject actionFO = suite1FO.getFileObject("action-project");
         this.actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(actionFO);
-        this.pxm = new ProjectXMLManager(actionProject.getHelper(), actionProject);
+        this.actionPXM = new ProjectXMLManager(actionProject.getHelper(), actionProject);
     }
     
     public void testGetDirectDependencies() throws Exception {
-        Set deps = pxm.getDirectDependencies();
+        Set deps = actionPXM.getDirectDependencies();
         assertEquals("number of dependencies", new Integer(deps.size()), new Integer(2));
         
         Set assumed = new HashSet();
@@ -74,14 +73,14 @@ public class ProjectXMLManagerTest extends TestBase {
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
-                pxm.removeDependency("org.openide");
+                actionPXM.removeDependency("org.openide");
                 return Boolean.TRUE;
             }
         });
         assertTrue("removing dependency", result.booleanValue());
         ProjectManager.getDefault().saveProject(actionProject);
         
-        final Set newDeps = pxm.getDirectDependencies();
+        final Set newDeps = actionPXM.getDirectDependencies();
         assertEquals("number of dependencies", new Integer(1), new Integer(newDeps.size()));
         Set assumed = new HashSet();
         assumed.add("org.netbeans.examples.modules.lib");
@@ -97,7 +96,7 @@ public class ProjectXMLManagerTest extends TestBase {
 //    }
     
     public void testEditDependency() throws Exception {
-        final Set deps = pxm.getDirectDependencies();
+        final Set deps = actionPXM.getDirectDependencies();
         
         ModuleDependency origDep;
         // apply and save project
@@ -111,7 +110,7 @@ public class ProjectXMLManagerTest extends TestBase {
                                 "2",
                                 origDep.getSpecificationVersion(),
                                 origDep.hasImplementationDepedendency());
-                        pxm.editDependency(origDep, newDep);
+                        actionPXM.editDependency(origDep, newDep);
                     }
                 }
                 return Boolean.TRUE;
@@ -120,9 +119,9 @@ public class ProjectXMLManagerTest extends TestBase {
         assertTrue("editing dependencies", result.booleanValue());
         ProjectManager.getDefault().saveProject(actionProject);
         // XXX this refresh shouldn't be needed
-        this.pxm = new ProjectXMLManager(actionProject.getHelper(), actionProject);
+        this.actionPXM = new ProjectXMLManager(actionProject.getHelper(), actionProject);
         
-        final Set newDeps = pxm.getDirectDependencies();
+        final Set newDeps = actionPXM.getDirectDependencies();
         for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             if ("org.openide".equals(md.getModuleEntry().getCodeNameBase())) {
@@ -144,14 +143,14 @@ public class ProjectXMLManagerTest extends TestBase {
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
-                pxm.addDependencies(newDeps);
+                actionPXM.addDependencies(newDeps);
                 return Boolean.TRUE;
             }
         });
         assertTrue("adding dependencies", result.booleanValue());
         ProjectManager.getDefault().saveProject(actionProject);
         
-        Set deps = pxm.getDirectDependencies();
+        Set deps = actionPXM.getDirectDependencies();
         
         Set assumed = new HashSet();
         assumed.add("org.netbeans.examples.modules.lib");
@@ -171,6 +170,15 @@ public class ProjectXMLManagerTest extends TestBase {
             }
         }
         assertTrue("following dependencies were found: " + assumed, assumed.isEmpty());
+    }
+    
+    public void testFindPublicPackages() throws Exception {
+        File projectXML = new File(FileUtil.toFile(extexamples),
+                "/suite2/misc-project/nbproject/project.xml");
+        assert projectXML.exists();
+        ManifestManager.PackageExport[] pp = ProjectXMLManager.findPublicPackages(projectXML);
+        assertEquals("number of public packages", new Integer(pp.length), new Integer(1));
+        assertEquals("public package", "org.netbeans.examples.modules.misc", pp[0].getPackage());
     }
     
     private FileObject prepareSuiteRepo(FileObject what) throws Exception {

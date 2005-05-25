@@ -36,7 +36,7 @@ public class ManifestManagerTest extends TestBase {
     
     public void testDirectManifestFile() throws Exception {
         File basedir = new File(suite2, "misc-project");
-        ManifestManager mm = ManifestManager.getInstance(new File(basedir, "manifest.mf"));
+        ManifestManager mm = ManifestManager.getInstance(new File(basedir, "manifest.mf"), false);
         assertEquals("right codeNameBase", "org.netbeans.examples.modules.misc", mm.getCodeNameBase());
         assertEquals("right release version", "1", mm.getReleaseVersion());
         assertEquals("right specification version", "1.0", mm.getSpecificationVersion());
@@ -44,7 +44,7 @@ public class ManifestManagerTest extends TestBase {
                 mm.getLocalizingBundle());
         
         basedir = new File(suite1, "action-project");
-        mm = ManifestManager.getInstance(new File(basedir, "manifest.mf"));
+        mm = ManifestManager.getInstance(new File(basedir, "manifest.mf"), false);
         assertEquals("right codeNameBase", "org.netbeans.examples.modules.action", mm.getCodeNameBase());
         assertNull("no release version", mm.getReleaseVersion());
     }

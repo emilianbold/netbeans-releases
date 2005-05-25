@@ -246,7 +246,7 @@ final class NbModuleProject implements Project {
             Manifest mf = getManifest();
             if (mf != null) {
                 String locBundleResource =
-                        ManifestManager.getInstance(mf).getLocalizingBundle();
+                        ManifestManager.getInstance(mf, false).getLocalizingBundle();
                 if (locBundleResource != null) {
                     String locBundleResourceBase, locBundleResourceExt;
                     int idx = locBundleResource.lastIndexOf('.');
