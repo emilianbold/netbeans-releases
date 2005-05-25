@@ -233,7 +233,7 @@ public class ProjectUtilities {
     /** Checks if the given file name can be created in the target folder.
      *
      * @param targetFolder target folder (e.g. source group)
-     * @param folderName name of the folder relative to target folder
+     * @param folderName name of the folder relative to target folder (null or /-separated)
      * @param newObjectName name of created file
      * @param extension extension of created file
      * @return localized error message or null if all right
