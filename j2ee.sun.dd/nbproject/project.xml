@@ -26,12 +26,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.loaders</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -39,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                         <specification-version>4.20</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.libs.xerces</code-name-base>
                     <build-prerequisite/>
@@ -48,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-             </module-dependencies>
+            </module-dependencies>
             <public-packages>
                 <!--package>org.netbeans.modules.j2ee.sun.dd.api</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.api.app</package>
