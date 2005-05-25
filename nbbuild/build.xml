@@ -31,6 +31,7 @@ ToDo:
 
   <target name="check-for-jdk-1.4">
     <available property="have-jdk-1.4" classname="java.lang.CharSequence"/>
+    <available property="have-jdk-1.5" classname="java.lang.StringBuilder"/>
   </target>
   <target name="assure-jdk-1.4" depends="check-for-jdk-1.4" unless="have-jdk-1.4">
     <fail>You need JDK 1.4 or higher to build NetBeans.</fail>
@@ -43,7 +44,7 @@ ToDo:
     <!-- the site's build properties files.         -->
     <property file="user.build.properties"/>
     <property file="site.build.properties"/>
-
+    
     <!-- Now read the standard properties file. -->
     <property file="build.properties"/>
 
@@ -3857,7 +3858,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </fail>
   </target>
   
-  <target name="check-shared-packages" depends="generate-golden-files" >
+  <target name="check-shared-packages" depends="generate-golden-files" unless="have-jdk-1.5" >
     <property name="check.shared.packages.golden" location="${golden.files.dir}/shared-packages.txt" />
     <property name="check.shared.packages.template" location="${template.files.dir}/shared-packages.txt" />
     <property name="check.shared.packages.generated" location="${generated.files.dir}/shared-packages.txt" />
