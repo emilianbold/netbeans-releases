@@ -212,12 +212,13 @@ final class ModuleListParser {
      */
     private static Map/*<String,Entry>*/ scanBinaries(Hashtable properties, Project project) throws IOException {
         String buildS = (String) properties.get("netbeans.dest.dir");
+        File basedir = new File((String) properties.get("basedir"));
         if (buildS == null) {
-            throw new IOException("No definition of netbeans.dest.dir in " + properties.get("basedir"));
+            throw new IOException("No definition of netbeans.dest.dir in " + basedir);
         }
-        File build = new File(buildS);
-        // Normalize ../ sequences and so on in case they are used (not likely though).
-        build = new File(build.toURI().normalize());
+        // Resolve against basedir, and normalize ../ sequences and so on in case they are used.
+        // Neither operation is likely to be needed, but just in case.
+        File build = FileUtils.newFileUtils().normalize(FileUtils.newFileUtils().resolveFile(basedir, buildS).getAbsolutePath());
         if (!build.isDirectory()) {
             throw new IOException("No such netbeans.dest.dir: " + build);
         }
