@@ -23,7 +23,7 @@ import org.netbeans.modules.project.uiapi.Utilities;
 public class CommonProjectActions {
     
     /**
-     * {@link FileObject} value honored by {@link #newProjectAction}
+     * {@link org.openide.filesystems.FileObject} value honored by {@link #newProjectAction}
      * that defines initial value for existing sources directory choosers.
      *
      * @since org.netbeans.modules.projectuiapi/1 1.3
@@ -101,9 +101,9 @@ public class CommonProjectActions {
     /**
      * Creates action that invokes <b>New Project</b> wizard.
      * 
-     * <p>{@link #EXISTING_SOURCES_DIRECTORY} keyed action
-     * value can carry {@link FileObject} that points
-     * to existing sources folder. {@link Action#setValue Set this value}
+     * <p>{@link #EXISTING_SOURCES_FOLDER} keyed action
+     * value can carry {@link org.openide.filesystems.FileObject} that points
+     * to existing sources folder. {@link Action#putValue Set this value}
      * if you open the wizard and you know user
      * expectations about initial value for wizard
      * choosers that refers to existing sources location.
