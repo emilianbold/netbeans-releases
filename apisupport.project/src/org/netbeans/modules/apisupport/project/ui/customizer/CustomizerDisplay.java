@@ -64,12 +64,24 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
     }
     
     private void storeToProperties() {
-        bundleProps.setProperty("OpenIDE-Module-Name", nameValue.getText().trim()); // NOI18N
-        bundleProps.setProperty("OpenIDE-Module-Short-Description", shortDescValue.getText().trim()); // NOI18N
-        bundleProps.setProperty("OpenIDE-Module-Long-Description", splitBySentence(longDescValue.getText().trim())); // NOI18N
-        String selectedCat = (String) categoryValue.getSelectedItem();
-        if (selectedCat != null) {
-            bundleProps.setProperty("OpenIDE-Module-Display-Category", selectedCat); // NOI18N
+        storeOneProperty("OpenIDE-Module-Name", nameValue.getText(), false); // NOI18N
+        storeOneProperty("OpenIDE-Module-Display-Category", (String) categoryValue.getSelectedItem(), false); // NOI18N
+        storeOneProperty("OpenIDE-Module-Short-Description", shortDescValue.getText(), false); // NOI18N
+        storeOneProperty("OpenIDE-Module-Long-Description", longDescValue.getText(), true); // NOI18N
+    }
+    
+    private void storeOneProperty(String name, String value, boolean split) {
+        if (value != null) {
+            value = value.trim();
+        }
+        if (value != null && value.length() > 0) {
+            if (split) {
+                bundleProps.setProperty(name, splitBySentence(value));
+            } else {
+                bundleProps.setProperty(name, value);
+            }
+        } else {
+            bundleProps.remove(name);
         }
     }
     
