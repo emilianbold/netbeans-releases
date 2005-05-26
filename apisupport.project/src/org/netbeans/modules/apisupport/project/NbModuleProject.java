@@ -23,14 +23,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -39,7 +43,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
@@ -388,16 +394,56 @@ final class NbModuleProject implements Project {
         providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
-        PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-        providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.classpath", computeModuleClasspath(baseEval)))); // NOI18N
+        providers.add(createModuleClasspathPropertyProvider());
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
         return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+    }
+    
+    private PropertyProvider createModuleClasspathPropertyProvider() {
+        // Wraps computeModuleClasspath and refires changes in project.xml.
+        class Provider implements PropertyProvider, AntProjectListener {
+            private final Set/*<ChangeListener>*/ listeners = new HashSet();
+            private String path;
+            Provider() {
+                path = computeModuleClasspath();
+                getHelper().addAntProjectListener(this);
+            }
+            public Map getProperties() {
+                return Collections.singletonMap("module.classpath", path); // NOI18N
+            }
+            public void addChangeListener(ChangeListener l) {
+                listeners.add(l);
+            }
+            public void removeChangeListener(ChangeListener l) {
+                listeners.remove(l);
+            }
+            private void maybeFireChange() {
+                String newpath = computeModuleClasspath();
+                if (!newpath.equals(path)) {
+                    Util.err.log("module classpath for " + getProjectDirectory() + " changed to " + newpath);
+                    path = newpath;
+                    ChangeEvent e = new ChangeEvent(this);
+                    Iterator it = listeners.iterator();
+                    while (it.hasNext()) {
+                        ((ChangeListener) it.next()).stateChanged(e);
+                    }
+                }
+            }
+            public void configurationXmlChanged(AntProjectEvent ev) {
+                // Module dependencies may have changed.
+                maybeFireChange();
+            }
+            public void propertiesChanged(AntProjectEvent ev) {
+                // XXX probably not relevant, right?
+            }
+        }
+        return new Provider();
     }
     
     /**
      * Should be similar to impl in ParseProjectXml.
      */
-    private String computeModuleClasspath(PropertyEvaluator baseEval) {
+    private String computeModuleClasspath() {
         Element data = getHelper().getPrimaryConfigurationData(true);
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N

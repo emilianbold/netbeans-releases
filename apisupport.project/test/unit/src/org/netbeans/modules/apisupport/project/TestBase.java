@@ -12,10 +12,19 @@
  */
 package org.netbeans.modules.apisupport.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -96,6 +105,77 @@ abstract class TestBase extends NbTestCase {
     
     protected File file(String path) {
         return file(nbrootF, path);
+    }
+    
+    /**
+     * Make a temporary copy of a whole folder into some new dir in the scratch area.
+     * Stolen from ant/freeform.
+     */
+    protected File copyFolder(File d) throws IOException {
+        assert d.isDirectory();
+        File workdir = getWorkDir();
+        String name = d.getName();
+        while (name.length() < 3) {
+            name = name + "x";
+        }
+        File todir = workdir.createTempFile(name, null, workdir);
+        todir.delete();
+        doCopy(d, todir);
+        return todir;
+    }
+    
+    private static void doCopy(File from, File to) throws IOException {
+        if (from.isDirectory()) {
+            to.mkdir();
+            String[] kids = from.list();
+            for (int i = 0; i < kids.length; i++) {
+                doCopy(new File(from, kids[i]), new File(to, kids[i]));
+            }
+        } else {
+            assert from.isFile();
+            InputStream is = new FileInputStream(from);
+            try {
+                OutputStream os = new FileOutputStream(to);
+                try {
+                    FileUtil.copy(is, os);
+                } finally {
+                    os.close();
+                }
+            } finally {
+                is.close();
+            }
+        }
+    }
+    
+    // XXX copied from TestBase in ant/freeform
+    protected static final class TestPCL implements PropertyChangeListener {
+        
+        public final Set/*<String>*/ changed = new HashSet();
+        public final Map/*<String,String*/ newvals = new HashMap();
+        public final Map/*<String,String*/ oldvals = new HashMap();
+        
+        public TestPCL() {}
+        
+        public void reset() {
+            changed.clear();
+            newvals.clear();
+            oldvals.clear();
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            String prop = evt.getPropertyName();
+            String nue = (String)evt.getNewValue();
+            String old = (String)evt.getOldValue();
+            changed.add(prop);
+            if (prop != null) {
+                newvals.put(prop, nue);
+                oldvals.put(prop, old);
+            } else {
+                assert nue == null : "null prop name -> null new value";
+                assert old == null : "null prop name -> null old value";
+            }
+        }
+        
     }
     
 }
