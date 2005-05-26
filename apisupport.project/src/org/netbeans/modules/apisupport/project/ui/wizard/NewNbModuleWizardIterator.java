@@ -51,10 +51,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         final NewModuleProjectData data = (NewModuleProjectData) settings.
                 getProperty("moduleProjectData"); // XXX should be constant
         
-        // create suite
-        NbModuleProjectGenerator.createSuite(
-                new File(data.getSuiteRoot()), data.getPlatform());
-        
         // create project
         final File projectFolder = new File(data.getProjectFolder());
         NbModuleProjectGenerator.createStandAloneModule(projectFolder,
