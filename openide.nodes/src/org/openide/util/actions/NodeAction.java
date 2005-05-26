@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util.actions;
 
 import org.openide.awt.Actions;
@@ -40,7 +41,6 @@ import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-
 
 /** An action which can listen to the activated node selection.
 * This means that the set of nodes active in a window
@@ -377,11 +377,8 @@ OUTER:
                 return;
             }
 
-            boolean schedule;
-
             chgSFC = true;
             chgNSFC = true;
-            schedule = true;
 
             Collection items = result.allItems();
             boolean updateActivatedNodes = true;
@@ -407,9 +404,7 @@ OUTER:
                 activatedNodes = (Reference[]) list.toArray(new Reference[list.size()]);
             }
 
-            if (schedule) {
-                update();
-            }
+            update();
         }
 
         /** Updates the state of the action.
@@ -447,6 +442,7 @@ OUTER:
                 NodeAction a = (NodeAction) it.next();
 
                 if (a.surviveFocusChange() == sfc) {
+                    // XXX should this be done in EQ? otherwise lookup changes can cause ISEs from here
                     a.maybeFireEnabledChange();
                 }
             }
