@@ -33,7 +33,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Convenient class for managing project's <em>project.xml</em> file.
+ * Convenience class for managing project's <em>project.xml</em> file.
  *
  * @author mkrauskopf
  */
