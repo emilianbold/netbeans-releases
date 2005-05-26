@@ -11,7 +11,7 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
@@ -112,6 +112,17 @@
 	            </file>
         	</folder>
     	</folder>
+    </folder>
+
+    <folder name="Windows2">
+        <folder name="Modes">
+            <folder name="output">        <!-- "output" is defined in core/ui -->
+                <file name="test-results.wstcref" url="../output/test-results.wstcref"/>
+            </folder>
+        </folder>
+        <folder name="Components">
+            <file name="test-results.settings" url="../output/test-results.settings"/>
+        </folder>
     </folder>
 
 </filesystem>

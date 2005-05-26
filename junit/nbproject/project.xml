@@ -23,7 +23,8 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.4</specification-version>
+                        <specification-version>3.12</specification-version>
+                            <!-- AntLogger is available since 3.12 -->
                     </run-dependency>
                 </dependency>
                 <dependency>
