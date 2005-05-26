@@ -13,12 +13,13 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.util.Collection;
 import java.util.Comparator;
 import org.netbeans.modules.apisupport.project.ModuleList;
 
 /**
- * TODO
+ * Represents one module dependency. i.e. <em>&lt;dependency&gt;</em> element
+ * in module's <em>project.xml</em> or one token in the
+ * OpenIDE-Module-Module-Dependencies attribute of module manifest.
  *
  * @author Martin Krauskopf
  */

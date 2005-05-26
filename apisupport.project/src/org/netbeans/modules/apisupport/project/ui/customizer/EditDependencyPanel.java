@@ -16,8 +16,6 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 
 /**
  * Represents panel for editing dependency details. Shown after <em>Edit</em>

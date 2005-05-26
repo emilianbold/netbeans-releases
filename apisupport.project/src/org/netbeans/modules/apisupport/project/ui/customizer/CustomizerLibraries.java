@@ -44,7 +44,7 @@ public class CustomizerLibraries extends JPanel {
         this.moduleProps = moduleProps;
         updateEnabled();
         dependencyList.setModel(subModules);
-        dependencyList.setCellRenderer(ComponentFactory.getModuleCellRenderer());
+        dependencyList.setCellRenderer(ComponentFactory.getDependencyCellRenderer());
         dependencyList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
@@ -163,15 +163,15 @@ public class CustomizerLibraries extends JPanel {
     }//GEN-LAST:event_editModuleDependency
     
     private void removeModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModuleDependency
-        moduleDeps.removeModule(Arrays.asList(dependencyList.getSelectedValues()));
+        moduleDeps.removeDependencies(Arrays.asList(dependencyList.getSelectedValues()));
         dependencyList.clearSelection();
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        Set modulesToAdd = new TreeSet(universeModulesModel.getDependencies());
-        modulesToAdd.removeAll(moduleDeps.getDependencies());
+        Set depsToAdd = new TreeSet(universeModulesModel.getDependencies());
+        depsToAdd.removeAll(moduleDeps.getDependencies());
         ComponentFactory.DependencyListModel model =
-                ComponentFactory.createModuleListModel(modulesToAdd);
+                ComponentFactory.createDependencyListModel(depsToAdd);
         AddModulePanel addPanel = new AddModulePanel(model);
         DialogDescriptor descriptor = new DialogDescriptor(addPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,
@@ -179,7 +179,7 @@ public class CustomizerLibraries extends JPanel {
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-            moduleDeps.addModule(addPanel.getSelectedModule());
+            moduleDeps.addDependency(addPanel.getSelectedDependency());
         }
         d.dispose();
     }//GEN-LAST:event_addModuleDependency

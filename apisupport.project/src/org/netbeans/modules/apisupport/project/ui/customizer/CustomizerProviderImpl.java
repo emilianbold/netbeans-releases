@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -66,8 +65,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private ProjectXMLManager projectXMLManipulator;
     
     private Set/*<String>*/ modCategories;
-    private Set/*<ModuleDependency>*/ universeModules;
-    private Set/*<ModuleDependency>*/ subModules;
+    private Set/*<ModuleDependency>*/ universeDependencies;
+    private Set/*<ModuleDependency>*/ moduleDependencies;
     
     private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
     
@@ -84,8 +83,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private static Map/*<Project,Dialog>*/ displayedDialogs = new HashMap();
 
     // models
-    private ComponentFactory.DependencyListModel subModulesListModel;
-    private ComponentFactory.DependencyListModel universeModulesListModel;
+    private ComponentFactory.DependencyListModel moduleDepsListModel;
+    private ComponentFactory.DependencyListModel universeDepsListModel;
 
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
             PropertyEvaluator evaluator, String locBundlePropsPath) {
@@ -95,55 +94,29 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         this.locBundlePropsPath = locBundlePropsPath;
     }
     
-    /** Returns all known subModules in the project's universe. */
-    private Set/*<ModuleList.Entry>*/ getSubModules() {
-        if (subModules == null) {
+    /**
+     * Returns all known moduleDependencies in the project's universe.
+     */
+    private Set/*<ModuleDependency>*/ getModuleDependencies() {
+        if (moduleDependencies == null) {
             try {
-                subModules = getProjectXMLManipulator().getDirectDependencies();
+                moduleDependencies = getProjectXMLManipulator().getDirectDependencies();
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
             }
         }
-        return subModules;
-//        if (subModules == null) {
-//            try {
-//                SubprojectProvider spp = (SubprojectProvider) project.getLookup().
-//                        lookup(SubprojectProvider.class);
-//                Set/*<Project>*/ subProjects = spp.getSubprojects();
-//                if (subProjects == null || subProjects.isEmpty()) {
-//                    subModules = Collections.EMPTY_SET;
-//                    return subModules;
-//                }
-//                
-//                Map/*<String, ModuleList.Entry>*/ sortedModules = new TreeMap();
-//                for (Iterator it = subProjects.iterator(); it.hasNext(); ) {
-//                    Project subProject = (Project) it.next();
-//                    ProjectInformation info = (ProjectInformation) subProject.
-//                            getLookup().lookup(ProjectInformation.class);
-//                    ModuleList.Entry me = getModuleList().getEntry(info.getName());
-//                    // XXX should instead reset ModuleList and try again
-//                    // -- see NbModuleProject constructor
-//                    assert me != null : "Cannot find Entry for " + info.getName(); // NOI18N
-//                    sortedModules.put(me.getLocalizedName(), me);
-//                }
-//                Set ordered = new LinkedHashSet(sortedModules.size());
-//                for (Iterator it = sortedModules.values().iterator(); it.hasNext(); ) {
-//                    ordered.add(it.next());
-//                }
-//                subModules = Collections.unmodifiableSet(ordered);
-//            } catch (IOException e) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//            }
-//        }
-//        return subModules;
+        return moduleDependencies;
     }
     
-    /** Returns all known modules in the project's universe. */
-    private Set/*<ModuleList.Entry>*/ getUniverseModules() {
-        if (universeModules == null) {
+    /**
+     * Returns all the set of all available dependencies in the module's
+     * universe.
+     */
+    private Set/*<ModuleDependency>*/ getUniverseDependencies() {
+        if (universeDependencies == null) {
             loadModuleListInfo();
         }
-        return universeModules;
+        return universeDependencies;
     }
     
     /** Returns all known categories in the project's universe. */
@@ -175,7 +148,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 }
             }
             modCategories = Collections.unmodifiableSortedSet(allCategories);
-            universeModules = Collections.unmodifiableSortedSet(new TreeSet(allDependencies));
+            universeDependencies = Collections.unmodifiableSortedSet(new TreeSet(allDependencies));
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
@@ -259,10 +232,10 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         panels.put(display, new CustomizerDisplay(locBundleProps, getModuleCategories()));
         
         // libraries customizer
-        subModulesListModel = ComponentFactory.createModuleListModel(new TreeSet(getSubModules()));
-        universeModulesListModel = ComponentFactory.createModuleListModel(getUniverseModules());
+        moduleDepsListModel = ComponentFactory.createDependencyListModel(new TreeSet(getModuleDependencies()));
+        universeDepsListModel = ComponentFactory.createDependencyListModel(getUniverseDependencies());
         panels.put(libraries, new CustomizerLibraries(moduleProps,
-                subModulesListModel, universeModulesListModel));
+                moduleDepsListModel, universeDepsListModel));
 
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
             public JComponent create(ProjectCustomizer.Category category) {
@@ -333,20 +306,20 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                     // store localized info
                     helper.putProperties(locBundlePropsPath,  locBundleProps);
                     // store module dependencies
-                    if (subModulesListModel.isChanged()) {
+                    if (moduleDepsListModel.isChanged()) {
                         Set/*<ModuleDependency>*/ depsToSave =
                                 new TreeSet(ModuleDependency.CODE_NAME_BASE_COMPARATOR);
-                        depsToSave.addAll(subModulesListModel.getDependencies());
+                        depsToSave.addAll(moduleDepsListModel.getDependencies());
                         
                         // process removed modules
-                        depsToSave.removeAll(subModulesListModel.getRemovedDependencies());
+                        depsToSave.removeAll(moduleDepsListModel.getRemovedDependencies());
                         
                         // process added modules
-                        depsToSave.addAll(subModulesListModel.getAddedDependencies());
+                        depsToSave.addAll(moduleDepsListModel.getAddedDependencies());
                         
                         // process edited modules
                         Map/*<ModuleDependency, ModuleDependency>*/ toEdit
-                                = subModulesListModel.getEditedDependencies();
+                                = moduleDepsListModel.getEditedDependencies();
                         for (Iterator it = toEdit.entrySet().iterator(); it.hasNext(); ) {
                             Map.Entry entry = (Map.Entry) it.next();
                             depsToSave.remove(entry.getKey());
@@ -362,7 +335,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 ProjectManager.getDefault().saveProject(project);
             }
             // reset
-            this.subModules = null;
+            this.moduleDependencies = null;
             this.projectXMLManipulator = null;
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());

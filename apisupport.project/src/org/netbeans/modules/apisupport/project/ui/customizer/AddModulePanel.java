@@ -32,7 +32,7 @@ final class AddModulePanel extends JPanel {
         this.universeModules = universeModules;
         initComponents();
         moduleList.setModel(universeModules);
-        moduleList.setCellRenderer(ComponentFactory.getModuleCellRenderer());
+        moduleList.setCellRenderer(ComponentFactory.getDependencyCellRenderer());
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 showDescriptionFor(e.getFirstIndex());
@@ -44,7 +44,7 @@ final class AddModulePanel extends JPanel {
         descValue.setText(universeModules.getDependency(index).getModuleEntry().getLongDescription());
     }
     
-    ModuleDependency getSelectedModule() {
+    ModuleDependency getSelectedDependency() {
         return universeModules.getDependency(moduleList.getSelectedIndex());
     }
     
