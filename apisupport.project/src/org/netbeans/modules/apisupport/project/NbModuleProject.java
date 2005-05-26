@@ -652,7 +652,7 @@ final class NbModuleProject implements Project {
         
     }
     
-    private final class OpenedHook extends ProjectOpenedHook {
+    final class OpenedHook extends ProjectOpenedHook {
         
         private ClassPath[] boot, source, compile;
         

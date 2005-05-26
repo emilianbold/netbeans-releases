@@ -16,6 +16,8 @@ package org.netbeans.modules.apisupport.project;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -28,7 +30,7 @@ import org.openide.filesystems.Repository;
  *
  * @author mkrauskopf
  */
-public class NbModuleProjectGeneratorTest extends NbTestCase {
+public class NbModuleProjectGeneratorTest extends TestBase {
     // TODO test both firstLevel and secondLevel modules and also NetBeans CVS
     // tree modules
     
@@ -46,22 +48,13 @@ public class NbModuleProjectGeneratorTest extends NbTestCase {
     };
     
     
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
-    private void cleanUp() throws IOException {
-        clearWorkDir();
+    protected void setUp() throws Exception {
+        super.setUp();
         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
         FileObject parent = root.getFileObject("org-netbeans-modules-apisupport-project");
         if (parent != null) {
             parent.delete();
         }
-    }
-    
-    protected void setUp() throws Exception {
-        super.setUp();
-        cleanUp();
         // prepare data (layerTemplate)
         final FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         fs.runAtomicAction(new FileSystem.AtomicAction() {
@@ -97,8 +90,14 @@ public class NbModuleProjectGeneratorTest extends NbTestCase {
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml");
-        // check generated module
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
+        // Make sure generated files are created too - simulate project opening.
+        Project p = ProjectManager.getDefault().findProject(fo);
+        assertNotNull("have a project in " + targetPrjDir, p);
+        NbModuleProject.OpenedHook hook = (NbModuleProject.OpenedHook) p.getLookup().lookup(NbModuleProject.OpenedHook.class);
+        assertNotNull("has an OpenedHook", hook);
+        hook.projectOpened(); // protected but can use package-private access
+        // check generated module
         for (int i=0; i < CREATED_FILES.length; i++) {
             assertNotNull(CREATED_FILES[i]+" file/folder cannot be found",
                     fo.getFileObject(CREATED_FILES[i]));
