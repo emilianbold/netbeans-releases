@@ -151,7 +151,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             )),
             bClose = new JButton (NbBundle.getMessage (
                 BreakpointsActionsProvider.class,
-                "CTL_Close" // NOI18N
+                "CTL_Cancel" // NOI18N
             ))
         });
         HelpCtx helpCtx = HelpCtx.findHelp (c);
@@ -167,14 +167,8 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         bClose.getAccessibleContext ().setAccessibleDescription (
             NbBundle.getMessage (
                 BreakpointsActionsProvider.class,
-                "ACSD_CTL_Close" // NOI18N
+                "ACSD_CTL_Cancel" // NOI18N
             )
-        );
-        bClose.setMnemonic (
-            NbBundle.getMessage (
-                BreakpointsActionsProvider.class,
-                "MN_CTL_Close" // NOI18N
-            ).charAt (0)
         );
         descriptor.setClosingOptions (null);
         Dialog d = DialogDisplayer.getDefault ().createDialog (descriptor);
