@@ -38,6 +38,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         "nbproject/build-impl.xml",
         "src/org/example/testModule/resources/Bundle.properties",
         "src/org/example/testModule/resources/layer.xml",
+        "test/unit/src",
     };
     
     // XXX also should test content created files (XMLs, properties) and

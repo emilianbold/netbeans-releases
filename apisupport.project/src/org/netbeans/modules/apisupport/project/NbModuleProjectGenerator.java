@@ -50,12 +50,13 @@ public class NbModuleProjectGenerator {
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
-        NbModuleProjectGenerator.createProjectXML(dirFO, cnb, true);
+        createProjectXML(dirFO, cnb, true);
         // XXX temporary - user will choose a platform in the wizard
-        NbModuleProjectGenerator.createPlatformProperties(dirFO, "default");
-        NbModuleProjectGenerator.createManifest(dirFO, cnb, bundlePath, layerPath);
-        NbModuleProjectGenerator.createBundle(dirFO, bundlePath, name);
-        NbModuleProjectGenerator.createLayer(dirFO, layerPath);
+        createPlatformProperties(dirFO, "default");
+        createManifest(dirFO, cnb, bundlePath, layerPath);
+        createBundle(dirFO, bundlePath, name);
+        createLayer(dirFO, layerPath);
+        createEmptyTestDir(dirFO);
         ProjectManager.getDefault().clearNonProjectCache();
     }
     
@@ -129,6 +130,10 @@ public class NbModuleProjectGenerator {
         } finally {
             lock.releaseLock();
         }
+    }
+    
+    private static void createEmptyTestDir(FileObject projectDir) throws IOException {
+        projectDir.createFolder("test/unit/src"); // NOI18N
     }
     
     /**
