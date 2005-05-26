@@ -44,7 +44,6 @@ public class JavaNode extends Node {
     static final AddClassAction addClassAction = new AddClassAction();
     static final AddInterfaceAction addInterfaceAction = new AddInterfaceAction();
     static final DeleteAction deleteAction = new DeleteAction();
-    static final RenameAction renameAction = new RenameAction();
     static final SaveAsTemplateAction saveAsTemplateAction = new SaveAsTemplateAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
    
@@ -58,7 +57,6 @@ public class JavaNode extends Node {
             addClassAction,
             addInterfaceAction,
             deleteAction,
-            renameAction,
             saveAsTemplateAction,
             propertiesAction
         });
@@ -97,11 +95,6 @@ public class JavaNode extends Node {
     /** performs DeleteAction with this node */    
     public void delete() {
         deleteAction.perform(this);
-    }
-
-    /** performs RenameAction with this node */    
-    public void rename() {
-        renameAction.perform(this);
     }
 
     /** performs SaveAsTemplateAction with this node */    

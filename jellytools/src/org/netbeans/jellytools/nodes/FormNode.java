@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,7 +51,6 @@ public class FormNode extends Node {
     static final AddClassAction addClassAction = new AddClassAction();
     static final AddInterfaceAction addInterfaceAction = new AddInterfaceAction();
     static final DeleteAction deleteAction = new DeleteAction();
-    static final RenameAction renameAction = new RenameAction();
     static final SaveAsTemplateAction saveAsTemplateAction = new SaveAsTemplateAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
    
@@ -67,7 +66,6 @@ public class FormNode extends Node {
             addClassAction,
             addInterfaceAction,
             deleteAction,
-            renameAction,
             saveAsTemplateAction,
             propertiesAction
         });
@@ -127,11 +125,6 @@ public class FormNode extends Node {
     /** performs DeleteAction with this node */    
     public void delete() {
         deleteAction.perform(this);
-    }
-
-    /** performs RenameAction with this node */    
-    public void rename() {
-        renameAction.perform(this);
     }
 
     /** performs SaveAsTemplateAction with this node */    
