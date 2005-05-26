@@ -23,12 +23,9 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new NetBeans Module project.
@@ -68,16 +65,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         if (chooserFolder != null && chooserFolder.exists()) {
             ProjectChooser.setProjectsFolder(chooserFolder);
         }
-        
-        // TODO throws exception in the meantime. Restart is needed to be able
-        // to open new modules. Also it should be opened automatically when it
-        // is returned in a resultSet.... we will see when it begins to work
-//        Project newModule = ProjectManager.getDefault().findProject(projectFolderFO);
-//        OpenProjects.getDefault().open(new Project[] {newModule}, false);
-        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                "With the current API it is not possible to open generated " +
-                "project without NetBeans restart. Please do so and THEN open " +
-                "project from \"" + projectFolder.getAbsolutePath() + "\""));
         
         return resultSet;
     }
