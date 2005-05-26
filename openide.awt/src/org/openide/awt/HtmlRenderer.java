@@ -7,116 +7,122 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * HtmlRenderer.java
- *
- * Created on January 2, 2004, 12:49 AM
- */
+
 package org.openide.awt;
 
-import org.openide.ErrorManager;
-import org.openide.util.Utilities;
-
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
-
-import java.util.*;
-
-import javax.swing.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
+import java.util.StringTokenizer;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
-
+import org.openide.ErrorManager;
+import org.openide.util.Utilities;
 
 /**
- * A lightweight html renderer supporting a minimal subset of HTML used for
- * markup purposes only - basic font styles, colors, etc.  Also supports
- * named logical colors specified by a preceding ! character for specifying
- * colors that should be looked up in the current look and feel's UIDefaults
- * (e.g. <code>&lt;font color=&amp;!textText&amp&gt;</code>).
+ * A lightweight HTML renderer supporting a minimal subset of HTML used for
+ * markup purposes only: basic font styles and some colors.
  * <p>
  * Provides a generic cell renderer implementation which can be used for trees, tables,
  * lists, combo boxes, etc.
  * <p>
  * If you only need to paint some HTML quickly, use the static methods for
- * painting - <code>renderString</code>, <code>renderPlainString</code> or
- * <code>renderHtml</code>.  These methods differ as follows:
+ * painting.  These methods behave as follows:
  * <ul>
- * <li><b>renderString</b> will check the string for opening HTML tags
- * (upper or lower but not mixed case) and call either <code>renderPlainString</code>
- * or <code>renderHtml</code> as appropriate.  Note this method does not tolerate
+ * <li>{@link #renderString renderString} will check the string for opening HTML tags
+ * (upper or lower but not mixed case) and call either {@link #renderPlainString renderPlainString}
+ * or {@link #renderHTML renderHTML} as appropriate.  Note this method does not tolerate
  * whitespace in opening html tags - it expects exactly 6 characters to make up
  * the opening tag if present.</li>
- * <li><b>renderPlainString</b> simply renders a string to the graphics context,
- * takes the same agruments as <code>renderHtml</code>, but will also honor
- * <code>STYLE_TRUNCATE</code>, so strings can be rendered with trailing
+ * <li>{@link #renderPlainString renderPlainString} simply renders a string to the graphics context,
+ * takes the same agruments as {@link #renderHTML renderHTML}, but will also honor
+ * {@link #STYLE_TRUNCATE}, so strings can be rendered with trailing
  * elipsis if there is not enough space</li>
- * <li><b>renderHtml</b> renders whatever is passed to it as HTML, regardless
+ * <li>{@link #renderHTML renderHTML} renders whatever is passed to it as HTML, regardless
  * of whether it has opening HTML tags or not.  It can be used to render plain
- * strings, but <code>renderPlainString</code> is faster for that. It is useful
+ * strings, but {@link #renderPlainString renderPlainString} is faster for that. It is useful
  * if you want to render a string you <strong>know</strong> to be compliant
  * HTML markup, but which does not have opening and closing HTML tags (though
  * they are harmless if present). </li>
+ * </ul>
  * <p>
  * This parser is designed entirely for performance; there are no separate parsing
- * and rendering loops.  In order to acheive its performance, some trade offs
+ * and rendering loops.  In order to achieve its performance, some trade-offs
  * are required.
- * <strong>To reiterate: This is not a forgiving HTML parser - the HTML supplied
+ * <strong>This is not a forgiving HTML parser - the HTML supplied
  * must follow the guidelines documented here!</strong>
  * <p>
  * The following tags are supported, in upper or lower (but not mixed) case:
- *
- * <table>
+ * </p>
+ * <table border="1">
  * <tr>
- *  <td>&lt;B&gt;</td>
+ *  <td><code>&lt;b&gt;</code></td>
  *  <td>Boldface text</td>
  * </tr>
  * <tr>
- *  <td>&lt;S&gt;</td>
+ *  <td><code>&lt;s&gt;</code></td>
  *  <td>Strikethrough text</td>
  * </tr>
  * <tr>
- *  <td>&lt;U&gt;</td>
+ *  <td><code>&lt;u&gt;</code></td>
  *  <td>Underline text</td>
  * </tr>
  * <tr>
- *  <td>&lt;I&gt;</td>
+ *  <td><code>&lt;i&gt;</code></td>
  *  <td>Italic text</td>
  * </tr>
  * <tr>
- *  <td>&lt;EM&gt;</td>
+ *  <td><code>&lt;em&gt;</code></td>
  *  <td>Emphasized text (same as italic)</td>
  * </tr>
  * <tr>
- *  <td>&lt;STRONG&gt;</td>
+ *  <td><code>&lt;strong&gt;</code></td>
  *  <td>Strong text (same as bold)</td>
  * </tr>
  * <tr>
- *  <td>&lt;font&gt;</td>
+ *  <td><code>&lt;font&gt;</code></td>
  *  <td>Font color - font attributes other than color are not supported.  Colors
  *  may be specified as hexidecimal strings, such as #FF0000 or as logical colors
  *  defined in the current look and feel by specifying a ! character as the first
  *  character of the color name.  Logical colors are colors available from the
- *  current look and feel's UIManager.  For example, <code>&lt;font
- *  color=&quot;!Tree.background&quot;&gt;</code> will set the font color to the
- *  result of <code>UIManager.getColor(&quot;Tree.background&quot;)</code>.
+ *  current look and feel's UIManager.  For example,
+ *  <code>&lt;font&nbsp;color="!Tree.background"&gt;</code> will set the font color to the
+ *  result of {@link UIManager#getColor(Object) UIManager.getColor("Tree.background")}.
  * <strong>Font size tags are not supported.</strong>
  * </td>
  * </tr>
  * </table>
- * The lightweight html renderer supports the following named sgml character
- * entities: <code>quot, lt, amp, lsquo, rsquo, ldquo, rdquo, ndash, mdash, ne,
- * le, ge, copy, reg, trade, nbsp.  </code>.  It also supports numeric entities
+ * <p>
+ * The lightweight HTML renderer supports the following named SGML character
+ * entities: <code>quot</code>, <code>lt</code>, <code>amp</code>, <code>lsquo</code>,
+ * <code>rsquo</code>, <code>ldquo</code>, <code>rdquo</code>, <code>ndash</code>,
+ * <code>mdash</code>, <code>ne</code>, <code>le</code>, <code>ge</code>,
+ * <code>copy</code>, <code>reg</code>, <code>trade</code>, and <code>nbsp</code>.
+ * It also supports numeric entities
  * (e.g. <code>&amp;8822;</code>).
  * <p><b>Why not use the JDK's HTML support?</b> The JDK's HTML support works
  * well for stable components, but suffers from performance problems in the
  * case of cell renderers - each call to set the text (which happens once per
  * cell, per paint) causes a document tree to be created in memory.  For small,
- * markup only strings, this is overkill.   For rendering short strings
+ * markup-only strings, this is overkill.   For rendering short strings
  * (for example, in a tree or table cell renderer)
  * with limited HTML, this method is approximately 10x faster than standard
  * Swing HTML rendering.
@@ -133,14 +139,15 @@ import javax.swing.tree.TreeCellRenderer;
  * <P><B><U>Modes of operation</U></B><BR>
  * This method supports two modes of operation:
  * <OL>
- * <LI><CODE>STYLE_CLIP</CODE> - as much text as will fit in the pixel width passed
+ * <LI>{@link #STYLE_CLIP} - as much text as will fit in the pixel width passed
  * to the method should be painted, and the text should be cut off at the maximum
  * width or clip rectangle maximum X boundary for the graphics object, whichever is
  * smaller.</LI>
- * <LI><CODE>STYLE_TRUNCATE</CODE> - paint as much text as will fit in the pixel
+ * <LI>{@link #STYLE_TRUNCATE} - paint as much text as will fit in the pixel
  * width passed to the method, but paint the last three characters as .'s, in the
  * same manner as a JLabel truncates its text when the available space is too
  * small.</LI>
+ * <!-- XXX and #STYLE_WORDWRAP? -->
  * </OL>
  * <P>
  * The paint methods can also be used in non-painting mode to establish the space
@@ -149,13 +156,14 @@ import javax.swing.tree.TreeCellRenderer;
  * width in pixels
  * to display the text.  Note that in order to retrieve an
  * accurate value, the argument for available width should be passed
- * as <code>Integer.MAX_VALUE</code> or an appropriate maximum size - otherwise
+ * as {@link Integer#MAX_VALUE} or an appropriate maximum size - otherwise
  * the return value will either be the passed maximum width or the required
  * width, whichever is smaller.  Also, the clip shape for the passed graphics
  * object should be null or a value larger than the maximum possible render size,
- * or text size measurement will stop at the clip bounds.  <code>HtmlRenderer.getGraphics()</code>
+ * or text size measurement will stop at the clip bounds.
+ * <!-- XXX what does the following mean? <code>getGraphics</code>
  * will always return non-null and non-clipped, and is suitable to pass in such a
- * situation.
+ * situation. -->
  * <P>
  *
  * <P>
@@ -174,34 +182,39 @@ public final class HtmlRenderer {
      * the case of nested color entries. */
     private static Stack colorStack = new Stack();
 
-    /** Constant used by <code>renderString</code>, <code>renderPlainString</code>
-     * <code>renderHTML</code>, and <code>HtmlRenderer.setRenderStyle</code>
-     * if painting should simply be cut off at the boundary of the cooordinates passed.     */
+    /**
+     * Constant used by {@link #renderString renderString}, {@link #renderPlainString renderPlainString},
+     * {@link #renderHTML renderHTML}, and {@link Renderer#setRenderStyle}
+     * if painting should simply be cut off at the boundary of the cooordinates passed.
+     */
     public static final int STYLE_CLIP = 0;
 
-    /** Constant used by <code>renderString</code>, <code>renderPlainString</code>
-     * <code>renderHTML</code>  and <code>HtmlRenderer.setRenderStyle</code> if
+    /**
+     * Constant used by {@link #renderString renderString}, {@link #renderPlainString renderPlainString},
+     * {@link #renderHTML renderHTML}, and {@link Renderer#setRenderStyle} if
      * painting should produce an ellipsis (...)
      * if the text would overlap the boundary of the coordinates passed.
      */
     public static final int STYLE_TRUNCATE = 1;
 
-    /** Constant used by <code>renderString</code>, <code>renderPlainString</code>
-     * <code>renderHTML</code> and <code>HtmlRenderer.setRenderStyle</code>
+    /**
+     * Constant used by {@link #renderString renderString}, {@link #renderPlainString renderPlainString},
+     * {@link #renderHTML renderHTML}, and {@link Renderer#setRenderStyle}
      * if painting should word wrap the text.  In
      * this case, the return value of any of the above methods will be the
-     * height, rather than width painted. */
+     * height, rather than width painted.
+     */
     private static final int STYLE_WORDWRAP = 2;
 
     /** System property to cause exceptions to be thrown when unparsable
      * html is encountered */
-    private static final boolean strictHtml = Boolean.getBoolean("netbeans.lwhtml.strict"); //NOI18N
+    private static final boolean STRICT_HTML = Boolean.getBoolean("netbeans.lwhtml.strict"); //NOI18N
 
     /** Cache for strings which have produced errors, so we don't post an
      * error message more than once */
     private static Set badStrings = null;
 
-    /** Definitions for a limited subset of sgml character entities */
+    /** Definitions for a limited subset of SGML character entities */
     private static final Object[] entities = new Object[] {
             new char[] { 'g', 't' }, new char[] { 'l', 't' }, //NOI18N
             new char[] { 'q', 'u', 'o', 't' }, new char[] { 'a', 'm', 'p' }, //NOI18N
@@ -221,12 +234,12 @@ public final class HtmlRenderer {
             }
         }; //NOI18N
 
-    /** Mappings for the array of sgml character entities to characters */
+    /** Mappings for the array of SGML character entities to characters */
     private static final char[] entitySubstitutions = new char[] {
             '>', '<', '"', '&', 8216, 8217, 8220, 8221, 8211, 8212, 8800, 8804, 8805, //NOI18N
             169, 174, 8482, ' '
         };
-    private static final boolean isMac = (Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0;
+    private static final boolean IS_MAC = (Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0;
 
     private HtmlRenderer() {
         //do nothing
@@ -235,7 +248,7 @@ public final class HtmlRenderer {
     /**
      * Returns an instance of Renderer which may be used as a table/tree/list cell renderer.
      * This method must be called on the AWT event thread.  If you <strong>know</strong> you will
-     * be passing it legal HTML (legal as documented here), call <code>setHtml(true)</code> on the
+     * be passing it legal HTML (legal as documented here), call {@link Renderer#setHtml setHtml(true)} on the
      * result of this call <strong>after calling getNNNCellRenderer</strong> to provide this hint.
      *
      * @return A cell renderer that can render HTML.
@@ -246,36 +259,36 @@ public final class HtmlRenderer {
 
     /**
      * For HTML rendering jobs outside of trees/lists/tables, returns a JLabel which will paint its text using
-     * the lightweight HTML renderer.  The result of this call will implement the <code>Renderer</code> interface.
-     * <strong>Do not add the result of this call to the AWT hierarchy</strong>.  It is not a general purpose JLabel, and
+     * the lightweight HTML renderer.  The result of this call will implement {@link Renderer}.
+     * <strong>Do not add the result of this call to the AWT hierarchy</strong>.  It is not a general purpose <code>JLabel</code>, and
      * will not behave correctly.  Use the result of this call to paint or to measure text.  Example:
      * <pre>
      * private final JLabel label = HtmlRenderer.createLabel();
      *
-     * public void paint (Graphics g) {
-     *    //background/whatever painting code here...
-     *    label.setText (someHtmlText);
-     *    label.paint (g);
+     * public void paint(Graphics g) {
+     *    // background/whatever painting code here...
+     *    label.setText(someHtmlText);
+     *    label.paint(g);
      * }
      * </pre>
      *
      *
-     * @return A JLabel which can render a subset of html very quickly
-     *         if the text should be rendered as plain text even <i>if</i> it contains
-     *        HTML markup.
+     * @return a label which can render a subset of HTML very quickly
      */
     public static final JLabel createLabel() {
         return new HtmlRendererImpl();
     }
 
-    /**Render a string to a graphics instance, using the same API as renderHTML().
+    /**
+     * Render a string to a graphics instance, using the same API as {@link #renderHTML renderHTML}.
      * Can render a string using JLabel-style ellipsis (...) in the case that
      * it will not fit in the passed rectangle, if the style parameter is
-     * STYLE_CLIP. Returns the width in pixels successfully painted.
+     * {@link #STYLE_CLIP}. Returns the width in pixels successfully painted.
      * <strong>This method is not thread-safe and should not be called off
      * the AWT thread.</strong>
      *
-     * @see #renderHTML */
+     * @see #renderHTML
+     */
     public static double renderPlainString(
         String s, Graphics g, int x, int y, int w, int h, Font f, Color defaultColor, int style, boolean paint
     ) {
@@ -359,10 +372,11 @@ public final class HtmlRenderer {
         return r.getWidth();
     }
 
-    /** Render a string to a graphics context, using HTML markup if the string
-     * begins with html tags.  Delegates to <code>renderPlainString()</code>
-     * or <code>renderHTML()</code> as appropriate.  See the documentation for
-     * <code>renderHTML()</code> for details of the subset of HTML that is
+    /**
+     * Render a string to a graphics context, using HTML markup if the string
+     * begins with <code>&lt;html&gt;</code>.  Delegates to {@link #renderPlainString renderPlainString}
+     * or {@link #renderHTML renderHTML} as appropriate.  See the class documentation for
+     * for details of the subset of HTML that is
      * supported.
      * @param s The string to render
      * @param g A graphics object into which the string should be drawn, or which should be
@@ -375,8 +389,8 @@ public final class HtmlRenderer {
      * @param h The maximum height within which to paint.
      * @param f The base font to be used for painting or calculating string width/height.
      * @param defaultColor The base color to use if no font color is specified as html tags
-     * @param style The wrapping style to use, either <code>STYLE_CLIP</CODE>,
-     * or <CODE>STYLE_TRUNCATE</CODE>
+     * @param style The wrapping style to use, either {@link #STYLE_CLIP},
+     * or {@link #STYLE_TRUNCATE}
      * @param paint True if actual painting should occur.  If false, this method will not actually
      * paint anything, only return a value representing the width/height needed to
      * paint the passed string.
@@ -405,76 +419,10 @@ public final class HtmlRenderer {
         }
     }
 
-    /** Render a string as HTML using a fast, lightweight renderer supporting a limited
-     * subset of HTML.  The following tags are supported, in upper or lower case:
+    /**
+     * Render a string as HTML using a fast, lightweight renderer supporting a limited
+     * subset of HTML.  See class Javadoc for details.
      *
-     * <table>
-     * <tr>
-     *  <td>&lt;B&gt;</td>
-     *  <td>Boldface text</td>
-     * </tr>
-     * <tr>
-     *  <td>&lt;S&gt;</td>
-     *  <td>Strikethrough text</td>
-     * </tr>
-     * <tr>
-     *  <td>&lt;U&gt;</td>
-     *  <td>Underline text</td>
-     * </tr>
-     * <tr>
-     *  <td>&lt;I&gt;</td>
-     *  <td>Italic text</td>
-     * </tr>
-     * <tr>
-     *  <td>&lt;EM&gt;</td>
-     *  <td>Emphasized text (same as italic)</td>
-     * </tr>
-     * <tr>
-     *  <td>&lt;STRONG&gt;</td>
-     *  <td>Strong text (same as bold)</td>
-     * </tr>
-     * <tr>
-     *  <td>&lt;font&gt;</td>
-     *  <td>Font color - font attributes other than color are not supported.  Colors
-     *  may be specified as hexidecimal strings, such as #FF0000 or as logical colors
-     *  defined in the current look and feel by specifying a ! character as the first
-     *  character of the color name.  Logical colors are colors available from the
-     *  current look and feel's UIManager.  For example, <code>&lt;font
-     *  color=&quot;!Tree.background&quot;&gt;</code> will set the font color to the
-     *  result of <code>UIManager.getColor(&quot;Tree.background&quot)</code>.
-     * <strong>Font size tags are not supported.</strong>
-     * </td>
-     * </tr>
-     * </table>
-     * The lightweight html renderer supports the following named sgml character
-     * entities: <code>quot, lt, amp, lsquo, rsquo, ldquo, rdquo, ndash, mdash, ne,
-     * le, ge, copy, reg, trade.  </code>.  It also supports numeric entities
-     * (e.g. <code>&amp;#8822;</code>).
-     * <p><b>When to use this method instead of the JDK's HTML support: </b> when
-     * rendering short strings (for example, in a tree or table cell renderer)
-     * with limited HTML, this method is approximately 10x faster than JDK HTML
-     * rendering (it does not build and parse a document tree).
-     *
-     * <P><B><U>Specifying logical colors</U></B><BR>
-     * Hardcoded text colors are undesirable, as they can be incompatible (even
-     * invisible) on some look and feels or themes.
-     * The lightweight HTML renderer supports a non-standard syntax for specifying
-     * font colors via a key for a color in the UI defaults for the current look
-     * and feel.  This is accomplished by prefixing the key name with a <code>!</code>
-     * character.  For example: <code>&lt;font color='!controlShadow'&gt;</code>.
-     *
-     * <P><B><U>Modes of operation</U></B><BR>
-     * This method supports two modes of operation:
-     * <OL>
-     * <LI><CODE>STYLE_CLIP</CODE> - as much text as will fit in the pixel width passed
-     * to the method should be painted, and the text should be cut off at the maximum
-     * width or clip rectangle maximum X boundary for the graphics object, whichever is
-     * smaller.</LI>
-     * <LI><CODE>STYLE_TRUNCATE</CODE> - paint as much text as will fit in the pixel
-     * width passed to the method, but paint the last three characters as .'s, in the
-     * same manner as a JLabel truncates its text when the available space is too
-     * small.</LI>
-     * </OL>
      * <P>
      * This method can also be used in non-painting mode to establish the space
      * necessary to paint a string.  This is accomplished by passing the value of the
@@ -482,7 +430,7 @@ public final class HtmlRenderer {
      * width in pixels
      * to display the text.  Note that in order to retrieve an
      * accurate value, the argument for available width should be passed
-     * as <code>Integer.MAX_VALUE</code> or an appropriate maximum size - otherwise
+     * as {@link Integer#MAX_VALUE} or an appropriate maximum size - otherwise
      * the return value will either be the passed maximum width or the required
      * width, whichever is smaller.  Also, the clip shape for the passed graphics
      * object should be null or a value larger than the maximum possible render size.
@@ -490,8 +438,7 @@ public final class HtmlRenderer {
      * This method will log a warning if it encounters HTML markup it cannot
      * render.  To aid diagnostics, if NetBeans is run with the argument
      * <code>-J-Dnetbeans.lwhtml.strict=true</code> an exception will be thrown
-     * when an attempt is made to render unsupported HTML.</code><p>
-     * <p>
+     * when an attempt is made to render unsupported HTML.
      * @param s The string to render
      * @param g A graphics object into which the string should be drawn, or which should be
      * used for calculating the appropriate size
@@ -503,8 +450,8 @@ public final class HtmlRenderer {
      * @param h The maximum height within which to paint.
      * @param f The base font to be used for painting or calculating string width/height.
      * @param defaultColor The base color to use if no font color is specified as html tags
-     * @param style The wrapping style to use, either <code>STYLE_CLIP</CODE>,
-     * or <CODE>STYLE_TRUNCATE</CODE>
+     * @param style The wrapping style to use, either {@link #STYLE_CLIP},
+     * or {@link #STYLE_TRUNCATE}
      * @param paint True if actual painting should occur.  If false, this method will not actually
      * paint anything, only return a value representing the width/height needed to
      * paint the passed string.
@@ -615,7 +562,7 @@ public final class HtmlRenderer {
                          +s + "\".  Please report this at http://www.netbeans.org"
                     ); //NOI18N
 
-                if (strictHtml) {
+                if (STRICT_HTML) {
                     throw aib;
                 } else {
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, aib);
@@ -1233,7 +1180,7 @@ public final class HtmlRenderer {
     private static final Font deriveFont(Font f, int style) {
         //      return f.deriveFont(style);
         // see #49973 for details.
-        Font result = isMac ? new Font(f.getName(), style, f.getSize()) : f.deriveFont(style);
+        Font result = IS_MAC ? new Font(f.getName(), style, f.getSize()) : f.deriveFont(style);
 
         return result;
     }
@@ -1317,7 +1264,7 @@ public final class HtmlRenderer {
         String out = msg + "\n  " + new String(chars) + "\n  " + new String(chh) + "\n Full HTML string:" +
             new String(chars); //NOI18N
 
-        if (!strictHtml) {
+        if (!STRICT_HTML) {
             if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
                 if (badStrings == null) {
                     badStrings = new HashSet();
@@ -1341,8 +1288,10 @@ public final class HtmlRenderer {
         }
     }
 
-    /** Interface aggregating TableCellRenderer, TreeCellRenderer and ListCellRenderer.
-     * Return type of <code>sharedInstance()</code>.
+    /**
+     * Interface aggregating table, tree, and list cell renderers.
+     * @see #createRenderer
+     * @see #createLabel
      */
     public interface Renderer extends TableCellRenderer, TreeCellRenderer, ListCellRenderer {
         /** Indicate that the component being rendered has keyboard focus.  NetBeans requires that a different
@@ -1362,7 +1311,7 @@ public final class HtmlRenderer {
 
         /**
          * Set a number of pixels the icon and text should be indented.  Used by ChoiceView and ListView to
-         * fake tree-style nesting.  This value has no effect if <code>setCentered(true)</code> has been called.
+         * fake tree-style nesting.  This value has no effect if {@link #setCentered setCentered(true)} has been called.
          *
          * @param pixels The number of pixels to indent
          */
@@ -1380,7 +1329,7 @@ public final class HtmlRenderer {
 
         /**
          * Set the rendering style - this can be JLabel-style truncated-with-elipsis (...) text, or clipped text.
-         * The default is STYLE_CLIP.
+         * The default is {@link #STYLE_CLIP}.
          *
          * @param style The text style
          */
@@ -1395,15 +1344,15 @@ public final class HtmlRenderer {
         /** Clear any stale data from previous use by other components,
          * clearing the icon, text, disabled state and other customizations, returning the component
          * to its initialized state.  This is done automatically when get*CellRenderer() is called,
-         * and to the shared instance when <code>createLabel()</code> is called.<p>
-         * Users of the static <code>createLabel()</code> method may want to call this method if they
-         * use the returned instance more than once without again calling <code>createLabel()</code>.
+         * and to the shared instance when {@link #createLabel} is called.<p>
+         * Users of the static {@link #createLabel} method may want to call this method if they
+         * use the returned instance more than once without again calling {@link #createLabel}.
          */
         void reset();
 
         /** Set the text to be displayed.  Use this if the object being rendered's toString() does not
          * return a real user-displayable string, after calling get**CellRenderer().  Typically after calling
-         * this one calls setHtml() if the text is known to either be or not be HTML markup.
+         * this one calls {@link #setHtml} if the text is known to either be or not be HTML markup.
          *
          * @param txt The text that should be displayed
          */
@@ -1416,4 +1365,5 @@ public final class HtmlRenderer {
          */
         void setIconTextGap(int gap);
     }
+    
 }
