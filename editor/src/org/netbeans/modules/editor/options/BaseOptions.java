@@ -182,12 +182,13 @@ public class BaseOptions extends OptionSupport {
     
     private static final Map textAntialiasingHintsMap = new HashMap();
     static {
-        textAntialiasingHintsMap.put(RenderingHints.KEY_ANTIALIASING,
-            RenderingHints.VALUE_ANTIALIAS_ON);
+        // Commented due to issue 59273
+        // textAntialiasingHintsMap.put(RenderingHints.KEY_ANTIALIASING,
+        //     RenderingHints.VALUE_ANTIALIAS_ON);
         textAntialiasingHintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
             RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        textAntialiasingHintsMap.put(RenderingHints.KEY_FRACTIONALMETRICS,
-            RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+        // textAntialiasingHintsMap.put(RenderingHints.KEY_FRACTIONALMETRICS,
+        //     RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
     }
 
     
