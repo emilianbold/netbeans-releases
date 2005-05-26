@@ -15,6 +15,8 @@ package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -25,7 +27,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
+
 
 /**
  * Servers for generating new NetBeans Modules templates.
@@ -110,19 +112,23 @@ public class NbModuleProjectGenerator {
     }
     
     private static void createLayer(FileObject projectDir, String layerPath) throws IOException {
-        // XXX should just find it via NbModuleProjectGenerator.class.getResource("..."), much simpler
-        // (and could delete NbModuleProjectGeneratorTest.setUp)
-        assert layerPath.endsWith(".xml") : "Cannot name layer other than *.xml, should be caught in GUI";
-        FileObject layerFO =  Repository.getDefault().getDefaultFileSystem().
-                findResource("org-netbeans-modules-apisupport-project/layer_template.xml"); //NOI18N
-        assert layerFO != null : "Cannot find layer template"; // NOI18N
-        int lastSlashPos = layerPath.lastIndexOf('/');
-        assert lastSlashPos != -1 : "Cannot put layer in default package, should be caught in GUI";
-        String layerDir = layerPath.substring(0, lastSlashPos);
-        String layerName = layerPath.substring(lastSlashPos + 1,
-                layerPath.length() - ".xml".length()); // NOI18N
-        FileObject destDir = FileUtil.createFolder(projectDir, "src/" + layerDir); // NOI18N
-        FileUtil.copyFile(layerFO, destDir, layerName);
+        FileObject layerFO = FileUtil.createData(projectDir, "src/" + layerPath); // NOI18N
+        FileLock lock = layerFO.lock();
+        try {
+            InputStream is = NbModuleProjectGenerator.class.getResourceAsStream("ui/resources/layer_template.xml"); // NOI18N
+            try {
+                OutputStream os = layerFO.getOutputStream(lock);
+                try {
+                    FileUtil.copy(is, os);
+                } finally {
+                    os.close();
+                }
+            } finally {
+                is.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
     }
     
     /**

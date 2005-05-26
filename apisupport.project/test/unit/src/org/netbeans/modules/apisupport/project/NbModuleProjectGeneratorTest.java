@@ -14,25 +14,18 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * NbModuleProjectGenerator tests.
  *
- * @author mkrauskopf
+ * @author Martin Krauskopf, Jesse Glick
  */
 public class NbModuleProjectGeneratorTest extends TestBase {
-    // TODO test both firstLevel and secondLevel modules and also NetBeans CVS
-    // tree modules
+    // TODO test suite module and also NetBeans CVS tree modules
     
     public NbModuleProjectGeneratorTest(String testName) {
         super(testName);
@@ -42,40 +35,10 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         "build.xml",
         "manifest.mf",
         "nbproject/project.xml",
-        "src",
+        "nbproject/build-impl.xml",
         "src/org/example/testModule/resources/Bundle.properties",
         "src/org/example/testModule/resources/layer.xml",
     };
-    
-    
-    protected void setUp() throws Exception {
-        super.setUp();
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject parent = root.getFileObject("org-netbeans-modules-apisupport-project");
-        if (parent != null) {
-            parent.delete();
-        }
-        // prepare data (layerTemplate)
-        final FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        fs.runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws java.io.IOException {
-                FileObject root = fs.getRoot();
-                FileObject parent = root.createFolder("org-netbeans-modules-apisupport-project");
-                FileObject layerTemplate = parent.createData("layer_template.xml");
-                FileLock lock = layerTemplate.lock();
-                PrintWriter pw = new PrintWriter(layerTemplate.getOutputStream(lock));
-                try {
-                    pw.println("\"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\"");
-                    pw.println("<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">");
-                    pw.println("<filesystem>");
-                    pw.println("</filesystem>");
-                } finally {
-                    lock.releaseLock();
-                    pw.close();
-                }
-            }
-        });
-    }
     
     // XXX also should test content created files (XMLs, properties) and
     // created suite.
@@ -103,4 +66,5 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                     fo.getFileObject(CREATED_FILES[i]));
         }
     }
+
 }
