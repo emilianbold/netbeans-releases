@@ -172,9 +172,10 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             return;
         } else {
             this.moduleProps = new NbModuleProperties(helper);
-            // XXX check if the locBundlePropsPath was found (i.e. != null)
-            // what to do then --> UI spec should be updated?
-            this.locBundleProps = helper.getProperties(locBundlePropsPath); // NOI18N
+            // XXX may be temporary solution - there is not exact spec what should be done
+            this.locBundleProps = locBundlePropsPath == null ? 
+                new EditableProperties() :
+                helper.getProperties(locBundlePropsPath);
             init();
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {
@@ -304,7 +305,9 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 public Object run() throws IOException {
                     moduleProps.storeProperties();
                     // store localized info
-                    helper.putProperties(locBundlePropsPath,  locBundleProps);
+                    if (locBundlePropsPath != null) {
+                        helper.putProperties(locBundlePropsPath,  locBundleProps);
+                    }
                     // store module dependencies
                     if (moduleDepsListModel.isChanged()) {
                         Set/*<ModuleDependency>*/ depsToSave =
