@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.util.Properties;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -33,17 +34,19 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * @author mkrauskopf
+ * Servers for generating new NetBeans Modules templates.
+ *
+ * @author Martin Krauskopf
  */
 public class NbModuleProjectGenerator {
     
-    /** Equal to AntProjectHelper.PROJECT_NS which is package private. */
-    // XXX is there a better way? (impact of imposibility to use ProjectGenerator)
-    private static final String PROJECT_NS =
-            "http://www.netbeans.org/ns/project/1"; // NOI18N
-    
+    // XXX obsolete - polish or remove
     private static final String SUITE_LOCATOR_PATH =
-            "nbproject/suite-locator.properties"; // NOI18N
+            "nbproject" + File.separator + "suite-locator.properties"; // NOI18N
+
+    private static final String PLATFORM_PROPERTIES_PATH =
+            "nbproject" + File.separator + "platform.properties"; // NOI18N
+            
     
     /** Use static factory methods instead. */
     private NbModuleProjectGenerator() {/* empty constructor*/}
@@ -63,19 +66,16 @@ public class NbModuleProjectGenerator {
         suiteFOS.close();
     }
     
-    // XXX not sure if we should return something (Project, AntProjectHelper)?
-    // we will see, anyway it is not possible to return anything in the time of
-    // writing this --> TBD
-    public static void createExternalProject(File projectDir, String name,
-            String cnb, String bundlePath, String layerPath, 
-            String suiteRoot) throws IOException {
+    /** Generates standalone NetBeans Module. */
+    public static void createStandAloneModule(File projectDir, String cnb,
+            String name, String bundlePath, String layerPath) throws IOException {
         final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
-        NbModuleProjectGenerator.createProjectXML(dirFO, cnb);
-        NbModuleProjectGenerator.createSuiteLocator(dirFO, suiteRoot);
-        NbModuleProjectGenerator.createBuildScript(dirFO);
+        NbModuleProjectGenerator.createProjectXML(dirFO, cnb, true);
+        NbModuleProjectGenerator.createBuildScript(dirFO, cnb);
+        NbModuleProjectGenerator.createPlatformProperties(dirFO);
         NbModuleProjectGenerator.createManifest(dirFO, cnb, bundlePath, layerPath);
         NbModuleProjectGenerator.createBundle(dirFO, bundlePath, name);
         NbModuleProjectGenerator.createLayer(dirFO, layerPath);
@@ -86,53 +86,14 @@ public class NbModuleProjectGenerator {
      * <code>AntProjectHelper.PROJECT_XML_PATH</code> is pointing to.
      */
     private static void createProjectXML(FileObject projectDir,
-            String cnb) throws IOException {
-        FileObject projectXml = projectDir.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
-        if (projectXml != null) {
-            throw new IllegalArgumentException("Already a " + projectXml); // NOI18N
-        }
-        projectXml = FileUtil.createData(projectDir, AntProjectHelper.PROJECT_XML_PATH);
-        Document prjDoc = XMLUtil.createDocument("project", PROJECT_NS, null, null); // NOI18N
-        
-        Element typeEl = prjDoc.createElementNS(PROJECT_NS, "type"); // NOI18N
-        typeEl.appendChild(prjDoc.createTextNode(NbModuleProjectType.TYPE));
-        prjDoc.getDocumentElement().appendChild(typeEl);
-        
-        Element confEl = prjDoc.createElementNS(PROJECT_NS, "configuration"); // NOI18N
-        prjDoc.getDocumentElement().appendChild(confEl);
-        
-        Element dataEl = confEl.getOwnerDocument().createElementNS(
-                NbModuleProjectType.NAMESPACE_SHARED, "data"); // NOI18N
-        confEl.appendChild(dataEl);
-        
-        Document dataDoc = dataEl.getOwnerDocument();
-        
-        Element el = dataDoc.createElementNS(
-                NbModuleProjectType.NAMESPACE_SHARED, "code-name-base"); // NOI18N
-        el.appendChild(dataDoc.createTextNode(cnb));
-        dataEl.appendChild(el);
-        
-        el = prjDoc.createElement("module-dependencies"); // NOI18N
-        dataEl.appendChild(el);
-        
-        el = prjDoc.createElement("public-packages"); // NOI18N
-        dataEl.appendChild(el);
-        
-        // store document to disk
-        FileLock lock = projectXml.lock();
-        try {
-            OutputStream os = projectXml.getOutputStream(lock);
-            try {
-                XMLUtil.write(prjDoc, os, "UTF-8"); // NOI18N
-            } finally {
-                os.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
+            String cnb, boolean standalone) throws IOException {
+        ProjectXMLManager.generateEmptyTemplate(
+                createFileObject(projectDir, AntProjectHelper.PROJECT_XML_PATH),
+                cnb, standalone);
     }
     
-    private static void createSuiteLocator(FileObject projectDir, 
+    // XXX obsolete - polish or remove
+    private static void createSuiteLocator(FileObject projectDir,
             String suiteRoot) throws IOException {
         Properties suiteLocatorProps = new Properties();
         FileObject fo = FileUtil.toFileObject(new File(suiteRoot));
@@ -141,8 +102,8 @@ public class NbModuleProjectGenerator {
         suiteLocatorProps.put("suite.properties", "${basedir}/" + upPath + // NOI18N
                 "/suite.properties"); // NOI18N
         
-        FileObject suiteLocFO = FileUtil.createData(projectDir,
-                NbModuleProjectGenerator.SUITE_LOCATOR_PATH);
+        FileObject suiteLocFO = NbModuleProjectGenerator.createFileObject(
+                projectDir, NbModuleProjectGenerator.SUITE_LOCATOR_PATH);
         FileLock lock = suiteLocFO.lock();
         try {
             OutputStream suiteLocFOS = suiteLocFO.getOutputStream(lock);
@@ -160,35 +121,24 @@ public class NbModuleProjectGenerator {
      * Creates basic <em>build.xml</em> or whatever
      * <code>GeneratedFilesHelper.BUILD_XML_PATH</code> is pointing to.
      */
-    private static void createBuildScript(FileObject projectDir) throws
+    private static void createBuildScript(FileObject projectDir, String cnb) throws
             IOException {
-        FileObject buildScript = projectDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-        if (buildScript != null) {
-            throw new IllegalArgumentException("Already a " + buildScript); // NOI18N
-        }
-        buildScript = FileUtil.createData(projectDir, GeneratedFilesHelper.BUILD_XML_PATH);
+        FileObject buildScript = NbModuleProjectGenerator.createFileObject(
+                projectDir, GeneratedFilesHelper.BUILD_XML_PATH);
         Document prjDoc = XMLUtil.createDocument("project", null, null, null); // NOI18N
         Element prjEl = prjDoc.getDocumentElement();
         prjEl.setAttribute("name", projectDir.getNameExt()); // NOI18N
         prjEl.setAttribute("default", "netbeans"); // NOI18N
         prjEl.setAttribute("basedir", "."); // NOI18N
         
-        Element el = prjDoc.createElement("property"); // NOI18N
-        el.setAttribute("file", "nbproject/suite-locator.properties"); // NOI18N
-        prjEl.appendChild(el);
-        
-        el = prjDoc.createElement("property"); // NOI18N
-        el.setAttribute("file", "${suite.properties}"); // NOI18N
-        prjEl.appendChild(el);
-        
-        el = prjDoc.createElement("fail"); // NOI18N
-        el.setAttribute("unless", "netbeans.dest.dir"); // NOI18N
-        el.appendChild(prjDoc.createTextNode("You must set suite." + // NOI18N
-                "properties to a file defining netbeans.dest.dir")); // NOI18N
+        Element el = prjDoc.createElement("description"); // NOI18N
+        // XXX should this be localized?
+        el.appendChild(prjDoc.createTextNode("Builds, tests, and runs the " + // NOI18N
+                "project " + cnb)); // NOI18N
         prjEl.appendChild(el);
         
         el = prjDoc.createElement("import"); // NOI18N
-        el.setAttribute("file", "${harness.dir}/build.xml"); // NOI18N
+        el.setAttribute("file", "nbproject/build-impl.xml"); // NOI18N
         prjEl.appendChild(el);
         
         // store document to disk
@@ -205,60 +155,43 @@ public class NbModuleProjectGenerator {
         }
     }
     
-    private static void createManifest(FileObject projectDir, String cnb, 
-            String bundlePath, String layerPath) throws IOException {
-        FileObject manifestFO = FileUtil.createData(projectDir,
-                "manifest.mf"); // NOI18N
-        FileLock lock = manifestFO.lock();
-        try {
-            PrintWriter pw = new PrintWriter(manifestFO.getOutputStream(lock));
-            try {
-                // XXX replace in future with something like ManifestManager.createManifest()
-                pw.println("Manifest-Version: 1.0"); // NOI18N
-                pw.println("OpenIDE-Module: " + cnb); // NOI18N
-                pw.println("OpenIDE-Module-Specification-Version: 1.0"); // NOI18N
-                pw.println("OpenIDE-Module-Localizing-Bundle: " + bundlePath); // NOI18N
-                pw.println("OpenIDE-Module-Layer: " + layerPath); // NOI18N
-                pw.println();
-            } finally {
-                pw.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
+    private static void createPlatformProperties(FileObject projectDir) throws IOException {
+        FileObject plafPropsFO = NbModuleProjectGenerator.createFileObject(
+                projectDir, NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH);
+        EditableProperties props = new EditableProperties(true);
+        // XXX temporary - user will choose a platform in the wizard
+        props.put("nbplatform.active", "default"); // NOI18N
+        NbModuleProjectGenerator.storeProperties(plafPropsFO, props);
     }
     
-    // XXX - use properties instead of direct access
+    private static void createManifest(FileObject projectDir, String cnb,
+            String bundlePath, String layerPath) throws IOException {
+        FileObject manifestFO = NbModuleProjectGenerator.createFileObject(
+                projectDir, "manifest.mf"); // NOI18N
+        ManifestManager.createManifest(manifestFO, cnb, "1.0", bundlePath, layerPath); // NOI18N
+    }
+    
     private static void createBundle(FileObject projectDir, String bundlePath,
             String name) throws IOException {
-        FileObject bundleFO = FileUtil.createData(projectDir, "src" + 
-                File.separator + bundlePath);
-        FileLock lock = bundleFO.lock();
-        try {
-            PrintWriter pw = new PrintWriter(bundleFO.getOutputStream(lock));
-            try {
-                pw.println("OpenIDE-Module-Name=" + name);
-                pw.println();
-            } finally {
-                pw.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
+        FileObject bundleFO = NbModuleProjectGenerator.createFileObject(
+                projectDir, "src" + File.separator + bundlePath); // NOI18N
+        EditableProperties props = new EditableProperties(true);
+        props.put("OpenIDE-Module-Name", name); // NOI18N
+        NbModuleProjectGenerator.storeProperties(bundleFO, props);
     }
-
+    
     private static void createLayer(FileObject projectDir, String layerPath) throws IOException {
         FileObject layerFO =  Repository.getDefault().getDefaultFileSystem().
                 findResource("org-netbeans-modules-apisupport-project/layer_template.xml"); //NOI18N
         assert layerFO != null : "Cannot find layer template"; // NOI18N
         int lastSlashPos = layerPath.lastIndexOf('/');
         String layerDir = layerPath.substring(0, lastSlashPos);
-        String layerName = layerPath.substring(lastSlashPos + 1, 
+        String layerName = layerPath.substring(lastSlashPos + 1,
                 layerPath.length() - 4);  // ".xml" <- 4
         FileObject destDir = FileUtil.createFolder(projectDir, "src/" + layerDir); // NOI18N
         FileUtil.copyFile(layerFO, destDir, layerName);
     }
-
+    
     /**
      * Creates project projectDir if it doesn't already exist and returns representing
      * <code>FileObject</code>.
@@ -312,6 +245,30 @@ public class NbModuleProjectGenerator {
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot resolve" + // NOI18N
                     "file object for " + root.getAbsolutePath()); // NOI18N
         }
+    }
+
+    /** Just utility method. */
+    private static void storeProperties(FileObject bundleFO, EditableProperties props) throws IOException {
+        FileLock lock = bundleFO.lock();
+        try {
+            props.store(bundleFO.getOutputStream(lock));
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
+    /**
+     * Creates a new <code>FileObject</code>.
+     * Throws <code>IllegalArgumentException</code> if such an object already
+     * exists. Throws <code>IOException</code> if creation fails.
+     */
+    private static FileObject createFileObject(FileObject dir, String relToDir) throws IOException {
+        FileObject createdFO = dir.getFileObject(relToDir);
+        if (createdFO != null) {
+            throw new IllegalArgumentException("File " + createdFO + " already exists."); // NOI18N
+        }
+        createdFO = FileUtil.createData(dir, relToDir);
+        return createdFO;
     }
 }
 

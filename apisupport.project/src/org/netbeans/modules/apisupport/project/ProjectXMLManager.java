@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,10 +25,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 
 /**
  * Convenient class for managing project's <em>project.xml</em> file.
@@ -36,8 +39,15 @@ import org.w3c.dom.Element;
  */
 public final class ProjectXMLManager {
     
+    /** Equal to AntProjectHelper.PROJECT_NS which is package private. */
+    // XXX is there a better way? (impact of imposibility to use ProjectGenerator)
+    private static final String PROJECT_NS =
+            "http://www.netbeans.org/ns/project/1"; // NOI18N
+    
     // elements constants
+    private static final String DATA = "data"; // NOI18N
     private static final String CODE_NAME_BASE = "code-name-base"; // NOI18N
+    private static final String STANDALONE = "standalone"; // NOI18N
     private static final String MODULE_DEPENDENCIES = "module-dependencies"; // NOI18N
     private static final String DEPENDENCY = "dependency"; // NOI18N
     private static final String RUN_DEPENDENCY = "run-dependency"; // NOI18N
@@ -261,11 +271,11 @@ public final class ProjectXMLManager {
                 NbModuleProjectType.NAMESPACE_SHARED);
     }
     
-    private Element createModuleElement(Document doc, String name) {
+    private static Element createModuleElement(Document doc, String name) {
         return doc.createElementNS(NbModuleProjectType.NAMESPACE_SHARED, name);
     }
     
-    private Element createModuleElement(Document doc, String name, String innerText) {
+    private static Element createModuleElement(Document doc, String name, String innerText) {
         Element el = createModuleElement(doc, name);
         el.appendChild(doc.createTextNode(innerText));
         return el;
@@ -294,5 +304,46 @@ public final class ProjectXMLManager {
         }
         return pps == null ? ManifestManager.EMPTY_EXPORTED_PACKAGES :
             (ManifestManager.PackageExport[]) pps.toArray(new ManifestManager.PackageExport[pps.size()]);
+    }
+    
+    /**
+     * Generates a basic <em>project.xml</em> templates into the given
+     * <code>projectXml</code>.
+     */
+    static void generateEmptyTemplate(FileObject projectXml, String cnb,
+            boolean standalone) throws IOException {
+        
+        Document prjDoc = XMLUtil.createDocument("project", PROJECT_NS, null, null); // NOI18N
+        
+        // generate general project elements
+        Element typeEl = prjDoc.createElementNS(PROJECT_NS, "type"); // NOI18N
+        typeEl.appendChild(prjDoc.createTextNode(NbModuleProjectType.TYPE));
+        prjDoc.getDocumentElement().appendChild(typeEl);
+        Element confEl = prjDoc.createElementNS(PROJECT_NS, "configuration"); // NOI18N
+        prjDoc.getDocumentElement().appendChild(confEl);
+        
+        // generate NB Module project type specific elements
+        Element dataEl = createModuleElement(confEl.getOwnerDocument(), DATA);
+        confEl.appendChild(dataEl);
+        Document dataDoc = dataEl.getOwnerDocument();
+        dataEl.appendChild(createModuleElement(dataDoc, CODE_NAME_BASE, cnb));
+        if (standalone) {
+            dataEl.appendChild(createModuleElement(dataDoc, STANDALONE));
+        }
+        dataEl.appendChild(createModuleElement(dataDoc, MODULE_DEPENDENCIES));
+        dataEl.appendChild(createModuleElement(dataDoc, PUBLIC_PACKAGES));
+        
+        // store document to disk
+        FileLock lock = projectXml.lock();
+        try {
+            OutputStream os = projectXml.getOutputStream(lock);
+            try {
+                XMLUtil.write(prjDoc, os, "UTF-8"); // NOI18N
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
     }
 }

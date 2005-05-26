@@ -31,7 +31,7 @@ import org.openide.filesystems.Repository;
 public class NbModuleProjectGeneratorTest extends NbTestCase {
     // TODO test both firstLevel and secondLevel modules and also NetBeans CVS
     // tree modules
-
+    
     public NbModuleProjectGeneratorTest(String testName) {
         super(testName);
     }
@@ -39,17 +39,15 @@ public class NbModuleProjectGeneratorTest extends NbTestCase {
     private static final String[] CREATED_FILES = {
         "build.xml",
         "manifest.mf",
-        "nbproject/suite-locator.properties",
         "nbproject/project.xml",
         "src",
-        "src/org/company/example/testModule/resources/Bundle.properties",
-        "src/org/company/example/testModule/resources/layer.xml",
+        "src/org/example/testModule/resources/Bundle.properties",
+        "src/org/example/testModule/resources/layer.xml",
     };
     
-
+    
     protected void tearDown() throws Exception {
         super.tearDown();
-        cleanUp();
     }
     
     private void cleanUp() throws IOException {
@@ -60,7 +58,7 @@ public class NbModuleProjectGeneratorTest extends NbTestCase {
             parent.delete();
         }
     }
-
+    
     protected void setUp() throws Exception {
         super.setUp();
         cleanUp();
@@ -88,20 +86,19 @@ public class NbModuleProjectGeneratorTest extends NbTestCase {
     
     // XXX also should test content created files (XMLs, properties) and
     // created suite.
-    public void testCreateExternalProject() throws Exception {
-        // XXX huh? is this a good way?
+    public void testCreateStandAloneModule() throws Exception {
+        // XXX check below lines
         String defPlatform = getDataDir().getParentFile().getParentFile().getParent();
-        File suiteDir = new File(getWorkDir(), "testSuite");
-        NbModuleProjectGenerator.createSuite(suiteDir, defPlatform);
+        File targetPrjDir = new File(getWorkDir(), "testModule");
         
-        File prjDir = new File(new File(suiteDir, "testModule"), "secondLevel");
-        
-        NbModuleProjectGenerator.createExternalProject(
-                prjDir, "Testing Module", "org.company.example.testModule", 
-                "org/company/example/testModule/resources/Bundle.properties",
-                "org/company/example/testModule/resources/layer.xml",
-                suiteDir.getPath());
-        FileObject fo = FileUtil.toFileObject(prjDir);
+        NbModuleProjectGenerator.createStandAloneModule(
+                targetPrjDir,
+                "org.example.testModule", // cnb
+                "Testing Module", // display name
+                "org/example/testModule/resources/Bundle.properties",
+                "org/example/testModule/resources/layer.xml");
+        // check generated module
+        FileObject fo = FileUtil.toFileObject(targetPrjDir);
         for (int i=0; i < CREATED_FILES.length; i++) {
             assertNotNull(CREATED_FILES[i]+" file/folder cannot be found",
                     fo.getFileObject(CREATED_FILES[i]));

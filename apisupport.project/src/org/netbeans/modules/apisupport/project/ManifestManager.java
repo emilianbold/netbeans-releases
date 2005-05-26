@@ -17,8 +17,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
@@ -26,6 +26,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import org.netbeans.modules.apisupport.project.ManifestManager.PackageExport;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.modules.Dependency;
 
 // XXX a lot of code in this class is duplicated from
@@ -142,6 +144,30 @@ public final class ManifestManager {
                 attr.getValue(CLASS_PATH),
                 publicPackages);
         return mm;
+    }
+    
+    /**
+     * Generates module manifest with the given values into the given
+     * <code>manifest</code>.
+     */
+    static void createManifest(FileObject manifest, String cnb, String specVer,
+            String bundlePath, String layerPath) throws IOException {
+        FileLock lock = manifest.lock();
+        try {
+            PrintWriter pw = new PrintWriter(manifest.getOutputStream(lock));
+            try {
+                pw.println("Manifest-Version: 1.0"); // NOI18N
+                pw.println(OPENIDE_MODULE + ": " + cnb); // NOI18N
+                pw.println(OPENIDE_MODULE_SPECIFICATION_VERSION + ": " + specVer); // NOI18N
+                pw.println(OPENIDE_MODULE_LOCALIZING_BUNDLE + ": " + bundlePath); // NOI18N
+                pw.println(OPENIDE_MODULE_LAYER + ": " + layerPath); // NOI18N
+                pw.println();
+            } finally {
+                pw.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
     }
     
     private static PackageExport[] parseExportedPackages(String exportsS) {
