@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.apisupport.project;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -22,17 +21,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Mutex;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+
 
 /**
  * Convenient class for managing project's <em>project.xml</em> file.
@@ -284,39 +279,20 @@ public final class ProjectXMLManager {
         return ModuleList.getModuleList(FileUtil.toFile(project.getProjectDirectory()));
     }
     
-    /**
-     * Utility method for finding public packages in project.xml.
-     */
-    static ManifestManager.PackageExport[] findPublicPackages(final File projectXML) {
-        return (ManifestManager.PackageExport[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
-                Set/*<ManifestManager.PackageExport>*/ pps = null;
-                try {
-                    Document doc = XMLUtil.parse(new InputSource(projectXML.toURI().toString()),
-                            false, true, null, null);
-                    // let's find public-packages element step-by-step to be sure
-                    // XXX should be checked for null(?)
-                    Element project = doc.getDocumentElement();
-                    Element config = Util.findElement(project, "configuration", null); // NOI18N
-                    Element data = Util.findElement(config, "data", NbModuleProjectType.NAMESPACE_SHARED);
-                    Element ppEl = Util.findElement(data, ProjectXMLManager.PUBLIC_PACKAGES,
-                            NbModuleProjectType.NAMESPACE_SHARED);
-                    if (ppEl != null) {
-                        pps = new HashSet();
-                        List/*<Element>*/ pkgEls = Util.findSubElements(ppEl);
-                        for (Iterator it = pkgEls.iterator(); it.hasNext(); ) {
-                            Element pkgEl = (Element) it.next();
-                            pps.add(new ManifestManager.PackageExport(Util.findText(pkgEl), false));
-                        }
-                    }
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                } catch (SAXException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-                return pps == null ? ManifestManager.EMPTY_EXPORTED_PACKAGES :
-                    (ManifestManager.PackageExport[]) pps.toArray(new ManifestManager.PackageExport[pps.size()]);
+    /** Utility method for finding public packages. */
+    static ManifestManager.PackageExport[] findPublicPackages(final Element confData) {
+        Element ppEl = Util.findElement(confData, ProjectXMLManager.PUBLIC_PACKAGES,
+                NbModuleProjectType.NAMESPACE_SHARED);
+        Set/*<ManifestManager.PackageExport>*/ pps = null;
+        if (ppEl != null) {
+            pps = new HashSet();
+            List/*<Element>*/ pkgEls = Util.findSubElements(ppEl);
+            for (Iterator it = pkgEls.iterator(); it.hasNext(); ) {
+                Element pkgEl = (Element) it.next();
+                pps.add(new ManifestManager.PackageExport(Util.findText(pkgEl), false));
             }
-        });
+        }
+        return pps == null ? ManifestManager.EMPTY_EXPORTED_PACKAGES :
+            (ManifestManager.PackageExport[]) pps.toArray(new ManifestManager.PackageExport[pps.size()]);
     }
 }

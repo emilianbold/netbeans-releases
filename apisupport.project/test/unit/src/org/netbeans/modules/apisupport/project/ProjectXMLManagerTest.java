@@ -18,12 +18,19 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Tests ProjectXMLManager class.
@@ -179,10 +186,28 @@ public class ProjectXMLManagerTest extends TestBase {
     }
     
     public void testFindPublicPackages() throws Exception {
-        File projectXML = new File(FileUtil.toFile(extexamples),
+        final File projectXML = new File(FileUtil.toFile(extexamples),
                 "/suite2/misc-project/nbproject/project.xml");
         assert projectXML.exists();
-        ManifestManager.PackageExport[] pp = ProjectXMLManager.findPublicPackages(projectXML);
+        Element confData = (Element) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                Element data = null;
+                try {
+                    Document doc = XMLUtil.parse(new InputSource(projectXML.toURI().toString()),
+                            false, true, null, null);
+                    Element project = doc.getDocumentElement();
+                    Element config = Util.findElement(project, "configuration", null); // NOI18N
+                    data = Util.findElement(config, "data", NbModuleProjectType.NAMESPACE_SHARED);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                } catch (SAXException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+                return data;
+            }
+        });
+        assertNotNull("finding configuration data element", confData);
+        ManifestManager.PackageExport[] pp = ProjectXMLManager.findPublicPackages(confData);
         assertEquals("number of public packages", new Integer(pp.length), new Integer(1));
         assertEquals("public package", "org.netbeans.examples.modules.misc", pp[0].getPackage());
     }
