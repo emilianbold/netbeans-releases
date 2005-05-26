@@ -181,6 +181,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         }
     }
     
+    /** Show customizer with the first category selected. */
     public void showCustomizer() {
         showCustomizer(null);
     }
@@ -333,30 +334,25 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                     helper.putProperties(locBundlePropsPath,  locBundleProps);
                     // store module dependencies
                     if (subModulesListModel.isChanged()) {
-                        ProjectXMLManager pxm = getProjectXMLManipulator();
+                        Set/*<ModuleDependency>*/ depsToSave =
+                                new TreeSet(ModuleDependency.CODE_NAME_BASE_COMPARATOR);
+                        depsToSave.addAll(subModulesListModel.getDependencies());
                         
                         // process removed modules
-                        Set toDelete = subModulesListModel.getRemovedDependencies();
-                        Set cnbsToDelete = new HashSet(toDelete.size());
-                        for (Iterator it = toDelete.iterator(); it.hasNext(); ) {
-                            cnbsToDelete.add(((ModuleDependency) it.next()).
-                                    getModuleEntry().getCodeNameBase());
-                        }
-                        // XXX should accept ModuleDependency collection
-                        pxm.removeDependencies(cnbsToDelete);
+                        depsToSave.removeAll(subModulesListModel.getRemovedDependencies());
                         
                         // process added modules
-                        pxm.addDependencies(subModulesListModel.getAddedDependencies());
+                        depsToSave.addAll(subModulesListModel.getAddedDependencies());
                         
                         // process edited modules
-                        Map/*<ModuleDependency, ModuleDependency>*/ toEdit 
+                        Map/*<ModuleDependency, ModuleDependency>*/ toEdit
                                 = subModulesListModel.getEditedDependencies();
                         for (Iterator it = toEdit.entrySet().iterator(); it.hasNext(); ) {
                             Map.Entry entry = (Map.Entry) it.next();
-                            pxm.editDependency(
-                                    (ModuleDependency) entry.getKey(), // orig
-                                    (ModuleDependency) entry.getValue()); // new
+                            depsToSave.remove(entry.getKey());
+                            depsToSave.add(entry.getValue());
                         }
+                        getProjectXMLManipulator().replaceDependencies(depsToSave);
                     }
                     return Boolean.TRUE;
                 }

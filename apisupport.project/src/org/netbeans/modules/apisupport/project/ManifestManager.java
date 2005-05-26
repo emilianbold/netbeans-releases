@@ -130,10 +130,7 @@ public final class ManifestManager {
         if (loadPublicPackages) {
             publicPackages = EMPTY_EXPORTED_PACKAGES;
             String pp = attr.getValue(OPENIDE_MODULE_PUBLIC_PACKAGES);
-            if (pp == null) {
-                Util.err.log(ErrorManager.WARNING, "Warning: module " + codenamebase +
-                        " does not declare OpenIDE-Module-Public-Packages in its manifest, so all packages are considered public by default: http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages");
-            } else {
+            if (pp != null) { // sanity check
                 publicPackages = parseExportedPackages(pp);
             }
         }

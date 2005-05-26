@@ -142,7 +142,20 @@ public final class ProjectXMLManager {
      * Use this for removing more than one dependencies. It's faster then
      * iterating and using <code>removeDependency</code> for every entry.
      */
-    public void removeDependencies(Collection/*<String>*/ toDelete) {
+    public void removeDependencies(Collection/*<ModuleDependency>*/ depsToDelete) {
+        Set cnbsToDelete = new HashSet(depsToDelete.size());
+        for (Iterator it = depsToDelete.iterator(); it.hasNext(); ) {
+            cnbsToDelete.add(((ModuleDependency) it.next()).
+                    getModuleEntry().getCodeNameBase());
+        }
+        removeDependenciesByCNB(cnbsToDelete);
+    }
+    
+    /**
+     * Use this for removing more than one dependencies. It's faster then
+     * iterating and using <code>removeDependency</code> for every entry.
+     */
+    public void removeDependenciesByCNB(Collection/*<String>*/ cnbsToDelete) {
         Element confData = helper.getPrimaryConfigurationData(true);
         Element moduleDependencies = findModuleDependencies(confData);
         List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
@@ -151,16 +164,16 @@ public final class ProjectXMLManager {
             Element cnbEl = Util.findElement(dep, ProjectXMLManager.CODE_NAME_BASE,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
-            if (toDelete.remove(cnb)) {
+            if (cnbsToDelete.remove(cnb)) {
                 moduleDependencies.removeChild(dep);
             }
-            if (toDelete.size() == 0) {
+            if (cnbsToDelete.size() == 0) {
                 break; // everything was deleted
             }
         }
-        if (toDelete.size() != 0) {
+        if (cnbsToDelete.size() != 0) {
             Util.err.log(ErrorManager.WARNING,
-                    "Some modules weren't deleted: " + toDelete); // NOI18N
+                    "Some modules weren't deleted: " + cnbsToDelete); // NOI18N
         }
         helper.putPrimaryConfigurationData(confData, true);
     }
@@ -198,6 +211,22 @@ public final class ProjectXMLManager {
         helper.putPrimaryConfigurationData(confData, true);
     }
     
+    public void replaceDependencies(Set/*<ModuleDependency>*/ newDeps) {
+        Element confData = helper.getPrimaryConfigurationData(true);
+        Document doc = confData.getOwnerDocument();
+        Element moduleDependencies = findModuleDependencies(confData);
+        Element publicPackages = Util.findElement(confData,
+                ProjectXMLManager.PUBLIC_PACKAGES, NbModuleProjectType.NAMESPACE_SHARED);
+        confData.removeChild(moduleDependencies);
+        moduleDependencies = createModuleElement(doc, ProjectXMLManager.MODULE_DEPENDENCIES);
+        confData.insertBefore(moduleDependencies, publicPackages);
+        for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
+            ModuleDependency md = (ModuleDependency) it.next();
+            createModuleDependencyElement(moduleDependencies, md, null);
+        }
+        helper.putPrimaryConfigurationData(confData, true);
+    }
+    
     private void createModuleDependencyElement(
             Element moduleDependencies, ModuleDependency md, Element nextSibling) {
         
@@ -225,7 +254,7 @@ public final class ProjectXMLManager {
                     doc, ProjectXMLManager.IMPLEMENTATION_VERSION));
         } else {
             String sv = md.getSpecificationVersion();
-            if (sv != null) {
+            if (sv != null && !"".equals(sv)) { // NOI18N
                 runDepEl.appendChild(createModuleElement(
                         doc, ProjectXMLManager.SPECIFICATION_VERSION, sv));
             }

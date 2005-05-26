@@ -80,9 +80,7 @@ final class EditDependencyPanel extends JPanel {
 
         versionGroup = new javax.swing.ButtonGroup();
         codeNameBase = new javax.swing.JLabel();
-        codeNameBaseValue = new javax.swing.JLabel();
         jarLocation = new javax.swing.JLabel();
-        jarLocationValue = new javax.swing.JLabel();
         releaseVersion = new javax.swing.JLabel();
         releaseVersionValue = new javax.swing.JTextField();
         specVer = new javax.swing.JRadioButton();
@@ -91,12 +89,15 @@ final class EditDependencyPanel extends JPanel {
         includeInCP = new javax.swing.JCheckBox();
         availablePkgSP = new javax.swing.JScrollPane();
         availablePkg = new javax.swing.JList();
+        codeNameBaseValue = new javax.swing.JTextField();
+        jarLocationValue = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(6, 6, 6, 6)));
         setPreferredSize(new java.awt.Dimension(400, 300));
         codeNameBase.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_CNB_Mnem").charAt(0));
+        codeNameBase.setLabelFor(codeNameBaseValue);
         codeNameBase.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_CNB"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -105,26 +106,15 @@ final class EditDependencyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(codeNameBase, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(codeNameBaseValue, gridBagConstraints);
-
         jarLocation.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_JAR_Mnem").charAt(0));
+        jarLocation.setLabelFor(jarLocationValue);
         jarLocation.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_JAR"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
         add(jarLocation, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jarLocationValue, gridBagConstraints);
 
         releaseVersion.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_MajorReleaseVersion_Mnem").charAt(0));
         releaseVersion.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_MajorReleaseVersion"));
@@ -205,6 +195,21 @@ final class EditDependencyPanel extends JPanel {
         gridBagConstraints.weighty = 1.0;
         add(availablePkgSP, gridBagConstraints);
 
+        codeNameBaseValue.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(codeNameBaseValue, gridBagConstraints);
+
+        jarLocationValue.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        add(jarLocationValue, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
     
@@ -217,11 +222,11 @@ final class EditDependencyPanel extends JPanel {
     private javax.swing.JList availablePkg;
     private javax.swing.JScrollPane availablePkgSP;
     private javax.swing.JLabel codeNameBase;
-    private javax.swing.JLabel codeNameBaseValue;
+    private javax.swing.JTextField codeNameBaseValue;
     private javax.swing.JRadioButton implVer;
     private javax.swing.JCheckBox includeInCP;
     private javax.swing.JLabel jarLocation;
-    private javax.swing.JLabel jarLocationValue;
+    private javax.swing.JTextField jarLocationValue;
     private javax.swing.JLabel releaseVersion;
     private javax.swing.JTextField releaseVersionValue;
     private javax.swing.JRadioButton specVer;

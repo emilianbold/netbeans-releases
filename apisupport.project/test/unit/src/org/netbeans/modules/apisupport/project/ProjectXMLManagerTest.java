@@ -64,6 +64,10 @@ public class ProjectXMLManagerTest extends TestBase {
                 assertEquals("release version", "1", md.getReleaseVersion());
                 assertEquals("specification version", "5.9", md.getSpecificationVersion());
             }
+            if (md.getModuleEntry().getCodeNameBase().equals("org.netbeans.examples.modules.lib")) {
+                assertNull("release version", md.getReleaseVersion());
+                assertNull("specification version", md.getSpecificationVersion());
+            }
             assertTrue("unknown dependency", assumed.remove(md.getModuleEntry().getCodeNameBase()));
         }
         assertTrue("following dependencies were found: " + assumed, assumed.isEmpty());
@@ -181,6 +185,22 @@ public class ProjectXMLManagerTest extends TestBase {
         ManifestManager.PackageExport[] pp = ProjectXMLManager.findPublicPackages(projectXML);
         assertEquals("number of public packages", new Integer(pp.length), new Integer(1));
         assertEquals("public package", "org.netbeans.examples.modules.misc", pp[0].getPackage());
+    }
+    
+    public void testReplaceDependencies() throws Exception {
+        // XXX make this test meaningful
+        final Set deps = actionPXM.getDirectDependencies();
+        assertEquals("number of dependencies", new Integer(deps.size()), new Integer(2));
+        
+        // apply and save project
+        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws IOException {
+                actionPXM.replaceDependencies(deps);
+                return Boolean.TRUE;
+            }
+        });
+        assertTrue("replace dependencies", result.booleanValue());
+        ProjectManager.getDefault().saveProject(actionProject);
     }
     
     private FileObject prepareSuiteRepo(FileObject what) throws Exception {

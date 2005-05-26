@@ -64,18 +64,21 @@ final class AddModulePanel extends JPanel {
         hackPanel = new javax.swing.JPanel();
         descValueSP = new javax.swing.JScrollPane();
         descValue = new javax.swing.JTextArea();
+        filter = new javax.swing.JLabel();
+        filterValue = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(6, 6, 6, 6)));
         setPreferredSize(new java.awt.Dimension(400, 300));
-        moduleLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Module_Mnem").charAt(0));
         moduleLabel.setLabelFor(moduleList);
-        moduleLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Module"));
+        org.openide.awt.Mnemonics.setLocalizedText(moduleLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Module"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(moduleLabel, gridBagConstraints);
 
         moduleList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -83,38 +86,58 @@ final class AddModulePanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(moduleSP, gridBagConstraints);
 
-        descLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Description_Mnem").charAt(0));
-        descLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Description"));
+        descLabel.setLabelFor(descValue);
+        org.openide.awt.Mnemonics.setLocalizedText(descLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Description"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(descLabel, gridBagConstraints);
 
         hackPanel.setLayout(new java.awt.BorderLayout());
 
+        descValue.setEditable(false);
         descValue.setLineWrap(true);
         descValue.setRows(4);
         descValue.setWrapStyleWord(true);
         descValue.setDisabledTextColor(java.awt.Color.black);
-        descValue.setEnabled(false);
         descValueSP.setViewportView(descValue);
 
         hackPanel.add(descValueSP, java.awt.BorderLayout.NORTH);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
         add(hackPanel, gridBagConstraints);
+
+        filter.setLabelFor(filterValue);
+        org.openide.awt.Mnemonics.setLocalizedText(filter, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Filter"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(filter, gridBagConstraints);
+
+        filterValue.setText("<not implemented yet>");
+        filterValue.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(filterValue, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -124,6 +147,8 @@ final class AddModulePanel extends JPanel {
     private javax.swing.JLabel descLabel;
     private javax.swing.JTextArea descValue;
     private javax.swing.JScrollPane descValueSP;
+    private javax.swing.JLabel filter;
+    private javax.swing.JTextField filterValue;
     private javax.swing.JPanel hackPanel;
     private javax.swing.JLabel moduleLabel;
     private javax.swing.JList moduleList;

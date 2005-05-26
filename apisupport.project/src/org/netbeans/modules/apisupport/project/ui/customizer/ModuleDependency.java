@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.util.Collection;
+import java.util.Comparator;
 import org.netbeans.modules.apisupport.project.ModuleList;
 
 /**
@@ -29,6 +31,17 @@ public final class ModuleDependency implements Comparable {
     
     private ModuleList.Entry me;
     
+    public static final Comparator CODE_NAME_BASE_COMPARATOR;
+    
+    static {
+        CODE_NAME_BASE_COMPARATOR = new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return ((ModuleDependency) o1).getModuleEntry().getCodeNameBase().compareTo(
+                        ((ModuleDependency) o2).getModuleEntry().getCodeNameBase());
+            }
+        };
+    }
+    
     public ModuleDependency(ModuleList.Entry me) {
         this(me, null, null, true, false);
     }
@@ -40,20 +53,16 @@ public final class ModuleDependency implements Comparable {
         // set versions to null if contain the same value as the given entry
         this.compileDep = compileDep;
         this.implDep = implDep;
-        this.releaseVersion =
-                releaseVersion != null && releaseVersion.equals(me.getReleaseVersion()) ?
-                    null : releaseVersion;
-        this.specVersion =
-                specVersion != null && specVersion.equals(me.getSpecificationVersion()) ?
-                    null : specVersion;
+        this.releaseVersion = releaseVersion;
+        this.specVersion = specVersion;
     }
     
     public String getReleaseVersion() {
-        return releaseVersion != null ? releaseVersion : me.getReleaseVersion();
+        return releaseVersion;
     }
     
     public String getSpecificationVersion() {
-        return specVersion != null ? specVersion : me.getSpecificationVersion();
+        return specVersion;
     }
     
     public ModuleList.Entry getModuleEntry() {
