@@ -1,21 +1,17 @@
 <?xml version="1.0"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <!--
+                Sun Public License Notice
 
-                 Sun Public License Notice
- 
- The contents of this file are subject to the Sun Public License
- Version 1.0 (the "License"). You may not use this file except in
- compliance with the License. A copy of the License is available at
- http://www.sun.com/
- 
- The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
- Microsystems, Inc. All Rights Reserved.
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
 
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
 -->
-
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
 	<folder name="org-netbeans-api-project-libraries">
     	<folder name="Libraries">
@@ -96,10 +92,6 @@
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
     	</file>        
     </folder>
-
-
-    
-    
     
     <folder name="UI">
     	<folder name="Services">
@@ -117,11 +109,15 @@
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="output">        <!-- "output" is defined in core/ui -->
+                <!-- XXX this file does not exist! breaks commit validation! forgot to commit to CVS?
                 <file name="test-results.wstcref" url="../output/test-results.wstcref"/>
+                -->
             </folder>
         </folder>
         <folder name="Components">
+            <!-- XXX ditto:
             <file name="test-results.settings" url="../output/test-results.settings"/>
+            -->
         </folder>
     </folder>
 
