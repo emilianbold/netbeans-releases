@@ -58,7 +58,7 @@ final class ModuleListParser {
                 project.log("Scanning for modules in " + root);
             }
             entries = new HashMap();
-            doScanNetBeansOrgSources(entries, root, DEPTH_NB_ALL, properties, null);
+            doScanNetBeansOrgSources(entries, root, DEPTH_NB_ALL, properties, null, project);
             if (project != null) {
                 project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
             }
@@ -70,7 +70,7 @@ final class ModuleListParser {
     /**
      * Scan a root for all NBM projects.
      */
-    private static void doScanNetBeansOrgSources(Map/*<String,Entry>*/ entries, File dir, int depth, Hashtable properties, String pathPrefix) throws IOException {
+    private static void doScanNetBeansOrgSources(Map/*<String,Entry>*/ entries, File dir, int depth, Hashtable properties, String pathPrefix, Project project) throws IOException {
         if (depth == 0) {
             return;
         }
@@ -84,18 +84,18 @@ final class ModuleListParser {
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + kids[i].getName() : kids[i].getName();
             try {
-                scanPossibleProject(kids[i], entries, properties, newPathPrefix, true);
+                scanPossibleProject(kids[i], entries, properties, newPathPrefix, true, project);
             } catch (SAXException e) {
                 throw (IOException) new IOException(e.toString()).initCause(e);
             }
-            doScanNetBeansOrgSources(entries, kids[i], depth - 1, properties, newPathPrefix);
+            doScanNetBeansOrgSources(entries, kids[i], depth - 1, properties, newPathPrefix, project);
         }
     }
     
     /**
      * Check a single dir to see if it is an NBM project, and if so, register it.
      */
-    private static boolean scanPossibleProject(File dir, Map/*<String,Entry>*/ entries, Hashtable properties, String path, boolean isNetBeansOrg) throws IOException, SAXException {
+    private static boolean scanPossibleProject(File dir, Map/*<String,Entry>*/ entries, Hashtable properties, String path, boolean isNetBeansOrg, Project project) throws IOException, SAXException {
         File nbproject = new File(dir, "nbproject");
         File projectxml = new File(nbproject, "project.xml");
         if (!projectxml.isFile()) {
@@ -110,7 +110,10 @@ final class ModuleListParser {
         Element configEl = XMLUtil.findElement(doc.getDocumentElement(), "configuration", ParseProjectXml.PROJECT_NS);
         Element dataEl = XMLUtil.findElement(configEl, "data", ParseProjectXml.NBM_NS);
         if (dataEl == null) {
-            throw new IOException("Missing <data> in " + projectxml);
+            if (project != null) {
+                project.log(projectxml.toString() + ": warning: module claims to be a NBM project but is missing <data xmlns=\"" + ParseProjectXml.NBM_NS + "\">; maybe an old NB 4.[01] project?", Project.MSG_WARN);
+            }
+            return false;
         }
         Element cnbEl = XMLUtil.findElement(dataEl, "code-name-base", ParseProjectXml.NBM_NS);
         String cnb = XMLUtil.findText(cnbEl);
@@ -320,7 +323,7 @@ final class ModuleListParser {
                 project.log("Scanning for modules in suite " + suite);
             }
             entries = new HashMap();
-            doScanSuite(entries, suite, properties);
+            doScanSuite(entries, suite, properties, project);
             if (project != null) {
                 project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
             }
@@ -329,7 +332,7 @@ final class ModuleListParser {
         return entries;
     }
     
-    private static void doScanSuite(Map/*<String,Entry>*/ entries, File suite, Hashtable properties) throws IOException {
+    private static void doScanSuite(Map/*<String,Entry>*/ entries, File suite, Hashtable properties, Project project) throws IOException {
         Project fakeproj = new Project();
         fakeproj.setBaseDir(suite); // in case ${basedir} is used somewhere
         Property faketask = new Property();
@@ -349,7 +352,7 @@ final class ModuleListParser {
                 throw new IOException("No such module " + module + " referred to from " + suite);
             }
             try {
-                if (!scanPossibleProject(module, entries, properties, null, false)) {
+                if (!scanPossibleProject(module, entries, properties, null, false, project)) {
                     throw new IOException("No valid module found in " + module + " referred to from " + suite);
                 }
             } catch (SAXException e) {
@@ -364,7 +367,7 @@ final class ModuleListParser {
         if (entry == null) {
             Map/*<String,Entries>*/ entries = new HashMap();
             try {
-                if (!scanPossibleProject(basedir, entries, properties, null, false)) {
+                if (!scanPossibleProject(basedir, entries, properties, null, false, project)) {
                     throw new IOException("No valid module found in " + basedir);
                 }
             } catch (SAXException e) {
