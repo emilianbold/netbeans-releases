@@ -34,7 +34,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.proxy</package>
                 <package>org.netbeans.modules.turbo</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>
