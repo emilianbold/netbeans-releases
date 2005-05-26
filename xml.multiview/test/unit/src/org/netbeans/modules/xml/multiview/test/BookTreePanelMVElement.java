@@ -29,7 +29,7 @@ public class BookTreePanelMVElement extends TreePanelMultiViewElement {
         super.componentShowing();
     }
 
-    private class BookView extends PanelView {
+    private class BookView extends TreePanelView {
         BookView(BookDataObject dObj) {
             super();           
             Children rootChildren = new Children.Array();
@@ -55,7 +55,7 @@ public class BookTreePanelMVElement extends TreePanelMultiViewElement {
             }
             setRoot(root);
         }
-        
+        /*
         public void initComponents() {
             setLayout(new java.awt.BorderLayout());
             JPanel scrollPanel= new JPanel();
@@ -70,7 +70,7 @@ public class BookTreePanelMVElement extends TreePanelMultiViewElement {
         public void showSelection(Node[] node) {
             System.out.println("showSelection()");
         }
-        
+        */
         public Error validateView() {
             try {
                 Book book = dObj.getBook();
@@ -99,19 +99,43 @@ public class BookTreePanelMVElement extends TreePanelMultiViewElement {
         }
     }
     
-    private class BookNode extends org.openide.nodes.AbstractNode {
+    static class BookNode extends org.openide.nodes.AbstractNode implements TreeNode {
+        Book book;
         BookNode(Book book) {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(book.getTitle());
+            this.book=book;
             //setIconBase("org/netbeans/modules/web/dd/multiview/resources/class"); //NOI18N
-        }    
+        }
+        public TreePanel getPanel() {
+            return new BookTreePanel();
+        }
+        public String getPanelId() {
+            return "book";
+        }
+        
+        public Book getBook() {
+            return book;
+        }
     }
-    private class ChapterNode extends org.openide.nodes.AbstractNode {
+    static class ChapterNode extends org.openide.nodes.AbstractNode implements TreeNode {
+        private Chapter chapter;
         ChapterNode(Chapter chapter) {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(chapter.getTitle());
+            this.chapter=chapter;
             //setIconBase("org/netbeans/modules/web/dd/multiview/resources/class"); //NOI18N
-        }    
+        }
+        public TreePanel getPanel() {
+            return new ChapterTreePanel();
+        }
+        public String getPanelId() {
+            return "chapter";
+        }
+        
+        public Chapter getChapter() {
+            return chapter;
+        }
     }
     
 }
