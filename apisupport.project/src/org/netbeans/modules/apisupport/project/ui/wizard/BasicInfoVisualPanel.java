@@ -15,14 +15,26 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
+ * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
+ * basic module information:
+ *
+ * <ul>
+ *  <li>Project name</li>
+ *  <li>Project Location</li>
+ *  <li>Project Folder</li>
+ *  <li>If should be set as a Main Project</li>
+ * </ul>
+ *
  * @author mkrauskopf
  */
-public class BasicInfoVisualPanel extends javax.swing.JPanel {
+public class BasicInfoVisualPanel extends JPanel {
     
     private WizardDescriptor settings;
     private Boolean valid = Boolean.FALSE;
@@ -54,24 +66,24 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
     private void nameUpdated() {
         // check module name
         String name = getNameValue();
-        if ("".equals(name)) {
-            setErrorMessage("Name cannot be empty String"); // NOI18N
+        if ("".equals(name)) { // NOI18N
+            setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_NameCannotBeEmpty")); // NOI18N
             return;
         }
-        updateFolderAndSuiteRootChoices();
+        updateFolder();
     }
     
     private void locationUpdated() {
         // check module location
         File fLocation = new File(getLocationValue());
         if (!fLocation.exists()) {
-            setErrorMessage("Location must exist."); // NOI18N
+            setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_LocationMustExist")); // NOI18N
             return;
         }
-        updateFolderAndSuiteRootChoices();
+        updateFolder();
     }
     
-    private void updateFolderAndSuiteRootChoices() {
+    private void updateFolder() {
         if ("".equals(getLocationValue()) || "".equals(getNameValue())) {
             folderValue.setText("");
             setErrorMessage(null, false);
@@ -80,15 +92,8 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
         folderValue.setText(getLocationValue() + File.separator + getNameValue());
         File fFolder = new File(folderValue.getText());
         if (fFolder.exists()) {
-            setErrorMessage("Project Folder already exists.");
+            setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_ProjectFolderExists")); // NOI18N
             return;
-        }
-        suiteRootValue.removeAllItems();
-        String firstLevel = getLocationValue();
-        suiteRootValue.addItem(firstLevel);
-        File secondLevel = new File(firstLevel).getParentFile();
-        if (secondLevel != null) {
-            suiteRootValue.addItem(secondLevel.getAbsolutePath());
         }
         setErrorMessage(null);
     }
@@ -119,8 +124,14 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
         data.setProjectName(getNameValue());
         data.setProjectLocation(getLocationValue());
         data.setProjectFolder(folderValue.getText());
-        data.setSuiteRoot((String) suiteRootValue.getModel().getSelectedItem());
         data.setMainProject(mainProject.isSelected());
+    }
+    
+    /**
+     * Convenience method for accessing Bundle resources from this package.
+     */
+    static String getMessage(String key) {
+        return NbBundle.getMessage(BasicInfoVisualPanel.class, key);
     }
     
     /** This method is called from within the constructor to
@@ -138,20 +149,18 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
         nameLbl = new javax.swing.JLabel();
         locationLbl = new javax.swing.JLabel();
         folderLbl = new javax.swing.JLabel();
-        suiteRootLbl = new javax.swing.JLabel();
         nameValue = new javax.swing.JTextField();
         locationValue = new javax.swing.JTextField();
-        folderValue = new javax.swing.JLabel();
-        suiteRootValue = new javax.swing.JComboBox();
         browseButton = new javax.swing.JButton();
         filler = new javax.swing.JLabel();
+        folderValue = new javax.swing.JTextField();
         separator2 = new javax.swing.JSeparator();
         mainProject = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
-        nameLocation.setText("Name and Location");
+        org.openide.awt.Mnemonics.setLocalizedText(nameLocation, "Name and Location");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(nameLocation, gridBagConstraints);
@@ -165,13 +174,15 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
 
         infoPanel.setLayout(new java.awt.GridBagLayout());
 
-        nameLbl.setText("Project Name:");
+        nameLbl.setLabelFor(nameValue);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLbl, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("LBL_ProjectName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         infoPanel.add(nameLbl, gridBagConstraints);
 
-        locationLbl.setText("Project Location:");
+        locationLbl.setLabelFor(locationValue);
+        org.openide.awt.Mnemonics.setLocalizedText(locationLbl, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("LBL_ProjectLocation"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -179,7 +190,8 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         infoPanel.add(locationLbl, gridBagConstraints);
 
-        folderLbl.setText("Project  Folder:");
+        folderLbl.setLabelFor(folderValue);
+        org.openide.awt.Mnemonics.setLocalizedText(folderLbl, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("LBL_ProjectFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -187,20 +199,11 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         infoPanel.add(folderLbl, gridBagConstraints);
 
-        suiteRootLbl.setText("Module Suite Root:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        infoPanel.add(suiteRootLbl, gridBagConstraints);
-
         nameValue.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         infoPanel.add(nameValue, gridBagConstraints);
 
         locationValue.setHorizontalAlignment(javax.swing.JTextField.LEFT);
@@ -209,24 +212,9 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         infoPanel.add(locationValue, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        infoPanel.add(folderValue, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        infoPanel.add(suiteRootValue, gridBagConstraints);
-
-        browseButton.setText("Browse");
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("CTL_BrowseButton"));
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLocation(evt);
@@ -236,13 +224,22 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         infoPanel.add(browseButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.weighty = 1.0;
         infoPanel.add(filler, gridBagConstraints);
+
+        folderValue.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        infoPanel.add(folderValue, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -260,7 +257,7 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         add(separator2, gridBagConstraints);
 
-        mainProject.setText("Set as Main Project");
+        org.openide.awt.Mnemonics.setLocalizedText(mainProject, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("CTL_SetAsMainProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -285,7 +282,7 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel filler;
     private javax.swing.JLabel folderLbl;
-    private javax.swing.JLabel folderValue;
+    private javax.swing.JTextField folderValue;
     private javax.swing.JPanel infoPanel;
     private javax.swing.JLabel locationLbl;
     private javax.swing.JTextField locationValue;
@@ -295,7 +292,5 @@ public class BasicInfoVisualPanel extends javax.swing.JPanel {
     private javax.swing.JTextField nameValue;
     private javax.swing.JSeparator separator1;
     private javax.swing.JSeparator separator2;
-    private javax.swing.JLabel suiteRootLbl;
-    private javax.swing.JComboBox suiteRootValue;
     // End of variables declaration//GEN-END:variables
 }

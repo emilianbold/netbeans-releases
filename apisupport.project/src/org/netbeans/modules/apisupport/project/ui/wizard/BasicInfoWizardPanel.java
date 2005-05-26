@@ -30,7 +30,6 @@ import org.openide.util.HelpCtx;
  *  <li>Project name</li>
  *  <li>Project Location</li>
  *  <li>Project Folder</li>
- *  <li>Module Suite Root</li>
  *  <li>If should be set as a Main Project</li>
  * </ul>
  *

@@ -32,7 +32,8 @@ import org.openide.util.HelpCtx;
  *  <li>Module Display Name</li>
  *  <li>Localizing Bundle</li>
  *  <li>XML Layer</li>
- *  <li>NetBeans Platform</li>
+ *  <li>NetBeans Platform (for standalone modules)</li>
+ *  <li>Module Suite (for suite modules)</li>
  * </ul>
  *
  * @author mkrauskopf

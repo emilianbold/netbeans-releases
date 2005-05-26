@@ -50,45 +50,52 @@ final class CustomizerSources extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         prjFolder = new javax.swing.JLabel();
-        prjFolderValue = new javax.swing.JLabel();
         srcLevel = new javax.swing.JLabel();
         srcLevelValue = new javax.swing.JComboBox();
         filler = new javax.swing.JLabel();
+        prjFolderValue = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
-        prjFolder.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ProjectFolder"));
+        prjFolder.setLabelFor(prjFolderValue);
+        org.openide.awt.Mnemonics.setLocalizedText(prjFolder, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ProjectFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(prjFolder, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(prjFolderValue, gridBagConstraints);
-
-        srcLevel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_SourceLevel_Mnem").charAt(0));
         srcLevel.setLabelFor(srcLevelValue);
-        srcLevel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_SourceLevel"));
+        org.openide.awt.Mnemonics.setLocalizedText(srcLevel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_SourceLevel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
         add(srcLevel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(srcLevelValue, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(filler, gridBagConstraints);
+
+        prjFolderValue.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(prjFolderValue, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -97,7 +104,7 @@ final class CustomizerSources extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel filler;
     private javax.swing.JLabel prjFolder;
-    private javax.swing.JLabel prjFolderValue;
+    private javax.swing.JTextField prjFolderValue;
     private javax.swing.JLabel srcLevel;
     private javax.swing.JComboBox srcLevelValue;
     // End of variables declaration//GEN-END:variables
