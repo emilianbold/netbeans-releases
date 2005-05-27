@@ -34,9 +34,6 @@ public final class JUnitAntLogger extends AntLogger {
         "junit"                                                         //NOI18N
     };
     
-    /** */
-    private static final String PROP_SESSION = "session";               //NOI18N
-    
     /** default constructor for lookup */
     public JUnitAntLogger() { }
     
