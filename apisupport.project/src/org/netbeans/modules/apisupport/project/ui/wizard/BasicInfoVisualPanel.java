@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
@@ -70,7 +71,7 @@ public class BasicInfoVisualPanel extends JPanel {
             setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_NameCannotBeEmpty")); // NOI18N
             return;
         }
-        updateFolder();
+        updateFolder(true);
     }
     
     private void locationUpdated() {
@@ -80,22 +81,36 @@ public class BasicInfoVisualPanel extends JPanel {
             setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_LocationMustExist")); // NOI18N
             return;
         }
-        updateFolder();
+        if (!fLocation.canWrite()) {
+            updateFolder(false);
+            setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_LocationNotWritable")); // NOI18N
+            return;
+        } else {
+            updateFolder(true);
+        }
     }
     
-    private void updateFolder() {
-        if ("".equals(getLocationValue()) || "".equals(getNameValue())) {
-            folderValue.setText("");
+    private void updateFolder(boolean alsoCheck) {
+        if ("".equals(getLocationValue()) || "".equals(getNameValue())) { // NOI18N
+            folderValue.setText(""); // NOI18N
             setErrorMessage(null, false);
             return;
         }
-        folderValue.setText(getLocationValue() + File.separator + getNameValue());
-        File fFolder = new File(folderValue.getText());
-        if (fFolder.exists()) {
-            setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_ProjectFolderExists")); // NOI18N
-            return;
+        String path = getLocationValue() + File.separator + getNameValue();
+        File fFolder;
+        try {
+            fFolder = new File(path).getCanonicalFile();
+        } catch (IOException e) {
+            fFolder = new File(path);
         }
-        setErrorMessage(null);
+        folderValue.setText(fFolder.getPath());
+        if (alsoCheck) {
+            if (fFolder.exists()) {
+                setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_ProjectFolderExists")); // NOI18N
+                return;
+            }
+            setErrorMessage(null);
+        }
     }
     
     /** Set error message and always update panel validity. */

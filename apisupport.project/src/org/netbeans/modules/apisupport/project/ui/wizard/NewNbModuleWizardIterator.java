@@ -52,7 +52,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         // create project
         final File projectFolder = new File(data.getProjectFolder());
         NbModuleProjectGenerator.createStandAloneModule(projectFolder,
-                data.getProjectDisplayName(), data.getCodeNameBase(),
+                data.getCodeNameBase(), data.getProjectDisplayName(),
                 data.getBundle(), data.getLayer(), data.getPlatform());
         
         FileObject projectFolderFO = FileUtil.toFileObject(FileUtil.normalizeFile(projectFolder));
