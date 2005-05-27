@@ -22,9 +22,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -33,7 +32,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
-
 /** 
  * Implementation of a single classpath that is derived from list of Ant properties.
  */
@@ -41,11 +39,10 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final File projectFolder;
-    private final String[] propertyNames;
-    private List resources;
+    private List/*<PathResourceImplementation>*/ resources;
     private final PropertyEvaluator evaluator;
     private boolean dirty = false;
-    private final Set/*<String>*/ propertyNamesSet = new HashSet ();
+    private final List/*<String>*/ propertyNames;
 
     /**
      * Construct the implementation.
@@ -57,12 +54,11 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         assert projectFolder != null && propertyNames != null && evaluator != null;
         this.projectFolder = projectFolder;
         this.evaluator = evaluator;
-        this.propertyNames = propertyNames;
-        this.propertyNamesSet.addAll(Arrays.asList(propertyNames));
+        this.propertyNames = Arrays.asList(propertyNames);
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    public synchronized List /*<PathResourceImplementation>*/ getResources() {
+    public synchronized List/*<PathResourceImplementation>*/ getResources() {
         if (this.resources == null) {
             this.resources = this.getPath ();
         }
@@ -79,11 +75,12 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
 
 
     public void propertyChange(PropertyChangeEvent evt) {        
-        if (!this.propertyNamesSet.contains(evt.getPropertyName())) {
+        if (!propertyNames.contains(evt.getPropertyName())) {
             // Not interesting to us.
             return;
         }
         // Coalesce changes; can come in fast after huge CP changes (#47910):
+        // XXX any synch needed on dirty flag?
         if (!dirty) {
             dirty = true;
             ProjectManager.mutex().postReadRequest(this);
@@ -105,10 +102,11 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
     }
     
-    private List getPath() {
-        List result = new ArrayList ();
-        for (int j=0; j< propertyNames.length; j++) {
-            String prop = evaluator.getProperty(propertyNames[j]);
+    private List/*<PathResourceImplementation>*/ getPath() {
+        List/*<PathResourceImplementation>*/ result = new ArrayList();
+        Iterator it = propertyNames.iterator();
+        while (it.hasNext()) {
+            String prop = evaluator.getProperty((String) it.next());
             if (prop != null) {
                 String[] pieces = PropertyUtils.tokenizePath(prop);
                 for (int i = 0; i < pieces.length; i++) {                    
