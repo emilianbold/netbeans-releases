@@ -112,7 +112,7 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
         assertEquals ("Wrong ClassPath roots",expected, Arrays.asList(fo));   //NOI18N
     }        
     
-    
+    // XXX should test that changes are actually fired when appropriate
     
     private void setClassPath (String[] propNames, FileObject[][] cpRoots) {
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -134,9 +134,5 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
         }
         return result.toString();
     }
-    
-    
-    
-    
     
 }
