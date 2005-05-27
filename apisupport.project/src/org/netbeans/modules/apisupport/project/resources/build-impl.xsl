@@ -51,6 +51,7 @@ Microsystems, Inc. All Rights Reserved.
                     <property name="@{{name}}" value="${{@{{value}}}}"/>
                 </sequential>
             </macrodef>
+            <!-- Skip this; it is legal to define netbeans.dest.dir and harness.dir explicitly:
             <xsl:choose>
                 <xsl:when test="/p:project/p:configuration/nbmproject:data/nbmproject:suite-component">
                     <fail unless="nbplatform.active">Your suite must set platform.properties to name your active NB platform</fail>
@@ -64,6 +65,7 @@ Microsystems, Inc. All Rights Reserved.
                     </xsl:message>
                 </xsl:otherwise>
             </xsl:choose>
+            -->
             <property file="${{user.properties.file}}"/>
             <nbmproject:property name="harness.dir" value="nbplatform.${{nbplatform.active}}.harness.dir"/>
             <nbmproject:property name="netbeans.dest.dir" value="nbplatform.${{nbplatform.active}}.netbeans.dest.dir"/>

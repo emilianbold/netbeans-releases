@@ -36,7 +36,9 @@ Microsystems, Inc. All Rights Reserved.
                     <property name="@{{name}}" value="${{@{{value}}}}"/>
                 </sequential>
             </macrodef>
+            <!-- Do not do this, as it is legal to define harness.dir and netbeans.dest.dir explicitly:
             <fail unless="nbplatform.active">You must set platform.properties to name your active NB platform</fail>
+            -->
             <property file="${{user.properties.file}}"/>
             <sproject:property name="harness.dir" value="nbplatform.${{nbplatform.active}}.harness.dir"/>
             <sproject:property name="netbeans.dest.dir" value="nbplatform.${{nbplatform.active}}.netbeans.dest.dir"/>

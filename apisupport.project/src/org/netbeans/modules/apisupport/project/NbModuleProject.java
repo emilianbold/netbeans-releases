@@ -774,6 +774,7 @@ final class NbModuleProject implements Project {
             assert compile != null : "No COMPILE path";
             // write user.properties.file=$userdir/build.properties to platform-private.properties
             if (getModuleType() == TYPE_STANDALONE) {
+                // XXX skip this in case nbplatform.active is not defined
                 ProjectManager.mutex().writeAccess(new Mutex.Action() {
                     public Object run() {
                         String path = "nbproject/private/platform-private.properties"; // NOI18N

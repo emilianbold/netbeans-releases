@@ -145,6 +145,7 @@ final class SuiteProject implements Project {
         OpenedHook() {}
         
         protected void projectOpened() {
+            // XXX skip this in case nbplatform.active is not defined
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
                     String path = "nbproject/private/platform-private.properties"; // NOI18N
