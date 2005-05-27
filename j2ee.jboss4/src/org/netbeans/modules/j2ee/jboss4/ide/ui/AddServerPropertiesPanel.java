@@ -131,6 +131,6 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx("j2eeplugins_wizard_new_server_instance_properties"); //NOI18N
+        return new HelpCtx("j2eeplugins_registering_app_server_jboss"); //NOI18N
     }
 }

@@ -42,7 +42,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx("j2eeplugins_property_sheet_server_node"); //NOI18N
+        return new org.openide.util.HelpCtx("j2eeplugins_property_sheet_server_node_jboss"); //NOI18N
     }
     
     public boolean hasCustomizer() {
