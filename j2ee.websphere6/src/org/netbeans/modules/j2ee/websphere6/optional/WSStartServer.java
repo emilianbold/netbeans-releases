@@ -649,24 +649,6 @@ public class WSStartServer extends StartServer {
                         (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), 
                         serverName}); 
                         
-//                ProcessBuilder processBuilder = new ProcessBuilder(new String[]{domainHome + "/bin/" + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), serverName});
-//                
-//                processBuilder.environment().put("WAS_DEBUG", "-Djava.compiler=NONE -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=7777");
-//                
-//                Process serverProcess = processBuilder.start();
-                
-                // get the current environment
-//                Properties environment = System.getProperties();
-//                environment.put("WAS_DEBUG", "-Xdebug -Xnoagent " +    // NOI18N
-//                        "-Xrunjdwp:transport=dt_socket,address=" +     // NOI18N
-//                        debuggerPort + ",server=y,suspend=n");         // NOI18N
-//                
-//                // create the startup process
-//                Process serverProcess = Runtime.getRuntime().exec(
-//                        new String[]{domainHome + "/bin/" + 
-//                        (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), 
-//                        serverName}, properties2StringArray(environment));
-                
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
                 new WSTailer(serverProcess.getInputStream(), 
