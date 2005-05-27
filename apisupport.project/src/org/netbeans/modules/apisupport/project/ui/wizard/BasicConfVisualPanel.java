@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import javax.swing.ButtonGroup;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
@@ -44,11 +45,20 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
     
     private WizardDescriptor settings;
     private NewModuleProjectData data;
-    private Boolean valid = Boolean.FALSE;
+    private boolean valid = false;
     
     /** Creates new form BasicConfVisualPanel */
     public BasicConfVisualPanel(WizardDescriptor setting) {
         initComponents();
+        ButtonGroup moduleTypeGroup = new ButtonGroup();
+        moduleTypeGroup.add(standAloneModule);
+        moduleTypeGroup.add(suiteModule);
+        {// XXX suites not yet supported, don't give the option!
+            suiteModule.setEnabled(false);
+            moduleSuite.setEnabled(false);
+            moduleSuiteValue.setEnabled(false);
+            browseSuiteButton.setEnabled(false);
+        }
         this.settings = setting;
         this.data = (NewModuleProjectData) settings.
                 getProperty("moduleProjectData"); // XXX should be constant
@@ -139,14 +149,18 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
     private void setErrorMessage(String errorMessage, boolean fireChange) {
         settings.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
         if (fireChange) {
-            setValid(Boolean.valueOf(errorMessage == null));
+            setValid(errorMessage == null);
         }
     }
     
-    private void setValid(Boolean newValid) {
-        Boolean oldValid = valid;
+    boolean isWizardValid() {
+        return valid;
+    }
+    
+    private void setValid(boolean newValid) {
+        boolean oldValid = valid;
         valid = newValid;
-        firePropertyChange("valid", oldValid, newValid); // NOI18N
+        firePropertyChange("valid", Boolean.valueOf(oldValid), Boolean.valueOf(newValid)); // NOI18N
     }
     
     void refreshData() {
@@ -237,12 +251,14 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
 
         confPanel.setLayout(new java.awt.GridBagLayout());
 
+        codeNameBase.setLabelFor(codeNameBaseValue);
         org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("LBL_CodeBaseName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 12);
         confPanel.add(codeNameBase, gridBagConstraints);
 
+        displayName.setLabelFor(displayNameValue);
         org.openide.awt.Mnemonics.setLocalizedText(displayName, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("LBL_ModuleDisplayName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -251,6 +267,7 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 12);
         confPanel.add(displayName, gridBagConstraints);
 
+        bundle.setLabelFor(bundleValue);
         org.openide.awt.Mnemonics.setLocalizedText(bundle, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("LBL_LocalizingBundle"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -259,6 +276,7 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 1, 12);
         confPanel.add(bundle, gridBagConstraints);
 
+        layer.setLabelFor(layerValue);
         org.openide.awt.Mnemonics.setLocalizedText(layer, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("LBL_XMLLayer"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -267,6 +285,7 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 12);
         confPanel.add(layer, gridBagConstraints);
 
+        platform.setLabelFor(platformValue);
         org.openide.awt.Mnemonics.setLocalizedText(platform, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("LBL_NetBeansPlatform"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -345,6 +364,7 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         confPanel.add(suiteModule, gridBagConstraints);
 
+        moduleSuite.setLabelFor(moduleSuiteValue);
         org.openide.awt.Mnemonics.setLocalizedText(moduleSuite, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("LBL_ModuleSuite"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

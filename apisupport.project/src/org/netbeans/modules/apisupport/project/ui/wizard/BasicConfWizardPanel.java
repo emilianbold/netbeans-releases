@@ -93,7 +93,7 @@ final class BasicConfWizardPanel implements PropertyChangeListener,
     }
     
     public boolean isValid() {
-        return true; // TODO
+        return ((BasicConfVisualPanel) getComponent()).isWizardValid();
     }
     
     public void validate() throws WizardValidationException {
