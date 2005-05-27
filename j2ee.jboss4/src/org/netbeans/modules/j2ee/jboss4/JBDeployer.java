@@ -49,20 +49,20 @@ public class JBDeployer implements ProgressObject, Runnable {
     File file;
     File file2;
     String uri;
-    
+    TargetModuleID module_id;
     /** Creates a new instance of JBDeployer */
     public JBDeployer(String serverUri) {
         uri = serverUri;
     }
     
     
-    public ProgressObject deploy(Target[] target, File file, File file2){
+    public ProgressObject deploy(Target[] target, File file, File file2, TargetModuleID module_id){
         
         
         this.target = target;
         this.file = file;
         this.file2 = file2;
-        
+        this.module_id = module_id;
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, ""));
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
         return this;
@@ -117,8 +117,8 @@ public class JBDeployer implements ProgressObject, Runnable {
             
             MBeanServerConnection srv = (MBeanServerConnection)ctx.lookup("/jmx/invoker/RMIAdaptor");
             
-            srv.invoke(mainDeployer, "deploy", args, sig);
-            
+            srv.invoke(mainDeployer, "undeploy", args, sig);
+            srv.invoke(mainDeployer, "deploy", args, sig);        
         }catch(Exception e){
             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ""));
         }finally{
@@ -163,7 +163,7 @@ public class JBDeployer implements ProgressObject, Runnable {
     }
     
     public TargetModuleID[] getResultTargetModuleIDs() {
-        return new TargetModuleID[]{ new TargetModuleIDImpl(target[0],"") };
+        return new TargetModuleID[]{ module_id };
     }
     
     public DeploymentStatus getDeploymentStatus() {
@@ -196,35 +196,3 @@ public class JBDeployer implements ProgressObject, Runnable {
 
 
 
-class TargetModuleIDImpl implements TargetModuleID{
-    private Target target;
-    private String module_id;
-    TargetModuleIDImpl(Target target, String module_id){
-        this.target = target;
-        this.module_id = module_id;
-    }
-    public TargetModuleID[]     getChildTargetModuleID(){
-        return null;
-    }
-    //Retrieve a list of identifiers of the children of this deployed module.
-    public java.lang.String     getModuleID(){
-        return module_id;
-    }
-    //         Retrieve the id assigned to represent the deployed module.
-    public TargetModuleID     getParentTargetModuleID(){
-
-        return null;
-    }
-    //Retrieve the identifier of the parent object of this deployed module.
-    public Target     getTarget(){
-        return target;
-    }
-    //Retrieve the name of the target server.
-    public java.lang.String     getWebURL(){
-        return "http://" + module_id; //NOI18N
-    }
-    //If this TargetModulID represents a web module retrieve the URL for it.
-    public java.lang.String     toString() {
-        return module_id;
-    }
-}
