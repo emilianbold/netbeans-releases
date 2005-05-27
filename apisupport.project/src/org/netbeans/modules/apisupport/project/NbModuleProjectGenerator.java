@@ -28,7 +28,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 
-
 /**
  * Servers for generating new NetBeans Modules templates.
  *
@@ -38,21 +37,19 @@ public class NbModuleProjectGenerator {
     
     private static final String PLATFORM_PROPERTIES_PATH =
             "nbproject" + File.separator + "platform.properties"; // NOI18N
-            
     
     /** Use static factory methods instead. */
     private NbModuleProjectGenerator() {/* empty constructor*/}
     
     /** Generates standalone NetBeans Module. */
     public static void createStandAloneModule(File projectDir, String cnb,
-            String name, String bundlePath, String layerPath) throws IOException {
+            String name, String bundlePath, String layerPath, String platformID) throws IOException {
         final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
         createProjectXML(dirFO, cnb, true);
-        // XXX temporary - user will choose a platform in the wizard
-        createPlatformProperties(dirFO, "default");
+        createPlatformProperties(dirFO, platformID);
         createManifest(dirFO, cnb, bundlePath, layerPath);
         createBundle(dirFO, bundlePath, name);
         createLayer(dirFO, layerPath);

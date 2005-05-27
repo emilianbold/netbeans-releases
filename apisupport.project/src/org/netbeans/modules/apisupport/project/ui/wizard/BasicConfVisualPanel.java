@@ -13,14 +13,12 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import javax.swing.ButtonGroup;
+import java.util.Set;
+import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.apisupport.project.NbPlatform;
+import org.netbeans.modules.apisupport.project.ui.ComponentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -39,7 +37,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkrauskopf
  */
-final class BasicConfVisualPanel extends javax.swing.JPanel {
+final class BasicConfVisualPanel extends JPanel {
     
     private static final String EXAMPLE_BASE_NAME = "org.yourorghere."; // NOI18N
     
@@ -50,9 +48,6 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
     /** Creates new form BasicConfVisualPanel */
     public BasicConfVisualPanel(WizardDescriptor setting) {
         initComponents();
-        ButtonGroup moduleTypeGroup = new ButtonGroup();
-        moduleTypeGroup.add(standAloneModule);
-        moduleTypeGroup.add(suiteModule);
         {// XXX suites not yet supported, don't give the option!
             suiteModule.setEnabled(false);
             moduleSuite.setEnabled(false);
@@ -62,7 +57,6 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
         this.settings = setting;
         this.data = (NewModuleProjectData) settings.
                 getProperty("moduleProjectData"); // XXX should be constant
-        platformValue.addItem(getDefaultPlatform());
         codeNameBaseValue.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { codeNameBaseUpdated(); }
             public void removeUpdate(DocumentEvent e) { codeNameBaseUpdated(); }
@@ -78,33 +72,6 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
             public void removeUpdate(DocumentEvent e) { layerUpdated(); }
             public void changedUpdate(DocumentEvent e) {}
         });
-    }
-    
-    // TODO this whole method is nonsense ant will be probably removed in the
-    // future when thinks around NB Platforms will be clear
-    private String getDefaultPlatform() {
-        File userDirProps = new File(System.getProperty("netbeans.user"), // NOI18N
-                "build.properties"); // NOI18N
-        Properties props = new Properties();
-        InputStream is = null;
-        String plf = null;
-        try {
-            is = new FileInputStream(userDirProps);
-            props.load(is);
-            plf = props.getProperty("netbeans.dest.dir"); // NOI18N
-        } catch (IOException e) {
-            System.err.println("Cannot load default platform: " + e); // NOI18N
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return plf;
     }
     
     private void codeNameBaseUpdated() {
@@ -177,7 +144,7 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
         NewModuleProjectData data = (NewModuleProjectData) settings.
                 getProperty("moduleProjectData"); // XXX should be constant
         data.setCodeNameBase(getCodeNameBaseValue());
-        data.setPlatform((String) platformValue.getSelectedItem());
+        data.setPlatform(((NbPlatform) platformValue.getSelectedItem()).getID());
         data.setProjectDisplayName(displayNameValue.getText());
         data.setBundle(getBundleValue());
         data.setLayer(getLayerValue());
@@ -224,7 +191,7 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
         displayNameValue = new javax.swing.JTextField();
         bundleValue = new javax.swing.JTextField();
         layerValue = new javax.swing.JTextField();
-        platformValue = new javax.swing.JComboBox();
+        platformValue = ComponentFactory.getNbPlatformsComboxBox();
         filler = new javax.swing.JLabel();
         standAloneModule = new javax.swing.JRadioButton();
         suiteModule = new javax.swing.JRadioButton();
@@ -345,6 +312,7 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         confPanel.add(filler, gridBagConstraints);
 
+        moduleTypeGroup.add(standAloneModule);
         standAloneModule.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(standAloneModule, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("CTL_StandaloneModule"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -355,6 +323,7 @@ final class BasicConfVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         confPanel.add(standAloneModule, gridBagConstraints);
 
+        moduleTypeGroup.add(suiteModule);
         org.openide.awt.Mnemonics.setLocalizedText(suiteModule, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("CTL_AddToModuleSuite"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

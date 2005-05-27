@@ -41,8 +41,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         "test/unit/src",
     };
     
-    // XXX also should test content created files (XMLs, properties) and
-    // created suite.
+    // XXX also should test content of created files (XMLs, properties)
     public void testCreateStandAloneModule() throws Exception {
         // XXX check below lines
         String defPlatform = getDataDir().getParentFile().getParentFile().getParent();
@@ -53,7 +52,8 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "org.example.testModule", // cnb
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
-                "org/example/testModule/resources/layer.xml");
+                "org/example/testModule/resources/layer.xml",
+                "default"); // platform id
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         Project p = ProjectManager.getDefault().findProject(fo);
