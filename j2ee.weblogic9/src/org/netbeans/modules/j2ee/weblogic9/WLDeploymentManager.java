@@ -112,9 +112,9 @@ public class WLDeploymentManager implements DeploymentManager {
         
         // set the host and port properties
         getInstanceProperties().setProperty(
-                WLDeploymentFactory.HOST_ATTR, parts[2]);
+                WLDeploymentFactory.HOST_ATTR, parts[3].substring(2));
         getInstanceProperties().setProperty(
-                WLDeploymentFactory.PORT_ATTR, parts[3]);
+                WLDeploymentFactory.PORT_ATTR, parts[4]);
     }
     
     ////////////////////////////////////////////////////////////////////////////
