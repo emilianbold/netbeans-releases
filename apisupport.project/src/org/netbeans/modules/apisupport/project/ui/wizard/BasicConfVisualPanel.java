@@ -13,14 +13,11 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
-import java.util.Set;
-import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.NbPlatform;
 import org.netbeans.modules.apisupport.project.ui.ComponentFactory;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
 
 /**
  * Second UI panel of <code>NewNbModuleWizardIterator</code>. Allow user to
@@ -37,16 +34,15 @@ import org.openide.util.NbBundle;
  *
  * @author mkrauskopf
  */
-final class BasicConfVisualPanel extends JPanel {
+final class BasicConfVisualPanel extends BasicVisualPanel {
     
     private static final String EXAMPLE_BASE_NAME = "org.yourorghere."; // NOI18N
     
-    private WizardDescriptor settings;
     private NewModuleProjectData data;
-    private boolean valid = false;
     
     /** Creates new form BasicConfVisualPanel */
     public BasicConfVisualPanel(WizardDescriptor setting) {
+        super(setting);
         initComponents();
         {// XXX suites not yet supported, don't give the option!
             suiteModule.setEnabled(false);
@@ -54,9 +50,8 @@ final class BasicConfVisualPanel extends JPanel {
             moduleSuiteValue.setEnabled(false);
             browseSuiteButton.setEnabled(false);
         }
-        this.settings = setting;
-        this.data = (NewModuleProjectData) settings.
-                getProperty("moduleProjectData"); // XXX should be constant
+        this.data = (NewModuleProjectData) getSetting().getProperty(
+                "moduleProjectData"); // XXX should be constant
         codeNameBaseValue.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { codeNameBaseUpdated(); }
             public void removeUpdate(DocumentEvent e) { codeNameBaseUpdated(); }
@@ -107,29 +102,6 @@ final class BasicConfVisualPanel extends JPanel {
         setErrorMessage(null);
     }
     
-    /** Set error message and always update panel validity. */
-    private void setErrorMessage(String errorMessage) {
-        setErrorMessage(errorMessage, true);
-    }
-    
-    /** Set error message and eventually update panel validity. */
-    private void setErrorMessage(String errorMessage, boolean fireChange) {
-        settings.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
-        if (fireChange) {
-            setValid(errorMessage == null);
-        }
-    }
-    
-    boolean isWizardValid() {
-        return valid;
-    }
-    
-    private void setValid(boolean newValid) {
-        boolean oldValid = valid;
-        valid = newValid;
-        firePropertyChange("valid", Boolean.valueOf(oldValid), Boolean.valueOf(newValid)); // NOI18N
-    }
-    
     void refreshData() {
         String dotName = EXAMPLE_BASE_NAME + data.getProjectName();
         codeNameBaseValue.setText(dotName);
@@ -141,7 +113,7 @@ final class BasicConfVisualPanel extends JPanel {
     /** Stores collected data into model. */
     void storeData() {
         // change will be fired -> update data
-        NewModuleProjectData data = (NewModuleProjectData) settings.
+        NewModuleProjectData data = (NewModuleProjectData) getSetting().
                 getProperty("moduleProjectData"); // XXX should be constant
         data.setCodeNameBase(getCodeNameBaseValue());
         data.setPlatform(((NbPlatform) platformValue.getSelectedItem()).getID());
@@ -162,13 +134,6 @@ final class BasicConfVisualPanel extends JPanel {
         return layerValue.getText().trim();
     }
     
-    /**
-     * Convenience method for accessing Bundle resources from this package.
-     */
-    static String getMessage(String key) {
-        return NbBundle.getMessage(BasicConfVisualPanel.class, key);
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -179,8 +144,6 @@ final class BasicConfVisualPanel extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         moduleTypeGroup = new javax.swing.ButtonGroup();
-        nameLocation = new javax.swing.JLabel();
-        separator1 = new javax.swing.JSeparator();
         confPanel = new javax.swing.JPanel();
         codeNameBase = new javax.swing.JLabel();
         displayName = new javax.swing.JLabel();
@@ -202,20 +165,6 @@ final class BasicConfVisualPanel extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
-        org.openide.awt.Mnemonics.setLocalizedText(nameLocation, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("LBL_BasicConfigPanel_Title"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(nameLocation, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
-        add(separator1, gridBagConstraints);
-
         confPanel.setLayout(new java.awt.GridBagLayout());
 
         codeNameBase.setLabelFor(codeNameBaseValue);
@@ -360,7 +309,7 @@ final class BasicConfVisualPanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -387,10 +336,8 @@ final class BasicConfVisualPanel extends JPanel {
     private javax.swing.JLabel moduleSuite;
     private javax.swing.JComboBox moduleSuiteValue;
     private javax.swing.ButtonGroup moduleTypeGroup;
-    private javax.swing.JLabel nameLocation;
     private javax.swing.JLabel platform;
     private javax.swing.JComboBox platformValue;
-    private javax.swing.JSeparator separator1;
     private javax.swing.JRadioButton standAloneModule;
     private javax.swing.JRadioButton suiteModule;
     // End of variables declaration//GEN-END:variables

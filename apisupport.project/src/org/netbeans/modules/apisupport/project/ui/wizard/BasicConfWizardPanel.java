@@ -14,14 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
-import org.openide.util.HelpCtx;
 
 /**
  * Second panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
@@ -38,17 +31,12 @@ import org.openide.util.HelpCtx;
  *
  * @author mkrauskopf
  */
-final class BasicConfWizardPanel implements PropertyChangeListener,
-        WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel {
+final class BasicConfWizardPanel extends BasicWizardPanel {
     
     /** Representing visual component for this step. */
     private BasicConfVisualPanel visualPanel;
     
     private WizardDescriptor settings;
-    
-    private EventListenerList listeners = new EventListenerList();
-    
-    private boolean valid;
     
     /** Creates a new instance of BasicConfWizardPanel */
     public BasicConfWizardPanel(WizardDescriptor settings) {
@@ -63,47 +51,12 @@ final class BasicConfWizardPanel implements PropertyChangeListener,
         visualPanel.storeData();
     }
     
-    public void addChangeListener(ChangeListener l) {
-        listeners.add(ChangeListener.class, l);
-    }
-    
-    public void removeChangeListener(ChangeListener l) {
-        listeners.remove(ChangeListener.class, l);
-    }
-    
-    protected void fireChange() {
-        ChangeListener[] chListeners = (ChangeListener[]) listeners.
-                getListeners(ChangeListener.class);
-        ChangeEvent e = new ChangeEvent(this);
-        for (int i = 0; i < chListeners.length; i++) {
-            chListeners[i].stateChanged(e);
-        }
-    }
-    
     public Component getComponent() {
         if (visualPanel == null) {
             visualPanel = new BasicConfVisualPanel(settings);
             visualPanel.addPropertyChangeListener(this);
+            visualPanel.setName(getMessage("LBL_BasicConfigPanel_Title")); // NOI18N
         }
         return visualPanel;
-    }
-    
-    public HelpCtx getHelp() {
-        return null;
-    }
-    
-    public boolean isValid() {
-        return ((BasicConfVisualPanel) getComponent()).isWizardValid();
-    }
-    
-    public void validate() throws WizardValidationException {
-        // TODO (if needed, don't implement ValidatingPanel otherwise)
-    }
-    
-    public void propertyChange(PropertyChangeEvent evt) {
-        if ("valid".equals(evt.getPropertyName())) {
-            this.valid = ((Boolean) evt.getNewValue()).booleanValue();
-            fireChange();
-        }
     }
 }

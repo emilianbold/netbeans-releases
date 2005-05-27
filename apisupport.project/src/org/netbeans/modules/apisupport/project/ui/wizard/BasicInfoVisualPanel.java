@@ -16,11 +16,9 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
 
 /**
  * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
@@ -35,15 +33,12 @@ import org.openide.util.NbBundle;
  *
  * @author mkrauskopf
  */
-public class BasicInfoVisualPanel extends JPanel {
-    
-    private WizardDescriptor settings;
-    private Boolean valid = Boolean.FALSE;
+public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     /** Creates new form BasicInfoVisualPanel */
-    public BasicInfoVisualPanel(WizardDescriptor settings) {
+    public BasicInfoVisualPanel(WizardDescriptor setting) {
+        super(setting);
         initComponents();
-        this.settings = settings;
         nameValue.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { nameUpdated(); }
             public void removeUpdate(DocumentEvent e) { nameUpdated(); }
@@ -68,7 +63,7 @@ public class BasicInfoVisualPanel extends JPanel {
         // check module name
         String name = getNameValue();
         if ("".equals(name)) { // NOI18N
-            setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_NameCannotBeEmpty")); // NOI18N
+            setErrorMessage(getMessage("MSG_NameCannotBeEmpty")); // NOI18N
             return;
         }
         updateFolder(true);
@@ -78,12 +73,12 @@ public class BasicInfoVisualPanel extends JPanel {
         // check module location
         File fLocation = new File(getLocationValue());
         if (!fLocation.exists()) {
-            setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_LocationMustExist")); // NOI18N
+            setErrorMessage(getMessage("MSG_LocationMustExist")); // NOI18N
             return;
         }
         if (!fLocation.canWrite()) {
             updateFolder(false);
-            setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_LocationNotWritable")); // NOI18N
+            setErrorMessage(getMessage("MSG_LocationNotWritable")); // NOI18N
             return;
         } else {
             updateFolder(true);
@@ -106,47 +101,21 @@ public class BasicInfoVisualPanel extends JPanel {
         folderValue.setText(fFolder.getPath());
         if (alsoCheck) {
             if (fFolder.exists()) {
-                setErrorMessage(BasicInfoVisualPanel.getMessage("MSG_ProjectFolderExists")); // NOI18N
+                setErrorMessage(getMessage("MSG_ProjectFolderExists")); // NOI18N
                 return;
             }
             setErrorMessage(null);
         }
     }
     
-    /** Set error message and always update panel validity. */
-    private void setErrorMessage(String errorMessage) {
-        setErrorMessage(errorMessage, true);
-    }
-    
-    /** Set error message and eventually update panel validity. */
-    private void setErrorMessage(String errorMessage, boolean fireChange) {
-        settings.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
-        if (fireChange) {
-            setValid(Boolean.valueOf(errorMessage == null));
-        }
-    }
-    
-    private void setValid(Boolean newValid) {
-        Boolean oldValid = valid;
-        valid = newValid;
-        firePropertyChange("valid", oldValid, newValid); // NOI18N
-    }
-    
     /** Stores collected data into model. */
     void storeData() {
-        NewModuleProjectData data = (NewModuleProjectData) settings.
+        NewModuleProjectData data = (NewModuleProjectData) getSetting().
                 getProperty("moduleProjectData"); // XXX should be constant
         data.setProjectName(getNameValue());
         data.setProjectLocation(getLocationValue());
         data.setProjectFolder(folderValue.getText());
         data.setMainProject(mainProject.isSelected());
-    }
-    
-    /**
-     * Convenience method for accessing Bundle resources from this package.
-     */
-    static String getMessage(String key) {
-        return NbBundle.getMessage(BasicInfoVisualPanel.class, key);
     }
     
     /** This method is called from within the constructor to
@@ -158,8 +127,6 @@ public class BasicInfoVisualPanel extends JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        nameLocation = new javax.swing.JLabel();
-        separator1 = new javax.swing.JSeparator();
         infoPanel = new javax.swing.JPanel();
         nameLbl = new javax.swing.JLabel();
         locationLbl = new javax.swing.JLabel();
@@ -175,18 +142,6 @@ public class BasicInfoVisualPanel extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
-        org.openide.awt.Mnemonics.setLocalizedText(nameLocation, "Name and Location");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(nameLocation, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
-        add(separator1, gridBagConstraints);
-
         infoPanel.setLayout(new java.awt.GridBagLayout());
 
         nameLbl.setLabelFor(nameValue);
@@ -258,7 +213,7 @@ public class BasicInfoVisualPanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
@@ -266,7 +221,7 @@ public class BasicInfoVisualPanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
@@ -275,7 +230,7 @@ public class BasicInfoVisualPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(mainProject, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("CTL_SetAsMainProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -303,9 +258,7 @@ public class BasicInfoVisualPanel extends JPanel {
     private javax.swing.JTextField locationValue;
     private javax.swing.JCheckBox mainProject;
     private javax.swing.JLabel nameLbl;
-    private javax.swing.JLabel nameLocation;
     private javax.swing.JTextField nameValue;
-    private javax.swing.JSeparator separator1;
     private javax.swing.JSeparator separator2;
     // End of variables declaration//GEN-END:variables
 }

@@ -26,6 +26,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new NetBeans Module project.
@@ -78,7 +79,8 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
                     new BasicConfWizardPanel(settings)
         };
         String[] steps = new String[] {
-            "Name and Location", "Basic Module Configuration"
+            getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
+            getMessage("LBL_BasicConfigPanel_Title") // NOI18N
         };
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
@@ -129,6 +131,13 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     public WizardDescriptor.Panel current() {
         return panels[position];
+    }
+    
+    /**
+     * Convenience method for accessing Bundle resources from this package.
+     */
+    static String getMessage(String key) {
+        return NbBundle.getMessage(NewNbModuleWizardIterator.class, key);
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:

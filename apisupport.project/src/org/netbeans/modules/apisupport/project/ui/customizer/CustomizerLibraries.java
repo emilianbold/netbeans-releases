@@ -32,16 +32,13 @@ public class CustomizerLibraries extends JPanel {
     
     private ComponentFactory.DependencyListModel moduleDeps;
     private ComponentFactory.DependencyListModel universeModulesModel;
-    private NbModuleProperties moduleProps;
     
     /** Creates new form CustomizerLibraries */
-    public CustomizerLibraries(final NbModuleProperties moduleProps,
-            final ComponentFactory.DependencyListModel subModules,
+    public CustomizerLibraries(final ComponentFactory.DependencyListModel subModules,
             final ComponentFactory.DependencyListModel universeModules) {
         initComponents();
         this.moduleDeps = subModules;
         this.universeModulesModel = universeModules;
-        this.moduleProps = moduleProps;
         updateEnabled();
         dependencyList.setModel(subModules);
         dependencyList.setCellRenderer(ComponentFactory.getDependencyCellRenderer());
