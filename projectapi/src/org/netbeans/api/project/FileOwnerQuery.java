@@ -138,9 +138,9 @@ public class FileOwnerQuery {
     public static final int EXTERNAL_ALGORITHM_TRANSIENT = 0;
     
     /**
-     * Mark an external folder as being owned by a particular project.
+     * Mark an external folder or file as being owned by a particular project.
      * After this call is made, for the duration appropriate to the selected
-     * algorithm, that folder and its ancestors will be considered owned
+     * algorithm, that folder or file and its ancestors will be considered owned
      * by the project (if any) matching the named project directory, except in
      * the case that a lower enclosing project directory can be found.
      * <p class="nonnormative">
@@ -149,15 +149,15 @@ public class FileOwnerQuery {
      * algorithm is selected, or only when the project is created, if a reliable
      * persistent algorithm is selected.
      * </p>
-     * @param root a folder which should be considered part of a project
+     * @param root a folder or a file which should be considered part of a project
      * @param owner a project which should be considered to own that folder tree
      *              (any prior marked external owner is overridden),
      *              or null to cancel external ownership for this folder root
      * @param algorithm an algorithm to use for retaining this information;
      *                  currently may only be {@link #EXTERNAL_ALGORITHM_TRANSIENT}
      * @throws IllegalArgumentException if the root or owner is null, if an unsupported
-     *                                  algorithm is requested, if the root is not a
-     *                                  folder, if the root is already a project directory,
+     *                                  algorithm is requested,
+     *                                  if the root is already a project directory,
      *                                  or if the root is already equal to or inside the owner's
      *                                  project directory (it may however be an ancestor)
      * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
@@ -173,8 +173,41 @@ public class FileOwnerQuery {
         }
     }
     
-    // XXX may need markExternalOwner(URI root, Project, int)? in case root dir does not exist yet...
-    // XXX is it useful to mark external owners for individual files?
+    /**
+     * Mark an external URI (folder or file) as being owned by a particular project.
+     * After this call is made, for the duration appropriate to the selected
+     * algorithm, that folder or file and its ancestors will be considered owned
+     * by the project (if any) matching the named project directory, except in
+     * the case that a lower enclosing project directory can be found.
+     * <p class="nonnormative">
+     * Typical usage would be to call this method for each external source root
+     * of a project (if any) as soon as the project is loaded, if a transient
+     * algorithm is selected, or only when the project is created, if a reliable
+     * persistent algorithm is selected.
+     * </p>
+     * @param root an URI of a folder or a file which should be considered part of a project
+     * @param owner a project which should be considered to own that folder tree
+     *              (any prior marked external owner is overridden),
+     *              or null to cancel external ownership for this folder root
+     * @param algorithm an algorithm to use for retaining this information;
+     *                  currently may only be {@link #EXTERNAL_ALGORITHM_TRANSIENT}
+     * @throws IllegalArgumentException if the root or owner is null, if an unsupported
+     *                                  algorithm is requested,
+     *                                  if the root is already a project directory,
+     *                                  or if the root is already equal to or inside the owner's
+     *                                  project directory (it may however be an ancestor)
+     * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
+     */
+    public static void markExternalOwner(URI root, Project owner, int algorithm) throws IllegalArgumentException {
+        switch (algorithm) {
+        case EXTERNAL_ALGORITHM_TRANSIENT:
+            // XXX check args
+            SimpleFileOwnerQueryImplementation.markExternalOwnerTransient(root, owner);
+            break;
+        default:
+            throw new IllegalArgumentException("No such algorithm: " + algorithm); // NOI18N
+        }
+    }
     
     /* TBD whether this is necessary:
     public static FileObject getMarkedExternalOwner(FileObject root) {}

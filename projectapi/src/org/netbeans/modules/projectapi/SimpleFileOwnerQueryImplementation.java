@@ -14,11 +14,13 @@
 package org.netbeans.modules.projectapi;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
@@ -26,6 +28,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -54,30 +57,36 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     }
         
     public Project getOwner(FileObject f) {
-        if (f.isData()) {
-            f = f.getParent();
-        }
         while (f != null) {
-            Project p;
-            try {
-                p = ProjectManager.getDefault().findProject(f);
-            } catch (IOException e) {
-                // There is a project here, but we cannot load it...
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                return null;
-            }
-            if (p != null) {
-                return p;
-            }
-            FileObject externalOwner = (FileObject)externalOwners.get(f);
-            if (externalOwner != null) {
+            if (f.isFolder()) {
+                Project p;
                 try {
-                    // Note: will be null if there is no such project.
-                    return ProjectManager.getDefault().findProject(externalOwner);
+                    p = ProjectManager.getDefault().findProject(f);
                 } catch (IOException e) {
-                    // There is a project there, but we cannot load it...
+                    // There is a project here, but we cannot load it...
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     return null;
+                }
+                if (p != null) {
+                    return p;
+                }
+            }
+            
+            WeakReference/*<FileObject>*/ externalOwnersReference =
+                    (WeakReference/*<FileObject>*/) externalOwners.get(fileObject2URI(f));
+            
+            if (externalOwnersReference != null) {
+                FileObject externalOwner = (FileObject) externalOwnersReference.get();
+                
+                if (externalOwner != null) {
+                    try {
+                        // Note: will be null if there is no such project.
+                        return ProjectManager.getDefault().findProject(externalOwner);
+                    } catch (IOException e) {
+                        // There is a project there, but we cannot load it...
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        return null;
+                    }
                 }
             }
             f = f.getParent();
@@ -88,7 +97,9 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     /**
      * Map from external source roots to the owning project directories.
      */
-    private static final Map/*<FileObject,FileObject>*/ externalOwners =
+    private static final Map/*<URI,WeakReference<FileObject>>*/ externalOwners =
+        Collections.synchronizedMap(new WeakHashMap());
+    private static final Map/*<FileObject, URI>*/ project2External =
         Collections.synchronizedMap(new WeakHashMap());
     
     /** @see FileOwnerQuery#reset */
@@ -96,12 +107,37 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         externalOwners.clear();
     }
     
+    private static URI fileObject2URI(FileObject f) {
+        try {
+            return URI.create(f.getURL().toString());
+        } catch (FileStateInvalidException e) {
+            IllegalArgumentException iae = new IllegalArgumentException(e.getMessage());
+            
+            ErrorManager.getDefault().annotate(iae, e);
+            throw iae;
+        }
+    }
+    
     /** @see FileOwnerQuery#markExternalOwner */
     public static void markExternalOwnerTransient(FileObject root, Project owner) {
+        markExternalOwnerTransient(fileObject2URI(root), owner);
+    }
+    
+    /** @see FileOwnerQuery#markExternalOwner */
+    public static void markExternalOwnerTransient(URI root, Project owner) {
         if (owner != null) {
-            externalOwners.put(root, owner.getProjectDirectory());
+            externalOwners.put(root, new WeakReference(owner.getProjectDirectory()));
+            project2External.put(owner.getProjectDirectory(), root);
         } else {
-            externalOwners.remove(root);
+            WeakReference/*<FileObject>*/ ownerReference = (WeakReference/*<FileObject>*/) externalOwners.remove(root);
+            
+            if (ownerReference != null) {
+                FileObject ownerFO = (FileObject) ownerReference.get();
+                
+                if (ownerFO != null) {
+                    project2External.remove(ownerFO);
+                }
+            }
         }
     }
     

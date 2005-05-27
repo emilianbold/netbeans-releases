@@ -76,6 +76,30 @@ is the proper place.
 
     <changes>
 
+        <change id="markExternal-for-file-and-URIs">
+            <api name="general"/>
+            <summary>The FileOwnerQuery.markExternalOwner allows registration of individal files and URIs</summary>
+            <version major="1" minor="5"/>
+            <date day="27" month="5" year="2005"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" semantic="compatible" binary="compatible">
+                <p>
+                    This changes add a new method <code>FileOwnerQuery.markExternalOwner(URI, FileObject, int)</code>,
+                    and also extends sematics of the existing
+                    <code>FileOwnerQuery.markExternalOwner(FileObject, FileObject, int)</code> method to allow registration
+                    of individual files.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    It is possible to register owner of an individual file using <code>FileOwnerQuery.markExternalOwner</code>.
+                    It is possible to register owner of a folder or file using URI, so the folder or file does not
+                    have to exist at the time of registration.
+                </p>
+            </description>
+            <issue number="58313"/>
+        </change>
+        
         <change id="rel-vers-1">
             <api name="general"/>
             <summary>Switched to major release version 1</summary>
