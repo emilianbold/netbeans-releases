@@ -78,9 +78,14 @@
                 </file>
                 
                 <!--
+                    An instance of the class responsible for splitting the 
+                    server-generated deployment plan and creating the server
+                    specific deployment descriptors of it.
+                -->
+                <!--
                 <file name="AppServerPlanSplitter.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.websphere6.WSDeploymentPlanSplitter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.WSDeploymentPlanSplitter"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.websphere6.optional.WSDeploymentPlanSplitter"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.optional.WSDeploymentPlanSplitter"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
                 </file>
                 -->
@@ -90,8 +95,18 @@
                     grouped by module type
                 -->
                 <folder name="DeploymentFileNames">
+                    <folder name="EAR">
+                        <file name="WebSphere6.dpf"/>
+                    </folder>
+                    <folder name="EJB">
+                        <file name="WebSphere6.dpf"/>
+                    </folder>
                     <folder name="WAR">
                         <file name="WebSphere6.dpf"/>
+                        <!--
+                        <file name="WEB-INF\ibm-web-bnd.xmi"/>
+                        <file name="WEB-INF\ibm-web-ext.xmi"/>
+                        -->
                     </folder>
                 </folder>
             </folder>

@@ -43,6 +43,12 @@ public class WSStartServer extends StartServer {
     private WSDeploymentManager dm;
     
     /**
+     * Current server's state. Can be either started, starting, stopping or 
+     * stopped
+     */
+    private int state;
+    
+    /**
      * Creates a new instance of WSStartServer
      * 
      * @param the server's deployment manager
@@ -50,6 +56,9 @@ public class WSStartServer extends StartServer {
     public WSStartServer(DeploymentManager dm) {
         // cast the deployment manager to the plugin's wrapper class and save
         this.dm = (WSDeploymentManager) dm;
+        
+        // get current server state
+        this.state = isRunning() ? STATE_STARTED : STATE_STOPPED;
     }
     
     /**
@@ -72,12 +81,41 @@ public class WSStartServer extends StartServer {
         // send a message denoting that the startup process has begun
         serverProgress.notifyStart(StateType.RUNNING,  "");            // NOI18N
         
+        // if the server is stopping
+        if (state == STATE_STOPPING) {
+            // wait till the startup completes or times out
+            for (int i = 0; i < WSStopRunnable.TIMEOUT; i += WSStopRunnable.DELAY) {
+                if (state == STATE_STOPPING) {
+                    try {
+                        Thread.sleep(WSStopRunnable.DELAY);
+                    } catch (InterruptedException e) {
+                        // do nothing just skip the sleeping phase
+                    }
+                }
+                
+                if (state == STATE_STOPPED) {
+                    break;
+                }
+            }
+        }
+        
+        // if the server is started or starting
+        if (state == STATE_STARTING || state == STATE_STARTED) {
+            // notify the progress object that the process is already 
+            // completed and return
+            serverProgress.notifyStart(StateType.COMPLETED, "");
+            return serverProgress;
+        }
+        
         // run the startup process in a separate thread
         RequestProcessor.getDefault().post(new WSStartDebugRunnable(
                 serverProgress), 0, Thread.NORM_PRIORITY);
         
         // set the debuggable marker
         isDebuggable = true;
+        
+        // set the state to starting
+        state = STATE_STARTING;
         
         // return the progress object
         return serverProgress;
@@ -155,12 +193,41 @@ public class WSStartServer extends StartServer {
         // send a message denoting that the shutdown process has begun
         serverProgress.notifyStop(StateType.RUNNING, "");              // NOI18N
         
+        // if the server is starting
+        if (state == STATE_STARTING) {
+            // wait till the startup completes or times out
+            for (int i = 0; i < WSStartRunnable.TIMEOUT; i += WSStartRunnable.DELAY) {
+                if (state == STATE_STARTING) {
+                    try {
+                        Thread.sleep(WSStartRunnable.DELAY);
+                    } catch (InterruptedException e) {
+                        // do nothing just skip the sleeping phase
+                    }
+                }
+                
+                if (state == STATE_STARTED) {
+                    break;
+                }
+            }
+        }
+        
+        // if the server is stopped or stopping
+        if (state == STATE_STOPPING || state == STATE_STOPPED) {
+            // notify the progress object that the process is already 
+            // completed and return
+            serverProgress.notifyStop(StateType.COMPLETED, "");
+            return serverProgress;
+        }
+        
         // run the shutdown process in a separate thread
         RequestProcessor.getDefault().post(new WSStopRunnable(serverProgress), 
                 0, Thread.NORM_PRIORITY);
         
         // set the debugguable marker to false as the server is stopped
         isDebuggable = false;
+        
+        // set the state to stopping
+        state = STATE_STOPPING;
         
         // return the progress object
         return serverProgress;
@@ -181,6 +248,32 @@ public class WSStartServer extends StartServer {
         // send a message denoting that the startup process has begun
         serverProgress.notifyStart(StateType.RUNNING,  ""); // NOI18N
         
+        // if the server is stopping
+        if (state == STATE_STOPPING) {
+            // wait till the startup completes or times out
+            for (int i = 0; i < WSStopRunnable.TIMEOUT; i += WSStopRunnable.DELAY) {
+                if (state == STATE_STOPPING) {
+                    try {
+                        Thread.sleep(WSStopRunnable.DELAY);
+                    } catch (InterruptedException e) {
+                        // do nothing just skip the sleeping phase
+                    }
+                }
+                
+                if (state == STATE_STOPPED) {
+                    break;
+                }
+            }
+        }
+        
+        // if the server is started or starting
+        if (state == STATE_STARTING || state == STATE_STARTED) {
+            // notify the progress object that the process is already 
+            // completed and return
+            serverProgress.notifyStart(StateType.COMPLETED, "");
+            return serverProgress;
+        }
+        
         // run the startup process in a separate thread
         RequestProcessor.getDefault().post(new WSStartRunnable(serverProgress),
                 0, Thread.NORM_PRIORITY);
@@ -188,6 +281,9 @@ public class WSStartServer extends StartServer {
         // set the debuggble marker to false as we do not start the server in 
         // debug mode
         isDebuggable = false;
+        
+        // set the state to starting
+        state = STATE_STARTING;
         
         // return the progress object
         return serverProgress;
@@ -210,7 +306,7 @@ public class WSStartServer extends StartServer {
      * @return false
      */
     public boolean needsStartForConfigure() {
-        return false;
+        return true;
     }
     
     /**
@@ -277,6 +373,85 @@ public class WSStartServer extends StartServer {
     }
     
     /**
+     * Reads an entire file into a string
+     * 
+     * @param file the file to be read
+     *
+     * @return the file contents
+     */
+    private String readFile(File file) {
+        // init the resulting string
+        String contents = "";
+        
+        // init the buffer and the amount of bytes read
+        char[] chars = new char[1024];
+        int read;
+        
+        // get the reader for the file and read the contents
+        try {
+            // init the reader
+            FileReader reader = new FileReader(file);
+
+            // read the file
+            do {
+                read = reader.read(chars);
+                contents += new String(chars, 0, read);
+            } while (read == 1024);
+        } catch (FileNotFoundException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        }
+        
+        return contents;
+    }
+    
+    /**
+     * Writes the supplied string to the given file.
+     * 
+     * @param string the string to write to the file
+     * @param file the file to write to
+     */
+    private void writeFile(String string, File file) {
+        try {
+            new FileOutputStream(file).write(string.getBytes());
+        } catch (FileNotFoundException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        }
+    }
+    
+    /**
+     * Turns on/off the debugging mode of the server.
+     * 
+     * @param degubEnabled whether the server should be started in debug mode
+     * @param debuggerPort which port the debugger should listen to
+     */
+    private void setDebugMode(boolean debugEnabled, int debuggerPort) {
+        // get the config file path from the instance properties
+        File configXmlFile = new File(dm.getInstanceProperties().getProperty(
+                WSDeploymentFactory.CONFIG_XML_PATH));
+        
+        // get the current file's contents
+        String contents = readFile(configXmlFile);
+        
+        // replace the attributes that relate to debugging mode of the server
+        if (debugEnabled) {
+            contents = contents.replace("debugMode=\"false\"", "debugMode=\"true\"");
+            contents = contents.replaceFirst("suspend=n,address=[0-9]+\" genericJvmArguments", "suspend=n,address=" + debuggerPort + "\" genericJvmArguments");
+            if (WSDebug.isEnabled()) {
+                WSDebug.notify("setting the address string to: " + "suspend=n,address=" + debuggerPort);
+            }
+        } else {
+            contents = contents.replace("debugMode=\"true\"", "debugMode=\"false\"");
+        }
+        
+        // write the replaced contents back to the file
+        writeFile(contents, configXmlFile);
+    }
+    
+    /**
      * Runnable that starts the server in normal mode. It is used to start the 
      * server in a separate thread, so that the IDE does not hang up during the
      * startup process.
@@ -329,6 +504,9 @@ public class WSStartServer extends StartServer {
                 // failed due to timeout
                 long start = System.currentTimeMillis();
                 
+                // set the server's debug mode to false
+                setDebugMode(false, 0);
+                
                 // create the startup process
                 Process serverProcess = Runtime.getRuntime().
                         exec(new String[]{domainHome + "/bin/" +       // NOI18N
@@ -352,6 +530,10 @@ public class WSStartServer extends StartServer {
                     } else {
                         serverProgress.notifyStart(StateType.COMPLETED, 
                                 "");                                   // NOI18N
+                        
+                        // set the state to started
+                        state = STATE_STARTED;
+                        
                         return;
                     }
                     
@@ -366,6 +548,9 @@ public class WSStartServer extends StartServer {
                 // we consider the startup as failed and kill the process
                 serverProgress.notifyStart(StateType.FAILED, "");      // NOI18N
                 serverProcess.destroy();
+                
+                // set the state to stopped
+                state = STATE_STOPPED;
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
             }
@@ -455,17 +640,32 @@ public class WSStartServer extends StartServer {
                 // failed due to timeout
                 long start = System.currentTimeMillis();
                 
-                // get the current environment
-                Properties environment = System.getProperties();
-                environment.put("WAS_DEBUG", "-Xdebug -Xnoagent " +    // NOI18N
-                        "-Xrunjdwp:transport=dt_socket,address=" +     // NOI18N
-                        debuggerPort + ",server=y,suspend=n");         // NOI18N
+                // set the server's debug mode to true
+                setDebugMode(true, new Integer(debuggerPort).intValue());
                 
                 // create the startup process
-                Process serverProcess = Runtime.getRuntime().exec(
-                        new String[]{domainHome + "/bin/" + 
+                Process serverProcess = Runtime.getRuntime().
+                        exec(new String[]{domainHome + "/bin/" +       // NOI18N
                         (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), 
-                        serverName}, properties2StringArray(environment));
+                        serverName}); 
+                        
+//                ProcessBuilder processBuilder = new ProcessBuilder(new String[]{domainHome + "/bin/" + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), serverName});
+//                
+//                processBuilder.environment().put("WAS_DEBUG", "-Djava.compiler=NONE -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=7777");
+//                
+//                Process serverProcess = processBuilder.start();
+                
+                // get the current environment
+//                Properties environment = System.getProperties();
+//                environment.put("WAS_DEBUG", "-Xdebug -Xnoagent " +    // NOI18N
+//                        "-Xrunjdwp:transport=dt_socket,address=" +     // NOI18N
+//                        debuggerPort + ",server=y,suspend=n");         // NOI18N
+//                
+//                // create the startup process
+//                Process serverProcess = Runtime.getRuntime().exec(
+//                        new String[]{domainHome + "/bin/" + 
+//                        (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), 
+//                        serverName}, properties2StringArray(environment));
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
@@ -484,6 +684,10 @@ public class WSStartServer extends StartServer {
                     } else {
                         serverProgress.notifyStart(StateType.COMPLETED, 
                                 "");                                   // NOI18N
+                        
+                        // set the state to started
+                        state = STATE_STARTED;
+                        
                         return;
                     }
                     
@@ -498,6 +702,9 @@ public class WSStartServer extends StartServer {
                 // we consider the startup as failed and kill the process
                 serverProgress.notifyStart(StateType.FAILED, "");      // NOI18N
                 serverProcess.destroy();
+                
+                // set the state to stopped
+                state = STATE_STOPPED;
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
             }
@@ -597,6 +804,10 @@ public class WSStartServer extends StartServer {
                         serverProgress.notifyStop(StateType.RUNNING, ""); // NOI18N
                     } else {
                         serverProgress.notifyStop(StateType.COMPLETED, ""); // NOI18N
+                        
+                        // set the state to stopped
+                        state = STATE_STOPPED;
+
                         return;
                     }
 
@@ -611,6 +822,9 @@ public class WSStartServer extends StartServer {
                 // we consider the stop process as failed and kill the process
                 serverProgress.notifyStop(StateType.FAILED, ""); // NOI18N
                 serverProcess.destroy();
+                
+                // set the state to started
+                state = STATE_STARTED;
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
             }
@@ -916,11 +1130,10 @@ public class WSStartServer extends StartServer {
     ////////////////////////////////////////////////////////////////////////////
     // Constants section
     ////////////////////////////////////////////////////////////////////////////
-    // These introduce two additional states to the instance - starting and 
-    // stopping son that we can filter sunsequent requests. They are currently 
-    // not used, but may be if problems wth multiple startup arise again
-    // private static final int STATE_STOPPED  = 0;
-    // private static final int STATE_STARTING = 1;
-    // private static final int STATE_STARTED  = 2;
-    // private static final int STATE_STOPPING = 3;
+    // These constants introduce two additional states to the instance - 
+    // starting and stopping son that we can filter sunsequent requests. 
+    private static final int STATE_STOPPED  = 0;
+    private static final int STATE_STARTING = 1;
+    private static final int STATE_STARTED  = 2;
+    private static final int STATE_STOPPING = 3;
 }

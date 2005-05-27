@@ -89,7 +89,7 @@ public class WSTailer extends Thread {
             // read from the input stream and put all the changes to the 
             // I/O window
             char[] chars = new char[1024];
-            while (true) {
+            while (!io.isClosed()) {
                 // while there is something in the stream to be read - read that
                 while (reader.ready()) {
                     io.getOut().println(new String(chars, 0, 

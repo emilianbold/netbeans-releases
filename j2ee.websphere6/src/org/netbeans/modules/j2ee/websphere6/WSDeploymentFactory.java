@@ -39,6 +39,7 @@ public class WSDeploymentFactory implements DeploymentFactory {
     public static final String PORT_ATTR = "port";                     // NOI18N
     public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
     public static final String SERVER_NAME_ATTR = "serverName";        // NOI18N
+    public static final String CONFIG_XML_PATH = "configXmlPath";      // NOI18N
     
     /**
      * The singleton instance of the factory

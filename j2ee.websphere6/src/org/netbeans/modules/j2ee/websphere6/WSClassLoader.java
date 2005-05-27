@@ -80,7 +80,7 @@ public class WSClassLoader extends URLClassLoader {
     private WSClassLoader(String serverRoot, String domainRoot) {
         // we have to isolate the loader from the netbeans main loader in order
         // to avoid conflicts with SOAP classes implementations
-        super(new URL[0]);
+        super(new URL[0], Thread.currentThread().getContextClassLoader());
         
         // save the instance variables
         this.serverRoot = serverRoot;
@@ -138,8 +138,6 @@ public class WSClassLoader extends URLClassLoader {
         
         // if debugging is enabled set the system property pointing to the WS
         // debug properties file
-        // NB: If you wish to use this feature, place the trace settings file
-        // somewhere in the class path, the best place is ${WAS_ROOT}/lib/
         if (WSDebug.isEnabled())
             System.setProperty("traceSettingsFile",                    // NOI18N
                     "TraceSettings.properties");                       // NOI18N

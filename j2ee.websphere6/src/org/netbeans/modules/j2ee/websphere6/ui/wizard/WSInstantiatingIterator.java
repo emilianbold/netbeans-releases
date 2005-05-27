@@ -115,11 +115,12 @@ public class WSInstantiatingIterator
         
         // set the additional properties of the instance: server installation 
         // directory, profile root directory, whether the server is local or
-        // remote and the instance name
+        // remote, the instance name and the server's config xml path
         String serverRoot = this.serverRoot;
         String domainRoot = this.domainRoot;
         String isLocal = this.isLocal;
         String serverName = this.serverName;
+        String configXmlPath = this.configXmlPath;
         
         // if all the data is normally validated - create the instance and 
         // attach the additional properties
@@ -133,6 +134,7 @@ public class WSInstantiatingIterator
             ip.setProperty(WSDeploymentFactory.SERVER_NAME_ATTR, serverName);
             ip.setProperty(WSDeploymentFactory.DEBUGGER_PORT_ATTR, 
                     DEFAULT_DEBUGGER_PORT);
+            ip.setProperty(WSDeploymentFactory.CONFIG_XML_PATH, configXmlPath);
             
             // add the created instance properties to the result set
             result.add(ip);
@@ -190,6 +192,7 @@ public class WSInstantiatingIterator
     private String username;
     private String password;
     private String serverName;
+    private String configXmlPath;
     
     /**
      * Setter for the server installation directory
@@ -336,6 +339,24 @@ public class WSInstantiatingIterator
      */
     public void setServerName(String serverName) {
         this.serverName = serverName;
+    }
+    
+    /**
+     * Getter for the server's config xml file path
+     *
+     * @return the server's config xml file path
+     */
+    public String getConfigXmlPath() {
+        return this.configXmlPath;
+    }
+    
+    /**
+     * Setter for the server's config xml file path
+     *
+     * @param serverName the new server's config xml file path
+     */
+    public void setConfigXmlPath(String configXmlPath) {
+        this.configXmlPath = configXmlPath;
     }
     
     ////////////////////////////////////////////////////////////////////////////

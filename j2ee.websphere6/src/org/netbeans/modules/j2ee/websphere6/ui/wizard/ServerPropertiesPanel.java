@@ -25,6 +25,7 @@ import org.xml.sax.*;
 import org.openide.*;
 import org.openide.util.*;
 
+import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
 
 /**
  * The second panel of the custom wizard used for registering an instance of
@@ -155,6 +156,8 @@ public class ServerPropertiesPanel extends JPanel
                 "TXT_serverTypeLocal")) ? "true" : "false");           // NOI18N
         instantiatingIterator.setServerName(((Instance) localInstancesCombo.
                 getSelectedItem()).getName());
+        instantiatingIterator.setConfigXmlPath(((Instance) localInstancesCombo.
+                getSelectedItem()).getConfigXmlPath());
         
         // everything seems ok
         return true;
@@ -580,6 +583,35 @@ public class ServerPropertiesPanel extends JPanel
     }
     
     /**
+     * Gets the path to the server's server.xml file
+     * 
+     * @param cellPath the root directory of the cell
+     * 
+     * @return the path to the cell's server.xml
+     */
+    private String getConfigXmlPath(String cellPath) {
+        // get the list of files under the nodes subfolder
+        String[] files = new File(cellPath + "/nodes").list();         // NOI18N
+        
+        // get the server name
+        String serverName = getServerName(cellPath);
+        
+        // for each file check whether it is a directory and there exists
+        // serverindex.xml, if it does, remember the path and break the loop
+        for (int i = 0; i < files.length; i++) {
+            String path = cellPath + "/nodes/" + files[i] +            // NOI18N
+                    "/servers/" + serverName + "/server.xml";          // NOI18N
+            if (new File(path).exists()) {
+                if (WSDebug.isEnabled())
+                    WSDebug.notify(path);
+                return path;
+            }
+        }
+        
+        return "";
+    }
+    
+    /**
      * Gets the server's name for a given cell basing on the cell's root 
      * directory.
      * 
@@ -681,7 +713,9 @@ public class ServerPropertiesPanel extends JPanel
                 String address = "localhost";                          // NOI18N
                 String port = getCellPort(nextCellPath);
                 String serverName = getServerName(nextCellPath);
-                result.add(new Instance(serverName, address, port, domains[i]));
+                String configXmlPath = getConfigXmlPath(nextCellPath);
+                result.add(new Instance(serverName, address, port, domains[i], 
+                        configXmlPath));
             }
         }
         
@@ -995,20 +1029,27 @@ public class ServerPropertiesPanel extends JPanel
         private String domainPath;
         
         /**
+         * Path to the server.xml file
+         */
+        private String configXmlPath;
+        
+        /**
          * Creates a new instance of Instance
          * 
          * @param name the instance's name
          * @param host the instance's host
          * @param port the instance's port
          * @param domainPath the instance's profile path
+         * @param configXmlPath path to the server.xml file
          */
         public Instance(String name, String host, String port, 
-                String domainPath) {
+                String domainPath, String configXmlPath) {
             // save the properties
             this.name = name;
             this.host = host;
             this.port = port;
             this.domainPath = domainPath;
+            this.configXmlPath = configXmlPath;
         }
         
         /**
@@ -1081,6 +1122,24 @@ public class ServerPropertiesPanel extends JPanel
          */
         public void setDomainPath(String domainPath) {
             this.domainPath = domainPath;
+        }
+        
+        /**
+         * Getter for the path to server's config xml file
+         * 
+         * @return the server's config xml file
+         */
+        public String getConfigXmlPath() {
+            return this.configXmlPath;
+        }
+        
+        /** 
+         * Setter for the server's config xml file
+         * 
+         * @param the new server's config xml file
+         */
+        public void setConfigXmlPath(String configXmlPath) {
+            this.configXmlPath = configXmlPath;
         }
         
         /**
