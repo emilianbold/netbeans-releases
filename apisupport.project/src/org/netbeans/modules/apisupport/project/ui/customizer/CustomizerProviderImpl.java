@@ -235,7 +235,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         // libraries customizer
         moduleDepsListModel = ComponentFactory.createDependencyListModel(new TreeSet(getModuleDependencies()));
         universeDepsListModel = ComponentFactory.createDependencyListModel(getUniverseDependencies());
-        panels.put(libraries, new CustomizerLibraries(moduleProps,
+        panels.put(libraries, new CustomizerLibraries(
                 moduleDepsListModel, universeDepsListModel));
 
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
