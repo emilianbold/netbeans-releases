@@ -62,26 +62,30 @@ public class ClassPathSupport {
 
     /**
      * Create ClassPathImplementation for the given list of
-     * PathResourceImplementation entries.
-     * @param entries list of PathResourceImplementation instances;
+     * {@link PathResourceImplementation} entries.
+     * @param entries list of {@link PathResourceImplementation} instances;
      *     cannot be null; can be empty
      * @return SPI classpath
      */
-    public static ClassPathImplementation createClassPathImplementation(List entries) {
-        assert entries != null;
+    public static ClassPathImplementation createClassPathImplementation(List/*<PathResourceImplementation>*/ entries) {
+        if (entries == null) {
+            throw new NullPointerException("Cannot pass null entries"); // NOI18N
+        }
         return new SimpleClassPathImplementation(entries);
     }
 
 
     /**
      * Create ClassPath for the given list of
-     * PathResourceImplementation entries.
-     * @param entries list of PathResourceImplementation instances;
+     * {@link PathResourceImplementation} entries.
+     * @param entries list of {@link PathResourceImplementation} instances;
      *     cannot be null; can be empty
      * @return API classpath
      */
-    public static ClassPath createClassPath(List entries) {
-        assert entries != null;
+    public static ClassPath createClassPath(List/*<PathResourceImplementation>*/ entries) {
+        if (entries == null) {
+            throw new NullPointerException("Cannot pass null entries"); // NOI18N
+        }
         return ClassPathFactory.createClassPath(createClassPathImplementation(entries));
     }
 
