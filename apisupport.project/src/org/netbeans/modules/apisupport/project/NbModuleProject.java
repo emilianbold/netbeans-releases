@@ -58,6 +58,7 @@ import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -395,8 +396,54 @@ final class NbModuleProject implements Project {
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
         providers.add(createModuleClasspathPropertyProvider());
+        Map/*<String,String>*/ buildDefaults = new HashMap();
+        buildDefaults.put("cp.extra", ""); // NOI18N
+        buildDefaults.put("cp", "${module.classpath}:${cp.extra}"); // NOI18N
+        buildDefaults.put("run.cp", "${cp}:${build.classes.dir}"); // NOI18N
+        PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        buildDefaults.put("junit.jar", findJunitJar(baseEval)); // NOI18N
+        buildDefaults.put("nbjunit.jar", findNbJunitJar(baseEval)); // NOI18N
+        buildDefaults.put("test.unit.cp.extra", ""); // NOI18N
+        buildDefaults.put("test.unit.cp", "${cp}:${netbeans.dest.dir}/${cluster.dir}/${module.jar}:${junit.jar}:${nbjunit.jar}:${test.unit.cp.extra}"); // NOI18N
+        buildDefaults.put("test.unit.run.cp.extra", ""); // NOI18N
+        buildDefaults.put("test.unit.run.cp", "${test.unit.cp}:${build.test.unit.classes.dir}:${test.unit.run.cp.extra}"); // NOI18N
+        providers.add(PropertyUtils.fixedPropertyProvider(buildDefaults));
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
         return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+    }
+    
+    /**
+     * Get an Ant location for the root of junit.jar.
+     * Prefer the IDE's lib version; else use xtest/lib/junit.jar.
+     */
+    private String findJunitJar(PropertyEvaluator eval) {
+        File f = InstalledFileLocator.getDefault().locate("modules/ext/junit-3.8.1.jar", "org.netbeans.modules.junit", false); // NOI18N
+        if (f != null) {
+            return f.getAbsolutePath();
+        } else {
+            f = getNbrootFile("xtest/lib/junit.jar", eval); // NOI18N
+            if (f != null) {
+                return f.getAbsolutePath();
+            } else {
+                // External module with no ref to nb.org sources.
+                return "${netbeans.dest.dir}/ide5/modules/ext/junit-3.8.1.jar"; // NOI18N
+            }
+        }
+    }
+    
+    /**
+     * Get an Ant location for the root of nbjunit.jar.
+     * Assume it is installed in the IDE.
+     */
+    private String findNbJunitJar(PropertyEvaluator eval) {
+        String path = "testtools/modules/org-netbeans-modules-nbjunit.jar"; // NOI18N
+        File f = getNbrootFile("nbbuild/netbeans/" + path, eval); // NOI18N
+        if (f != null) {
+            return f.getAbsolutePath();
+        } else {
+            // External module with no ref to nb.org sources.
+            return "${netbeans.dest.dir}/" + path; // NOI18N
+        }
     }
     
     private PropertyProvider createModuleClasspathPropertyProvider() {
@@ -561,13 +608,16 @@ final class NbModuleProject implements Project {
     }
     
     private File getNbroot() {
+        return getNbroot(null);
+    }
+    private File getNbroot(PropertyEvaluator eval) {
         File dir = FileUtil.toFile(getProjectDirectory());
         File nbroot = ModuleList.findNetBeansOrg(dir);
         if (nbroot != null) {
             return nbroot;
         } else {
             // OK, not it.
-            NbPlatform platform = getPlatform();
+            NbPlatform platform = getPlatform(eval);
             if (platform != null) {
                 URL[] roots = platform.getSourceRoots();
                 for (int i = 0; i < roots.length; i++) {
@@ -585,7 +635,10 @@ final class NbModuleProject implements Project {
     }
     
     File getNbrootFile(String path) {
-        File nbroot = getNbroot();
+        return getNbrootFile(path, null);
+    }
+    private File getNbrootFile(String path, PropertyEvaluator eval) {
+        File nbroot = getNbroot(eval);
         if (nbroot != null) {
             return new File(nbroot, path.replace('/', File.separatorChar));
         } else {
@@ -607,7 +660,13 @@ final class NbModuleProject implements Project {
     }
     
     public NbPlatform getPlatform() {
-        String prop = evaluator().getProperty("netbeans.dest.dir"); // NOI18N
+        return getPlatform(null);
+    }
+    private NbPlatform getPlatform(PropertyEvaluator eval) {
+        if (eval == null) {
+            eval = evaluator();
+        }
+        String prop = eval.getProperty("netbeans.dest.dir"); // NOI18N
         if (prop == null) {
             return null;
         }
