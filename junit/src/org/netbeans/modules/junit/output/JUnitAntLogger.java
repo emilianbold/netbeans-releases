@@ -19,7 +19,13 @@ import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 
 /**
+ * Ant logger interested in task &quot;junit&quot;,
+ * dispatching events to instances of the {@link JUnitOutputReader} class.
+ * There is one <code>JUnitOutputReader</code> instance created per each
+ * Ant session.
  *
+ * @see  JUnitOutputReader
+ * @see  Report
  * @author  Marian Petras
  */
 public final class JUnitAntLogger extends AntLogger {

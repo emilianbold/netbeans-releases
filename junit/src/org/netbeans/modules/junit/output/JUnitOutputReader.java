@@ -20,8 +20,13 @@ import org.openide.util.Mutex;
 import org.xml.sax.SAXException;
 
 /**
+ * Obtains events from a single session of an Ant <code>junit</code> task
+ * and builds a {@link Report}.
+ * The events are delivered by the {@link JUnitAntLogger}.
  *
- * @author Marian Petras
+ * @see  JUnitAntLogger
+ * @see  Report
+ * @author  Marian Petras
  */
 public class JUnitOutputReader {
     

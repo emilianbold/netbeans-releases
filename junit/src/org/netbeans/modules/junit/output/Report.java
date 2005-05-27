@@ -18,7 +18,10 @@ import java.util.List;
 import org.openide.util.NbBundle;
 
 /**
+ * Data structure (model) of results of JUnit task results.
+ * The data are built by the {@link JUnitOutputReader}.
  *
+ * @see  JUnitOutputReader
  * @author  Marian Petras
  */
 final class Report {

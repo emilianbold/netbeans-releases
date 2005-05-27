@@ -18,8 +18,9 @@ import java.lang.ref.WeakReference;
 import java.util.regex.Pattern;
 
 /**
+ * Utility class providing various parsing routines for parsing JUnit output.
  *
- * @author Marian Petras
+ * @author  Marian Petras
  */
 final class RegexpUtils {
     
