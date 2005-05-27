@@ -129,9 +129,9 @@ public class EditorContextBridge {
     }
     
     /**
-     * Returns number of line currently selected in editor or <code>null</code>.
+     * Returns number of line currently selected in editor or <code>-1</code>.
      *
-     * @return number of line currently selected in editor or <code>0</code>
+     * @return number of line currently selected in editor or <code>-1</code>
      */
     public static int getCurrentLineNumber () {
         return getContext ().getCurrentLineNumber ();
