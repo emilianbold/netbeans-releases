@@ -22,9 +22,11 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -32,6 +34,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -40,6 +46,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
@@ -54,14 +61,21 @@ import org.openidex.search.SearchInfoFactory;
 /** Node displaying a packages in given SourceGroup
  * @author Petr Hrebejk
  */
-final class PackageRootNode extends AbstractNode {
+final class PackageRootNode extends AbstractNode implements Runnable, FileStatusListener {
 
     static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
         
     private static Action actions[]; 
 
     private SourceGroup group;
-        
+
+    private final FileObject file;
+    private final Set files;
+    private FileStatusListener fileSystemListener;
+    private RequestProcessor.Task task;
+    private volatile boolean iconChange;
+    private volatile boolean nameChange;
+    
     PackageRootNode( SourceGroup group ) {
         this( group, new InstanceContent() );
     }
@@ -72,8 +86,19 @@ final class PackageRootNode extends AbstractNode {
                                                new AbstractLookup( ic )} ) );
         ic.add(alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfoBySubnodes(this)));
         this.group = group;
+        file = group.getRootFolder();
+        files = Collections.singleton(file);
+        try {
+            FileSystem fs = file.getFileSystem();
+            fileSystemListener = FileUtil.weakFileStatusListener(this, fs);
+            fs.addFileStatusListener(fileSystemListener);
+        } catch (FileStateInvalidException e) {
+            ErrorManager err = ErrorManager.getDefault();
+            err.annotate(e, "Can not get " + file + " filesystem, ignoring...");  // NO18N
+            err.notify(ErrorManager.INFORMATIONAL, e);
+        }
         setName( group.getName() );
-        setDisplayName( group.getDisplayName() );
+        setDisplayName( group.getDisplayName() );        
         // setIconBase("org/netbeans/modules/java/j2seproject/ui/resources/packageRoot");
     }
 
@@ -86,6 +111,65 @@ final class PackageRootNode extends AbstractNode {
     public Image getOpenedIcon( int type ) {
         return computeIcon( true, type );
     }
+    
+    public String getDisplayName () {
+        String s = super.getDisplayName ();
+
+        try {            
+            s = file.getFileSystem ().getStatus ().annotateName (s, files);
+        } catch (FileStateInvalidException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+
+        return s;
+    }
+
+    public String getHtmlDisplayName() {
+         try {
+             FileSystem.Status stat = file.getFileSystem().getStatus();
+             if (stat instanceof FileSystem.HtmlStatus) {
+                 FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
+
+                 String result = hstat.annotateNameHtml (
+                     super.getDisplayName(), files);
+
+                 //Make sure the super string was really modified
+                 if (!super.getDisplayName().equals(result)) {
+                     return result;
+                 }
+             }
+         } catch (FileStateInvalidException e) {
+             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+         }
+         return super.getHtmlDisplayName();
+    }
+
+    public void run() {
+        if (iconChange) {
+            fireIconChange();
+            fireOpenedIconChange();
+            iconChange = false;
+        }
+        if (nameChange) {
+            fireDisplayNameChange(null, null);
+            nameChange = false;
+        }
+    }
+
+    public void annotationChanged(FileStatusEvent event) {
+        if (task == null) {
+            task = RequestProcessor.getDefault().create(this);
+        }
+
+        if ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange())) {
+            if (event.hasChanged(file)) {
+                iconChange |= event.isIconChange();
+                nameChange |= event.isNameChange();
+            }
+        }
+
+        task.schedule(50);  // batch by 50 ms
+    }    
     
     public Action[] getActions( boolean context ) {
 
