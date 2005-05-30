@@ -725,7 +725,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                                 poss--;
                         } else{
                             if (token.getImage().substring(1).toLowerCase().equals(tag))
-                            /*&& !isSingletonTag(token))*/
+                                /*&& !isSingletonTag(token))*/
                                 poss++;
                         }
                     }
@@ -735,40 +735,40 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         }
         
         
-        //match html comments
-            /*if(tokenOnOffset != null && tokenOnOffset.getTokenID() == HTMLTokenContext.BLOCK_COMMENT) {
-                String tokenImage = tokenOnOffset.getImage();
-                TokenItem toki = tokenOnOffset;
-                if(tokenImage.startsWith("<!--") && (offset < (tokenOnOffset.getOffset()) + "<!--".length())) { //NOI18N
-                    //start html token - we need to find the end token of the html comment
-                    while(toki != null) {
-                        if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
-                            if(toki.getImage().endsWith("-->")) {//NOI18N
-                                //found end token
-                                int start = toki.getOffset() + toki.getImage().length() - "-->".length(); //NOI18N
-                                int end = toki.getOffset() + toki.getImage().length();
-                                return new int[] {start, end};
-                            }
-                        } else break;
-                        toki = toki.getNext();
-                    }
+        //match xml comments
+        if(tokenOnOffset != null && tokenOnOffset.getTokenID() == XMLTokenIDs.BLOCK_COMMENT) {
+            String tokenImage = tokenOnOffset.getImage();
+            TokenItem toki = tokenOnOffset;
+            if(tokenImage.startsWith("<!--") && (offset < (tokenOnOffset.getOffset()) + "<!--".length())) { //NOI18N
+                //start html token - we need to find the end token of the html comment
+                while(toki != null) {
+                    if((toki.getTokenID() == XMLTokenIDs.BLOCK_COMMENT)) {
+                        if(toki.getImage().endsWith("-->")) {//NOI18N
+                            //found end token
+                            int start = toki.getOffset() + toki.getImage().length() - "-->".length(); //NOI18N
+                            int end = toki.getOffset() + toki.getImage().length();
+                            return new int[] {start, end};
+                        }
+                    } else break;
+                    toki = toki.getNext();
                 }
-                if(tokenImage.endsWith("-->") && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - "-->".length())) { //NOI18N
-                    //end html token - we need to find the start token of the html comment
-                    while(toki != null) {
-                        if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
-                            if(toki.getImage().startsWith("<!--")) { //NOI18N
-                                //found end token
-                                int start = toki.getOffset();
-                                int end = toki.getOffset() + "<!--".length(); //NOI18N
-                                return new int[] {start, end};
-                            }
-                        } else break;
-                        toki = toki.getPrevious();
-                    }
+            }
+            if(tokenImage.endsWith("-->") && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - "-->".length())) { //NOI18N
+                //end html token - we need to find the start token of the html comment
+                while(toki != null) {
+                    if((toki.getTokenID() == XMLTokenIDs.BLOCK_COMMENT)) {
+                        if(toki.getImage().startsWith("<!--")) { //NOI18N
+                            //found end token
+                            int start = toki.getOffset();
+                            int end = toki.getOffset() + "<!--".length(); //NOI18N
+                            return new int[] {start, end};
+                        }
+                    } else break;
+                    toki = toki.getPrevious();
                 }
-            } //eof match html comments
-             */
+            }
+        } //eof match xml comments
+        
         
         return null;
     }
