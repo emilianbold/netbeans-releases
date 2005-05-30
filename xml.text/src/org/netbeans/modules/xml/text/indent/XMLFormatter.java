@@ -98,11 +98,11 @@ public class XMLFormatter extends ExtFormatter {
             return null;
         }
         
-        TokenItem ti = sup.getTokenChain(startOffset, endOffset + 1);
+        /*TokenItem ti = sup.getTokenChain(startOffset, endOffset + 1);
         do {
             System.out.println(ti);
         } while ((ti = ti.getNext()) != null);
-        
+        */
         
         int lastPairTokenRowOffset = -1;
         do {
