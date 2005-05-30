@@ -73,28 +73,29 @@ public class XMLFormatter extends ExtFormatter {
         
         if (startOffset == endOffset){
             //pressed enter - called from indentNewLine
-            //check whether there is an open tag at the end of the previous line
-            int carretLine = Utilities.getLineOffset(doc, startOffset);
-            
+            //get first non-white token backward
+            int nonWSTokenBwd = Utilities.getFirstNonWhiteBwd(doc, endOffset);
             //get first non-white token on the line
-            int rowStart = Utilities.getRowStartFromLineOffset(doc, carretLine - 1);
-            int nonWsOffset = Utilities.getFirstNonWhiteFwd(doc, rowStart, /* limit */ endOffset);
-            if(nonWsOffset > 0) {
-                //found non - empty line
-                token = sup.getTokenChain(nonWsOffset , nonWsOffset + 1);
-                if(token != null && token.getImage().startsWith("<") && !token.getImage().startsWith("</")) {
-                    //found an open tag => increase indentation
-                    int previousLineIndentation = Utilities.getRowIndent(doc, token.getOffset());
-                    int newLineIndent = previousLineIndentation + getShiftWidth();
-                    changeRowIndent(doc, startOffset, newLineIndent);
-                    
-                    return null;
-                }
+            int lineStart = Utilities.getRowStart(doc, nonWSTokenBwd);
+            int firstNonWsOffsetOnLine = Utilities.getFirstNonWhiteFwd(doc, lineStart);
+            
+            token = sup.getTokenChain(firstNonWsOffsetOnLine , firstNonWsOffsetOnLine + 1);
+            if(token != null &&
+                    token.getTokenID() == XMLTokenIDs.TAG &&
+                    token.getImage().startsWith("<") &&
+                    !token.getImage().startsWith("</")) {
+                //found an open tag => increase indentation
+                int previousLineIndentation = Utilities.getRowIndent(doc, token.getOffset());
+                int newLineIndent = previousLineIndentation + getShiftWidth();
+                changeRowIndent(doc, startOffset, newLineIndent);
+                
+                return null;
+            } else {
+                //found something else => indent to the some level
+                int previousLineIndentation = Utilities.getRowIndent(doc, endOffset, false);
+                changeRowIndent(doc, startOffset, previousLineIndentation);
             }
             
-            //found something else => indent to the some level
-            int previousLineIndentation = Utilities.getRowIndent(doc, rowStart, false);
-            changeRowIndent(doc, startOffset, previousLineIndentation);
             return null;
         }
         
@@ -102,7 +103,7 @@ public class XMLFormatter extends ExtFormatter {
         do {
             System.out.println(ti);
         } while ((ti = ti.getNext()) != null);
-        */
+         */
         
         int lastPairTokenRowOffset = -1;
         do {
