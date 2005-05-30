@@ -24,9 +24,9 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  */
 public final class SuiteProjectType implements AntBasedProjectType {
     
-    static final String TYPE = "org.netbeans.modules.apisupport.project.suite"; // NOI18N
+    public static final String TYPE = "org.netbeans.modules.apisupport.project.suite"; // NOI18N
     static final String NAME_SHARED = "data"; // NOI18N
-    static final String NAMESPACE_SHARED = "http://www.netbeans.org/ns/nb-module-suite-project/1"; // NOI18N
+    public static final String NAMESPACE_SHARED = "http://www.netbeans.org/ns/nb-module-suite-project/1"; // NOI18N
     private static final String NAME_PRIVATE = "data"; // NOI18N
     private static final String NAMESPACE_PRIVATE = "http://www.netbeans.org/ns/nb-module-suite-project-private/1"; // NOI18N
     

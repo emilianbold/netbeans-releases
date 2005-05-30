@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
@@ -281,6 +282,16 @@ public final class ProjectXMLManager {
         return el;
     }
     
+    private static Element createSuiteElement(Document doc, String name) {
+        return doc.createElementNS(SuiteProjectType.NAMESPACE_SHARED, name);
+    }
+    
+    private static Element createSuiteElement(Document doc, String name, String innerText) {
+        Element el = createSuiteElement(doc, name);
+        el.appendChild(doc.createTextNode(innerText));
+        return el;
+    }
+    
     /**
      * Helper method to get the <code>ModuleList</code> for the project this
      * instance manage.
@@ -308,9 +319,10 @@ public final class ProjectXMLManager {
     
     /**
      * Generates a basic <em>project.xml</em> templates into the given
-     * <code>projectXml</code>.
+     * <code>projectXml</code> for <em>standalone</em> or <em>module in
+     * suite</em> module.
      */
-    static void generateEmptyTemplate(FileObject projectXml, String cnb,
+    static void generateEmptyModuleTemplate(FileObject projectXml, String cnb,
             boolean standalone) throws IOException {
         
         Document prjDoc = XMLUtil.createDocument("project", PROJECT_NS, null, null); // NOI18N
@@ -334,6 +346,36 @@ public final class ProjectXMLManager {
         dataEl.appendChild(createModuleElement(dataDoc, PUBLIC_PACKAGES));
         
         // store document to disk
+        ProjectXMLManager.safelyWrite(projectXml, prjDoc);
+    }
+    
+    /**
+     * Generates a basic <em>project.xml</em> templates into the given
+     * <code>projectXml</code> for <em>Suite</em>.
+     */
+    public static void generateEmptySuiteTemplate(FileObject projectXml, String name) throws IOException {
+        // XXX this method could be moved in a future (depends on how complex 
+        // suite's project.xml will be) to the .suite package dedicated class
+        Document prjDoc = XMLUtil.createDocument("project", PROJECT_NS, null, null); // NOI18N
+        
+        // generate general project elements
+        Element typeEl = prjDoc.createElementNS(PROJECT_NS, "type"); // NOI18N
+        typeEl.appendChild(prjDoc.createTextNode(SuiteProjectType.TYPE));
+        prjDoc.getDocumentElement().appendChild(typeEl);
+        Element confEl = prjDoc.createElementNS(PROJECT_NS, "configuration"); // NOI18N
+        prjDoc.getDocumentElement().appendChild(confEl);
+        
+        // generate NB Suite project type specific elements
+        Element dataEl = createSuiteElement(confEl.getOwnerDocument(), DATA);
+        confEl.appendChild(dataEl);
+        Document dataDoc = dataEl.getOwnerDocument();
+        dataEl.appendChild(createSuiteElement(dataDoc, "name", name)); // NOI18N
+        
+        // store document to disk
+        ProjectXMLManager.safelyWrite(projectXml, prjDoc);
+    }
+    
+    private static void safelyWrite(FileObject projectXml, Document prjDoc) throws IOException {
         FileLock lock = projectXml.lock();
         try {
             OutputStream os = projectXml.getOutputStream(lock);

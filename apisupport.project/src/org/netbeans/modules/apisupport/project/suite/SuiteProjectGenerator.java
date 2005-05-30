@@ -11,17 +11,14 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.apisupport.project;
+package org.netbeans.modules.apisupport.project.suite;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -33,105 +30,42 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Martin Krauskopf
  */
-public class NbModuleProjectGenerator {
+public class SuiteProjectGenerator {
     
     private static final String PLATFORM_PROPERTIES_PATH =
             "nbproject" + File.separator + "platform.properties"; // NOI18N
     
     /** Use static factory methods instead. */
-    private NbModuleProjectGenerator() {/* empty constructor*/}
+    private SuiteProjectGenerator() {/* empty constructor*/}
     
     /** Generates standalone NetBeans Module. */
-    public static void createStandAloneModule(File projectDir, String cnb,
-            String name, String bundlePath, String layerPath, String platformID) throws IOException {
-        final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+    public static void createSuiteModule(File projectDir, String platformID) throws IOException {
+        final FileObject dirFO = SuiteProjectGenerator.createProjectDir(projectDir);
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
-        createProjectXML(dirFO, cnb, true);
+        createSuiteProjectXML(dirFO);
         createPlatformProperties(dirFO, platformID);
-        createManifest(dirFO, cnb, bundlePath, layerPath);
-        createBundle(dirFO, bundlePath, name);
-        createLayer(dirFO, layerPath);
-        createEmptyTestDir(dirFO);
         ProjectManager.getDefault().clearNonProjectCache();
     }
     
     /**
      * Creates basic <em>nbbuild/project.xml</em> or whatever
      * <code>AntProjectHelper.PROJECT_XML_PATH</code> is pointing to for
-     * <em>standalone</em> or <em>module in suite</em> module.
+     * <em>Suite</em>.
      */
-    private static void createProjectXML(FileObject projectDir,
-            String cnb, boolean standalone) throws IOException {
-        ProjectXMLManager.generateEmptyModuleTemplate(
+    private static void createSuiteProjectXML(FileObject projectDir) throws IOException {
+        ProjectXMLManager.generateEmptySuiteTemplate(
                 createFileObject(projectDir, AntProjectHelper.PROJECT_XML_PATH),
-                cnb, standalone);
-    }
-    
-    private static void createSuiteProperties(FileObject projectDir, File suiteDir) throws IOException {
-        File projectDirF = FileUtil.toFile(projectDir);
-        String suiteLocation;
-        String suitePropertiesLocation;
-        if (CollocationQuery.areCollocated(projectDirF, suiteDir)) {
-            suiteLocation = "${basedir}/" + PropertyUtils.relativizeFile(projectDirF, suiteDir); // NOI18N
-            suitePropertiesLocation = "nbproject/suite.properties"; // NOI18N
-        } else {
-            suiteLocation = suiteDir.getAbsolutePath();
-            suitePropertiesLocation = "nbproject/private/suite-private.properties"; // NOI18N
-        }
-        EditableProperties props = new EditableProperties(true);
-        props.setProperty("suite.dir", suiteLocation); // NOI18N
-        FileObject suiteProperties = createFileObject(projectDir, suitePropertiesLocation);
-        storeProperties(suiteProperties, props);
+                projectDir.getName());
     }
     
     private static void createPlatformProperties(FileObject projectDir, String platformID) throws IOException {
         FileObject plafPropsFO = createFileObject(
-                projectDir, NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH);
+                projectDir, SuiteProjectGenerator.PLATFORM_PROPERTIES_PATH);
         EditableProperties props = new EditableProperties(true);
         props.put("nbplatform.active", platformID); // NOI18N
         storeProperties(plafPropsFO, props);
-    }
-    
-    private static void createManifest(FileObject projectDir, String cnb,
-            String bundlePath, String layerPath) throws IOException {
-        FileObject manifestFO = createFileObject(
-                projectDir, "manifest.mf"); // NOI18N
-        ManifestManager.createManifest(manifestFO, cnb, "1.0", bundlePath, layerPath); // NOI18N
-    }
-    
-    private static void createBundle(FileObject projectDir, String bundlePath,
-            String name) throws IOException {
-        FileObject bundleFO = createFileObject(
-                projectDir, "src" + File.separator + bundlePath); // NOI18N
-        EditableProperties props = new EditableProperties(true);
-        props.put("OpenIDE-Module-Name", name); // NOI18N
-        NbModuleProjectGenerator.storeProperties(bundleFO, props);
-    }
-    
-    private static void createLayer(FileObject projectDir, String layerPath) throws IOException {
-        FileObject layerFO = createFileObject(projectDir, "src/" + layerPath); // NOI18N
-        FileLock lock = layerFO.lock();
-        try {
-            InputStream is = NbModuleProjectGenerator.class.getResourceAsStream("ui/resources/layer_template.xml"); // NOI18N
-            try {
-                OutputStream os = layerFO.getOutputStream(lock);
-                try {
-                    FileUtil.copy(is, os);
-                } finally {
-                    os.close();
-                }
-            } finally {
-                is.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
-    }
-    
-    private static void createEmptyTestDir(FileObject projectDir) throws IOException {
-        projectDir.createFolder("test/unit/src"); // NOI18N
     }
     
     /**
@@ -188,7 +122,7 @@ public class NbModuleProjectGenerator {
                     "file object for " + root.getAbsolutePath()); // NOI18N
         }
     }
-
+    
     /** Just utility method. */
     private static void storeProperties(FileObject bundleFO, EditableProperties props) throws IOException {
         FileLock lock = bundleFO.lock();

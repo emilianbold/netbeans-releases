@@ -33,7 +33,7 @@ import org.openide.filesystems.FileUtil;
  * Basic setup for all the tests.
  * @author Jesse Glick
  */
-abstract class TestBase extends NbTestCase {
+public abstract class TestBase extends NbTestCase {
     
     protected TestBase(String name) {
         super(name);

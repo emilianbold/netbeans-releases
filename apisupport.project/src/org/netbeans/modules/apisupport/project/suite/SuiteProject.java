@@ -140,7 +140,7 @@ final class SuiteProject implements Project {
         
     }
     
-    private final class OpenedHook extends ProjectOpenedHook {
+    final class OpenedHook extends ProjectOpenedHook {
         
         OpenedHook() {}
         

@@ -16,17 +16,15 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
+import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -67,10 +65,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
                     data.getCodeNameBase(), data.getProjectDisplayName(),
                     data.getBundle(), data.getLayer(), data.getPlatform());
         } else  if (data.getKind() == KIND_SUITE) {
-            // create suite project
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Generation phase is not completed yet")); // NOI18N
-            return Collections.EMPTY_SET;
+            SuiteProjectGenerator.createSuiteModule(projectFolder, data.getPlatform());
         } else {
             throw new IllegalStateException("Uknown kind: " + data.getKind()); // NOI18N
         }

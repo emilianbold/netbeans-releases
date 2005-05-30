@@ -11,58 +11,48 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.apisupport.project;
+package org.netbeans.modules.apisupport.project.suite;
 
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.TestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * NbModuleProjectGenerator tests.
+ * SuiteProjectGenerator tests.
  *
  * @author Martin Krauskopf, Jesse Glick
  */
-public class NbModuleProjectGeneratorTest extends TestBase {
-    // TODO test suite module and also NetBeans CVS tree modules
+public class SuiteProjectGeneratorTest extends TestBase {
     // XXX also should test content of created files (XMLs, properties)
     
-    public NbModuleProjectGeneratorTest(String testName) {
+    public SuiteProjectGeneratorTest(String testName) {
         super(testName);
     }
     
-    private static final String[] CREATED_FILES = {
+    private static final String[] SUITE_CREATED_FILES = {
         "build.xml",
-        "manifest.mf",
         "nbproject/project.xml",
         "nbproject/build-impl.xml",
         "nbproject/platform.properties",
-        "src/org/example/testModule/resources/Bundle.properties",
-        "src/org/example/testModule/resources/layer.xml",
-        "test/unit/src",
     };
     
-    public void testCreateStandAloneModule() throws Exception {
-        File targetPrjDir = new File(getWorkDir(), "testModule");
-        NbModuleProjectGenerator.createStandAloneModule(
-                targetPrjDir,
-                "org.example.testModule", // cnb
-                "Testing Module", // display name
-                "org/example/testModule/resources/Bundle.properties",
-                "org/example/testModule/resources/layer.xml",
-                "default"); // platform id
+    public void testCreateSuiteModule() throws Exception {
+        File targetPrjDir = new File(getWorkDir(), "testSuite");
+        SuiteProjectGenerator.createSuiteModule(targetPrjDir, "default");
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         Project p = ProjectManager.getDefault().findProject(fo);
         assertNotNull("have a project in " + targetPrjDir, p);
-        NbModuleProject.OpenedHook hook = (NbModuleProject.OpenedHook) p.getLookup().lookup(NbModuleProject.OpenedHook.class);
+        SuiteProject.OpenedHook hook = (SuiteProject.OpenedHook) p.getLookup().lookup(SuiteProject.OpenedHook.class);
         assertNotNull("has an OpenedHook", hook);
         hook.projectOpened(); // protected but can use package-private access
         // check generated module
-        for (int i=0; i < CREATED_FILES.length; i++) {
-            assertNotNull(CREATED_FILES[i]+" file/folder cannot be found",
-                    fo.getFileObject(CREATED_FILES[i]));
+        for (int i=0; i < SUITE_CREATED_FILES.length; i++) {
+            assertNotNull(SUITE_CREATED_FILES[i]+" file/folder cannot be found",
+                    fo.getFileObject(SUITE_CREATED_FILES[i]));
         }
     }
- }
+}
