@@ -394,6 +394,13 @@ public class TreeModelNode extends AbstractNode {
                     Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
                 }
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                // recover from defect in getChildren()
+                // Otherwise there would remain "Please wait..." node.
+                ErrorManager.getDefault().notify(t);
+                ch = new Object[0];
             }
             boolean fire;
             synchronized (evaluated) {
