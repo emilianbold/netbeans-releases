@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -44,23 +44,23 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     private String systemId = null;  // cached refernce to DTD
     private String publicId = null;  // cached refernce to DTD
     private volatile boolean requestedAutoCompletion = false;
-
+    
     /** Holds last character user have typed. */
     private char lastInsertedChar = 'X';  // NOI18N
-
+    
     private final DocumentMonitor documentMonitor;
-
+    
     /** Creates new XMLSyntaxSupport */
     public XMLSyntaxSupport(BaseDocument doc) {
         super(doc);
-
+        
         // listener has same lifetime as this class
         documentMonitor = new DocumentMonitor();
         DocumentListener l = WeakListeners.document(documentMonitor, doc);
         doc.addDocumentListener(l);
-
+        
     }
-
+    
     /**
      * Get token at given offet or previous one if at token boundary.
      * It does not lock the document.
@@ -74,13 +74,13 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         
         // find first token item at the offset
         
-        TokenItem item = null;        
+        TokenItem item = null;
         int step = 11;
         int len = getDocument().getLength();  //??? read lock
         if (offset > len) throw new BadLocationException("Offset " + offset + " cannot be higher that document length " + len + " .", offset );  //NOI18N
         int from = Math.min(len, offset);
-        int to = Math.min(len, offset);                
-
+        int to = Math.min(len, offset);
+        
         // go ahead to document beginning
         
         while ( item == null) {
@@ -108,11 +108,11 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             }
             item = next;
         }
-
+        
         return item;
     }
     
-    /** 
+    /**
      * Returns SyntaxElement instance for block of tokens, which is either
      * surrounding given offset, or is just before the offset.
      * @param offset Offset in document where to search for SyntaxElement.
@@ -120,10 +120,10 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
      * or <code>null</code> at document begining.
      */
     public SyntaxElement getElementChain( int offset ) throws BadLocationException {
-
+        
         TokenItem item = getPreviousToken( offset);
         if (item == null) return null;
-    
+        
         // locate SyntaxElement start boundary by traversing previous tokens
         // then create element starting from that boundary
         
@@ -133,7 +133,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         // reference can be in attribute or in content
         
         if( id == CHARACTER ) {
-            while( id == CHARACTER ) {                
+            while( id == CHARACTER ) {
                 item = item.getPrevious();
                 if (item == null) break;
                 id = item.getTokenID();
@@ -142,7 +142,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             
             // now item is either XMLSyntax.VALUE or we're in text, or at BOF
             if( id != VALUE && id != TEXT && id != CDATA_SECTION ) {
-
+                
                 // #34453 it may start of element tag or end of start tag (skip attributtes)
                 if( id == XMLDefaultTokenContext.TAG ) {
                     if( item.getImage().startsWith( "<" ) ) {
@@ -155,38 +155,38 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                         return createElement( item );       // TAGC
                     }
                 }
-
+                
                 return createElement( first );
             } // else ( for VALUE or TEXT ) fall through
         }
         
         // these are possible only in containers (tags or doctype)
-        if ( id == XMLDefaultTokenContext.WS 
-          || id == XMLDefaultTokenContext.ARGUMENT 
-          || id == XMLDefaultTokenContext.OPERATOR
-          || id == XMLDefaultTokenContext.VALUE)  // or doctype
+        if ( id == XMLDefaultTokenContext.WS
+                || id == XMLDefaultTokenContext.ARGUMENT
+                || id == XMLDefaultTokenContext.OPERATOR
+                || id == XMLDefaultTokenContext.VALUE)  // or doctype
         {
             while (true) {
                 item = item.getPrevious();
                 id = item.getTokenID();
                 if (id == XMLDefaultTokenContext.TAG) break;
-                if (id == XMLDefaultTokenContext.DECLARATION 
-                    && item.getImage().trim().length() > 0) break;
+                if (id == XMLDefaultTokenContext.DECLARATION
+                        && item.getImage().trim().length() > 0) break;
                 if (isInPI(id, false)) break;
             };
         }
-                
+        
         if( id == TEXT || id == CDATA_SECTION) {
             
             while( id == TEXT || id == CHARACTER || id == CDATA_SECTION) {
                 first = item;
-                item = item.getPrevious();                
-                if (item == null)  break;                
-                id = item.getTokenID();                
+                item = item.getPrevious();
+                if (item == null)  break;
+                id = item.getTokenID();
             }
             return createElement( first ); // from start of continuous text
         }
-
+        
         //
         // it may start of element tag or end of start tag (skip attributtes)
         //
@@ -216,20 +216,20 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         
         
         if ( id == XMLDefaultTokenContext.DECLARATION ) {
-            while(true) { 
-                first = item;                
-                if (id == XMLDefaultTokenContext.DECLARATION 
-                  && item.getImage().startsWith("<!"))                          // NOI18N
+            while(true) {
+                first = item;
+                if (id == XMLDefaultTokenContext.DECLARATION
+                        && item.getImage().startsWith("<!"))                          // NOI18N
                 {
-                      break;
+                    break;
                 }
                 item = item.getPrevious();
                 if (item == null) break;
                 id = item.getTokenID();
             }
-            return createElement( first ); 
+            return createElement( first );
         }
-
+        
         // PI detection
         
         if (isInPI(id, false)) {
@@ -242,35 +242,35 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         if (id == XMLDefaultTokenContext.PI_START) {
             return createElement(item);
         }
-                
+        
         return null;
     }
-        
+    
     // return if in PI exluding PI_START and including WSes
     private boolean isInPI(TokenID id, boolean includeWS) {
-        return id == XMLDefaultTokenContext.PI_TARGET 
-            || id == XMLDefaultTokenContext.PI_CONTENT 
-            || id == XMLDefaultTokenContext.PI_END 
-            || (includeWS && id == XMLDefaultTokenContext.WS);
+        return id == XMLDefaultTokenContext.PI_TARGET
+                || id == XMLDefaultTokenContext.PI_CONTENT
+                || id == XMLDefaultTokenContext.PI_END
+                || (includeWS && id == XMLDefaultTokenContext.WS);
     }
     
-    /** 
-     * Create elements starting with given item. 
-     * 
+    /**
+     * Create elements starting with given item.
+     *
      * @param  item or null if EOD
      * @return SyntaxElement startting at offset, or null, if EoD
-     */    
+     */
     public SyntaxElement createElement( TokenItem item ) throws BadLocationException {
         
         if( item == null ) return null; // on End of Document
-
+        
 //        System.err.println("Creating element for: "  + item.getTokenID().getName() + " " + item.getImage());
         
         TokenID id = item.getTokenID();
         TokenItem first = item;
         int lastOffset = getTokenEnd( item );
         switch (id.getNumericID()) {
-                
+            
             case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
                 
                 while( id == XMLDefaultTokenContext.BLOCK_COMMENT ) {
@@ -280,15 +280,14 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     id = item.getTokenID();
                 }
                 return new CommentImpl( this, first, lastOffset );
-        
+                
             case XMLDefaultTokenContext.DECLARATION_ID:
                 
                 // we treat internal DTD as one syntax element
                 boolean seekforDTDEnd = false;;
-                while( id == XMLDefaultTokenContext.DECLARATION 
-                    || id == XMLDefaultTokenContext.VALUE
-                    || seekforDTDEnd)
-                {                                        
+                while( id == XMLDefaultTokenContext.DECLARATION
+                        || id == XMLDefaultTokenContext.VALUE
+                        || seekforDTDEnd) {
                     lastOffset = getTokenEnd( item );
                     if (seekforDTDEnd) {
                         if (item.getImage().endsWith("]>")) {
@@ -299,17 +298,17 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     }
                     item = item.getNext();
                     if( item == null ) break; //EoD
-                    id = item.getTokenID();                    
+                    id = item.getTokenID();
                 }
                 return new DocumentTypeImpl( this, first, lastOffset);
-        
+                
             case XMLDefaultTokenContext.ERROR_ID:
                 
                 return new SyntaxElement.Error( this, first, lastOffset);
-        
+                
             case TEXT_ID:
             case CHARACTER_ID:
-            case CDATA_SECTION_ID:    
+            case CDATA_SECTION_ID:
                 
                 while( id == TEXT || id == CHARACTER || id == CDATA_SECTION) {
                     lastOffset = getTokenEnd( item );
@@ -318,7 +317,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     id = item.getTokenID();
                 }
                 return new TextImpl( this, first, lastOffset );
-        
+                
             case XMLDefaultTokenContext.TAG_ID:
                 
                 String text = item.getImage();
@@ -326,13 +325,13 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     String name = text.substring( 2 );
                     item = item.getNext();
                     id = item == null ? null : item.getTokenID();
-
+                    
                     while( id == XMLDefaultTokenContext.WS ) {
                         lastOffset = getTokenEnd( item );
                         item = item.getNext();
                         id = item == null ? null : item.getTokenID();
                     }
-
+                    
                     if( id == XMLDefaultTokenContext.TAG && item.getImage().equals( ">" ) ) {   // with this tag
                         return new EndTag( this, first, getTokenEnd( item ), name );
                     } else {                                                            // without this tag
@@ -341,18 +340,17 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 } else {                                                                // starttag
                     String name = text.substring( 1 );
                     ArrayList attrs = new ArrayList();
-
+                    
                     // skip attributes
                     
                     item = item.getNext();
                     id = item == null ? null : item.getTokenID();
                     
                     while( id == XMLDefaultTokenContext.WS
-                        || id == XMLDefaultTokenContext.ARGUMENT
-                        || id == XMLDefaultTokenContext.OPERATOR
-                        || id == XMLDefaultTokenContext.VALUE
-                        || id == XMLDefaultTokenContext.CHARACTER) 
-                    {
+                            || id == XMLDefaultTokenContext.ARGUMENT
+                            || id == XMLDefaultTokenContext.OPERATOR
+                            || id == XMLDefaultTokenContext.VALUE
+                            || id == XMLDefaultTokenContext.CHARACTER) {
                         if ( id == XMLDefaultTokenContext.ARGUMENT ) {
                             attrs.add( item.getImage() );  // remember all attributes
                         }
@@ -361,9 +359,9 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                         if (item == null) break;
                         id = item.getTokenID();
                     }
-
+                    
                     // empty or start tag handling
-
+                    
                     if( id  == XMLDefaultTokenContext.TAG && (item.getImage().equals( "/>") || item.getImage().equals(">") || item.getImage().equals("?>"))){
                         if(item.getImage().equals("/>"))
                             return new EmptyTag( this, first, getTokenEnd( item ), name, attrs );
@@ -375,7 +373,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                         return new StartTag( this, first, lastOffset, name, attrs );
                     }
                 }
-
+                
             case XMLDefaultTokenContext.PI_START_ID:
                 do {
                     lastOffset = getTokenEnd( item );
@@ -391,7 +389,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         
         throw new BadLocationException( "Cannot create SyntaxElement at " + item, item.getOffset() );  //NOI18N
     }
-        
+    
     // ~~~~~~~~~~~~~~~~~ utility methods ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     
@@ -401,7 +399,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
 //    public SyntaxElement.Declaration getDeclarationElement(){
 //        int offset = 5;
 //        SyntaxElement elem = null;
-//        
+//
 //        try {
 //            while(true){  //??? optimalize stop on first element
 //                elem = getElementChain(offset);
@@ -414,8 +412,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
 //        }
 //        return elem != null ? (SyntaxElement.Declaration)elem : null;
 //    }
-
-
+    
+    
     /**
      * Look for pairing closing tag.
      *
@@ -500,24 +498,24 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     return result;
                 } else                         // not empty - we match content of stack
                     if( stack.peek().equals( name ) ) { // match - close this branch of document tree
-                        
-                        if(stack.size()==1)
-                            //we need this name to add to our list of tags before the point of insertion
-                            //we r at depth 1
-                            children.add(name);
-                        
-                        stack.pop();
+                    
+                    if(stack.size()==1)
+                        //we need this name to add to our list of tags before the point of insertion
+                        //we r at depth 1
+                        children.add(name);
+                    
+                    stack.pop();
                     }
             }
         }
         result.clear();
         return result;
     }
-
+    
     /**
      * @param  offset of a child in parent
      * @return all tags used as children of given parent that follows the offset
-     */    
+     */
     public List getFollowingLevelTags(int offset)throws BadLocationException{
         Stack stack = new Stack();
         Vector children = new Vector();
@@ -560,7 +558,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         children.clear();
         return children;
     }
-
+    
     
     /**
      * Defines <b>auto-completion</b> popup trigering criteria.
@@ -568,9 +566,9 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
      *
      */
     public int checkCompletion(JTextComponent target, String typedText, boolean visible ) {
-
+        
         requestedAutoCompletion = false;
-
+        
         if( !visible ) {
             int retVal = COMPLETION_CANCEL;
             switch( typedText.charAt( typedText.length()-1 ) ) {
@@ -594,7 +592,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 case '\'':
                     retVal = COMPLETION_POPUP;
                     break;
-             }
+            }
             if (retVal == COMPLETION_POPUP) requestedAutoCompletion = true;
             return retVal;
         } else { // the pane is already visible
@@ -607,7 +605,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             return COMPLETION_POST_REFRESH; //requery it
         }
     }
-
+    
     /**
      * Return true is this syntax requested auto completion.
      * XMLCompletionQuery can utilize it to not show needless 'No suggestion.'.
@@ -615,25 +613,198 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     public boolean requestedAutoCompletion() {
         return requestedAutoCompletion;
     }
-
+    
     /**
      * @return end offset of given item
      */
     static int getTokenEnd( TokenItem item ) {
         return item.getOffset() + item.getImage().length();
     }
-
+    
     /** Returns last inserted character. It's most likely one recently typed by user. */
     public final char lastTypedChar() {
         return lastInsertedChar;
     }
-
+    
+    /** Find matching tags with the current position.
+     * @param offset position of the starting tag
+     * @param simple whether the search should skip comment and possibly other areas.
+     *  This can be useful when the speed is critical, because the simple
+     *  search is faster.
+     * @return array of integers containing starting and ending position
+     *  of the block in the document. Null is returned if there's
+     *  no matching block.
+     */
+    public int[] findMatchingBlock(int offset, boolean simpleSearch)
+    throws BadLocationException {
+        // TODO - replanning to the other thread. Now it's in awt thread
+        TokenItem token = getTokenChain(offset, offset+1);
+        TokenItem tokenOnOffset = token;
+        
+        // if the carret is after char '>' or '/>', ship inside the tag
+        if (token != null &&
+                token.getTokenID() == XMLTokenIDs.TAG &&
+                token.getImage().endsWith(">")) token = token.getPrevious();
+        
+        boolean isInside = false;  // flag, whether the carret is somewhere in a HTML tag
+        
+        if( token != null ) {
+            if (token.getImage().startsWith("<")) {
+                isInside = true; // the carret is somewhere in '<htmltag' or '</htmltag'
+            } else {
+                // find out whether the carret is inside an HTML tag
+                //try to find the beginning of the tag.
+                while (token!=null &&
+                        token.getTokenID() != XMLTokenIDs.TAG &&
+                        !token.getImage().startsWith("<"))
+                    token = token.getPrevious();
+                if (token!=null && token.getTokenID() == XMLTokenIDs.TAG &&
+                        token.getImage().startsWith("<"))
+                    isInside = true;
+            }
+        }
+        
+        if (token != null && isInside){
+            int start; // possition where the matched tag starts
+            int end;   // possition where the matched tag ends
+            int poss = -1; // how many the same tags is inside the mathed tag
+            
+            //test whether we are in a close tag
+            if (token.getTokenID() == XMLTokenIDs.TAG && token.getImage().startsWith("</")) {
+                //we are in a close tag
+                String tag = token.getImage().substring(2).trim().toLowerCase();
+                while ( token != null){
+                    if (token.getTokenID() == XMLTokenIDs.TAG && !">".equals(token.getImage())) {
+                        if (token.getImage().substring(1).trim().toLowerCase().equals(tag)
+                        /*&& !isSingletonTag(token)*/) {
+                            //it's an open tag
+                            if (poss == 0){
+                                //get offset of previous token: < or </
+                                start = token.getOffset();
+                                end = token.getOffset()+token.getImage().length()+1;
+                                token = token.getNext();
+                                
+                                while (token != null && token.getTokenID() != XMLTokenIDs.TAG){
+                                    token = token.getNext();
+                                }
+                                if (token != null)
+                                    end = token.getOffset()+token.getImage().length();
+                                return new int[] {start, end};
+                            } else{
+                                poss--;
+                            }
+                        } else {
+                            //test whether the tag is a close tag for the 'tag' tagname
+                            if ((token.getImage().substring(2).toLowerCase().indexOf(tag) > -1)
+                            /*&& !isSingletonTag(token)*/) {
+                                poss++;
+                            }
+                        }
+                    }
+                    token = token.getPrevious();
+                }
+                
+            } else{
+                //we are in an open tag
+                //We need to find out whether the open tag is a singleton tag or not.
+                //In the first case no matching is needed
+                /*if(isSingletonTag(token)) return null;*/
+                
+                String tag = token.getImage().substring(1).toLowerCase();
+                while ( token != null){
+                    if (token.getTokenID() == XMLTokenIDs.TAG && !">".equals(token.getImage())) {
+                        if (token.getImage().substring(2).trim().toLowerCase().equals(tag)) {
+                            //it's a close tag
+                            if (poss == 0) {
+                                //get offset of previous token: < or </
+                                start = token.getOffset();
+                                end = token.getOffset()+token.getImage().length()+1;
+                                
+                                return new int[] {start, end};
+                            } else
+                                poss--;
+                        } else{
+                            if (token.getImage().substring(1).toLowerCase().equals(tag))
+                            /*&& !isSingletonTag(token))*/
+                                poss++;
+                        }
+                    }
+                    token = token.getNext();
+                }
+            }
+        }
+        
+        
+        //match html comments
+            /*if(tokenOnOffset != null && tokenOnOffset.getTokenID() == HTMLTokenContext.BLOCK_COMMENT) {
+                String tokenImage = tokenOnOffset.getImage();
+                TokenItem toki = tokenOnOffset;
+                if(tokenImage.startsWith("<!--") && (offset < (tokenOnOffset.getOffset()) + "<!--".length())) { //NOI18N
+                    //start html token - we need to find the end token of the html comment
+                    while(toki != null) {
+                        if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
+                            if(toki.getImage().endsWith("-->")) {//NOI18N
+                                //found end token
+                                int start = toki.getOffset() + toki.getImage().length() - "-->".length(); //NOI18N
+                                int end = toki.getOffset() + toki.getImage().length();
+                                return new int[] {start, end};
+                            }
+                        } else break;
+                        toki = toki.getNext();
+                    }
+                }
+                if(tokenImage.endsWith("-->") && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - "-->".length())) { //NOI18N
+                    //end html token - we need to find the start token of the html comment
+                    while(toki != null) {
+                        if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
+                            if(toki.getImage().startsWith("<!--")) { //NOI18N
+                                //found end token
+                                int start = toki.getOffset();
+                                int end = toki.getOffset() + "<!--".length(); //NOI18N
+                                return new int[] {start, end};
+                            }
+                        } else break;
+                        toki = toki.getPrevious();
+                    }
+                }
+            } //eof match html comments
+             */
+        
+        return null;
+    }
+    
+    /** Finds out whether the given tagTokenItem is a part of a singleton tag (e.g. <div style=""/>).
+     * @tagTokenItem a token item whithin a tag
+     * @return true is the token is a part of singleton tag
+     */
+    /*public boolean isSingletonTag(TokenItem tagTokenItem) {
+        TokenItem ti = tagTokenItem;
+        while(ti != null) {
+            if(ti.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
+                if("/>".equals(ti.getImage())) { // NOI18N
+                    //it is a singleton tag => do not match
+                    return true;
+                }
+                if(">".equals(ti.getImage())) break; // NOI18N
+            }
+            //break the loop on TEXT or on another open tag symbol
+            //(just to prevent long loop in case the tag is not closed)
+            if((ti.getTokenID() == HTMLTokenContext.TEXT)
+            || (ti.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL)) break;
+     
+            ti = ti.getNext();
+        }
+        return false;
+    }*/
+    
+    
+    
     /** Keep track of last typed character */
     private class DocumentMonitor implements DocumentListener {
-
+        
         public void changedUpdate(DocumentEvent e) {
         }
-
+        
         public void insertUpdate(DocumentEvent e) {
             int start = e.getOffset();
             int len = e.getLength();
@@ -645,7 +816,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 err.notify(e1);
             }
         }
-
+        
         public void removeUpdate(DocumentEvent e) {
         }
     }
