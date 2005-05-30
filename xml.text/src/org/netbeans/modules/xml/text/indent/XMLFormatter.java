@@ -65,7 +65,7 @@ public class XMLFormatter extends ExtFormatter {
         
         //TODO: we are not preserving whitespaces yet - make an editor option for that and make it enabled by default
         
-        System.out.println("reformat from "+ startOffset + " to " + endOffset + ": " +doc.getText(startOffset, endOffset-startOffset));
+        //System.out.println("reformat from "+ startOffset + " to " + endOffset + ": " +doc.getText(startOffset, endOffset-startOffset));
         
         int pos = Utilities.getRowStart(doc, endOffset);
         TokenItem token = null;
@@ -98,10 +98,10 @@ public class XMLFormatter extends ExtFormatter {
             return null;
         }
         
-//        TokenItem ti = sup.getTokenChain(startOffset, endOffset + 1);
-//        do {
-//            System.out.println(ti);
-//        } while ((ti = ti.getNext()) != null);
+        TokenItem ti = sup.getTokenChain(startOffset, endOffset + 1);
+        do {
+            System.out.println(ti);
+        } while ((ti = ti.getNext()) != null);
         
         
         int lastPairTokenRowOffset = -1;

@@ -50,6 +50,9 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     
     private final DocumentMonitor documentMonitor;
     
+    private static final String CDATA_START = "<![CDATA[";
+    private static final String CDATA_END = "]]>";
+    
     /** Creates new XMLSyntaxSupport */
     public XMLSyntaxSupport(BaseDocument doc) {
         super(doc);
@@ -734,6 +737,24 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             }
         }
         
+        //CDATA matching
+        if(tokenOnOffset != null && tokenOnOffset.getTokenID() == XMLTokenIDs.CDATA_SECTION) {
+            String tokenImage = tokenOnOffset.getImage();
+            
+            TokenItem toki = tokenOnOffset;
+            if(tokenImage.startsWith(CDATA_START) && (offset < (tokenOnOffset.getOffset()) + CDATA_START.length())) { //NOI18N
+                //CDATA section start
+                int start = toki.getOffset() + toki.getImage().length() - CDATA_END.length(); //NOI18N
+                int end = toki.getOffset() + toki.getImage().length();
+                return new int[] {start, end};
+            }
+            if(tokenImage.endsWith(CDATA_END) && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - CDATA_END.length())) { //NOI18N
+                //CDATA section end
+                int start = toki.getOffset();
+                int end = toki.getOffset() + CDATA_START.length(); //NOI18N
+                return new int[] {start, end};
+            }
+        }
         
         //match xml comments
         if(tokenOnOffset != null && tokenOnOffset.getTokenID() == XMLTokenIDs.BLOCK_COMMENT) {
