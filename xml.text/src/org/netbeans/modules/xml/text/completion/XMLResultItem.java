@@ -14,12 +14,14 @@
 package org.netbeans.modules.xml.text.completion;
 
 import java.awt.Color;
+import java.io.IOException;
 
 import javax.swing.text.*;
 import javax.swing.Icon;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
+import org.netbeans.editor.Utilities;
 import javax.swing.JLabel;
 
 /** 
@@ -106,8 +108,12 @@ class XMLResultItem implements CompletionQuery.ResultItem {
         try {
             doc.remove( offset, len );
             doc.insertString( offset, text, null);
+            //reformat the line
+            ((ExtFormatter)doc.getFormatter()).reformat(doc, Utilities.getRowStart(doc, offset), offset+text.length(), true);
         } catch( BadLocationException exc ) {
             return false;    //not sucessfull
+        } catch (IOException e) {
+            return false;
         } finally {
             doc.atomicUnlock();
         }
