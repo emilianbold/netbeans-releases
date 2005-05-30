@@ -84,18 +84,21 @@ public class XMLFormatter extends ExtFormatter {
                     token.getTokenID() == XMLTokenIDs.TAG &&
                     token.getImage().startsWith("<") &&
                     !token.getImage().startsWith("</")) {
-                //found an open tag => increase indentation
-                int previousLineIndentation = Utilities.getRowIndent(doc, token.getOffset());
-                int newLineIndent = previousLineIndentation + getShiftWidth();
-                changeRowIndent(doc, startOffset, newLineIndent);
+                //found an open tag => test whether it has a matching close tag between endOffset and the open tag offset
+                //if so, do not increase the indentation
+                int[] match = sup.findMatchingBlock(token.getOffset(), false);
+                if((match != null && match[0] > endOffset) || match == null) {
+                    //increase indentation
+                    int previousLineIndentation = Utilities.getRowIndent(doc, token.getOffset());
+                    int newLineIndent = previousLineIndentation + getShiftWidth();
+                    changeRowIndent(doc, startOffset, newLineIndent);
+                    return null;
+                }
                 
-                return null;
-            } else {
-                //found something else => indent to the some level
-                int previousLineIndentation = Utilities.getRowIndent(doc, endOffset, false);
-                changeRowIndent(doc, startOffset, previousLineIndentation);
             }
-            
+            //found something else => indent to the some level
+            int previousLineIndentation = Utilities.getRowIndent(doc, endOffset, false);
+            changeRowIndent(doc, startOffset, previousLineIndentation);
             return null;
         }
         
