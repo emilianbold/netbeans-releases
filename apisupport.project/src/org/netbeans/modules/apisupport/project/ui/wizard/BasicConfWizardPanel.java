@@ -36,11 +36,9 @@ final class BasicConfWizardPanel extends BasicWizardPanel {
     /** Representing visual component for this step. */
     private BasicConfVisualPanel visualPanel;
     
-    private WizardDescriptor settings;
-    
     /** Creates a new instance of BasicConfWizardPanel */
     public BasicConfWizardPanel(WizardDescriptor settings) {
-        this.settings = settings;
+        super(settings);
     }
     
     public void readSettings(Object settings) {
@@ -53,7 +51,7 @@ final class BasicConfWizardPanel extends BasicWizardPanel {
     
     public Component getComponent() {
         if (visualPanel == null) {
-            visualPanel = new BasicConfVisualPanel(settings);
+            visualPanel = new BasicConfVisualPanel(getSettings());
             visualPanel.addPropertyChangeListener(this);
             visualPanel.setName(getMessage("LBL_BasicConfigPanel_Title")); // NOI18N
         }

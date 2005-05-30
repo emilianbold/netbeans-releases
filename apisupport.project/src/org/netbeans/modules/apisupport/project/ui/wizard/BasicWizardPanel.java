@@ -23,15 +23,24 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * Basic wizard panel for Eclipse Wizard importer.
+ * Basic wizard panel for APISupport projects.
  *
  * @author mkrauskopf
  */
 abstract class BasicWizardPanel implements WizardDescriptor.Panel, PropertyChangeListener {
     
     private boolean valid;
+    private WizardDescriptor settings;
     
     private EventListenerList listeners = new EventListenerList();
+    
+    BasicWizardPanel(WizardDescriptor settings) {
+        this.settings = settings;
+    }
+    
+    WizardDescriptor getSettings() {
+        return settings;
+    }
     
     public void addChangeListener(ChangeListener l) {
         listeners.add(ChangeListener.class, l);
@@ -64,7 +73,12 @@ abstract class BasicWizardPanel implements WizardDescriptor.Panel, PropertyChang
     public void storeSettings(Object settings) {;}
     
     public void readSettings(Object settings) {;}
-
+    
+    void setValid(boolean valid) {
+        this.valid = valid;
+        fireChange();
+    }
+    
     public boolean isValid() {
         return valid;
     }

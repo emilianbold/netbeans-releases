@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -23,9 +24,14 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,6 +42,10 @@ import org.openide.util.NbBundle;
 public class NewNbModuleWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
+    
+    private final static String KIND_ATTR = "kind"; // NOI18N
+    private final static String KIND_STANDALONE = "standalone"; // NOI18N
+    private final static String KIND_SUITE = "suite"; // NOI18N
     
     static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
     
@@ -50,11 +60,20 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         final NewModuleProjectData data = (NewModuleProjectData) settings.
                 getProperty("moduleProjectData"); // XXX should be constant
         
-        // create project
         final File projectFolder = new File(data.getProjectFolder());
-        NbModuleProjectGenerator.createStandAloneModule(projectFolder,
-                data.getCodeNameBase(), data.getProjectDisplayName(),
-                data.getBundle(), data.getLayer(), data.getPlatform());
+        if (data.getKind() == KIND_STANDALONE) {
+            // create standalone project
+            NbModuleProjectGenerator.createStandAloneModule(projectFolder,
+                    data.getCodeNameBase(), data.getProjectDisplayName(),
+                    data.getBundle(), data.getLayer(), data.getPlatform());
+        } else  if (data.getKind() == KIND_SUITE) {
+            // create suite project
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    "Generation phase is not completed yet")); // NOI18N
+            return Collections.EMPTY_SET;
+        } else {
+            throw new IllegalStateException("Uknown kind: " + data.getKind()); // NOI18N
+        }
         
         FileObject projectFolderFO = FileUtil.toFileObject(FileUtil.normalizeFile(projectFolder));
         
@@ -71,17 +90,28 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     }
     
     public void initialize(WizardDescriptor wiz) {
+        String kind = null;
         this.settings = wiz;
-        settings.putProperty("moduleProjectData", new NewModuleProjectData()); // NOI18N
+        try {
+            DataObject obj = DataObject.find(Templates.getTemplate(settings));
+            assert obj != null : "Cannot find data object for the template"; // NOI18N
+            kind = (String) obj.getPrimaryFile().getAttribute(KIND_ATTR);
+            assert kind != null : "kind attribute wasn't found"; // NOI18N
+        } catch (DataObjectNotFoundException e) {
+            assert false : "Cannot find data object for the template"; // NOI18N
+        }
+        NewModuleProjectData data = new NewModuleProjectData();
+        data.setKind(kind);
+        settings.putProperty("moduleProjectData", data); // NOI18N
         position = 0;
-        panels = new WizardDescriptor.Panel[] {
-            new BasicInfoWizardPanel(settings),
-                    new BasicConfWizardPanel(settings)
-        };
-        String[] steps = new String[] {
-            getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
-            getMessage("LBL_BasicConfigPanel_Title") // NOI18N
-        };
+        String[] steps = null;
+        if (kind.equals("standalone")) { // NOI18N
+            steps = initStandaloneModuleWizard();
+        } else if (kind.equals("suite")) { // NOI18N
+            steps = initSuiteModuleWizard();
+        } else {
+            assert false : "Illegal value for the king attribute"; // NOI18N
+        }
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             if (c instanceof JComponent) { // assume Swing components
@@ -99,12 +129,32 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         panels = null;
     }
     
+    private String[] initStandaloneModuleWizard() {
+        panels = new WizardDescriptor.Panel[] {
+            new BasicInfoWizardPanel(settings),
+            new BasicConfWizardPanel(settings)
+        };
+        String[] steps = new String[] {
+            getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
+            getMessage("LBL_BasicConfigPanel_Title") // NOI18N
+        };
+        return steps;
+    }
+    
+    private String[] initSuiteModuleWizard() {
+        panels = new WizardDescriptor.Panel[] {
+            new BasicInfoWizardPanel(settings),
+            new PlatformSelectionWizardPanel(settings)
+        };
+        String[] steps = new String[] {
+            getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
+            getMessage("LBL_PlatformSelectionPanel_Title") // NOI18N
+        };
+        return steps;
+    }
+    
     public String name() {
-        return "NewNbModuleWizardIterator.name()";
-//        return MessageFormat.format(
-//                NbBundle.getMessage(NewNbModuleWizardIterator.class, "LBL_WizardStepsCount"),
-//                new String[] {(new Integer(position + 1)).toString(),
-//                        (new Integer(panels.length)).toString()}); //NOI18N
+        return null; // XXX is this used somewhere actually
     }
     
     public boolean hasNext() {

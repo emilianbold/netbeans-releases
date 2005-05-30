@@ -34,11 +34,9 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
     /** Representing visual component for this step. */
     private BasicInfoVisualPanel visualPanel;
     
-    private WizardDescriptor settings;
-    
     /** Creates a new instance of BasicInfoWizardPanel */
     public BasicInfoWizardPanel(WizardDescriptor settings) {
-        this.settings = settings;
+        super(settings);
     }
     
     public void storeSettings(Object settings) {
@@ -47,7 +45,7 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
     
     public Component getComponent() {
         if (visualPanel == null) {
-            visualPanel = new BasicInfoVisualPanel(settings);
+            visualPanel = new BasicInfoVisualPanel(getSettings());
             visualPanel.addPropertyChangeListener(this);
             visualPanel.setName(getMessage("LBL_BasicInfoPanel_Title")); // NOI18N
         }

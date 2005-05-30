@@ -20,8 +20,9 @@ import org.netbeans.modules.apisupport.project.ui.ComponentFactory;
 import org.openide.WizardDescriptor;
 
 /**
- * Second UI panel of <code>NewNbModuleWizardIterator</code>. Allow user to
- * enter basic configuration:
+ * Second UI panel of <code>NewNbModuleWizardIterator</code> for 
+ * <em>standalone</em> module creating mode. Allow user to enter basic 
+ * configuration:
  *
  * <ul>
  *  <li>Code Name Base</li>
@@ -32,7 +33,7 @@ import org.openide.WizardDescriptor;
  *  <li>Module Suite (for suite modules)</li>
  * </ul>
  *
- * @author mkrauskopf
+ * @author Martin Krauskopf
  */
 final class BasicConfVisualPanel extends BasicVisualPanel {
     

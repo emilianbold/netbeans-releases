@@ -18,6 +18,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
+ * Basic visual panel for APISupport wizard panels.
  *
  * @author Martin Krauskopf
  */

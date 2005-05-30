@@ -20,6 +20,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
  */
 final class NewModuleProjectData {
     
+    private String kind;
     private String projectName;
     private String projectLocation;
     private String projectFolder;
@@ -33,6 +34,14 @@ final class NewModuleProjectData {
     
     /** Creates a new instance of NewModuleProjectData */
     NewModuleProjectData() {/* empty constructor */}
+    
+    String getKind() {
+        return kind;
+    }
+    
+    void setKind(String kind) {
+        this.kind = kind;
+    }
     
     String getProjectName() {
         return projectName;
@@ -85,31 +94,31 @@ final class NewModuleProjectData {
     String getPlatform() {
         return platform;
     }
-
+    
     void setPlatform(String platform) {
         this.platform = platform;
     }
-
+    
     String getBundle() {
         return bundle;
     }
-
+    
     void setBundle(String bundle) {
         this.bundle = bundle;
     }
-
+    
     String getLayer() {
         return layer;
     }
-
+    
     void setLayer(String layer) {
         this.layer = layer;
     }
-
+    
     String getProjectDisplayName() {
         return projectDisplayName;
     }
-
+    
     void setProjectDisplayName(String projectDisplayName) {
         this.projectDisplayName = projectDisplayName;
     }
