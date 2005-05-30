@@ -245,16 +245,18 @@ public class XMLFormatter extends ExtFormatter {
                         } else {
                             //found an open tag => auto include close tag
                             String tagname = token.getImage().substring(1); //cut '<'
-                            doc.atomicLock();
-                            try {
-                                doc.insertString( dotPos, "</"+tagname+">" , null);
-                            } catch( BadLocationException exc ) {
-                                //do nothing
-                            } finally {
-                                doc.atomicUnlock();
+                            if(tagname.trim().length() > 0) {
+                                doc.atomicLock();
+                                try {
+                                    doc.insertString( dotPos, "</"+tagname+">" , null);
+                                } catch( BadLocationException exc ) {
+                                    //do nothing
+                                } finally {
+                                    doc.atomicUnlock();
+                                }
+                                //return cursor back
+                                target.setCaretPosition(dotPos);
                             }
-                            //return cursor back
-                            target.setCaretPosition(dotPos);
                         }
                     }
                 }

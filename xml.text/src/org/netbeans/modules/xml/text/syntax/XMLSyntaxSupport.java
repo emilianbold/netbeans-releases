@@ -797,8 +797,6 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             }
         }
         
-        
-        
         //CDATA matching
         if(tokenOnOffset.getTokenID() == XMLTokenIDs.CDATA_SECTION) {
             String tokenImage = tokenOnOffset.getImage();
@@ -852,8 +850,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             }
         } //eof match xml comments
         
-        
-        return null;
+        //for the rest of the situations use default impl from ancestor
+        return super.findMatchingBlock(offset, simpleSearch);
     }
     
     /** Finds out whether the given tagTokenItem is a part of a singleton tag (e.g. <div style=""/>).
