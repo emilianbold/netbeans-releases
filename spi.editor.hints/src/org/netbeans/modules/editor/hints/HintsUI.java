@@ -132,6 +132,7 @@ public class HintsUI implements MouseListener, KeyListener {
         if (listPopup != null) {
             listPopup.hide();
             hintListComponent = null;
+            hintIcon.setToolTipText(NbBundle.getMessage(HintsUI.class, "HINT_Bulb")); // NOI18N
         }
     }
     
@@ -183,6 +184,7 @@ public class HintsUI implements MouseListener, KeyListener {
         if (hintIcon == null) {
             hintIcon = new JLabel();
             hintIcon.addMouseListener (this);
+            hintIcon.setToolTipText(NbBundle.getMessage(HintsUI.class, "HINT_Bulb")); // NOI18N
         }
         String iconBase;
         if (hints.size() > 1) {
@@ -206,6 +208,10 @@ public class HintsUI implements MouseListener, KeyListener {
         if (comp == null || hints.isEmpty()) {
             return;
         }
+        hintIcon.setToolTipText(null);
+        // be sure that hint will hide when popup is showing
+        ToolTipManager.sharedInstance().setEnabled(false);
+        ToolTipManager.sharedInstance().setEnabled(true);
         hintListComponent = 
                 new ScrollCompletionPane(comp, hints, null, null);
         
