@@ -25,6 +25,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ModuleList;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -68,6 +69,7 @@ final class SuiteProject implements Project {
             new OpenedHook(),
             helper.createSharabilityQuery(eval, new String[0], new String[/*XXX anything?*/0]),
             new SuiteSubprojectProviderImpl(this, helper, eval),
+            new SuiteProviderImpl(),
             //new SuiteActions(this),
             //new SuiteLogicalView(this),
             //new SuiteCustomizer(this, helper, eval),
@@ -204,4 +206,17 @@ final class SuiteProject implements Project {
         
     }
     
+    private final class SuiteProviderImpl implements SuiteProvider {
+        
+        public String getSuiteDirectory() {
+            File prjDir = FileUtil.toFile(getProjectDirectory());
+            try {
+                return prjDir.getCanonicalPath();
+            } catch (IOException e) {
+                return prjDir.getAbsolutePath();
+            }
+        }
+        
+    }
+
 }

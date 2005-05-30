@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -174,7 +176,7 @@ final class NbModuleProject implements Project {
             }
         });
         findLocalizedBundlePath();
-        lookup = Lookups.fixed(new Object[] {
+        Object[] lookupBase = new Object[] {
             new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
@@ -189,7 +191,7 @@ final class NbModuleProject implements Project {
             fileBuilt,
             new AccessibilityQueryImpl(this),
             new SourceLevelQueryImpl(this, evaluator()),
-            helper.createSharabilityQuery(eval, new String[0], new String[] {
+            helper.createSharabilityQuery(evaluator(), new String[0], new String[] {
                 // currently these are hardcoded
                 "build", // NOI18N
             }),
@@ -197,7 +199,14 @@ final class NbModuleProject implements Project {
             new AntArtifactProviderImpl(this, helper, evaluator()),
             new CustomizerProviderImpl(this, getHelper(), evaluator(), 
                     locBundlePropsPath),
-        });
+        };
+        if (getModuleType() == TYPE_SUITE_COMPONENT) {
+            Collection suiteCompLookup = new ArrayList(Arrays.asList(lookupBase));
+            suiteCompLookup.add(new SuiteProviderImpl());
+            lookup = Lookups.fixed(suiteCompLookup.toArray());
+        } else {
+            lookup = Lookups.fixed(lookupBase);
+        }
     }
     
     public String toString() {
@@ -796,11 +805,11 @@ final class NbModuleProject implements Project {
                 try {
                     genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        NbModuleProject.class.getResource("resources/build-impl.xsl"),
+                        NbModuleProject.class.getResource("resources/build-impl.xsl"), // NOI18N
                         true);
                     genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_XML_PATH,
-                        NbModuleProject.class.getResource("resources/build.xsl"),
+                        NbModuleProject.class.getResource("resources/build.xsl"), // NOI18N
                         true);
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -838,15 +847,32 @@ final class NbModuleProject implements Project {
             if (getModuleType() != TYPE_NETBEANS_ORG) {
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    NbModuleProject.class.getResource("resources/build-impl.xsl"),
+                    NbModuleProject.class.getResource("resources/build-impl.xsl"), // NOI18N
                     false);
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_XML_PATH,
-                    NbModuleProject.class.getResource("resources/build.xsl"),
+                    NbModuleProject.class.getResource("resources/build.xsl"), // NOI18N
                     false);
             }
         }
         
     }
     
+    private final class SuiteProviderImpl implements SuiteProvider {
+        
+        public String getSuiteDirectory() {
+            File result;
+            String suiteDir = eval.getProperty("suite.dir"); // NOI18N
+            result = new File(suiteDir);
+            if (!result.isAbsolute()) {
+                result = new File(FileUtil.toFile(getProjectDirectory()), suiteDir);
+            }
+            try {
+                return result.getCanonicalPath();
+            } catch (IOException e) {
+                return result.getAbsolutePath();
+            }
+        }
+        
+    }
 }

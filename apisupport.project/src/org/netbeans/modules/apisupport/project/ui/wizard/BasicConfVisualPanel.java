@@ -161,7 +161,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         suiteModule = new javax.swing.JRadioButton();
         moduleSuite = new javax.swing.JLabel();
         browseSuiteButton = new javax.swing.JButton();
-        moduleSuiteValue = new javax.swing.JComboBox();
+        moduleSuiteValue = ComponentFactory.getSuitesComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
