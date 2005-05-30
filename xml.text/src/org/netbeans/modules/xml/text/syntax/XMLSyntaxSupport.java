@@ -742,7 +742,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         //declaration matching e.g. (<!DOCTYPE tutorial SYSTEM "newXMLWizard.dtd">)
         if(tokenOnOffset.getTokenID() == XMLTokenIDs.DECLARATION) {
             String tokenImage = tokenOnOffset.getImage();
-            if(tokenImage.startsWith("<!") && (offset < (tokenOnOffset.getOffset()) + "<!".length())) { //NOI18N
+            if(tokenImage.startsWith("<!")) { //NOI18N
                 //declaration start
                 TokenItem toki = tokenOnOffset;
                 do {
