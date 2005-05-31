@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,16 +155,21 @@ public final class ManifestManager {
             String bundlePath, String layerPath) throws IOException {
         FileLock lock = manifest.lock();
         try {
-            PrintWriter pw = new PrintWriter(manifest.getOutputStream(lock));
+            OutputStream os = manifest.getOutputStream(lock);
             try {
-                pw.println("Manifest-Version: 1.0"); // NOI18N
-                pw.println(OPENIDE_MODULE + ": " + cnb); // NOI18N
-                pw.println(OPENIDE_MODULE_SPECIFICATION_VERSION + ": " + specVer); // NOI18N
-                pw.println(OPENIDE_MODULE_LOCALIZING_BUNDLE + ": " + bundlePath); // NOI18N
-                pw.println(OPENIDE_MODULE_LAYER + ": " + layerPath); // NOI18N
-                pw.println();
+                PrintWriter pw = new PrintWriter(os);
+                try {
+                    pw.println("Manifest-Version: 1.0"); // NOI18N
+                    pw.println(OPENIDE_MODULE + ": " + cnb); // NOI18N
+                    pw.println(OPENIDE_MODULE_SPECIFICATION_VERSION + ": " + specVer); // NOI18N
+                    pw.println(OPENIDE_MODULE_LOCALIZING_BUNDLE + ": " + bundlePath); // NOI18N
+                    pw.println(OPENIDE_MODULE_LAYER + ": " + layerPath); // NOI18N
+                    pw.println();
+                } finally {
+                    pw.close();
+                }
             } finally {
-                pw.close();
+                os.close();
             }
         } finally {
             lock.releaseLock();
