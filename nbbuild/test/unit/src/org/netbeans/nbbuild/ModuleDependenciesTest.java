@@ -897,14 +897,19 @@ public class ModuleDependenciesTest extends NbTestCase {
 
     
     private static String readFile (File f) throws IOException {
-        FileReader r = new FileReader (f);
+        java.io.BufferedReader r = new java.io.BufferedReader (new FileReader (f));
         StringBuffer sb = new StringBuffer ();
+        String prev = "";
         for (;;) {
-            int ch = r.read ();
-            if (ch == -1) {
-                return sb.toString ();
+            String line = r.readLine ();
+            if (line == null) {
+                // line ending at the end of file
+                sb.append ('\n');
+                return sb.toString();
             }
-            sb.append ((char)ch);
+            sb.append (prev);
+            sb.append (line);
+            prev = "\n";
         }
     }
     
