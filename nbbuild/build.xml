@@ -2186,7 +2186,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xtest/examples" target="netbeans"/>
   </target>
 
-  <target name="all-xtest/module" depends="init,all-xtest">
+  <target name="all-xtest/module" depends="init,all-openide/loaders, all-java/j2seproject,all-projects/projectapi,all-projects/projectuiapi,all-xtest">
       <echo message="Building module xtest/module..."/>
     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
