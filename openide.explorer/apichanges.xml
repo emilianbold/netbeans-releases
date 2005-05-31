@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
          </pre>
          separates items returned from <code>getAsText</code> and parsed by <code>setAsText</code>
          by <q>-</q>. List of supported parameters can be found 
-         <a href="@TOP@org/openide/explorer/doc-files/api.html#core_editors_custom_parameters" shape="rect">here</a>.
+         <a href="@TOP@/org/openide/explorer/doc-files/propertyViewCustomization.html#core_editors_custom_parameters" shape="rect">here</a>.
        </description>
        <class package="org.openide.explorer.propertysheet" name="PropertyPanel"/>
        <issue number="56257"/>
@@ -346,8 +346,7 @@ Microsystems, Inc. All Rights Reserved.
         <p>
         The entire
         <code>org.openide.explorer.propertysheet.editors</code>
-        package is
-        <a href="http://openide.netbeans.org/proposals/ReasonsToDeleteEditorsPackage.html" shape="rect">generally deprecated</a>
+        package is generally deprecated
         and no longer included in Javadoc.
         </p>
         <p>
@@ -395,8 +394,7 @@ public void removeVetoableChangeListener(VetoableChangeListener l);</pre>
         The added methods allow to modify the state of the "environment" from 
         a property editor. They also allow listening on such changes and
         veto the change if needed.
-        The changes were described <a href="http://openide.netbeans.org/proposals/propertyPanel-changes.html" shape="rect">here</a>
-        and also the API documentation for the class <code>PropertyEnv</code> should
+        The API documentation for the class <code>PropertyEnv</code> should
         provide information on what they do.
       </description>
       <class package="org.openide.explorer.propertysheet" name="PropertyEnv"/>
@@ -518,7 +516,7 @@ public void removeVetoableChangeListener(VetoableChangeListener l);</pre>
         indicate a failure in the loading of the manager's handles, but the stream
         is OK.
       </description>
-      <class package="org.openide.explorer" name="ExplorerPanel"/>
+      <class link="no" package="org.openide.explorer" name="ExplorerPanel"/>
       <class package="org.openide.explorer" name="ExplorerManager"/>
     </change>
 <change>

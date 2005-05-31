@@ -140,19 +140,12 @@ attached to. It provides the external interface by which the selection
 of nodes, e.g., can be examined or set, and permits multiple views to
 be synchronized (for example, creating a master/detail view is very easy). 
 
-<li>Usually, an
+<li>Usually, actions provided by <a href="../ExplorerUtils.html"><code>ExplorerUtils</code></a>,
+will be attached to the component to make sure they are correctly enabled
+or disabled according to the current node selection. Follow the example in
+<a href="../ExplorerUtils.html"><code>ExplorerUtils</code></a>.
 
-<a href="@org-openide-compat@/org/openide/explorer/ExplorerActions.html"><code>ExplorerActions</code></a>
 
-object will be attached to the manager to make sure that such things
-as cut/copy/paste actions are correctly enabled or disabled according
-to the current node selection. Typically, the topmost component will
-attach these actions to the manager when it is
-
-<a href="@org-openide-windows@/org/openide/windows/TopComponent.html#componentActivated()">activated</a>
-
-or otherwise given focus (and detach them when
-not). <code>ExplorerPanel</code> does this for you.
 
 <li>Most importantly, the Explorer views themselves are added as
 (possibly indirect) children to the topmost component. You do

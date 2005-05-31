@@ -273,7 +273,7 @@ type) the custom parameter is ignored.
             When it is set the property editor will use htmlDisplayValue as a
             string to be shown to the user. Given HTML is interpreted as
             described in awt/HtmlRenderer.html
-            <a href="../../awt/HtmlRenderer.html"><code>HtmlRenderer</code></a>.
+            <a href="@org-openide-awt@/org/openide/awt/HtmlRenderer.html"><code>HtmlRenderer</code></a>.
             So it gives a possibility to show property values e.g. in red,
             bold, ... font.
           </TD>
@@ -441,11 +441,11 @@ Module authors will sometimes want to make use of the fact that
 such an editor exists when creating JavaBean-related code; most
 commonly, this means that
 
-<a href="../../nodes/Node.Property.html#getPropertyEditor()">node properties</a>
+<a href="@org-openide-nodes@/org/openide/nodes/Node.Property.html#getPropertyEditor()">node properties</a>
 
 and
 
-<a href="../../options/SystemOption.html">system options</a>
+<a href="@org-openide-options@/org/openide/options/SystemOption.html">system options</a>
 
 may declare a property to be of a certain type without explicitly
 specifying a property editor for it, and rely on the search path to
@@ -528,11 +528,11 @@ available in the package
 but these are all deprecated; modules are encouraged to
 instead rely solely on the default editor search path, and to add needed configuration
 
-<a href="@JDK@/java/beans/FeatureDescriptor.html#setValue(java.lang.String, java.lang.Object)">parameters</a>
+<a href="@JDK@/java/beans/FeatureDescriptor.html#setValue(java.lang.String,%20java.lang.Object)">parameters</a>
 
 to their
 
-<a href="../../nodes/Node.Property.html"><code>Node.Property</code></a>s
+<a href="@org-openide-nodes@/org/openide/nodes/Node.Property.html"><code>Node.Property</code></a>s
 
 or
 
