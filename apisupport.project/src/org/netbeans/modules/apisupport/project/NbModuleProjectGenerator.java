@@ -103,6 +103,13 @@ public class NbModuleProjectGenerator {
         storeProperties(suiteProperties, props);
     }
     
+    /** 
+     * Appends currently created project in the <code>projectDir<code> to a 
+     * suite project contained in the <code>suiteDir</code>. Also intelligently 
+     * decides whether an added project is relative to a destination suite or 
+     * absolute and uses either <em>nbproject/project.properties</em> or
+     * <em>nbproject/private/private.properties</em> appropriately.
+     */
     private static void appendToSuite(FileObject projectDir, File suiteDir) throws IOException {
         File projectDirF = FileUtil.toFile(projectDir);
         File suiteGlobalPropsFile = new File(suiteDir, "nbproject/project.properties"); // NOI18N
