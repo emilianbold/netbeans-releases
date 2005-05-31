@@ -12,7 +12,6 @@
  */
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
-//todo        dataObject.modelUpdatedFromUI();
 
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;

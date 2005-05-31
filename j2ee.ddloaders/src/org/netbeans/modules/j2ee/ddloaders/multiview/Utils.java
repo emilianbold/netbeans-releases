@@ -19,6 +19,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -26,6 +29,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
+import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.java.JavaDataObject;
 import org.netbeans.modules.java.ui.nodes.SourceNodes;
 import org.netbeans.modules.javacore.api.JavaModel;
@@ -42,12 +46,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.src.ClassElement;
-import org.openide.src.Identifier;
-import org.openide.src.MethodElement;
-import org.openide.src.MethodParameter;
-import org.openide.src.SourceException;
-import org.openide.src.Type;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -62,6 +60,7 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Iterator;
 
 /**
  * @author pfiala
@@ -169,24 +168,6 @@ public class Utils {
         return packageName.charAt(packageName.length() - 1) != '.';
     }
 
-    public static void removeInterface(ClassElement classElement, String interfaceName) {
-        Identifier[] interfaces = classElement.getInterfaces();
-        for (int i = 0; i < interfaces.length; i++) {
-            if (interfaceName.equals(interfaces[i].getFullName())) {
-                Identifier identifier = Identifier.create(interfaceName);
-                removeInterface(classElement, identifier);
-            }
-        }
-    }
-
-    public static void removeInterface(ClassElement classElement, Identifier identifier) {
-        try {
-            classElement.removeInterface(identifier);
-        } catch (SourceException ex) {
-            Utils.notifyError(ex);
-        }
-    }
-
     public static void removeClass(ClassPath classPath, String className) {
         FileObject sourceFile = getSourceFile(classPath, className);
         if (sourceFile != null) {
@@ -228,6 +209,8 @@ public class Utils {
     }
 
     public static EntityNode createEntityNode(FileObject ejbJarFile, ClassPath classPath, Entity entity) {
+        //todo:
+        //classPath = getSourceClassPath(ejbJarFile);
         EjbJar ejbJar;
         try {
             ejbJar = DDProvider.getDefault().getDDRoot(ejbJarFile);
@@ -244,88 +227,72 @@ public class Utils {
         return ClassPathFactory.createClassPath(new ClassPathImpl(groups));
     }
 
-    public static MethodElement getMethod(ClassElement classElement, MethodElement method) {
-        if (classElement == null || method == null) {
+    public static Method getMethod(JavaClass javaClass, Method method) {
+        if (javaClass == null || method == null) {
             return null;
         } else {
-            MethodParameter[] parameters = method.getParameters();
-            Type[] paramTypes = new Type[parameters.length];
-            for (int i = 0; i < parameters.length; i++) {
-                paramTypes[i] = parameters[i].getType();
+            List parameters = new LinkedList();
+            for (Iterator it = method.getParameters().iterator(); it.hasNext();) {
+                parameters.add(((Parameter) it.next()).getType());
             }
-            return classElement.getMethod(method.getName(), paramTypes);
+            return javaClass.getMethod(method.getName(), parameters, false);
         }
     }
 
-    public static void addMethod(ClassElement interfaceElement, MethodElement method) {
-        addMethod(interfaceElement, method, false);
+    public static void addMethod(JavaClass javaClass, Method prototype) {
+        addMethod(javaClass, prototype, false);
     }
 
-    public static void addMethod(ClassElement interfaceElement, MethodElement method, boolean remote) {
-        if (method != null) {
-            addMethod(interfaceElement, method, remote, method.getModifiers());
+    public static void addMethod(JavaClass javaClass, Method prototype, boolean remote) {
+        if (prototype != null) {
+            addMethod(javaClass, prototype, remote, prototype.getModifiers());
         }
     }
 
-    public static void addMethod(ClassElement interfaceElement, MethodElement method, boolean remote, int modifiers) {
-        if (interfaceElement == null || method == null) {
+    public static void addMethod(JavaClass interfaceClass, Method prototype, boolean remote, int modifiers) {
+        if (interfaceClass == null || prototype == null) {
             return;
         }
-        if (getMethod(interfaceElement, method) != null) {
+        if (getMethod(interfaceClass, prototype) != null) {
             return;
         }
-        method = (MethodElement) method.clone();
+        beginJmiTransaction(true);
+        boolean rollback = true;
         try {
+            Method method = JMIUtils.createMethod(interfaceClass);
+            method.setName(prototype.getName());
+            JMIUtils.replaceParameters(method, prototype.getParameters());
             method.setModifiers(modifiers);
             if (remote) {
-                addExceptionIfNecessary(method, RemoteException.class.getName());
+                method.getExceptions().add(JMIUtils.resolveType(RemoteException.class.getName()));
             }
-            interfaceElement.addMethod(method);
-        } catch (SourceException e) {
-            Utils.notifyError(e);
+            getContents(interfaceClass).add(method);
+            rollback = false;
+        } finally {
+            endJmiTransaction(rollback);
         }
     }
 
-    private static void addExceptionIfNecessary(MethodElement me, String exceptionName) throws SourceException {
-        Identifier[] exceptions = me.getExceptions();
-        boolean containsException = false;
-        for (int i = 0; i < exceptions.length; i++) {
-            String curExName = exceptions[i].getFullName();
-            containsException |= exceptionName.equals(curExName);
-        }
-        if (!containsException) {
-            Identifier[] newEx = new Identifier[exceptions.length + 1];
-            System.arraycopy(exceptions, 0, newEx, 0, exceptions.length);
-            newEx[newEx.length - 1] = Identifier.create(exceptionName);
-            me.setExceptions(newEx);
-        }
+    public static List getContents(JavaClass javaClass) {
+        return ((JavaClass) JMIUtils.resolveType(javaClass.getName())).getContents();
     }
 
-    public static void removeBusinessMethod(ClassElement interfaceElement, MethodElement method) {
-        if (interfaceElement == null || method == null) {
+    public static void removeMethod(JavaClass javaClass, Method method) {
+        if (javaClass == null || method == null) {
             return;
         }
-        MethodElement businessMethod = getMethod(interfaceElement, method);
-        if (businessMethod == null) {
-            return;
-        }
+        beginJmiTransaction(true);
+        boolean rollback = true;
         try {
-            interfaceElement.removeMethod(businessMethod);
-        } catch (SourceException e) {
-            Utils.notifyError(e);
+            getContents(javaClass).remove(method);
+            rollback = false;
+        } finally {
+            endJmiTransaction(rollback);
         }
-    }
-
-    public static ClassElement getClassElement(ClassPath classPath, String className) {
-        return ClassElement.forName(className, getSourceFile(classPath, className));
-    }
-
-    public static JavaClass resolveJavaClass(String fullClassName) {
-        return (JavaClass) JavaModel.getDefaultExtent().getType().resolve(fullClassName);
     }
 
     private static Lookup createClassRefactoringLookup(String fullClassName) {
-        Node node = SourceNodes.getExplorerFactory().createClassNode(resolveJavaClass(fullClassName));
+        Node node = SourceNodes.getExplorerFactory().createClassNode((JavaClass) JMIUtils.resolveType(fullClassName));
         InstanceContent ic = new InstanceContent();
         ic.add(node);
         return new AbstractLookup(ic);
@@ -347,24 +314,9 @@ public class Utils {
         return EntityMethodController.getMethodName(fieldName, get);
     }
 
-    public static void renameMethod(MethodElement method, Identifier identifier) {
+    public static void renameMethod(Method method, String name) {
         if (method != null) {
-            try {
-                method.setName(identifier);
-            } catch (SourceException e) {
-                notifyError(e);
-            }
-        }
-    }
-
-    public static void removeMethod(ClassElement classElement, MethodElement method) {
-        method = getMethod(classElement, method);
-        if (method != null) {
-            try {
-                classElement.removeMethod(method);
-            } catch (SourceException e) {
-                Utils.notifyError(e);
-            }
+            method.setName(name);
         }
     }
 
@@ -379,13 +331,13 @@ public class Utils {
     /**
      * Opens source of given class
      * @param ejbJarFile
-     * @param classElement
+     * @param javaClass
      */
-    public static void openEditorFor(FileObject ejbJarFile, ClassElement classElement) {
-        if (classElement == null) {
+    public static void openEditorFor(FileObject ejbJarFile, JavaClass javaClass) {
+        if (javaClass == null) {
             return;
         }
-        FileObject sourceFile = getSourceFile(getSourceClassPath(ejbJarFile), classElement.getVMName());
+        FileObject sourceFile = getSourceFile(getSourceClassPath(ejbJarFile), javaClass.getName());
         if (sourceFile != null) {
             DataObject javaDo;
             try {
@@ -410,16 +362,19 @@ public class Utils {
         org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(runnable);
     }
 
-    public static void changeParameterType(final MethodElement method, Type type) {
+    public static void changeParameterType(final Method method, Type type) {
         if (method != null) {
-            MethodParameter[] parameters = method.getParameters();
-            parameters[0].setType(type);
-            try {
-                method.setParameters(parameters);
-            } catch (SourceException e) {
-                notifyError(e);
-            }
+            Parameter parameter = (Parameter) method.getParameters().get(0);
+            parameter.setType(type);
         }
+    }
+
+    public static void beginJmiTransaction(boolean writeAccess) {
+        JavaModel.getJavaRepository().beginTrans(writeAccess);
+    }
+
+    public static void endJmiTransaction(boolean rollback) {
+        JavaModel.getJavaRepository().endTrans(rollback);
     }
 
     private static class ClassPathImpl implements ClassPathImplementation {

@@ -15,11 +15,18 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
+import org.netbeans.jmi.javamodel.Field;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.JavaModelPackage;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionGenerator;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -54,13 +61,7 @@ import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 import java.lang.reflect.Modifier;
-import org.openide.src.ClassElement;
-import org.openide.src.FieldElement;
-import org.openide.src.Identifier;
-import org.openide.src.MethodElement;
-import org.openide.src.MethodParameter;
-import org.openide.src.SourceException;
-import org.openide.src.Type;
+import org.netbeans.modules.j2ee.common.JMIUtils;
 
 /**
  *
@@ -605,66 +606,77 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     }
     
     public void addInfrastructure(String implBeanClass, FileObject pkg){
+        boolean rollbackFlag = true; // rollback the transaction by default
+        JavaModel.getJavaRepository().beginTrans(true);
         try {
-            ClassElement clazz = ClassElement.forName(implBeanClass, pkg);
+            JavaModel.setClassPath(pkg);
+            JavaClass clazz = JMIUtils.findClass(implBeanClass);
             //remove java.rmi.Remote interface
-            Identifier remote = Identifier.create("java.rmi.Remote");
-            clazz.removeInterface(remote);
+            for (Iterator it = clazz.getInterfaces().iterator(); it.hasNext();) {
+               JavaClass interfaceJavaClass = (JavaClass) it.next();
+               if (interfaceJavaClass.getName().equals("java.rmi.Remote")) {
+                   it.remove();
+               }
+            }
             
             //add javax.ejb.SessionBean interface
-            Identifier session = Identifier.create("javax.ejb.SessionBean");
-            clazz.addInterface(session);
+            JavaClass session = JMIUtils.findClass("javax.ejb.SessionBean");
+            clazz.getInterfaces().add(session);
+
+            JavaModelPackage jmp = (JavaModelPackage) clazz.refImmediatePackage();
             
             //add javax.ejb.SessionContext field
-            Identifier sessionCtx = Identifier.create("javax.ejb.SessionContext");
-            Type sessionCtxType = Type.createClass(sessionCtx);
-            FieldElement field = new FieldElement();
-            field.setType(sessionCtxType);
-            field.setName(Identifier.create("context"));
-            clazz.addField(field);
+            JavaClass sessionCtx = JMIUtils.findClass("javax.ejb.SessionContext");
+            Field field = jmp.getField().createField();
+            field.setType(sessionCtx);
+            field.setName("context");
+            clazz.getContents().add(field);
             
             //add setSessionContext(javax.ejb.SessionContext aContext) method
-            MethodElement sessionCtxMethod = new MethodElement();
-            sessionCtxMethod.setName(Identifier.create("setSessionContext"));
-            MethodParameter ctxParam = new MethodParameter("aContext", sessionCtxType, false);
-            sessionCtxMethod.setParameters(new MethodParameter[] {ctxParam});
-            sessionCtxMethod.setReturn(Type.VOID);
+            Method sessionCtxMethod = jmp.getMethod().createMethod();
+            sessionCtxMethod.setName("setSessionContext");
+            Parameter ctxParam = jmp.getParameter().createParameter(
+                    "aContext", 
+                    Collections.EMPTY_LIST,
+                    false, 
+                    jmp.getMultipartId().createMultipartId(sessionCtx.getName(), null, null), // type name
+                    0,
+                    false);
+            sessionCtxMethod.getParameters().add(ctxParam);
+            sessionCtxMethod.setType(JMIUtils.resolveType("void"));
             sessionCtxMethod.setModifiers(Modifier.PUBLIC);
-            sessionCtxMethod.setBody("context = aContext;");
-            clazz.addMethod(sessionCtxMethod);
+            sessionCtxMethod.setBodyText("context = aContext;");
+            clazz.getContents().add(sessionCtxMethod);
             
             //add ejbActivate method
-            MethodElement ejbActivateMethod = new MethodElement();
-            ejbActivateMethod.setName(Identifier.create("ejbActivate"));
-            ejbActivateMethod.setReturn(Type.VOID);
+            Method ejbActivateMethod = jmp.getMethod().createMethod();
+            ejbActivateMethod.setName("ejbActivate");
+            ejbActivateMethod.setType(JMIUtils.resolveType("void"));
             ejbActivateMethod.setModifiers(Modifier.PUBLIC);
-            clazz.addMethod(ejbActivateMethod);
+            clazz.getContents().add(ejbActivateMethod);
             
             //add ejbPassivate method
-            MethodElement ejbPassivateMethod = new MethodElement();
-            ejbPassivateMethod.setName(Identifier.create("ejbPassivate"));
-            ejbPassivateMethod.setReturn(Type.VOID);
+            Method ejbPassivateMethod = jmp.getMethod().createMethod();
+            ejbPassivateMethod.setName("ejbPassivate");
+            ejbPassivateMethod.setType(JMIUtils.resolveType("void"));
             ejbPassivateMethod.setModifiers(Modifier.PUBLIC);
-            clazz.addMethod(ejbPassivateMethod);
+            clazz.getContents().add(ejbPassivateMethod);
             
             //add ejbRemove method
-            MethodElement ejbRemoveMethod = new MethodElement();
-            ejbRemoveMethod.setName(Identifier.create("ejbRemove"));
-            ejbRemoveMethod.setReturn(Type.VOID);
+            Method ejbRemoveMethod = jmp.getMethod().createMethod();
+            ejbRemoveMethod.setName("ejbRemove");
+            ejbRemoveMethod.setType(JMIUtils.resolveType("void"));
             ejbRemoveMethod.setModifiers(Modifier.PUBLIC);
-            clazz.addMethod(ejbRemoveMethod);
+            clazz.getContents().add(ejbRemoveMethod);
             
             //add ejbCreate method
-            MethodElement ejbCreateMethod = new MethodElement();
-            ejbCreateMethod.setName(Identifier.create("ejbCreate"));
-            ejbCreateMethod.setReturn(Type.VOID);
+            Method ejbCreateMethod = jmp.getMethod().createMethod();
+            ejbCreateMethod.setName("ejbCreate");
+            ejbCreateMethod.setType(JMIUtils.resolveType("void"));
             ejbCreateMethod.setModifiers(Modifier.PUBLIC);
-            clazz.addMethod(ejbCreateMethod);
-        }
-        catch(SourceException e) {
-            DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarWebServicesSupport.class,"MSG_Unable_Add_EJB_Infrastructure"),
-            NotifyDescriptor.ERROR_MESSAGE));
+            clazz.getContents().add(ejbCreateMethod);
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollbackFlag);
         }
     }
     

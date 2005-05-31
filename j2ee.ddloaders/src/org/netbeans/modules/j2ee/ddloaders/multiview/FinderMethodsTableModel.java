@@ -15,7 +15,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.QueryCustomizer;
-import org.openide.src.MethodElement;
+import org.netbeans.jmi.javamodel.Method;
 
 /**
  * @author pfiala
@@ -41,12 +41,12 @@ class FinderMethodsTableModel extends QueryMethodsTableModel {
         boolean hasRemoteMethod = helper.remoteMethod != null;
         boolean returnsCollection = helper.returnsCollection();
         QueryCustomizer customizer = new QueryCustomizer();
-        MethodElement methodElement = (MethodElement) helper.getPrototypeMethod().clone();
+        Method method = helper.getPrototypeMethod();
         Query aQuery = (Query) queries.getFinderMethod(row).clone();
-        boolean result = customizer.showFinderCustomizer(methodElement, aQuery, returnsCollection,
+        boolean result = customizer.showFinderCustomizer(method, aQuery, returnsCollection,
                 hasLocal, hasRemote, hasLocalMethod, hasRemoteMethod);
         if (result) {
-            helper.updateFinderMethod(methodElement, aQuery, customizer.finderReturnIsSingle(),
+            helper.updateFinderMethod(method, aQuery, customizer.finderReturnIsSingle(),
                     customizer.publishToLocal(), customizer.publishToRemote());
         }
     }
@@ -86,7 +86,7 @@ class FinderMethodsTableModel extends QueryMethodsTableModel {
         boolean publishToLocal = helper.localMethod != null;
         boolean publishToRemote = helper.remoteMethod != null;
         boolean returnsCollection = helper.returnsCollection();
-        MethodElement methodElement = (MethodElement) helper.getPrototypeMethod().clone();
+        Method method = helper.getPrototypeMethod();
         Query query = (Query) queries.getFinderMethod(rowIndex).clone();
         switch (columnIndex) {
             case 1:
@@ -96,7 +96,7 @@ class FinderMethodsTableModel extends QueryMethodsTableModel {
                 query.setDescription((String) value);
                 break;
         }
-        helper.updateFinderMethod(methodElement, query, !returnsCollection, publishToLocal, publishToRemote);
+        helper.updateFinderMethod(method, query, !returnsCollection, publishToLocal, publishToRemote);
     }
 
     public Class getColumnClass(int columnIndex) {

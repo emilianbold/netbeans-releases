@@ -12,8 +12,8 @@
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -26,18 +26,16 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.src.ClassElement;
+
 
 public class Utils {
 
@@ -102,13 +100,17 @@ public class Utils {
     public static void setSteps(WizardDescriptor.Panel[] panels, String[] steps) {
         setSteps(panels, steps, steps, 0);
     }
-    
-    public static void save(ClassElement ce) {
-        if (ce == null) {
+
+    /**
+     * JMI transaction must be started and JMI classpath must be set to use this method
+     */
+    public static void save(JavaClass jc) {
+        if (jc == null) {
             return;
         }
-        SaveCookie saveCookie = (SaveCookie) ce.getCookie(SaveCookie.class);
-        assert saveCookie != null: ("SaveCookie not found for " + ce.getName().getName());
+        SaveCookie saveCookie = (SaveCookie) JMIUtils.getCookie(jc, SaveCookie.class);
+        // TODO: SaveCookie - is returned if file is not modified?
+//        assert saveCookie != null: ("SaveCookie not found for " + jc.getName());
         if (saveCookie != null) {
             try {
                 saveCookie.save();
@@ -117,10 +119,13 @@ public class Utils {
             }
         }
     }
-    
-    public static boolean isModified(ClassElement ce) {
-        DataObject dataObject = (DataObject) ce.getCookie(DataObject.class);
-        assert dataObject != null: ("DataObject not found for " + ce.getName().getName());
+
+    /**
+     * JMI transaction must be started and JMI classpath must be set to use this method
+     */
+    public static boolean isModified(JavaClass ce) {        
+        DataObject dataObject = JavaMetamodel.getManager().getDataObject(ce.getResource());
+        assert dataObject != null: ("DataObject not found for " + ce.getName());
         return dataObject.isModified();
     }
 
@@ -136,9 +141,9 @@ public class Utils {
                     J2eeAppProvider j2eeApp = (J2eeAppProvider)j2eeAppProvider;
                     J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
                     if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
-                        J2eeModuleProvider affectedPrjProvider1 = 
+                        J2eeModuleProvider affectedPrjProvider1 =
                                 (J2eeModuleProvider)p1.getLookup().lookup(J2eeModuleProvider.class);
-                        J2eeModuleProvider affectedPrjProvider2 = 
+                        J2eeModuleProvider affectedPrjProvider2 =
                                 (J2eeModuleProvider)p2.getLookup().lookup(J2eeModuleProvider.class);
                         if (affectedPrjProvider1 != null && affectedPrjProvider2 != null) {
                             List childModules = Arrays.asList(j2eeModules);
@@ -154,36 +159,6 @@ public class Utils {
         return false;
     }
 
-    public static JavaClass findClass(String className, FileObject[] roots) {
-        return findClass(className, ClassPathSupport.createClassPath(roots));
-    }
-    
-    // modified version of org.netbeans.modules.j2ee.refactoring.test.util.Helper.findClass()
-    public static JavaClass findClass(String className, ClassPath cp) {
-        JavaClass result;
-        int i = 20;
-        JavaModel.getJavaRepository().beginTrans(false);
-        try {
-            JavaModel.setClassPath(cp);
-            do {
-                result = (JavaClass) JavaModel.getDefaultExtent().getType().resolve(className);
-                if (result instanceof UnresolvedClass) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                }
-                i--;
-            } while ((result instanceof UnresolvedClass) && i > 0);
-        } finally {
-            JavaModel.getJavaRepository().endTrans();
-        }
-        if (result instanceof UnresolvedClass) {
-            throw new IllegalStateException("Class " + className + " not found.");
-        }
-        return result;
-    }
+    // =========================================================================
 
 }

@@ -19,13 +19,13 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddCmpF
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddFinderMethodAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddSelectMethodAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EntityAndSessionGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.entity.EntityGenerator;
+import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Type;
 import org.openide.nodes.Node;
-import org.openide.src.ClassElement;
-import org.openide.src.Identifier;
-import org.openide.src.MethodElement;
-import org.openide.src.MethodParameter;
-import org.openide.src.SourceException;
-import org.openide.src.Type;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -45,6 +45,8 @@ public class EntityHelper extends EntityAndSessionHelper {
     private final Entity entity;
     public final CmpFields cmpFields;
     public final EntityHelper.Queries queries;
+    private static final String PRIMARY_KEY_FINDER_METHOD = "findByPrimaryKey"; // NOI18N
+    private EntityMethodController entityMethodController;
 
 
     public EntityHelper(EjbJarMultiViewDataObject ejbJarMultiViewDataObject, Entity entity) {
@@ -52,40 +54,52 @@ public class EntityHelper extends EntityAndSessionHelper {
         this.entity = ((Entity) ejb);
         cmpFields = new CmpFields();
         queries = new Queries();
+        entityMethodController = new EntityMethodController(entity, sourceClassPath,
+                ejbJarMultiViewDataObject.getEjbJar());
+        super.abstractMethodController = entityMethodController;
     }
 
-    public MethodElement createAccessMethod(String fieldName, Type type, boolean get) {
-        MethodElement method = new MethodElement();
+    public Method createAccessMethod(String fieldName, Type type, boolean get) {
+        JMIUtils.beginJmiTransaction(true);
+        boolean rollback = true;
         try {
-            method.setName(Identifier.create(Utils.getMethodName(fieldName, get)));
-        } catch (SourceException e) {
-            Utils.notifyError(e);
-        }
-        if (get) {
-            try {
-                method.setReturn(type);
-            } catch (SourceException e) {
-                Utils.notifyError(e);
+            Method prototype = JMIUtils.createMethod(getBeanClass());
+            prototype.setName(Utils.getMethodName(fieldName, get));
+            if (get) {
+                prototype.setType(type);
+            } else {
+                prototype.getParameters().add(JMIUtils.createParameter(prototype, fieldName, type, false));
             }
+            JavaClass beanClass = getBeanClass();
+            Utils.addMethod(beanClass, prototype, false, Modifier.PUBLIC | Modifier.ABSTRACT);
+            Method accessMethod = Utils.getMethod(beanClass, prototype);
+            rollback = false;
+            return accessMethod;
+        } finally {
+            JMIUtils.endJmiTransaction(rollback);
+        }
+    }
+
+    public Method getSetterMethod(String fieldName, Method getterMethod) {
+        if (getterMethod == null) {
+            return null;
         } else {
+            JMIUtils.beginJmiTransaction();
             try {
-                method.setParameters(
-                        new MethodParameter[]{new MethodParameter(fieldName, type, false)});
-            } catch (SourceException e) {
-                Utils.notifyError(e);
+                return EntityMethodController.getSetterMethod(getBeanClass(), fieldName, getterMethod.getType());
+            } finally {
+                JMIUtils.endJmiTransaction();
             }
         }
-        Utils.addMethod(beanClass, method, false, Modifier.PUBLIC | Modifier.ABSTRACT);
-        return Utils.getMethod(beanClass, method);
     }
 
-    public MethodElement getSetterMethod(String fieldName, MethodElement getterMethod) {
-        return getterMethod == null ?
-                null : EntityMethodController.getSetterMethod(beanClass, fieldName, getterMethod);
-    }
-
-    public MethodElement getGetterMethod(String fieldName) {
-        return EntityMethodController.getGetterMethod(beanClass, fieldName);
+    public Method getGetterMethod(String fieldName) {
+        JMIUtils.beginJmiTransaction();
+        try {
+            return EntityMethodController.getGetterMethod(getBeanClass(), fieldName);
+        } finally {
+            JMIUtils.endJmiTransaction(false);
+        }
     }
 
     public void removeQuery(Query query) {
@@ -123,20 +137,25 @@ public class EntityHelper extends EntityAndSessionHelper {
     }
 
     public void setPrimKeyClass(Type newType) {
-        Identifier primaryMethod = Identifier.create("findByPrimaryKey");
-        ClassElement classElement = getLocalHomeInterfaceClass();
-        Type[] origArguments = new Type[]{Type.parse(entity.getPrimKeyClass())};
-        if (classElement != null) {
-            MethodElement method = classElement.getMethod(primaryMethod, origArguments);
-            Utils.changeParameterType(method, newType);
-        }
-        classElement = getHomeInterfaceClass();
-        if (classElement != null) {
-            MethodElement method = classElement.getMethod(primaryMethod, origArguments);
-            Utils.changeParameterType(method, newType);
-        }
-        entity.setPrimKeyClass(newType.getFullString());
+        List params = new LinkedList();
+        params.add(JMIUtils.resolveType(entity.getPrimKeyClass()));
+        changeFinderMethodParam(getLocalHomeInterfaceClass(), params, newType);
+        changeFinderMethodParam(getHomeInterfaceClass(), params, newType);
+        entity.setPrimKeyClass(newType.getName());
         modelUpdatedFromUI();
+    }
+
+    private static void changeFinderMethodParam(JavaClass javaClass, List params, Type newType) {
+        if (javaClass != null) {
+            Method method = javaClass.getMethod(PRIMARY_KEY_FINDER_METHOD, params, false);
+            Utils.changeParameterType(method, newType);
+        }
+    }
+
+    protected EntityAndSessionGenerator getGenerator() {
+        EntityGenerator generator = new EntityGenerator();
+        generator.setCMP(Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType()));
+        return generator;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -158,9 +177,20 @@ public class EntityHelper extends EntityAndSessionHelper {
             cmpFields.change(source, propertyName, oldValue, newValue);
         } else if (source instanceof Query) {
             queries.change(source, propertyName, oldValue, newValue);
-        } else if (source instanceof ClassElement) {
-            cmpFields.change(source, propertyName, oldValue, newValue);
-            queries.change(source, propertyName, oldValue, newValue);
+        }
+    }
+
+    public EntityMethodController getEntityMethodController() {
+        return entityMethodController;
+    }
+
+    public void updateMethod(Method method, boolean local, boolean isComponent, boolean shouldExist) {
+        entityMethodController.updateMethod(method, local, isComponent, shouldExist);
+    }
+
+    public void updateFieldAccessor(String fieldName, boolean getter, boolean local, boolean shouldExist) {
+        if (local && hasLocalInterface() || !local && hasRemoteInterface()) {
+            entityMethodController.updateFieldAccessor(fieldName, getter, local, shouldExist);
         }
     }
 
@@ -237,11 +267,6 @@ public class EntityHelper extends EntityAndSessionHelper {
         public void change(Object source, String propertyName, Object oldValue, Object newValue) {
             if (source instanceof Entity) {
                 cmpFieldHelperMap.keySet().retainAll(Arrays.asList(entity.getCmpField()));
-            } else if (source instanceof ClassElement) {
-                for (Iterator it = cmpFieldHelperMap.values().iterator(); it.hasNext();) {
-                    CmpFieldHelper cmpFieldHelper = (CmpFieldHelper) it.next();
-                    cmpFieldHelper.initAccessMethods();
-                }
             }
             firePropertyChange(new PropertyChangeEvent(source, propertyName, oldValue, newValue));
         }
@@ -253,7 +278,7 @@ public class EntityHelper extends EntityAndSessionHelper {
         }
 
         public void addCmpField() {
-            new AddCmpFieldAction().addCmpField(beanClass, ejbJarFile);
+            new AddCmpFieldAction().addCmpField(getBeanClass(), ejbJarFile);
             modelUpdatedFromUI();
         }
 
@@ -292,12 +317,17 @@ public class EntityHelper extends EntityAndSessionHelper {
         }
 
         public QueryMethodHelper getQueryMethodHelper(Query query) {
-            QueryMethodHelper queryMethodHelper = (QueryMethodHelper) queryMethodHelperMap.get(query);
-            if (queryMethodHelper == null) {
-                queryMethodHelper = new QueryMethodHelper(EntityHelper.this, query);
-                queryMethodHelperMap.put(query, queryMethodHelper);
+            JMIUtils.beginJmiTransaction();
+            try {
+                QueryMethodHelper queryMethodHelper = (QueryMethodHelper) queryMethodHelperMap.get(query);
+                if (queryMethodHelper == null) {
+                    queryMethodHelper = new QueryMethodHelper(EntityHelper.this, query);
+                    queryMethodHelperMap.put(query, queryMethodHelper);
+                }
+                return queryMethodHelper;
+            } finally {
+                JMIUtils.endJmiTransaction();
             }
-            return queryMethodHelper;
         }
 
         public QueryMethodHelper getFinderMethodHelper(int row) {

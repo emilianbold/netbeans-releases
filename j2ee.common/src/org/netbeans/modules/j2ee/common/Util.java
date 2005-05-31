@@ -34,9 +34,8 @@ import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.jmi.javamodel.JavaClass;
 import org.openide.ErrorManager;
-import org.openide.src.ClassElement;
-import org.openide.src.Identifier;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -98,56 +97,6 @@ public class Util {
             }
         }
         return null;
-    }
-         
-   
-    /*
-     * Determines if the class specified in rhs inherits from lhs, traversing the entire heirarchy tree.
-     * @param lhs ClassElement representing the potential superclass or interface
-     * @param rhs Fully-qualified name of class being tested
-     * @param ref FileObject of a file that is thought to belong to the same classpath structure as rhs.
-     */
-    public static boolean isAssignableFrom(ClassElement lhs, String rhs, FileObject ref) {
-        String lhsName = lhs.getName().getFullName();
-        if (lhsName.equals(rhs)) {
-            return true;
-        }
-        ClassElement rhsCls = ClassElement.forName(rhs, ref);
-        boolean lhsIsInterface = lhs.isInterface();
-        HashMap visited = null;
-        
-        while (rhsCls != null) {
-            if (visited == null) {
-                visited = new HashMap();
-            } else {
-                if (visited.get(rhsCls) != null) {
-                    return false;
-                }
-            }
-            visited.put(rhsCls, rhsCls);
-            
-            if (lhsIsInterface) {
-                Identifier[] interfaces = rhsCls.getInterfaces();
-                for (int i = 0; i < interfaces.length; ++i) {
-                    String interfaceName = interfaces[i].getFullName();
-                    // Recursively go and check with this interface
-                    // (dealing with superinterfaces).
-                    if (isAssignableFrom(lhs, interfaceName, ref)){
-                        return true;
-                    }    
-                }
-            }
-            Identifier superCls = rhsCls.getSuperclass();
-            if (superCls != null) {
-                if (lhsName.equals(superCls.getFullName())) {
-                    return true;
-                }
-                rhsCls = ClassElement.forName(superCls.getFullName(), ref);
-            } else {
-                rhsCls = null;
-            }
-        }
-        return false;
     }
     
     /**

@@ -19,11 +19,12 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.CmpRelationshipsForm;
+import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Type;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.src.ClassElement;
-import org.openide.src.MethodElement;
-import org.openide.src.Type;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -67,8 +68,8 @@ class CmpRelationshipsDialogHelper {
         private String origFieldName;
         private String origFieldType;
         private EntityHelper origEntityHelper;
-        protected MethodElement origGetterMethod;
-        protected MethodElement origSetterMethod;
+        protected Method origGetterMethod;
+        protected Method origSetterMethod;
         protected boolean origGetter;
         protected boolean origSetter;
 
@@ -128,7 +129,7 @@ class CmpRelationshipsDialogHelper {
                         Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origSetterMethod);
                     }
                     if (fieldChanged) {
-                        ClassElement beanClass = origEntityHelper.beanClass;
+                        JavaClass beanClass = origEntityHelper.getBeanClass();
                         Utils.removeMethod(beanClass, origGetterMethod);
                         Utils.removeMethod(beanClass, origSetterMethod);
                     }
@@ -142,12 +143,13 @@ class CmpRelationshipsDialogHelper {
                         entityHelper = origEntityHelper;
                     }
                     if (entityHelper != null) {
-                        Type type = Type.parse(fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType);
-                        MethodElement getterMethod = entityHelper.getGetterMethod(fieldName);
+                        String typeName = fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType;
+                        Type type = JMIUtils.resolveType(typeName);
+                        Method getterMethod = entityHelper.getGetterMethod(fieldName);
                         if (getterMethod == null) {
                             getterMethod = entityHelper.createAccessMethod(fieldName, type, true);
                         }
-                        MethodElement setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
+                        Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
                         if (setterMethod == null) {
                             setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
                         }
@@ -251,7 +253,7 @@ class CmpRelationshipsDialogHelper {
                 if (origEntityHelper != null) {
                     origGetterMethod = origEntityHelper.getGetterMethod(origFieldName);
                     origSetterMethod = origEntityHelper.getSetterMethod(origFieldName, origGetterMethod);
-                    ClassElement localBusinessInterfaceClass = origEntityHelper.getLocalBusinessInterfaceClass();
+                    JavaClass localBusinessInterfaceClass = origEntityHelper.getLocalBusinessInterfaceClass();
                     origGetter = Utils.getMethod(localBusinessInterfaceClass, origGetterMethod) != null;
                     origSetter = Utils.getMethod(localBusinessInterfaceClass, origSetterMethod) != null;
                     lastGetter = origGetter;

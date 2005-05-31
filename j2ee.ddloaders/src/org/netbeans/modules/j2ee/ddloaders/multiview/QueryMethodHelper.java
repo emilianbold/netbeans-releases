@@ -16,15 +16,16 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodParams;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
-import org.openide.src.ClassElement;
-import org.openide.src.Identifier;
-import org.openide.src.MethodElement;
-import org.openide.src.MethodParameter;
-import org.openide.src.SourceException;
-import org.openide.src.Type;
+import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Type;
 
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Iterator;
 
 /**
  * @author pfiala
@@ -34,9 +35,9 @@ public class QueryMethodHelper {
     final Query query;
     private final EntityHelper entityHelper;
     private boolean isSelectMethod;
-    private MethodElement implementationMethod;
-    public MethodElement remoteMethod;
-    public MethodElement localMethod;
+    private Method implementationMethod;
+    public Method remoteMethod;
+    public Method localMethod;
 
     public QueryMethodHelper(EntityHelper helper, Query query) {
         this.query = query;
@@ -47,13 +48,15 @@ public class QueryMethodHelper {
 
     protected void init() {
         QueryMethod queryMethod = query.getQueryMethod();
-        Type[] types = getQueryMethodParamTypes(queryMethod);
-        Identifier methodName = Identifier.create(queryMethod.getMethodName());
-        implementationMethod = entityHelper.beanClass.getMethod(methodName, types);
-        ClassElement homeClass = entityHelper.getHomeInterfaceClass();
-        remoteMethod = homeClass == null ? null : homeClass.getMethod(methodName, types);
-        ClassElement localHomeClass = entityHelper.getLocalHomeInterfaceClass();
-        localMethod = localHomeClass == null ? null : localHomeClass.getMethod(methodName, types);
+        List parameters = getQueryMethodParams(queryMethod);
+        String methodName = queryMethod.getMethodName();
+        implementationMethod = entityHelper.getBeanClass().getMethod(methodName, parameters, false);
+        remoteMethod = getMethod(entityHelper.getHomeInterfaceClass(), methodName, parameters);
+        localMethod = getMethod(entityHelper.getLocalHomeInterfaceClass(), methodName, parameters);
+    }
+
+    private static Method getMethod(JavaClass javaClass, String methodName, List parameters) {
+        return javaClass == null ? null : javaClass.getMethod(methodName, parameters, false);
     }
 
     public String getMethodName() {
@@ -61,8 +64,21 @@ public class QueryMethodHelper {
     }
 
     public String getReturnType() {
-        MethodElement method = getImplementationMethod();
-        return method == null ? null : method.getReturn().getFullString();
+        JMIUtils.beginJmiTransaction();
+        try {
+            Method method = getImplementationMethod();
+            if (method != null) {
+                Type type = method.getType();
+                if (type == null) {
+                    return null;
+                } else {
+                    return type.getName();
+                }
+            }
+            return null;
+        } finally {
+            JMIUtils.endJmiTransaction();
+        }
     }
 
     public boolean returnsCollection() {
@@ -70,16 +86,16 @@ public class QueryMethodHelper {
     }
 
     public String getResultInterface() {
-        ClassElement localHomeClass = entityHelper.getLocalHomeInterfaceClass();
-        ClassElement homeClass = entityHelper.getHomeInterfaceClass();
+        JavaClass localHomeClass = entityHelper.getLocalHomeInterfaceClass();
+        JavaClass homeClass = entityHelper.getHomeInterfaceClass();
 
         QueryMethod queryMethod = query.getQueryMethod();
-        Type[] types = getQueryMethodParamTypes(queryMethod);
+        List parameters = getQueryMethodParams(queryMethod);
         String methodName = queryMethod.getMethodName();
         boolean hasLocal = localHomeClass == null ?
-                false : localHomeClass.getMethod(Identifier.create(methodName), types) != null;
+                false : localHomeClass.getMethod(methodName, parameters, false) != null;
         boolean hasRemote = homeClass == null ?
-                false : homeClass.getMethod(Identifier.create(methodName), types) != null;
+                false : homeClass.getMethod(methodName, parameters, false) != null;
         String remote = "remote"; //NOI18N;
         String local = "local"; //NOI18N;
         if (hasLocal) {
@@ -97,63 +113,44 @@ public class QueryMethodHelper {
         }
     }
 
-    private Type[] getQueryMethodParamTypes(QueryMethod queryMethod) {
+    private List getQueryMethodParams(QueryMethod queryMethod) {
         String[] methodParam = queryMethod.getMethodParams().getMethodParam();
-        Type[] types = new Type[methodParam.length];
+        List params = new LinkedList();
         for (int i = 0; i < methodParam.length; i++) {
-            MethodParameter parameter = null;
-            Type type;
-            try {
-                parameter = MethodParameter.parse(methodParam[i]);
-                type = parameter.getType();
-            } catch (IllegalArgumentException e) {
-                type = Type.parse(methodParam[i]);
-            }
-            types[i] = type;
+            params.add(JMIUtils.resolveType(methodParam[i]));
         }
-        return types;
+        return params;
     }
 
     public void removeQuery() {
         init();
-        Utils.removeMethod(entityHelper.beanClass, implementationMethod);
+        Utils.removeMethod(entityHelper.getBeanClass(), implementationMethod);
         Utils.removeMethod(entityHelper.getLocalHomeInterfaceClass(), localMethod);
         Utils.removeMethod(entityHelper.getHomeInterfaceClass(), remoteMethod);
         entityHelper.removeQuery(query);
     }
 
-    public MethodElement getPrototypeMethod() {
-        MethodElement prototypeMethod = getImplementationMethod();
-        if (prototypeMethod == null) {
-            prototypeMethod = new MethodElement();
+    public Method getPrototypeMethod() {
+        Method implementationMethod = getImplementationMethod();
+        if (implementationMethod == null) {
+            Method prototypeMethod = JMIUtils.createMethod(null);
             QueryMethod queryMethod = query.getQueryMethod();
-            try {
-                prototypeMethod.setName(Identifier.create(queryMethod.getMethodName()));
-            } catch (SourceException e) {
-                notifyError(e);
-            }
+            prototypeMethod.setName(queryMethod.getMethodName());
             MethodParams queryParams = queryMethod.getMethodParams();
-            MethodParameter[] params = new MethodParameter[queryParams.sizeMethodParam()];
-            for (int i = 0; i < params.length; i++) {
-                String queryParam = queryParams.getMethodParam(i);
-                try {
-                    params[i] = MethodParameter.parse(queryParam);
-                } catch (IllegalArgumentException e) {
-                    Type type = Type.parse(queryParam);
-                    params[i] = new MethodParameter("p" + i, type, false);
-                }
+            List parameters = prototypeMethod.getParameters();
+            for (int i = 0, n = queryParams.sizeMethodParam(); i < n; i++) {
+                parameters.add(JMIUtils.createParameter(prototypeMethod, "p" + i,
+                        JMIUtils.resolveType(queryParams.getMethodParam(i)), false));
             }
-            try {
-                prototypeMethod.setParameters(params);
-            } catch (SourceException e) {
-                notifyError(e);
-            }
+            return prototypeMethod;
+        } else {
+            return (Method) implementationMethod.duplicate();
+
         }
-        return prototypeMethod;
     }
 
-    public MethodElement getImplementationMethod() {
-        MethodElement prototypeMethod = null;
+    public Method getImplementationMethod() {
+        Method prototypeMethod = null;
         if (isSelectMethod) {
             //select method
             prototypeMethod = implementationMethod;
@@ -168,14 +165,10 @@ public class QueryMethodHelper {
         return prototypeMethod;
     }
 
-    public void updateFinderMethod(MethodElement prototype, Query query, boolean singleReturn, boolean publishToLocal,
+    public void updateFinderMethod(Method prototype, Query query, boolean singleReturn, boolean publishToLocal,
             boolean publishToRemote) {
         //todo: validation
-        try {
-            prototype.setModifiers(0);
-        } catch (SourceException e) {
-            notifyError(e);
-        }
+        prototype.setModifiers(0);
         if (publishToLocal) {
             localMethod = setMethod(localMethod, prototype, singleReturn, false);
         } else {
@@ -196,12 +189,12 @@ public class QueryMethodHelper {
         entityHelper.modelUpdatedFromUI();
     }
 
-    private MethodElement setMethod(MethodElement method, MethodElement prototype, boolean singleReturn,
+    private Method setMethod(Method method, Method prototype, boolean singleReturn,
             boolean remote) {
-        ClassElement interfaceClass = getHomeClass(remote);
+        JavaClass interfaceClass = getHomeClass(remote);
         setReturn(prototype, singleReturn, remote);
         if (method == null) {
-            Utils.addMethod(interfaceClass, (MethodElement) prototype.clone(), remote);
+            Utils.addMethod(interfaceClass, (Method) prototype.duplicate(), remote);
             method = Utils.getMethod(interfaceClass, prototype);
         } else {
             updateMethod(method, prototype);
@@ -209,43 +202,28 @@ public class QueryMethodHelper {
         return method;
     }
 
-    private MethodElement removeMethod(MethodElement method, boolean remote) {
-        ClassElement interfaceClass = getHomeClass(remote);
-        if (method != null) {
-            try {
-                interfaceClass.removeMethod(method);
-            } catch (SourceException e) {
-                notifyError(e);
-                return method;
-            }
-        }
+    private Method removeMethod(Method method, boolean remote) {
+        Utils.removeMethod(getHomeClass(remote), method);
         return null;
     }
 
-    private ClassElement getHomeClass(boolean remote) {
-        ClassElement interfaceClass = remote ?
+    private JavaClass getHomeClass(boolean remote) {
+        JavaClass interfaceClass = remote ?
                 entityHelper.getHomeInterfaceClass() : entityHelper.getLocalHomeInterfaceClass();
         return interfaceClass;
     }
 
-    private void setReturn(MethodElement prototype, boolean singleReturn, boolean remote) {
-        try {
-            String interfaceName = remote ? entityHelper.getRemote() : entityHelper.getLocal();
-            prototype.setReturn(Type.parse(singleReturn ? interfaceName : Collection.class.getName()));
-        } catch (SourceException e) {
-            notifyError(e);
-        }
+    private void setReturn(Method prototype, boolean singleReturn, boolean remote) {
+        String interfaceName = remote ? entityHelper.getRemote() : entityHelper.getLocal();
+        String typeName = singleReturn ? interfaceName : Collection.class.getName();
+        prototype.setType(JMIUtils.resolveType(typeName));
     }
 
-    public void updateSelectMethod(MethodElement prototype, Query query) {
+    public void updateSelectMethod(Method prototype, Query query) {
         //todo: validation
-        try {
-            prototype.setModifiers(Modifier.PUBLIC | Modifier.ABSTRACT);
-        } catch (SourceException e) {
-            notifyError(e);
-        }
+        prototype.setModifiers(Modifier.PUBLIC | Modifier.ABSTRACT);
         if (implementationMethod == null) {
-            Utils.addMethod(entityHelper.beanClass, prototype);
+            Utils.addMethod(entityHelper.getBeanClass(), prototype);
             implementationMethod = prototype;
         } else {
             updateMethod(implementationMethod, prototype);
@@ -253,38 +231,17 @@ public class QueryMethodHelper {
         updateQuery(query);
     }
 
-    private static void updateMethod(MethodElement method, MethodElement prototype) {
+    private static void updateMethod(Method method, Method prototype) {
         if (method != null) {
-            try {
-                method.setName(prototype.getName());
-            } catch (SourceException e) {
-                notifyError(e);
+            method.setName(prototype.getName());
+            method.setType(prototype.getType());
+            final List newParameters = prototype.getParameters();
+            JMIUtils.replaceParameters(method, newParameters);
+            for (Iterator it = prototype.getExceptions().iterator(); it.hasNext();) {
+                JMIUtils.addException(method, ((JavaClass) it.next()).getName());
             }
-            try {
-                method.setReturn(prototype.getReturn());
-            } catch (SourceException e) {
-                notifyError(e);
-            }
-            try {
-                method.setParameters(prototype.getParameters());
-            } catch (SourceException e) {
-                notifyError(e);
-            }
-            try {
-                method.setExceptions(prototype.getExceptions());
-            } catch (SourceException e) {
-                notifyError(e);
-            }
-            try {
-                method.setModifiers(prototype.getModifiers());
-            } catch (SourceException e) {
-                notifyError(e);
-            }
+            method.setModifiers(prototype.getModifiers());
         }
-    }
-
-    private static void notifyError(Exception ex) {
-        Utils.notifyError(ex);
     }
 
     public QueryMethod getQueryMethod() {

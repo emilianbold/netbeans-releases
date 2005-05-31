@@ -21,6 +21,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import java.awt.GridBagLayout;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.util.NbBundle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,8 +34,6 @@ import java.awt.Dialog;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.src.ClassElement;
-import org.openide.cookies.SourceCookie;
 import javax.swing.table.DefaultTableModel;
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -157,13 +159,7 @@ public class MessageHandlerPanel extends JPanel{
                         Node[] selectedNodes = sPanel.getSelectedNodes();
                         for(int i = 0; i < selectedNodes.length; i++){
                             Node node = selectedNodes[i];
-                            ClassElement classElement = (ClassElement)node.getCookie(ClassElement.class);
-                            if(classElement == null){
-                                SourceCookie srcCookie = (SourceCookie)node.getCookie(SourceCookie.class);
-                                if(srcCookie != null){
-                                    classElement = srcCookie.getSource().getClasses()[0];
-                                }
-                            }
+                            JavaClass classElement = JMIUtils.getJavaClassFromNode(node);
                             //FIX-ME: Improve this by filtering the Tree View to only include handlers
                             if(classElement == null){
                                 errMsg = NbBundle.getMessage(MessageHandlerPanel.class,
@@ -175,7 +171,7 @@ public class MessageHandlerPanel extends JPanel{
                             if(!isHandler(classElement)) {
                                 errMsg = NbBundle.getMessage(MessageHandlerPanel.class,
                                 "NotHandlerClass_msg",
-                                classElement.getName().getFullName());
+                                classElement.getName());
                                 accepted = false;
                                 break;
                             }
@@ -199,29 +195,18 @@ public class MessageHandlerPanel extends JPanel{
                 Node[] selectedNodes = sPanel.getSelectedNodes();
                 for(int i = 0; i < selectedNodes.length; i++){
                     Node node = selectedNodes[i];
-                    ClassElement classElement = (ClassElement)node.getCookie(ClassElement.class);
-                    if(classElement == null){
-                        SourceCookie srcCookie = (SourceCookie)node.getCookie(SourceCookie.class);
-                        if(srcCookie != null){
-                            classElement = srcCookie.getSource().getClasses()[0];
-                        }
-                    }
+                    JavaClass classElement = JMIUtils.getJavaClassFromNode(node);
                     
-                    tblModel.addRow(new String[]{classElement.getName().getFullName()});
+                    tblModel.addRow(new String[]{classElement.getName()});
                 }
             }
         }
     }
-    private boolean isHandler(ClassElement ce) {
-        ClassPathProvider cpp = (ClassPathProvider)project.getLookup().lookup(ClassPathProvider.class);
-        assert cpp != null;
-        DataObject dobj = (DataObject)ce.getCookie(DataObject.class);
-        FileObject f = dobj.getPrimaryFile();
-        ClassPath cp = cpp.findClassPath(f, ClassPath.COMPILE);
-        FileObject handlerFO = cp.findResource("javax/xml/rpc/handler/Handler.class");
-        if(handlerFO != null) {
-            ClassElement handlerClassEl = ClassElement.forName("javax.xml.rpc.handler.Handler", handlerFO.getParent());
-            return Util.isAssignableFrom(handlerClassEl, ce.getName().getFullName(), srcRoot);
+    
+    private boolean isHandler(JavaClass ce) {
+        if (ce != null) {
+            JavaClass handlerClass = JMIUtils.findClass("javax.xml.rpc.handler.Handler");
+            return ce.isSubTypeOf(handlerClass);
         }
         return false;
     }
@@ -246,7 +231,6 @@ public class MessageHandlerPanel extends JPanel{
             return null;
         }
     }
-    
     
     private JScrollPane classesScrollPane;
     private JTable messageHandlerTable;

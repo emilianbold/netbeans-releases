@@ -14,7 +14,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
-import org.openide.src.ClassElement;
+import org.netbeans.jmi.javamodel.JavaClass;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -34,8 +34,6 @@ public abstract class QueryMethodsTableModel extends InnerTableModel {
                 Object source = evt.getSource();
                 if (source instanceof Entity) {
                     tableChanged();
-                } else if (source instanceof ClassElement) {
-                    fireTableDataChanged();
                 } else if (source instanceof Query) {
                     for (int i = 0, n = getRowCount(); i < n; i++) {
                         QueryMethodHelper queryMethodHelper = getQueryMethodHelper(i);

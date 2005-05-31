@@ -118,7 +118,6 @@ public class EjbJarMultiViewDataNode extends DataNode {
                 String val = (String) value;
                 if (EjbJar.VERSION_2_1.equals(val) && !val.equals(dataObject.getEjbJar().getVersion().toString())) {
                     dataObject.getEjbJar().setVersion(new java.math.BigDecimal(val));
-                    //todo: check modelUpdatedFromUI() vs. write()
                     dataObject.modelUpdatedFromUI();
                     try {
                         dataObject.getEjbJar().write(dataObject.getPrimaryFile());

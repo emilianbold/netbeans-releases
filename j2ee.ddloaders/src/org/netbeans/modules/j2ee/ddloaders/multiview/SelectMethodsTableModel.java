@@ -16,7 +16,8 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.QueryCustomizer;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.FieldCustomizer;
-import org.openide.src.MethodElement;
+import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.jmi.javamodel.Method;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -47,11 +48,12 @@ class SelectMethodsTableModel extends QueryMethodsTableModel {
     public void editRow(int row) {
         QueryMethodHelper helper = getQueryMethodHelper(row);
         QueryCustomizer customizer = new QueryCustomizer();
-        MethodElement methodElement = (MethodElement) helper.getPrototypeMethod().clone();
+        Method method = helper.getPrototypeMethod();
+        method.setType(JMIUtils.resolveType(method.getTypeName().getName()));
         Query aQuery = (Query) helper.query.clone();
-        boolean result = customizer.showSelectCustomizer(methodElement, aQuery);
+        boolean result = customizer.showSelectCustomizer(method, aQuery);
         if (result) {
-            helper.updateSelectMethod(methodElement, aQuery);
+            helper.updateSelectMethod(method, aQuery);
         }
     }
 

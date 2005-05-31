@@ -12,14 +12,22 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.session.methodcontroller.SessionMethodController;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EntityAndSessionGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionGenerator;
 
 /**
  * @author pfiala
  */
 public class SessionHelper extends EntityAndSessionHelper {
 
-    public SessionHelper(EjbJarMultiViewDataObject ejbJarMultiViewDataObject, EntityAndSession ejb) {
-        super(ejbJarMultiViewDataObject, ejb);
+    public SessionHelper(EjbJarMultiViewDataObject ejbJarMultiViewDataObject, Session session) {
+        super(ejbJarMultiViewDataObject, session);
+        abstractMethodController = new SessionMethodController(session, sourceClassPath);
+    }
+
+    protected EntityAndSessionGenerator getGenerator() {
+        return new SessionGenerator();
     }
 }

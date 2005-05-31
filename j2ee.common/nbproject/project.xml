@@ -75,6 +75,14 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.11</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.jmiutils</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
                  <dependency>
                     <code-name-base>javax.jmi.reflect</code-name-base>
                     <build-prerequisite/>
@@ -209,14 +217,6 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>4.20</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.src</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

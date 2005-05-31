@@ -15,11 +15,12 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.MdbImplementationForm;
+import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.src.ClassElement;
+import org.netbeans.jmi.javamodel.JavaClass;
 import org.openide.filesystems.FileObject;
 
 import javax.swing.*;
@@ -79,7 +80,7 @@ public class MdbImplementationPanel extends MdbImplementationForm {
         if(ddProperty == LINK_BEAN) {
             final FileObject ejbJarFile = dataObject.getPrimaryFile();
             final ClassPath sourceClassPath = Utils.getSourceClassPath(ejbJarFile);
-            ClassElement beanClass = Utils.getClassElement(sourceClassPath, messageDriven.getEjbClass());
+            JavaClass beanClass = (JavaClass) JMIUtils.resolveType(messageDriven.getEjbClass());
             Utils.openEditorFor(ejbJarFile, beanClass);
         }
     }

@@ -19,9 +19,9 @@ import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.jmi.javamodel.JavaClass;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.src.ClassElement;
 
 import javax.swing.*;
 import java.awt.*;
@@ -239,22 +239,22 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
     }
 
     public void linkButtonPressed(Object ddBean, String ddProperty) {
-        ClassElement classElement;
+        JavaClass javaClass;
         if(ddProperty == LINK_BEAN) {
-            classElement = helper.beanClass;
+            javaClass = helper.getBeanClass();
         } else if(ddProperty == LINK_LOCAL) {
-            classElement = helper.getLocalBusinessInterfaceClass();
+            javaClass = helper.getLocalBusinessInterfaceClass();
         } else if(ddProperty == LINK_LOCAL_HOME) {
-            classElement = helper.getLocalHomeInterfaceClass();
+            javaClass = helper.getLocalHomeInterfaceClass();
         } else if(ddProperty == LINK_REMOTE) {
-            classElement = helper.getRemoteBusinessInterfaceClass();
+            javaClass = helper.getRemoteBusinessInterfaceClass();
         } else if (ddProperty == LINK_REMOTE_HOME) {
-            classElement = helper.getHomeInterfaceClass();
+            javaClass = helper.getHomeInterfaceClass();
         } else {
-            classElement = null;
+            javaClass = null;
         }
-        if (classElement != null) {
-            Utils.openEditorFor(helper.ejbJarFile, classElement);
+        if (javaClass != null) {
+            Utils.openEditorFor(helper.ejbJarFile, javaClass);
         }
     }
 

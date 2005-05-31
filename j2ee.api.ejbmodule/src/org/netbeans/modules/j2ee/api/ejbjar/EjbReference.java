@@ -14,9 +14,9 @@
 package org.netbeans.modules.j2ee.api.ejbjar;
 
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
-import org.openide.src.MethodElement;
 
 public interface EjbReference {
     public AntArtifact getClientJarTarget();
@@ -33,12 +33,12 @@ public interface EjbReference {
      * Create JNDI Lookup method and do no throw any checked exceptions in the
      * generated method.
      */
-    public MethodElement generateJNDILookup(EjbRef ref, boolean throwExceptions);
+    public Method generateJNDILookup(EjbRef ref, boolean throwExceptions);
     
     /**
      * Create JNDI Lookup method and do no throw any checked exceptions in the
      * generated method.
      */
-    public MethodElement generateJNDILookup(EjbLocalRef ref, boolean throwExceptions);
+    public Method generateJNDILookup(EjbLocalRef ref, boolean throwExceptions);
 
 }
