@@ -12,7 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="openide/windows" default="netbeans" basedir=".">
+<project name="openide/compat" default="netbeans" basedir=".">
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
