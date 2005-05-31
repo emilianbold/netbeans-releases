@@ -105,31 +105,35 @@ public class NbModuleProjectGenerator {
     
     private static void appendToSuite(FileObject projectDir, File suiteDir) throws IOException {
         File projectDirF = FileUtil.toFile(projectDir);
-        String projectLocation;
-        String suitePropertiesLocation;
+        File suiteGlobalPropsFile = new File(suiteDir, "nbproject/project.properties"); // NOI18N
+        FileObject suiteGlobalPropFO;
+        if (suiteGlobalPropsFile.exists()) {
+            suiteGlobalPropFO = FileUtil.toFileObject(suiteGlobalPropsFile);
+        } else {
+            suiteGlobalPropFO = createFileObject(suiteGlobalPropsFile);
+        }
+        EditableProperties globalProps = loadProperties(suiteGlobalPropFO);
+        String projectPropKey = "project." + projectDirF.getName(); // NOI18N
         if (CollocationQuery.areCollocated(projectDirF, suiteDir)) {
             // XXX the generating of relative path doesn't seem's too clever, check it
-            projectLocation = PropertyUtils.relativizeFile(suiteDir, projectDirF); // NOI18N
-            suitePropertiesLocation = "nbproject/project.properties"; // NOI18N
+            globalProps.setProperty(projectPropKey,
+                    PropertyUtils.relativizeFile(suiteDir, projectDirF));
         } else {
-            projectLocation = projectDirF.getAbsolutePath();
-            suitePropertiesLocation = "nbproject/private/private.properties"; // NOI18N
+            File suitePrivPropsFile = new File(suiteDir, "nbproject/private/private.properties"); // NOI18N
+            FileObject suitePrivPropFO;
+            if (suitePrivPropsFile.exists()) {
+                suitePrivPropFO = FileUtil.toFileObject(suitePrivPropsFile);
+            } else {
+                suitePrivPropFO = createFileObject(suitePrivPropsFile);
+            }
+            EditableProperties privProps= loadProperties(suitePrivPropFO);
+            privProps.setProperty(projectPropKey, projectDirF.getAbsolutePath());
+            storeProperties(suitePrivPropFO, privProps);
         }
-        File suitePropsFile = new File(suiteDir, suitePropertiesLocation);
-        FileObject suitePropFO;
-        if (suitePropsFile.exists()) {
-            suitePropFO = FileUtil.toFileObject(suitePropsFile);
-        } else {
-            suitePropFO = createFileObject(suitePropsFile);
-        }
-        EditableProperties props = new EditableProperties(true);
-        InputStream is = suitePropFO.getInputStream();
-        props.load(is);
-        is.close();
-        String modulesProp = props.getProperty("modules"); // NOI18N
+        String modulesProp = globalProps.getProperty("modules"); // NOI18N
         modulesProp = modulesProp == null ? "" : modulesProp + ":"; // NOI18N
-        props.setProperty("modules", projectLocation); // NOI18N
-        storeProperties(suitePropFO, props);
+        globalProps.setProperty("modules", modulesProp + "${" + projectPropKey + "}"); // NOI18N
+        storeProperties(suiteGlobalPropFO, globalProps);
     }
     
     private static void createPlatformProperties(FileObject projectDir, String platformID) throws IOException {
@@ -235,7 +239,7 @@ public class NbModuleProjectGenerator {
         }
     }
 
-    /** Just utility method. */
+    /** Just utility method to store <code>EditableProperties</code>. */
     private static void storeProperties(FileObject propsFO, EditableProperties props) throws IOException {
         FileLock lock = propsFO.lock();
         try {
@@ -245,6 +249,21 @@ public class NbModuleProjectGenerator {
         }
     }
     
+    /** Just utility method to load <code>EditableProperties</code>. */
+    private static EditableProperties loadProperties(FileObject propsFO) throws IOException {
+        InputStream is = null;
+        EditableProperties props = new EditableProperties(true);
+        try {
+            is = propsFO.getInputStream();
+            props.load(is);
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+        return props;
+    }
+
     /**
      * Creates a new <code>FileObject</code>.
      * Throws <code>IllegalArgumentException</code> if such an object already
