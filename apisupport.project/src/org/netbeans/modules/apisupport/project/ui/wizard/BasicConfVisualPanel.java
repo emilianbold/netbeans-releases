@@ -45,12 +45,6 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     public BasicConfVisualPanel(WizardDescriptor setting) {
         super(setting);
         initComponents();
-        {// XXX suites not yet supported, don't give the option!
-            suiteModule.setEnabled(false);
-            moduleSuite.setEnabled(false);
-            moduleSuiteValue.setEnabled(false);
-            browseSuiteButton.setEnabled(false);
-        }
         this.data = (NewModuleProjectData) getSetting().getProperty(
                 "moduleProjectData"); // XXX should be constant
         codeNameBaseValue.getDocument().addDocumentListener(new DocumentListener() {
@@ -108,6 +102,11 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         codeNameBaseValue.setText(dotName);
         codeNameBaseValue.select(0, EXAMPLE_BASE_NAME.length() - 1);
         displayNameValue.setText(data.getProjectName());
+        if (data.isStandalone()) {
+            standAloneModule.setSelected(true);
+        } else {
+            suiteModule.setSelected(true);
+        }
         codeNameBaseUpdated();
     }
     
@@ -116,8 +115,10 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         // change will be fired -> update data
         NewModuleProjectData data = (NewModuleProjectData) getSetting().
                 getProperty("moduleProjectData"); // XXX should be constant
+        data.setStandalone(standAloneModule.isSelected());
         data.setCodeNameBase(getCodeNameBaseValue());
         data.setPlatform(((NbPlatform) platformValue.getSelectedItem()).getID());
+        data.setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
         data.setProjectDisplayName(displayNameValue.getText());
         data.setBundle(getBundleValue());
         data.setLayer(getLayerValue());

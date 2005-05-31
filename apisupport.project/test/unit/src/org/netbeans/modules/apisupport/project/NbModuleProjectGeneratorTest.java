@@ -47,8 +47,12 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         "nbproject/platform.properties",
     };
     
-    private static final String[] SUITE_COMP_CREATED_FILES = {
+    private static final String[] SUITE_COMP_REL_CREATED_FILES = {
         "nbproject/suite.properties",
+    };
+    
+    private static final String[] SUITE_COMP_ABS_CREATED_FILES = {
+        "nbproject/private/suite-private.properties",
     };
     
     public void testCreateStandAloneModule() throws Exception {
@@ -83,8 +87,8 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         File suiteDir = new File(getWorkDir(), "testSuite");
         SuiteProjectGenerator.createSuiteModule(suiteDir, "default");
         
-        // create module in suite
-        File targetPrjDir = new File(suiteDir, "testModule");
+        // create "relative" module in suite
+        File targetPrjDir = new File(suiteDir, "testModuleRel");
         NbModuleProjectGenerator.createSuiteComponentModule(
                 targetPrjDir,
                 "org.example.testModule", // cnb
@@ -104,9 +108,35 @@ public class NbModuleProjectGeneratorTest extends TestBase {
             assertNotNull(BASIC_CREATED_FILES[i]+" file/folder cannot be found",
                     fo.getFileObject(BASIC_CREATED_FILES[i]));
         }
-        for (int i=0; i < SUITE_COMP_CREATED_FILES.length; i++) {
-            assertNotNull(SUITE_COMP_CREATED_FILES[i]+" file/folder cannot be found",
-                    fo.getFileObject(SUITE_COMP_CREATED_FILES[i]));
+        for (int i=0; i < SUITE_COMP_REL_CREATED_FILES.length; i++) {
+            assertNotNull(SUITE_COMP_REL_CREATED_FILES[i]+" file/folder cannot be found",
+                    fo.getFileObject(SUITE_COMP_REL_CREATED_FILES[i]));
+        }
+        
+        // create "absolute" module in suite
+        targetPrjDir = new File(getWorkDir(), "testModuleAbs");
+        NbModuleProjectGenerator.createSuiteComponentModule(
+                targetPrjDir,
+                "org.example.testModule", // cnb
+                "Testing Module", // display name
+                "org/example/testModule/resources/Bundle.properties",
+                "org/example/testModule/resources/layer.xml",
+                suiteDir); // platform id
+        fo = FileUtil.toFileObject(targetPrjDir);
+        // Make sure generated files are created too - simulate project opening.
+        p = ProjectManager.getDefault().findProject(fo);
+        assertNotNull("have a project in " + targetPrjDir, p);
+        hook = (NbModuleProject.OpenedHook) p.getLookup().lookup(NbModuleProject.OpenedHook.class);
+        assertNotNull("has an OpenedHook", hook);
+        hook.projectOpened(); // protected but can use package-private access
+        // check generated module
+        for (int i=0; i < BASIC_CREATED_FILES.length; i++) {
+            assertNotNull(BASIC_CREATED_FILES[i]+" file/folder cannot be found",
+                    fo.getFileObject(BASIC_CREATED_FILES[i]));
+        }
+        for (int i=0; i < SUITE_COMP_ABS_CREATED_FILES.length; i++) {
+            assertNotNull(SUITE_COMP_ABS_CREATED_FILES[i]+" file/folder cannot be found",
+                    fo.getFileObject(SUITE_COMP_ABS_CREATED_FILES[i]));
         }
     }
     

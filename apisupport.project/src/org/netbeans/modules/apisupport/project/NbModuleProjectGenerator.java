@@ -269,6 +269,9 @@ public class NbModuleProjectGenerator {
         if (parent == null) {
             throw new IllegalArgumentException("Cannot create: " + fileToCreate);
         }
+        if (!parent.exists()) {
+            parent.mkdirs();
+        }
         return createFileObject(
                 FileUtil.toFileObject(parent), fileToCreate.getName());
     }

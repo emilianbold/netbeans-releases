@@ -21,6 +21,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 final class NewModuleProjectData {
     
     private String kind;
+    private boolean standalone;
     private String projectName;
     private String projectLocation;
     private String projectFolder;
@@ -39,6 +40,14 @@ final class NewModuleProjectData {
         return kind;
     }
     
+    void setStandalone(boolean standalone) {
+        this.standalone = standalone;
+    }
+    
+    boolean isStandalone() {
+        return standalone;
+    }
+            
     void setKind(String kind) {
         this.kind = kind;
     }

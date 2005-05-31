@@ -42,7 +42,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     private static final long serialVersionUID = 1L;
     
     private final static String KIND_ATTR = "kind"; // NOI18N
-    private final static String KIND_STANDALONE = "standalone"; // NOI18N
+    private final static String KIND_MODULE = "module"; // NOI18N
     private final static String KIND_SUITE = "suite"; // NOI18N
     
     static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
@@ -59,12 +59,19 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
                 getProperty("moduleProjectData"); // XXX should be constant
         
         final File projectFolder = new File(data.getProjectFolder());
-        if (data.getKind() == KIND_STANDALONE) {
-            // create standalone project
-            NbModuleProjectGenerator.createStandAloneModule(projectFolder,
-                    data.getCodeNameBase(), data.getProjectDisplayName(),
-                    data.getBundle(), data.getLayer(), data.getPlatform());
-        } else  if (data.getKind() == KIND_SUITE) {
+        if (data.getKind() == KIND_MODULE) {
+            if (data.isStandalone()) {
+                // create standalone module
+                NbModuleProjectGenerator.createStandAloneModule(projectFolder,
+                        data.getCodeNameBase(), data.getProjectDisplayName(),
+                        data.getBundle(), data.getLayer(), data.getPlatform());
+            } else {
+                // create suite-component module
+                NbModuleProjectGenerator.createSuiteComponentModule(projectFolder,
+                        data.getCodeNameBase(), data.getProjectDisplayName(),
+                        data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()));
+            }
+        } else if (data.getKind() == KIND_SUITE) {
             SuiteProjectGenerator.createSuiteModule(projectFolder, data.getPlatform());
         } else {
             throw new IllegalStateException("Uknown kind: " + data.getKind()); // NOI18N
@@ -100,9 +107,9 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         settings.putProperty("moduleProjectData", data); // NOI18N
         position = 0;
         String[] steps = null;
-        if (kind.equals("standalone")) { // NOI18N
-            steps = initStandaloneModuleWizard();
-        } else if (kind.equals("suite")) { // NOI18N
+        if (kind.equals(KIND_MODULE)) { // NOI18N
+            steps = initModuleWizard();
+        } else if (kind.equals(KIND_SUITE)) {
             steps = initSuiteModuleWizard();
         } else {
             assert false : "Illegal value for the king attribute"; // NOI18N
@@ -124,7 +131,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         panels = null;
     }
     
-    private String[] initStandaloneModuleWizard() {
+    private String[] initModuleWizard() {
         panels = new WizardDescriptor.Panel[] {
             new BasicInfoWizardPanel(settings),
             new BasicConfWizardPanel(settings)
