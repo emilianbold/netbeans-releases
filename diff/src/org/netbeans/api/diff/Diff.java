@@ -82,7 +82,7 @@ public abstract class Diff extends Object {
                 return c;
             }
     
-            public int getDiffCount() {
+            public int getDifferenceCount() {
                 return 0;
             }
     

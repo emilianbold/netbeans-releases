@@ -84,7 +84,7 @@ public abstract class DiffVisualizer extends Object {
                 return c;
             }
     
-            public int getDiffCount() {
+            public int getDifferenceCount() {
                 return n;
             }
     
