@@ -110,7 +110,8 @@ public class Difference extends Object implements Serializable {
 
     /**
      * Get the difference type. It's one of <a href="#DELETE">DELETE</a>,
-     * <a href="#ADD">ADD</a> or <a href="#CHANGE">CHANGE</a>.
+     * <a href="#ADD">ADD</a> or <a href="#CHANGE">CHANGE</a> meaning
+     * respective change in second source.
      */
     public int getType() {
         return this.type;
@@ -118,6 +119,9 @@ public class Difference extends Object implements Serializable {
     
     /**
      * Get the line number on which the difference starts in the first file.
+     *
+     * <p>For ADD changes it returns previous line number e.g. 0 for add
+     * file start.
      */
     public int getFirstStart() {
         return this.firstStart;
@@ -125,6 +129,8 @@ public class Difference extends Object implements Serializable {
 
     /**
      * Get the line number on which the difference ends in the first file.
+     * <p>
+     * Does not have any meaning for ADD changes.
      */
     public int getFirstEnd() {
         return this.firstEnd;
@@ -139,6 +145,8 @@ public class Difference extends Object implements Serializable {
     
     /**
      * Get the line number on which the difference ends in the second file.
+     * <p>
+     * Does not have any meaning for DELETE changes.
      */
     public int getSecondEnd() {
         return this.secondEnd;
