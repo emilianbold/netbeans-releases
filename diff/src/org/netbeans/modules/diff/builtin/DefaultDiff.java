@@ -15,17 +15,12 @@ package org.netbeans.modules.diff.builtin;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -35,9 +30,11 @@ import org.openide.windows.*;
 import org.netbeans.api.diff.Diff;
 //import org.netbeans.api.diff.DiffWrapperPanel;
 import org.netbeans.api.diff.Difference;
+import org.netbeans.api.diff.DiffView;
+import org.netbeans.api.diff.StreamSource;
 import org.netbeans.spi.diff.*;
+import org.netbeans.modules.diff.builtin.visualizer.DiffViewImpl;
 import org.openide.DialogDisplayer;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -110,7 +107,11 @@ public class DefaultDiff extends Diff implements Serializable {
         //if (!initPanel()) return null;
         //return tp;
     }
-    
+
+    public DiffView createDiff(StreamSource s1, StreamSource s2) throws IOException {
+        return new DiffViewImpl(s1, s2);
+    }
+
     /** Getter for property showDiffSelector.
      * @return Value of property showDiffSelector.
      */

@@ -7,13 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.diff;
 
 import java.awt.Component;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Collection;
@@ -58,4 +59,53 @@ public abstract class Diff extends Object {
     public abstract Component createDiff(String name1, String title1,
                                          Reader r1, String name2, String title2,
                                          Reader r2, String MIMEType) throws IOException ;
+    
+    /**
+     * Creates single-window diff component that does not include any navigation controls and
+     * is controlled programatically via the returned DiffView interface.
+     * <p>
+     * The StreamSource can be used to save the source content if it's modified
+     * in the view. The view should not allow source modification if StreamSource.createWriter()
+     * returns <code>null</code>.
+     * 
+     * @param s1 the first source
+     * @param s2 the second source
+     * @return DiffView controller interface
+     */ 
+    public DiffView createDiff(StreamSource s1, StreamSource s2) throws IOException {
+        final Component c = createDiff(s1.getName(), s1.getTitle(), s1.createReader(),
+                                       s2.getName(), s2.getTitle(), s2.createReader(),
+                                       s1.getMIMEType());
+        return new DiffView() {
+            
+            public Component getComponent() {
+                return c;
+            }
+    
+            public int getDiffCount() {
+                return 0;
+            }
+    
+            public boolean canSetCurrentDifference() {
+                return false;
+            }
+
+            public void setCurrentDifference(int diffNo) throws UnsupportedOperationException {
+                throw new UnsupportedOperationException();
+            }
+    
+            public int getCurrentDifference() throws UnsupportedOperationException {
+                throw new UnsupportedOperationException();
+            }
+            
+            public javax.swing.JToolBar getToolBar() {
+                return null;
+            }
+    
+            public void addPropertyChangeListener(PropertyChangeListener l) {}
+    
+            public void removePropertyChangeListener(PropertyChangeListener l) {}
+    
+        };
+    }
 }
