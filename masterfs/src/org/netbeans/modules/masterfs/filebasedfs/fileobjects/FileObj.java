@@ -85,7 +85,7 @@ final class FileObj extends BaseFileObj {
                 closeableReference.close();    
             }
             
-            final FileNotFoundException fileNotFoundException = new FileNotFoundException(e.getLocalizedMessage());
+            final FileNotFoundException fileNotFoundException = (FileNotFoundException) new FileNotFoundException(e.toString()).initCause(e);
             FSException.annotateException(fileNotFoundException);
             throw fileNotFoundException;
         }
