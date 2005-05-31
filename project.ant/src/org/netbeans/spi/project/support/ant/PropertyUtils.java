@@ -126,11 +126,23 @@ public class PropertyUtils {
                     if (ubp != null) {
                         FileObject bp = FileUtil.toFileObject(ubp);
                         if (bp == null) {
-                            ubp.getParentFile().mkdirs();
-                            new FileOutputStream(ubp).close();
-                            assert ubp.isFile() : "Did not actually make " + ubp;
+                            if (!ubp.exists()) {
+                                ubp.getParentFile().mkdirs();
+                                new FileOutputStream(ubp).close();
+                                assert ubp.isFile() : "Did not actually make " + ubp;
+                            }
                             bp = FileUtil.toFileObject(ubp);
-                            assert bp != null : "Could not make " + ubp + "; no masterfs?";
+                            if (bp == null) {
+                                // XXX ugly (and will not correctly notify changes) but better than nothing:
+                                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - cannot properly write to " + ubp + "; might be because your user directory is on a Windows UNC path (issue #46813)? If so, try using mapped drive latters.");
+                                OutputStream os = new FileOutputStream(ubp);
+                                try {
+                                    properties.store(os);
+                                } finally {
+                                    os.close();
+                                }
+                                return null;
+                            }
                         }
                         FileLock lock = bp.lock();
                         try {
