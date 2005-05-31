@@ -13,11 +13,21 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
+import java.io.File;
+import java.io.IOException;
+import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbPlatform;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.ui.ComponentFactory;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.windows.WindowManager;
 
 /**
  * Second UI panel of <code>NewNbModuleWizardIterator</code> for
@@ -307,6 +317,12 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         confPanel.add(moduleSuite, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseSuiteButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("CTL_BrowseButton_w"));
+        browseSuiteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseModuleSuite(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 7;
@@ -334,6 +350,32 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
+    
+    private void browseModuleSuite(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseModuleSuite
+        JFileChooser chooser = ProjectChooser.projectChooser();
+        int option = chooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
+        if (option == JFileChooser.APPROVE_OPTION) {
+            File projectDir = chooser.getSelectedFile();
+            try {
+                Project suite = ProjectManager.getDefault().findProject(
+                        FileUtil.toFileObject(projectDir));
+                if (suite != null) {
+                    SuiteProvider provider = (SuiteProvider) suite.
+                            getLookup().lookup(SuiteProvider.class);
+                    if (provider != null) {
+                        String suiteDir = provider.getSuiteDirectory();
+                        // register for this session
+                        ComponentFactory.addUserSuite(suiteDir);
+                        // add to current combobox
+                        moduleSuiteValue.addItem(suiteDir);
+                        moduleSuiteValue.setSelectedItem(suiteDir);
+                    }
+                }
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
+        }
+    }//GEN-LAST:event_browseModuleSuite
     
     private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
         boolean standalone = standAloneModule.isSelected();

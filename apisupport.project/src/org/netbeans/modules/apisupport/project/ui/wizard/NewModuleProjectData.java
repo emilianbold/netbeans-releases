@@ -21,7 +21,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 final class NewModuleProjectData {
     
     private String kind;
-    private boolean standalone;
+    private boolean standalone = true; // standalone is default
     private String projectName;
     private String projectLocation;
     private String projectFolder;
