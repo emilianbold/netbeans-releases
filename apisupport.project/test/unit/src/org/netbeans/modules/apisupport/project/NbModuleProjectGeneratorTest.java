@@ -14,9 +14,13 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -86,6 +90,11 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         // create suite for the module being tested
         File suiteDir = new File(getWorkDir(), "testSuite");
         SuiteProjectGenerator.createSuiteModule(suiteDir, "default");
+        FileObject fo = FileUtil.toFileObject(suiteDir);
+        Project suiteProject = ProjectManager.getDefault().findProject(fo);
+        assertNotNull("have a project in " + suiteDir, suiteProject);
+        SubprojectProvider spp = (SubprojectProvider) suiteProject.getLookup().lookup(SubprojectProvider.class);
+        assertNotNull("has a SubprojectProvider", spp);
         
         // create "relative" module in suite
         File targetPrjDir = new File(suiteDir, "testModuleRel");
@@ -96,11 +105,11 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
                 suiteDir); // platform id
-        FileObject fo = FileUtil.toFileObject(targetPrjDir);
+        fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
-        Project p = ProjectManager.getDefault().findProject(fo);
-        assertNotNull("have a project in " + targetPrjDir, p);
-        NbModuleProject.OpenedHook hook = (NbModuleProject.OpenedHook) p.getLookup().lookup(NbModuleProject.OpenedHook.class);
+        Project moduleProjectRel = ProjectManager.getDefault().findProject(fo);
+        assertNotNull("have a project in " + targetPrjDir, moduleProjectRel);
+        NbModuleProject.OpenedHook hook = (NbModuleProject.OpenedHook) moduleProjectRel.getLookup().lookup(NbModuleProject.OpenedHook.class);
         assertNotNull("has an OpenedHook", hook);
         hook.projectOpened(); // protected but can use package-private access
         // check generated module
@@ -112,6 +121,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
             assertNotNull(SUITE_COMP_REL_CREATED_FILES[i]+" file/folder cannot be found",
                     fo.getFileObject(SUITE_COMP_REL_CREATED_FILES[i]));
         }
+        assertEquals("listed as the sole suite component", Collections.singleton(moduleProjectRel), spp.getSubprojects());
         
         // create "absolute" module in suite
         targetPrjDir = new File(getWorkDir(), "testModuleAbs");
@@ -124,9 +134,9 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 suiteDir); // platform id
         fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
-        p = ProjectManager.getDefault().findProject(fo);
-        assertNotNull("have a project in " + targetPrjDir, p);
-        hook = (NbModuleProject.OpenedHook) p.getLookup().lookup(NbModuleProject.OpenedHook.class);
+        Project moduleProjectAbs = ProjectManager.getDefault().findProject(fo);
+        assertNotNull("have a project in " + targetPrjDir, moduleProjectAbs);
+        hook = (NbModuleProject.OpenedHook) moduleProjectAbs.getLookup().lookup(NbModuleProject.OpenedHook.class);
         assertNotNull("has an OpenedHook", hook);
         hook.projectOpened(); // protected but can use package-private access
         // check generated module
@@ -138,6 +148,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
             assertNotNull(SUITE_COMP_ABS_CREATED_FILES[i]+" file/folder cannot be found",
                     fo.getFileObject(SUITE_COMP_ABS_CREATED_FILES[i]));
         }
+        assertEquals("now have two suite components", new HashSet(Arrays.asList(new Project[] {moduleProjectRel, moduleProjectAbs})), spp.getSubprojects());
     }
     
 }

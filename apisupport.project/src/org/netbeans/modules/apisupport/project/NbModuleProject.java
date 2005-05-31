@@ -84,7 +84,6 @@ final class NbModuleProject implements Project {
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final Lookup lookup;
-    private final ModuleList moduleList;
     private Map/*<String,String>*/ evalPredefs;
     private List/*<Map<String,String>>*/ evalDefs;
     private Map/*<FileObject,Element>*/ extraCompilationUnits;
@@ -100,13 +99,13 @@ final class NbModuleProject implements Project {
         if (getCodeNameBase() == null) {
             throw new IOException("Misconfigured project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " has no defined <code-name-base>"); // NOI18N
         }
-        moduleList = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
-        if (moduleList.getEntry(getCodeNameBase()) == null) {
+        ModuleList ml = getModuleList();
+        if (ml.getEntry(getCodeNameBase()) == null) {
             // XXX try to give better diagnostics - as examples are discovered
             // XXX might also try resetting ModuleList and trying again, in case it was just added
             throw new IOException("Project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " does not appear to be listed in its own module list; some sort of misconfiguration (e.g. not listed in its own suite)"); // NOI18N
         }
-        eval = createEvaluator();
+        eval = createEvaluator(ml);
         FileBuiltQueryImplementation fileBuilt;
         // XXX could add globs for other package roots too
         if (supportsUnitTests()) {
@@ -323,7 +322,7 @@ final class NbModuleProject implements Project {
      * Create a property evaluator: private project props, shared project props, various defaults.
      * Synch with nbbuild/templates/projectized.xml.
      */
-    private PropertyEvaluator createEvaluator() {
+    private PropertyEvaluator createEvaluator(ModuleList ml) {
         // XXX a lot of this duplicates ModuleList.parseProperties... can they be shared?
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         Map/*<String,String>*/ stock = new HashMap();
@@ -334,7 +333,6 @@ final class NbModuleProject implements Project {
         if (nbroot != null) {
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
         }
-        ModuleList ml = getModuleList();
         // Register *.dir for nb.org modules. There is no equivalent for external modules.
         Iterator it = ml.getAllEntries().iterator();
         while (it.hasNext()) {
@@ -500,13 +498,19 @@ final class NbModuleProject implements Project {
      * Should be similar to impl in ParseProjectXml.
      */
     private String computeModuleClasspath() {
+        ModuleList ml;
+        try {
+            ml = getModuleList();
+        } catch (IOException e) {
+            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            return "";
+        }
         Element data = getHelper().getPrimaryConfigurationData(true);
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
         Iterator it = deps.iterator();
         StringBuffer cp = new StringBuffer();
-        ModuleList ml = getModuleList();
         while (it.hasNext()) {
             Element dep = (Element)it.next();
             if (Util.findElement(dep, "compile-dependency", // NOI18N
@@ -531,7 +535,7 @@ final class NbModuleProject implements Project {
             cp.append(moduleJar.getAbsolutePath());
             cp.append(module.getClassPathExtensions());
         }
-        ModuleList.Entry myself = moduleList.getEntry(getCodeNameBase());
+        ModuleList.Entry myself = ml.getEntry(getCodeNameBase());
         cp.append(myself.getClassPathExtensions());
         return cp.toString();
     }
@@ -664,8 +668,8 @@ final class NbModuleProject implements Project {
         }
     }
     
-    public ModuleList getModuleList() {
-        return moduleList;
+    public ModuleList getModuleList() throws IOException {
+        return ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
     }
     
     public NbPlatform getPlatform() {
@@ -827,6 +831,7 @@ final class NbModuleProject implements Project {
             // XXX could discard caches, etc.
             
             // unregister project's classpaths to GlobalClassPathRegistry
+            // XXX behave more gracefully in case an exception was thrown during projectOpened
             assert boot != null && source != null && compile != null : "#46802: project being closed which was never opened?? " + NbModuleProject.this;
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, boot);
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, source);

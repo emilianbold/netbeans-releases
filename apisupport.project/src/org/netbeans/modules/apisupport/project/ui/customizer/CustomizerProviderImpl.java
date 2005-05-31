@@ -113,6 +113,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
      * universe.
      */
     private Set/*<ModuleDependency>*/ getUniverseDependencies() {
+        // XXX may need to invalidate this cache in case a module has been added to a suite...
         if (universeDependencies == null) {
             loadModuleListInfo();
         }

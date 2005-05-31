@@ -54,6 +54,7 @@ public class NbModuleProjectGenerator {
         createBundle(dirFO, bundlePath, name);
         createLayer(dirFO, layerPath);
         createEmptyTestDir(dirFO);
+        ModuleList.refresh();
         ProjectManager.getDefault().clearNonProjectCache();
     }
     
@@ -71,6 +72,7 @@ public class NbModuleProjectGenerator {
         createLayer(dirFO, layerPath);
         createEmptyTestDir(dirFO);
         appendToSuite(dirFO, suiteDir);
+        ModuleList.refresh();
         ProjectManager.getDefault().clearNonProjectCache();
     }
     
@@ -250,7 +252,12 @@ public class NbModuleProjectGenerator {
     private static void storeProperties(FileObject propsFO, EditableProperties props) throws IOException {
         FileLock lock = propsFO.lock();
         try {
-            props.store(propsFO.getOutputStream(lock));
+            OutputStream os = propsFO.getOutputStream(lock);
+            try {
+                props.store(os);
+            } finally {
+                os.close();
+            }
         } finally {
             lock.releaseLock();
         }
@@ -302,5 +309,3 @@ public class NbModuleProjectGenerator {
                 FileUtil.toFileObject(parent), fileToCreate.getName());
     }
 }
-
-

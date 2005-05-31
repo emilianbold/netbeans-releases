@@ -24,7 +24,6 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.ModuleList;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -53,7 +52,6 @@ final class SuiteProject implements Project {
     private final AntProjectHelper helper;
     private final Lookup lookup;
     private final PropertyEvaluator eval;
-    private final ModuleList moduleList;
     private final GeneratedFilesHelper genFilesHelper;
     
     public SuiteProject(AntProjectHelper helper) throws IOException {
@@ -74,7 +72,6 @@ final class SuiteProject implements Project {
             //new SuiteLogicalView(this),
             //new SuiteCustomizer(this, helper, eval),
         });
-        moduleList = ModuleList.findOrCreateModuleListFromSuite(FileUtil.toFile(getProjectDirectory()));
     }
     
     public String toString() {

@@ -15,7 +15,9 @@ package org.netbeans.modules.apisupport.project.suite;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.ModuleList;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -46,6 +48,7 @@ public class SuiteProjectGenerator {
         }
         createSuiteProjectXML(dirFO);
         createPlatformProperties(dirFO, platformID);
+        ModuleList.refresh();
         ProjectManager.getDefault().clearNonProjectCache();
     }
     
@@ -127,7 +130,12 @@ public class SuiteProjectGenerator {
     private static void storeProperties(FileObject bundleFO, EditableProperties props) throws IOException {
         FileLock lock = bundleFO.lock();
         try {
-            props.store(bundleFO.getOutputStream(lock));
+            OutputStream os = bundleFO.getOutputStream(lock);
+            try {
+                props.store(os);
+            } finally {
+                os.close();
+            }
         } finally {
             lock.releaseLock();
         }
