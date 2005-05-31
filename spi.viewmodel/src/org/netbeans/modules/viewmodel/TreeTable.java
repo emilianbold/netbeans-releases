@@ -80,7 +80,6 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     public TreeTable () {
         setLayout (new BorderLayout ());
             treeTable = new MyTreeTable ();
-            treeTable.setTreePreferredWidth (200);
             treeTable.setRootVisible (false);
             treeTable.setVerticalScrollBarPolicy 
                 (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -111,27 +110,14 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
         
         // 4) set columns for given model
         columns = createColumns (model);
+        currentTreeModelRoot = new TreeModelRoot (model, this);
+        TreeModelNode rootNode = currentTreeModelRoot.getRootNode ();
+        getExplorerManager ().setRootContext (rootNode);
+        // The root node must be ready when setting the columns
         treeTable.setProperties (columns);
         
-        treeTable.setToolTipText ("tttttttttttttttttttttttt");
-        setToolTipText ("aaaaaaaaaaaaaaaaaaaaa");
-//        try {
-//            treeTable.setToolTipText (model.getShortDescription (
-//                model.getRoot ()
-//            ));
-//        } catch (UnknownTypeException ex) {
-//            ex.printStackTrace ();
-//        }
-        
         // 5) set root node for given model
-        currentTreeModelRoot = new TreeModelRoot (model, this);
-        TreeModelNode.getRequestProcessor ().post (new Runnable () {
-            public void run () {
-                getExplorerManager ().setRootContext (
-                    currentTreeModelRoot.getRootNode ()
-                );
-            }
-        });
+        // Moved to 4), because the new root node must be ready when setting columns
         
         // 6) update column widths & expanded nodes
         updateColumnWidths ();

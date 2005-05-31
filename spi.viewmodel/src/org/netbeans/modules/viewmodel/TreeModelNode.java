@@ -291,13 +291,8 @@ public class TreeModelNode extends AbstractNode {
                 setIconBase ("org/openide/resources/actions/empty");
             firePropertyChange(null, null, null);
         } catch (UnknownTypeException e) {
-            if (object instanceof String) {
-                String name = (String) object;
-                setName (name, false);
-            } else {
-                Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
-            }
+            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
         }
     }
     

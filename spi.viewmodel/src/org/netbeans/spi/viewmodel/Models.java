@@ -98,7 +98,7 @@ public final class Models {
     /**
      * Set given models to given view instance.
      *
-     * @param view a view instance
+     * @param view a view instance - must be an instance created by {@link #createView} method.
      * @param treeModel a tree model instance
      * @param nodeModel a node model instance
      * @param tableModel a table model instance
@@ -109,6 +109,9 @@ public final class Models {
         final JComponent view,
         final CompoundModel compoundModel
     ) {
+        if (!(view instanceof TreeTable)) {
+            throw new IllegalArgumentException("Expecting an instance of "+TreeTable.class.getName()+", which can be obtained from Models.createView().");
+        }
         if (verbose)
             System.out.println (compoundModel);
         SwingUtilities.invokeLater (new Runnable () {
@@ -175,7 +178,9 @@ public final class Models {
                 columnModels.addLast (model);
         }
         
-        if (treeModels.isEmpty ()) treeModels.add (new EmptyTreeModel ());
+        if (treeModels.isEmpty ()) {
+            treeModels.add (new EmptyTreeModel ());
+        }
         
         return new CompoundModel (
             createCompoundTreeModel (
@@ -1423,6 +1428,10 @@ public final class Models {
             this.models = models;
 
         }
+        
+        NodeModel[] getModels() {
+            return models;
+        }
 
         /**
          * Returns display name for given node.
@@ -2066,6 +2075,12 @@ public final class Models {
          * @return  display name for given node
          */
         public String getDisplayName (Object node) throws UnknownTypeException {
+            if (nodeModel instanceof DelegatingNodeModel) {
+                NodeModel[] subModels = ((DelegatingNodeModel) nodeModel).getModels();
+                if (subModels.length == 0) {
+                    return ""; // Nothing when there are no models
+                }
+            }
             return nodeModel.getDisplayName (node);
         }
 
@@ -2090,6 +2105,12 @@ public final class Models {
          */
         public String getIconBase (Object node) 
         throws UnknownTypeException {
+            if (nodeModel instanceof DelegatingNodeModel) {
+                NodeModel[] subModels = ((DelegatingNodeModel) nodeModel).getModels();
+                if (subModels.length == 0) {
+                    return null; // Nothing when there are no models
+                }
+            }
             return nodeModel.getIconBase (node);
         }
 
@@ -2214,7 +2235,7 @@ public final class Models {
                    "\n  NodeModel = " + nodeModel +
                    "\n  TableModel = " + tableModel +
                    "\n  NodeActionsProvider = " + nodeActionsProvider +
-                   "\n  ColumnsModel = " + columnModels;
+                   "\n  ColumnsModel = " + java.util.Arrays.asList(columnModels);
         }
     }
 }
