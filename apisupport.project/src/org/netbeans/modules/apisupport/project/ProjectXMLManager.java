@@ -63,7 +63,7 @@ public final class ProjectXMLManager {
     private AntProjectHelper helper;
     private Project project;
     
-    private Set directDeps;
+    private Set/*<ModuleDependency>*/ directDeps;
     
     /** Creates a new instance of ProjectXMLManager */
     public ProjectXMLManager(AntProjectHelper helper, Project project) {
