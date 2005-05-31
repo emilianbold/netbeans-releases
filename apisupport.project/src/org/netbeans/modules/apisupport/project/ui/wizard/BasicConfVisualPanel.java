@@ -20,8 +20,8 @@ import org.netbeans.modules.apisupport.project.ui.ComponentFactory;
 import org.openide.WizardDescriptor;
 
 /**
- * Second UI panel of <code>NewNbModuleWizardIterator</code> for 
- * <em>standalone</em> module creating mode. Allow user to enter basic 
+ * Second UI panel of <code>NewNbModuleWizardIterator</code> for
+ * <em>standalone</em> module creating mode. Allow user to enter basic
  * configuration:
  *
  * <ul>
@@ -107,6 +107,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         } else {
             suiteModule.setSelected(true);
         }
+        typeChanged(null);
         codeNameBaseUpdated();
     }
     
@@ -266,6 +267,12 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         moduleTypeGroup.add(standAloneModule);
         standAloneModule.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(standAloneModule, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("CTL_StandaloneModule"));
+        standAloneModule.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeChanged(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -276,6 +283,12 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
 
         moduleTypeGroup.add(suiteModule);
         org.openide.awt.Mnemonics.setLocalizedText(suiteModule, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("CTL_AddToModuleSuite"));
+        suiteModule.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeChanged(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -322,6 +335,14 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     }
     // </editor-fold>//GEN-END:initComponents
     
+    private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
+        boolean standalone = standAloneModule.isSelected();
+        platform.setEnabled(standalone);
+        platformValue.setEnabled(standalone);
+        moduleSuite.setEnabled(!standalone);
+        moduleSuiteValue.setEnabled(!standalone);
+        browseSuiteButton.setEnabled(!standalone);
+    }//GEN-LAST:event_typeChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseSuiteButton;
