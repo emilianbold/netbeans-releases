@@ -230,7 +230,7 @@ public class ProjectsRootNode extends AbstractNode {
                 nodes = PhysicalView.createNodesForProject( project );
             }            
             else if ( lvp == null ) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply LogicalViewProvider in it's lookup"); // NOI18N
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply a LogicalViewProvider in its lookup"); // NOI18N
                 Sources sources = ProjectUtils.getSources( project );
                 sources.removeChangeListener( this );
                 sources.addChangeListener( this );
