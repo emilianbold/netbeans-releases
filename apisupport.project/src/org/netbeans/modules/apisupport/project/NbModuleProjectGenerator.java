@@ -57,6 +57,23 @@ public class NbModuleProjectGenerator {
         ProjectManager.getDefault().clearNonProjectCache();
     }
     
+    /** Generates suite component NetBeans Module. */
+    public static void createSuiteComponentModule(File projectDir, String cnb,
+            String name, String bundlePath, String layerPath, File suiteDir) throws IOException {
+        final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+        if (ProjectManager.getDefault().findProject(dirFO) != null) {
+            throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+        }
+        createProjectXML(dirFO, cnb, false);
+        createSuiteProperties(dirFO, suiteDir);
+        createManifest(dirFO, cnb, bundlePath, layerPath);
+        createBundle(dirFO, bundlePath, name);
+        createLayer(dirFO, layerPath);
+        createEmptyTestDir(dirFO);
+        appendToSuite(dirFO, suiteDir);
+        ProjectManager.getDefault().clearNonProjectCache();
+    }
+    
     /**
      * Creates basic <em>nbbuild/project.xml</em> or whatever
      * <code>AntProjectHelper.PROJECT_XML_PATH</code> is pointing to for
@@ -84,6 +101,35 @@ public class NbModuleProjectGenerator {
         props.setProperty("suite.dir", suiteLocation); // NOI18N
         FileObject suiteProperties = createFileObject(projectDir, suitePropertiesLocation);
         storeProperties(suiteProperties, props);
+    }
+    
+    private static void appendToSuite(FileObject projectDir, File suiteDir) throws IOException {
+        File projectDirF = FileUtil.toFile(projectDir);
+        String projectLocation;
+        String suitePropertiesLocation;
+        if (CollocationQuery.areCollocated(projectDirF, suiteDir)) {
+            // XXX the generating of relative path doesn't seem's too clever, check it
+            projectLocation = PropertyUtils.relativizeFile(suiteDir, projectDirF); // NOI18N
+            suitePropertiesLocation = "nbproject/project.properties"; // NOI18N
+        } else {
+            projectLocation = projectDirF.getAbsolutePath();
+            suitePropertiesLocation = "nbproject/private/private.properties"; // NOI18N
+        }
+        File suitePropsFile = new File(suiteDir, suitePropertiesLocation);
+        FileObject suitePropFO;
+        if (suitePropsFile.exists()) {
+            suitePropFO = FileUtil.toFileObject(suitePropsFile);
+        } else {
+            suitePropFO = createFileObject(suitePropsFile);
+        }
+        EditableProperties props = new EditableProperties(true);
+        InputStream is = suitePropFO.getInputStream();
+        props.load(is);
+        is.close();
+        String modulesProp = props.getProperty("modules"); // NOI18N
+        modulesProp = modulesProp == null ? "" : modulesProp + ":"; // NOI18N
+        props.setProperty("modules", projectLocation); // NOI18N
+        storeProperties(suitePropFO, props);
     }
     
     private static void createPlatformProperties(FileObject projectDir, String platformID) throws IOException {
@@ -190,10 +236,10 @@ public class NbModuleProjectGenerator {
     }
 
     /** Just utility method. */
-    private static void storeProperties(FileObject bundleFO, EditableProperties props) throws IOException {
-        FileLock lock = bundleFO.lock();
+    private static void storeProperties(FileObject propsFO, EditableProperties props) throws IOException {
+        FileLock lock = propsFO.lock();
         try {
-            props.store(bundleFO.getOutputStream(lock));
+            props.store(propsFO.getOutputStream(lock));
         } finally {
             lock.releaseLock();
         }
@@ -211,6 +257,20 @@ public class NbModuleProjectGenerator {
         }
         createdFO = FileUtil.createData(dir, relToDir);
         return createdFO;
+    }
+    
+    /**
+     * Creates a new <code>FileObject</code>.
+     * Throws <code>IllegalArgumentException</code> if such an object already
+     * exists. Throws <code>IOException</code> if creation fails.
+     */
+    private static FileObject createFileObject(File fileToCreate) throws IOException {
+        File parent = fileToCreate.getParentFile();
+        if (parent == null) {
+            throw new IllegalArgumentException("Cannot create: " + fileToCreate);
+        }
+        return createFileObject(
+                FileUtil.toFileObject(parent), fileToCreate.getName());
     }
 }
 

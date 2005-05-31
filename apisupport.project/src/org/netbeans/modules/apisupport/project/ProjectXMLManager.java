@@ -49,6 +49,7 @@ public final class ProjectXMLManager {
     private static final String DATA = "data"; // NOI18N
     private static final String CODE_NAME_BASE = "code-name-base"; // NOI18N
     private static final String STANDALONE = "standalone"; // NOI18N
+    private static final String SUITE_COMPONENT = "suite-component"; // NOI18N
     private static final String MODULE_DEPENDENCIES = "module-dependencies"; // NOI18N
     private static final String DEPENDENCY = "dependency"; // NOI18N
     private static final String RUN_DEPENDENCY = "run-dependency"; // NOI18N
@@ -341,6 +342,8 @@ public final class ProjectXMLManager {
         dataEl.appendChild(createModuleElement(dataDoc, CODE_NAME_BASE, cnb));
         if (standalone) {
             dataEl.appendChild(createModuleElement(dataDoc, STANDALONE));
+        } else {
+            dataEl.appendChild(createModuleElement(dataDoc, SUITE_COMPONENT));
         }
         dataEl.appendChild(createModuleElement(dataDoc, MODULE_DEPENDENCIES));
         dataEl.appendChild(createModuleElement(dataDoc, PUBLIC_PACKAGES));
