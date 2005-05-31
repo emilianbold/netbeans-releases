@@ -16,6 +16,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Project">
             <attr name="Standard/APISupport" boolvalue="true"/>
+            <attr name="Web/APISupport" boolvalue="true"/>
+            <attr name="J2EE/APISupport" boolvalue="true"/>
             <folder name="APISupport">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/apisupport.html"/>
@@ -36,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptySuite.html"/>
                 </file>
             </folder>
+            <attr name="APISupport/Samples" boolvalue="true"/>
         </folder>
     </folder>
 </filesystem>
