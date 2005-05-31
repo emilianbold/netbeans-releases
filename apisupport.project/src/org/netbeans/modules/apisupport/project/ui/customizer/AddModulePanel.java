@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import javax.swing.JPanel;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
@@ -34,8 +35,8 @@ final class AddModulePanel extends JPanel {
         moduleList.setModel(universeModules);
         moduleList.setCellRenderer(ComponentFactory.getDependencyCellRenderer());
         moduleList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-                showDescriptionFor(e.getFirstIndex());
+            public void valueChanged(ListSelectionEvent e) {
+                showDescriptionFor(moduleList.getSelectedIndex());
             }
         });
     }
