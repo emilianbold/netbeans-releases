@@ -113,7 +113,7 @@ public class CatalogEntryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(10, 5, 0, 0);
         add(systemRB, gridBagConstraints);
 
-        publicTF.setColumns(25);
+        publicTF.setColumns(40);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -164,7 +164,7 @@ public class CatalogEntryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(20, 5, 5, 0);
         add(uriLabel, gridBagConstraints);
 
-        uriTF.setColumns(25);
+        uriTF.setColumns(35);
         uriTF.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
