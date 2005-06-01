@@ -20,6 +20,8 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
  */
 final class NewModuleProjectData {
     
+    static final String DATA_PROPERTY_NAME = "moduleProjectData"; // NOI18N
+    
     private boolean standalone = true; // standalone is default
     private String projectName;
     private String projectLocation;
@@ -31,7 +33,7 @@ final class NewModuleProjectData {
     private String bundle;
     private String layer;
     private String projectDisplayName;
-    
+
     /** Creates a new instance of NewModuleProjectData */
     NewModuleProjectData() {/* empty constructor */}
     

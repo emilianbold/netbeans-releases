@@ -14,11 +14,20 @@
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.NbPlatform;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.ui.ComponentFactory;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.windows.WindowManager;
 
 /**
  * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
@@ -29,16 +38,23 @@ import org.openide.filesystems.FileUtil;
  *  <li>Project Location</li>
  *  <li>Project Folder</li>
  *  <li>If should be set as a Main Project</li>
+ *  <li>NetBeans Platform (for standalone modules)</li>
+ *  <li>Module Suite (for suite modules)</li>
  * </ul>
  *
- * @author mkrauskopf
+ * @author Martin Krauskopf
  */
 public class BasicInfoVisualPanel extends BasicVisualPanel {
     
+    private NewModuleProjectData data;
+    
     /** Creates new form BasicInfoVisualPanel */
-    public BasicInfoVisualPanel(WizardDescriptor setting) {
+    public BasicInfoVisualPanel(WizardDescriptor setting, boolean showModuleTypeChooser) {
         super(setting);
         initComponents();
+        this.data = (NewModuleProjectData) getSetting().getProperty(
+                NewModuleProjectData.DATA_PROPERTY_NAME);
+        typeChooserPanel.setVisible(showModuleTypeChooser);
         nameValue.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { nameUpdated(); }
             public void removeUpdate(DocumentEvent e) { nameUpdated(); }
@@ -105,12 +121,22 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     /** Stores collected data into model. */
     void storeData() {
-        NewModuleProjectData data = (NewModuleProjectData) getSetting().
-                getProperty("moduleProjectData"); // XXX should be constant
         data.setProjectName(getNameValue());
         data.setProjectLocation(getLocationValue());
         data.setProjectFolder(folderValue.getText());
         data.setMainProject(mainProject.isSelected());
+        data.setStandalone(standAloneModule.isSelected());
+        data.setPlatform(((NbPlatform) platformValue.getSelectedItem()).getID());
+        data.setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
+    }
+    
+    void refreshData() {
+        if (data.isStandalone()) {
+            standAloneModule.setSelected(true);
+        } else {
+            suiteModule.setSelected(true);
+        }
+        typeChanged(null);
     }
     
     /** This method is called from within the constructor to
@@ -122,6 +148,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        moduleTypeGroup = new javax.swing.ButtonGroup();
         infoPanel = new javax.swing.JPanel();
         nameLbl = new javax.swing.JLabel();
         locationLbl = new javax.swing.JLabel();
@@ -133,6 +160,15 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         folderValue = new javax.swing.JTextField();
         separator2 = new javax.swing.JSeparator();
         mainProject = new javax.swing.JCheckBox();
+        typeChooserPanel = new javax.swing.JPanel();
+        standAloneModule = new javax.swing.JRadioButton();
+        platform = new javax.swing.JLabel();
+        platformValue = ComponentFactory.getNbPlatformsComboxBox();
+        suiteModule = new javax.swing.JRadioButton();
+        moduleSuite = new javax.swing.JLabel();
+        moduleSuiteValue = ComponentFactory.getSuitesComboBox();
+        browseSuiteButton = new javax.swing.JButton();
+        chooserFiller = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -225,14 +261,143 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         org.openide.awt.Mnemonics.setLocalizedText(mainProject, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/Bundle").getString("CTL_SetAsMainProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(mainProject, gridBagConstraints);
+
+        typeChooserPanel.setLayout(new java.awt.GridBagLayout());
+
+        moduleTypeGroup.add(standAloneModule);
+        standAloneModule.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(standAloneModule, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_StandaloneModule"));
+        standAloneModule.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeChanged(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        typeChooserPanel.add(standAloneModule, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_NetBeansPlatform"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        typeChooserPanel.add(platform, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        typeChooserPanel.add(platformValue, gridBagConstraints);
+
+        moduleTypeGroup.add(suiteModule);
+        org.openide.awt.Mnemonics.setLocalizedText(suiteModule, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_AddToModuleSuite"));
+        suiteModule.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeChanged(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        typeChooserPanel.add(suiteModule, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(moduleSuite, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_ModuleSuite"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        typeChooserPanel.add(moduleSuite, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        typeChooserPanel.add(moduleSuiteValue, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(browseSuiteButton, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_BrowseButton_w"));
+        browseSuiteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseModuleSuite(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        typeChooserPanel.add(browseSuiteButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.weighty = 1.0;
+        typeChooserPanel.add(chooserFiller, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        add(typeChooserPanel, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
+    
+    private void browseModuleSuite(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseModuleSuite
+        JFileChooser chooser = ProjectChooser.projectChooser();
+        int option = chooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
+        if (option == JFileChooser.APPROVE_OPTION) {
+            File projectDir = chooser.getSelectedFile();
+            try {
+                Project suite = ProjectManager.getDefault().findProject(
+                        FileUtil.toFileObject(projectDir));
+                if (suite != null) {
+                    SuiteProvider sp = (SuiteProvider) suite.
+                            getLookup().lookup(SuiteProvider.class);
+                    if (sp != null && sp.getSuiteDirectory() != null) {
+                        String suiteDir = sp.getSuiteDirectory().getAbsolutePath();
+                        // register for this session
+                        ComponentFactory.addUserSuite(suiteDir);
+                        // add to current combobox
+                        moduleSuiteValue.addItem(suiteDir);
+                        moduleSuiteValue.setSelectedItem(suiteDir);
+                    }
+                }
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
+        }
+    }//GEN-LAST:event_browseModuleSuite
+    
+    private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
+        boolean standalone = standAloneModule.isSelected();
+        platform.setEnabled(standalone);
+        platformValue.setEnabled(standalone);
+        moduleSuite.setEnabled(!standalone);
+        moduleSuiteValue.setEnabled(!standalone);
+        browseSuiteButton.setEnabled(!standalone);
+    }//GEN-LAST:event_typeChanged
     
     private void browseLocation(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocation
         JFileChooser chooser = new JFileChooser(locationValue.getText());
@@ -245,6 +410,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
+    private javax.swing.JButton browseSuiteButton;
+    private javax.swing.JLabel chooserFiller;
     private javax.swing.JLabel filler;
     private javax.swing.JLabel folderLbl;
     private javax.swing.JTextField folderValue;
@@ -252,8 +419,16 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     private javax.swing.JLabel locationLbl;
     private javax.swing.JTextField locationValue;
     private javax.swing.JCheckBox mainProject;
+    private javax.swing.JLabel moduleSuite;
+    private javax.swing.JComboBox moduleSuiteValue;
+    private javax.swing.ButtonGroup moduleTypeGroup;
     private javax.swing.JLabel nameLbl;
     private javax.swing.JTextField nameValue;
+    private javax.swing.JLabel platform;
+    private javax.swing.JComboBox platformValue;
     private javax.swing.JSeparator separator2;
+    private javax.swing.JRadioButton standAloneModule;
+    private javax.swing.JRadioButton suiteModule;
+    private javax.swing.JPanel typeChooserPanel;
     // End of variables declaration//GEN-END:variables
 }

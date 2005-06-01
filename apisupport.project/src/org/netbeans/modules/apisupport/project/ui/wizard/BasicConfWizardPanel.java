@@ -25,11 +25,9 @@ import org.openide.WizardDescriptor;
  *  <li>Module Display Name</li>
  *  <li>Localizing Bundle</li>
  *  <li>XML Layer</li>
- *  <li>NetBeans Platform (for standalone modules)</li>
- *  <li>Module Suite (for suite modules)</li>
  * </ul>
  *
- * @author mkrauskopf
+ * @author Martin Krauskopf
  */
 final class BasicConfWizardPanel extends BasicWizardPanel {
     

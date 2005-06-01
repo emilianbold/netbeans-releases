@@ -25,18 +25,27 @@ import org.openide.WizardDescriptor;
  *  <li>Project Location</li>
  *  <li>Project Folder</li>
  *  <li>If should be set as a Main Project</li>
+ *  <li>NetBeans Platform (for standalone modules)</li>
+ *  <li>Module Suite (for suite modules)</li>
  * </ul>
  *
- * @author mkrauskopf
+ * @author Martin Krauskopf
  */
 final class BasicInfoWizardPanel extends BasicWizardPanel {
     
     /** Representing visual component for this step. */
     private BasicInfoVisualPanel visualPanel;
+
+    private boolean isSuiteWizard;
     
     /** Creates a new instance of BasicInfoWizardPanel */
-    public BasicInfoWizardPanel(WizardDescriptor settings) {
+    public BasicInfoWizardPanel(WizardDescriptor settings, boolean isSuiteWizard) {
         super(settings);
+        this.isSuiteWizard = isSuiteWizard;
+    }
+    
+    public void readSettings(Object settings) {
+        visualPanel.refreshData();
     }
     
     public void storeSettings(Object settings) {
@@ -45,7 +54,7 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
     
     public Component getComponent() {
         if (visualPanel == null) {
-            visualPanel = new BasicInfoVisualPanel(getSettings());
+            visualPanel = new BasicInfoVisualPanel(getSettings(), !isSuiteWizard);
             visualPanel.addPropertyChangeListener(this);
             visualPanel.setName(getMessage("LBL_BasicInfoPanel_Title")); // NOI18N
         }

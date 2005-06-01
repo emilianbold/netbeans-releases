@@ -65,7 +65,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     public Set instantiate() throws IOException {
         final NewModuleProjectData data = (NewModuleProjectData) settings.
-                getProperty("moduleProjectData"); // XXX should be constant
+                getProperty(NewModuleProjectData.DATA_PROPERTY_NAME);
         
         final File projectFolder = new File(data.getProjectFolder());
         if (this.type == TYPE_MODULE) {
@@ -103,7 +103,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     public void initialize(WizardDescriptor wiz) {
         this.settings = wiz;
         NewModuleProjectData data = new NewModuleProjectData();
-        settings.putProperty("moduleProjectData", data); // NOI18N
+        settings.putProperty(NewModuleProjectData.DATA_PROPERTY_NAME, data);
         position = 0;
         String[] steps = null;
         switch (type) {
@@ -135,7 +135,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     private String[] initModuleWizard() {
         panels = new WizardDescriptor.Panel[] {
-            new BasicInfoWizardPanel(settings),
+            new BasicInfoWizardPanel(settings, false),
             new BasicConfWizardPanel(settings)
         };
         String[] steps = new String[] {
@@ -147,7 +147,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     private String[] initSuiteModuleWizard() {
         panels = new WizardDescriptor.Panel[] {
-            new BasicInfoWizardPanel(settings),
+            new BasicInfoWizardPanel(settings, true),
             new PlatformSelectionWizardPanel(settings)
         };
         String[] steps = new String[] {
