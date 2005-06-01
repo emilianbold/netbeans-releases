@@ -102,12 +102,10 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         // setIconBase("org/netbeans/modules/java/j2seproject/ui/resources/packageRoot");
     }
 
-    // FIXME add FileStatusListener and fireIconChanged
     public Image getIcon( int type ) {        
         return computeIcon( false, type );
     }
         
-    // FIXME add FileStatusListener and fireOpenedIconChanged
     public Image getOpenedIcon( int type ) {
         return computeIcon( true, type );
     }
