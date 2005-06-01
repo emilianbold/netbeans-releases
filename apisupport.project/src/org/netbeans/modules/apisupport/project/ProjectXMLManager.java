@@ -324,7 +324,7 @@ public final class ProjectXMLManager {
      * suite</em> module.
      */
     static void generateEmptyModuleTemplate(FileObject projectXml, String cnb,
-            boolean standalone) throws IOException {
+            int type) throws IOException {
         
         Document prjDoc = XMLUtil.createDocument("project", PROJECT_NS, null, null); // NOI18N
         
@@ -340,10 +340,18 @@ public final class ProjectXMLManager {
         confEl.appendChild(dataEl);
         Document dataDoc = dataEl.getOwnerDocument();
         dataEl.appendChild(createModuleElement(dataDoc, CODE_NAME_BASE, cnb));
-        if (standalone) {
-            dataEl.appendChild(createModuleElement(dataDoc, STANDALONE));
-        } else {
-            dataEl.appendChild(createModuleElement(dataDoc, SUITE_COMPONENT));
+        switch (type) {
+            case NbModuleProject.TYPE_STANDALONE:
+                dataEl.appendChild(createModuleElement(dataDoc, STANDALONE));
+                break;
+            case NbModuleProject.TYPE_SUITE_COMPONENT:
+                dataEl.appendChild(createModuleElement(dataDoc, SUITE_COMPONENT));
+                break;
+            case NbModuleProject.TYPE_NETBEANS_ORG:
+                // has no special element
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown module type: " + type); // NOI18N
         }
         dataEl.appendChild(createModuleElement(dataDoc, MODULE_DEPENDENCIES));
         dataEl.appendChild(createModuleElement(dataDoc, PUBLIC_PACKAGES));

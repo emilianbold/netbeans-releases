@@ -21,12 +21,16 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Servers for generating new NetBeans Modules templates.
@@ -48,7 +52,7 @@ public class NbModuleProjectGenerator {
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
-        createProjectXML(dirFO, cnb, true);
+        createProjectXML(dirFO, cnb, NbModuleProject.TYPE_STANDALONE);
         createPlatformProperties(dirFO, platformID);
         createManifest(dirFO, cnb, bundlePath, layerPath);
         createBundle(dirFO, bundlePath, name);
@@ -65,7 +69,7 @@ public class NbModuleProjectGenerator {
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
-        createProjectXML(dirFO, cnb, false);
+        createProjectXML(dirFO, cnb, NbModuleProject.TYPE_SUITE_COMPONENT);
         createSuiteProperties(dirFO, suiteDir);
         createManifest(dirFO, cnb, bundlePath, layerPath);
         createBundle(dirFO, bundlePath, name);
@@ -76,16 +80,79 @@ public class NbModuleProjectGenerator {
         ProjectManager.getDefault().clearNonProjectCache();
     }
     
+    /** 
+     * Generates NetBeans Module within the netbeans.org CVS tree.
+     */
+    public static void createNetBeansOrgModule(File projectDir, String cnb,
+            String name, String bundlePath, String layerPath) throws IOException {
+        File nborg = ModuleList.findNetBeansOrg(projectDir);
+        if (nborg == null) {
+            throw new IllegalArgumentException(projectDir + " doesn't " + // NOI18N
+                    "point to directory within the netbeans.org CVS tree"); // NOI18N
+        }
+        final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+        if (ProjectManager.getDefault().findProject(dirFO) != null) {
+            throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+        }
+        createBuildXML(dirFO, cnb, nborg);
+        createProjectXML(dirFO, cnb, NbModuleProject.TYPE_NETBEANS_ORG);
+        createManifest(dirFO, cnb, bundlePath, layerPath);
+        createBundle(dirFO, bundlePath, name);
+        createLayer(dirFO, layerPath);
+        createEmptyTestDir(dirFO);
+        ModuleList.refresh();
+        ProjectManager.getDefault().clearNonProjectCache();
+    }
+    
     /**
      * Creates basic <em>nbbuild/project.xml</em> or whatever
      * <code>AntProjectHelper.PROJECT_XML_PATH</code> is pointing to for
      * <em>standalone</em> or <em>module in suite</em> module.
      */
     private static void createProjectXML(FileObject projectDir,
-            String cnb, boolean standalone) throws IOException {
+            String cnb, int type) throws IOException {
         ProjectXMLManager.generateEmptyModuleTemplate(
                 createFileObject(projectDir, AntProjectHelper.PROJECT_XML_PATH),
-                cnb, standalone);
+                cnb, type);
+    }
+    
+    /**
+     * Creates basic <em>build.xml</em> or whatever
+     * <code>GeneratedFilesHelper.BUILD_XML_PATH</code> is pointing to.
+     */
+    private static void createBuildXML(FileObject projectDir, String cnb,
+            File nborg) throws IOException {
+        FileObject buildScript = NbModuleProjectGenerator.createFileObject(
+                projectDir, GeneratedFilesHelper.BUILD_XML_PATH);
+        Document prjDoc = XMLUtil.createDocument("project", null, null, null); // NOI18N
+        Element prjEl = prjDoc.getDocumentElement();
+        prjEl.setAttribute("name", PropertyUtils.relativizeFile(nborg, 
+                FileUtil.toFile(projectDir)));
+        prjEl.setAttribute("default", "netbeans"); // NOI18N
+        prjEl.setAttribute("basedir", "."); // NOI18N
+        
+        Element el = prjDoc.createElement("description"); // NOI18N
+        el.appendChild(prjDoc.createTextNode("Builds, tests, and runs the " + // NOI18N
+                "project " + cnb)); // NOI18N
+        prjEl.appendChild(el);
+        
+        el = prjDoc.createElement("import"); // NOI18N
+        el.setAttribute("file", PropertyUtils.relativizeFile(FileUtil.toFile(projectDir), 
+                new File(nborg, "nbbuild/templates/projectized.xml"))); // NOI18N
+        prjEl.appendChild(el);
+        
+        // store document to disk
+        FileLock lock = buildScript.lock();
+        try {
+            OutputStream os = buildScript.getOutputStream(lock);
+            try {
+                XMLUtil.write(prjDoc, os, "UTF-8"); // NOI18N
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
     }
     
     private static void createSuiteProperties(FileObject projectDir, File suiteDir) throws IOException {

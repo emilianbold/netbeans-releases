@@ -151,4 +151,17 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         assertEquals("now have two suite components", new HashSet(Arrays.asList(new Project[] {moduleProjectRel, moduleProjectAbs})), spp.getSubprojects());
     }
     
+    // XXX hmmm, don't know yet how to fully test this case since I don't want
+    // to touch the netbeans.org CVS tree. Probably somehow simulating
+    // netbeans.org CVS tree would help. I'll try to investigate it later.
+//    public void testCreateNetBeansModule() throws Exception {
+//        File prjDir = new File("/usr/share/java/netbeans-cvs-current/ide/projectimport/testModule");
+//        NbModuleProjectGenerator.createNetBeansOrgModule(
+//                prjDir,
+//                "org.example.testModule", // cnb
+//                "Testing Module", // display name
+//                "org/example/testModule/resources/Bundle.properties",
+//                "org/example/testModule/resources/layer.xml");
+//    }
+    
 }
