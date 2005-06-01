@@ -24,12 +24,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
@@ -41,9 +38,8 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     private static final long serialVersionUID = 1L;
     
-    private final static String KIND_ATTR = "kind"; // NOI18N
-    private final static String KIND_MODULE = "module"; // NOI18N
-    private final static String KIND_SUITE = "suite"; // NOI18N
+    private final static int TYPE_MODULE = 1;
+    private final static int TYPE_SUITE = 2;
     
     static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
     
@@ -51,15 +47,28 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor settings;
     
+    private transient int type;
+    
     /** Create a new wizard iterator. */
-    public NewNbModuleWizardIterator() {}
+    private NewNbModuleWizardIterator(int type) {
+        this.type = type;
+    }
+    
+    public static NewNbModuleWizardIterator createModuleIterator() {
+        return new NewNbModuleWizardIterator(TYPE_MODULE);
+    }
+    
+    public static NewNbModuleWizardIterator createSuiteIterator() {
+        return new NewNbModuleWizardIterator(TYPE_SUITE);
+    }
+    
     
     public Set instantiate() throws IOException {
         final NewModuleProjectData data = (NewModuleProjectData) settings.
                 getProperty("moduleProjectData"); // XXX should be constant
         
         final File projectFolder = new File(data.getProjectFolder());
-        if (data.getKind() == KIND_MODULE) {
+        if (this.type == TYPE_MODULE) {
             if (data.isStandalone()) {
                 // create standalone module
                 NbModuleProjectGenerator.createStandAloneModule(projectFolder,
@@ -71,10 +80,10 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
                         data.getCodeNameBase(), data.getProjectDisplayName(),
                         data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()));
             }
-        } else if (data.getKind() == KIND_SUITE) {
+        } else if (this.type == TYPE_SUITE) {
             SuiteProjectGenerator.createSuiteModule(projectFolder, data.getPlatform());
         } else {
-            throw new IllegalStateException("Uknown kind: " + data.getKind()); // NOI18N
+            throw new IllegalStateException("Uknown wizard type: " + this.type); // NOI18N
         }
         
         FileObject projectFolderFO = FileUtil.toFileObject(FileUtil.normalizeFile(projectFolder));
@@ -92,27 +101,20 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     }
     
     public void initialize(WizardDescriptor wiz) {
-        String kind = null;
         this.settings = wiz;
-        try {
-            DataObject obj = DataObject.find(Templates.getTemplate(settings));
-            assert obj != null : "Cannot find data object for the template"; // NOI18N
-            kind = (String) obj.getPrimaryFile().getAttribute(KIND_ATTR);
-            assert kind != null : "kind attribute wasn't found"; // NOI18N
-        } catch (DataObjectNotFoundException e) {
-            assert false : "Cannot find data object for the template"; // NOI18N
-        }
         NewModuleProjectData data = new NewModuleProjectData();
-        data.setKind(kind);
         settings.putProperty("moduleProjectData", data); // NOI18N
         position = 0;
         String[] steps = null;
-        if (kind.equals(KIND_MODULE)) { // NOI18N
-            steps = initModuleWizard();
-        } else if (kind.equals(KIND_SUITE)) {
-            steps = initSuiteModuleWizard();
-        } else {
-            assert false : "Illegal value for the king attribute"; // NOI18N
+        switch (type) {
+            case TYPE_MODULE:
+                steps = initModuleWizard();
+                break;
+            case TYPE_SUITE:
+                steps = initSuiteModuleWizard();
+                break;
+            default:
+                assert false : "Should never get here. type: "  + type; // NOI18N
         }
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();

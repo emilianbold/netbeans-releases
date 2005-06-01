@@ -20,7 +20,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
  */
 final class NewModuleProjectData {
     
-    private String kind;
     private boolean standalone = true; // standalone is default
     private String projectName;
     private String projectLocation;
@@ -36,10 +35,6 @@ final class NewModuleProjectData {
     /** Creates a new instance of NewModuleProjectData */
     NewModuleProjectData() {/* empty constructor */}
     
-    String getKind() {
-        return kind;
-    }
-    
     void setStandalone(boolean standalone) {
         this.standalone = standalone;
     }
@@ -48,10 +43,6 @@ final class NewModuleProjectData {
         return standalone;
     }
             
-    void setKind(String kind) {
-        this.kind = kind;
-    }
-    
     String getProjectName() {
         return projectName;
     }

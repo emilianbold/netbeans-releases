@@ -22,17 +22,15 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/apisupport.html"/>
                 <file name="emptyModule.xml">
-                    <attr name="kind" stringvalue="module"/>
                     <attr name="template" boolvalue="true"/>
-                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createModuleIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyModule.html"/>
                 </file>
                 <file name="emptySuite.xml">
-                    <attr name="kind" stringvalue="suite"/>
                     <attr name="template" boolvalue="true"/>
-                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createSuiteIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptySuite.html"/>
