@@ -26,13 +26,13 @@ import java.util.*;
  * registration and lookup mechanism. The difference is that the methods do
  * not throw checked exceptions (as they usually work only locally and not over the network)
  * and that the Lookup API concentrates on the lookup, not on the registration
- * (although {Lookup#getDefault} is strongly encouraged to support
+ * (although {@link Lookup#getDefault} is strongly encouraged to support
  * {@link Lookups#metaInfServices} for registration in addition to whatever
  * else it decides to support).
  * <p>
  * For a general talk about the idea behind the lookup pattern please see
  * <UL>
- *      <LI><a href="lookup/doc-files/index.html">The Solution to Comunication Between Components</a>
+ *      <LI><a href="lookup/doc-files/index.html">The Solution to Communication Between Components</a>
  *      page
  *      <LI>the introduction to the <a href="lookup/doc-files/lookup-api.html">lookup API via
  *      use cases</a>
