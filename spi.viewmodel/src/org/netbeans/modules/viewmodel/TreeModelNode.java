@@ -374,7 +374,7 @@ public class TreeModelNode extends AbstractNode {
             refreshLazyChildren();
         }
         
-        public void evaluateLazily() {
+        public void evaluateLazily(Runnable evaluatedNotify) {
             Object[] ch;
             try {
                 int count = model.getChildrenCount (object);
@@ -397,6 +397,7 @@ public class TreeModelNode extends AbstractNode {
                 ErrorManager.getDefault().notify(t);
                 ch = new Object[0];
             }
+            evaluatedNotify.run();
             boolean fire;
             synchronized (evaluated) {
                 fire = evaluated[0] == -1;
@@ -431,6 +432,7 @@ public class TreeModelNode extends AbstractNode {
                 } else {
                     ch = children_evaluated;
                 }
+                children_evaluated = null;
             }
             if (ch == null) {
                 applyWaitChildren();
@@ -558,7 +560,7 @@ public class TreeModelNode extends AbstractNode {
             }
         }
         
-        public void evaluateLazily() {
+        public void evaluateLazily(Runnable evaluatedNotify) {
             Object value = "";
             String htmlValue = null;
             String nonHtmlValue = null;
@@ -579,6 +581,7 @@ public class TreeModelNode extends AbstractNode {
             } catch (Throwable t) {
                 t.printStackTrace();
             } finally {
+                evaluatedNotify.run();
                 boolean fire;
                 synchronized (properties) {
                     if (value instanceof String) {
@@ -720,34 +723,35 @@ public class TreeModelNode extends AbstractNode {
 
         public void run() {
             while(true) {
-                try {
-                    Evaluable eval;
-                    synchronized (objectsToEvaluate) {
-                        if (objectsToEvaluate.size() == 0) {
-                            try {
-                                objectsToEvaluate.wait(EXPIRE_TIME);
-                            } catch (InterruptedException iex) {
-                                return ;
-                            }
-                            if (objectsToEvaluate.size() == 0) { // Expired
-                                return ;
-                            }
+                Evaluable eval;
+                synchronized (objectsToEvaluate) {
+                    if (objectsToEvaluate.size() == 0) {
+                        try {
+                            objectsToEvaluate.wait(EXPIRE_TIME);
+                        } catch (InterruptedException iex) {
+                            return ;
                         }
-                        eval = (Evaluable) objectsToEvaluate.remove(0);
-                        currentlyEvaluating = eval;
+                        if (objectsToEvaluate.size() == 0) { // Expired
+                            return ;
+                        }
                     }
-                    eval.evaluateLazily();
-                } finally {
-                    synchronized (objectsToEvaluate) {
-                        currentlyEvaluating = null;
-                    }
+                    eval = (Evaluable) objectsToEvaluate.remove(0);
+                    currentlyEvaluating = eval;
                 }
+                Runnable evaluatedNotify = new Runnable() {
+                    public void run() {
+                        synchronized (objectsToEvaluate) {
+                            currentlyEvaluating = null;
+                        }
+                    }
+                };
+                eval.evaluateLazily(evaluatedNotify);
             }
         }
 
         public interface Evaluable {
 
-            public void evaluateLazily();
+            public void evaluateLazily(Runnable evaluatedNotify);
 
         }
 
