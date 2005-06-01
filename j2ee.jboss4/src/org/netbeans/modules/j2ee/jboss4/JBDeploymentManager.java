@@ -59,6 +59,7 @@ public class JBDeploymentManager implements DeploymentManager {
     
     private String host;
     private int port;
+    private int debuggingPort = 8787;
     
     // ide specific data
     private JBLogWriter logWriter;
@@ -89,6 +90,10 @@ public class JBDeploymentManager implements DeploymentManager {
         return port;
     }
     
+    public int getDebuggingPort() {
+        return debuggingPort;
+    }
+    
     public String getUrl() {
         if (domain.equals(""))
             return this.uri;
@@ -112,8 +117,6 @@ public class JBDeploymentManager implements DeploymentManager {
     ////////////////////////////////////////////////////////////////////////////
     public ProgressObject distribute(Target[] target, File file, File file2) throws IllegalStateException {
         JBDeployer deployer = new JBDeployer(realUri);
-        
-        
         
         org.w3c.dom.Document dom =null;
         

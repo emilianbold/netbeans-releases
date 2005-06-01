@@ -68,7 +68,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
     }
     
     public ProgressObject startDebugging(Target target) {
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, "")); //NOI18N
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS"))); //NOI18N
         RequestProcessor.getDefault().post(new JBStartRunnable(true), 0, Thread.NORM_PRIORITY);
         return this;
     }
@@ -82,7 +82,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
     }
     
     public ServerDebugInfo getDebugInfo(Target target) {
-        return null;
+        return new ServerDebugInfo("localhost", dm.getDebuggingPort());
     }
     
     
@@ -127,12 +127,10 @@ public class JBStartServer extends StartServer implements ProgressObject{
         return false;
     }
     
-    
-    
     private boolean isReallyRunning(){
         ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
         URLClassLoader loader = ((JBDeploymentFactory)JBDeploymentFactory.create()).getJBClassLoader();
-                
+        
         Thread.currentThread().setContextClassLoader(loader);
         java.util.Hashtable env = new java.util.Hashtable();
         
@@ -142,15 +140,32 @@ public class JBStartServer extends StartServer implements ProgressObject{
         env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
         env.put("jnp.disableDiscovery", Boolean.TRUE); // NOI18N
         
+        String checkingConfigName = InstanceProperties.getInstanceProperties(dm.getUrl()).getProperty("server");
+        
         try{
             InitialContext ctx = new InitialContext(env);
             ctx.lookup("/jmx/invoker/RMIAdaptor");
+            
+            MBeanServerConnection srv = (MBeanServerConnection)ctx.lookup("/jmx/invoker/RMIAdaptor");
+            ObjectName target = new ObjectName("jboss.system:type=ServerConfig");
+            String configName = (String)srv.getAttribute(target, "ServerName");
+            
+            if (checkingConfigName.equals(configName)){
+                return true;
+            }else{
+                return false;
+            }
+        }catch(NameNotFoundException e){
+            if (checkingConfigName.equals("minimal")) 
+                return true;
+            else
+                return false;
         }catch(Exception e){
             return false;
         } finally{
             Thread.currentThread().setContextClassLoader(oldLoader);
         }
-        return true;
+       // return true;
     }
     
     public boolean isRunning() {
@@ -169,6 +184,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         // create an output tab for the server output
         InputOutput io = IOProvider.getDefault().getIO( getIOTabName(serverName), false);
         io.select();
+        
         
         String logFileName = (String)InstanceProperties.getInstanceProperties((dm).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR) + File.separator+"log"+ File.separator+"server.log" ;//NOI18N
         File logFile = new File(logFileName);
@@ -217,7 +233,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 ProcessBuilder processBuilder = new ProcessBuilder(new String[] {serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), "-c", JBOSS_INSTANCE});
                 
                 if (debug) {
-                    processBuilder.environment().put("JAVA_OPTS", "-classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n");//NOI18N
+                    processBuilder.environment().put("JAVA_OPTS", "-classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="+dm.getDebuggingPort()+ ",server=y,suspend=n");//NOI18N
                 } else {
                     processBuilder.environment().put("JAVA_OPTS", "");
                 }
@@ -238,7 +254,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 LineNumberReader reader = new LineNumberReader(new InputStreamReader(serverProcess.getInputStream()));
                 
                 try {
-                    int timeout = 60000;
+                    int timeout = 300000;
                     int elapsed = 0;
                     while (elapsed < timeout) {
                         while (reader.ready()) {
@@ -299,7 +315,10 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 Process serverProcess = Runtime.getRuntime().exec(serverLocation + (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH));
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                         NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS")));
-                int timeout = 30000;
+                
+                
+                
+                int timeout = 300000;
                 int elapsed = 0;
                 while (elapsed < timeout) {
                     if (isRunning()) {
@@ -307,10 +326,11 @@ public class JBStartServer extends StartServer implements ProgressObject{
                                 NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS")));//NOI18N
                     } else {
                         try {
-                            Thread.sleep(15000);
+                            Thread.sleep(30000);
                         } catch (InterruptedException e) {
                             // do nothing
                         }
+                        
                         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
                                 NbBundle.getMessage(JBStartServer.class, "MSG_SERVER_STOPPED")));//NOI18N
                         return;
