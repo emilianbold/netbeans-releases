@@ -1771,6 +1771,24 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../utilities/group" target="netbeans"/>
   </target>
+  <target name="all-versioncontrol" depends="init,all-openide">
+     <echo message="Building module versioncontrol..."/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../versioncontrol" target="netbeans"/>
+  </target>
+  <target name="all-javacvs/cvsmodule" depends="init,all-javacvs/libmodule,all-diff,all-versioncontrol,all-core,all-core/progress,all-projects/projectapi,all-projects/projectuiapi,all-editor,all-editor/fold,all-editor/lib,all-xml/api,all-projects/queries,all-openide,all-openide/io,all-openide/loaders">
+     <echo message="Building module javacvs/cvsmodule..."/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../javacvs/cvsmodule" target="netbeans"/>
+  </target>
   <target name="all-vcscvs" depends="init,all-openidex,all-editor,all-vcscore">
     <echo message="Building module vcscvs..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
