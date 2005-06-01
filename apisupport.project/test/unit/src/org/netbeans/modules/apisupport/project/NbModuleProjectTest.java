@@ -168,4 +168,9 @@ public class NbModuleProjectTest extends TestBase {
         assertFalse(beansProject.supportsJavadoc());
     }
     
+    public void testGetNbrootFile() throws Exception {
+        NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(extexamples.getFileObject("suite1/action-project"));
+        assertEquals(file("xtest/lib/insanelib.jar"), actionProject.getNbrootFile("xtest/lib/insanelib.jar"));
+    }
+    
 }
