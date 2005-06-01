@@ -1,0 +1,6 @@
+OpenIDE-Module: org.netbeans.modules.versioning.system.cvss/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/versioning/system/cvss/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/versioning/system/cvss/resources/layer.xml
+OpenIDE-Module-Install: org/netbeans/modules/versioning/system/cvss/ModuleLifecycleManager.class
+OpenIDE-Module-Implementation-Version: 1
+

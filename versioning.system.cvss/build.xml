@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project basedir="." default="netbeans" name="javacvs/cvsmodule">
+    <import file="../../nbbuild/templates/projectized.xml"/>
+
+    <target name="netbeans-extra" depends="release"/>
+    
+    <target name="release" depends="init">
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext">
+            <fileset file="../external/jsch-0.1.20.jar"/>
+        </copy>
+    </target>
+
+    <!-- Need to unscramble the libs before continuing-->
+    <target name="build-init" depends="projectized.build-init">
+      <ant dir="../external" target="unscramble"/>
+    </target>
+
+    <!-- Rewritten to capture two licenses. -->                           
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
+                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 module="${module.jar}"
+                 homepage="${nbm.homepage}"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}"
+                 releasedate="${nbm.release.date}"
+                 moduleauthor="${nbm.module.author}">
+            <license name="cvslite-license.txt">
+                 <text>For CVSlite module itself:</text>
+                 <file location="${license.file}"/>
+                 <text>For JSch library:</text>
+                 <file location="../external/jsch-license.txt"/>
+            </license>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
+    
+</project>

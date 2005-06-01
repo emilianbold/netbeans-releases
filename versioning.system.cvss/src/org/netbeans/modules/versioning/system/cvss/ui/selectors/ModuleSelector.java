@@ -1,0 +1,194 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.versioning.system.cvss.ui.selectors;
+
+import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.lib.cvsclient.Client;
+import org.netbeans.lib.cvsclient.admin.AdminHandler;
+import org.netbeans.lib.cvsclient.event.*;
+import org.netbeans.lib.cvsclient.connection.*;
+import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
+import org.netbeans.lib.cvsclient.command.checkout.ModuleListInformation;
+import org.netbeans.lib.cvsclient.command.GlobalOptions;
+import org.netbeans.lib.cvsclient.command.CommandException;
+import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.openide.DialogDescriptor;
+import org.openide.nodes.*;
+import org.openide.util.UserCancelException;
+
+import java.util.*;
+import java.util.List;
+
+/**
+ * Prototype impl of defined modules listing.
+ *
+ * @author Petr Kuzel
+ */
+public final class ModuleSelector {
+
+    private CVSRoot root;
+
+    private DialogDescriptor descriptor;
+    
+    private ProxyDescriptor proxyDescriptor;
+
+    /**
+     * Asks user to select which module to checkout. Popups a modal UI,
+     * @param root
+     * @return Set of String, possibly empty
+     */
+    public Set selectModules(CVSRoot root, ProxyDescriptor proxy) {
+        this.root = root;
+        this.proxyDescriptor = proxy;
+
+
+        // create top level node that categorizes to aliases and raw browser
+
+        Children.Array kids = new Children.Array();
+        Client.Factory clientFactory = Kit.createClientFactory(root, proxy);
+        Node aliasesNode = AliasesNode.create(clientFactory, root);
+        Node pathsNode = RepositoryPathNode.create(clientFactory, root, "");
+        kids.add(new Node[] {aliasesNode, pathsNode});
+        Node rootNode = new AbstractNode(kids);
+        rootNode.setDisplayName("Repository Browser");
+
+        try {
+            Node[] selected = NodeOperation.getDefault().select("Select Content to Checkout", "Choose Aliases or Folders", rootNode, new NodeAcceptor() {
+                public boolean acceptNodes(Node[] nodes) {
+                    boolean ret = nodes.length > 0;
+                    for (int i = 0; i < nodes.length; i++) {
+                        Node node = nodes[i];
+                        String path = (String) node.getLookup().lookup(String.class);
+                        ret &= path != null;
+                    }
+                    return ret;
+                }
+            });
+
+            Set  modules = new LinkedHashSet();
+            for (int i = 0; i < selected.length; i++) {
+                Node node = selected[i];
+                String path = (String) node.getLookup().lookup(String.class);
+                modules.add(path);
+            }
+            return modules;
+        } catch (UserCancelException e) {
+            return Collections.EMPTY_SET;
+        }
+    }
+
+    private static final String MAGIC_START = ": New directory `"; // NOI18N
+    private static final String MAGIC_END = "' -- ignored"; // NOI18N
+
+    /**
+     * Lists subfolders in given repository folder.
+     *
+     * @param client engine to be used
+     * @param root identifies repository
+     * @param path "/" separated repository folder path (e.g. "javacvs/cvsmodule")
+     * @return folders never <code>null</code>
+     */
+    public static List listRepositoryPath(Client client, CVSRoot root, String path) throws CommandException, AuthenticationException {
+
+        final List list = new ArrayList();
+        GlobalOptions gtx = new GlobalOptions();
+        gtx.setCVSRoot(root.toString());
+        gtx.setDoNoChanges(true);
+
+        UpdateCommand blindUpdate = new UpdateCommand();
+        blindUpdate.setBuildDirectories(true);
+
+        AdminHandler localEnv = new VirtualAdminHandler(root, path); // NOI18N
+        client.setAdminHandler(localEnv);
+        String tmpDir = System.getProperty("java.io.tmpdir");  // NOI18N
+        client.setLocalPath(tmpDir);
+        EventManager mgr = client.getEventManager();
+        mgr.addCVSListener(new CVSListener() {
+            public void messageSent(MessageEvent e) {
+                if (e.isError()) {
+                    String message = e.getMessage();
+                    if (message.endsWith(MAGIC_END)) {  // NOI18N
+                        int start = message.indexOf(MAGIC_START);
+                        if (start != -1) {
+                            int pathStart = start + MAGIC_START.length();
+                            int pathEnd = message.length() - MAGIC_END.length();
+                            String path = message.substring(pathStart, pathEnd);
+                            list.add(path);
+                        }
+                    }
+                }
+            }
+            public void messageSent(BinaryMessageEvent e) {
+            }
+            public void fileAdded(FileAddedEvent e) {
+            }
+            public void fileToRemove(FileToRemoveEvent e) {
+            }
+            public void fileRemoved(FileRemovedEvent e) {
+            }
+            public void fileUpdated(FileUpdatedEvent e) {
+            }
+            public void fileInfoGenerated(FileInfoEvent e) {
+            }
+            public void commandTerminated(TerminationEvent e) {
+            }
+            public void moduleExpanded(ModuleExpansionEvent e) {
+            }
+        });
+        client.executeCommand(blindUpdate, gtx);
+
+        return list;
+    }
+
+    /**
+     * Lists defined aliases in given repository.
+     *
+     * @return list of ModuleListInformation
+     */
+    public static List listAliases(Client client, CVSRoot root) throws CommandException, AuthenticationException {
+
+        CheckoutCommand checkout = new CheckoutCommand();
+        checkout.setShowModules(true);
+        final List modules = new LinkedList();
+        EventManager mgr = client.getEventManager();
+        mgr.addCVSListener(new CVSListener() {
+            public void messageSent(MessageEvent e) {
+            }
+            public void messageSent(BinaryMessageEvent e) {
+            }
+            public void fileAdded(FileAddedEvent e) {
+            }
+            public void fileToRemove(FileToRemoveEvent e) {
+            }
+            public void fileRemoved(FileRemovedEvent e) {
+            }
+            public void fileUpdated(FileUpdatedEvent e) {
+            }
+            public void fileInfoGenerated(FileInfoEvent e) {
+                ModuleListInformation moduleList = (ModuleListInformation) e.getInfoContainer();
+                modules.add(moduleList);
+            }
+            public void commandTerminated(TerminationEvent e) {
+            }
+            public void moduleExpanded(ModuleExpansionEvent e) {
+            }
+        });
+
+        GlobalOptions gtx = new GlobalOptions();
+        gtx.setCVSRoot(root.toString());  // XXX why is it needed? Client already knows, who is definitive source of cvs root?
+        client.executeCommand(checkout, gtx);
+
+        return modules;
+    }
+}
