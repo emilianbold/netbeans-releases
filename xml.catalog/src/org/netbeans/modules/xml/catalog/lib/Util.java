@@ -84,23 +84,34 @@ public class Util extends AbstractUtil {
     
     /**
      * Prompts user for a catalog file.
-     * @param takes a list of file extensions
+     * @param extensions takes a list of file extensions
      * @return filename or null if operation was cancelled.
      */
-    public static File selectCatalogFile(final String enum2) {
+    public static File selectCatalogFile(final String extensions) {
+        return selectFile(extensions, Util.THIS.getString("TITLE_select_catalog"), Util.THIS.getString("PROP_catalog_mask"));
+    }
+    
+    /**
+     * Prompts user for a file.
+     * @param extensions takes a list of file extensions
+     * @param dialogTitle dialog title
+     * @param maskTitle title for filter mask
+     * @return filename or null if operation was cancelled
+     */
+    public static File selectFile(final String extensions, String dialogTitle, final String maskTitle) {
         JFileChooser chooser = new JFileChooser();
 
         chooser.setFileFilter(new FileFilter() {
             public boolean accept(File f) {
                 if (f.isDirectory()) return true;
-                StringTokenizer token = new StringTokenizer(enum2, " ");  // NOI18N
+                StringTokenizer token = new StringTokenizer(extensions, " ");  // NOI18N
                 while (token.hasMoreElements()) {
                     if (f.getName().endsWith(token.nextToken())) return true;
                 }
                 return false;
             }
             public String getDescription() {
-                return Util.THIS.getString("PROP_catalog_mask"); // NOI18N
+                return maskTitle; // NOI18N
             }
         });
 
@@ -108,7 +119,7 @@ public class Util extends AbstractUtil {
             chooser.setCurrentDirectory(lastDirectory);
         }
 
-        chooser.setDialogTitle(Util.THIS.getString("TITLE_select_catalog"));
+        chooser.setDialogTitle(dialogTitle);
         while (chooser.showDialog(WindowManager.getDefault().getMainWindow(),
                                Util.THIS.getString("PROP_select_button"))
                == JFileChooser.APPROVE_OPTION)
@@ -116,7 +127,7 @@ public class Util extends AbstractUtil {
             File f = chooser.getSelectedFile();
             lastDirectory = chooser.getCurrentDirectory();
             if (f != null && f.isFile()) {
-                StringTokenizer token = new StringTokenizer(enum2, " ");  // NOI18N
+                StringTokenizer token = new StringTokenizer(extensions, " ");  // NOI18N
                 while (token.hasMoreElements()) {
                     if (f.getName().endsWith(token.nextToken())) return f;
                 }
@@ -126,6 +137,6 @@ public class Util extends AbstractUtil {
                 Util.THIS.getString("MSG_inValidFile"), NotifyDescriptor.WARNING_MESSAGE));
         }
         return null;
-    }    
+    } 
     
 }

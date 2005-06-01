@@ -36,10 +36,11 @@ import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
  */
 final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeListener, Node.Cookie {
     
+    private CatalogReader catalog;
     /** Creates new CatalogNode */
     public CatalogNode(CatalogReader catalog) throws IntrospectionException {        
         super(catalog, new CatalogChildren(catalog));
-
+        this.catalog=catalog;
         getCookieSet().add(this);
         
         if (catalog instanceof CatalogDescriptor) {
@@ -49,7 +50,8 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
             CatalogDescriptor desc = (CatalogDescriptor) catalog;            
             setSynchronizeName(false);
             setName(desc.getDisplayName());
-            setDisplayName(desc.getDisplayName());
+            String bundleString = catalog instanceof CatalogWriter ?"LBL_catalogReadWrite":"LBL_catalogReadOnly"; //NOI18N
+            setDisplayName(Util.THIS.getString(bundleString, desc.getDisplayName()));
             setShortDescription(desc.getShortDescription());
             fireIconChange();  
 
@@ -61,21 +63,31 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
 
     /** Lazy action initialization. */
     protected SystemAction[] createActions() {
-        return new SystemAction[] {
-            SystemAction.get(RefreshAction.class),
-            SystemAction.get(CatalogNode.UnmountAction.class),
-            null,
-            //??? #24349 CustimizeAction sometimes added by BeanNode here
-            SystemAction.get(PropertiesAction.class)
-        };
+        if (catalog instanceof CatalogWriter)
+            return new SystemAction[] {
+                new AddCatalogEntryAction((CatalogWriter)catalog),
+                SystemAction.get(RefreshAction.class),
+                SystemAction.get(CatalogNode.UnmountAction.class),
+                null,
+                //??? #24349 CustimizeAction sometimes added by BeanNode here
+                SystemAction.get(PropertiesAction.class)
+            };
+        else
+            return new SystemAction[] {
+                SystemAction.get(RefreshAction.class),
+                SystemAction.get(CatalogNode.UnmountAction.class),
+                null,
+                //??? #24349 CustimizeAction sometimes added by BeanNode here
+                SystemAction.get(PropertiesAction.class)
+            };
     }
 
     /**
      * @return icon regurned by CatalogDescriptor if instance of it
      */
     public Image getIcon(int type) {
-        if (getBean() instanceof CatalogDescriptor) {
-            Image icon = ((CatalogDescriptor)getBean()).getIcon(type);
+        if (catalog instanceof CatalogDescriptor) {
+            Image icon = ((CatalogDescriptor)catalog).getIcon(type);
             if (icon != null) return icon;
         }
         
@@ -91,7 +103,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
      * Refresh catalog provider and then refresh children.
      */
     public void refresh() {
-        ((CatalogReader)getBean()).refresh();
+        catalog.refresh();
         ((CatalogChildren)getChildren()).reload();  // may be double reload
     }
 
@@ -111,7 +123,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
      */
     public void destroy() throws IOException {
         CatalogSettings mounted = CatalogSettings.getDefault();
-        mounted.removeCatalog((CatalogReader)getBean());
+        mounted.removeCatalog(catalog);
         super.destroy();
     }
 
@@ -120,7 +132,6 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
      */
     public void propertyChange(PropertyChangeEvent e) {
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(e.toString());
-        
         if (CatalogDescriptor.PROP_CATALOG_NAME.equals(e.getPropertyName())) {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Setting name: " + (String) e.getNewValue()); // NOI18N
 

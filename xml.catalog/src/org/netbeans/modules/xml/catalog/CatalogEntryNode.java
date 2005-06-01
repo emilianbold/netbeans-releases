@@ -25,6 +25,7 @@ import org.openide.text.*;
 import org.openide.*;
 
 import org.netbeans.modules.xml.catalog.lib.*;
+import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
 
 /**
  * Node representing single catalog entry. It can be viewed.
@@ -36,18 +37,29 @@ final class CatalogEntryNode extends BeanNode {
 
     // cached ViewCookie instance
     private transient ViewCookie view;
+    boolean isCatalogWriter;
     
     /** Creates new CatalogNode */
     public CatalogEntryNode(CatalogEntry entry) throws IntrospectionException {        
         super(entry);
+        if (entry.getCatalog() instanceof CatalogWriter) 
+            isCatalogWriter = true;
     }
     
     protected SystemAction[] createActions() {
-        return new SystemAction[] {
-            SystemAction.get(ViewAction.class),
-            null,
-            SystemAction.get(PropertiesAction.class)
-        };
+        if (isCatalogWriter)
+            return new SystemAction[] {
+                SystemAction.get(ViewAction.class),
+                SystemAction.get(DeleteAction.class),
+                null,
+                SystemAction.get(PropertiesAction.class)
+            };
+        else
+            return new SystemAction[] {
+                SystemAction.get(ViewAction.class),
+                null,
+                SystemAction.get(PropertiesAction.class)
+            };
     }
     
     public SystemAction getDefaultAction() {
@@ -100,6 +112,14 @@ final class CatalogEntryNode extends BeanNode {
     
     private String getSystemID() {
         return ((CatalogEntry)getBean()).getSystemID();
+    }
+
+    public void destroy() throws IOException {
+        super.destroy();
+        if (isCatalogWriter) {
+            CatalogWriter catalogWriter = (CatalogWriter)((CatalogEntry)getBean()).getCatalog();
+            catalogWriter.registerCatalogEntry(getPublicID(),null);
+        }
     }
 
     

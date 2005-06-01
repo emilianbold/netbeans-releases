@@ -33,6 +33,10 @@ public final class CatalogEntry extends Object {
         this.publicID = publicID;
         this.catalog = catalog;
     }
+    
+    CatalogReader getCatalog() {
+        return catalog;
+    }
 
     /**
      * Use CatalogReader or alternatively EntityResolver interface to resolve the PID.

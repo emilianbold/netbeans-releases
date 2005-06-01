@@ -75,6 +75,9 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
         </folder>
+        <folder name="catalogs">
+            <file name="UserXMLCatalog.xml" url="nbres:/org/netbeans/modules/xml/catalog/resources/UserXMLCatalog.xml"/>
+        </folder>
     </folder>
 
 
@@ -83,5 +86,15 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-catalog-CatalogRootNode.instance"/>
         </folder> <!-- Runtime -->        
     </folder>  <!-- UI -->
+    
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <file name="org-netbeans-modules-xml-catalog-user-UserXMLCatalog.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 
 </filesystem>
