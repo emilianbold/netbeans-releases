@@ -15,8 +15,6 @@ package org.netbeans.modules.xml.catalog.user;
 
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
-import java.util.Iterator;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
@@ -135,8 +133,10 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
                 publicIds = parse(userCatalog);
             } catch (java.io.IOException ex) {
                 publicIds = new HashMap();
+                org.openide.ErrorManager.getDefault().notify(ex);
             } catch (SAXException ex) {
                 publicIds = new HashMap();
+                org.openide.ErrorManager.getDefault().notify(ex);
             }
         } 
         return publicIds;
@@ -257,13 +257,10 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
             XMLReader reader = parser.getXMLReader();
             CatalogHandler handler = new CatalogHandler();
             reader.setContentHandler(handler);
-            try {
-                reader.parse(new InputSource(userCatalog.getInputStream()));
-            } catch (SAXException ex) {
-                String message = ex.getMessage();
-            }
+            reader.parse(new InputSource(userCatalog.getInputStream()));
             return handler.getValues();
         } catch(javax.xml.parsers.ParserConfigurationException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
             return new java.util.HashMap();
         }
     }
