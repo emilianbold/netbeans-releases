@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="build/${nbm}"
                  productdir="${netbeans.dest.dir}/${cluster.dir}"
                  module="${module.jar}"
-                 homepage="${nbm.homepage}"
+                 homepage="http://javacvs.netbeans.org/nonav/cvslite/userguide/index.html"
                  distribution="http://${dist.base}/${nbm}"
                  needsrestart="${nbm.needs.restart}"
                  releasedate="${nbm.release.date}"
