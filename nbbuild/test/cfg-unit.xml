@@ -9,16 +9,24 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <mconfig name="nbbuild">
     
     <testbag testattribs="stable" executor="unit-executor" name="projectized">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/nbbuild/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="automated" executor="unit-executor" name="projectized">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/nbbuild/*Test.class"/>
+                <!-- Not designed for use on tester machine: -->
+                <exclude name="**/ModuleListParserTest.class"/>
             </patternset>
         </testset>
     </testbag>
