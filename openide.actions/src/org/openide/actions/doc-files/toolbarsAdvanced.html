@@ -24,7 +24,7 @@ sorts of instances:
 <ol>
 
 <li>An action implementing
-<a href="../../util/actions/Presenter.Toolbar.html"><code>Presenter.Toolbar</code></a>
+<a href="@org-openide-util@/org/openide/util/actions/Presenter.Toolbar.html"><code>Presenter.Toolbar</code></a>
 
 <li>Any
 <a href="@JDK@/java/awt/Component.html"><code>Component</code></a>.
@@ -36,7 +36,7 @@ given as the toolbar presenter of an action.
 
 <p>A toolbar as created when a folder is encountered is actually an instance
 of 
-<a href="../../awt/Toolbar.html"><code>Toolbar</code></a>,
+<a href="@org-openide-loaders@/org/openide/awt/Toolbar.html"><code>Toolbar</code></a>,
 which is a subclass of
 <a href="@JDK@/javax/swing/JToolBar.html"><code>JToolBar</code></a>
 that is able to compose itself from the contents of a folder.
@@ -50,16 +50,16 @@ rather than a subfolder.
 folder-scanning mechanism or whether custom written, are available
 using
 
-<a href="../../awt/ToolbarPool.html#getToolbars()"><code>ToolbarPool.getToolbars()</code></a>.
+<a href="@org-openide-loaders@/org/openide/awt/ToolbarPool.html#getToolbars()"><code>ToolbarPool.getToolbars()</code></a>.
 
 However, at any given time not all of these are visible. All of this 
 information is controlled by a
 
-<a href="../../awt/ToolbarPool.Configuration.html"><code>ToolbarPool.Configuration</code></a>
+<a href="@org-openide-loaders@/org/openide/awt/ToolbarPool.Configuration.html"><code>ToolbarPool.Configuration</code></a>
 
 object. All available configurations are listed in
 
-<a href="../../awt/ToolbarPool.html#getConfigurations()"><code>ToolbarPool.getConfigurations()</code></a>,
+<a href="@org-openide-loaders@/org/openide/awt/ToolbarPool.html#getConfigurations()"><code>ToolbarPool.getConfigurations()</code></a>,
 
 and <code>ToolbarPool</code> also permits the current configuration
 to be retrieved and set. Normally the choice of configuration is
