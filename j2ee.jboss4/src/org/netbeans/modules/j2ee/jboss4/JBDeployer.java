@@ -38,6 +38,7 @@ import java.util.Hashtable;
 import javax.naming.*;
 import javax.management.*;
 import java.net.URLClassLoader;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,12 +59,12 @@ public class JBDeployer implements ProgressObject, Runnable {
     
     public ProgressObject deploy(Target[] target, File file, File file2, TargetModuleID module_id){
         
-        
+
         this.target = target;
         this.file = file;
         this.file2 = file2;
         this.module_id = module_id;
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, ""));
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
         return this;
     }
@@ -83,7 +84,7 @@ public class JBDeployer implements ProgressObject, Runnable {
         
         fileName = fileName.substring(0,fileName.lastIndexOf('.'));
         
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, ""));
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
         
         try{
             wait(2000);
@@ -91,7 +92,7 @@ public class JBDeployer implements ProgressObject, Runnable {
             
         }
         
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, ""));
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
         
         ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
         URLClassLoader loader = ((JBDeploymentFactory)JBDeploymentFactory.create()).getJBClassLoader();
@@ -120,7 +121,7 @@ public class JBDeployer implements ProgressObject, Runnable {
             srv.invoke(mainDeployer, "undeploy", args, sig);
             srv.invoke(mainDeployer, "deploy", args, sig);        
         }catch(Exception e){
-            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ""));
+            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
         }finally{
             Thread.currentThread().setContextClassLoader(oldLoader);
         }
