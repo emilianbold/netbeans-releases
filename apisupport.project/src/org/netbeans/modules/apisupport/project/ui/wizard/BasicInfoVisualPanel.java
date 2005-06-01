@@ -15,11 +15,13 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.ButtonModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.ModuleList;
 import org.netbeans.modules.apisupport.project.NbPlatform;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.ui.ComponentFactory;
@@ -47,6 +49,10 @@ import org.openide.windows.WindowManager;
 public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     private NewModuleProjectData data;
+
+    private boolean isNetBeansOrg;
+
+    private ButtonModel lastSelectedType;
     
     /** Creates new form BasicInfoVisualPanel */
     public BasicInfoVisualPanel(WizardDescriptor setting, boolean showModuleTypeChooser) {
@@ -110,6 +116,24 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         String path = getLocationValue() + File.separator + getNameValue();
         File fFolder = FileUtil.normalizeFile(new File(path));
         folderValue.setText(fFolder.getPath());
+        boolean isNBOrg = ModuleList.findNetBeansOrg(fFolder) != null;
+        if (isNBOrg != isNetBeansOrg) {
+            isNetBeansOrg = isNBOrg;
+            if (isNetBeansOrg) {
+                lastSelectedType = moduleTypeGroup.getSelection();
+                moduleTypeGroup.remove(standAloneModule);
+                moduleTypeGroup.remove(suiteModule);
+                standAloneModule.setSelected(false);
+                suiteModule.setSelected(false);
+            } else {
+                moduleTypeGroup.add(standAloneModule);
+                moduleTypeGroup.add(suiteModule);
+                moduleTypeGroup.setSelected(lastSelectedType, true);
+            }
+            standAloneModule.setEnabled(!isNetBeansOrg);
+            suiteModule.setEnabled(!isNetBeansOrg);
+            typeChanged(null);
+        }
         if (alsoCheck) {
             if (fFolder.exists()) {
                 setErrorMessage(getMessage("MSG_ProjectFolderExists")); // NOI18N
@@ -125,18 +149,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         data.setProjectLocation(getLocationValue());
         data.setProjectFolder(folderValue.getText());
         data.setMainProject(mainProject.isSelected());
+        data.setNetBeansOrg(isNetBeansOrg);
         data.setStandalone(standAloneModule.isSelected());
         data.setPlatform(((NbPlatform) platformValue.getSelectedItem()).getID());
         data.setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
-    }
-    
-    void refreshData() {
-        if (data.isStandalone()) {
-            standAloneModule.setSelected(true);
-        } else {
-            suiteModule.setSelected(true);
-        }
-        typeChanged(null);
     }
     
     /** This method is called from within the constructor to
@@ -392,11 +408,12 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
         boolean standalone = standAloneModule.isSelected();
+        boolean suiteModuleSelected = suiteModule.isSelected();
         platform.setEnabled(standalone);
         platformValue.setEnabled(standalone);
-        moduleSuite.setEnabled(!standalone);
-        moduleSuiteValue.setEnabled(!standalone);
-        browseSuiteButton.setEnabled(!standalone);
+        moduleSuite.setEnabled(suiteModuleSelected);
+        moduleSuiteValue.setEnabled(suiteModuleSelected);
+        browseSuiteButton.setEnabled(suiteModuleSelected);
     }//GEN-LAST:event_typeChanged
     
     private void browseLocation(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocation

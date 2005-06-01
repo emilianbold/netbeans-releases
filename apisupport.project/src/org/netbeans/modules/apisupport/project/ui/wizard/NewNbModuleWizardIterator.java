@@ -69,7 +69,12 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         
         final File projectFolder = new File(data.getProjectFolder());
         if (this.type == TYPE_MODULE) {
-            if (data.isStandalone()) {
+            if (data.isNetBeansOrg()) {
+                // create module within the netbeans.org CVS tree
+                NbModuleProjectGenerator.createNetBeansOrgModule(projectFolder,
+                        data.getCodeNameBase(), data.getProjectDisplayName(),
+                        data.getBundle(), data.getLayer());
+            } else if (data.isStandalone()) {
                 // create standalone module
                 NbModuleProjectGenerator.createStandAloneModule(projectFolder,
                         data.getCodeNameBase(), data.getProjectDisplayName(),

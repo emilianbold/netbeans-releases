@@ -44,10 +44,6 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
         this.isSuiteWizard = isSuiteWizard;
     }
     
-    public void readSettings(Object settings) {
-        visualPanel.refreshData();
-    }
-    
     public void storeSettings(Object settings) {
         visualPanel.storeData();
     }
