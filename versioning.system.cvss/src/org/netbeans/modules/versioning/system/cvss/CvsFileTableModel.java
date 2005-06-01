@@ -133,7 +133,7 @@ public class CvsFileTableModel {
         if (file.isDirectory() || (status & FileInformation.FLAG_DIRECTORY) != 0) {
             File [] files = cache.listFilesCached(file);
             for (int i = 0; i < files.length; i++) {
-                addRecursively(nodes, files[i]);
+                addRecursivelyCached(nodes, files[i]);
             }
         } else {
             if ((includeStatus & status) != 0) {
