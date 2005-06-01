@@ -14,11 +14,11 @@
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.io.File;
-import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 
 /**
  * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
@@ -92,12 +92,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             return;
         }
         String path = getLocationValue() + File.separator + getNameValue();
-        File fFolder;
-        try {
-            fFolder = new File(path).getCanonicalFile();
-        } catch (IOException e) {
-            fFolder = new File(path);
-        }
+        File fFolder = FileUtil.normalizeFile(new File(path));
         folderValue.setText(fFolder.getPath());
         if (alsoCheck) {
             if (fFolder.exists()) {
