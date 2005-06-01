@@ -117,7 +117,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * @return context help
      */
     public HelpCtx getHelpCtx() {
-        HelpCtx fromKit = HelpCtx.findHelp(support.kit());
+        Object kit = support.kit();
+        HelpCtx fromKit = kit == null ? null : HelpCtx.findHelp(kit);
 
         if (fromKit != null) {
             return fromKit;
