@@ -623,14 +623,12 @@ final class NbModuleProject implements Project {
         } else {
             // OK, not it.
             NbPlatform platform = getPlatform(eval);
-            if (platform != null) {
-                URL[] roots = platform.getSourceRoots();
-                for (int i = 0; i < roots.length; i++) {
-                    if (roots[i].getProtocol().equals("file")) { // NOI18N
-                        File f = new File(URI.create(roots[i].toExternalForm()));
-                        if (ModuleList.isNetBeansOrg(f)) {
-                            return f;
-                        }
+            URL[] roots = platform.getSourceRoots();
+            for (int i = 0; i < roots.length; i++) {
+                if (roots[i].getProtocol().equals("file")) { // NOI18N
+                    File f = new File(URI.create(roots[i].toExternalForm()));
+                    if (ModuleList.isNetBeansOrg(f)) {
+                        return f;
                     }
                 }
             }
