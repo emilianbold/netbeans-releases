@@ -145,7 +145,7 @@ public class StorageBuilderAction extends ProductAction {
                 return;
             }
             logEvent(this, Log.DBG,"Created destination dir for SB: " + mdrDestDir.getAbsolutePath());
-            
+            boolean canRunScript = true;
 	    if (Util.isWindowsOS()) {
 		String runScript = uninstDir + File.separator + "storagebuilder" + File.separator
                 + "run-storage-builder-windows.template";
@@ -154,7 +154,7 @@ public class StorageBuilderAction extends ProductAction {
 	    } else {
 		String runScript = uninstDir + File.separator + "storagebuilder" + File.separator
                 + "run-storage-builder-unix.template";
-		createRunScript(runScript,"run-storage-builder-unix.sh",
+		canRunScript = createRunScript(runScript,"run-storage-builder-unix.sh",
                 mdrTempDir.getAbsolutePath() + File.separator + STORAGE_BUILDER_TEMP_FILE);
             }
             
@@ -182,10 +182,15 @@ public class StorageBuilderAction extends ProductAction {
                 cmdArray[0] = execPath;
             }
             
-	    // Invoke the correct command
-            logEvent(this, Log.DBG,"# # # # # # # #");
-            logEvent(this, Log.DBG,"Start Invoking Storage Builder: cmdArray -> " + Arrays.asList(cmdArray).toString());
-            runCommand(cmdArray, null, support);
+            if (canRunScript) {
+                // Invoke the correct command
+                logEvent(this, Log.DBG,"# # # # # # # #");
+                logEvent(this, Log.DBG,"Start Invoking Storage Builder: cmdArray -> " + Arrays.asList(cmdArray).toString());
+                runCommand(cmdArray, null, support);
+            } else {
+                logEvent(this, Log.DBG,"# # # # # # # #");
+                logEvent(this, Log.DBG,"Cannot run Storage Builder");
+            }
             
             //Delete temporary dir
             Util.deleteCompletely(mdrTempDir,support);
@@ -205,27 +210,27 @@ public class StorageBuilderAction extends ProductAction {
         
         String fileName;
         fileName = nbInstallDir + File.separator + StorageBuilderAction.STORAGE_BUILDER_DEST_DIR;
-        logEvent(this, Log.DBG,"Deleting :" + fileName);
+        logEvent(this, Log.DBG,"Deleting: " + fileName);
         Util.deleteCompletely(new File(fileName),support);
         
         fileName = uninstDir + File.separator + "storagebuilder" + File.separator + "storagebuilder.log";
-        logEvent(this, Log.DBG,"Deleting :" + fileName);
+        logEvent(this, Log.DBG,"Deleting: " + fileName);
         Util.deleteCompletely(new File(fileName),support);
         
         if (Util.isWindowsOS()) {
             fileName = uninstDir + File.separator + "storagebuilder" + File.separator + "run-storage-builder-windows.bat";
-            logEvent(this, Log.DBG,"Deleting :" + fileName);
+            logEvent(this, Log.DBG,"Deleting: " + fileName);
             Util.deleteCompletely(new File(fileName),support);
         } else {
             fileName = uninstDir + File.separator + "storagebuilder" + File.separator + "run-storage-builder-unix.sh";
-            logEvent(this, Log.DBG,"Deleting :" + fileName);
+            logEvent(this, Log.DBG,"Deleting: " + fileName);
             Util.deleteCompletely(new File(fileName),support);
         }
     }
     
     //threads should only run in install mode until ISMP supports them
     private void runCommand(String[] cmdArray, String [] envP, ProductActionSupport support)
-    throws Exception{
+    throws Exception {
         boolean doProgress = !(Boolean.getBoolean("no.progress"));
         logEvent(this, Log.DBG,"doProgress -> " + doProgress);
         
@@ -404,12 +409,13 @@ public class StorageBuilderAction extends ProductAction {
 	    logEvent(this, Log.ERROR, "Could not delete file: " + templateFile);
 	}              
         writer.close();
-	if (setExecutable(scriptFile.getAbsolutePath())) {
-	    logEvent(this, Log.DBG, scriptFile.getAbsolutePath() +
-		     " is set as executable file.");
+        if (setExecutable(scriptFile.getAbsolutePath())) {
+	    logEvent(this, Log.DBG, scriptFile.getAbsolutePath()
+            + " is set as executable file.");
 	    return true;
-	}
-	return false;
+	} else {
+            return false;
+        }
     }
     
     /** Create run script for storage builder from the provided template.

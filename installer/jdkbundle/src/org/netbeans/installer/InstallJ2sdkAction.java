@@ -123,7 +123,10 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 	    if (!Util.isWindowsOS()) {
 		String jdkInstallScript = uninstDir + File.separator 
                 + "j2se-install.template";
-		createInstallScript(jdkInstallScript, "custom-install");
+		if (!createInstallScript(jdkInstallScript, "custom-install")) {
+                    //Cannot set install script executable so exit.
+                    return;
+                }
 		String jdkUninstallScript = uninstDir + File.separator 
 		+ "j2se-uninstall.template";
 		createUninstallScript(jdkUninstallScript, "uninstall.sh");
@@ -635,11 +638,12 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 	}              
         writer.close();
 	if (setExecutable(scriptFile.getAbsolutePath())) {
-	    logEvent(this, Log.DBG, scriptFile.getAbsolutePath() +
-		     " is set as executable file.");
+	    logEvent(this, Log.DBG, scriptFile.getAbsolutePath()
+            + " is set as executable file.");
 	    return true;
-	}
-	return false;
+	} else {
+            return false;
+        }
     }
 
     /** Create the j2se install script from the provided template.
@@ -673,14 +677,15 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 	if (!templateFile.delete()) {
 	    logEvent(this, Log.ERROR, "Could not uninstall template file: " + templateFile);
 	}
-              
+        
         writer.close();
 	if (setExecutable(scriptFile.getAbsolutePath())) {
-	    logEvent(this, Log.DBG, scriptFile.getAbsolutePath() +
-		     " is set as executable file.");
+	    logEvent(this, Log.DBG, scriptFile.getAbsolutePath()
+            + " is set as executable file.");
 	    return true;
-	}
-	return false;
+	} else {
+            return false;
+        }
     }
     
     /** Create the JDK install script from the provided template.
