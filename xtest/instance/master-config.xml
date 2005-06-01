@@ -55,6 +55,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="core/windows" testtypes="unit" attributes="stable"/>
         <module name="core/javahelp" testtypes="unit" attributes="stable"/>
         <module name="autoupdate" testtypes="unit" attributes="stable"/>
+        <module name="diff" testtypes="unit" attributes="stable"/>
         <!-- J2EE team -->
         <module name="j2eeserver" testtypes="unit" attributes="stable"/>
         <module name="web/webapi" testtypes="unit" attributes="stable"/>
