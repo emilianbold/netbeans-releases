@@ -546,7 +546,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
     
     /** Utility class that just "consumes" the input stream - #58554 workaround
      */
-    private class StreamConsumer implements Runnable {
+    private static class StreamConsumer implements Runnable {
         
         private BufferedInputStream in;
         
