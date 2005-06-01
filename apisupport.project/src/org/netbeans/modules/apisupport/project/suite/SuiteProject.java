@@ -205,13 +205,8 @@ final class SuiteProject implements Project {
     
     private final class SuiteProviderImpl implements SuiteProvider {
         
-        private File suite;
-        
         public File getSuiteDirectory() {
-            if (suite == null) {
-                suite = FileUtil.toFile(getProjectDirectory()).getAbsoluteFile();
-            }
-            return suite;
+            return FileUtil.toFile(getProjectDirectory());
         }
         
     }
