@@ -360,10 +360,10 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
                 Project suite = ProjectManager.getDefault().findProject(
                         FileUtil.toFileObject(projectDir));
                 if (suite != null) {
-                    SuiteProvider provider = (SuiteProvider) suite.
+                    SuiteProvider sp = (SuiteProvider) suite.
                             getLookup().lookup(SuiteProvider.class);
-                    if (provider != null) {
-                        String suiteDir = provider.getSuiteDirectory();
+                    if (sp != null && sp.getSuiteDirectory() != null) {
+                        String suiteDir = sp.getSuiteDirectory().getAbsolutePath();
                         // register for this session
                         ComponentFactory.addUserSuite(suiteDir);
                         // add to current combobox

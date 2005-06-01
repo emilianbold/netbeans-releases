@@ -13,14 +13,20 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.io.File;
+
 /**
- * Interface to be implemented by projects which are part of Module Suite or are
- * Suite themselves.
+ * Interface to be implemented mainly by projects which are part of Module Suite
+ * or are Suite themselves.
  *
  * @see org.netbeans.api.project.Project#getLookup
  * @author Martin Krauskopf
  */
 public interface SuiteProvider {
     
-    String getSuiteDirectory();
+    /**
+     * Returnts directory containing a regular suite or <code>null</code> if
+     * a method implementation fails for some reason.
+     */
+    File getSuiteDirectory();
 }

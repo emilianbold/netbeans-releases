@@ -20,8 +20,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -175,7 +173,7 @@ final class NbModuleProject implements Project {
             }
         });
         findLocalizedBundlePath();
-        Object[] lookupBase = new Object[] {
+        lookup = Lookups.fixed(new Object[] {
             new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
@@ -198,14 +196,8 @@ final class NbModuleProject implements Project {
             new AntArtifactProviderImpl(this, helper, evaluator()),
             new CustomizerProviderImpl(this, getHelper(), evaluator(), 
                     locBundlePropsPath),
-        };
-        if (getModuleType() == TYPE_SUITE_COMPONENT) {
-            Collection suiteCompLookup = new ArrayList(Arrays.asList(lookupBase));
-            suiteCompLookup.add(new SuiteProviderImpl());
-            lookup = Lookups.fixed(suiteCompLookup.toArray());
-        } else {
-            lookup = Lookups.fixed(lookupBase);
-        }
+            new SuiteProviderImpl(),
+        });
     }
     
     public String toString() {
@@ -864,19 +856,18 @@ final class NbModuleProject implements Project {
     }
     
     private final class SuiteProviderImpl implements SuiteProvider {
+
+        private File suite;
         
-        public String getSuiteDirectory() {
-            File result;
-            String suiteDir = eval.getProperty("suite.dir"); // NOI18N
-            result = new File(suiteDir);
-            if (!result.isAbsolute()) {
-                result = new File(FileUtil.toFile(getProjectDirectory()), suiteDir);
+        public File getSuiteDirectory() {
+            // XXX maybe this will not be cached when there will be a
+            // possibility to move projects from suite to suite, remove from 
+            // suite... tests will reveal this anyway
+            if (suite == null) {
+                String suiteDir = eval.getProperty("suite.dir"); // NOI18N
+                return suiteDir == null ? null : helper.resolveFile(suiteDir);
             }
-            try {
-                return result.getCanonicalPath();
-            } catch (IOException e) {
-                return result.getAbsolutePath();
-            }
+            return suite;
         }
         
     }

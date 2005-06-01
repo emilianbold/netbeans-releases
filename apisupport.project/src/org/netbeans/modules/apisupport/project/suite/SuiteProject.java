@@ -205,13 +205,13 @@ final class SuiteProject implements Project {
     
     private final class SuiteProviderImpl implements SuiteProvider {
         
-        public String getSuiteDirectory() {
-            File prjDir = FileUtil.toFile(getProjectDirectory());
-            try {
-                return prjDir.getCanonicalPath();
-            } catch (IOException e) {
-                return prjDir.getAbsolutePath();
+        private File suite;
+        
+        public File getSuiteDirectory() {
+            if (suite == null) {
+                suite = FileUtil.toFile(getProjectDirectory()).getAbsoluteFile();
             }
+            return suite;
         }
         
     }
