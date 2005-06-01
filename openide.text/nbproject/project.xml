@@ -71,6 +71,7 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages>
                 <package>org.openide.text</package>
+                <package>org.openide.cookies</package>
             </public-packages>
         </data>
     </configuration>
