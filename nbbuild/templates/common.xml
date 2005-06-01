@@ -330,7 +330,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="build"/>
         <delete dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
         <delete file="${netbeans.javadoc.dir}/${code.name.base.dashes}.zip"/>
-        <delete>
+        <delete failonerror="false"> <!-- #59457: OK if cluster does not exist currently -->
             <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
                 <patternset refid="module.files"/>
             </fileset>
