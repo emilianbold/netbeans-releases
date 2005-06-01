@@ -121,9 +121,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     }
 
     public Iterator getPublicIDs() {
-        System.out.println("getPublicIds()");
         return getPublicIdMap().keySet().iterator();
-        //return Collections.EMPTY_SET.iterator();
     }
 
     public String getDisplayName() {
