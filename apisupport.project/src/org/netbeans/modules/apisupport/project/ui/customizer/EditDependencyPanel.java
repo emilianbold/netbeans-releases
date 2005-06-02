@@ -94,9 +94,9 @@ final class EditDependencyPanel extends JPanel {
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(6, 6, 6, 6)));
         setPreferredSize(new java.awt.Dimension(400, 300));
-        codeNameBase.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_CNB_Mnem").charAt(0));
+        codeNameBase.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_CNB_Mnem").charAt(0));
         codeNameBase.setLabelFor(codeNameBaseValue);
-        codeNameBase.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_CNB"));
+        codeNameBase.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_CNB"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -104,9 +104,9 @@ final class EditDependencyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(codeNameBase, gridBagConstraints);
 
-        jarLocation.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_JAR_Mnem").charAt(0));
+        jarLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_JAR_Mnem").charAt(0));
         jarLocation.setLabelFor(jarLocationValue);
-        jarLocation.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_JAR"));
+        jarLocation.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_JAR"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -114,8 +114,8 @@ final class EditDependencyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
         add(jarLocation, gridBagConstraints);
 
-        releaseVersion.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_MajorReleaseVersion_Mnem").charAt(0));
-        releaseVersion.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_MajorReleaseVersion"));
+        releaseVersion.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_MajorReleaseVersion_Mnem").charAt(0));
+        releaseVersion.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_MajorReleaseVersion"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -133,9 +133,9 @@ final class EditDependencyPanel extends JPanel {
         add(releaseVersionValue, gridBagConstraints);
 
         versionGroup.add(specVer);
-        specVer.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_SpecificationVersion_Mnem").charAt(0));
+        specVer.setMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_SpecificationVersion_Mnem").charAt(0));
         specVer.setSelected(true);
-        specVer.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_SpecificationVersion"));
+        specVer.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_SpecificationVersion"));
         specVer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 versionChanged(evt);
@@ -157,8 +157,8 @@ final class EditDependencyPanel extends JPanel {
         add(specVerValue, gridBagConstraints);
 
         versionGroup.add(implVer);
-        implVer.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ImplementationVersion_Mnem").charAt(0));
-        implVer.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ImplementationVersion"));
+        implVer.setMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_ImplementationVersion_Mnem").charAt(0));
+        implVer.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_ImplementationVersion"));
         implVer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 versionChanged(evt);
@@ -172,8 +172,8 @@ final class EditDependencyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(implVer, gridBagConstraints);
 
-        includeInCP.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_IncludeAPIPackages_Mnem").charAt(0));
-        includeInCP.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_IncludeAPIPackages"));
+        includeInCP.setMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_IncludeAPIPackages_Mnem").charAt(0));
+        includeInCP.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_IncludeAPIPackages"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;

@@ -58,7 +58,7 @@ final class CustomizerSources extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         prjFolder.setLabelFor(prjFolderValue);
-        org.openide.awt.Mnemonics.setLocalizedText(prjFolder, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ProjectFolder"));
+        org.openide.awt.Mnemonics.setLocalizedText(prjFolder, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_ProjectFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -67,7 +67,7 @@ final class CustomizerSources extends JPanel {
         add(prjFolder, gridBagConstraints);
 
         srcLevel.setLabelFor(srcLevelValue);
-        org.openide.awt.Mnemonics.setLocalizedText(srcLevel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_SourceLevel"));
+        org.openide.awt.Mnemonics.setLocalizedText(srcLevel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_SourceLevel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;

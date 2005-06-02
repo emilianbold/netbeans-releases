@@ -73,7 +73,7 @@ final class AddModulePanel extends JPanel {
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(6, 6, 6, 6)));
         setPreferredSize(new java.awt.Dimension(400, 300));
         moduleLabel.setLabelFor(moduleList);
-        org.openide.awt.Mnemonics.setLocalizedText(moduleLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Module"));
+        org.openide.awt.Mnemonics.setLocalizedText(moduleLabel, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "LBL_Module"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -94,7 +94,7 @@ final class AddModulePanel extends JPanel {
         add(moduleSP, gridBagConstraints);
 
         descLabel.setLabelFor(descValue);
-        org.openide.awt.Mnemonics.setLocalizedText(descLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Description"));
+        org.openide.awt.Mnemonics.setLocalizedText(descLabel, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "LBL_Description"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -122,7 +122,7 @@ final class AddModulePanel extends JPanel {
         add(hackPanel, gridBagConstraints);
 
         filter.setLabelFor(filterValue);
-        org.openide.awt.Mnemonics.setLocalizedText(filter, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Filter"));
+        org.openide.awt.Mnemonics.setLocalizedText(filter, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "LBL_Filter"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

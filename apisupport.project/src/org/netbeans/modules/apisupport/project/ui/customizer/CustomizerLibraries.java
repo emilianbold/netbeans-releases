@@ -78,9 +78,9 @@ public class CustomizerLibraries extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        modDepLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ModuleDependencies_Mnem").charAt(0));
+        modDepLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_ModuleDependencies_Mnem").charAt(0));
         modDepLabel.setLabelFor(dependencyList);
-        modDepLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ModuleDependencies"));
+        modDepLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_ModuleDependencies"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -90,8 +90,8 @@ public class CustomizerLibraries extends JPanel {
 
         depButtonPanel.setLayout(new java.awt.GridLayout(4, 1));
 
-        addDepButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_AddButton_Mnem").charAt(0));
-        addDepButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_AddButton"));
+        addDepButton.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddButton_Mnem").charAt(0));
+        addDepButton.setText(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddButton"));
         addDepButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addModuleDependency(evt);
@@ -100,8 +100,8 @@ public class CustomizerLibraries extends JPanel {
 
         depButtonPanel.add(addDepButton);
 
-        removeDepButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_RemoveButton_Mnem").charAt(0));
-        removeDepButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_RemoveButton"));
+        removeDepButton.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton_Mnem").charAt(0));
+        removeDepButton.setText(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton"));
         removeDepButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeModuleDependency(evt);
@@ -112,8 +112,8 @@ public class CustomizerLibraries extends JPanel {
 
         depButtonPanel.add(space1);
 
-        editDepButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_EditButton_Mnem").charAt(0));
-        editDepButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("CTL_EditButton"));
+        editDepButton.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_EditButton_Mnem").charAt(0));
+        editDepButton.setText(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_EditButton"));
         editDepButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editModuleDependency(evt);

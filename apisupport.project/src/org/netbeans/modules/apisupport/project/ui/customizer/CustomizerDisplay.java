@@ -121,9 +121,9 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
 
         setLayout(new java.awt.GridBagLayout());
 
-        name.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_DisplayName_Mnem").charAt(0));
+        name.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayName_Mnem").charAt(0));
         name.setLabelFor(nameValue);
-        name.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_DisplayName"));
+        name.setText(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -139,9 +139,9 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(nameValue, gridBagConstraints);
 
-        category.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_DisplayCategory_Mnem").charAt(0));
+        category.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayCategory_Mnem").charAt(0));
         category.setLabelFor(categoryValue);
-        category.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_DisplayCategory"));
+        category.setText(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayCategory"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -158,9 +158,9 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(categoryValue, gridBagConstraints);
 
-        shortDesc.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ShortDescription_Mnem").charAt(0));
+        shortDesc.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_ShortDescription_Mnem").charAt(0));
         shortDesc.setLabelFor(shortDescValue);
-        shortDesc.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ShortDescription"));
+        shortDesc.setText(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_ShortDescription"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -176,9 +176,9 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(shortDescValue, gridBagConstraints);
 
-        longDesc.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_LongDescription_Mnem").charAt(0));
+        longDesc.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_LongDescription_Mnem").charAt(0));
         longDesc.setLabelFor(longDescValue);
-        longDesc.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_LongDescription"));
+        longDesc.setText(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_LongDescription"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
