@@ -24,6 +24,12 @@ public class Names {
     public static final String APP_SERVER_ID = "beanAppServer";
     public static final String J2SE_ID = "beanJ2SE";
     
+    //Used to distinguish installers
+    public static final String INSTALLER_TYPE = "InstallerType";
+    public static final String INSTALLER_NB = "NetBeansInstaller";
+    public static final String INSTALLER_AS_BUNDLE = "ASBundleInstaller";
+    public static final String INSTALLER_JDK_BUNDLE = "JDKBundleInstaller";
+            
     /** Creates a new instance of Names */
     private Names() {
     }

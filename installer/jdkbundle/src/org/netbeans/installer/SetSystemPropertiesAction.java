@@ -78,6 +78,7 @@ public class SetSystemPropertiesAction extends WizardAction {
 	}
         //It is used to create file 'nb4.1/config/productid'
         Util.setStringPropertyValue("ProductID","NBJDK");
+        Util.setStringPropertyValue(Names.INSTALLER_TYPE,Names.INSTALLER_JDK_BUNDLE);
     }
     
     private void checkStorageBuilder () {

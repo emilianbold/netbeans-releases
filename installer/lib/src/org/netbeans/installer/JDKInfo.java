@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -95,7 +95,9 @@ public class JDKInfo {
         return info;
     }
     
-    /** Checks whether jdkHome is a valid JDK installation with the required minimum version.*/
+    /** Checks whether jdkHome is a valid JDK installation with the required minimum version.
+     * Exception: On Mac OS X and asbundle installer we now accept only JDK 1.4.2.
+     */
     public static boolean checkJdkHome(Log log, String jdkHome) {
         log.logEvent(log, Log.DBG, "Checking JDK: " + jdkHome);
         JDKInfo info = new JDKInfo(log, jdkHome);
@@ -177,7 +179,7 @@ public class JDKInfo {
         
         return type;
     }
-
+    
     /** This method determines whether the JVM version is valid or not.
      *  This method must always be updated to determine the correct jdk
      *  based on the product needs.
@@ -185,7 +187,17 @@ public class JDKInfo {
      */
     public static boolean isJVMVersionValid(String version) {
         JDKVersion jdkVersion = new JDKVersion(version);
-        return !jdkVersion.isBelowMinimumJDK();
+        if (Util.isMacOSX() && Util.isASBundle()) {
+            //Accept only JDK 1.4.2_X on Mac OS X and asbundle installer
+            if ((jdkVersion.getMajorNum() == 1) && (jdkVersion.getMinorNum() == 4) &&
+                (jdkVersion.getMicroNum() == 2)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return !jdkVersion.isBelowMinimumJDK();
+        }
     }
     
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -110,8 +110,12 @@ public class Util {
         return System.getProperty("os.name").startsWith("Darwin");
     }
     
-    // Product Directories
+    //Installer types
+    public static boolean isASBundle() {
+        return System.getProperty(Names.INSTALLER_TYPE).equals(Names.INSTALLER_AS_BUNDLE);
+    }
     
+    // Product Directories
     public static String getTmpDir() {
         return getStringPropertyValue("tmpDir");
     }

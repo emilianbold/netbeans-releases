@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -53,17 +53,19 @@ public class JDKSearchAction extends CancelableWizardAction  {
         // to make the action not to search the JDKs if the user click
         // back button
         
-        if(!jdkHomeList.isEmpty())
+        if (!jdkHomeList.isEmpty()) {
             return;
+        }
         
         // Check if user specified jdkHome (alias jh) in the command Line
         // jdkHome property always overrides the alias jh
         String jdkHome = Util.getJdkHome();
-        if(jdkHome == null)
+        if (jdkHome == null) {
             jdkHome = "";
+        }
         
         // If JDKHome is specified and is a valid one then
-        // donot do the search.
+        // do not do the search.
         if (jdkHome.length() > 0) {
             if (JDKInfo.checkJdkHome(this, jdkHome)) {
                 Util.setJdkHome(jdkHome);
@@ -77,8 +79,9 @@ public class JDKSearchAction extends CancelableWizardAction  {
         currentJDKHome = Util.getCurrentJDKHome();
         if (currentJDKHome == null) {
             JDKInfo jdkInfo = JDKInfo.getCurrentJDKInfo(this, false);
-            if (jdkInfo.isJDKType())
-                currentJDKHome =  jdkInfo.getHome();
+            if (jdkInfo.isJDKType()) {
+                currentJDKHome = jdkInfo.getHome();
+            }
         }
         
         String searchMsg = resolveString("$L(org.netbeans.installer.Bundle, JDKSearchAction.searchMessage)");
@@ -163,18 +166,17 @@ public class JDKSearchAction extends CancelableWizardAction  {
         }
     }
     
-    void findUnixJDK(){
+    void findUnixJDK() {
         String jdkHome;
         // Try the standard places first
         logEvent(this, Log.DBG,"Checking Unix Standard Places ... ");
-        if (Util.isSunOS()){
+        if (Util.isSunOS()) {
             checkDir("/usr");
             checkDir("/usr/jdk");
             checkDir("/opt");
             checkDir("/export/home");
             checkDir(System.getProperty("user.home"));
-        }
-        if (Util.isLinuxOS()){
+        } else if (Util.isLinuxOS()) {
             checkDir("/usr");
             checkDir("/opt");
             checkDir("/usr/local");
@@ -182,6 +184,9 @@ public class JDKSearchAction extends CancelableWizardAction  {
             checkDir("/opt/java");
             checkDir("/usr/local/java");
             checkDir(System.getProperty("user.home"));
+        } else if (Util.isMacOSX()) {
+            checkDirMacOSX("/System/Library/Frameworks/JavaVM.framework/Versions/1.4");
+            checkDirMacOSX("/System/Library/Frameworks/JavaVM.framework/Versions/1.5");
         }
         
         // Try the current jdk
@@ -223,25 +228,44 @@ public class JDKSearchAction extends CancelableWizardAction  {
         }
     }
         
-    void checkDir(String rootDir) {
+    void checkDir (String rootDir) {
         logEvent(this, Log.DBG,"Checking Directory: " + rootDir);
         String jdkHome;
         File root = new File(rootDir);
         String[] list = root.list();
         if((list != null)){
-            for (int i=0;i<list.length;i++){
+            for (int i=0;i<list.length;i++) {
                 if((list[i].startsWith("j2se") || list[i].startsWith("java") ||
                    list[i].startsWith("j2sdk") || list[i].startsWith("jdk")) ||
                    list[i].startsWith("IBMJava2")) {
                     if (rootDir.endsWith("\\") || rootDir.endsWith("/")) {
-                        jdkHome=rootDir+list[i];
+                        jdkHome = rootDir + list[i];
                     } else {
-                        jdkHome=rootDir+File.separator+list[i];
+                        jdkHome = rootDir + File.separator + list[i];
                     }
-                    if((new File(jdkHome)).isDirectory())
-                        if(JDKInfo.checkJdkHome(this, jdkHome)) 
+                    if ((new File(jdkHome)).isDirectory()) {
+                        if(JDKInfo.checkJdkHome(this, jdkHome)) {
                             addToList(jdkHome);
+                        }
+                    }
                 }
+            }
+        }
+    }
+    
+    /** Special version for Mac OS X as structure of directories is different */
+    void checkDirMacOSX (String rootDir) {
+        logEvent(this, Log.DBG,"Checking Directory: " + rootDir);
+        String jdkHome;
+        File root = new File(rootDir);
+        if (rootDir.endsWith("\\") || rootDir.endsWith("/")) {
+            jdkHome = rootDir + "Home";
+        } else {
+            jdkHome = rootDir + File.separator + "Home";
+        }
+        if ((new File(jdkHome)).isDirectory()) {
+            if(JDKInfo.checkJdkHome(this, jdkHome)) {
+                addToList(jdkHome);
             }
         }
     }

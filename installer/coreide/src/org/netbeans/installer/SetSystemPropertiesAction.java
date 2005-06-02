@@ -40,6 +40,7 @@ public class SetSystemPropertiesAction extends WizardAction {
         resolveProductBeanProperties();
         checkStorageBuilder();
         setDesktopIconName();
+        Util.setStringPropertyValue(Names.INSTALLER_TYPE,Names.INSTALLER_NB);
     }
     
     private void checkStorageBuilder () {

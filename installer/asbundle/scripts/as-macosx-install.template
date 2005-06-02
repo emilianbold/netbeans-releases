@@ -7,7 +7,6 @@ INSTDIR=
 STATEFILE=
 LOGFILE=
 JAVAHOME=
-UNAME=`/bin/uname`
 
 cd $INSTDIR
 echo "(`date`) Installing Appserver..." >> $LOGFILE
@@ -18,14 +17,6 @@ fi
 if [ ! -f $STATEFILE ] ; then
         echo "ERROR: $STATEFILE not found." >> $LOGFILE;
         exit 3;
-fi
-
-if [ "$UNAME" = "Linux" -a ! -x "$EXECNAME" ] ; then
-	/bin/chmod u+x $EXECNAME uninstall.sh;
-	if [ $? != 0 ] ; then
-		echo "ERROR: cannot add execute permissions to Appserver setup file." >> $LOGFILE;
-		exit 4;
-	fi
 fi
 
 echo "Executing the following command:" >> $LOGFILE

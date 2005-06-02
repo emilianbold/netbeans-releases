@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -33,9 +33,21 @@ public class JDKSelectionPanel extends DirectoryChooserPanel
         
         String description = null;
         if (jdkHomeList.size() != 0) {
-            description = resolveString("$L(org.netbeans.installer.Bundle, JDKSelectionPanel.description)"); //NOI18N
+            if (Util.isMacOSX() && Util.isASBundle()) {
+                description = resolveString
+                ("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.description_MacOSX_ASBundle)");
+            } else {
+                description = resolveString
+                ("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.description)");
+            }
         } else {
-            description = resolveString("$L(org.netbeans.installer.Bundle, JDKSelectionPanel.descriptionJdkNotFound)"); //NOI18N
+            if (Util.isMacOSX() && Util.isASBundle()) {
+                description = resolveString
+                ("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.descriptionJdkNotFound_MacOSX_ASBundle)");
+            } else {
+                description = resolveString
+                ("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.descriptionJdkNotFound)");
+            }
         }
         
         setDescription(description);
@@ -91,7 +103,10 @@ public class JDKSelectionPanel extends DirectoryChooserPanel
     
     private boolean checkJDK(String jdkHome) {
         if (jdkHome.trim().equals("")) {
-            showLocalizedErrorMsg("org.netbeans.installer.Bundle", "JDKSelectionPanel.checkJdkDialogTitle", "JDKSelectionPanel.emptyJdkHomeField");
+            showLocalizedErrorMsg
+            ("org.netbeans.installer.Bundle",
+             "JDKSelectionPanel.checkJdkDialogTitle",
+             "JDKSelectionPanel.emptyJdkHomeField");
             return false;
         }
         
@@ -99,7 +114,17 @@ public class JDKSelectionPanel extends DirectoryChooserPanel
         jdkHome = jdkDir.getAbsolutePath();
         
         if (!JDKInfo.checkJdkHome(this, jdkHome)) {
-            showLocalizedErrorMsg("org.netbeans.installer.Bundle", "JDKSelectionPanel.checkJdkDialogTitle", "JDKSelectionPanel.invalidJdkHome");
+            if (Util.isMacOSX() && Util.isASBundle()) {
+                showLocalizedErrorMsg
+                ("org.netbeans.installer.Bundle",
+                 "JDKSelectionPanel.checkJdkDialogTitle",
+                 "JDKSelectionPanel.invalidJdkHome_MacOSX_ASBundle");
+            } else {
+                showLocalizedErrorMsg
+                ("org.netbeans.installer.Bundle",
+                 "JDKSelectionPanel.checkJdkDialogTitle",
+                 "JDKSelectionPanel.invalidJdkHome");
+            }
             return false;
         }
         return true;

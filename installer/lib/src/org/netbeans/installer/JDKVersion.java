@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -257,21 +257,26 @@ public class JDKVersion {
 	return trimQuotes(line);
     }
 
-    private int getMajorNum() {
+    public int getMajorNum() {
 	return majorNum;
     }
-    private int getMinorNum() {
+    
+    public int getMinorNum() {
 	return minorNum;
     }
-    private int getMicroNum() {
+    
+    public int getMicroNum() {
 	return microNum;
     }
-    private int getUpdateNum() {
+    
+    public int getUpdateNum() {
 	return updateNum;
     }
+    
     private boolean has3VersionNums() {
 	return has3VersionNums;
     }
+    
     private boolean hasUpdateNum() {
 	return hasUpdateNum;
     }
