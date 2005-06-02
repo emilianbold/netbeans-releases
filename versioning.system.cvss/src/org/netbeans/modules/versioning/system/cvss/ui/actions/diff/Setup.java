@@ -50,7 +50,7 @@ class Setup {
 
     private String    title;
 
-    public Setup(File baseFile, int type) {
+    public Setup(File baseFile, int type, boolean binary) {
         this.baseFile = baseFile;
         FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(baseFile);
         int status = info.getStatus();
@@ -100,17 +100,18 @@ class Setup {
             secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalModified"), new Object [] { revision });
         }
 
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstTitle);
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondTitle);
+        firstSource = new DiffStreamSource(baseFile, firstRevision, firstTitle, binary);
+        secondSource = new DiffStreamSource(baseFile, secondRevision, secondTitle, binary);
         title = Annotator.annotateNameHtml(baseFile, status);
     }
 
+    /** Text file setup for arbitrary revisions. */
     public Setup(File baseFile, String firstRevision, String secondRevision) {
         this.baseFile = baseFile;
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision);
+        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision, false);
+        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision, false);
     }
 
     public File getBaseFile() {

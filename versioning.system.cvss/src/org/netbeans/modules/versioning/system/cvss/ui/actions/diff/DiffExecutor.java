@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
+import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.system.cvss.*;
@@ -93,25 +94,22 @@ public class DiffExecutor {
     }
 
     /**
-     * Utility method that returns all text files that are under given roots (folders) and
-     * have one of specified statuses.
+     * Utility method that returns all non-excluded modified files that are
+     * under given roots (folders) and have one of specified statuses.
      *
      * @param rootFiles folders to search
      * @param includeStatus bit mask of file statuses to include in result
      * @return File [] array of Files having specified status
      */
-    public static File [] getTextFiles(File [] rootFiles, int includeStatus) {
+    public static File [] getModifiedFiles(File [] rootFiles, int includeStatus) {
         CvsFileTableModel model = CvsVersioningSystem.getInstance().getFileTableModel(rootFiles, includeStatus);
         CvsFileNode [] nodes = model.getNodes();
         List files = new ArrayList();
         for (int i = 0; i < nodes.length; i++) {
-            int status = nodes[i].getInformation().getStatus();
-            if (status == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY ||
-                    status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY ||
-                    status == FileInformation.STATUS_VERSIONED_NEWINREPOSITORY ||
-                    status == FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY ||
-                    CvsVersioningSystem.getInstance().isText(nodes[i].getFile())) {
-                files.add(nodes[i].getFile());
+            File file = nodes[i].getFile();
+            String path = file.getAbsolutePath();
+            if (CvsModuleConfig.getDefault().isExcludedFromCommit(path) == false) {
+                files.add(file);
             }
         }
         return (File[]) files.toArray(new File[files.size()]);

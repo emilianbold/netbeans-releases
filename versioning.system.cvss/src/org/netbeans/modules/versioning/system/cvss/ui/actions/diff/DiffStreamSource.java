@@ -40,6 +40,7 @@ class DiffStreamSource extends StreamSource {
 
     private IOException     failure;
     private File            remoteFile;
+    private final boolean   binary;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -48,10 +49,11 @@ class DiffStreamSource extends StreamSource {
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
      */ 
-    public DiffStreamSource(File baseFile, String revision, String title) {
+    public DiffStreamSource(File baseFile, String revision, String title, boolean binary) {
         this.baseFile = baseFile;
         this.revision = revision;
         this.title = title;
+        this.binary = binary;
     }
 
     public String getName() {
@@ -72,8 +74,9 @@ class DiffStreamSource extends StreamSource {
     }
 
     public Reader createReader() throws IOException {
-        init();
+        init();        
         if (revision == null) return null;
+        if (binary) return new StringReader("[Binary File " + getTitle() + "]");
         if (revision == Setup.REVISION_CURRENT) {
 
             // TODO make diff line.separator insensitive
