@@ -178,7 +178,8 @@ public class StartActionProvider extends ActionsProvider {
                     ((Session) lookupProvider.lookupFirst 
                         (null, Session.class)).kill ();
                 }
-            }
+            },
+            debuggerImpl.LOCK
         );
     }
 }

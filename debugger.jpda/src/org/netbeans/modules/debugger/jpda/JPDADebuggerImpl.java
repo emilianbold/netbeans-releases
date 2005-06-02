@@ -809,7 +809,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     private SourcePath engineContext;
-    SourcePath getEngineContext () {
+    public synchronized SourcePath getEngineContext () {
         if (engineContext == null)
             engineContext = (SourcePath) lookupProvider.
                 lookupFirst (null, SourcePath.class);

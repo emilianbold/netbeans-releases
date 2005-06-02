@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -139,11 +140,9 @@ public class CallStackTreeModel implements TreeModel {
     public boolean isLeaf (Object node) throws UnknownTypeException {
         if (node == BasicCallStackTreeModel.ROOT) 
             return model.isLeaf (node);
-        if (node instanceof CallStackFrameImpl) {
-            StackFrame sf = ((CallStackFrameImpl) node).getStackFrame ();
-            if (sf == null) return true;
-            if (node instanceof CallStackFrameImpl)
-                return model.isLeaf (sf);
+        if (node instanceof CallStackFrame) {
+            CallStackFrame csf = (CallStackFrame) node;
+            return model.isLeaf(csf);
         }
         throw new UnknownTypeException (node);
     }

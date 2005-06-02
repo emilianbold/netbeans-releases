@@ -64,7 +64,8 @@ public class Operator {
     public Operator (
         VirtualMachine virtualMachine,
         Executor starter,
-        Runnable finalizer
+        Runnable finalizer,
+        final Object resumeLock
     ) {
         EventQueue eventQueue = virtualMachine.eventQueue ();
         if (eventQueue == null) 
@@ -155,7 +156,9 @@ public class Operator {
                          System.out.println("  resume = "+resume+", startEventOnly = "+startEventOnly);
                      }
                      if (resume && (!startEventOnly)) {
-                         eventSet.resume ();
+                         synchronized (resumeLock) {
+                            eventSet.resume ();
+                         }
                      }
                  }// for
              } catch (VMDisconnectedException e) {   

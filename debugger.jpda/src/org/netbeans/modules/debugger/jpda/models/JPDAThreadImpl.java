@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -256,7 +256,7 @@ public class JPDAThreadImpl implements JPDAThread {
     /**
      * Suspends thread.
      */
-    public void suspend () {
+    public synchronized void suspend () {
         try {
             if (isSuspended ()) return;
             threadReference.suspend ();
@@ -268,7 +268,7 @@ public class JPDAThreadImpl implements JPDAThread {
     /**
      * Unsuspends thread.
      */
-    public void resume () {
+    public synchronized void resume () {
         try {
             if (!isSuspended ()) return;
             int count = threadReference.suspendCount ();
