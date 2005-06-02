@@ -83,6 +83,7 @@ public class CatalogEntryPanel extends javax.swing.JPanel {
         uriTF = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        descLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -196,6 +197,15 @@ public class CatalogEntryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 10, 5);
         add(jLabel4, gridBagConstraints);
 
+        descLabel.setText(org.openide.util.NbBundle.getMessage(CatalogEntryPanel.class, "LBL_catalogEntryDesc"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(20, 5, 5, 5);
+        add(descLabel, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
 
@@ -229,6 +239,7 @@ public class CatalogEntryPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JLabel descLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;

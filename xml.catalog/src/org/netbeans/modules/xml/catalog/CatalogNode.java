@@ -60,12 +60,16 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
             desc.addPropertyChangeListener(WeakListeners.propertyChange(this, desc));
         }
     }
+    
+    CatalogReader getCatalogReader() {
+        return catalog;
+    }
 
     /** Lazy action initialization. */
     protected SystemAction[] createActions() {
         if (catalog instanceof CatalogWriter)
             return new SystemAction[] {
-                new AddCatalogEntryAction((CatalogWriter)catalog),
+                SystemAction.get(AddCatalogEntryAction.class),
                 SystemAction.get(RefreshAction.class),
                 SystemAction.get(CatalogNode.UnmountAction.class),
                 null,

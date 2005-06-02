@@ -25,6 +25,8 @@ import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.*;
 import java.io.*;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  * Supplies a catalog which lets user register DTD and XML schema in a very simple way.
@@ -98,6 +100,14 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
             listener.notifyRemoved(publicId);
         }
     }
+    
+    protected void fireEntryUpdated(String publicId) {
+        Iterator it = catalogListeners.iterator();
+        while (it.hasNext()) {
+            CatalogListener listener = (CatalogListener)it.next();
+            listener.notifyUpdate(publicId);
+        }
+    }
 
     public Image getIcon(int type) {
         return Utilities.loadImage("org/netbeans/modules/xml/catalog/impl/xmlCatalog.gif", true); //NOI18N
@@ -156,19 +166,19 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
                     if (line.indexOf("</catalog>")>=0) { //NOI18N
                         switch (entryType) {
                             case TYPE_PUBLIC : {
-                                writer.println("  <public publicId=\""+key+"\"  uri=\""+value+"\"/>"); //NOI18N
+                                writer.println("  <public publicId=\""+key+"\" uri=\""+value+"\"/>"); //NOI18N
                                 publicIds.put(PUBLIC_PREFIX+key, value);
                                 fireEntryAdded(PUBLIC_PREFIX+key);
                                 break;
                             }
                             case TYPE_SYSTEM : {
-                                writer.println("  <system systemId=\""+key+"\"  uri=\""+value+"\"/>"); //NOI18N
+                                writer.println("  <system systemId=\""+key+"\" uri=\""+value+"\"/>"); //NOI18N
                                 publicIds.put(SYSTEM_PREFIX+key, value);
                                 fireEntryAdded(SYSTEM_PREFIX+key);
                                 break;
                             }
                             case TYPE_URI : {
-                                writer.println("  <uri name=\""+key+"\"  uri=\""+value+"\"/>"); //NOI18N
+                                writer.println("  <uri name=\""+key+"\" uri=\""+value+"\"/>"); //NOI18N
                                 publicIds.put(URI_PREFIX+key, value);
                                 fireEntryAdded(URI_PREFIX+key);
                                 break;
@@ -235,6 +245,59 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
         }
     }
     
+    private void updateEntry (int entryType, String key, String value) throws IOException {
+        getPublicIdMap(); // to ensure that publicIds were created
+        FileObject userCatalog = Repository.getDefault().getDefaultFileSystem().findResource(catalogResource);
+        String tempBuffer = createCatalogBuffer(userCatalog);
+        BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));
+        FileLock lock = userCatalog.lock();
+        try {
+            PrintWriter writer = new PrintWriter(userCatalog.getOutputStream(lock));
+            try {
+                String line;
+                while ((line=reader.readLine())!=null) {
+                    switch (entryType) {
+                        case TYPE_PUBLIC : {
+                            if (line.indexOf("<public publicId=\""+key+"\"")>0) { //NOI18N
+                                writer.println("  <public publicId=\""+key+"\" uri=\""+value+"\"/>"); //NOI18N
+                                publicIds.put(PUBLIC_PREFIX+key, value);
+                                fireEntryUpdated(PUBLIC_PREFIX+key);
+                            } else {
+                                writer.println(line);
+                            }
+                            break;
+                        }
+                        case TYPE_SYSTEM : {
+                            if (line.indexOf("<system systemId=\""+key+"\"")>0) { //NOI18N
+                                writer.println("  <system systemId=\""+key+"\" uri=\""+value+"\"/>"); //NOI18N
+                                publicIds.put(SYSTEM_PREFIX+key,value);
+                                fireEntryUpdated(SYSTEM_PREFIX+key);
+                            } else {
+                                writer.println(line);
+                            }
+                            break;
+                        }
+                        case TYPE_URI : {
+                            if (line.indexOf("<uri name=\""+key+"\"")>0) { //NOI18N
+                                writer.println("  <uri name=\""+key+"\" uri=\""+value+"\"/>"); //NOI18N
+                                publicIds.put(URI_PREFIX+key, value);
+                                fireEntryUpdated(URI_PREFIX+key);
+                            } else {
+                                writer.println(line);
+                            }
+                            break;
+                        } default : writer.println(line);
+                    }
+                    
+                }
+            } finally {
+                writer.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
     private String createCatalogBuffer(FileObject fo) throws IOException {
         BufferedInputStream is = new BufferedInputStream(fo.getInputStream());
         ByteArrayOutputStream temp = new ByteArrayOutputStream();
@@ -255,6 +318,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
         try {
             javax.xml.parsers.SAXParser parser = fact.newSAXParser();
             XMLReader reader = parser.getXMLReader();
+            reader.setEntityResolver(new OasisCatalogResolver());
             CatalogHandler handler = new CatalogHandler();
             reader.setContentHandler(handler);
             reader.parse(new InputSource(userCatalog.getInputStream()));
@@ -268,24 +332,42 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     public void registerCatalogEntry(String key, String value) {
         try {
             if (key.startsWith(PUBLIC_PREFIX)) {
-                if (value!=null)
-                    addEntry(TYPE_PUBLIC, key.substring(PUBLIC_PREFIX.length()), value);
-                else
-                    removeEntry(TYPE_PUBLIC, key.substring(PUBLIC_PREFIX.length()));
+                if (value!=null) {
+                    if (publicIds.get(key)!=null) {
+                        if (requestUpdate(key.substring(PUBLIC_PREFIX.length())))
+                            updateEntry(TYPE_PUBLIC, key.substring(PUBLIC_PREFIX.length()), value);
+                    } else
+                        addEntry(TYPE_PUBLIC, key.substring(PUBLIC_PREFIX.length()), value);
+                } else
+                      removeEntry(TYPE_PUBLIC, key.substring(PUBLIC_PREFIX.length()));
             } else if (key.startsWith(SYSTEM_PREFIX)) {
-                if (value!=null)
-                    addEntry(TYPE_SYSTEM, key.substring(SYSTEM_PREFIX.length()), value);
-                else
-                    removeEntry(TYPE_SYSTEM, key.substring(SYSTEM_PREFIX.length()));
+                if (value!=null) {
+                    if (publicIds.get(key)!=null) {
+                        if (requestUpdate(key.substring(SYSTEM_PREFIX.length())))
+                            updateEntry(TYPE_SYSTEM, key.substring(SYSTEM_PREFIX.length()), value);
+                    } else
+                        addEntry(TYPE_SYSTEM, key.substring(SYSTEM_PREFIX.length()), value);
+                } else
+                      removeEntry(TYPE_SYSTEM, key.substring(SYSTEM_PREFIX.length()));
             } else if (key.startsWith(URI_PREFIX)) {
-                if (value!=null)
-                    addEntry(TYPE_URI, key.substring(URI_PREFIX.length()), value);
-                else
-                    removeEntry(TYPE_URI, key.substring(URI_PREFIX.length()));
+                if (value!=null) {
+                    if (publicIds.get(key)!=null) {
+                        if (requestUpdate(key.substring(URI_PREFIX.length()))) updateEntry(TYPE_URI, key.substring(URI_PREFIX.length()), value);
+                    } else
+                        addEntry(TYPE_URI, key.substring(URI_PREFIX.length()), value);
+                } else
+                      removeEntry(TYPE_URI, key.substring(URI_PREFIX.length()));
             }
         } catch (IOException ex) {
             org.openide.ErrorManager.getDefault().notify(ex);
         }
+    }
+    
+    private boolean requestUpdate(String id) {
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(UserXMLCatalog.class,"TXT_updateEntry",id),NotifyDescriptor.YES_NO_OPTION);
+        DialogDisplayer.getDefault().notify(desc);
+        return (NotifyDescriptor.YES_OPTION==desc.getValue());
     }
     
     private static class CatalogHandler extends org.xml.sax.helpers.DefaultHandler {
@@ -310,6 +392,16 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
         
         public Map getValues() {
             return values;
+        }
+    }
+    
+    private class OasisCatalogResolver implements EntityResolver {
+        public InputSource resolveEntity (String publicId, String systemId) {
+            if ("-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN".equals(publicId)) { //NOI18N
+                java.net.URL url = org.apache.xml.resolver.Catalog.class.getResource("etc/catalog.dtd"); //NOI18N
+                return new InputSource(url.toExternalForm());
+            }
+            return null;
         }
     }
 }

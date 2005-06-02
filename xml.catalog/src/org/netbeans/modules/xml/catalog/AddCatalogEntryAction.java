@@ -26,34 +26,33 @@ import org.openide.DialogDescriptor;
  * @author mkuchtiak
  */
 public class AddCatalogEntryAction extends NodeAction {
-    CatalogWriter catalog;
+
     /** Creates a new instance of AddCatalogEntryAction */
-    public AddCatalogEntryAction(CatalogWriter catalog) {
-        this.catalog=catalog;
-    }
+    public AddCatalogEntryAction() {}
 
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
+        CatalogNode node = (CatalogNode) activatedNodes[0].getCookie(CatalogNode.class);
+        CatalogWriter catalog = (CatalogWriter)node.getCatalogReader();
         CatalogEntryPanel panel = new CatalogEntryPanel();
-            DialogDescriptor dd = new DialogDescriptor(panel,
-                                  Util.THIS.getString ("TITLE_addCatalogEntry")); //NOI18N
-            //dd.setHelpCtx(new HelpCtx(CatalogMounterPanel.class));
-            panel.setEnclosingDesc(dd);
-            java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-            dd.setValid(false);
-            dialog.show();
-            if (dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
-                if (panel.isPublic())
-                    catalog.registerCatalogEntry("PUBLIC:"+panel.getPublicId(), panel.getUri()); //NOI18N
-                else
-                    catalog.registerCatalogEntry("SYSTEM:"+panel.getSystemId(), panel.getUri()); //NOI18N
-            }
-        //catalog.registerCatalogEntry("PUBLIC:y", "file:/home/mkuchtiak/ide_projects/XmlProject/src/xmlproject/A.dtd");
+        DialogDescriptor dd = new DialogDescriptor(panel,
+                              Util.THIS.getString ("TITLE_addCatalogEntry")); //NOI18N
+        //dd.setHelpCtx(new HelpCtx(CatalogMounterPanel.class));
+        panel.setEnclosingDesc(dd);
+        java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dd.setValid(false);
+        dialog.show();
+        if (dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
+            if (panel.isPublic())
+                catalog.registerCatalogEntry("PUBLIC:"+panel.getPublicId(), panel.getUri()); //NOI18N
+            else
+                catalog.registerCatalogEntry("SYSTEM:"+panel.getSystemId(), panel.getUri()); //NOI18N
+        }
     }
 
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes.length>0)  {
             CatalogNode node = (CatalogNode) activatedNodes[0].getCookie(CatalogNode.class);
-            if (node!=null) return true;
+            if (node!=null && node.getCatalogReader() instanceof CatalogWriter) return true;
         }
         return false;
     }

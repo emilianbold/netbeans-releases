@@ -25,7 +25,16 @@ import org.openide.text.*;
 import org.openide.*;
 
 import org.netbeans.modules.xml.catalog.lib.*;
+import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
+
+import org.netbeans.modules.xml.catalog.user.UserXMLCatalog;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.cookies.EditCookie;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+
 
 /**
  * Node representing single catalog entry. It can be viewed.
@@ -33,23 +42,63 @@ import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
  * @author  Petr Kuzel
  * @version 1.0
  */
-final class CatalogEntryNode extends BeanNode {
+final class CatalogEntryNode extends BeanNode implements EditCookie {
 
     // cached ViewCookie instance
     private transient ViewCookie view;
-    boolean isCatalogWriter;
+    private boolean isCatalogWriter;
+    private CatalogReader catalogReader;
     
     /** Creates new CatalogNode */
     public CatalogEntryNode(CatalogEntry entry) throws IntrospectionException {        
         super(entry);
-        if (entry.getCatalog() instanceof CatalogWriter) 
+        getCookieSet().add(this);
+        catalogReader = entry.getCatalog();
+        if (catalogReader instanceof CatalogWriter) {
             isCatalogWriter = true;
+        }
+    }
+    
+    public javax.swing.Action getPreferredAction() {
+        if (isCatalogWriter) 
+            return SystemAction.get(EditAction.class);
+        else 
+            return SystemAction.get(ViewAction.class);
+    }
+    
+    public void edit() {
+        UserXMLCatalog catalog = (UserXMLCatalog)getCatalogReader();
+        try {
+            java.net.URI uri = new java.net.URI(getSystemID());
+            File file = new File(uri);
+            FileObject fo = FileUtil.toFileObject(file);
+            boolean editPossible=false;
+            if (fo!=null) {
+                DataObject obj = DataObject.find(fo);
+                EditCookie editCookie = (EditCookie)obj.getCookie(EditCookie.class);
+                if (editCookie!=null) {
+                    editPossible=true;
+                    editCookie.edit();
+                }
+            }
+            if (!editPossible)
+                org.openide.DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            Util.THIS.getString("MSG_CannotOpenURI",getSystemID()), //NOI18N
+                            NotifyDescriptor.INFORMATION_MESSAGE));
+        } catch (Throwable ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+    
+    CatalogReader getCatalogReader() {
+        return catalogReader;
     }
     
     protected SystemAction[] createActions() {
         if (isCatalogWriter)
             return new SystemAction[] {
-                SystemAction.get(ViewAction.class),
+                SystemAction.get(EditAction.class),
                 SystemAction.get(DeleteAction.class),
                 null,
                 SystemAction.get(PropertiesAction.class)
@@ -106,11 +155,11 @@ final class CatalogEntryNode extends BeanNode {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    private String getPublicID() {
+    String getPublicID() {
         return ((CatalogEntry)getBean()).getPublicID();
     }
     
-    private String getSystemID() {
+    String getSystemID() {
         return ((CatalogEntry)getBean()).getSystemID();
     }
 
@@ -134,7 +183,7 @@ final class CatalogEntryNode extends BeanNode {
         }
                                 
         protected String messageName() {
-            return Util.THIS.getString("MSG_opened_entity", getPublicID());
+            return Util.THIS.getString("MSG_opened_entity", getPublicID());  // NOI18N
         }
         
         protected String messageSave() {
