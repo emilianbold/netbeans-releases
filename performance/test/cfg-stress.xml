@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<mconfig name="core stress test config">
+
+    <testbag testattribs="measure_stress1" prio="1"
+             executor="ide_stress" compiler="stress-compiler" name="Stress test measuring #1" >
+	<testset dir="stress/src">
+	    <patternset>
+		<include name="stress/MeasureStress1.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <executor name="ide_stress" antfile="build-stress.xml" target="runidetest" default="true"/>
+    <compiler name="stress-compiler" antfile="build-stress.xml" target="stress-compiler" default="true"/>
+    
+</mconfig>
