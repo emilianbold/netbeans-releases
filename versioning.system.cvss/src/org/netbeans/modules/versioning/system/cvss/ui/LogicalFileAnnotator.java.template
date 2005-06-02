@@ -34,51 +34,52 @@ import java.beans.PropertyChangeEvent;
  * @see http://www.netbeans.org/issues/show_bug.cgi?id=57776
  * @author Petr Kuzel
  */
-class LogicalFileAnnotator extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener, LookupListener {
+class LogicalFileAnnotator extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
 
+    // icon badging >>>
     private Set files;
-    private Set fileSystemListeners;
+    private Map fileSystemListeners;
     private RequestProcessor.Task task;
-    private volatile boolean iconChange;
-    private volatile boolean nameChange;
-    private Set sourcesListeners;
-    private Set groupsListeners;
-    private LookupListener lookupListener;
+    private final Object privateLock = new Object();
+    private boolean iconChange;
+    private boolean nameChange;        
+    private ChangeListener sourcesListener;
+    private Map groupsListeners;
     private Project project;
+    // icon badging <<<
+
+
+    public LogicalFileAnnotator(Project project) {
+        // ...
+        setProjectFiles(project);
+    }
 
     protected final void setProjectFiles(Project project) {
-        this.project = project;
-        Lookup.Template t = new Lookup.Template(Sources.class);
-        Lookup lookup = project.getLookup();
-        Lookup.Result sources = lookup.lookup(t);
-        lookupListener = (LookupListener) WeakListeners.create(LookupListener.class, this, lookup);
-        sources.addLookupListener(lookupListener);
-        setSources(sources.allInstances());
+        Sources sources = ProjectUtils.getSources(project);  // returns singleton
+        if (sourcesListener == null) {                
+            sourcesListener = WeakListeners.change(this, sources);
+            sources.addChangeListener(sourcesListener);                                
+        }
+        setGroups(Arrays.asList(sources.getSourceGroups(Sources.TYPE_GENERIC)));
     }
 
-    private final void setSources(Collection sources) {
-        sourcesListeners = new HashSet();
-        Set groups = new HashSet();
-        Iterator it = sources.iterator();
-        while (it.hasNext()) {
-            Sources source = (Sources) it.next();
-            ChangeListener cl = WeakListeners.change(this, sources);
-            sourcesListeners.add(cl);
-            source.addChangeListener(cl);
-            List gl = Arrays.asList(source.getSourceGroups(Sources.TYPE_GENERIC));
-            groups.addAll(gl);
-        }
-        setGroups(groups);
-    }
 
     private final void setGroups(Collection groups) {
-        groupsListeners = new HashSet();
+        if (groupsListeners != null) {
+            Iterator it = groupsListeners.keySet().iterator();
+            while (it.hasNext()) {
+                SourceGroup group = (SourceGroup) it.next();
+                PropertyChangeListener pcl = (PropertyChangeListener) groupsListeners.get(group);
+                group.removePropertyChangeListener(pcl);
+            }
+        }
+        groupsListeners = new HashMap();
         Set roots = new HashSet();
         Iterator it = groups.iterator();
         while (it.hasNext()) {
             SourceGroup group = (SourceGroup) it.next();
             PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
-            groupsListeners.add(pcl);
+            groupsListeners.put(group, pcl);
             group.addPropertyChangeListener(pcl);
             FileObject fo = group.getRootFolder();
             roots.add(fo);
@@ -87,7 +88,16 @@ class LogicalFileAnnotator extends AbstractNode implements Runnable, FileStatusL
     }
 
     protected final void setFiles(Set files) {
-        fileSystemListeners = new HashSet();
+        if (fileSystemListeners != null) {
+            Iterator it = fileSystemListeners.keySet().iterator();
+            while (it.hasNext()) {
+                FileSystem fs = (FileSystem) it.next();
+                FileStatusListener fsl = (FileStatusListener) fileSystemListeners.get(fs);
+                fs.removeFileStatusListener(fsl);
+            }
+        }
+
+        fileSystemListeners = new HashMap();
         this.files = files;
         if (files == null) return;
 
@@ -103,7 +113,7 @@ class LogicalFileAnnotator extends AbstractNode implements Runnable, FileStatusL
                 hookedFileSystems.add(fs);
                 FileStatusListener fsl = FileUtil.weakFileStatusListener(this, fs);
                 fs.addFileStatusListener(fsl);
-                fileSystemListeners.add(fsl);
+                fileSystemListeners.put(fs, fsl);
             } catch (FileStateInvalidException e) {
                 ErrorManager err = ErrorManager.getDefault();
                 err.annotate(e, "Can not get " + fo + " filesystem, ignoring...");  // NO18N
@@ -180,36 +190,44 @@ class LogicalFileAnnotator extends AbstractNode implements Runnable, FileStatusL
         return img;
     }
 
-    public void run() {
-        if (iconChange) {
-            fireIconChange();
-            fireOpenedIconChange();
-            iconChange = false;
-        }
-        if (nameChange) {
-            fireDisplayNameChange(null, null);
-            nameChange = false;
-        }
-    }
-
-    public void annotationChanged(FileStatusEvent event) {
-        if (task == null) {
-            task = RequestProcessor.getDefault().create(this);
-        }
-
-        if ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange())) {
-            Iterator it = files.iterator();
-            while (it.hasNext()) {
-                FileObject fo = (FileObject) it.next();
-                if (event.hasChanged(fo)) {
-                    iconChange |= event.isIconChange();
-                    nameChange |= event.isNameChange();
-                }
+        public void run() {
+            boolean fireIcon;
+            boolean fireName;
+            synchronized (privateLock) {
+                fireIcon = iconChange;
+                fireName = nameChange;
+                iconChange = false;
+                nameChange = false;
+            }
+            if (fireIcon) {
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+            if (fireName) {
+                fireDisplayNameChange(null, null);
             }
         }
 
-        task.schedule(50);  // batch by 50 ms
-    }
+        public void annotationChanged(FileStatusEvent event) {
+            if (task == null) {
+                task = RequestProcessor.getDefault().create(this);
+            }
+
+            synchronized (privateLock) {
+                if ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange())) {
+                    Iterator it = files.iterator();
+                    while (it.hasNext()) {
+                        FileObject fo = (FileObject) it.next();
+                        if (event.hasChanged(fo)) {
+                            iconChange |= event.isIconChange();
+                            nameChange |= event.isNameChange();
+                        }
+                    }
+                }
+            }
+
+            task.schedule(50);  // batch by 50 ms
+        }
 
     // sources change
     public void stateChanged(ChangeEvent e) {
@@ -221,8 +239,4 @@ class LogicalFileAnnotator extends AbstractNode implements Runnable, FileStatusL
         setProjectFiles(project);
     }
 
-    // project lookup
-    public void resultChanged(LookupEvent ev) {
-        setProjectFiles(project);
-    }
 }
