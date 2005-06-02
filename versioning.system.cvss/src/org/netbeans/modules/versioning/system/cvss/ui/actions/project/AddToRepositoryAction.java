@@ -28,15 +28,23 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings;
+import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
+import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.lib.cvsclient.connection.PasswordsFile;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 import java.io.*;
 import java.awt.*;
 import java.util.Set;
 import java.util.Vector;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 
 /**
  * Imports project into CVS repository.
@@ -107,13 +115,23 @@ public final class AddToRepositoryAction extends NodeAction {
                                 }
                             }
 
-                            ImportPanel importPanel = new ImportPanel();
+                            final ImportPanel importPanel = new ImportPanel();
                             if (cvsRepository != null) {
                                 importPanel.moduleTextField.setText(cvsRepository + "/" + root.getName());
                             } else {
                                 importPanel.moduleTextField.setText(root.getName());
                             }
-                            Set roots = CvsRootSettings.listCvsRoots();
+
+                            Set roots = new LinkedHashSet(HistorySettings.getRecent(HistorySettings.PROP_CVS_ROOTS));
+                            roots.addAll(CvsRootSettings.listCvsRoots());
+                            roots.addAll(PasswordsFile.listRoots(":pserver:"));  // NOI18N
+                            // templates for supported connection methods
+                            String user = System.getProperty("user.name", ""); // NOI18N
+                            if (user.length() > 0) user += "@"; // NOI18N
+                            roots.add(":pserver:" + user);  // NOI18N
+                            roots.add(":ext:" + user); // NOI18N
+                            roots.add(":fork:"); // NOI18N
+                            roots.add(":local:"); // NOI18N
                             Vector vector = new Vector();
                             if (cvsRoot != null) {
                                 vector.add(cvsRoot);
@@ -125,13 +143,30 @@ public final class AddToRepositoryAction extends NodeAction {
                             DefaultComboBoxModel model = new DefaultComboBoxModel(vector);
                             importPanel.rootComboBox.setModel(model);
 
-                            // TODO add user input validation
-
                             importPanel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
 
                             String title = NbBundle.getMessage(AddToRepositoryAction.class, "BK0007");
-                            DialogDescriptor descriptor = new DialogDescriptor(importPanel, title);
+                            final DialogDescriptor descriptor = new DialogDescriptor(importPanel, title);
                             descriptor.setModal(true);
+
+                            // user input validation
+                            DocumentListener validation = new DocumentListener() {
+                                public void changedUpdate(DocumentEvent e) {
+                                }
+                                public void insertUpdate(DocumentEvent e) {
+                                    checkInput(importPanel, descriptor);
+                                }
+                                public void removeUpdate(DocumentEvent e) {
+                                    checkInput(importPanel, descriptor);
+                                }
+                            };
+                            importPanel.moduleTextField.getDocument().addDocumentListener(validation);
+                            importPanel.commentTextArea.getDocument().addDocumentListener(validation);
+                            Component editor = importPanel.rootComboBox.getEditor().getEditorComponent();
+                            JTextComponent textEditor = (JTextComponent) editor;
+                            textEditor.getDocument().addDocumentListener(validation);
+                            checkInput(importPanel, descriptor);
+
                             Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
                             dialog.show();
                             if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
@@ -176,6 +211,24 @@ public final class AddToRepositoryAction extends NodeAction {
                 }
             }
         }
+    }
+
+    private static void checkInput(ImportPanel importPanel, DialogDescriptor descriptor) {
+        boolean valid = importPanel.moduleTextField.getText().trim().length() > 0;
+        valid &= importPanel.commentTextArea.getText().trim().length() > 0;
+        String root = (String) importPanel.rootComboBox.getEditor().getItem();
+        boolean supportedMethod = root.startsWith(":pserver:"); // NOI18N
+        supportedMethod |= root.startsWith(":local:"); // NOI18N
+        supportedMethod |= root.startsWith(":fork:"); // NOI18N
+        supportedMethod |= root.startsWith(":ext:"); // NOI18N
+        valid &= supportedMethod;
+        
+        try {
+            CVSRoot.parse(root);
+        } catch (IllegalArgumentException ex) {
+            valid = false;
+        }
+        descriptor.setValid(valid);
     }
 
     private static String escape(String path) {
