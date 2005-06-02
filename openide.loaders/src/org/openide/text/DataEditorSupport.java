@@ -133,7 +133,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         if (name == null) {
             name = obj.getNodeDelegate().getDisplayName();
         } else {
-            name = "<html>" + name;
+            if (!name.startsWith("<html>")) name = "<html>" + name;
         }
         return addFlagsToName(name);
     }
