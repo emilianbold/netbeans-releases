@@ -17,6 +17,13 @@ import java.awt.Component;
 
 import java.util.HashMap;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
+
 import org.netbeans.jellytools.JellyTestCase;
 
 import org.netbeans.jemmy.QueueTool;
@@ -469,6 +476,163 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
     }
     
+    /**
+     * Test that measures detailed memory usage.
+     * <br>
+     * <br>If during measurement exception arise - test fails and no value is reported as Performance Data.
+     * <p>Each test should reset the state in {@link close()} method.</p>
+     */
+    public void measureDetailMemoryUsage() {
+        
+        boolean exceptionDuringMeasurement = false;
+        useTwoOrderTypes = false;
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel()|JemmyProperties.ROBOT_MODEL_MASK);
+        JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
+        
+        initialize();
+        
+        for (int i=1; i<=repeat_memory && !exceptionDuringMeasurement; i++) {
+            try {
+
+                prepare();
+                
+                testedComponentOperator = open();
+                
+            }catch(Exception exc){ // catch for prepare(), open()
+                exc.printStackTrace(getLog());
+                exceptionDuringMeasurement = true;
+                getScreenshot("exception_during_open");
+            }finally{
+                try{
+                    
+                    close();
+                    
+                    closeAllModal();
+
+                }catch(Exception e){
+                    e.printStackTrace(getLog());
+                    getScreenshot("measure");
+                    exceptionDuringMeasurement = true;
+                }finally{
+                }
+            }
+        }
+        
+        reportDetailMemoryUsage();
+        
+        try {
+            
+            shutdown();
+            
+            closeAllDialogs();
+            
+        }catch (Exception e) {
+            e.printStackTrace(getLog());
+            getScreenshot("shutdown");
+            exceptionDuringMeasurement = true;
+        }finally{
+        }
+        
+        if(exceptionDuringMeasurement)
+            throw new Error("Exception rises during measurement, look at appropriate log file for stack trace(s).");
+        
+    }
+    
+    public void reportDetailMemoryUsage() {
+
+        // what platform are we running on?
+        String platformString = (System.getProperty("os.name","")+","+System.getProperty("os.arch","")).replace(' ','_');
+        boolean onunix = platformString.equalsIgnoreCase("Linux,i386") || platformString.equalsIgnoreCase("SunOS,sparc");
+        boolean onwindows = platformString.equalsIgnoreCase("Windows_NT,x86") || platformString.equalsIgnoreCase("Windows_2000,x86") ||
+                platformString.equalsIgnoreCase("Windows_XP,x86") || platformString.equalsIgnoreCase("Windows_95,x86") ||
+                platformString.equalsIgnoreCase("Windows_98,x86") || platformString.equalsIgnoreCase("Windows_Me,x86");
+
+        // find IDE process's PID using JPS utility
+        String pid = null;
+        String jprocs = executeNativeCommand ("jps -m");
+        String[] procstrings = jprocs.split("\n");
+        for (int i=0; i<procstrings.length; i++) {
+            if (procstrings[i].matches(".*test/work/sys/ide.*")) {
+                log (procstrings[i]);
+                log ("");
+                pid = procstrings[i].split(" ")[0];
+                break;
+            }
+        }
+        
+        // find the information using JSTAT
+        if (pid!=null) {
+            String commandoutput;
+            
+            log (commandoutput = executeNativeCommand ("jstat -class " + pid));
+            reportPerformance ("Loaded",Long.valueOf(getOutputSubstring(commandoutput,1,0)).longValue(),"classes",0);
+            reportPerformance ("Unloaded",Long.valueOf(getOutputSubstring(commandoutput,1,2)).longValue(),"classes",0);
+            
+            log (commandoutput = executeNativeCommand ("jstat -gc " + pid));
+            reportPerformance ("S0U+S1U+EU",Float.valueOf(getOutputSubstring(commandoutput,1,2)).longValue()+Float.valueOf(getOutputSubstring(commandoutput,1,3)).longValue()+Float.valueOf(getOutputSubstring(commandoutput,1,5)).longValue(),"kB",0);
+            reportPerformance ("0U",Float.valueOf(getOutputSubstring(commandoutput,1,7)).longValue(),"kB",0);
+            reportPerformance ("PU",Float.valueOf(getOutputSubstring(commandoutput,1,9)).longValue(),"kB",0);
+            reportPerformance ("YGC",Float.valueOf(getOutputSubstring(commandoutput,1,10)).longValue(),"occurences",0);
+            reportPerformance ("YGCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,11)).floatValue()*1000),"ms",0);
+            reportPerformance ("FGC",Float.valueOf(getOutputSubstring(commandoutput,1,12)).longValue(),"occurences",0);
+            reportPerformance ("FGCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,13)).floatValue()*1000),"ms",0);
+            reportPerformance ("GCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,14)).floatValue()*1000),"ms",0);
+            
+            //log (commandoutput = executeNativeCommand ("footprint -s 1 -p " + pid + " 2>&1"));
+        }
+        
+        runGC(5);
+        
+        Runtime runtime = Runtime.getRuntime();
+        long totalHeap = runtime.totalMemory();
+        long heapUsage = totalHeap - runtime.freeMemory();
+        reportPerformance ("Used Heap", heapUsage/1024, "kB", 0);
+        reportPerformance ("Heap Capacity", totalHeap/1024, "kB", 0);
+        log ("Heap = " + heapUsage/totalHeap);
+        log ("-----------------------");
+    }
+
+    private String getOutputSubstring (String source, int line, int item) {
+        String[] linestrings = source.split("\n");
+        String[] lineitems = linestrings[line].split(" ");
+        for (int i=0, j=0; i<lineitems.length; i++)
+            if (lineitems[i].trim().length()>0) {
+                if (item==j)
+                    return lineitems[i];
+                j++;
+            }
+        return "N/A";
+    }
+    
+    private String executeNativeCommand (String commandLine){
+            
+        log("Execute command: ["+commandLine+"].");
+        
+        try {
+            Process proc = Runtime.getRuntime().exec(commandLine);
+            
+            StringBuffer buffer = new StringBuffer();
+            BufferedReader dataInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            String line;
+            
+            while ((line = dataInput.readLine()) != null) {
+                buffer.append(line);
+                buffer.append('\n');
+            }
+            
+            proc.waitFor();
+            return buffer.toString();
+            
+        } catch (InterruptedException ie) {
+            ie.printStackTrace(getLog());
+            log("InterruptedException: "+ie.toString());
+        } catch (IOException ioe){
+            ioe.printStackTrace(getLog());
+            log("None output from command, exception arise "+ioe.toString());
+        }
+        return null;
+    }
+
     /**
      * Initialize callback that is called once before the repeated sequence of
      * testet operation is perfromed.
