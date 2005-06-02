@@ -60,7 +60,7 @@ public class HTMLFormatter extends ExtFormatter {
         TokenItem token = null;
         HTMLSyntaxSupport sup = (HTMLSyntaxSupport)(doc.getSyntaxSupport().get(HTMLSyntaxSupport.class));
         
-          if (startOffset == endOffset){
+        if (startOffset == endOffset){
             //pressed enter - called from indentNewLine
             //get first non-white token backward
             int nonWSTokenBwd = Utilities.getFirstNonWhiteBwd(doc, endOffset);
@@ -218,17 +218,25 @@ public class HTMLFormatter extends ExtFormatter {
                     } else {
                         //found an open tag => auto include close tag
                         String tagname = token.getImage();
-                        if(tagname.trim().length() > 0) {
-                            doc.atomicLock();
-                            try {
-                                doc.insertString( dotPos, "</"+tagname+">" , null);
-                            } catch( BadLocationException exc ) {
-                                //do nothing
-                            } finally {
-                                doc.atomicUnlock();
+                        //test whether there is a matching close tag,
+                        //if so, do not autocomplete.
+                        int[] match = sup.findMatchingBlock(token.getOffset(), false);
+                        if((match != null && match[0] < dotPos) || match == null) {
+                            //there isn't a _real_ matching tag => autocomplete
+                            //note: the test for match index is necessary since the '<'  in <tag> matches the '>' character on the end of the tag.
+                            
+                            if(tagname.trim().length() > 0) {
+                                doc.atomicLock();
+                                try {
+                                    doc.insertString( dotPos, "</"+tagname+">" , null);
+                                } catch( BadLocationException exc ) {
+                                    //do nothing
+                                } finally {
+                                    doc.atomicUnlock();
+                                }
+                                //return cursor back
+                                target.setCaretPosition(dotPos);
                             }
-                            //return cursor back
-                            target.setCaretPosition(dotPos);
                         }
                     }
                 }
