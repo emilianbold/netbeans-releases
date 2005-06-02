@@ -588,7 +588,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         long heapUsage = totalHeap - runtime.freeMemory();
         reportPerformance ("Used Heap", heapUsage/1024, "kB", 0);
         reportPerformance ("Heap Capacity", totalHeap/1024, "kB", 0);
-        log ("Heap = " + heapUsage/totalHeap);
+        log ("Heap = " + heapUsage + "/" + totalHeap);
         log ("-----------------------");
     }
 
