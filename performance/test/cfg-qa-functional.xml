@@ -159,7 +159,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 -->    
 
-    <testbag testattribs="measure_memory_usage or memory_dialog or memory_temp" prio="2"
+    <testbag testattribs="measure_memory_usage or memory_dialog" prio="2"
              executor="ide_performance_memory_usage" name="Measure Memory Usage Dialog" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -349,17 +349,6 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
 
-    <!-- Custom / Module test bags -->    
-    <testbag testattribs="measure_java" prio="100"
-             executor="ide_performance_java" name="Measure UI responsiveness of actions,dialogs or menus related to java, editor, mdr" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureJava.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-    
-    
     <!-- Scan Classpath test bag -->    
     <testbag testattribs="measure_ui or measure_scan" prio="100"
                  executor="ide_performance_scan" name="Measure Classpath Scan and time to create new projects" >
@@ -384,12 +373,31 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     
+    <!-- Custom / Module test bags -->    
+    <testbag testattribs="measure_java" prio="100"
+             executor="ide_performance_java" name="Measure UI responsiveness of actions,dialogs or menus related to java, editor, mdr" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureJava.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+        
     <!-- Temp -->    
-    <testbag testattribs="temp" prio="16"
+    <testbag testattribs="temp" prio="100"
              executor="ide_performance" name="Temp" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureTemp.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="memory_temp" prio="101"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Temp" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/memory_usage/MeasureMemoryUsageTemp.class"/>
 	    </patternset>
 	</testset>
     </testbag>
