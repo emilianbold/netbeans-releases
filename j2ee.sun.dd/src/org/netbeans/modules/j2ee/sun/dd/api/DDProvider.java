@@ -12,21 +12,14 @@
  */
 
 package org.netbeans.modules.j2ee.sun.dd.api;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.modules.schema2beans.Common;
-import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.Map;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import java.util.ResourceBundle;
-
-import org.netbeans.modules.j2ee.sun.dd.api.DDException;
         
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
 import org.netbeans.modules.j2ee.sun.dd.impl.ejb.SunEjbJarProxy;
