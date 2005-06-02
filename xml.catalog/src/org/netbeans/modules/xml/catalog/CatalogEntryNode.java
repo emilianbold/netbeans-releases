@@ -91,7 +91,7 @@ final class CatalogEntryNode extends BeanNode implements EditCookie {
         }
     }
     
-    CatalogReader getCatalogReader() {
+    private CatalogReader getCatalogReader() {
         return catalogReader;
     }
     
@@ -155,11 +155,11 @@ final class CatalogEntryNode extends BeanNode implements EditCookie {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    String getPublicID() {
+    private String getPublicID() {
         return ((CatalogEntry)getBean()).getPublicID();
     }
     
-    String getSystemID() {
+    private String getSystemID() {
         return ((CatalogEntry)getBean()).getSystemID();
     }
 
