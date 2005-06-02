@@ -136,7 +136,7 @@ public class LineDiff implements Diff {
             tmp.add(testLine);
         }
         first.close();
-        match&=(firstFile.length() == secondFile.length());
+        //match&=(firstFile.length() == secondFile.length()); - there can be different end lines
         if (match) {
             return false;
         }
