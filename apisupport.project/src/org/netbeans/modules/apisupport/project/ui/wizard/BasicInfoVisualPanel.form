@@ -230,6 +230,9 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JComboBox" name="moduleSuiteValue">
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="moduleSuiteChosen"/>
+          </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="ComponentFactory.getSuitesComboBox();"/>
           </AuxValues>

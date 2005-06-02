@@ -134,12 +134,25 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             suiteModule.setEnabled(!isNetBeansOrg);
             typeChanged(null);
         }
+        if (!checkModuleSuite()) {
+            return;
+        }
         if (alsoCheck) {
             if (fFolder.exists()) {
                 setErrorMessage(getMessage("MSG_ProjectFolderExists")); // NOI18N
                 return;
             }
             setErrorMessage(null);
+        }
+    }
+    
+    private boolean checkModuleSuite() {
+        if (suiteModule.isSelected() && moduleSuiteValue.getSelectedItem() == null) {
+            setErrorMessage(getMessage("MSG_ChooseRegularSuite")); // NOI18N
+            return false;
+        } else {
+            setErrorMessage(null);
+            return true;
         }
     }
     
@@ -343,6 +356,12 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         typeChooserPanel.add(moduleSuite, gridBagConstraints);
 
+        moduleSuiteValue.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moduleSuiteChosen(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -379,6 +398,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void moduleSuiteChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moduleSuiteChosen
+        checkModuleSuite();
+    }//GEN-LAST:event_moduleSuiteChosen
     
     private void browseModuleSuite(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseModuleSuite
         JFileChooser chooser = ProjectChooser.projectChooser();
@@ -414,6 +437,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         moduleSuite.setEnabled(suiteModuleSelected);
         moduleSuiteValue.setEnabled(suiteModuleSelected);
         browseSuiteButton.setEnabled(suiteModuleSelected);
+        checkModuleSuite();
     }//GEN-LAST:event_typeChanged
     
     private void browseLocation(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocation
