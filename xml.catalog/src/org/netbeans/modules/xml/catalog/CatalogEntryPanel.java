@@ -32,6 +32,8 @@ public class CatalogEntryPanel extends javax.swing.JPanel {
         publicTF.getDocument().addDocumentListener(docListener);
         systemTF.getDocument().addDocumentListener(docListener);
         uriTF.getDocument().addDocumentListener(docListener);
+        getAccessibleContext().setAccessibleName(titleLabel.getText());
+        getAccessibleContext().setAccessibleDescription(descLabel.getText());
     }
     
     void setEnclosingDesc(DialogDescriptor enclosingDesc) {
@@ -82,7 +84,7 @@ public class CatalogEntryPanel extends javax.swing.JPanel {
         uriLabel = new javax.swing.JLabel();
         uriTF = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
-        jLabel4 = new javax.swing.JLabel();
+        titleLabel = new javax.swing.JLabel();
         descLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -190,12 +192,12 @@ public class CatalogEntryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(20, 5, 5, 5);
         add(browseButton, gridBagConstraints);
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(CatalogEntryPanel.class, "HINT_panel"));
+        titleLabel.setText(org.openide.util.NbBundle.getMessage(CatalogEntryPanel.class, "HINT_panel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 10, 5);
-        add(jLabel4, gridBagConstraints);
+        add(titleLabel, gridBagConstraints);
 
         descLabel.setText(org.openide.util.NbBundle.getMessage(CatalogEntryPanel.class, "LBL_catalogEntryDesc"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -242,11 +244,11 @@ public class CatalogEntryPanel extends javax.swing.JPanel {
     private javax.swing.JLabel descLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JRadioButton publicRB;
     private javax.swing.JTextField publicTF;
     private javax.swing.JRadioButton systemRB;
     private javax.swing.JTextField systemTF;
+    private javax.swing.JLabel titleLabel;
     private javax.swing.JLabel uriLabel;
     private javax.swing.JTextField uriTF;
     // End of variables declaration//GEN-END:variables
