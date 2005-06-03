@@ -154,8 +154,8 @@ public class AbstractVariable implements ObjectVariable {
     }
     
     /**
-     * Returns all fields declared in this type. Or max 50 fields 
-     * of an array.
+     * Returns all fields declared in this type that are in interval
+     * &lt;<code>from</code>, <code>to</code>).
      */
     public Field[] getFields (int from, int to) {
         //either the fields are cached or we have to init them
