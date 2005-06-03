@@ -38,22 +38,6 @@ import org.netbeans.jemmy.operators.*;
  * @author Martin.Schovanek@sun.com
  */
 public class NewJspFileNameStepOperator extends WizardOperator {
-    private static final String JSP_FILE = Bundle.getStringTrimmed(
-            "org.netbeans.modules.web.dd.wizards.Bundle",
-            "TITLE_JspFile");
-    private static final String NEW = Bundle.getStringTrimmed(
-            "org.netbeans.modules.project.ui.Bundle",
-            "LBL_NewFileWizard_Subtitle");
-    
-    /**
-     * Creates new NewJspFileNameStepOperator that can handle it.
-     */
-    public NewJspFileNameStepOperator() {
-        super(Bundle.getStringTrimmed("org/netbeans/modules/project/ui/Bundle",
-                "LBL_NewFileWizard_MessageFormat",
-                new Object[] {NEW, JSP_FILE}));
-    }
-    
     private JLabelOperator _lblNameAndLocation;
     private JLabelOperator _lblJSPFileName;
     private JTextFieldOperator _txtJSPFileName;
@@ -73,6 +57,38 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     private JLabelOperator _lblDescription;
     private JTextAreaOperator _txtDescription;
     
+    private static final String JSP_FILE = Bundle.getStringTrimmed(
+            "org.netbeans.modules.web.wizards.Bundle",
+            "TITLE_JspFile");
+    private static final String NEW = Bundle.getStringTrimmed(
+            "org.netbeans.modules.project.ui.Bundle",
+            "LBL_NewFileWizard_Subtitle");
+    
+    /**
+     * Creates new NewJspFileNameStepOperator that can handle it.
+     */
+    public NewJspFileNameStepOperator() {
+        super(Bundle.getStringTrimmed(
+                "org.netbeans.modules.project.ui.Bundle",
+                "LBL_NewFileWizard_MessageFormat",
+                new Object[] {NEW, JSP_FILE}));
+    }
+
+    /** Invokes dialog from main menu "File|New..." and selects Web/JSP template.
+     * @return instance of NewJspFileNameStepOperator
+     */
+    public static final NewJspFileNameStepOperator invoke() {
+                NewFileWizardOperator wizarOperator = NewFileWizardOperator.invoke();
+        wizarOperator.selectCategory(Bundle.getStringTrimmed(
+                "org.netbeans.modules.web.core.Bundle",
+                "Templates/JSP_Servlet"));
+        wizarOperator.selectFileType(Bundle.getStringTrimmed(
+                "org.netbeans.modules.web.core.Bundle",
+                "Templates/JSP_Servlet/JSP.jsp"));
+        wizarOperator.next();
+        return new NewJspFileNameStepOperator();
+    }
+    
     //******************************
     // Subcomponents definition part
     //******************************
@@ -83,7 +99,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     public JLabelOperator lblNameAndLocation() {
         if (_lblNameAndLocation==null) {
             _lblNameAndLocation = new JLabelOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "TITLE_name_location"));
         }
         return _lblNameAndLocation;
@@ -95,7 +111,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     public JLabelOperator lblJSPFileName() {
         if (_lblJSPFileName==null) {
             _lblJSPFileName = new JLabelOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "LBL_JspName"));
         }
         return _lblJSPFileName;
@@ -106,7 +122,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtJSPFileName() {
         if (_txtJSPFileName==null) {
-            Component comp = _lblJSPFileName.getLabelFor();
+            Component comp = lblJSPFileName().getLabelFor();
             if (comp != null) {
                 _txtJSPFileName = new JTextFieldOperator((JTextField) comp);
             } else {
@@ -122,7 +138,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     public JLabelOperator lblProject() {
         if (_lblProject==null) {
             _lblProject = new JLabelOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "LBL_Project"));
         }
         return _lblProject;
@@ -133,7 +149,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtProject() {
         if (_txtProject==null) {
-            Component comp = _lblProject.getLabelFor();
+            Component comp = lblProject().getLabelFor();
             if (comp != null) {
                 _txtProject = new JTextFieldOperator((JTextField) comp);
             } else {
@@ -149,7 +165,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     public JLabelOperator lblLocation() {
         if (_lblLocation==null) {
             _lblLocation = new JLabelOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "LBL_Location"));
         }
         return _lblLocation;
@@ -160,7 +176,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
      */
     public JComboBoxOperator cboLocation() {
         if (_cboLocation==null) {
-            Component comp = _lblLocation.getLabelFor();
+            Component comp = lblLocation().getLabelFor();
             if (comp != null) {
                 _cboLocation = new JComboBoxOperator((JComboBox) comp);
             } else {
@@ -176,7 +192,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     public JLabelOperator lblFolder() {
         if (_lblFolder==null) {
             _lblFolder = new JLabelOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "LBL_Folder"));
         }
         return _lblFolder;
@@ -187,7 +203,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtFolder() {
         if (_txtFolder==null) {
-            Component comp = _lblFolder.getLabelFor();
+            Component comp = lblFolder().getLabelFor();
             if (comp != null) {
                 _txtFolder = new JTextFieldOperator((JTextField) comp);
             } else {
@@ -203,7 +219,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     public JButtonOperator btBrowse() {
         if (_btBrowse==null) {
             _btBrowse = new JButtonOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "LBL_Browse"));
         }
         return _btBrowse;
@@ -215,7 +231,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     public JLabelOperator lblCreatedFile() {
         if (_lblCreatedFile==null) {
             _lblCreatedFile = new JLabelOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "LBL_CreatedFile"));
         }
         return _lblCreatedFile;
@@ -226,7 +242,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtCreatedFile() {
         if (_txtCreatedFile==null) {
-            Component comp = _lblCreatedFile.getLabelFor();
+            Component comp = lblCreatedFile().getLabelFor();
             if (comp != null) {
                 _txtCreatedFile = new JTextFieldOperator((JTextField) comp);
             } else {
@@ -242,7 +258,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     public JLabelOperator lblOptions() {
         if (_lblOptions==null) {
             _lblOptions = new JLabelOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "LBL_Options"));
         }
         return _lblOptions;
@@ -255,7 +271,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
         if (_rbJSPFileStandardSyntax==null) {
             _rbJSPFileStandardSyntax = new JRadioButtonOperator(this,
                     Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "OPT_JspSyntax"));
         }
         return _rbJSPFileStandardSyntax;
@@ -268,7 +284,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
         if (_rbJSPDocumentXMLSyntax==null) {
             _rbJSPDocumentXMLSyntax = new JRadioButtonOperator(this,
                     Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "OPT_XmlSyntax"));
         }
         return _rbJSPDocumentXMLSyntax;
@@ -281,7 +297,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
         if (_cbCreateAsAJSPSegment==null) {
             _cbCreateAsAJSPSegment = new JCheckBoxOperator(this,
                     Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "OPT_JspSegment"));
         }
         return _cbCreateAsAJSPSegment;
@@ -293,7 +309,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     public JLabelOperator lblDescription() {
         if (_lblDescription==null) {
             _lblDescription = new JLabelOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.web.dd.wizards.Bundle",
+                    "org.netbeans.modules.web.wizards.Bundle",
                     "LBL_description"));
         }
         return _lblDescription;
@@ -304,7 +320,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
      */
     public JTextAreaOperator txtDescription() {
         if (_txtDescription==null) {
-            Component comp = _lblDescription.getLabelFor();
+            Component comp = lblDescription().getLabelFor();
             if (comp != null) {
                 _txtDescription = new JTextAreaOperator((JTextArea) comp);
             } else {

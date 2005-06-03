@@ -89,10 +89,19 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
     public JTextFieldOperator txtProjectName() {
         if(_txtProjectName == null) {
             if ( lblProjectName().getLabelFor()!=null ) {
-                _txtProjectName = new JTextFieldOperator((JTextField)lblProjectName().getLabelFor());
+                _txtProjectName = new JTextFieldOperator(
+                        (JTextField)lblProjectName().getLabelFor());
             }
         }
         return _txtProjectName;
+    }
+    
+    
+    /** Sets given name in text field Project Name.
+     * @param name project name
+     */
+    public void setProjectName(String name) {
+        txtProjectName().setText(name);
     }
     
     
@@ -116,13 +125,14 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
     public JTextFieldOperator txtProjectLocation() {
         if(_txtProjectLocation == null) {
             if (lblProjectLocation().getLabelFor()!=null) {
-                _txtProjectLocation = new JTextFieldOperator((JTextField)lblProjectLocation().getLabelFor());
+                _txtProjectLocation = new JTextFieldOperator(
+                        (JTextField)lblProjectLocation().getLabelFor());
             }
         }
         return _txtProjectLocation;
     }
     
-    
+    /** Sets given project location
     /** Returns operator for browse project location button
      * @return JButtonOperator
      */
@@ -134,6 +144,13 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
                     "LBL_NWP1_BrowseLocation_Button"));
         }
         return _btBrowseProjectLocation;
+    }
+    
+    /** Sets given location in text field Project Location.
+     * @param location project location
+     */
+    public void setProjectLocation(String location) {
+        txtProjectLocation().setText(location);
     }
     
     /** Returns operator for label Project Location
@@ -156,7 +173,8 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
     public JTextFieldOperator txtLocation() {
         if(_txtLocation == null) {
             if (lblLocation().getLabelFor()!=null) {
-                _txtLocation = new JTextFieldOperator((JTextField)lblLocation().getLabelFor());
+                _txtLocation = new JTextFieldOperator(
+                        (JTextField)lblLocation().getLabelFor());
             }
         }
         return _txtLocation;
@@ -176,6 +194,12 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
         return _btBrowseProjectLocation;
     }
     
+    /** Sets given location in text field Location.
+     * @param location Project With Existing Sources location
+     */
+    public void setLocation(String location) {
+        txtLocation().setText(location);
+    }
     
     /** Returns operator for label Project Folder
      * @return JLabelOperator
@@ -197,7 +221,8 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
     public JTextFieldOperator txtProjectFolder() {
         if(_txtProjectFolder == null) {
             if ( lblProjectFolder().getLabelFor()!=null ) {
-                _txtProjectFolder = new JTextFieldOperator((JTextField)lblProjectFolder().getLabelFor());
+                _txtProjectFolder = new JTextFieldOperator(
+                        (JTextField)lblProjectFolder().getLabelFor());
             }
         }
         return _txtProjectFolder;
@@ -222,7 +247,8 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
     public JComboBoxOperator cbSourceStructure() {
         if ( _cbSourceStructure==null ) {
             if (lblSourceStructure().getLabelFor()!=null ) {
-                _cbSourceStructure = new JComboBoxOperator((JComboBox)lblSourceStructure().getLabelFor());
+                _cbSourceStructure = new JComboBoxOperator(
+                        (JComboBox)lblSourceStructure().getLabelFor());
             }
         }
         return _cbSourceStructure;
@@ -268,8 +294,9 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
      */
     public JComboBoxOperator cbJ2EEVersion() {
         if ( _cbJ2EEVersion==null ) {
-            if (lblJ2EEVersion().getLabelFor()!=null ) {
-                _cbJ2EEVersion = new JComboBoxOperator((JComboBox)lblJ2EEVersion().getLabelFor());
+            if (lblJ2EEVersion().getLabelFor()!=null) {
+                _cbJ2EEVersion = new JComboBoxOperator(
+                        (JComboBox)lblJ2EEVersion().getLabelFor());
             }
         }
         return _cbJ2EEVersion;
@@ -298,8 +325,9 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
      * @return JTextOperator
      */
     public JTextFieldOperator txtContextPath() {
-        if (  lblContextPath().getLabelFor()!=null ) {
-            _txtContextPath = new JTextFieldOperator((JTextField)lblContextPath().getLabelFor());
+        if (lblContextPath().getLabelFor()!=null) {
+            _txtContextPath = new JTextFieldOperator(
+                    (JTextField)lblContextPath().getLabelFor());
         }
         return _txtContextPath;
     }
@@ -311,8 +339,9 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
     public JCheckBoxOperator cbSetAsMainProject() {
         if ( _cbSetAsMainProject==null ) {
             _cbSetAsMainProject = new JCheckBoxOperator(this,
-                    Bundle.getString("org.netbeans.modules.web.project.ui.wizards.Bundle", 
-                                     "LBL_NWP1_SetAsMain_CheckBox"));
+                    Bundle.getString(
+                    "org.netbeans.modules.web.project.ui.wizards.Bundle",
+                    "LBL_NWP1_SetAsMain_CheckBox"));
         }
         return _cbSetAsMainProject;
     }
