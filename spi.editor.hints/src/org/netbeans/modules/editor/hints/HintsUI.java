@@ -240,26 +240,7 @@ public class HintsUI implements MouseListener, KeyListener {
     private PopupFactory pf = null;
     private PopupFactory getPopupFactory() {
         if (pf == null) {
-            //Lightweight popup never repaints on mac os - no idea why
-            //Seems to be solved by usage of the JLayeredPane
-            if (false) {
-                pf = new PopupFactory();
-                try {
-                    java.lang.reflect.Method m = PopupFactory.class.getDeclaredMethod("setPopupType", new Class[] {Integer.TYPE});
-                    m.setAccessible(true);
-                    java.lang.reflect.Field f = PopupFactory.class.getDeclaredField("HEAVY_WEIGHT_POPUP");
-                    f.setAccessible(true);
-                    Object arg = f.get(PopupFactory.class);
-                    m.invoke (pf, new Object[] { arg });
-                } catch (Exception e) {
-                    pf = PopupFactory.getSharedInstance();
-                    e.printStackTrace();
-                    ErrorManager.getDefault().notify (ErrorManager.INFORMATIONAL,
-                            e);
-                }
-            } else {
-                pf = PopupFactory.getSharedInstance();
-            }
+            pf = PopupFactory.getSharedInstance();
         }
         return pf;
     }
