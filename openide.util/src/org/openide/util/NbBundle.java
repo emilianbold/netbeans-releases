@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
 import org.openide.ErrorManager;
@@ -38,7 +39,6 @@ import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.jar.Attributes;
 
-
 /** Convenience class permitting easy loading of localized resources of various sorts.
 * Extends the functionality of the default Java resource support, and interacts
 * better with class loaders in a multiple-loader system.
@@ -51,10 +51,9 @@ import java.util.jar.Attributes;
 *   // Might also look in /com/mycom/Bundle_de.properties, etc.
 * }
 * </pre></code>
-*
-* @author   Petr Hamernik, Jaroslav Tulach, Jesse Glick
 */
 public class NbBundle extends Object {
+    
     private static final boolean USE_DEBUG_LOADER = Boolean.getBoolean("org.openide.util.NbBundle.DEBUG"); // NOI18N
     private static String brandingToken = null;
 
@@ -88,6 +87,11 @@ public class NbBundle extends Object {
     /** Set the current branding token.
      * The permitted format, as a regular expression:
      * <pre>/^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$/</pre>
+     * <p class="nonnormative">
+     * This is normally only called by NetBeans startup code and unit tests.
+     * Currently the branding may be specified by passing the <code>--branding</code>
+     * command-line option to the launcher.
+     * </p>
      * @param bt the new branding, or <code>null</code> to clear
      * @throws IllegalArgumentException if in an incorrect format
      */
@@ -96,9 +100,10 @@ public class NbBundle extends Object {
         brandingToken = bt;
     }
 
-    /** Get a localized file in the default locale with the default class loader.
+    /**
+     * Get a localized and/or branded file in the default locale with the default class loader.
     * <p>Note that use of this call is similar to using the URL protocol <code>nbresloc</code>
-    * (which is in fact implemented using the fuller form of the method).
+    * (which may in fact be implemented using the fuller form of the method).
     * <p>The extension may be null, in which case no final dot will be appended.
     * If it is the empty string, the resource will end in a dot.
     * @param baseName base name of file, as dot-separated path (e.g. <code>some.dir.File</code>)
@@ -114,7 +119,8 @@ public class NbBundle extends Object {
         return getLocalizedFile(baseName, ext, Locale.getDefault(), getLoader());
     }
 
-    /** Get a localized file with the default class loader.
+    /**
+     * Get a localized and/or branded file with the default class loader.
     * @param baseName base name of file, as dot-separated path (e.g. <code>some.dir.File</code>)
     * @param ext      extension of file (or <code>null</code>)
     * @param locale   locale of file
@@ -129,7 +135,8 @@ public class NbBundle extends Object {
         return getLocalizedFile(baseName, ext, locale, getLoader());
     }
 
-    /** Get a localized file.
+    /**
+     * Get a localized and/or branded file.
     * @param baseName base name of file, as dot-separated path (e.g. <code>some.dir.File</code>)
     * @param ext      extension of file (or <code>null</code>)
     * @param locale   locale of file
@@ -230,7 +237,8 @@ public class NbBundle extends Object {
         }
     }
 
-    /** Find a localized value for a given key and locale.
+    /**
+     * Find a localized and/or branded value for a given key and locale.
     * Scans through a map to find
     * the most localized match possible. For example:
     * <p><code><PRE>
@@ -276,7 +284,8 @@ public class NbBundle extends Object {
         return null;
     }
 
-    /** Find a localized value for a given key in the default system locale.
+    /**
+     * Find a localized and/or branded value for a given key in the default system locale.
     *
     * @param table mapping from localized strings to objects
     * @param key the key to look for
@@ -287,7 +296,8 @@ public class NbBundle extends Object {
         return getLocalizedValue(table, key, Locale.getDefault());
     }
 
-    /** Find a localized value in a JAR manifest.
+    /**
+     * Find a localized and/or branded value in a JAR manifest.
     * @param attr the manifest attributes
     * @param key the key to look for (case-insensitive)
     * @param locale the locale to use
@@ -297,7 +307,8 @@ public class NbBundle extends Object {
         return (String) getLocalizedValue(attr2Map(attr), key.toString().toLowerCase(Locale.US), locale);
     }
 
-    /** Find a localized value in a JAR manifest in the default system locale.
+    /**
+     * Find a localized and/or branded value in a JAR manifest in the default system locale.
     * @param attr the manifest attributes
     * @param key the key to look for (case-insensitive)
     * @return the value if found, else <code>null</code>
@@ -320,7 +331,7 @@ public class NbBundle extends Object {
     // ---- LOADING RESOURCE BUNDLES ----
 
     /**
-    * Get a resource bundle with the default class loader and locale.
+    * Get a resource bundle with the default class loader and locale/branding.
     * <strong>Caution:</strong> {@link #getBundle(Class)} is generally
     * safer when used from a module as this method relies on the module's
     * classloader to currently be part of the system classloader. The
@@ -338,7 +349,7 @@ public class NbBundle extends Object {
     }
 
     /** Get a resource bundle in the same package as the provided class,
-    * with the default locale and the class' own classloader.
+    * with the default locale/branding and the class' own classloader.
     * This is the usual style of invocation.
     *
     * @param clazz the class to take the package name from
@@ -368,9 +379,9 @@ public class NbBundle extends Object {
     }
 
     /**
-    * Get a resource bundle with the default class loader.
+    * Get a resource bundle with the default class loader and branding.
     * @param baseName bundle basename
-    * @param locale the locale to use
+    * @param locale the locale to use (but still uses {@link #getBranding default branding})
     * @return the resource bundle
     * @exception MissingResourceException if the bundle does not exist
     */
@@ -381,7 +392,7 @@ public class NbBundle extends Object {
 
     /** Get a resource bundle the hard way.
     * @param baseName bundle basename
-    * @param locale the locale to use
+    * @param locale the locale to use (but still uses {@link #getBranding default branding})
     * @param loader the class loader to use
     * @return the resource bundle
     * @exception MissingResourceException if the bundle does not exist
@@ -592,7 +603,8 @@ public class NbBundle extends Object {
     // Helper methods to simplify localization of messages
     //
 
-    /** Finds a localized string in a bundle.
+    /**
+     * Finds a localized and/or branded string in a bundle.
     * @param clazz the class to use to locate the bundle
     * @param resName name of the resource to look for
     * @return the string associated with the resource
@@ -603,7 +615,8 @@ public class NbBundle extends Object {
         return getBundle(clazz).getString(resName);
     }
 
-    /** Finds a localized string in a bundle and formats the message
+    /**
+     * Finds a localized and/or branded string in a bundle and formats the message
     * by passing requested parameters.
     *
     * @param clazz the class to use to locate the bundle
@@ -618,7 +631,8 @@ public class NbBundle extends Object {
         return getMessage(clazz, resName, new Object[] { param1 });
     }
 
-    /** Finds a localized string in a bundle and formats the message
+    /**
+     * Finds a localized and/or branded string in a bundle and formats the message
     * by passing requested parameters.
     *
     * @param clazz the class to use to locate the bundle
@@ -634,7 +648,8 @@ public class NbBundle extends Object {
         return getMessage(clazz, resName, new Object[] { param1, param2 });
     }
 
-    /** Finds a localized string in a bundle and formats the message
+    /**
+     * Finds a localized and/or branded string in a bundle and formats the message
     * by passing requested parameters.
     *
     * @param clazz the class to use to locate the bundle
@@ -651,7 +666,8 @@ public class NbBundle extends Object {
         return getMessage(clazz, resName, new Object[] { param1, param2, param3 });
     }
 
-    /** Finds a localized string in a bundle and formats the message
+    /**
+     * Finds a localized and/or branded string in a bundle and formats the message
     * by passing requested parameters.
     *
     * @param clazz the class to use to locate the bundle
@@ -676,10 +692,12 @@ public class NbBundle extends Object {
         return (c != null) ? c : ClassLoader.getSystemClassLoader();
     }
 
-    /** Get a list of all suffixes used to search for localized resources.
+    /**
+     * Get a list of all suffixes used to search for localized/branded resources.
      * Based on the default locale and branding, returns the list of suffixes
      * which various <code>NbBundle</code> methods use as the search order.
-     * For example, you might get a sequence such as:
+     * For example, when {@link #getBranding} returns <code>branding</code>
+     * and the default locale is German, you might get a sequence such as:
      * <ol>
      * <li><samp>"_branding_de"</samp>
      * <li><samp>"_branding"</samp>
