@@ -25,15 +25,10 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import org.netbeans.modules.apisupport.project.ManifestManager.PackageExport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.Dependency;
-
-// XXX a lot of code in this class is duplicated from
-// org.netbeans.core.modules.Module class. It would be nice to maintain this
-// code only once.
 
 /**
  * TODO - Comment whole code!
@@ -157,17 +152,12 @@ public final class ManifestManager {
         try {
             OutputStream os = manifest.getOutputStream(lock);
             try {
-                PrintWriter pw = new PrintWriter(os);
-                try {
-                    pw.println("Manifest-Version: 1.0"); // NOI18N
-                    pw.println(OPENIDE_MODULE + ": " + cnb); // NOI18N
-                    pw.println(OPENIDE_MODULE_SPECIFICATION_VERSION + ": " + specVer); // NOI18N
-                    pw.println(OPENIDE_MODULE_LOCALIZING_BUNDLE + ": " + bundlePath); // NOI18N
-                    pw.println(OPENIDE_MODULE_LAYER + ": " + layerPath); // NOI18N
-                    pw.println();
-                } finally {
-                    pw.close();
-                }
+                EditableManifest em = new EditableManifest();
+                em.setAttribute(OPENIDE_MODULE, cnb, null);
+                em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
+                em.setAttribute(OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
+                em.setAttribute(OPENIDE_MODULE_LAYER, layerPath, null);
+                em.write(os);
             } finally {
                 os.close();
             }
@@ -177,6 +167,9 @@ public final class ManifestManager {
     }
     
     private static PackageExport[] parseExportedPackages(String exportsS) {
+        // XXX a lot of code in this method is duplicated from
+        // org.netbeans.core.modules.Module class. It would be nice to maintain this
+        // code only once.
         PackageExport[] exportedPackages = null;
         if (exportsS.trim().equals("-")) { // NOI18N
             exportedPackages = EMPTY_EXPORTED_PACKAGES;
