@@ -18,6 +18,8 @@ import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
@@ -217,11 +219,11 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     }
 
     private void removeNotVersionedRoots() {
-        CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         List newRoots = new ArrayList(roots.length);
         for (int i = 0; i < roots.length; i++) {
             File rootFile = roots[i];
-            if (cvs.isManaged(rootFile)) newRoots.add(rootFile);
+            if ((cache.getStatus(rootFile).getStatus() & FileInformation.STATUS_MANAGED) != 0) newRoots.add(rootFile);
         }
         setRoots((File[]) newRoots.toArray(new File[newRoots.size()]));
     }

@@ -23,12 +23,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.*;
 
 import java.io.*;
 import java.util.*;
@@ -222,23 +220,35 @@ public class Utils {
 
     /**
      * Computes relative path from the nearest versioned root.
+     * TODO: add second argument: File [] roots
      *
      * @param path full path
      * @return String relative path from the nearest versioned root. If this path does not describe a
      * versioned file, this method returns the full path itself. 
      */
     public static String getRelativePath(String path) {
-        String relativePath = path;
-        for (Iterator i = CvsModuleConfig.getDefault().getManagedRoots().iterator(); i.hasNext();) {
-            CvsModuleConfig.ManagedRoot root = (CvsModuleConfig.ManagedRoot) i.next();
-            String rootPath = root.getPath();
-            if (path.startsWith(rootPath)) {
-                int idx = rootPath.lastIndexOf(File.separatorChar);
-                relativePath = path.substring(idx == -1 ? 0 : idx + 1);
-                break;
+        File file = FileUtil.normalizeFile(new File(path));
+        Project p = getProject(file);
+        if (p != null) {
+            String rootPath = FileUtil.toFile(p.getProjectDirectory()).getAbsolutePath();
+            int idx = rootPath.lastIndexOf(File.separatorChar);
+            return path.substring(idx == -1 ? 0 : idx + 1);
+        } else {
+            FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+            for (file = file.getParentFile(); file != null; file = file.getParentFile()) {
+                if (cache.getStatus(file).getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
+                    int idx = file.getAbsolutePath().lastIndexOf(File.separatorChar);
+                    return path.substring(idx == -1 ? 0 : idx + 1);
+                }
             }
         }
-        return relativePath;
+        return path;
+    }
+    
+    private static Project getProject(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) return null;
+        return FileOwnerQuery.getOwner(fo);
     }
 
     /**

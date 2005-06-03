@@ -16,16 +16,12 @@ package org.netbeans.modules.versioning.system.cvss;
 import org.openide.modules.ModuleInstall;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.project.Project;
 import org.netbeans.core.modules.Module;
 import org.netbeans.core.modules.ModuleManager;
 import org.netbeans.core.modules.InvalidException;
 import org.netbeans.core.NbTopManager;
 
 import javax.swing.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.*;
 
 /**
@@ -37,11 +33,7 @@ import java.util.*;
  * @author Petr Kuzel
  * @author Maros Sandor
  */
-public final class ModuleLifecycleManager extends ModuleInstall implements PropertyChangeListener {
-
-    public void restored() {
-        OpenProjects.getDefault().addPropertyChangeListener(this);
-    }
+public final class ModuleLifecycleManager extends ModuleInstall {
 
     public void validate() throws IllegalStateException {
         final Boolean [] oldEnabled = new Boolean[] { Boolean.FALSE };
@@ -99,15 +91,9 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Prope
     }
     
     public void uninstalled() {
-        OpenProjects.getDefault().removePropertyChangeListener(this);
         if (JOptionPane.showConfirmDialog(null, NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Uninstall_Warning"), 
                                           NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Uninstall_Warning_Title"), 
                                           JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) return;
         enableCurrentModules();
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        CvsVersioningSystem.getInstance().updateManagedRoots(projects);
     }
 }

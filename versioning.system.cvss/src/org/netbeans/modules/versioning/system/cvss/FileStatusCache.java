@@ -16,26 +16,19 @@ package org.netbeans.modules.versioning.system.cvss;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.spi.VersioningListener;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.lib.cvsclient.admin.Entry;
 
 import java.io.*;
 import java.util.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * Central part of CVS status management, deduces and caches statuses of files under version control.
  * 
- * Persistent elsewhere:
- * - list of files inside the folder
- * - status (up-to-date, etc.), meni sa ak prebehne nejaky command alebo ked user file zedituje
- * 
  * @author Maros Sandor
  */
-public class FileStatusCache implements PropertyChangeListener {
+public class FileStatusCache {
 
     /**
      * Indicates that status of a file changed and listeners SHOULD check new status 
@@ -63,10 +56,13 @@ public class FileStatusCache implements PropertyChangeListener {
     public static final int REPOSITORY_STATUS_REMOVED_REMOTELY   = 'Y';
     public static final int REPOSITORY_STATUS_UPTODATE  = 65536;
 
-    private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
-    private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE);
-    private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED);
-    private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN);
+    private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, false);
+    private static final FileInformation FILE_INFORMATION_EXCLUDED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true); 
+    private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
+    private static final FileInformation FILE_INFORMATION_UPTODATE_DIRECTORY = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, true); 
+    private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, false);
+    private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
+    private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
 
     private final CvsVersioningSystem   cvs;
     private final CvsLiteAdminHandler   sah;
@@ -82,13 +78,13 @@ public class FileStatusCache implements PropertyChangeListener {
      * to Collections.EMPTY_MAP. Entries in this map are created as directories are scanne, are never removed and
      * are updated by the refresh method.
      */
-    private final HashMap               scannedFolders;         // File => Set<File>
+    private final Map       scannedFolders;         // File => Map<File,FileInformation>
 
-    private final Object scanLock = new Object();
+    private final Object    scanLock = new Object();
 
-    private Turbo turbo;
+    private Turbo           turbo;
     
-    private int serialVersion = 0;
+    private int             serialVersion = 0;
 
     /**
      * Identifies attribute that holds information about all non STATUS_VERSIONED_UPTODATE files.
@@ -104,7 +100,6 @@ public class FileStatusCache implements PropertyChangeListener {
         scannedFolders = cache == null ? new HashMap() : cache;
         this.cvs = cvsVersioningSystem;
         sah = (CvsLiteAdminHandler) cvs.getAdminHandler();
-        CvsModuleConfig.getDefault().addPropertyChangeListener(this);
 
         if (TURBO_ENABLED) {
             System.out.println("Turbo is active, netbeans.experimental.FileStatusCache property honored.");  // NOI18N
@@ -142,7 +137,13 @@ public class FileStatusCache implements PropertyChangeListener {
      */ 
     public File [] listFilesCached(File dir) throws InformationUnavailableException {
         synchronized(onFolderInfp()) {
-            if (getFolderInfo(dir) == null) throw new InformationUnavailableException();
+            if (getFolderInfo(dir) == null) {
+                if (isNotManagedByDefault(dir)) {
+                    return new File[0];
+                } else {
+                    throw new InformationUnavailableException();
+                }
+            }
         }
         return listFiles(dir);
     }
@@ -195,10 +196,6 @@ public class FileStatusCache implements PropertyChangeListener {
         FileInformation fi = createFileInformation(file, repositoryStatus);
         if (fi.equals(current) || current == null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_UPTODATE) != 0) {
             return fi;
-        }
-        if (files == Collections.EMPTY_MAP) {
-            files = new HashMap();
-            putFolderInfo(dir, files);
         }
         synchronized(onFolderInfp()) {
             if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
@@ -300,9 +297,10 @@ public class FileStatusCache implements PropertyChangeListener {
     }
 
     /**
-     * Refreshes statuses of locally modified files. Used after deserialization.
+     * Cleans up the cache by removing or correcting entries that are no longer valid or correct.
+     * TODO: implement full cleanup, may also speculatively delete some entries to limit cache size 
      */ 
-    void refreshLocallyModified() {
+    void cleanUp() {
         synchronized(onFolderInfp()) {
             Set toRefresh = new HashSet();
             for (Iterator i = scannedFolders.values().iterator(); i.hasNext();) {
@@ -331,6 +329,7 @@ public class FileStatusCache implements PropertyChangeListener {
             turbo.writeEntry(dir, FILE_STATUS_MAP, files);
         } else {
             synchronized(onFolderInfp()) {
+                assert !dir.getName().equals(CvsVersioningSystem.FILENAME_CVS);
                 scannedFolders.put(dir, files);
             }
         }
@@ -371,7 +370,7 @@ public class FileStatusCache implements PropertyChangeListener {
             files = getFolderInfo(dir);
             if (files != null) return files;
         }
-        if (!dir.exists() && MetadataAttic.getMetadata(dir) == null) {
+        if (isNotManagedByDefault(dir)) {
             return NOT_MANAGED_MAP; 
         }
         synchronized(scanLock) {
@@ -385,32 +384,27 @@ public class FileStatusCache implements PropertyChangeListener {
         return files;
     }
 
-    private Map scanFolder(File dir) {
-        Map folderFiles = new HashMap();
+    private boolean isNotManagedByDefault(File dir) {
+        return !dir.exists() && MetadataAttic.getMetadata(dir) == null || dir.getName().equals(CvsVersioningSystem.FILENAME_CVS);
+    }
 
-        if (!cvs.isManaged(dir)) {
-            boolean containsManagedFile = false;
-            File [] files = dir.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if (cvs.isManaged(files[i])) {
-                    containsManagedFile = true;
-                    break;
-                }
-            }
-            if (!containsManagedFile) return NOT_MANAGED_MAP;
-        } else {
-            if ("CVS".equals(dir.getName())) return NOT_MANAGED_MAP;
-        }
-        
+    /**
+     * Scans all files in the given folder, computes and stores their CVS status. 
+     * 
+     * @param dir directory to scan
+     * @return Map map to be included in the status cache (File => FileInformation)
+     */ 
+    private Map scanFolder(File dir) {
         File [] files = dir.listFiles();
         if (files == null) files = new File[0];
+        Map folderFiles = new HashMap(files.length);
+        
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileInformation fi = createFileInformation(file, REPOSITORY_STATUS_UNKNOWN);
-            if (fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
+            // directories are always in cache for listFiles() to work
+            if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
                 folderFiles.put(file, fi);
-            } else {
-                if (file.isDirectory()) folderFiles.put(file, FILE_INFORMATION_UPTODATE);
             }
         }
 
@@ -431,18 +425,24 @@ public class FileStatusCache implements PropertyChangeListener {
         } catch (IOException e) {
             // bad entries, ignore them
         }
-        if (folderFiles.size() == 0) folderFiles = Collections.EMPTY_MAP;
         return folderFiles;
     }
 
+    /**
+     * Examines a file or folder and computes its CVS status. 
+     * 
+     * @param file file/folder to examine
+     * @param repositoryStatus status of the file/folder as reported by the CVS server 
+     * @return FileInformation file/folder status bean
+     */ 
     private FileInformation createFileInformation(File file, int repositoryStatus) {
         FileInformation fi = null;
         Entry entry = null;
         if (!cvs.isManaged(file)) {
-            return FILE_INFORMATION_NOTMANAGED;
+            return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
         }
         if (cvs.isIgnored(file)) {
-            return FILE_INFORMATION_EXCLUDED;
+            return file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
         }
         try {
             entry = sah.getEntry(file);
@@ -456,32 +456,26 @@ public class FileStatusCache implements PropertyChangeListener {
         }
         return fi;
     }
-/*
-    private int typeToStatus(String type) {
-        // file je modifikovany v repository        ... U
-        // file je v repository a lokalne nie je    ... U
-        // file bol iba lokalne modifivany          ... M
-        // file bol modifikovany aj tam aj tam a da sa zmergovat      ... G
-        // konflikt neda sa zmergovat normalne      ... C
-        // novy lokalne nepridany                   ... ?
-        // novy lokalne pridany cez add             ... A 
-        // zmazany lokalne cez remove caka na commit ... R 
-        // zmazany v repo, lokalne existuje         ... Y
-        // zmazany v repo, lokalne modifikovany     ... C
-    }
-*/
-    
+
+    /**
+     * Examines a file or folder that has an associated CVS entry. 
+     * 
+     * @param entry entry of the file/folder
+     * @param file file/folder to examine
+     * @param repositoryStatus status of the file/folder as reported by the CVS server 
+     * @return FileInformation file/folder status bean
+     */ 
     private FileInformation createVersionedFileInformation(Entry entry, File file, int repositoryStatus) {
         if (entry.isDirectory()) {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.FLAG_DIRECTORY, entry);
+            return FILE_INFORMATION_UPTODATE_DIRECTORY;
         }
         if (entry.isNewUserFile()) {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, entry);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, entry, false);
         } else if (entry.isUserFileToBeRemoved()) {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, entry);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, entry, false);
         } else {
             if (!file.exists()) {
-                return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY, entry);                
+                return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY, entry, false);                
             }
             if (repositoryStatus == REPOSITORY_STATUS_UPTODATE) {
                 if (!entryTimestampMatches(entry,  file)) {
@@ -492,34 +486,34 @@ public class FileStatusCache implements PropertyChangeListener {
                         e.printStackTrace();
                     }
                 }
-                return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, entry);
+                return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, entry, false);
             } else if (repositoryStatus == REPOSITORY_STATUS_UPDATED || repositoryStatus == REPOSITORY_STATUS_PATCHED) {
-                return new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY, entry);
+                return new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY, entry, false);
             } else if (repositoryStatus == REPOSITORY_STATUS_MODIFIED) {
-                FileInformation fi = new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, entry);
+                FileInformation fi = new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, entry, false);
                 return fi;
             } else if (repositoryStatus == REPOSITORY_STATUS_CONFLICT) {
                 if (isLocalConflict(entry, file)) {
-                    return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, entry);
+                    return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, entry, false);
                 } else {
-                    return new FileInformation(FileInformation.STATUS_VERSIONED_MERGE, entry);
+                    return new FileInformation(FileInformation.STATUS_VERSIONED_MERGE, entry, false);
                 }
             } else if (repositoryStatus == REPOSITORY_STATUS_MERGEABLE) {
-                return new FileInformation(FileInformation.STATUS_VERSIONED_MERGE, entry);
+                return new FileInformation(FileInformation.STATUS_VERSIONED_MERGE, entry, false);
             } else if (repositoryStatus == REPOSITORY_STATUS_REMOVED_REMOTELY) {
-                return new FileInformation(FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY, entry);
+                return new FileInformation(FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY, entry, false);
             } else if (repositoryStatus == REPOSITORY_STATUS_UNKNOWN || repositoryStatus == '?') {
                 if (file.exists()) {
                     if (isLocalConflict(entry, file)) {
-                        return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, entry);
+                        return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, entry, false);
                     } else if (entryTimestampMatches(entry,  file)) {
-                        return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, entry);
+                        return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, entry, false);
                     } else {
-                        FileInformation fi = new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, entry);
+                        FileInformation fi = new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, entry, false);
                         return fi;
                     }                    
                 } else {
-                    return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY, entry);                    
+                    return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY, entry, false);                    
                 }
             }
         }
@@ -530,31 +524,41 @@ public class FileStatusCache implements PropertyChangeListener {
         return file.exists() && entry.hadConflicts() && entryTimestampMatches(entry, file);
     }
 
+    /**
+     * Examines a file or folder that does NOT have an associated CVS entry. 
+     * 
+     * @param file file/folder to examine
+     * @param repositoryStatus status of the file/folder as reported by the CVS server 
+     * @return FileInformation file/folder status bean
+     */ 
     private FileInformation createMissingEntryFileInformation(File file, int repositoryStatus) {
-        if (getStatus(file.getParentFile()).getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-            return FILE_INFORMATION_EXCLUDED;
+        boolean isDirectory = file.isDirectory();
+        int parentStatus = getStatus(file.getParentFile()).getStatus();
+        if (parentStatus == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+            return isDirectory ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
         }
-        if (cvs.isRoot(file)) {
-            return FILE_INFORMATION_UPTODATE;
+        // Working directory roots (aka managed roots). We already know that cvs.isManaged(file) is true
+        if (isDirectory && parentStatus == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
+             return FILE_INFORMATION_UPTODATE_DIRECTORY;
         }
         if (repositoryStatus == REPOSITORY_STATUS_UNKNOWN || repositoryStatus == '?') {
             if (file.exists()) {
-                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
             } else {
-                return new FileInformation(FileInformation.STATUS_UNKNOWN);
+                return new FileInformation(FileInformation.STATUS_UNKNOWN, false);
             }                    
         } else if (repositoryStatus == REPOSITORY_STATUS_UPDATED) {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_NEWINREPOSITORY);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_NEWINREPOSITORY, isDirectory);
         } else if (repositoryStatus == REPOSITORY_STATUS_UPTODATE) {
             // server marks this file as uptodate and it does not have an entry, the file is probably listed in CVSROOT/cvsignore
             if (getStatus(file.getParentFile()).getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
             } else {
-                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
+                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, isDirectory);
             }
         } else if (repositoryStatus == REPOSITORY_STATUS_REMOVED_REMOTELY) {
             if (file.exists()) {
-                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
             } else {
                 return FILE_INFORMATION_UNKNOWN;
             }
@@ -585,54 +589,6 @@ public class FileStatusCache implements PropertyChangeListener {
     private void fireFileStatusChanged(File file) {
         serialVersion++;
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, file);
-    }
-
-    /**
-     * We need to update statuses of files that just became part of a versioned root. For example, newly checked-out
-     * directories are considered not-versioned until the user opens a project inside them. Must be called
-     * while holding the lock.
-     */ 
-    private void refreshRoots() {
-        // TODO: Need to fire change events?
-        // TODO: Make this code Turbo-enabled
-        Set mappings = scannedFolders.keySet();
-        for (Iterator i = mappings.iterator(); i.hasNext();) {
-            File folder = (File) i.next();
-            Map files = getFolderInfo(folder);
-            if (files == NOT_MANAGED_MAP) {
-                if (cvs.isManaged(folder)) {
-                    i.remove();
-                    continue;
-                }
-            } else {
-                if (!cvs.isManaged(folder)) {
-                    i.remove();
-                    continue;
-                }
-            }
-        }
-        
-        Set setups = CvsModuleConfig.getDefault().getManagedRoots();
-        for (Iterator i = setups.iterator(); i.hasNext();) {
-            CvsModuleConfig.ManagedRoot managedRoot = (CvsModuleConfig.ManagedRoot) i.next();
-            File root = new File(managedRoot.getPath());
-            Map files = getFolderInfo(root.getParentFile());
-            if (files == null) {
-                // not scanned yet, ignore
-            } else if (files == NOT_MANAGED_MAP) {
-                removeFolderInfo(root.getParentFile());
-            } else {
-                files.put(root, FILE_INFORMATION_UPTODATE); // set as uptodate
-            }
-        }
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CvsModuleConfig.PROP_MANAGED_ROOTS.equals(evt.getPropertyName())) {
-            synchronized (onFolderInfp()) {
-                refreshRoots();
-            }
-        }
     }
 
     private static final class NotManagedMap extends AbstractMap implements Serializable {

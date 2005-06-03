@@ -13,55 +13,51 @@
 
 package org.netbeans.modules.versioning.system.cvss;
 
-import org.openide.filesystems.*;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
+import org.openide.filesystems.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * Handles events fired from the filesystem such as file/folder create/delete/move.
  * 
  * @author Maros Sandor
  */
-class FilesystemHandler implements FileChangeListener, InterceptionListener, PropertyChangeListener {
+class FilesystemHandler implements FileChangeListener, InterceptionListener {
         
     private static final String FILENAME_CVS = "CVS";
 
-    private final CvsVersioningSystem   cvs;
     private final FileStatusCache       cache;
     
-    private final Set                   hookedFilesystems = new HashSet(1);
-
     public FilesystemHandler(CvsVersioningSystem cvs) {
-        this.cvs = cvs;
         cache = cvs.getStatusCache();
-        CvsModuleConfig.getDefault().addPropertyChangeListener(this);
     }
     
     /**
-     * Deregisters current Filesystem listeners, re-reads CVS module configuration and registers
-     * new listeners based on the configuration.
+     * Registers listeners to all disk filesystems.
      */ 
-    private synchronized void restart() {
-        for (Iterator i = hookedFilesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            fileSystem.removeFileChangeListener(this);
-            i.remove();
+    void init() {
+        Set filesystems = new HashSet();
+        File [] roots = File.listRoots();
+        for (int i = 0; i < roots.length; i++) {
+            File root = roots[i];
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(root));
+            if (fo == null) continue;
+            try {
+                filesystems.add(fo.getFileSystem());
+            } catch (FileStateInvalidException e) {
+                // ignore invalid filesystems
+            }
         }
-        
-        Set setups = CvsModuleConfig.getDefault().getManagedRoots();
-        for (Iterator i = setups.iterator(); i.hasNext();) {
-            CvsModuleConfig.ManagedRoot managedRoot = (CvsModuleConfig.ManagedRoot) i.next();
-            addFilesystemHandler(new File(managedRoot.getPath()));
+        for (Iterator i = filesystems.iterator(); i.hasNext();) {
+            FileSystem fileSystem = (FileSystem) i.next();
+            fileSystem.addFileChangeListener(this);
         }
     }
 
@@ -97,36 +93,21 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Pro
         // not interested
     }
     
-    private void addFilesystemHandler(File root) {
-        root = FileUtil.normalizeFile(root);
-        FileSystem fs = getFileSystem(root);
-        if (hookedFilesystems.contains(fs)) return;
-        fs.addFileChangeListener(this);
-        hookedFilesystems.add(fs);
-    }
-
-    private FileSystem getFileSystem(File file) {
-        FileObject rootFileObject = FileUtil.toFileObject(file);
-        if (rootFileObject == null) throw new IllegalArgumentException("File must exist!");
-        try {
-            return rootFileObject.getFileSystem();
-        } catch (FileStateInvalidException e) {
-            IllegalArgumentException iae = new IllegalArgumentException("File resides in an invalid Filesystem");
-            iae.initCause(e);
-            throw iae;
-        }
-    }
-    
     private void addNewFile(File file) {
-        if (!cvs.isManaged(file)) return;
-        // TODO: do automatic handling for .cvignore files
-        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-    }
+        int status = cache.getStatus(file).getStatus();
+        if ((status & FileInformation.STATUS_MANAGED) == 0) return;
+        // TODO: if .cvignore is added, refresh statuses of whole directory
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CvsModuleConfig.PROP_MANAGED_ROOTS.equals(evt.getPropertyName())) {
-            restart();
+        StandardAdminHandler sah = new StandardAdminHandler();
+        Entry entry = null;
+        try {
+            entry = sah.getEntry(file);
+        } catch (IOException e) {
         }
+        if (entry != null && !entry.isDirectory() && entry.isUserFileToBeRemoved()) {
+            cvsUndoRemoveLocally(sah, file, entry);    
+        }
+        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
 
     /**
@@ -135,7 +116,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Pro
      * @param file deleted file
      */ 
     private void fileDeletedImpl(File file) {
-        if (!cvs.isManaged(file)) return;
+        if (file == null) return;
         
         StandardAdminHandler sah = new StandardAdminHandler();
         Entry entry = null;
@@ -167,6 +148,16 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Pro
         }
     }
 
+    private void cvsUndoRemoveLocally(AdminHandler ah, File file, Entry entry) {
+        entry.setRevision(entry.getRevision().substring(1));
+        entry.setConflict(Entry.getLastModifiedDateFormatter().format(new Date(System.currentTimeMillis() - 1000)));
+        try {
+            ah.setEntry(file, entry);
+        } catch (IOException e) {
+            // failed to set entry, the file will be probably resurrected during update
+        }
+    }
+    
     /**
      * The folder's metadata is about to be deleted. We have to save all metadata information.
      * 
@@ -196,7 +187,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Pro
             file = file.getParentFile();
         }
         if (!file.getName().equals(FILENAME_CVS)) return;
-        if (!cvs.isManaged(file)) return;
+        if ((cache.getStatus(file.getParentFile()).getStatus() & FileInformation.STATUS_MANAGED) == 0) return;
         file = file.getParentFile();
         saveMetadata(file);
     }

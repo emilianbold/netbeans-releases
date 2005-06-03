@@ -15,7 +15,6 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.status;
 
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.*;
 import org.openide.util.NbBundle;
@@ -51,7 +50,7 @@ public class StatusProjectsAction extends SystemAction {
     }
 
     public boolean isEnabled() {
-        return CvsModuleConfig.getDefault().getManagedRoots().size() > 0;
+        return OpenProjects.getDefault().getOpenProjects().length > 0;
     }
 
     public void actionPerformed(ActionEvent e) {

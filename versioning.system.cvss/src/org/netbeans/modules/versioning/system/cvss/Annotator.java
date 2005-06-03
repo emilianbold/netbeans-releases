@@ -263,7 +263,7 @@ public class Annotator {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {
             if (files[i].isFile()) return false;
-            if (!files[i].exists() && (cache.getStatus(files[i]).getStatus() & FileInformation.FLAG_DIRECTORY) == 0) return false;
+            if (!files[i].exists() && !cache.getStatus(files[i]).isDirectory()) return false;
         }
         return true;
     }

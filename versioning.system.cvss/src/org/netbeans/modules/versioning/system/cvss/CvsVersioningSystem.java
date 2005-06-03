@@ -27,18 +27,12 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.core.modules.ModuleManager;
 import org.netbeans.core.modules.Module;
 import org.netbeans.core.NbTopManager;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.filesystems.*;
 
 import java.io.*;
@@ -62,7 +56,8 @@ public class CvsVersioningSystem {
     public static final Object EVENT_PARAM_CHANGED = new Object();
     public static final Object PARAM_BATCH_REFRESH_RUNNING = new Object();
 
-    private static final String FILENAME_CVS = "CVS";
+    static final String FILENAME_CVS = "CVS";
+    private static final String FILENAME_CVS_REPOSITORY = FILENAME_CVS + "/Repository";
     
     private final Map clientsCache = new HashMap();
     private final Map params = new HashMap();
@@ -96,9 +91,8 @@ public class CvsVersioningSystem {
         filesystemHandler  = new FilesystemHandler(this);
         refreshManager = new RefreshManager(this);
         annotator = new Annotator(this);
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        updateManagedRoots(projects);
         MetadataAttic.cleanUp();
+        filesystemHandler.init();
     }
 
     /**
@@ -152,9 +146,9 @@ public class CvsVersioningSystem {
         fileStatusCache = new FileStatusCache(this, kes);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                fileStatusCache.refreshLocallyModified();
+                fileStatusCache.cleanUp();
             }
-        });
+        }, 5000);
     }
 
     /**
@@ -315,19 +309,14 @@ public class CvsVersioningSystem {
     }
 
     /**
-     * Checks if the file is be ignored by CVS module. This method assumes that the file is managed so
+     * Checks if the file is ignored by CVS module. This method assumes that the file is managed so
      * if you do not know this beforehand, you have to call isManaged() first.
      *
      * @param file file to be tested
      * @return true, if the file is ignored by CVS, false otherwise.
      */
     public boolean isIgnored(File file) {
-        if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) return true;
-
         String name = file.getName();
-        if (file.isDirectory()) {
-            if (name.equals(FILENAME_CVS)) return true;
-        }
         Set patterns = new HashSet(Arrays.asList(CvsModuleConfig.getDefault().getIgnoredFilePatterns()));
         addUserPatterns(patterns);
 
@@ -336,6 +325,7 @@ public class CvsVersioningSystem {
             if (pattern.matcher(name).matches()) return true;
         }
 
+        if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) return true;
         return isInCvsIgnore(file);
     }
     
@@ -377,80 +367,22 @@ public class CvsVersioningSystem {
     }
 
     /**
-     * Tests whether the file/directory is managed by this module.
+     * Tests whether a file or directory is managed by CVS. All files and folders that have a parent with CVS/Repository
+     * file are considered managed by CVS. This method accesses disk and should NOT be routinely called.
      * 
      * @param file a file or directory
-     * @return true if the file is under this module management, false otherwise
+     * @return true if the file is under CVS management, false otherwise
      */ 
-    public boolean isManaged(File file) {
-        String path = file.getAbsolutePath();
-        // TODO: more elegant testing ?
-        Set managedRoots = CvsModuleConfig.getDefault().getManagedRoots();
-        if (Utilities.isWindows()) {
-            for (Iterator i = managedRoots.iterator(); i.hasNext();) {
-                CvsModuleConfig.ManagedRoot root = (CvsModuleConfig.ManagedRoot) i.next();
-                String setupPath = root.getPath();
-                if (path.length() >= setupPath.length() && setupPath.equalsIgnoreCase(path.substring(0, setupPath.length()))) {
-                    return true;
-                }
-            }
-        } else {
-            for (Iterator i = managedRoots.iterator(); i.hasNext();) {
-                CvsModuleConfig.ManagedRoot root = (CvsModuleConfig.ManagedRoot) i.next();
-                if (path.startsWith(root.getPath())) {
-                    return true;
-                }
-            }
-        }
-/*
-        // automatic adding of versioned roots, disabled now
+    boolean isManaged(File file) {
+        if (file.isDirectory() && file.getName().equals(FILENAME_CVS)) return false;
         if (file.isFile()) file = file.getParentFile();
-        if (file == null) return false;
-        File entries = new File(file, FILENAME_CVS + "/Entries");
-        if (entries.canRead()) {
-            for (;;) {
-                if (file.getParentFile() == null) break;
-                entries = new File(file.getParentFile(), FILENAME_CVS + "/Entries");
-                if (!entries.canRead()) {
-                    addManagedRoot(file);
-                    break;
-                }
-                file = file.getParentFile();
-            }
-            return true;
-        }
-*/
-        return false;
-    }
-
-/*
-        // automatic adding of versioned roots, disabled now
-    private void addManagedRoot(File file) {
-        Set newRoots = new HashSet(CvsModuleConfig.getDefault().getManagedRoots());
-        for (Iterator i = newRoots.iterator(); i.hasNext();) {
-            CvsModuleConfig.ManagedRoot root = (CvsModuleConfig.ManagedRoot) i.next();
-            File currentRoot = new File(root.getPath());
-            if (Utils.isParentOrEqual(currentRoot, file)) return;
-            if (Utils.isParentOrEqual(file, currentRoot)) {
-                i.remove();
-            }
-        }
-        newRoots.add(new CvsModuleConfig.ManagedRoot(FileUtil.normalizeFile(file).getAbsolutePath()));
-        CvsModuleConfig.getDefault().setManagedRoots(newRoots);
-    }
-*/
-
-    public boolean isRoot(File file) {
-        String path = file.getAbsolutePath();
-        for (Iterator i = CvsModuleConfig.getDefault().getManagedRoots().iterator(); i.hasNext();) {
-            CvsModuleConfig.ManagedRoot root = (CvsModuleConfig.ManagedRoot) i.next();
-            if (path.equals(root.getPath())) {
-                return true;
-            }
+        for (; file != null; file = file.getParentFile()) {
+            File repository = new File(file, FILENAME_CVS_REPOSITORY);
+            if (repository.canRead()) return true;
         }
         return false;
     }
-    
+
     public boolean isInCvsIgnore(File file) {
         try {
             return readCvsIgnoreEntries(file.getParentFile()).contains(file.getName());
@@ -602,31 +534,6 @@ public class CvsVersioningSystem {
         }
     }
 
-    /**
-     * Marks all passed projects as versioning roots if CVS subfolder found.
-     * Updates internal structures used by {@link #isManaged}.
-     * Adds all files marked as NOT_SHARABLE by {@link org.netbeans.api.queries.SharabilityQuery} into .cvsignore lists
-     * to be consistent with other tools.
-     */
-    public void updateManagedRoots(Project[] projects) {
-        Set roots = new HashSet();
-        for (int i = 0; i < projects.length; i++) {
-            Project project = projects[i];
-            Sources projectSources = ProjectUtils.getSources(project);
-            SourceGroup groups[] = projectSources.getSourceGroups(Sources.TYPE_GENERIC);
-            for (int j = 0; j < groups.length; j++) {
-                SourceGroup group = groups[j];
-                FileObject root = group.getRootFolder();
-                File rootFile = FileUtil.toFile(root);
-                File testCVS = new File(rootFile, FILENAME_CVS);  // NOI18N
-                if (testCVS.isDirectory()) {
-                    roots.add(new CvsModuleConfig.ManagedRoot(rootFile.getAbsolutePath()));
-                }
-            }
-        }
-        CvsModuleConfig.getDefault().setManagedRoots(roots);
-    }
-    
     /**
      * Hook to obtain CVS system interception listener.
      * 
