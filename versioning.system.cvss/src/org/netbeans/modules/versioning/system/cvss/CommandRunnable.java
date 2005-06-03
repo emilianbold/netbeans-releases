@@ -38,6 +38,7 @@ class CommandRunnable implements Runnable, Cancellable {
     private boolean             aborted;
     private ProgressHandle      progressHandle;
     private String              progressName;
+    private Thread              runnableThread;
 
     public CommandRunnable(Client client, GlobalOptions options, Command cmd) {
         this.client = client;
@@ -51,6 +52,7 @@ class CommandRunnable implements Runnable, Cancellable {
     }
     
     public void run() {
+        runnableThread = Thread.currentThread();
         progressHandle.start();
         CounterRunnable counterUpdater = new CounterRunnable();
         RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
@@ -96,7 +98,7 @@ class CommandRunnable implements Runnable, Cancellable {
         if (finished || aborted) return false;
         aborted = true;
         client.abort();
-        Thread.currentThread().interrupt();
+        runnableThread.interrupt();
         return true;
     }
 
