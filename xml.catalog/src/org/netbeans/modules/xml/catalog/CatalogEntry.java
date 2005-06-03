@@ -72,7 +72,12 @@ public final class CatalogEntry extends Object {
     }
     
     public String getName() {
-        return publicID;
+        String id = getPublicID();
+        if (id.startsWith("PUBLIC:")) return id.substring(7); //NOI18N
+        if (id.startsWith("SYSTEM:")) return id.substring(7); //NOI18N
+        if (id.startsWith("URI:")) return id.substring(4); //NOI18N
+        if (id.startsWith("SCHEMA:")) return id.substring(7); //NOI18N
+        return id;
     }
     
     public String toString() {

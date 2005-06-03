@@ -35,7 +35,7 @@ public class CatalogEntryBeanInfo extends SimpleBeanInfo {
 
     static {
         try {
-            properties[PROPERTY_publicID] = new PropertyDescriptor ( "publicID", CatalogEntry.class, "getPublicID", null ); // NOI18N
+            properties[PROPERTY_publicID] = new PropertyDescriptor ( "publicID", CatalogEntry.class, "getName", null ); // NOI18N
             properties[PROPERTY_publicID].setDisplayName ( PUBLICID_N );
             properties[PROPERTY_publicID].setShortDescription ( PUBLICID_D );
             properties[PROPERTY_systemID] = new PropertyDescriptor ( "systemID", CatalogEntry.class, "getSystemID", null ); // NOI18N
