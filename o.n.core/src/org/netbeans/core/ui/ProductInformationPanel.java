@@ -510,15 +510,10 @@ public class ProductInformationPanel extends JPanel {
         while (all.hasMoreElements ()) {
             String s = (String)all.nextElement ();
             File f = new File (s);
-            try {
-                f = f.getCanonicalFile ();
-            } catch (java.io.IOException ex) {
-                // ignore and use original file
-            }
             if (files.add (f)) {
                 // new file
                 sb.append (prefix);
-                sb.append (f.toString ());
+                sb.append(f.getAbsolutePath());
                 prefix = "\n";
             }
         }
