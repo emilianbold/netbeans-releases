@@ -41,7 +41,7 @@ public class CustomizerLibraries extends JPanel {
         this.universeModulesModel = universeModules;
         updateEnabled();
         dependencyList.setModel(subModules);
-        dependencyList.setCellRenderer(ComponentFactory.getDependencyCellRenderer());
+        dependencyList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(false));
         dependencyList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {

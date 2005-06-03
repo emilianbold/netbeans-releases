@@ -33,7 +33,7 @@ final class AddModulePanel extends JPanel {
         this.universeModules = universeModules;
         initComponents();
         moduleList.setModel(universeModules);
-        moduleList.setCellRenderer(ComponentFactory.getDependencyCellRenderer());
+        moduleList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(true));
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 showDescriptionFor(moduleList.getSelectedIndex());
