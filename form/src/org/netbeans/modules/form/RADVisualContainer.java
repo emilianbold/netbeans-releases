@@ -23,7 +23,7 @@ import org.netbeans.modules.form.layoutsupport.*;
 
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
     private ArrayList subComponents = new ArrayList(10);
-    private LayoutSupportManager layoutSupport = new LayoutSupportManager();
+    private LayoutSupportManager layoutSupport; // = new LayoutSupportManager();
     private LayoutNode layoutNode; // [move to LayoutSupportManager?]
 
     private RADMenuComponent containerMenu;
@@ -32,25 +32,26 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     private boolean noContainerDelegate;
 
 
-    public boolean initialize(FormModel formModel) {
-        if (super.initialize(formModel)) {
-            if (getBeanClass() != null)
-                layoutSupport.initialize(this, formModel.getCodeStructure());
-            return true;
-        }
-        return false;
-    }
+//    public boolean initialize(FormModel formModel) {
+//        if (super.initialize(formModel)) {
+//            if (getBeanClass() != null)
+//                layoutSupport.initialize(this, formModel.getCodeStructure());
+//            return true;
+//        }
+//        return false;
+//    }
 
     protected void setBeanInstance(Object beanInstance) {
-        if (isLayoutSupportSet())
-            layoutSupport.clearPrimaryContainer();
+//        if (layoutSupport != null && layoutSupport.getLayoutDelegate() != null)
+//            layoutSupport.clearPrimaryContainer();
 
         containerDelegateGetter = null;
         noContainerDelegate = false;
 
         super.setBeanInstance(beanInstance);
 
-        layoutSupport.initialize(this, getFormModel().getCodeStructure());
+        if (layoutSupport != null)
+            layoutSupport.initialize(this, getFormModel().getCodeStructure());
     }
 
     public void setLayoutSupportDelegate(LayoutSupportDelegate layoutDelegate,
@@ -65,8 +66,30 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         return layoutSupport;
     }
 
-    public boolean isLayoutSupportSet() {
-        return layoutSupport.getLayoutDelegate() != null;
+//    public boolean isLayoutSupportSet() {
+//        return layoutSupport.getLayoutDelegate() != null;
+//    }
+
+    void setOldLayoutSupport(boolean old) {
+        if (old) {
+            if (layoutSupport == null) {
+                layoutSupport = new LayoutSupportManager();
+                if (getBeanClass() != null)
+                    layoutSupport.initialize(this, getFormModel().getCodeStructure());
+            }
+        }
+        else {
+            layoutSupport = null;
+            setLayoutNodeReference(null);
+        }
+    }
+
+//    public boolean hasOldLayoutSupport() {
+//        return layoutSupport != null;
+//    }
+
+    public boolean hasDedicatedLayoutSupport() {
+        return layoutSupport != null && layoutSupport.isDedicated();
     }
 
     /**
@@ -136,6 +159,10 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         return layoutNode;
     }
 
+    boolean shouldHaveLayoutNode() {
+        return layoutSupport != null && layoutSupport.shouldHaveNode();
+    }
+
     RADMenuComponent getContainerMenu() {
         return containerMenu;
     }
@@ -202,23 +229,35 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     public void reorderSubComponents(int[] perm) {
-        layoutSupport.removeAll();
+        if (layoutSupport != null) {
+            layoutSupport.removeAll();
 
-        RADVisualComponent[] components =
-            new RADVisualComponent[subComponents.size()];
-        LayoutConstraints[] constraints =
-            new LayoutConstraints[subComponents.size()];
+            RADVisualComponent[] components =
+                new RADVisualComponent[subComponents.size()];
+            LayoutConstraints[] constraints =
+                new LayoutConstraints[subComponents.size()];
 
-        for (int i=0; i < perm.length; i++) {
-            RADVisualComponent comp = (RADVisualComponent) subComponents.get(i);
-            components[perm[i]] = comp;
-            constraints[perm[i]] = layoutSupport.getStoredConstraints(comp);
+            for (int i=0; i < perm.length; i++) {
+                RADVisualComponent comp = (RADVisualComponent) subComponents.get(i);
+                components[perm[i]] = comp;
+                constraints[perm[i]] = layoutSupport.getStoredConstraints(comp);
+            }
+
+            subComponents.clear();
+            subComponents.addAll(java.util.Arrays.asList(components));
+
+            layoutSupport.addComponents(components, constraints, 0);
         }
-
-        subComponents.clear();
-        subComponents.addAll(java.util.Arrays.asList(components));
-
-        layoutSupport.addComponents(components, constraints, 0);
+        else {
+            RADVisualComponent[] components =
+                new RADVisualComponent[subComponents.size()];
+            for (int i=0; i < perm.length; i++) {
+                RADVisualComponent comp = (RADVisualComponent) subComponents.get(i);
+                components[perm[i]] = comp;
+            }
+            subComponents.clear();
+            subComponents.addAll(java.util.Arrays.asList(components));
+        }
     }
 
     public void add(RADComponent comp) {
@@ -234,8 +273,10 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     public void remove(RADComponent comp) {
         if (comp instanceof RADVisualComponent) {
-            layoutSupport.removeComponent((RADVisualComponent) comp,
-                                          subComponents.indexOf(comp));
+            if (layoutSupport != null) {
+                layoutSupport.removeComponent((RADVisualComponent) comp,
+                                              subComponents.indexOf(comp));
+            }
             if (subComponents.remove(comp))
                 comp.setParentComponent(null);
         }

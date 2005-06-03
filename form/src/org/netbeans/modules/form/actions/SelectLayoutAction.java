@@ -55,7 +55,7 @@ public class SelectLayoutAction extends CallableSystemAction {
         Node[] nodes = getNodes();
         for (int i=0; i < nodes.length; i++) {
             RADVisualContainer container = getContainer(nodes[i]);
-            if (container == null || container.getLayoutSupport().isDedicated())
+            if (container == null || container.hasDedicatedLayoutSupport())
                 return false;
         }
         return true;
@@ -126,6 +126,14 @@ public class SelectLayoutAction extends CallableSystemAction {
 
             if (nodes.length != 0 && !initialized) {
                 popup.removeAll();
+
+                if (FormEditor.isNaturalLayoutEnabled()) {
+                    JMenuItem mi = new JMenuItem("Free Design"); // [need to choose right label and do i18n]
+                    popup.add(mi);
+                    mi.addActionListener(new LayoutActionListener(null));
+                    popup.addSeparator();
+                }
+
                 PaletteItem[] layouts = getAllLayouts();
                 for (int i = 0; i < layouts.length; i++) {
                     JMenuItem mi = new JMenuItem(layouts[i].getNode().getDisplayName());
@@ -153,9 +161,16 @@ public class SelectLayoutAction extends CallableSystemAction {
                 if (container == null)
                     continue;
 
-                // set the selected layout on the activated container
-                container.getFormModel().getComponentCreator().createComponent(
-                    paletteItem.getComponentClassSource(), container, null);
+                FormModel formModel = container.getFormModel();
+                if (paletteItem != null) {
+                    // set the selected layout on the container
+                    formModel.getComponentCreator().createComponent(
+                        paletteItem.getComponentClassSource(), container, null);
+                }
+                else {
+                    formModel.setNaturalContainerLayout(container);
+                    FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
+                }
             }
         }
     }

@@ -15,7 +15,6 @@ package org.netbeans.modules.form.palette;
 
 import java.beans.BeanInfo;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import java.io.File;
 import java.awt.event.ActionEvent;

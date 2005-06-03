@@ -173,26 +173,26 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
                     x = containerDelegate.getSize().width / 2 - 5;
                 }
                 y1 = 0;
-                y2 = 20;
+                y2 = (component != null ? component.getHeight() : 20);
             }
             else {
                 Rectangle b = components[0].getBounds();
                 x = b.x;
                 y1 = b.y;
-                y2 = b.y + b.height;
+                y2 = b.y + (component != null ? component.getHeight() : b.height);
             }
         }
         else if (newIndex >= components.length) {
             Rectangle b = components[components.length - 1].getBounds();
             x = b.x + b.width;
             y1 = b.y;
-            y2 = b.y + b.height;
+            y2 = b.y + (component != null ? component.getHeight() : b.height);
         }
         else {
-            Rectangle b1 = components[newIndex].getBounds();
-            x = b1.x;
-            y1 = b1.y;
-            y2 = b1.y + b1.height;
+            Rectangle b = components[newIndex].getBounds();
+            x = b.x;
+            y1 = b.y;
+            y2 = b.y + (component != null ? component.getHeight() : b.height);
         }
         g.drawRect(x - 10 - hgap / 2, y1, 20, y2 - y1);
         return true;

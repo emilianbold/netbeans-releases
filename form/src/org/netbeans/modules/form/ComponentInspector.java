@@ -56,7 +56,7 @@ public class ComponentInspector extends TopComponent
     private ClipboardListener clipboardListener;
 
     /** Currently focused form or null if no form is opened/focused */
-    private FormEditorSupport focusedForm;
+    private FormEditor focusedForm;
 
     private EmptyInspectorNode emptyInspectorNode;
     
@@ -202,7 +202,7 @@ public class ComponentInspector extends TopComponent
     /** This method focuses the ComponentInspector on given form.
      * @param form the form to focus on
      */
-    public void focusForm(final FormEditorSupport form) {
+    public void focusForm(final FormEditor form) {
         if (focusedForm != form)
             focusFormInAwtThread(form, 0);
     }
@@ -211,12 +211,12 @@ public class ComponentInspector extends TopComponent
      * @param form the form to focus on
      * @param visible true to open inspector, false to close
      */
-    public void focusForm(final FormEditorSupport form, boolean visible) {
+    public void focusForm(final FormEditor form, boolean visible) {
         if (focusedForm != form)
             focusFormInAwtThread(form, visible ? 1 : -1);
     }
 
-    private void focusFormInAwtThread(final FormEditorSupport form,
+    private void focusFormInAwtThread(final FormEditor form,
                                       final int visibility) {
         if (java.awt.EventQueue.isDispatchThread()) {
             focusFormImpl(form, visibility);
@@ -230,7 +230,7 @@ public class ComponentInspector extends TopComponent
         }
     }
 
-    private void focusFormImpl(FormEditorSupport form, int visibility) {
+    private void focusFormImpl(FormEditor form, int visibility) {
         focusedForm = form;
 
         if (form == null) {
@@ -260,13 +260,13 @@ public class ComponentInspector extends TopComponent
             close();
     }
 
-    public FormEditorSupport getFocusedForm() {
+    public FormEditor getFocusedForm() {
         return focusedForm;
     }
 
     /** Called to synchronize with FormDesigner. Invokes NodeSelectionListener.
      */
-    void setSelectedNodes(Node[] nodes, FormEditorSupport form)
+    void setSelectedNodes(Node[] nodes, FormEditor form)
         throws PropertyVetoException
     {
         if (form == focusedForm)
@@ -429,8 +429,7 @@ public class ComponentInspector extends TopComponent
                         designer.connectBean(cookie.getRADComponent(), true);
                 }
             }
-            else if (TopComponent.getRegistry().getActivated()
-                     == ComponentInspector.this)
+            else if (evt.getSource() == ComponentInspector.this.getExplorerManager())
             {   // the change comes from ComponentInspector => synchronize FormDesigner
                 designer.clearSelectionImpl();
                 for (int i=0; i < selectedNodes.length; i++) {

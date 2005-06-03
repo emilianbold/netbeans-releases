@@ -120,14 +120,27 @@ public class TestAction extends CallableSystemAction implements Runnable {
             }
  
             // set size
-            if (formContainer != null
-                && formContainer.getFormSizePolicy()
-                                     == RADVisualFormContainer.GEN_BOUNDS
-                && formContainer.getGenerateSize())
-            {
-                frame.setSize(formContainer.getFormSize());
+            if (FormEditor.isNaturalLayoutEnabled()) {
+                // [temporary hack for new layout: always set the size according to the form designer]
+                if (formContainer != null) {
+                    Dimension size = formContainer.getDesignerSize();
+                    Dimension diffDim = RADVisualFormContainer.getWindowContentDimensionDiff();
+                    size = new Dimension(size.width + diffDim.width,
+                                         size.height + diffDim.height);
+                    frame.setSize(size);
+                }
+                else frame.pack();
             }
-            else frame.pack();
+            else {
+                if (formContainer != null
+                    && formContainer.getFormSizePolicy()
+                                         == RADVisualFormContainer.GEN_BOUNDS
+                    && formContainer.getGenerateSize())
+                {
+                    frame.setSize(formContainer.getFormSize());
+                }
+                else frame.pack();
+            }
 
             frame.setBounds(org.openide.util.Utilities.findCenterBounds(frame.getSize()));
             frame.show();

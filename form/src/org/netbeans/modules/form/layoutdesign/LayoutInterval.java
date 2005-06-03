@@ -1,0 +1,755 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.form.layoutdesign;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * @author Tomas Pavek
+ */
+
+public final class LayoutInterval implements LayoutConstants {
+    static final int ATTRIBUTE_FILL = 1;
+    static final int ATTRIBUTE_FORMER_FILL = 2;
+
+    // type of the interval - SINGLE, SEQUENTIAL, PARALLEL
+    private int type;
+
+    // additional attributes set on the interval as bit flags
+    private int attributes;
+
+    // alignment of the interval (if in a parallel group)
+    private int alignment = DEFAULT;
+
+    // parent interval (group )
+    private LayoutInterval parentInterval;
+
+    // internall alignment of a group (if this is a parallel group)
+    private int groupAlignment = LEADING;
+
+    // contained sub-intervals (if this is a group)
+    private List subIntervals;
+
+    // associated LayoutComponent (if any)
+    private LayoutComponent layoutComponent;
+
+//    private boolean defaultPadding; // String[] surroundingComps
+
+    // minimum, preferred, and maximum size definitions
+    private int minSize;
+    private int prefSize;
+    private int maxSize;
+
+    // current position and size of the interval in the visual representation
+    private LayoutRegion currentSpace;
+
+    // -----
+    // setup methods - each setter should be called max. once after creation,
+    // other changes should be done via LayoutModel to be fired and recorded
+    // for undo/redo
+
+    LayoutInterval(int type) {
+        this.type = type;
+        minSize = NOT_EXPLICITLY_DEFINED;
+        prefSize = NOT_EXPLICITLY_DEFINED;
+        if (type == SEQUENTIAL || type == PARALLEL) {
+            subIntervals = new LinkedList();
+            maxSize = NOT_EXPLICITLY_DEFINED; // group can resize by default
+        }
+        else {
+            assert type == SINGLE;
+            maxSize = USE_PREFERRED_SIZE;
+        }
+    }
+
+    void setAlignment(int alignment) {
+        this.alignment = alignment;
+    }
+
+    void setGroupAlignment(int alignment) {
+        assert alignment != DEFAULT && type == PARALLEL;
+        groupAlignment = alignment;
+    }
+
+    void setComponent(LayoutComponent comp) {
+        this.layoutComponent = comp;
+    }
+
+    void setMinimumSize(int size) {
+        // for groups we expect only two states - shrinking suppressed/allowed
+        assert isSingle() || (size == USE_PREFERRED_SIZE || size == NOT_EXPLICITLY_DEFINED);
+        minSize = size;
+    }
+
+    void setPreferredSize(int size) {
+        assert (size != USE_PREFERRED_SIZE && isSingle()) || (size == NOT_EXPLICITLY_DEFINED); // groups should not have explicit size
+        prefSize = size;
+    }
+
+    void setMaximumSize(int size) {
+        // for single interval the max size must be defined
+        // for groups only two states - growing suppressed or allowed
+        assert (isSingle() && size != NOT_EXPLICITLY_DEFINED)
+               || (isGroup() && (size == USE_PREFERRED_SIZE || size == NOT_EXPLICITLY_DEFINED));
+        maxSize = size;
+    }
+
+    void setSize(int size) {
+        setMinimumSize(size);
+        setPreferredSize(size);
+        setMaximumSize(size);
+    }
+
+    void setSizes(int min, int pref, int max) {
+        setMinimumSize(min);
+        setPreferredSize(pref);
+        setMaximumSize(max);
+    }
+
+    // ---------
+    // public methods
+
+    /**
+     * Returns the type of the structure of the interval. It can be a single
+     * interval or a group with sub-intervals arranged either sequentially
+     * or parallelly.
+     * @return type of the interval: SINGLE, SEQUENTIAL, or PARALLEL
+     */
+    public int getType() {
+        return type;
+    }
+
+    /**
+     * Returns alignment of the interval within a parallel group. If the
+     * interval is not part of a parallel group, the alignment is meaningless.
+     * @return alignment of the interval within a parallel group (LEADING,
+     *         TRAILING, CENTER, or BASELINE); DEFAULT if in a sequential group
+     */
+    public int getAlignment() {
+        return alignment == DEFAULT && parentInterval != null
+                                    && parentInterval.isParallel() ?
+            parentInterval.getGroupAlignment() : alignment;
+    }
+
+    /**
+     * Returns the common alignment of sub-intervals within a group (makes
+     * sense only for a parallel group).
+     * @return alignment of the group (LEADING, TRAILING, CENTER, or BASELINE)
+     */
+    public int getGroupAlignment() {
+        return groupAlignment;
+    }
+
+    /**
+     * Returns the minimum size of the interval. Instead of a specific size
+     * it may return also one of the constants NOT_EXPLICITLY_DEFINED or
+     * USE_PREFERRED_SIZE.
+     * @return minimum interval size, or one of the constants:
+     *         NOT_EXPLICITLY_DEFINED or USE_PREFERRED_SIZE
+     */
+    public int getMinimumSize() {
+        return minSize;
+    }
+
+    /**
+     * Returns the preferred size of the interval. If no specific size was set,
+     * it returns NOT_EXPLICITLY_DEFINED constant.
+     * @return preferred size of the interval, or NOT_EXPLICITLY_DEFINED constant
+     */
+    public int getPreferredSize() {
+        return prefSize;
+    }
+
+    /**
+     * Returns the maximum size of the interval. Instead of a specific size
+     * it may return also one of the constants NOT_EXPLICITLY_DEFINED or
+     * USE_PREFERRED_SIZE.
+     * @return maximum interval size, or one of the constants:
+     *         NOT_EXPLICITLY_DEFINED or USE_PREFERRED_SIZE
+     */
+    public int getMaximumSize() {
+        return maxSize;
+    }
+
+    /**
+     * Returns number of sub-intervals of this interval.
+     * @return number of sub-intervals of this interval, 0 if it is not a group
+     */
+    public int getSubIntervalCount() {
+        return subIntervals != null ? subIntervals.size() : 0;
+    }
+
+    /**
+     * Returns an iterator of sub-intervals.
+     * @return iterator of sub-intervals, empty if there are no sub-intervals
+     */
+    public Iterator getSubIntervals() {
+        return subIntervals != null ? subIntervals.iterator() :
+                                      Collections.EMPTY_LIST.iterator();
+    }
+
+    /**
+     * If this interval represents a component's width or height, this methods
+     * returns the component.
+     * @return LayoutComponent instance representing the associated component.
+     *         Null if this interval does not represent a component.
+     */
+    public LayoutComponent getComponent() {
+        return layoutComponent;
+    }
+
+    // helper methods (redundant - based on derived information)
+
+    public boolean isParallel() {
+        return type == PARALLEL;
+    }
+
+    public boolean isSequential() {
+        return type == SEQUENTIAL;
+    }
+
+    /**
+     * Returns whether this interval defines a lyout component.
+     * @return true if this interval represents a layout component,
+     *         false otherwise
+     */
+    public boolean isComponent() {
+        return layoutComponent != null;
+    }
+
+    /**
+     * Returns whether this interval defines an "empty" space (gap) in the
+     * layout, not including nor being able to include any component.
+     * @return true if this is a single interval not representing a component,
+     *         false otherwise
+     */
+    public boolean isEmptySpace() {
+        return type == SINGLE && layoutComponent == null;
+    }
+
+    public boolean isDefaultPadding() {
+        return isEmptySpace() && (minSize == NOT_EXPLICITLY_DEFINED
+                                  || prefSize == NOT_EXPLICITLY_DEFINED
+                                  || maxSize == NOT_EXPLICITLY_DEFINED);
+    }
+
+    public boolean isSingle() {
+        return type == SINGLE;
+    }
+
+    /**
+     * Returns whether this interval represents a group structure that can have
+     * have sub-intervals.
+     * @return whether this interval is a group, either sequential or parallel
+     */
+    public boolean isGroup() {
+        return type == SEQUENTIAL || type == PARALLEL;
+    }
+
+    /**
+     * @return whether the interval is allowed to grow (according to its
+     *         definition); if allowed, the real growing possibility may still
+     *         depend on the associated component
+     */
+//    public boolean isAllowedToGrow() {
+//        return maxSize != USE_PREFERRED_SIZE
+//               && (prefSize == NOT_EXPLICITLY_DEFINED
+//                   || maxSize == NOT_EXPLICITLY_DEFINED
+//                   || maxSize > prefSize);
+//    }
+
+    /**
+     * @return whether the interval is allowed to shrink (according to its
+     *         definition); if allowed, the real growing possibility may still
+     *         depend on the associated component
+     */
+//    public boolean isAllowedToShrink() {
+//        return minSize != USE_PREFERRED_SIZE
+//               && (prefSize == NOT_EXPLICITLY_DEFINED
+//                   || minSize == NOT_EXPLICITLY_DEFINED
+//                   || minSize < prefSize);
+//    }
+
+    // end of public methods
+    // -----
+
+    boolean hasAttribute(int attr) {
+        return (attributes & attr) == attr;
+    }
+
+    void setAttribute(int attr) {
+        attributes |= attr;
+    }
+
+    void unsetAttribute(int attr) {
+        attributes &= ~attr;
+    }
+    
+    /**
+     * Sets attributes of the layout interval. Should be used by persistence manager only!
+     *
+     * @param attrs attributes.
+     */
+    void setAttributes(int attrs) {
+        attributes = attrs;
+    }
+    
+    /**
+     * Returns attributes of this layout interval. You should use
+     * <code>hasAttribute()</code> when you are interested in one
+     * particular attribute.
+     */
+    int getAttributes() {
+        return attributes;
+    }
+
+    /**
+     * @return the value of the alignment field of the interval - unlike
+     *         getAlignment() it does not ask the parent if not set (DEFAULT)
+     */
+    int getRawAlignment() {
+        return alignment;
+    }
+
+    // -----
+
+    LayoutInterval getParent() {
+        return parentInterval;
+    }
+
+    int add(LayoutInterval interval, int index) {
+        if (index < 0) {
+            index = subIntervals.size();
+        }
+        subIntervals.add(index, interval);
+        interval.parentInterval = this;
+        return index;
+    }
+
+    int remove(LayoutInterval interval) {
+        int index = subIntervals.indexOf(interval);
+        if (index >= 0) {
+            subIntervals.remove(index);
+            interval.parentInterval = null;
+        }
+        return index;
+    }
+
+    LayoutInterval remove(int index) {
+        LayoutInterval interval = (LayoutInterval) subIntervals.get(index);
+        subIntervals.remove(index);
+        interval.parentInterval = null;
+        return interval;
+    }
+
+    LayoutInterval getSubInterval(int index) {
+        return subIntervals != null ?
+               (LayoutInterval) subIntervals.get(index) : null;
+    }
+
+    int indexOf(LayoutInterval interval) {
+        return subIntervals != null ? subIntervals.indexOf(interval) : -1;
+    }
+
+    boolean isParentOf(LayoutInterval interval) {
+        if (isGroup()) {
+            do {
+                interval = interval.getParent();
+                if (interval == this)
+                    return true;
+            }
+            while (interval != null);
+        }
+        return false;
+    }
+
+    // -----
+    // current state of the layout - current position and size of layout
+    // interval kept to be available quickly for the layout designer
+
+    LayoutRegion getCurrentSpace() {
+        assert !isEmptySpace(); // [temporary - nobody should be interested in gap positions]
+        if (currentSpace == null) {
+            currentSpace = new LayoutRegion();
+        }
+        return currentSpace;
+    }
+
+    void setCurrentSpace(LayoutRegion space) {
+        currentSpace = space;
+    }
+
+    // -----
+    // static helper methods
+
+    /**
+     * @return the closest parent interval that matches given type
+     */
+    static LayoutInterval getFirstParent(LayoutInterval interval, int type) {
+        LayoutInterval parent = interval.getParent();
+        while (parent != null && parent.getType() != type) {
+            parent = parent.getParent();
+        }
+        return parent;
+    }
+
+    static LayoutInterval getRoot(LayoutInterval interval) {
+        while (interval.getParent() != null) {
+            interval = interval.getParent();
+        }
+        assert interval.isParallel();
+        return interval;
+    }
+
+    static int getCount(LayoutInterval group, int alignment, boolean nonEmpty) {
+        int n = 0;
+        Iterator it = group.getSubIntervals();
+        while (it.hasNext()) {
+            LayoutInterval li = (LayoutInterval) it.next();
+            if ((group.isSequential()
+                 || alignment == LayoutRegion.ALL_POINTS
+                 || li.getAlignment() == alignment
+                 || wantResize(li, false))
+                && (!nonEmpty || !li.isEmptySpace()))
+            {   // count in
+                n++;
+            }
+        }
+        return n;
+    }
+
+    static LayoutInterval getDirectNeighbor(LayoutInterval interval, int alignment, boolean nonEmpty) {
+        LayoutInterval parent = interval.getParent();
+        assert parent.isSequential();
+
+        LayoutInterval neighbor = null;
+        int d = (alignment == LEADING ? -1 : 1);
+        int n = parent.getSubIntervalCount();
+        int index = parent.indexOf(interval) + d;
+        while (index >= 0 && index < n && neighbor == null) {
+            LayoutInterval li = parent.getSubInterval(index);
+            index += d;
+            if (!nonEmpty || !li.isEmptySpace()) {
+                neighbor = li;
+            }
+        }
+        return neighbor;
+    }
+
+    /**
+     * @param alignment direction in which the neighbor is looked for (LEADING or TRAILING)
+     * @param nonEmpty true if empty spaces (gaps) should be skipped
+     * @param outOfParent true if can go up (out of the first sequential parent)
+     *                         for an indirect neighbor
+     * @param aligned true if the indirect neighbor must be in contact with the
+     *                     given interval
+     */
+    static LayoutInterval getNeighbor(LayoutInterval interval,
+                                      int alignment,
+                                      boolean nonEmpty,
+                                      boolean outOfParent,
+                                      boolean aligned)
+    {
+        assert alignment == LEADING || alignment == TRAILING;
+
+        LayoutInterval neighbor = null;
+        LayoutInterval parent = interval;
+        int d = (alignment == LEADING ? -1 : 1);
+
+        do {
+            do { // find sequential parent first
+                interval = parent;
+                parent = interval.getParent();
+                if (aligned && parent != null && parent.isParallel()
+                    && !isAlignedAtBorder(interval, alignment))
+                {   // interval not aligned in parent
+                    parent = null;
+                }
+            }
+            while (parent != null && parent.isParallel());
+
+            if (parent != null) { // look for the neighbor in the sequence
+                neighbor = getDirectNeighbor(interval, alignment, nonEmpty);
+            }
+        }
+        while (neighbor == null && parent != null && outOfParent);
+
+        return neighbor;
+    }
+
+    static LayoutInterval getNeighbor(LayoutInterval interval, int parentType, int alignment) {
+        assert alignment == LEADING || alignment == TRAILING;
+        LayoutInterval sibling = null;
+        LayoutInterval parent = interval;
+        do {
+            do {
+                interval = parent;
+                parent = parent.getParent();                
+            } while ((parent != null) && (parent.getType() != parentType));
+            if (parent != null) {
+                List subs = parent.subIntervals;
+                int index = subs.indexOf(interval);
+                if ((alignment == LEADING) && (index > 0)) {
+                    sibling = (LayoutInterval)subs.get(index-1);
+                }
+                else if ((alignment == TRAILING) && (index+1 < subs.size())) {
+                    sibling = (LayoutInterval)subs.get(index+1);
+                }
+            }
+        } while ((parent != null) && (sibling == null));
+        return sibling;
+    }
+
+    static boolean startsWithEmptySpace(LayoutInterval interval, int alignment) {
+        assert alignment == LEADING || alignment == TRAILING;
+        if (interval.isSingle()) {
+            return interval.isEmptySpace();
+        }
+        if (interval.isSequential()) {
+            int index = alignment == LEADING ? 0 : interval.getSubIntervalCount()-1;
+            return startsWithEmptySpace(interval.getSubInterval(index), alignment);
+        }
+        else { // parallel group
+            for (Iterator it=interval.getSubIntervals(); it.hasNext(); ) {
+                LayoutInterval li = (LayoutInterval) it.next();
+                if (startsWithEmptySpace(li, alignment)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether an interval is permanently aligned to its parent at given
+     * border. (The asked relation is hard, always maintained by the layout.)
+     * For a sequential parent the interval is aligned if it is first or last.
+     * For parallel parent the interval must have the given alignment in the
+     * group, or be resizing.
+     */
+    static boolean isAlignedAtBorder(LayoutInterval interval, int alignment) {
+        if (alignment != LEADING && alignment != TRAILING) {
+            return false;
+        }
+        LayoutInterval parent = interval.getParent();
+        if (parent == null) {
+            return false;
+        }
+        if (parent.isSequential()) {
+            int index = alignment == LEADING ? 0 : parent.getSubIntervalCount()-1;
+            return interval == parent.getSubInterval(index);
+        }
+        else { // parallel parent
+            return interval.getAlignment() == alignment
+                   || wantResize(interval, false);
+        }
+    }
+
+    /**
+     * Checks whether an interval is permanently aligned with a given parent
+     * interval - need not be the direct parent. This is a multi-level version
+     * of the other (simple) isAlignedAtBorder method.
+     */
+    static boolean isAlignedAtBorder(LayoutInterval interval, LayoutInterval parent, int alignment) {
+        do {
+            if (!isAlignedAtBorder(interval, alignment)) {
+                return false;
+            }
+            interval = interval.getParent();
+        }
+        while (interval != parent);
+        return true;
+    }
+
+    /**
+     * Checks whether given interval is placed at border side of its parent.
+     * Cares about the current visual situation only - the place may change if
+     * the alignment is not backed by the layout structure.
+     * Note this method requires the current visual state (positions) of the
+     * relevant intervals to be up-to-date.
+     */
+    static boolean isPlacedAtBorder(LayoutInterval interval, int dimension, int alignment) {
+        if (alignment != LEADING && alignment != TRAILING) {
+            return false;
+        }
+        LayoutInterval parent = interval.getParent();
+        if (parent == null) {
+            return false;
+        }
+        if (interval.isEmptySpace()) {
+            if (parent.isSequential()) {
+                int index = alignment == LEADING ? 0 : parent.getSubIntervalCount()-1;
+                return interval == parent.getSubInterval(index);
+            }
+            else { // gap in parallel parent
+                return true;
+            }
+        }
+        else { // check visual position
+           return LayoutRegion.distance(interval.getCurrentSpace(), parent.getCurrentSpace(),
+                                        dimension, alignment, alignment) == 0;
+        }
+    }
+
+    /**
+     * Checks whether an interval is placed at border side of given parent
+     * (need not be the direct parent). This is a multi-level version of the
+     * simpler isPlacededAtBorder method.
+     * Note this method requires the current visual state (positions) of the
+     * relevant intervals to be up-to-date.
+     */
+    static boolean isPlacedAtBorder(LayoutInterval interval, LayoutInterval parent, int dimension, int alignment) {
+        if (alignment != LEADING && alignment != TRAILING) {
+            return false;
+        }
+        if (interval.isEmptySpace()) {
+            LayoutInterval p = interval.getParent();
+            if (p.isSequential()) {
+                int index = alignment == LEADING ? 0 : p.getSubIntervalCount()-1;
+                if (interval != p.getSubInterval(index)) {
+                    return false;
+                }
+            }
+            if (p == parent) {
+                return true;
+            }
+            interval = p;
+        }
+        return LayoutRegion.distance(interval.getCurrentSpace(), parent.getCurrentSpace(),
+                                     dimension, alignment, alignment) == 0
+               && parent.isParentOf(interval);
+    }
+
+    // [to be replaced by separate methods like isAlignedAtBorder, isPlacedBorder, isLastInterval]
+    static boolean isBorderInterval(LayoutInterval interval, int alignment, boolean attached) {
+        LayoutInterval parent = interval.getParent();
+        if (parent != null && (alignment == LEADING || alignment == TRAILING)) {
+            if (parent.isSequential()) {
+                int index = alignment == LEADING ? 0 : parent.getSubIntervalCount()-1;
+                while (index >= 0 && index < parent.getSubIntervalCount()) {
+                    LayoutInterval li = parent.getSubInterval(index);
+                    if (li == interval) {
+                        return true;
+                    }
+                    else if (attached || !li.isEmptySpace()) {
+                        return false;
+                    }
+                    index += alignment == LEADING ? 1 : -1;
+                }
+            }
+            else {
+                return !attached
+                       || interval.getAlignment() == alignment
+                       || wantResize(interval, false);
+            }
+//                if (interval.getAlignment() == alignment) {
+//                return interval.getCurrentSpace().positions[dimension][alignment]
+//                       == parent.getCurrentSpace().positions[dimension][alignment];
+        }
+        return false;
+    }
+
+    static boolean isClosedGroup(LayoutInterval group, int alignment) {
+        assert group.isParallel();
+
+        if (/*group.hasAttribute(CLOSED_GROUP)
+            ||*/ group.getGroupAlignment() == CENTER
+            || group.getGroupAlignment() == BASELINE)
+        {
+            return true;
+        }
+
+        Iterator it = group.getSubIntervals();
+        while (it.hasNext()) {
+            LayoutInterval li = (LayoutInterval) it.next();
+            if (li.getAlignment() == alignment || wantResize(li, false)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return whether given interval is allowed to resize (not defined as fixed)
+     */
+    static boolean canResize(LayoutInterval interval) {
+        // [don't care about shrinking, assuming min possibly not defined - is it ok?]
+        int max = interval.getMaximumSize();
+        int pref = interval.getPreferredSize();
+        assert interval.isGroup() || max != NOT_EXPLICITLY_DEFINED;
+        return (max != pref && max != USE_PREFERRED_SIZE)
+               || max == NOT_EXPLICITLY_DEFINED;
+    }
+
+    /**
+     * Finds out whether given interval would resize if allowed (given more
+     * space by its parent).
+     * @param wholeLayout if true, the method considers resizing of the whole
+     *        layout (in such case some parent of the interval could block the
+     *        resizing); if false, only the interval itself is checked
+     * @return whether given interval would resize if given opportunity
+     */
+    static boolean wantResize(LayoutInterval interval, boolean wholeLayout) {
+        if (!canResize(interval)) {
+            return false;
+        }
+        if (interval.isGroup() && !contentWantResize(interval)) {
+            return false;
+        }
+        if (wholeLayout) {
+            while (interval.getParent() != null) {
+                interval = interval.getParent();
+                if (!canResize(interval)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    static boolean contentWantResize(LayoutInterval group) {
+        assert group.getSubIntervalCount() > 0;
+        boolean subres = false;
+        Iterator it = group.getSubIntervals();
+        while (it.hasNext()) {
+            if (wantResize((LayoutInterval)it.next(), false)) {
+                subres = true;
+                break;
+            }
+        }
+        return subres;
+    }
+
+    static int getIntervalCurrentSize(LayoutInterval interval, int dimension) {
+        if (!interval.isEmptySpace()) {
+            return interval.getCurrentSpace().size(dimension);
+        }
+
+        LayoutInterval parent = interval.getParent();
+        assert parent.isSequential();
+
+        int index = parent.indexOf(interval);
+        int posL = index > 0 ?
+            parent.getSubInterval(index-1).getCurrentSpace().positions[dimension][TRAILING] :
+            parent.getCurrentSpace().positions[dimension][LEADING];
+        int posT = index+1 < parent.getSubIntervalCount() ?
+            parent.getSubInterval(index+1).getCurrentSpace().positions[dimension][LEADING] :
+            parent.getCurrentSpace().positions[dimension][TRAILING];
+
+        return posT - posL;
+    }
+}

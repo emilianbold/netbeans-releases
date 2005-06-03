@@ -105,7 +105,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
         containerProxy.removeAll();
         
-        FormDesigner designer = formModel.getFormDesigner();
+        FormDesigner designer = FormEditor.getFormDesigner(formModel);
         if (!designer.isInDesignedTree(radContainer)) {
             designer.setTopDesignComponent(radContainer, true);
             // terrible hack - wait for designer update
@@ -120,7 +120,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         formListener = new FormListener();
         formModel.addFormModelListener(formListener);
     }
-    
+
     void customizerClosed() {
         formModel.removeFormModelListener(formListener);
     }
@@ -540,15 +540,15 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 }
 
                 public Dimension getPreferredSize() {
-                    Component comp = (Component)formModel.getFormDesigner()
-                                                    .getComponent(component);
+                    FormDesigner designer = FormEditor.getFormDesigner(formModel);
+                    Component comp = (Component)designer.getComponent(component);
                     Dimension size;
                     if (comp == null) {
                         comp = (Component) component.getBeanInstance();
                         size = comp.getPreferredSize();
                     }
                     else {
-                        if (formModel.getFormDesigner().isOpened()) {
+                        if (designer.isOpened()) {
                             size = comp.getSize();
                             if (size.width > 4096) // [hack for issue 32311]
                                 size.width = comp.getPreferredSize().width;
@@ -585,8 +585,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 }
 
                 public Dimension getMinimumSize() {
-                    Component comp = (Component)formModel.getFormDesigner()
-                                                    .getComponent(component);
+                    Component comp = (Component)
+                        FormEditor.getFormDesigner(formModel).getComponent(component);
                     if (comp == null)
                         comp = (Component) component.getBeanInstance();
                     return comp.getMinimumSize();
@@ -594,8 +594,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 }
 
                 public Dimension getMaximumSize() {
-                    Component comp = (Component)formModel.getFormDesigner()
-                                                    .getComponent(component);
+                    Component comp = (Component)
+                        FormEditor.getFormDesigner(formModel).getComponent(component);
                     if (comp == null)
                         comp = (Component) component.getBeanInstance();
                     return comp.getMaximumSize();
@@ -1261,7 +1261,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             buttonPanel.add(helpButton);
 
             getContentPane().add(buttonPanel, BorderLayout.SOUTH);
-            
+
             addWindowListener(new WindowAdapter() {
                 public void windowClosed(WindowEvent e) {
                     customizerPanel.customizerClosed();

@@ -23,12 +23,14 @@ import org.openide.util.SharedClassObject;
 import org.openide.loaders.MultiDataObject.Entry;
 
 import org.netbeans.api.editor.fold.*;
-import org.netbeans.api.java.classpath.ClassPath;
+
 import org.netbeans.modules.java.JavaEditor;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.form.editors.CustomCodeEditor;
 import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
+import org.netbeans.modules.form.layoutdesign.support.SwingLayoutCodeGenerator;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -36,6 +38,7 @@ import java.beans.*;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
+import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 
 /**
  * JavaCodeGenerator is the default code generator which produces a Java source
@@ -119,6 +122,8 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private Map constructorProperties;
     private Map containerDependentProperties;
+    
+    private SwingLayoutCodeGenerator swingGenerator;
 
     private FormProperty.Filter propertyFilter = new FormProperty.Filter() {
         public boolean accept(FormProperty property) {
@@ -138,11 +143,10 @@ class JavaCodeGenerator extends CodeGenerator {
     public void initialize(FormModel formModel) {
         if (!initialized) {
             this.formModel = formModel;
-            formEditorSupport = FormEditorSupport.getFormEditor(formModel);
+            FormDataObject formDO = FormEditor.getFormDataObject(formModel);
+            formEditorSupport = formDO.getFormEditorSupport();
 
-            if (formEditorSupport.getFormDataObject().getPrimaryFile()
-                  .canWrite())
-            {
+            if (formDO.getPrimaryFile().canWrite()) {
                 canGenerate = true;
                 formModel.addFormModelListener(new FormListener());
             }
@@ -245,8 +249,10 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_VARIABLE_MODIFIER, oldValue, value);
-                    component.getNodeReference().firePropertyChangeHelper(
-                        PROP_VARIABLE_MODIFIER, null, null); // NOI18N
+                    if (component.getNodeReference() != null) {
+                        component.getNodeReference().firePropertyChangeHelper(
+                            PROP_VARIABLE_MODIFIER, null, null);
+                    }
                 }
 
                 public Object getValue() {
@@ -260,7 +266,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 public boolean supportsDefaultValue() {
                     return component.getAuxValue(AUX_VARIABLE_LOCAL) == null;
                 }
-
+                
                 public void restoreDefaultValue() {
                     if (component.getAuxValue(AUX_VARIABLE_LOCAL) == null)
                         setValue(new Integer(formModel.getSettings().getVariablesModifier()));
@@ -338,7 +344,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_VARIABLE_LOCAL, oldValue, value);
-                    component.getNodeReference().fireComponentPropertySetsChange();
+                    if (component.getNodeReference() != null) {
+                        component.getNodeReference().fireComponentPropertySetsChange();
+                    }
                 }
 
                 public Object getValue() {
@@ -467,8 +475,10 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_CREATE_CODE_PRE, oldValue, value);
-                    component.getNodeReference().firePropertyChangeHelper(
-                        PROP_CREATE_CODE_PRE, null, null); // NOI18N
+                    if (component.getNodeReference() != null) {
+                        component.getNodeReference().firePropertyChangeHelper(
+                            PROP_CREATE_CODE_PRE, null, null);
+                    }
                 }
 
                 public Object getValue() {
@@ -498,8 +508,10 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_CREATE_CODE_POST, oldValue, value);
-                    component.getNodeReference().firePropertyChangeHelper(
-                        PROP_CREATE_CODE_POST, null, null); // NOI18N
+                    if (component.getNodeReference() != null) {
+                        component.getNodeReference().firePropertyChangeHelper(
+                            PROP_CREATE_CODE_POST, null, null);
+                    }
                 }
 
                 public Object getValue() {
@@ -529,8 +541,10 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_INIT_CODE_PRE, oldValue, value);
-                    component.getNodeReference().firePropertyChangeHelper(
-                        PROP_INIT_CODE_PRE, null, null); // NOI18N
+                    if (component.getNodeReference() != null) {
+                        component.getNodeReference().firePropertyChangeHelper(
+                            PROP_INIT_CODE_PRE, null, null);
+                    }
                 }
 
                 public Object getValue() {
@@ -560,8 +574,10 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     formModel.fireSyntheticPropertyChanged(
                         component, PROP_INIT_CODE_POST, oldValue, value);
-                    component.getNodeReference().firePropertyChangeHelper(
-                        PROP_INIT_CODE_POST, null, null); // NOI18N
+                    if (component.getNodeReference() != null) {
+                        component.getNodeReference().firePropertyChangeHelper(
+                            PROP_INIT_CODE_POST, null, null);
+                    }
                 }
 
                 public Object getValue() {
@@ -631,8 +647,10 @@ class JavaCodeGenerator extends CodeGenerator {
 
                         formModel.fireSyntheticPropertyChanged(
                             component, PROP_CREATE_CODE_CUSTOM, oldValue, value);
-                        component.getNodeReference().firePropertyChangeHelper(
-                            PROP_CREATE_CODE_CUSTOM, null, null); // NOI18N
+                        if (component.getNodeReference() != null) {
+                            component.getNodeReference().firePropertyChangeHelper(
+                                PROP_CREATE_CODE_CUSTOM, null, null);
+                        }
                     }
 
                     public Object getValue() {
@@ -702,7 +720,7 @@ class JavaCodeGenerator extends CodeGenerator {
         // find indent engine to use or imitate
         IndentEngine indentEngine = IndentEngine.find(
                                         formEditorSupport.getDocument());
-        
+
         int initComponentsOffset = initComponentsSection.getBegin().getOffset();
 
         // create Writer for writing the generated code in
@@ -741,7 +759,7 @@ class JavaCodeGenerator extends CodeGenerator {
             if (addLocalVariables(initCodeWriter))
                 initCodeWriter.write("\n"); // NOI18N
 
-            RADComponent[] nonVisualComponents = formModel.getNonVisualComponents();
+            RADComponent[] nonVisualComponents = formModel.getOtherComponents(false);
             for (int i = 0; i < nonVisualComponents.length; i++) {
                 addCreateCode(nonVisualComponents[i], initCodeWriter);
             }
@@ -977,9 +995,44 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
                 initCodeWriter.write("\n"); // NOI18N
             }
-//            if (comp instanceof RADVisualContainer)
+            if (comp instanceof RADVisualContainer) {
+                RADVisualContainer cont = (RADVisualContainer)comp;
+                if (cont.getLayoutSupport() == null) {
+                    LayoutComponent layoutCont = formModel.getLayoutModel().getLayoutComponent(cont.getId());
+                    if (layoutCont != null) {
+                        RADVisualComponent[] comps = cont.getSubComponents();
+                        String[] compNames = new String[comps.length];
+                        String[] compIds = new String[comps.length];
+                        for (int i=0; i<comps.length; i++) {
+                            compNames[i] = getExpressionJavaString(comps[i].getCodeExpression(), ""); // NOI18N
+                            compIds[i] = comps[i].getId();
+                        }
+                        CodeExpression contExpr = LayoutSupportManager.containerDelegateCodeExpression(
+                            cont, cont.getCodeExpression(), formModel.getCodeStructure());
+                        String contExprStr = getExpressionJavaString(contExpr, ""); // NOI18N
+                        CodeVariable contVar = cont.getCodeExpression().getVariable();
+                        String contVarName = (contVar == null) ? null : contVar.getName();
+                        SwingLayoutCodeGenerator swingGenerator = getSwingGenerator();
+                        swingGenerator.generateContainerLayout(
+                            initCodeWriter,
+                            layoutCont,
+                            contExprStr,
+                            contVarName,
+                            compIds,
+                            compNames);
+                    }
+                }
 //                generateVisualCode((RADVisualContainer)comp, initCodeWriter);
+            }
+
         }
+    }
+    
+    private SwingLayoutCodeGenerator getSwingGenerator() {
+        if (swingGenerator == null) {
+            swingGenerator = new SwingLayoutCodeGenerator(formModel.getLayoutModel());
+        }
+        return swingGenerator;
     }
 
     private void generateComponentCreate(RADComponent comp,
@@ -1138,9 +1191,8 @@ class JavaCodeGenerator extends CodeGenerator {
             LayoutSupportManager layoutSupport =
                 ((RADVisualContainer)comp).getLayoutSupport();
 
-            if (layoutSupport.isLayoutChanged()) {
-                Iterator it = layoutSupport.getLayoutCode()
-                                                .getStatementsIterator();
+            if (layoutSupport != null && layoutSupport.isLayoutChanged()) {
+                Iterator it = layoutSupport.getLayoutCode().getStatementsIterator();
                 while (it.hasNext()) {
                     CodeStatement statement = (CodeStatement) it.next();
                     initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
@@ -1271,8 +1323,9 @@ class JavaCodeGenerator extends CodeGenerator {
         throws IOException
     {
         if (comp instanceof RADVisualComponent) {
-            CodeGroup componentCode = container.getLayoutSupport()
-                                 .getComponentCode((RADVisualComponent)comp);
+            LayoutSupportManager laysup = container.getLayoutSupport();
+            CodeGroup componentCode = laysup != null ?
+                laysup.getComponentCode((RADVisualComponent)comp) : null;
             if (componentCode != null) {
                 Iterator it = componentCode.getStatementsIterator();
                 while (it.hasNext()) {
@@ -2555,12 +2608,12 @@ class JavaCodeGenerator extends CodeGenerator {
                         // check if the value contains & (ampersand) to inform
                         // the user about the Mnemonics code generation feature
                         try {
-                            String str = (String)
-                                ev.getComponentProperty().getRealValue();
+                            String str = (String) ev.getComponentProperty().getRealValue();
                             if (org.openide.awt.Mnemonics.findMnemonicAmpersand(str) > -1
                                 && showMnemonicsDialog())
                                 comp.setAuxValue(PROP_GENERATE_MNEMONICS, Boolean.TRUE);
-                        } catch (Exception ex) {} // ignore
+                        }
+                        catch (Exception ex) {} // ignore
                     }
                  }
                  // Mnemonics support - end -
@@ -2648,7 +2701,7 @@ class JavaCodeGenerator extends CodeGenerator {
             mnemonicsInfoDialog = new MnemonicsInfoDialog();
         mnemonicsInfoDialog.show();
         if (mnemonicsInfoDialog.mnemonicsEnabled())
-            formModel.getSettings().setGenerateMnemonicsCode(true);
+			formModel.getSettings().setGenerateMnemonicsCode(true);
             formSettings.setGenerateMnemonicsCode(true);
         if (mnemonicsInfoDialog.showingDisabled())
             formSettings.setShowMnemonicsDialog(false);
@@ -2845,7 +2898,8 @@ class JavaCodeGenerator extends CodeGenerator {
         public PropertyEditor getPropertyEditor() {
             return new PropertyEditorSupport() {
                 public Component getCustomEditor() {
-                    return new CustomCodeEditor(CodePropertySupportRW.this, formModel.getFormDataObject());
+                    return new CustomCodeEditor(CodePropertySupportRW.this,
+                                                formEditorSupport.getFormDataObject());
                 }
 
                 public boolean supportsCustomEditor() {
@@ -2860,18 +2914,18 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     // }}}
-
+    
     // Properties
-      
+    
     private class VariablesModifierProperty extends PropertySupport.ReadWrite {
-          
+        
         private VariablesModifierProperty() {
             super(PROP_VARIABLE_MODIFIER,
-            Integer.class,
-            FormUtils.getBundleString("PROP_VARIABLES_MODIFIER"), // NOI18N
-            FormUtils.getBundleString("HINT_VARIABLES_MODIFIER")); // NOI18N
+                Integer.class,
+                FormUtils.getBundleString("PROP_VARIABLES_MODIFIER"), // NOI18N
+                FormUtils.getBundleString("HINT_VARIABLES_MODIFIER")); // NOI18N
         }
-              
+            
         public void setValue(Object value) {
             if (!(value instanceof Integer))
                 throw new IllegalArgumentException();
@@ -2883,18 +2937,20 @@ class JavaCodeGenerator extends CodeGenerator {
             if (formModel.getSettings().getVariablesLocal()) {
                 varType = CodeVariable.LOCAL | (variablesModifier & CodeVariable.FINAL) | CodeVariable.EXPLICIT_DECLARATION;
             } else varType = CodeVariable.FIELD | variablesModifier;
-            
+
             formModel.getCodeStructure().setDefaultVariableType(varType);
             formModel.getSettings().setVariablesModifier(variablesModifier);
             formModel.fireSyntheticPropertyChanged(null, PROP_VARIABLE_MODIFIER, oldValue, newValue);
-            ((FormRootNode)formEditorSupport.getFormRootNode()).firePropertyChangeHelper(
+            FormEditor formEditor = FormEditor.getFormEditor(formModel);
+            FormRootNode formRootNode = (FormRootNode)formEditor.getFormRootNode();
+            formRootNode.firePropertyChangeHelper(
                 PROP_VARIABLE_MODIFIER, oldValue, newValue);
         }
-          
+        
         public Object getValue() {
             return new Integer(formModel.getSettings().getVariablesModifier());
         }
-        
+
         public boolean supportsDefaultValue() {
             return true;
         }
@@ -2911,7 +2967,7 @@ class JavaCodeGenerator extends CodeGenerator {
         public boolean canWrite() {
             return JavaCodeGenerator.this.canGenerate;
         }
-
+        
         public PropertyEditor getPropertyEditor() {
             boolean local = formModel.getSettings().getVariablesLocal();
             return local ? new ModifierEditor(Modifier.FINAL) :
@@ -2925,21 +2981,21 @@ class JavaCodeGenerator extends CodeGenerator {
         }
         
     }
-
+    
     private class LocalVariablesProperty extends PropertySupport.ReadWrite {
-        
+
         private LocalVariablesProperty() {
             super(PROP_VARIABLE_LOCAL,
-            Boolean.TYPE,
-            FormUtils.getBundleString("PROP_VARIABLES_LOCAL"), // NOI18N
-            FormUtils.getBundleString("HINT_VARIABLES_LOCAL")); // NOI18N
+                Boolean.TYPE,
+                FormUtils.getBundleString("PROP_VARIABLES_LOCAL"), // NOI18N
+                FormUtils.getBundleString("HINT_VARIABLES_LOCAL")); // NOI18N
         }
         
         public void setValue(Object value) {
             if (!(value instanceof Boolean))
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException();            
             if (value.equals(getValue())) return;
-
+            
             Boolean oldValue = (Boolean)getValue();
             Boolean newValue = (Boolean)value;
             FormSettings formSettings = formModel.getSettings();
@@ -2951,15 +3007,17 @@ class JavaCodeGenerator extends CodeGenerator {
             int varType = variablesLocal ?
                 CodeVariable.LOCAL | variablesModifier | CodeVariable.EXPLICIT_DECLARATION
                 : CodeVariable.FIELD | variablesModifier;
-            
+
             formModel.getCodeStructure().setDefaultVariableType(varType);
             formSettings.setVariablesLocal(variablesLocal);
             formSettings.setVariablesModifier(variablesModifier);
             formModel.fireSyntheticPropertyChanged(null, PROP_VARIABLE_LOCAL, oldValue, newValue);
             formModel.fireSyntheticPropertyChanged(null, PROP_VARIABLE_MODIFIER, oldModif, newModif);
-            ((FormRootNode)formEditorSupport.getFormRootNode()).firePropertyChangeHelper(
+            FormEditor formEditor = FormEditor.getFormEditor(formModel);
+            FormRootNode formRootNode = (FormRootNode)formEditor.getFormRootNode();
+            formRootNode.firePropertyChangeHelper(
                 PROP_VARIABLE_LOCAL, oldValue, newValue);
-            ((FormRootNode)formEditorSupport.getFormRootNode()).firePropertyChangeHelper(
+            formRootNode.firePropertyChangeHelper(
                 PROP_VARIABLE_MODIFIER, oldModif, newModif);
         }
         
@@ -2976,10 +3034,10 @@ class JavaCodeGenerator extends CodeGenerator {
         }
         
         public boolean isDefaultValue() {
-            return (formModel.getSettings().getVariablesLocal() ==
+            return (formModel.getSettings().getVariablesLocal() == 
                 FormLoaderSettings.getInstance().getVariablesLocal());
         }
-          
+        
         public boolean canWrite() {
             return JavaCodeGenerator.this.canGenerate;
         }
@@ -2990,11 +3048,11 @@ class JavaCodeGenerator extends CodeGenerator {
         
         private GenerateMnemonicsCodeProperty() {
             super(PROP_GENERATE_MNEMONICS,
-            Boolean.TYPE,
-            FormUtils.getBundleString("PROP_GENERATE_MNEMONICS"), // NOI18N
-            FormUtils.getBundleString("HINT_GENERATE_MNEMONICS2")); // NOI18N
+                Boolean.TYPE,
+                FormUtils.getBundleString("PROP_GENERATE_MNEMONICS"), // NOI18N
+                FormUtils.getBundleString("HINT_GENERATE_MNEMONICS2")); // NOI18N
         }
-
+            
         public void setValue(Object value) {
             if (!(value instanceof Boolean))
                 throw new IllegalArgumentException();
@@ -3003,10 +3061,12 @@ class JavaCodeGenerator extends CodeGenerator {
             Boolean newValue = (Boolean)value;
             formModel.getSettings().setGenerateMnemonicsCode(newValue.booleanValue());
             formModel.fireSyntheticPropertyChanged(null, PROP_GENERATE_MNEMONICS, oldValue, newValue);
-            ((FormRootNode)formEditorSupport.getFormRootNode()).firePropertyChangeHelper(
+            FormEditor formEditor = FormEditor.getFormEditor(formModel);
+            FormRootNode formRootNode = (FormRootNode)formEditor.getFormRootNode();
+            formRootNode.firePropertyChangeHelper(
                 PROP_GENERATE_MNEMONICS, oldValue, newValue);
         }
-          
+        
         public Object getValue() {
             return Boolean.valueOf(formModel.getSettings().getGenerateMnemonicsCode());
         }
@@ -3024,12 +3084,12 @@ class JavaCodeGenerator extends CodeGenerator {
         }
         
         public boolean isDefaultValue() {
-            return (formModel.getSettings().getGenerateMnemonicsCode() ==
+            return (formModel.getSettings().getGenerateMnemonicsCode() == 
                 FormLoaderSettings.getInstance().getGenerateMnemonicsCode());
         }
         
     }
-    
+
     private class ListenerGenerationStyleProperty extends PropertySupport.ReadWrite {
         
         private ListenerGenerationStyleProperty() {
@@ -3038,7 +3098,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormUtils.getBundleString("PROP_LISTENER_GENERATION_STYLE"), // NOI18N
                 FormUtils.getBundleString("HINT_LISTENER_GENERATION_STYLE")); // NOI18N
         }
-              
+            
         public void setValue(Object value) {
             if (!(value instanceof Integer))
                 throw new IllegalArgumentException();
@@ -3047,14 +3107,16 @@ class JavaCodeGenerator extends CodeGenerator {
             Integer newValue = (Integer)value;
             formModel.getSettings().setListenerGenerationStyle(newValue.intValue());
             formModel.fireSyntheticPropertyChanged(null, PROP_LISTENER_GENERATION_STYLE, oldValue, newValue);
-            ((FormRootNode)formEditorSupport.getFormRootNode()).firePropertyChangeHelper(
+            FormEditor formEditor = FormEditor.getFormEditor(formModel);
+            FormRootNode formRootNode = (FormRootNode)formEditor.getFormRootNode();
+            formRootNode.firePropertyChangeHelper(
                 PROP_LISTENER_GENERATION_STYLE, oldValue, newValue);
         }
-          
+        
         public Object getValue() {
             return new Integer(formModel.getSettings().getListenerGenerationStyle());
         }
-        
+
         public boolean supportsDefaultValue() {
             return true;
         }
@@ -3077,5 +3139,5 @@ class JavaCodeGenerator extends CodeGenerator {
         }
         
     }
-  
+
 }

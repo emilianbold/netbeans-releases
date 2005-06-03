@@ -19,6 +19,8 @@ import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.BeanInfo;
+import java.util.*;
+import java.util.List;
 
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
@@ -117,10 +119,10 @@ class FormToolBar extends JToolBar {
         // adding the components to the toolbar
         JToolBar.Separator separator1 = new JToolBar.Separator();
         separator1.setOrientation(JSeparator.VERTICAL);
-//        JToolBar.Separator separator2 = new JToolBar.Separator();
-//        separator2.setOrientation(JSeparator.VERTICAL);
-//        JToolBar.Separator separator3 = new JToolBar.Separator();
-//        separator3.setOrientation(JSeparator.VERTICAL);
+        JToolBar.Separator separator2 = new JToolBar.Separator();
+        separator2.setOrientation(JSeparator.VERTICAL);
+        JToolBar.Separator separator3 = new JToolBar.Separator();
+        separator3.setOrientation(JSeparator.VERTICAL);
 
         TestAction testAction = (TestAction) SystemAction.get(TestAction.class);
         JButton testButton = (JButton) testAction.getToolbarPresenter();
@@ -151,19 +153,45 @@ class FormToolBar extends JToolBar {
         add(connectionButton);
         add(paletteButton);
         add(Box.createHorizontalStrut(6));
-//        add(separator2);
-//        add(Box.createHorizontalStrut(4));
         add(pmButton);
         add(Box.createHorizontalStrut(6));
-//        add(separator3);
-//        add(Box.createHorizontalStrut(4));
         add(testButton);
+
+        if (FormEditor.isNaturalLayoutEnabled()) {
+            add(Box.createHorizontalStrut(4));
+            add(separator2);
+            add(Box.createHorizontalStrut(4));
+
+            installDesignerActions();
+            add(separator3);
+            installAlignmentButtons();
+        }
+
+        // Add "addLabel" at the end of the toolbar
         add(Box.createHorizontalGlue());
         add(addLabel);
 
         if (!FormLoaderSettings.getInstance().isPaletteInToolBar()) {
             addLabel.setVisible(false);
             paletteButton.setVisible(false);
+        }
+    }
+
+    void installDesignerActions() {
+        Collection actions = formDesigner.getDesignerActions();
+        Iterator iter = actions.iterator();
+        while (iter.hasNext()) {
+            Action action = (Action)iter.next();
+            JButton button = add(action);
+            initButton(button);
+        }        
+    }
+    
+    void installAlignmentButtons() {
+        JToggleButton[] buttons = formDesigner.getAlignmentButtons();
+        for (int i=0; i<buttons.length; i++) {
+            initButton(buttons[i]);
+            add(buttons[i]);
         }
     }
 
@@ -176,6 +204,7 @@ class FormToolBar extends JToolBar {
         }
         button.setOpaque(false);
         button.setFocusPainted(false);
+        button.setMargin(new Insets(0, 0, 0, 0));
     }
     
     void updateDesignerMode(int mode) {

@@ -33,7 +33,8 @@ class ComponentDragger
     private FormDesigner formDesigner;
     private HandleLayer handleLayer;
     private RADVisualComponent[] selectedComponents;
-    private Point hotspot;
+    private Rectangle[] originalBounds; // in HandleLayer coordinates
+    private Point hotspot; // in HandleLayer coordinates
     private Point mousePosition;
     private int resizeType;
 
@@ -43,17 +44,34 @@ class ComponentDragger
     private Container targetContainer;
     private Container targetContainerDel;
 
+    static Stroke dashedStroke1 = new BasicStroke((float) 2.0,
+                                      BasicStroke.CAP_SQUARE,
+                                      BasicStroke.JOIN_MITER,
+                                      (float) 10.0,
+                                      new float[] { (float) 1.0, (float) 4.0 },
+                                      0);
+
+    static Stroke dashedStroke2 = new BasicStroke(
+                                      (float) 2.0,
+                                      BasicStroke.CAP_SQUARE,
+                                      BasicStroke.JOIN_MITER,
+                                      (float) 10.0,
+                                      new float[] { (float) 2.0, (float) 8.0 },
+                                      0);
+
     /** The FormLoaderSettings instance */
     // constructor for dragging
     ComponentDragger(FormDesigner formDesigner,
                      HandleLayer handleLayer,
                      RADVisualComponent[] selectedComponents,
+                     Rectangle[] originalBounds,
                      Point hotspot,
                      RADVisualContainer fixedTargetMetaContainer)
     {
         this.formDesigner = formDesigner;
         this.handleLayer = handleLayer;
         this.selectedComponents = selectedComponents;
+        this.originalBounds = originalBounds;
         this.hotspot = hotspot;
         this.mousePosition = hotspot;
         this.resizeType = 0;
@@ -68,12 +86,14 @@ class ComponentDragger
     ComponentDragger(FormDesigner formDesigner,
                      HandleLayer handleLayer,
                      RADVisualComponent[] selectedComponents,
+                     Rectangle[] originalBounds,
                      Point hotspot,
                      int resizeType)
     {
         this.formDesigner = formDesigner;
         this.handleLayer = handleLayer;
         this.selectedComponents = selectedComponents;
+        this.originalBounds = originalBounds;
         this.hotspot = hotspot;
         this.mousePosition = hotspot;
         this.resizeType = resizeType;
@@ -85,13 +105,7 @@ class ComponentDragger
 
     void paintDragFeedback(Graphics2D g) {
         Stroke oldStroke = g.getStroke();
-        Stroke stroke = new BasicStroke((float) 2.0,
-                                        BasicStroke.CAP_SQUARE,
-                                        BasicStroke.JOIN_MITER,
-                                        (float) 10.0,
-                                        new float[] { (float) 1.0, (float) 4.0 },
-                                        0 );
-        g.setStroke(stroke);
+        g.setStroke(dashedStroke1);
 
         Color oldColor = g.getColor();
         g.setColor(FormLoaderSettings.getInstance().getSelectionBorderColor());
@@ -145,13 +159,16 @@ class ComponentDragger
         if (targetMetaContainer != null) {
             constraints = new ArrayList(selectedComponents.length);
             indices = new ArrayList(selectedComponents.length);
-            if (!computeConstraints(point, constraints, indices))
-                return;
+            computeConstraints(point, constraints, indices);
         }
-        else if (handleLayer.mouseOnVisual(point))
-            return;
+        if (targetMetaContainer == null) {
+            if (handleLayer.mouseOnVisual(point)) {
+                return;
+            }
+            constraints = indices = null;
+        }
 
-        FormModel formModel = formDesigner.getModel();
+        FormModel formModel = formDesigner.getFormModel();
 
         // LayoutSupportManager of the target container
         LayoutSupportManager layoutSupport = null;
@@ -297,7 +314,7 @@ class ComponentDragger
                         movedFromOutside = new ArrayList(selectedComponents.length);
                     movedFromOutside.add(metacomp);
 
-                    formModel.removeComponentFromContainer(metacomp);
+                    formModel.removeComponent(metacomp, false);
                 }
             }
             else { // remove empty space
@@ -407,8 +424,8 @@ class ComponentDragger
 
         if (!fixedTarget) {
             targetMetaContainer = resizeType == 0 ?
-                                    handleLayer.getMetaContainerAt(p) :
-                                    selectedComponents[0].getParentContainer();
+                handleLayer.getMetaContainerAt(p, HandleLayer.COMP_DEEPEST) :
+                selectedComponents[0].getParentContainer();
             if (targetMetaContainer == null)
                 return false; // unknown meta-container
         }
@@ -452,8 +469,8 @@ class ComponentDragger
                     }
 
                     if (resizeType == 0) { // dragging
-                        Point posInComp = SwingUtilities.convertPoint(
-                                              handleLayer, hotspot, comp);
+                        Point posInComp = new Point(hotspot.x - originalBounds[i].x,
+                                                    hotspot.y - originalBounds[i].y);
                         index = layoutSupport.getNewIndex(
                                     targetContainer, targetContainerDel,
                                     comp, metacomp.getComponentIndex(),
@@ -587,13 +604,7 @@ class ComponentDragger
 
     private void paintTargetContainerFeedback(Graphics2D g, Container cont) {
         Stroke oldStroke = g.getStroke();
-        Stroke stroke = new BasicStroke((float) 2.0,
-                                        BasicStroke.CAP_SQUARE,
-                                        BasicStroke.JOIN_MITER,
-                                        (float) 10.0,
-                                        new float[] { (float) 2.0, (float) 8.0 },
-                                        0 );
-        g.setStroke(stroke);
+        g.setStroke(dashedStroke2);
 
         Color oldColor = g.getColor();
         g.setColor(FormLoaderSettings.getInstance().getDragBorderColor());
@@ -629,8 +640,8 @@ class ComponentDragger
                 formModel.setUndoRedoRecording(false);
 
             for (int i=0; i < componentsMovedFromOutside.length; i++)
-                formModel.removeComponentFromContainer(
-                                         componentsMovedFromOutside[i]);
+                formModel.removeComponentImpl(
+                                         componentsMovedFromOutside[i], false);
 
             if (targetContainer != null) {
                 LayoutSupportManager layoutSupport =

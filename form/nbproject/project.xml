@@ -127,7 +127,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>	
+                </dependency>
                 <dependency>
                     <code-name-base>org.openide.src</code-name-base>
                     <build-prerequisite/>
@@ -161,6 +161,10 @@ Microsystems, Inc. All Rights Reserved.
             <class-path-extension>
                 <runtime-relative-path>ext/AbsoluteLayout.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/AbsoluteLayout.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/swing-layout.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/swing-layout.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

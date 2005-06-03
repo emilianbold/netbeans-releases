@@ -41,8 +41,7 @@ public class InPlaceEditAction extends NodeAction {
             RADComponent metacomp = radCookie == null ? null :
                                       radCookie.getRADComponent();
             if (metacomp != null) {
-                FormDesigner designer = FormEditorSupport.getFormDesigner(
-                                            metacomp.getFormModel());
+                FormDesigner designer = FormEditor.getFormDesigner(metacomp.getFormModel());
                 if (designer != null)
                     designer.startInPlaceEditing(metacomp);
             }
@@ -67,8 +66,7 @@ public class InPlaceEditAction extends NodeAction {
             RADComponent metacomp = radCookie == null ? null :
                                       radCookie.getRADComponent();
             if (metacomp != null) {
-                FormDesigner designer = FormEditorSupport.getFormDesigner(
-                                            metacomp.getFormModel());
+                FormDesigner designer = FormEditor.getFormDesigner(metacomp.getFormModel());
                 if (designer != null)
                     return designer.isEditableInPlace(metacomp);
             }

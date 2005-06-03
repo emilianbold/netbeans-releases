@@ -187,9 +187,9 @@ public class ClassPathUtils {
                         + File.separator
                         + artifactLocations[j].getPath());
                     outputList.add(outputFile.getAbsolutePath());
-                }
             }
-            outputs = (String[])outputList.toArray(new String[0]);
+            }
+            outputs = (String[])outputList.toArray(new String[outputList.size()]);
         }
 
         String[] types = new String[outputs.length];

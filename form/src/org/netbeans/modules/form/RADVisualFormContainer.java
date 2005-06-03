@@ -82,7 +82,15 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     public Dimension getFormSize() {
         if (formSize == null) {
-            formSize = new Dimension(400, 300); //topContainer.getSize();
+            Dimension size = getDesignerSize();
+            if (getBeanInstance() instanceof Dialog
+                || getBeanInstance() instanceof Frame)
+            {
+                Dimension diffDim = getWindowContentDimensionDiff();
+                size = new Dimension(size.width + diffDim.width,
+                                     size.height + diffDim.height);
+            }
+            formSize = size; //new Dimension(400, 300); //topContainer.getSize();
         }
         return formSize;
     }
@@ -399,7 +407,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     private static Dimension windowContentDimensionDiff;
 
-    private static Dimension getWindowContentDimensionDiff() {
+    public static Dimension getWindowContentDimensionDiff() {
         if (windowContentDimensionDiff == null) {
             javax.swing.JFrame frame = new javax.swing.JFrame();
             frame.pack();

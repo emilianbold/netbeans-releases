@@ -18,7 +18,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.*;
 import java.util.*;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 

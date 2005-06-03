@@ -17,14 +17,19 @@ import java.awt.*;
 import javax.swing.*;
 import java.util.*;
 
+import org.openide.ErrorManager;
+
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.netbeans.modules.form.layoutsupport.*;
+//import org.netbeans.modules.form.layoutdesign.LayoutDesigner.VisualMapper;
+import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 
 /**
- * This class replicates the instances from meta-components hierarchy of the
- * designed form. Components cloned this way are used e.g. in ComponentLayer
- * for presenting the form in designer, or by TestAction. Due to mapping from
- * meta components to clones (and viceversa), effective incremental updates of
+ * This class replicates (clones) the reference instances from meta-components
+ * of a form. This way an equal and independent hierarchy of real instances is
+ * built. Components cloned this way are used in the ComponentLayer presenting
+ * the form in designer, or by the TestAction. Thanks to mapping from meta
+ * components to clones (and viceversa), effective incremental updates of
  * changes from metadata are possible.
  * Note: After updating replicated components, revalidate() and repaint()
  * should be called on the top component.
@@ -32,63 +37,93 @@ import org.netbeans.modules.form.layoutsupport.*;
  * @author Tomas Pavek
  */
 
-public class VisualReplicator {
+public class VisualReplicator { //implements VisualMapper
 
-    Object topClonedComponent;
-    RADVisualComponent topMetaComponent;
+//    Object topClonedComponent;
+    private RADVisualComponent topMetaComponent;
 
-    Map metaToClone = new HashMap();
-    Map cloneToMeta = new HashMap();
+    private Map idToClone = new HashMap();
+    private Map cloneToId = new HashMap();
 
-    int designRestrictions;
+    private Map layoutBuilders = new HashMap();
+
+    private int designRestrictions;
 
     // design restrictions flags
-    public static final int ATTACH_FAKE_PEERS = 1;
-    public static final int DISABLE_FOCUSING = 2;
+    static final int ATTACH_FAKE_PEERS = 1;
+    static final int DISABLE_FOCUSING = 2;
 
     // restrictions
-    Class requiredTopClass;
-    Class[] forbiddenClasses;
+    private Class requiredTopClass;
+    private Class[] forbiddenClasses;
 
+    // ---------
 
     public VisualReplicator() {
     }
 
     public VisualReplicator(Class requiredClass,
                             Class[] forbiddenClasses,
-                            int designRestrictions) {
+                            int designRestrictions)
+    {
         setRequiredTopVisualClass(requiredClass);
         setForbiddenTopVisualClasses(forbiddenClasses);
         setDesignRestrictions(designRestrictions);
+//        this.layoutBuilder = layoutBuilder;
     }
 
     // ---------
     // mapping
 
     public Object getClonedComponent(RADComponent metacomponent) {
-        return metaToClone.get(metacomponent);
+        return idToClone.get(metacomponent.getId());
     }
 
-    public RADComponent getMetaComponent(Object component) {
-        return (RADComponent) cloneToMeta.get(component);
+    public Object getClonedComponent(String id) {
+        return idToClone.get(id);
+    }
+
+    public String getClonedComponentId(Object component) {
+        return (String) cloneToId.get(component);
+    }
+
+    // ---------
+
+    private FormModel getFormModel() {
+        return getTopMetaComponent().getFormModel();
+    }
+
+    SwingLayoutBuilder getLayoutBuilder(String containerId) {
+        SwingLayoutBuilder builder = (SwingLayoutBuilder) layoutBuilders.get(containerId);
+        if (builder == null) {
+            RADVisualContainer metacont = (RADVisualContainer)
+                getFormModel().getMetaComponent(containerId);
+            Container cont = (Container) getClonedComponent(containerId);
+            Container contDelegate = metacont.getContainerDelegate(cont);
+
+            builder = new SwingLayoutBuilder(getFormModel().getLayoutModel(),
+                                             contDelegate, containerId);
+            layoutBuilders.put(containerId, builder);
+        }
+        return builder;
     }
 
     // ---------
     // getters & setters
 
-    public Object getTopClonedComponent() {
-        return topClonedComponent;
-    }
+//    public Object getTopClonedComponent() {
+//        return topClonedComponent;
+//    }
 
     public RADVisualComponent getTopMetaComponent() {
         return topMetaComponent;
     }
 
     public void setTopMetaComponent(RADVisualComponent metacomponent) {
-        topClonedComponent = null;
+//        topClonedComponent = null;
         topMetaComponent = metacomponent;
-        metaToClone.clear();
-        cloneToMeta.clear();
+        idToClone.clear();
+        cloneToId.clear();
     }
 
     public int getDesignRestrictions() {
@@ -138,7 +173,7 @@ public class VisualReplicator {
                 copyRelativeProperties(relativeProperties);
         }
         catch (Exception ex) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             clone = null;
         }
 
@@ -166,20 +201,27 @@ public class VisualReplicator {
     }
 
     public void updateContainerLayout(RADVisualContainer metacont) {
-        if (metacont == null)
-            return;
-
         Container cont = (Container) getClonedComponent(metacont);
-        if (cont == null) // should not happen
-            return;
         Container contDelegate = metacont.getContainerDelegate(cont);
-
         LayoutSupportManager laysup = metacont.getLayoutSupport();
-        laysup.clearContainer(cont, contDelegate);
-        laysup.setLayoutToContainer(cont, contDelegate);
+        SwingLayoutBuilder layoutBuilder;
 
+        // clear the container first before setting/changing the layout
+        if (laysup != null) { // old layout support
+            layoutBuilder = null;
+            layoutBuilders.remove(metacont.getId());
+            laysup.clearContainer(cont, contDelegate);
+        }
+        else { // new layout support
+            layoutBuilder = getLayoutBuilder(metacont.getId());
+            layoutBuilder.clearContainer();
+        }
+
+        // update visual components
         RADVisualComponent[] metacomps = metacont.getSubComponents();
         Component[] comps = new Component[metacomps.length];
+        String[] compIds = new String[metacomps.length];
+
         for (int i = 0; i < metacomps.length; i++) {
             RADVisualComponent metacomp = metacomps[i];
 
@@ -198,27 +240,37 @@ public class VisualReplicator {
                 FakePeerSupport.attachFakePeerRecursively((Container)comp);
 
             comps[i] = comp;
+            compIds[i] = metacomp.getId();
         }
 
-        // add removed subcomponents
-        laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
-
-        laysup.arrangeContainer(cont, contDelegate);
+        // set the layout and re-add the components
+        if (laysup != null) { // old layout support
+            laysup.setLayoutToContainer(cont, contDelegate);
+            if (comps.length > 0)
+                laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
+            laysup.arrangeContainer(cont, contDelegate);
+        }
+        else { // new layout support
+            layoutBuilder.setupContainerLayout(comps, compIds);
+        }
     }
 
     public void updateAddedComponents(ComponentContainer metacont) {
-        if (metacont == null)
-            return;
-
         Container container = null;
         if (metacont instanceof RADComponent) {
             Object contClone = getClonedComponent((RADComponent)metacont);
-            if (contClone instanceof Container)
-                if (metacont instanceof RADVisualContainer)
-                    container = ((RADVisualContainer)metacont)
-                                .getContainerDelegate((Container)contClone);
-                else
-                    container = (Container)contClone;
+            if (contClone instanceof Container) {
+                if (metacont instanceof RADVisualContainer) {
+                    RADVisualContainer visualMetaCont = (RADVisualContainer)metacont;
+                    if (visualMetaCont.getLayoutSupport() == null) {
+                        // don't try incremental update with new layout support
+                        updateContainerLayout(visualMetaCont);
+                        //return;
+                    }
+                    container = visualMetaCont.getContainerDelegate((Container)contClone);
+                }
+                else container = (Container)contClone;
+            }
         }
 
         RADComponent[] subComps = metacont.getSubBeans();
@@ -228,8 +280,7 @@ public class VisualReplicator {
                 addComponent(subComps[i]);
             else if (compClone instanceof Component) {
                 Container cloneCont = ((Component)compClone).getParent();
-                if (cloneCont != container && getMetaComponent(cloneCont)
-                                                                      != null)
+                if (cloneCont != container && cloneToId.get(cloneCont) != null)
                     return; // the clone is placed in another container in
             }               // replicator, there's going to be another update
         }
@@ -250,19 +301,24 @@ public class VisualReplicator {
 
             RADVisualContainer metacont = (RADVisualContainer)
                                           metacomp.getParentComponent();
-            Container cont = (Container) getClonedComponent(metacont);
-            if (cont == null) // should not happen
-                return;
-            Container contDelegate = metacont.getContainerDelegate(cont);
-
             LayoutSupportManager laysup = metacont.getLayoutSupport();
-            laysup.addComponentsToContainer(
-                          cont,
-                          contDelegate,
-                          new Component[] { (Component) clone },
-                          ((RADVisualComponent)metacomp).getComponentIndex());
 
-            laysup.arrangeContainer(cont, contDelegate);
+            if (laysup != null) { // old layout support
+                Container cont = (Container) getClonedComponent(metacont);
+                if (cont == null) return;
+                Container contDelegate = metacont.getContainerDelegate(cont);
+                laysup.addComponentsToContainer(
+                        cont,
+                        contDelegate,
+                        new Component[] { (Component) clone },
+                        ((RADVisualComponent)metacomp).getComponentIndex());
+                laysup.arrangeContainer(cont, contDelegate);
+            }
+//            else { // new layout support
+//                getLayoutBuilder(metacont.getId()).addComponentsToContainer(
+//                        new Component[] { (Component) clone },
+//                        new String[] { metacomp.getId() } );
+//            }
         }
         else if (metacomp instanceof RADMenuItemComponent) {
             Object clone = createClone(metacomp);
@@ -320,28 +376,35 @@ public class VisualReplicator {
             else { // let the layout support remove the visual component
                 Container contDelegate = parentCont.getContainerDelegate(cont);
                 LayoutSupportManager laysup = parentCont.getLayoutSupport();
-                if (!laysup.removeComponentFromContainer(
-                                cont, contDelegate, comp))
-                {   // layout delegate cannot remove individual components,
-                    // we must clear the container and add the components again
-                    laysup.clearContainer(cont, contDelegate);
+                if (laysup != null) { // old layout support
+                    if (!laysup.removeComponentFromContainer(
+                                    cont, contDelegate, comp))
+                    {   // layout delegate cannot remove individual components,
+                        // we must clear the container and add the components again
+                        laysup.clearContainer(cont, contDelegate);
 
-                    RADVisualComponent[] metacomps = parentCont.getSubComponents();
-                    if (metacomps.length > 0) {
-                        // we assume the metacomponent is already removed
-                        Component[] comps = new Component[metacomps.length];
-                        for (int i=0; i < metacomps.length; i++) {
-                            comp = (Component) getClonedComponent(metacomps[i]);
-                            // becaues the components were removed, we must
-                            // re-attach their fake peers (if needed)
-                            FakePeerSupport.attachFakePeer(comp);
-                            if (comp instanceof Container)
-                                FakePeerSupport.attachFakePeerRecursively(
-                                                           (Container)comp);
-                            comps[i] = comp;
+                        RADVisualComponent[] metacomps = parentCont.getSubComponents();
+                        if (metacomps.length > 0) {
+                            // we assume the metacomponent is already removed
+                            Component[] comps = new Component[metacomps.length];
+                            for (int i=0; i < metacomps.length; i++) {
+                                comp = (Component) getClonedComponent(metacomps[i]);
+                                // becaues the components were removed, we must
+                                // re-attach their fake peers (if needed)
+                                FakePeerSupport.attachFakePeer(comp);
+                                if (comp instanceof Container)
+                                    FakePeerSupport.attachFakePeerRecursively(
+                                                               (Container)comp);
+                                comps[i] = comp;
+                            }
+                            laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
                         }
-                        laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
                     }
+                }
+                else { // new layout support
+                    getLayoutBuilder(parentCont.getId()).removeComponentsFromContainer(
+                        new Component[] { comp },
+                        new String[] { metacomp.getId() } );
                 }
             }
         }
@@ -461,7 +524,7 @@ public class VisualReplicator {
                 ((Component)targetComp).invalidate();
         }
         catch (Exception ex) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
 
@@ -473,8 +536,8 @@ public class VisualReplicator {
                                   java.util.List relativeProperties)
         throws Exception
     {
-        Object clone;
-        Object compClone = null;
+        Object clone; // mapped clone instance
+        Object compClone = null; // clone of the component, might appear under 'clone'
 
         if (needsConversion(metacomp)) { // clone with conversion
             clone = cloneComponentWithConversion(
@@ -483,13 +546,15 @@ public class VisualReplicator {
                     relativeProperties);
 
             if (clone instanceof RootPaneContainer
-                  && !(metacomp.getBeanInstance() instanceof RootPaneContainer))
-                compClone = // the cloned component was put to the content pane
-                    ((RootPaneContainer)clone).getContentPane().getComponent(0);
-        } else if ("java.awt.ScrollPane".equals(metacomp.getBeanClass().getName()) // NOI18N
+                && !(metacomp.getBeanInstance() instanceof RootPaneContainer))
+            {   // the cloned component was put to the content pane
+                compClone = ((RootPaneContainer)clone).getContentPane().getComponent(0);
+            }
+        }
+        else if ("java.awt.ScrollPane".equals(metacomp.getBeanClass().getName()) // NOI18N
             && ((getDesignRestrictions() & ATTACH_FAKE_PEERS) != 0)
-            && (System.getProperty("java.version").startsWith("1.4"))) { // NOI18N
-            // Issue 36629 - ScrollPane attempts to place
+            && (System.getProperty("java.version").startsWith("1.4"))) // NOI18N
+        {   // Issue 36629 - ScrollPane attempts to place
             // components with a lightweight peer into a Panel
             clone = new java.awt.ScrollPane() {
                         public void addNotify() {
@@ -502,14 +567,16 @@ public class VisualReplicator {
                             }
                         }
                     };
-        } else // just clone the bean
+        }
+        else { // just clone the bean
             clone = metacomp.cloneBeanInstance(relativeProperties);
+        }
 
         if (compClone == null)
             compClone = clone;
 
-        metaToClone.put(metacomp, clone);
-        cloneToMeta.put(clone, metacomp);
+        idToClone.put(metacomp.getId(), clone);
+        cloneToId.put(clone, metacomp.getId());
 
         if (compClone instanceof java.beans.DesignMode)
             ((java.beans.DesignMode)compClone).setDesignTime(
@@ -520,39 +587,44 @@ public class VisualReplicator {
             final Container cont = (Container) compClone;
             final Container contDelegate = metacont.getContainerDelegate(cont);
 
-            // copy menu
+            // clone menu
             if (metacont.getContainerMenu() != null) {
                 Object menu = cloneComponent(metacont.getContainerMenu(),
                                              relativeProperties);
                 setContainerMenu(cont, menu);
             }
 
-            // set layout
-            final LayoutSupportManager laysup = metacont.getLayoutSupport();
-            laysup.setLayoutToContainer(cont, contDelegate);
-
-            // copy subcomponents
+            // clone subcomponents
             RADVisualComponent[] metacomps = metacont.getSubComponents();
-            if (metacomps.length > 0) {
-                final Component[] comps = new Component[metacomps.length];
-                for (int i=0; i < metacomps.length; i++)
-                    comps[i] = (Component) cloneComponent(metacomps[i],
-                                                          relativeProperties);
-
-                // add cloned subcomponents to container
-                if (!(cont instanceof JToolBar))
-                    laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
-                else { // a L&F workaround for JToolBar (MetalToobarUI)
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            laysup.addComponentsToContainer(cont, contDelegate,
-                                                            comps, 0);
-                        }
-                    });
-                }
+            final Component[] comps = new Component[metacomps.length];
+            String[] compIds = new String[metacomps.length];
+            for (int i=0; i < metacomps.length; i++) {
+                comps[i] = (Component) cloneComponent(metacomps[i],
+                                                      relativeProperties);
+                compIds[i] = metacomps[i].getId();
             }
 
-            laysup.arrangeContainer(cont, contDelegate);
+            // set layout
+            final LayoutSupportManager laysup = metacont.getLayoutSupport();
+            if (laysup != null) { // old layout support
+                laysup.setLayoutToContainer(cont, contDelegate);
+                if (comps.length > 0) { // add cloned subcomponents to container
+                    if (!(cont instanceof JToolBar))
+                        laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
+                    else { // a L&F workaround for JToolBar (MetalToobarUI)
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                laysup.addComponentsToContainer(cont, contDelegate,
+                                                                comps, 0);
+                            }
+                        });
+                    }
+                }
+                laysup.arrangeContainer(cont, contDelegate);
+            }
+            else { // new layout support
+                getLayoutBuilder(metacont.getId()).setupContainerLayout(comps, compIds);
+            }
         }
         else if (metacomp instanceof RADMenuComponent) {
             RADComponent[] metacomps = ((RADMenuComponent)metacomp).getSubBeans();
@@ -831,13 +903,12 @@ public class VisualReplicator {
     }
 
     private void removeMapping(RADComponent metacomp) {
-        Object comp = getClonedComponent(metacomp);
-        if (comp != null) {
-            metaToClone.remove(metacomp);
-            cloneToMeta.remove(comp);
-        }
+        Object comp = idToClone.remove(metacomp.getId());
+        if (comp != null)
+            cloneToId.remove(comp);
 
         if (metacomp instanceof ComponentContainer) {
+            layoutBuilders.remove(metacomp.getId());
             RADComponent[] subcomps = ((ComponentContainer)metacomp).getSubBeans();
             for (int i=0; i < subcomps.length; i++)
                 removeMapping(subcomps[i]);

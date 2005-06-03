@@ -116,14 +116,14 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
         if (generateEditable || generateTypes) {
             return
                 "new javax.swing.table.DefaultTableModel(\n" + // NOI18N
-                "\tnew Object [][] " + new String (dataSB) + ",\n" + // NOI18N
-                "\tnew String [] " + new String (titlesSB) + "\n" + // NOI18N
+                "\tnew Object [][] " + dataSB.toString() + ",\n" + // NOI18N
+                "\tnew String [] " + titlesSB.toString() + "\n" + // NOI18N
                 ") {\n" + // NOI18N
                 (generateTypes ? (
-                     "\tClass[] types = new Class [] " + new String (typesSB) + ";\n") : // NOI18N
+                     "\tClass[] types = new Class [] " + typesSB.toString() + ";\n") : // NOI18N
                  "") + // NOI18N
                 (generateEditable ? (
-                     "\tboolean[] canEdit = new boolean [] " + new String (editableSB) + ";\n") : // NOI18N
+                     "\tboolean[] canEdit = new boolean [] " + editableSB.toString() + ";\n") : // NOI18N
                  "") + // NOI18N
                 (generateTypes ? (
                      "\n" + // NOI18N
@@ -141,8 +141,8 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
         } else {
             return
                 "new javax.swing.table.DefaultTableModel(\n" + // NOI18N
-                "\tnew Object [][] " + new String (dataSB) + ",\n" + // NOI18N
-                "\tnew String [] " + new String (titlesSB) + "\n" + // NOI18N
+                "\tnew Object [][] " + dataSB.toString() + ",\n" + // NOI18N
+                "\tnew String [] " + titlesSB.toString() + "\n" + // NOI18N
                 ")"; // NOI18N
         }
     }

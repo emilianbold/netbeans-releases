@@ -79,19 +79,19 @@ class ComponentLayer extends JPanel
         return designerPanel.getBounds();
     }
 
-    Dimension getDesignerSize() {
-        return designerPanel.getDesignerSize();
-    }
-
     Insets getDesignerOutsets() {
         return designerPanel.getInsets();
     }
 
-    void updateDesignerSize(Dimension size) {
+    Dimension getDesignerSize() {
+        return designerPanel.getDesignerSize();
+    }
+
+    void setDesignerSize(Dimension size) {
         if (size != null && !size.equals(designerPanel.getDesignerSize())) {
             designerPanel.setDesignerSize(size);
-            revalidate();
-            repaint();
+//            revalidate();
+//            repaint();
         }
     }
 
@@ -113,7 +113,7 @@ class ComponentLayer extends JPanel
     // ---------
 
     private static class DesignerPanel extends JPanel {
-        private static int BORDER_THICKNESS = 5; // [could be changeable]
+        private static int BORDER_THICKNESS = 4; // [could be changeable]
 
         private Dimension designerSize = new Dimension(400, 300);
 

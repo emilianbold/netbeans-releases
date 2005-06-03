@@ -26,7 +26,7 @@ import java.util.*;
 
 final class DefaultCodeExpression implements CodeExpression {
 
-    protected CodeStructure codeStructure;
+    private CodeStructure codeStructure;
 
     private CodeExpressionOrigin expressionOrigin;
 

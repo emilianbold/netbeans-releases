@@ -180,7 +180,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      */
     public boolean shouldHaveNode() {
         Class cls = getSupportedClass();
-        return cls != null && LayoutManager.class.isAssignableFrom(cls);
+        return cls == null || LayoutManager.class.isAssignableFrom(cls);
     }
 
     /** Provides a display name for the layout node - derived from the name
@@ -188,10 +188,17 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @return display name of supported layout
      */
     public String getDisplayName() {
-        String name = getSupportedClass().getName();
-        int lastdot = name.lastIndexOf('.');
-        if (lastdot > 0)
-            name = name.substring(lastdot + 1);
+        Class cls = getSupportedClass();
+        String name;
+
+        if (cls != null) {
+            name = cls.getName();
+            int lastdot = name.lastIndexOf('.');
+            if (lastdot > 0)
+                name = name.substring(lastdot + 1);
+        }
+        else name = "null"; // NOI18N
+
         return name;
     }
 
@@ -768,7 +775,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                                  targetProperties,
                                  FormUtils.CHANGED_ONLY
                                    | FormUtils.DISABLE_CHANGE_FIRING);
-        
+
         // Ensure correct propagation of copied properties (issue 50011)
         try {
             clone.acceptContainerLayoutChange(null);

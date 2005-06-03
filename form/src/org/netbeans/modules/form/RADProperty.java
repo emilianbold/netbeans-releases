@@ -162,9 +162,9 @@ public class RADProperty extends FormProperty {
         if (descriptor.getPropertyType() == Integer.TYPE
             && ("mnemonic".equals(descriptor.getName()) // NOI18N
                 || "displayedMnemonic".equals(descriptor.getName()))) { // NOI18N
-                    prEd = new MnemonicEditor();
+                prEd = new MnemonicEditor();
         } else {
-            prEd = createEnumEditor(descriptor);
+                prEd = createEnumEditor(descriptor);
         }
 
         if (prEd == null && desc.getPropertyEditorClass() != null) {
@@ -192,7 +192,7 @@ public class RADProperty extends FormProperty {
         }
         else { // hack: debugGraphicsOptions is problematic because its
                // default value (0) does not correspond to any of the
-               // enumerated constants
+               // enumerated constants (NONE_OPTION is -1)
             enumerationValues = new Object[] {
                 "NONE_OPTION", new Integer(-1), "DebugGraphics.NONE_OPTION", // NOI18N
                 "NO_CHANGES", new Integer(0), "0", // NOI18N

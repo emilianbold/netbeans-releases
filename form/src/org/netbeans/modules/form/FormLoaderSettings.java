@@ -46,6 +46,8 @@ public class FormLoaderSettings extends SystemOption {
     public static final String PROP_CONNECTION_BORDER_COLOR = "connectionBorderColor"; // NOI18N
     /** Property name of the dragBorderColor property */
     public static final String PROP_DRAG_BORDER_COLOR = "dragBorderColor"; // NOI18N
+    /** Property name of the guidingLineColor property */
+    public static final String PROP_GUIDING_LINE_COLOR = "guidingLineColor"; // NOI18N
     /** Property name of the formDesignerBackgroundColor property */
     public static final String PROP_FORMDESIGNER_BACKGROUND_COLOR =
         "formDesignerBackgroundColor"; // NOI18N
@@ -107,11 +109,11 @@ public class FormLoaderSettings extends SystemOption {
 
     /** The size(in pixels) of the border that marks visual components on a form
      * as selected. */
-    private static int selectionBorderSize = 2;
+    private static int selectionBorderSize = 1;
 
     /** The color of the border boxes on selection border */
     private static java.awt.Color selectionBorderColor =
-        new java.awt.Color(0, 0, 192);
+        new java.awt.Color(255, 164, 0);
     /** The color of the border boxes on connection border */
     private static java.awt.Color connectionBorderColor = java.awt.Color.red;
     /** The color of the drag border on selection border */
@@ -121,6 +123,9 @@ public class FormLoaderSettings extends SystemOption {
     /** The color of border around designed component */
     private static java.awt.Color formDesignerBorderColor =
         new java.awt.Color(224, 224, 255);
+    /** The color of guiding lines. */
+    private static java.awt.Color guidingLineColor =
+        new java.awt.Color(143, 171, 196);
 
     /** The grid size(in pixels) in x axis. */
     private static int gridX = 10;
@@ -145,7 +150,7 @@ public class FormLoaderSettings extends SystemOption {
     
     /** If true, only editable properties are displayed in the ComponentInspector */
     private static boolean displayWritableOnly = true;
-    
+
     /** If true then the generated code will be folded. */
     private static boolean foldGeneratedCode = true;
 
@@ -294,6 +299,20 @@ public class FormLoaderSettings extends SystemOption {
         java.awt.Color oldValue = dragBorderColor;
         dragBorderColor = value;
         firePropertyChange(PROP_DRAG_BORDER_COLOR, oldValue, dragBorderColor);
+    }
+    
+    /** Getter for the guidingLineColor option */
+    public java.awt.Color getGuidingLineColor() {
+        return guidingLineColor;
+    }
+
+    /** Setter for the dragBorderColor option */
+    public void setGuidingLineColor(java.awt.Color value) {
+        if (value.equals(guidingLineColor))
+            return;
+        java.awt.Color oldValue = guidingLineColor;
+        guidingLineColor = value;
+        firePropertyChange(PROP_GUIDING_LINE_COLOR, oldValue, guidingLineColor);
     }
 
     /** Getter for the gridX option */

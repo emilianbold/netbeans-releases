@@ -43,6 +43,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormDesignValue;
+import org.netbeans.modules.form.FormEditor;
 
 /**
  * PropertyEditor for Icons. Depends on existing DataObject for images.
@@ -109,13 +110,13 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             while (st.hasMoreElements())
                 sb.append("\\\\").append(st.nextElement()); // NOI18N
         }
-        return new String(sb);
+        return sb.toString();
     }
     
     // variables ..................................................................................
     
     private PropertyEnv propertyEnv;
-    private FormModel formModel;
+	private FormModel formModel;
     
     // Special access methods......................................................................
     
@@ -239,7 +240,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
         if (resource.startsWith("/")) { // NOI18N
             resource = resource.substring(1);
         }
-        FileObject formFile = formModel.getFormDataObject().getFormFile();
+        FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
         ClassPath classPath = ClassPath.getClassPath(formFile, ClassPath.SOURCE);
         FileObject resourceObject = classPath.findResource(resource);
         if (resourceObject == null) {
@@ -495,7 +496,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
                     break;
             }
             tfName.setText(((NbImageIcon)localIcon).name);
-
+            
             updateIcon();
         }
         
@@ -779,7 +780,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
          * @returns name of the selected resource or <code>null</code>.
          */
         private String selectResource() {
-            FileObject formFile = formModel.getFormDataObject().getFormFile();
+            FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
             ClassPath executeClassPath = ClassPath.getClassPath(formFile, ClassPath.EXECUTE);
             java.util.List roots = (executeClassPath == null) ? Collections.EMPTY_LIST : getRoots(executeClassPath);
             Project project = FileOwnerQuery.getOwner(formFile);
@@ -976,7 +977,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResourceSelector")); // NOI18N
             getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResourceSelector")); // NOI18N
             manager.setRootContext(root);
-
+            
             BeanTreeView tree = new BeanTreeView();
             tree.setPopupAllowed(false);
             tree.setDefaultActionAllowed(false);

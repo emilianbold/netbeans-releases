@@ -19,7 +19,6 @@ import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.Method;
-import javax.swing.JComponent;
 import javax.swing.border.TitledBorder;
 import java.text.MessageFormat;
 import java.security.*;
@@ -45,16 +44,6 @@ public class FormUtils
     public static final int CHANGED_ONLY = 1;
     public static final int DISABLE_CHANGE_FIRING = 2;
     public static final int PASS_DESIGN_VALUES = 4;
-
-    private static final boolean debug = System.getProperty("netbeans.debug.form") != null;
-
-    /** The FormLoaderSettings instance */
-    private static FormLoaderSettings formSettings = (FormLoaderSettings)
-                   SharedClassObject.findObject(FormLoaderSettings.class, true);
-
-    /** The list of all well-known heavyweight components */
-    private static Class[] heavyweightComponents;
-    private static HashMap jComponentIgnored;
 
     private static final Object CLASS_EXACTLY = new Object();
     private static final Object CLASS_AND_SUBCLASSES = new Object();
@@ -337,7 +326,10 @@ public class FormUtils
             "model", "selectedValues" },
         { javax.swing.JComboBox.class,
             "model", "selectedIndex",
-            "model", "selectedItem" }
+            "model", "selectedItem" },
+        { java.awt.TextComponent.class,
+            "text", "selectionStart",
+            "text", "selectionEnd" }
     };
 
     /** List of components that should never be containers; some of them are
@@ -367,42 +359,10 @@ public class FormUtils
         "javax.swing.JColorChooser", // NOI18N
         "javax.swing.JFileChooser", // NOI18N
     };
-
-    /** The properties whose changes are ignored in JComponent subclasses */
-
-    private static String[] jComponentIgnoredList = new String [] {
-        "UI", // NOI18N
-        "layout", // NOI18N
-        "actionMap", // NOI18N
-        "border", // NOI18N
-        "model" // NOI18N
+    
+    private static ClassPattern[] designTimeClasses = new ClassPattern[] {
+        new ClassPattern("org.netbeans.modules.form.", ClassPattern.PACKAGE_AND_SUBPACKAGES) // NOI18N
     };
-
-    static {
-        try {
-            heavyweightComponents = new Class[] {
-                java.awt.Button.class,
-                java.awt.Canvas.class,
-                java.awt.List.class,
-                java.awt.Button.class,
-                java.awt.Label.class,
-                java.awt.TextField.class,
-                java.awt.TextArea.class,
-                java.awt.Checkbox.class,
-                java.awt.Choice.class,
-                java.awt.List.class,
-                java.awt.Scrollbar.class,
-                java.awt.ScrollPane.class,
-                java.awt.Panel.class,
-            };
-        } catch (Exception e) {
-            throw new InternalError("Cannot initialize AWT classes"); // NOI18N
-        }
-
-        jComponentIgnored = new HashMap(15);
-        for (int i = 0; i < jComponentIgnoredList.length; i++)
-            jComponentIgnored.put(jComponentIgnoredList[i], jComponentIgnoredList[i]);
-    }
 
     // -----------------------------------------------------------------------------
     // Utility methods
@@ -709,31 +669,6 @@ public class FormUtils
         return null;
     }
 
-    /**
-     * A utility method for checking whether specified component is heavyweight
-     * or lightweight.
-     * @param comp The component to check
-     */
-
-    public static boolean isHeavyweight(Component comp) {
-        for (int i=0; i < heavyweightComponents.length; i++)
-            if (heavyweightComponents[i].isAssignableFrom(comp.getClass()))
-                return true;
-        return false;
-    }
-
-    public static boolean isIgnoredProperty(Class beanClass, String propertyName) {
-        if (JComponent.class.isAssignableFrom(beanClass)) {
-            if (jComponentIgnored.get(propertyName) != null)
-                return true;
-        }
-        if (javax.swing.JDesktopPane.class.isAssignableFrom(beanClass) && "desktopManager".equals(propertyName)) // NOI18N
-            return true;
-        if (javax.swing.JInternalFrame.class.isAssignableFrom(beanClass) && "menuBar".equals(propertyName)) // NOI18N
-            return true;
-        return false;
-    }
-
     // ---------
 
     public static boolean isContainer(Class beanClass) {
@@ -792,13 +727,16 @@ public class FormUtils
 
         Object isContainerValue = null;
         try {
-            BeanDescriptor desc = Introspector.getBeanInfo(beanClass)
+            BeanDescriptor desc = Utilities.getBeanInfo(beanClass)
                                                     .getBeanDescriptor();
             if (desc != null)
                isContainerValue = desc.getValue("isContainer"); // NOI18N
         }
-        catch (IntrospectionException ex) { // ignore
-            ex.printStackTrace();
+        catch (Exception ex) { // ignore failure
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        catch (LinkageError ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
         if (isContainerValue instanceof Boolean)
@@ -1051,177 +989,6 @@ public class FormUtils
         return list.toArray();
     }
 
-
-    // -----------------------------------------------------------------------------
-    // Visual utility methods
-
-    /**
-     * This method converts array of Rectangles(with compoment bounds) to
-     * GridBagConstraints.
-     *
-     * Some bug(properly in GridBagLayout) appeares:
-     *
-     *  here will be bad size!!!!
-     *               |
-     *               V
-     * mmmm  mmmm  mmmm  mmmm
-     *         mmmmm
-     */
-    public static GridBagConstraints[] convertToConstraints(Rectangle[] r, Component[] com) {
-        int i, k = r.length;
-        GridBagConstraints[] c = new GridBagConstraints[k];
-        for (i = 0; i < k; i++) {
-            c [i] = new GridBagConstraints();
-            int gx = 0, x1 = r [i].x;
-            int gy = 0, y1 = r [i].y;
-            int gw = 1, x2 = x1 + r [i].width;
-            int gh = 1, y2 = y1 + r [i].height;
-            int fromX = 0, fromY = 0;
-            int j, l = r.length;
-            for (j = 0; j < l; j++) {
-                int xe = r [j].x + r [j].width;
-                int ye = r [j].y + r [j].height;
-                if (xe <= x1) {
-                    gx++;
-                    fromX = Math.max(fromX, xe);
-                }
-                if (ye <= y1) {
-                    gy++;
-                    fromY = Math.max(fromY, ye);
-                }
-                if ((xe > x1) &&(xe < x2)) gw++;
-                if ((ye > y1) &&(ye < y2)) gh++;
-            }
-            c [i].gridx = gx;
-            c [i].gridy = gy;
-            c [i].gridwidth = gw;
-            c [i].gridheight = gh;
-            c [i].insets = new Insets(y1 - fromY, x1 - fromX, 0, 0);
-            c [i].fill = GridBagConstraints.BOTH;
-            c [i].ipadx =(r [i].width - com [i].getPreferredSize().width);
-            c [i].ipady =(r [i].height - com [i].getPreferredSize().height);
-        }
-        return c;
-    }
-
-    /**
-     * Translates specified event so that the source component of the new event
-     * is the original event's source component's parent and the coordinates of
-     * the event are translated appropriately to the parent's coordinate space.
-     *
-     * @param evt the MouseEvent to be translated
-     * @param parent the parent component
-     * @exception IllegalArgumentException is thrown if the source component
-     *    of the MouseEvent is not a subcomponent of given parent component
-     */
-    static MouseEvent translateMouseEventToParent(MouseEvent evt, Component parent) {
-        if (parent == null)
-            return evt;
-
-        Component comp = evt.getComponent();
-        while (!parent.equals(comp)) {
-            if (comp instanceof JComponent)
-                evt.translatePoint(((JComponent)comp).getX(),
-                                   ((JComponent)comp).getY());
-            else {
-                Rectangle bounds = comp.getBounds();
-                evt.translatePoint(bounds.x, bounds.y);
-            }
-            comp = comp.getParent();
-            if (comp == null) {
-                System.err.println("Component: "+evt.getSource()+" is not under its parent's container: "+parent); // NOI18N
-                break;
-            }
-        }
-
-        return new MouseEvent(parent,
-                              evt.getID(),
-                              evt.getWhen(),
-                              evt.getModifiers(),
-                              evt.getX(),
-                              evt.getY(),
-                              evt.getClickCount(),
-                              evt.isPopupTrigger()
-                              );
-    }
-
-    // -----------------------------------------------------------------------------
-    // DEBUG utilities
-
-    public static void DEBUG() {
-        if (debug) {
-            Thread.dumpStack();
-        }
-    }
-
-    public static void DEBUG(String s) {
-        if (debug) {
-            System.out.println(s);
-        }
-    }
-
-    /** A utility method which looks for the first common ancestor of the
-     * classes specified. The ancestor is either one of the two classes, if one of them extends the other
-     * or their first superclass which is common to both.
-     * @param cl1 the first class
-     * @param cl2 the first class
-     * @return class which is superclass of both classes provided, or null if the first common superclass is java.lang.Object]
-     */
-    public Class findCommonAncestor(Class cl1, Class cl2) {
-        // handle direct inheritance
-        if (cl1.isAssignableFrom(cl2)) return cl1; // cl2 is subclass of cl1
-        if (cl2.isAssignableFrom(cl1)) return cl2; // cl1 is subclass of cl2
-
-        ArrayList cl1Ancestors = new ArrayList(8);
-        ArrayList cl2Ancestors = new ArrayList(8);
-        Class cl1An = cl1.getSuperclass();
-        Class cl2An = cl2.getSuperclass();
-        while (cl1An != null) {
-            cl1Ancestors.add(cl1An);
-            cl1An = cl1An.getSuperclass();
-        }
-        while (cl2An != null) {
-            cl2Ancestors.add(cl2An);
-            cl2An = cl2An.getSuperclass();
-        }
-        if (cl2Ancestors.size() > cl1Ancestors.size()) {
-            ArrayList temp = cl1Ancestors;
-            cl1Ancestors = cl2Ancestors;
-            cl2Ancestors = temp;
-        }
-        // cl1Ancestors is now the longer stack of classes,
-        // i.e. it must contain the first common superclass
-        Class foundClass = null;
-        for (Iterator it = cl1Ancestors.iterator(); it.hasNext();) {
-            Object o = it.next();
-            if (cl2Ancestors.contains(o)) {
-                foundClass =(Class)o;
-                break;
-            }
-        }
-        if (foundClass.equals(Object.class)) {
-            foundClass = null; // if Object is the first common superclass, null is returned
-        }
-        return foundClass;
-    }
-
-    /** A utility method which looks for the first common ancestor of the
-     * classes specified. The ancestor is either one of the two classes, if one of them extends the other
-     * or their first superclass which is common to both.
-     * The stopClass parameter can be used to limit the superclass to be found to be instance
-     * @param cl1 the first class
-     * @param cl2 the first class
-     * @param stopClass a class to limit the results to, i.e. a result returned is either subclass of the stopClass or null. 
-     *                  If the stopClass is null, the result is not limited to any particular class
-     * @return class which is superclass of both classes provided, or null if the first common superclass is not inmstance of stopClass]
-     */
-    public Class findCommonAncestor(Class cl1, Class cl2, Class stopClass) {
-        Class cl = findCommonAncestor(cl1, cl2);
-        if (stopClass == null) return cl;
-        if ((cl == null) ||(!(stopClass.isAssignableFrom(cl)))) return null;
-        return cl;
-    }
-
     // ---------
 
     /** Loads a class of a component to be used (instantiated) in the form
@@ -1235,10 +1002,11 @@ public class FormUtils
     public static Class loadClass(String name, FileObject formFile)
         throws ClassNotFoundException
     {
-        // first try the project class loader (for user classes)
-        if (formFile != null) {
+        if (isDesignTimeClass(name)) {
+            // first try the system classloader (for IDE and module stuff
+            // like property editors, form support classes, etc)
             try {
-                return loadUserClass(name, formFile);
+                return loadSystemClass(name);
             }
             catch (ClassNotFoundException ex) {
             // ignore, likely this is not the right classloader
@@ -1247,15 +1015,34 @@ public class FormUtils
                 // some problem during loading [should not be left uncaught here?]
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
+            if (formFile != null) { // fall back to project class loader
+                return loadUserClass(name, formFile);
+            }
         }
-        // fall back to system class loader (for IDE classes)
-        return loadSystemClass(name);
+        else { // first try the project class loader (for user classes)
+            if (formFile != null) {
+                try {
+                    return loadUserClass(name, formFile);
+                }
+                catch (ClassNotFoundException ex) {
+                // ignore, likely this is not the right classloader
+                }
+                catch (LinkageError ex) {
+                    // some problem during loading [should not be left uncaught here?]
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+            // fall back to system class loader (for IDE classes)
+            return loadSystemClass(name);
+        }
+
+        throw new ClassNotFoundException(); // classpath unknown
     }
 
     public static Class loadClass(String name, FormModel form)
         throws ClassNotFoundException
     {
-        return loadClass(name, FormEditorSupport.getFormDataObject(form).getFormFile());
+        return loadClass(name, FormEditor.getFormDataObject(form).getFormFile());
     }
 
     /** Loads a class using IDE system class loader. Usable for form module
@@ -1284,6 +1071,57 @@ public class FormUtils
 //    {
 //        return loadUserClass(name, FormEditorSupport.getFormDataObject(form).getFormFile());
 //    }
+    
+    public static synchronized void registerDesignTimeClass(String pattern) {
+        ClassPattern[] patterns = new ClassPattern[designTimeClasses.length + 1];
+        System.arraycopy(designTimeClasses, 0, patterns, 0, designTimeClasses.length);
+        ClassPattern classPattern;
+        if (pattern.endsWith("**")) { // NOI18N
+            classPattern = new ClassPattern(
+                pattern.substring(0, pattern.length()-2),
+                ClassPattern.PACKAGE_AND_SUBPACKAGES);
+        } else if (pattern.endsWith("*")) { // NOI18N
+            classPattern = new ClassPattern(
+                pattern.substring(0, pattern.length()-1),
+                ClassPattern.PACKAGE);
+        } else {
+            classPattern = new ClassPattern(pattern, ClassPattern.CLASS);
+        }
+        patterns[designTimeClasses.length] = classPattern;
+        designTimeClasses = patterns;
+    }
+
+    static boolean isDesignTimeClass(String className) {
+        for (int i=0; i<designTimeClasses.length; i++) {
+            ClassPattern pattern = designTimeClasses[i];
+            switch (pattern.type) {
+                case (ClassPattern.CLASS):
+                    if (className.equals(pattern.name)) return true;
+                    break;
+                case (ClassPattern.PACKAGE):
+                    if (className.startsWith(pattern.name)
+                        && (className.lastIndexOf('.') <= pattern.name.length())) return true;
+                    break;
+                case (ClassPattern.PACKAGE_AND_SUBPACKAGES):
+                    if (className.startsWith(pattern.name)) return true;
+                    break;
+            }
+        }
+        return false;
+    }
+    
+    private static class ClassPattern {
+        static final int CLASS = 0;
+        static final int PACKAGE = 1;
+        static final int PACKAGE_AND_SUBPACKAGES = 2;
+        String name;
+        int type;
+        
+        ClassPattern(String name, int type) {
+            this.name = name;
+            this.type = type;
+        }
+    }
 
     // ---------
 

@@ -16,7 +16,6 @@ package org.netbeans.modules.form;
 
 import javax.swing.Action;
 
-import org.openide.actions.OpenAction;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.java.JavaNode;
 
@@ -45,11 +44,11 @@ public class FormDataNode extends JavaNode {
         // issue 56351
         return new javax.swing.AbstractAction() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                ((FormDataObject)getDataObject()).getFormEditor().openFormEditor(false);
+                ((FormDataObject)getDataObject()).getFormEditorSupport().openFormEditor(false);
             }
         };
     }
-
+    
     public Action[] getActions(boolean context) {
         Action[] javaActions = super.getActions(context);
         Action[] formActions = new Action[javaActions.length+2];
@@ -59,5 +58,5 @@ public class FormDataNode extends JavaNode {
         System.arraycopy(javaActions, 1, formActions, 3, javaActions.length-1);
         return formActions;
     }
-    
+
 }

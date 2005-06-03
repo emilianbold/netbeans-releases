@@ -1,0 +1,46 @@
+<layout-model>
+    <root>
+        <layout dim="horizontal">
+            <group type="parallel">
+                <group type="sequential">
+                    <emptySpace/>
+                    <component id="{2}" min="$pref" max="$pref"/>
+                    <emptySpace/>
+                    <component id="{3}" min="$pref" pref="80" max="$pref"/>
+                    <emptySpace pref="100" max="Short.MAX_VALUE"/>
+                </group>
+                <group type="sequential">
+                    <emptySpace/>
+                    <group type="parallel" alignment="trailing">
+                        <component id="{4}" alignment="leading" min="$pref" max="$pref"/>
+                        <component id="{5}" alignment="trailing" min="$pref" max="$pref"/>
+                    </group>
+                    <emptySpace/>
+                    <component id="{6}" min="0" max="Short.MAX_VALUE"/>
+                    <emptySpace/>
+                </group>
+            </group>
+        </layout>
+        <layout dim="vertical">
+            <group type="parallel">
+                <group type="sequential">
+                    <emptySpace/>
+                    <group type="parallel" alignment="baseline">
+                        <component id="{2}" alignment="baseline" min="$pref" max="$pref"/>
+                        <component id="{3}" alignment="baseline" min="$pref" max="$pref"/>
+                    </group>
+                    <emptySpace/>
+                    <group type="parallel">
+                        <group type="sequential">
+                            <component id="{4}" min="$pref" max="$pref"/>
+                            <emptySpace/>
+                            <component id="{5}" min="$pref" max="$pref"/>
+                        </group>
+                        <component id="{6}" min="$pref" max="$pref"/>
+                    </group>
+                    <emptySpace pref="50" max="Short.MAX_VALUE"/>
+                </group>
+            </group>
+        </layout>
+    </root>
+</layout-model>

@@ -86,11 +86,11 @@ public class FormDataObject extends JavaDataObject {
     private class OpenEdit implements OpenCookie, EditCookie {
         public void open() {
             // open form editor with form designer selected
-            getFormEditor().openFormEditor(true);
+            getFormEditorSupport().openFormEditor(true);
         }
         public void edit() {
             // open form editor with java editor selected (form not loaded)
-            getFormEditor().open();
+            getFormEditorSupport().open();
         }
     }
 
@@ -115,9 +115,15 @@ public class FormDataObject extends JavaDataObject {
         return formEditor;
     }
 
-    public FormEditorSupport getFormEditor() {
+    public FormEditorSupport getFormEditorSupport() {
         return (FormEditorSupport) getJavaEditor();
     }
+
+    // PENDING remove when form_new_layout is merged to trunk
+    public FormEditorSupport getFormEditor() {
+        return getFormEditorSupport();
+    }
+    // END of PENDING
 
     FileEntry getFormEntry() {
         return formEntry;

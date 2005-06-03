@@ -17,6 +17,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.plaf.metal.*;
 import org.openide.util.*;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -25,7 +26,7 @@ import org.openide.util.*;
 
 class FormLAF {
 
-    private static LookAndFeel defaultLookAndFeel;
+    private static Map lafDefaults;
     private static Map ideDefaults;
     private static int useIdeLaf = -1;
     private static boolean lafBlockEntered;
@@ -116,32 +117,30 @@ class FormLAF {
     }
     
     private static void useDefaultLookAndFeel() {
-        if (defaultLookAndFeel == null) {
+        if (lafDefaults == null) {
             try {
                 String lafName = UIManager.getLookAndFeel().getClass().getName();
-                defaultLookAndFeel = (LookAndFeel)
-                                     Class.forName(lafName).newInstance();
+                LookAndFeel defaultLookAndFeel =
+                    (LookAndFeel) Class.forName(lafName).newInstance();
                 defaultLookAndFeel.initialize();
-                
+
                 // call src.get() on each key to force LazyValues to be init'ed
                 // see javax.swing.UIDefaults to see why
-                UIDefaults defaults = defaultLookAndFeel.getDefaults();
-                Object[] keys = defaults.keySet().toArray();
+                lafDefaults = defaultLookAndFeel.getDefaults();
+                Object[] keys = lafDefaults.keySet().toArray();
                 for (int i=0; i < keys.length; i++) {
                     // Do not resolve icons - some L&Fs don't provide icons for all keys (see #44482)
                     if (!(keys[i] instanceof String) || (((String)keys[i])).indexOf("Icon") == -1) { // NOI18N
-                        defaults.get(keys[i]);
+                        lafDefaults.get(keys[i]);
                     }
                 }
-        
-
             }
             catch (Exception ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 return;
             }
             catch (LinkageError ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 return;
             }
         }
@@ -149,7 +148,7 @@ class FormLAF {
         if (ideDefaults == null)
             saveIDELookAndFeelDefaults();
 
-        copyMap(UIManager.getDefaults(), defaultLookAndFeel.getDefaults());
+        copyMap(UIManager.getDefaults(), lafDefaults);
     }
 
     private static void useIDELookAndFeel() {

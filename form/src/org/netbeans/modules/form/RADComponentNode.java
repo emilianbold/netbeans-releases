@@ -19,6 +19,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.beans.*;
 import java.security.*;
+import javax.swing.Action;
 
 import org.openide.ErrorManager;
 import org.openide.actions.*;
@@ -46,7 +47,7 @@ public class RADComponentNode extends FormNode
             FormUtils.getBundleString("FMT_UnnamedComponentNodeName")); // NOI18N
 
     private RADComponent component;
-
+    private Action[] actions;
 
     public RADComponentNode(RADComponent component) {
         this(component instanceof ComponentContainer ?
@@ -127,7 +128,7 @@ public class RADComponentNode extends FormNode
      * @return default action, or <code>null</code> if there should be none
      */
     public SystemAction getDefaultAction() {
-        if (component instanceof RADVisualContainer)
+        if (component instanceof RADVisualContainer && !FormEditor.isNaturalLayoutEnabled())
             return SystemAction.get(EditContainerAction.class);
 //        if (component.getEventHandlers().getDefaultEvent() != null)
         return SystemAction.get(DefaultRADAction.class);
@@ -135,8 +136,8 @@ public class RADComponentNode extends FormNode
 //        return null;
     }
 
-    public javax.swing.Action[] getActions(boolean context) {
-        if (systemActions == null) { // from AbstractNode
+    public Action[] getActions(boolean context) {
+        if (actions == null) { // from AbstractNode
             ArrayList actions = new ArrayList(20);
 
             if (component.isReadOnly()) {
@@ -157,7 +158,7 @@ public class RADComponentNode extends FormNode
             else {
                 RADComponent topComp = component.getFormModel().getTopRADComponent();
                 if (component instanceof RADVisualContainer) {
-                    if (!((RADVisualContainer)component).getLayoutSupport().isDedicated()) {
+                    if (!((RADVisualContainer)component).hasDedicatedLayoutSupport()) {
                         actions.add(SystemAction.get(SelectLayoutAction.class));
                         actions.add(SystemAction.get(CustomizeLayoutAction.class));
                         actions.add(null);
@@ -170,17 +171,31 @@ public class RADComponentNode extends FormNode
                 if (component == topComp)
                     actions.add(SystemAction.get(TestAction.class));
 
-                if (component instanceof RADVisualContainer) {
+                // [possibility to change the designed container temporarily disabled in new layout]
+                if (!FormEditor.isNaturalLayoutEnabled()
+                    && component instanceof RADVisualContainer)
+                {
                     actions.add(SystemAction.get(EditContainerAction.class));
                     if (topComp != null && component != topComp)
                         actions.add(SystemAction.get(EditFormAction.class));
+                    actions.add(null);
                 }
-                actions.add(null);
 
                 if (InPlaceEditLayer.supportsEditingFor(component.getBeanClass(),
                                                         false))
                 {
                     actions.add(SystemAction.get(InPlaceEditAction.class));
+                    actions.add(null);
+                }
+                
+                java.util.List actionProps = component.getActionProperties();
+                Iterator iter = actionProps.iterator();
+                while (iter.hasNext()) {
+                    final RADProperty prop = (RADProperty)iter.next();
+                    Action action = new PropertyAction(prop);
+                    actions.add(action);
+                }
+                if (actionProps.size() > 0) {
                     actions.add(null);
                 }
 
@@ -215,6 +230,7 @@ public class RADComponentNode extends FormNode
                     actions.add(null);
                     actions.add(SystemAction.get(NewAction.class));
                 }
+                
             }
 
             actions.add(null);
@@ -223,11 +239,11 @@ public class RADComponentNode extends FormNode
             for (int i=0; i < superActions.length; i++)
                 actions.add(superActions[i]);
 
-            systemActions = new SystemAction[actions.size()];
-            actions.toArray(systemActions);
+            this.actions = new Action[actions.size()];
+            actions.toArray(this.actions);
         }
 
-        return systemActions;
+        return actions;
     }
 
     /** Set the system name. Fires a property change event.
@@ -276,7 +292,16 @@ public class RADComponentNode extends FormNode
      * @exception IOException if something fails
      */
     public void destroy() throws java.io.IOException {
-        component.getFormModel().removeComponent(component);
+        RADComponent parent = component.getParentComponent();
+        if (parent != null) {
+            Object bean = parent.getBeanInstance();
+            if (bean.getClass() == javax.swing.JScrollPane.class) {
+                if (parent.getAuxValue("autoScrollPane") != null) { // NOI18N
+                    component = parent;
+                }
+            }
+        }
+        component.getFormModel().removeComponent(component, true);
         component.setNodeReference(null);
 
         super.destroy();
@@ -521,7 +546,7 @@ public class RADComponentNode extends FormNode
                 if (menuComp != null)
                     keys.add(menuComp);
 
-                if (visualCont.getLayoutSupport().shouldHaveNode()) {
+                if (visualCont.shouldHaveLayoutNode()) {
                     keyLayout = visualCont.getLayoutSupport().getLayoutDelegate(); //new Object(); // [need not be recreated every time]
                     keys.add(keyLayout);
                 }

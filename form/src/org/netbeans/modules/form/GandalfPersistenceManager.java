@@ -29,6 +29,8 @@ import org.openide.xml.XMLUtil;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutsupport.delegates.*;
 import org.netbeans.modules.form.codestructure.*;
+import org.netbeans.modules.form.layoutdesign.LayoutModel;
+import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javacore.api.JavaModel;
@@ -48,6 +50,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     static final String NB32_VERSION = "1.0"; // NOI18N
     static final String NB33_VERSION = "1.1"; // NOI18N
     static final String NB34_VERSION = "1.2"; // NOI18N
+    static final String NB42_VERSION = "experimental"; // NOI18N
 
     // XML elements names
     static final String XML_FORM = "Form"; // NOI18N
@@ -143,6 +146,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private String formatVersion; // format version for saving the form file
 
+    private boolean newLayout; // whether a new layout support was loaded
 
     /** This method is used to check if the persistence manager can read the
      * given form (if it understands the form file format).
@@ -368,6 +372,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         this.formFile = formFile;
         this.formModel = formModel;
         this.nonfatalErrors = nonfatalErrors;
+        this.newLayout = false;
 
         formModel.setName(formObject.getName());
 
@@ -378,6 +383,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (topComp != null) // load the main form component
             loadComponent(mainElement, topComp, null);
 
+        if (newLayout) { // for sure update project classpath with layout extensions library
+            FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
+        }
+
         // final cleanup
         containerDependentProperties = null;
         if (expressions != null)
@@ -387,7 +396,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         this.formModel = null;
     }
 
-    private void loadNonVisuals(org.w3c.dom.Node node) {
+    private void loadNonVisuals(org.w3c.dom.Node node) throws PersistenceException {
         org.w3c.dom.Node nonVisualsNode =
                                 findSubNode(node, XML_NON_VISUAL_COMPONENTS);
         org.w3c.dom.NodeList childNodes = nonVisualsNode == null ? null :
@@ -414,6 +423,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     // recognizes, creates, initializes and loads a meta component
     private RADComponent restoreComponent(org.w3c.dom.Node node,
                                           RADComponent parentComponent)
+        throws PersistenceException
     {
         org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
         if (attrs == null) { // should not be null even if there are no attributes
@@ -500,9 +510,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         // initialize the metacomponent
         try {
             newComponent.initialize(formModel);
+            newComponent.setStoredName(compName);
             newComponent.initInstance(compClass);
             newComponent.setInModel(true);
-            newComponent.setName(compName);
         }
         catch (Exception ex) {
             compEx = ex;
@@ -531,6 +541,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void loadComponent(org.w3c.dom.Node node,
                                RADComponent component,
                                RADComponent parentComponent)
+        throws PersistenceException
     {
         org.w3c.dom.NodeList childNodes = node.getChildNodes();
         if (childNodes == null)
@@ -620,6 +631,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 component instanceof RADVisualContainer ?
                         (RADVisualContainer) component : null;
 
+        if (visualContainer != null)
+            visualContainer.setOldLayoutSupport(true);
+
         int convIndex = LAYOUT_FROM_CODE;
         if (visualContainer != null && layoutNode != null) {
             // load container layout properties saved in NB 3.1 format;
@@ -659,20 +673,56 @@ public class GandalfPersistenceManager extends PersistenceManager {
             loadLayoutCode(layoutCodeNode);
         }
 
+        if ((visualContainer != null) && (convIndex == LAYOUT_NATURAL)) {
+            if (!FormEditor.isNaturalLayoutEnabled()) {
+                PersistenceException ex = new PersistenceException("Cannot open form");
+                ErrorManager.getDefault().annotate(ex, "This form was created using new experimental layout design support. "
+                        + "It is not possible to open the form as this support is not enabled now. "
+                        + "You need to run the IDE with \"-J-Dnetbeans.form.new_layout=true\" in netbeans.conf file.");
+                throw ex;
+            }
+            visualContainer.setOldLayoutSupport(false);
+            LayoutModel layoutModel = formModel.getLayoutModel();
+            layoutModel.addRootComponent(
+                new LayoutComponent(visualContainer.getId(), true));
+            Map nameToIdMap = new HashMap();
+            for (int i=0; i<childComponents.length; i++) {
+                RADComponent comp = childComponents[i];
+                CodeVariable var = comp.getCodeExpression().getVariable();
+                nameToIdMap.put(var.getName(), comp.getId());
+            }
+            layoutModel.loadModel(visualContainer.getId(), layoutNode.getChildNodes(), nameToIdMap);
+            newLayout = true;
+        }
+
         // initialize layout support from restored code
         if (visualContainer != null) {
             LayoutSupportManager layoutSupport =
                                    visualContainer.getLayoutSupport();
             boolean layoutInitialized = false;
-            boolean unknownLayout = layoutNode != null && convIndex < 0
-                                    && layoutCodeNode == null;
             Throwable layoutEx = null;
 
-            
-            if (!unknownLayout)
+            if (convIndex == LAYOUT_NATURAL) {
+                layoutInitialized = true;
+            }
+            else if (convIndex >= 0 || layoutCodeNode != null) {
                 try {
                     layoutInitialized =
                         layoutSupport.initializeLayoutDelegate(true);
+
+                    // hack: set new layout support to top container if it is empty
+                    // [this won't be needed once the templates are updated to new layout]
+                    if (FormEditor.isNaturalLayoutEnabled()
+                        && !layoutSupport.isDedicated()
+                        && childComponents.length == 0
+                        && formModel.getTopRADComponent() == visualContainer)
+                    {
+                        visualContainer.setOldLayoutSupport(false);
+                        formModel.getLayoutModel().addRootComponent(
+                            new LayoutComponent(visualContainer.getId(), true));
+                        newLayout = true;
+                        layoutSupport = null;
+                    }
                 }
                 catch (Exception ex) {
                     layoutEx = ex;
@@ -680,6 +730,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 catch (LinkageError ex) {
                     layoutEx = ex;
                 }
+            }
 
             if (!layoutInitialized) {
                 if (layoutEx != null) { // no LayoutSupportDelegate found
@@ -721,7 +772,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
 
             visualContainer.initSubComponents(childComponents);
-            visualContainer.getLayoutSupport().updatePrimaryContainer();
+            if (layoutSupport != null)
+                layoutSupport.updatePrimaryContainer();
         }
         else // non-visual container
             container.initSubComponents(childComponents);
@@ -1256,7 +1308,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.NamedNodeMap layoutAttr = layoutNode.getAttributes();
         org.w3c.dom.Node node = layoutAttr.getNamedItem(ATTR_LAYOUT_CLASS);
         if (node == null)
-            return -1;
+            return LAYOUT_NATURAL;
 
         String layout31Name = PersistenceObjectRegistry.getClassName(
                                                             node.getNodeValue());
@@ -2001,7 +2053,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 && metacomp instanceof RADVisualFormContainer)
             {
                 RADComponent[] nvComps =
-                    metacomp.getFormModel().getNonVisualComponents();
+                    metacomp.getFormModel().getOtherComponents(false);
                 for (int j=0; j < nvComps.length; j++)
                     if (nvComps[j] instanceof RADMenuComponent
                         && value.equals(nvComps[j].getName()))
@@ -2010,7 +2062,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             (RADMenuComponent) nvComps[j];
                         RADVisualFormContainer formCont =
                             (RADVisualFormContainer) metacomp;
-                        menuComp.getFormModel().removeComponentFromContainer(menuComp);
+                        menuComp.getFormModel().removeComponentImpl(menuComp, false);
                         formCont.add(menuComp);
                         menuComp.setParentComponent(formCont);
                         break;
@@ -2280,7 +2332,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             codeStructure.removeExpressionFromVariable(exp);
             codeStructure.createVariableForExpression(exp, varType, varName);
         }
-
+        
         // Default variable modifiers for form
         if (comp == formModel.getTopRADComponent()) {
             FormSettings settings = formModel.getSettings();
@@ -2290,7 +2342,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 | CodeVariable.EXPLICIT_DECLARATION) : modifiers | CodeVariable.FIELD;
             formModel.getCodeStructure().setDefaultVariableType(type);
         }
-
     }
 
     // -----------
@@ -2351,7 +2402,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         buf1.append("\" ?>\n\n"); // NOI18N
 
         // store "Other Components"
-        RADComponent[] nonVisuals = formModel.getNonVisualComponents();
+        RADComponent[] nonVisuals = formModel.getOtherComponents(false);
 
         // compatibility hack for saving form's menu bar (part I)
         if (formCont != null && formCont.getContainerMenu() != null) {
@@ -2539,6 +2590,30 @@ public class GandalfPersistenceManager extends PersistenceManager {
                            StringBuffer buf, String indent)
     {
         LayoutSupportManager layoutSupport = container.getLayoutSupport();
+
+        if (layoutSupport == null) {
+            raiseFormatVersion(NB42_VERSION);
+            RADVisualComponent[] subComponents = container.getSubComponents();
+            Map idToNameMap = new HashMap();
+            for (int i=0; i<subComponents.length; i++) {
+                RADVisualComponent comp = subComponents[i];
+                CodeVariable var = comp.getCodeExpression().getVariable();
+                if (var != null) {
+                    idToNameMap.put(comp.getId(), var.getName());
+                }
+            }
+            buf.append("\n"); // NOI18N
+            buf.append(indent);
+            addElementOpen(buf, XML_LAYOUT);
+            LayoutModel layoutModel = formModel.getLayoutModel();
+            int indentation = indent.length()/ONE_INDENT.length() + 1;
+            LayoutComponent layoutComp = layoutModel.getLayoutComponent(container.getId());
+            buf.append(layoutModel.dumpLayout(indentation, layoutComp, idToNameMap, false));
+            buf.append(indent);
+            addElementClose(buf, XML_LAYOUT);
+            return LAYOUT_NATURAL;
+        } // end of hack
+
         if (layoutSupport.isUnknownLayout())
             return LAYOUT_UNKNOWN;
 
@@ -2675,7 +2750,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         saveComponent(component, buf, indent);
 
         RADVisualContainer container = component.getParentContainer();
-        if (container == null)
+        if (container == null || container.getLayoutSupport() == null)
             return;
 
         int componentIndex = container.getIndexOf(component);
@@ -4764,7 +4839,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (text.indexOf('&') != -1)
             text = Utilities.replaceString(text, "&", "&amp;"); // must be the first to prevent changes in the &XX; codes // NOI18N
-
         if (text.indexOf('<') != -1)
             text = Utilities.replaceString(text, "<", "&lt;"); // NOI18N
         if (text.indexOf('>') != -1)
@@ -4932,14 +5006,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (ver != formatVersion
             && (formatVersion == NB32_VERSION
                 || (formatVersion == NB33_VERSION
-                    && ver == NB34_VERSION)))
+                    && ver == NB34_VERSION) || (ver == NB42_VERSION)))
             formatVersion = ver;
     }
 
     private boolean isSupportedFormatVersion(String ver) {
         return NB32_VERSION.equals(ver)
                || NB33_VERSION.equals(ver)
-               || NB34_VERSION.equals(ver);
+               || NB34_VERSION.equals(ver)
+               || "1.3".equals(ver) // PENDING should be removed when NB42_VERSION.equals("1.3")
+               || NB42_VERSION.equals(ver);
     }
 
     // --------------
@@ -5065,6 +5141,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private static final int LAYOUT_UNKNOWN = -1;
     private static final int LAYOUT_FROM_CODE = -2;
+    private static final int LAYOUT_NATURAL = -3;
 
     private static final String[] layout31Names = {
         "org.netbeans.modules.form.compat2.layouts.DesignBorderLayout", // NOI18N

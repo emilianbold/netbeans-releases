@@ -19,6 +19,7 @@ import javax.swing.undo.*;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.form.layoutsupport.*;
+import org.openide.ErrorManager;
 
 /**
  * Describes single change in FormModel. Provides UndoableEdit capable to
@@ -118,7 +119,8 @@ public class FormModelEvent extends EventObject
             if (componentIndex >= 0) {
                 LayoutSupportManager laysup =
                     ((RADVisualContainer)container).getLayoutSupport();
-                constraints = laysup.getConstraints(componentIndex);
+                if (laysup != null)
+                    constraints = laysup.getConstraints(componentIndex);
             }
         }
     }
@@ -126,15 +128,15 @@ public class FormModelEvent extends EventObject
     void setRemoveData(RADComponent metacomp,
                        ComponentContainer metacont,
                        int index,
-                       boolean removedFromModel,
-                       Object codeStructureMark1,
-                       Object codeStructureMark2)
+                       boolean removedFromModel)
+//                       Object codeStructureMark1,
+//                       Object codeStructureMark2)
     {
         component = metacomp;
         container = metacont;
         componentIndex = index;
-        codeUndoRedoStart = codeStructureMark1;
-        codeUndoRedoEnd = codeStructureMark2;
+//        codeUndoRedoStart = codeStructureMark1;
+//        codeUndoRedoEnd = codeStructureMark2;
         createdDeleted = removedFromModel;
 
         if (metacomp instanceof RADVisualComponent
@@ -142,9 +144,14 @@ public class FormModelEvent extends EventObject
         {
             LayoutSupportManager laysup =
                 ((RADVisualContainer)metacont).getLayoutSupport();
-            constraints =
+            constraints = laysup == null ? null :
                 laysup.getStoredConstraints((RADVisualComponent)metacomp);
         }
+    }
+
+    void setCodeChange(Object startMark, Object endMark) {
+        codeUndoRedoStart = startMark;
+        codeUndoRedoEnd = endMark;
     }
 
     void setEvent(Event event, // may be null if the handler is just updated
@@ -472,32 +479,45 @@ public class FormModelEvent extends EventObject
 
         private void undoContainerLayoutExchange() {
             try {
-                getFormModel().setContainerLayout(
-                    (RADVisualContainer) getContainer(),
-                    getOldLayoutSupport(),
-                    null);
+                LayoutSupportDelegate layoutDelegate = getOldLayoutSupport();
+                if (layoutDelegate != null) {
+                    getFormModel().setContainerLayout(
+                            (RADVisualContainer)getContainer(),
+                            layoutDelegate,
+                            null);
+                }
+                else {
+                    getFormModel().setNaturalContainerLayout(
+                        (RADVisualContainer)getContainer());
+                }
             }
             catch (Exception ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
 
         private void redoContainerLayoutExchange() {
             try {
-                getFormModel().setContainerLayout(
-                    (RADVisualContainer)getContainer(),
-                    getNewLayoutSupport(),
-                    null);
+                LayoutSupportDelegate layoutDelegate = getNewLayoutSupport();
+                if (layoutDelegate != null) {
+                    getFormModel().setContainerLayout(
+                            (RADVisualContainer)getContainer(),
+                            layoutDelegate,
+                            null);
+                }
+                else {
+                    getFormModel().setNaturalContainerLayout(
+                            (RADVisualContainer)getContainer());
+                }
             }
             catch (Exception ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
 
         private void undoContainerLayoutChange() {
-            LayoutSupportManager laysup =
-                getComponent() instanceof RADVisualContainer ?
-                    ((RADVisualContainer)getComponent()).getLayoutSupport() : null;
+            RADVisualContainer metacont = (RADVisualContainer) getComponent();
+            LayoutSupportManager laysup = metacont.getLayoutSupport();
             if (laysup != null) {
                 Node.Property prop = laysup.getLayoutProperty(getPropertyName());
                 if (prop != null)
@@ -508,12 +528,14 @@ public class FormModelEvent extends EventObject
                         ex.printStackTrace();
                     }
             }
+            else {
+                getFormModel().fireContainerLayoutChanged(metacont, null, null, null);
+            }
         }
 
         private void redoContainerLayoutChange() {
-            LayoutSupportManager laysup =
-                getComponent() instanceof RADVisualContainer ?
-                    ((RADVisualContainer)getComponent()).getLayoutSupport() : null;
+            RADVisualContainer metacont = (RADVisualContainer) getComponent();
+            LayoutSupportManager laysup = metacont.getLayoutSupport();
             if (laysup != null) {
                 Node.Property prop = laysup.getLayoutProperty(getPropertyName());
                 if (prop != null)
@@ -523,6 +545,9 @@ public class FormModelEvent extends EventObject
                     catch (Exception ex) { // should not happen
                         ex.printStackTrace();
                     }
+            }
+            else {
+                getFormModel().fireContainerLayoutChanged(metacont, null, null, null);
             }
         }
 
@@ -594,10 +619,11 @@ public class FormModelEvent extends EventObject
             {
                 LayoutSupportManager layoutSupport =
                     ((RADVisualContainer)getContainer()).getLayoutSupport();
-                layoutSupport.addComponents(
-                    new RADVisualComponent[] { (RADVisualComponent)getComponent() },
-                    new LayoutConstraints[] { getComponentLayoutConstraints() },
-                    componentIndex);
+                if (layoutSupport != null)
+                    layoutSupport.addComponents(
+                        new RADVisualComponent[] { (RADVisualComponent)getComponent() },
+                        new LayoutConstraints[] { getComponentLayoutConstraints() },
+                        componentIndex);
             }
 
             if (getCreatedDeleted())
@@ -607,10 +633,7 @@ public class FormModelEvent extends EventObject
         }
 
         private void redoComponentRemoval() {
-            if (getCreatedDeleted())
-                getFormModel().removeComponent(getComponent());
-            else
-                getFormModel().removeComponentFromContainer(getComponent());
+            getFormModel().removeComponentImpl(getComponent(), getCreatedDeleted());
 
             if (codeUndoRedoEnd != null)
                 getFormModel().getCodeStructure().redoToMark(codeUndoRedoEnd);
@@ -678,8 +701,8 @@ public class FormModelEvent extends EventObject
             } else { 
                 Node.Property[] props;
                 if (getComponent() == null) { // form synthetic property
-                    FormEditorSupport fes = FormEditorSupport.getFormEditor(getFormModel());
-                    FormRootNode rootNode = (FormRootNode)fes.getFormRootNode();
+                    FormEditor formEditor = FormEditor.getFormEditor(getFormModel());
+                    FormRootNode rootNode = (FormRootNode)formEditor.getFormRootNode();
                     props = rootNode.getSyntheticProperties();
                 } else { // component synthetic property
                     props = getComponent().getSyntheticProperties();
@@ -717,8 +740,8 @@ public class FormModelEvent extends EventObject
             } else {
                 Node.Property[] props;
                 if (getComponent() == null) { // form synthetic property
-                    FormEditorSupport fes = FormEditorSupport.getFormEditor(getFormModel());
-                    FormRootNode rootNode = (FormRootNode)fes.getFormRootNode();
+                    FormEditor formEditor = FormEditor.getFormEditor(getFormModel());
+                    FormRootNode rootNode = (FormRootNode)formEditor.getFormRootNode();
                     props = rootNode.getSyntheticProperties();
                 } else { // component synthetic property
                     props = getComponent().getSyntheticProperties();

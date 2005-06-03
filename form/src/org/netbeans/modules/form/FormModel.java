@@ -20,9 +20,10 @@ import javax.swing.undo.*;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.netbeans.modules.form.layoutsupport.*;
 
+import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.codestructure.CodeStructure;
+import org.netbeans.modules.form.layoutdesign.*;
 
 /**
  * Holds all data of a form.
@@ -32,11 +33,16 @@ import org.netbeans.modules.form.codestructure.CodeStructure;
 
 public class FormModel
 {
-    // the top metacomponent of the form (null if form is based on Object)
-    private RADComponent topRADComponent;
+    // name of the form (name of the DataObject)
+    private String formName;
+
+    private boolean readOnly = false;
 
     // the class on which the form is based (which is extended in the java file)
     private Class formBaseClass;
+
+    // the top metacomponent of the form (null if form is based on Object)
+    private RADComponent topRADComponent;
 
     // other components - out of the main hierarchy under topRADComponent
     private ArrayList otherComponents = new ArrayList(10);
@@ -44,11 +50,11 @@ public class FormModel
     // holds both topRADComponent and otherComponents
     private ComponentContainer modelContainer;
 
-    // name of the form (name of the DataObject)
-    private String formName;
+    private LayoutModel layoutModel;
 
-    private boolean readOnly = false;
-    private boolean formLoaded = false;
+    private Map idToComponents = new HashMap();
+
+//    private boolean formLoaded = false;
 
     private UndoRedo.Manager undoRedoManager;
     private boolean undoRedoRecording = false;
@@ -63,7 +69,7 @@ public class FormModel
     private MetaComponentCreator metaCreator;
 
     private CodeStructure codeStructure = new CodeStructure(false);
-    private CodeGenerator codeGenerator; // [this reference should be removed]
+//    private CodeGenerator codeGenerator; // [this reference should be removed]
     
     private FormSettings settings = new FormSettings();
 
@@ -84,9 +90,13 @@ public class FormModel
 
         RADComponent topComp;
         if (java.awt.Component.class.isAssignableFrom(formClass)) {
-            topComp = FormUtils.isContainer(formClass) ?
-                          new RADVisualFormContainer() :
-                          new RADVisualComponent();
+            if (FormUtils.isContainer(formClass)) {
+                topComp = new RADVisualFormContainer();
+                layoutModel = new LayoutModel();
+            }
+            else {
+                topComp = new RADVisualComponent();
+            }
         }
         else if (java.lang.Object.class != formClass)
             topComp = new RADFormContainer();
@@ -126,17 +136,21 @@ public class FormModel
         return readOnly;
     }
 
-    public final boolean isFormLoaded() {
-        return formLoaded;
-    }
+//    public final boolean isFormLoaded() {
+//        return formLoaded;
+//    }
 
-    public final FormDesigner getFormDesigner() {
-        return FormEditorSupport.getFormDesigner(this);
-    }
+//    public final FormDesigner getFormDesigner() {
+//        return FormEditorSupport.getFormDesigner(this);
+//    }
+//
+//    // for compatibility with previous version
+//    public final FormDataObject getFormDataObject() {
+//        return FormEditorSupport.getFormDataObject(this);
+//    }
 
-    // for compatibility with previous version
-    public final FormDataObject getFormDataObject() {
-        return FormEditorSupport.getFormDataObject(this);
+    public final RADComponent getTopRADComponent() {
+        return topRADComponent;
     }
 
     public ComponentContainer getModelContainer() {
@@ -145,28 +159,31 @@ public class FormModel
         return modelContainer;
     }
 
-    public final RADComponent getTopRADComponent() {
-        return topRADComponent;
+    public final LayoutModel getLayoutModel() {
+        return layoutModel;
+    }
+
+    public final RADComponent getMetaComponent(String id) {
+        return (RADComponent) idToComponents.get(id);
     }
 
     public RADComponent findRADComponent(String name) {
-        Iterator allComps = getMetaComponents().iterator();
+        Iterator allComps = idToComponents.values().iterator(); // getMetaComponents().iterator();
         while (allComps.hasNext()) {
             RADComponent comp = (RADComponent) allComps.next();
             if (name.equals(comp.getName()))
                 return comp;
         }
-
         return null;
     }
 
-    /** Returns all meta components in the model. The components are collected
-     * recursively, and placed in a List.
+    /** Returns all meta components in the model.
      */
     public java.util.List getMetaComponents() {
-        ArrayList list = new ArrayList();
-        collectMetaComponents(getModelContainer(), list);
-        return list; //Collections.unmodifiableList(list);
+        return new ArrayList(idToComponents.values());
+//        ArrayList list = new ArrayList();
+//        collectMetaComponents(getModelContainer(), list);
+//        return list; //Collections.unmodifiableList(list);
     }
 
     /** Collects and returns all components in the main visual hierarchy.
@@ -186,22 +203,26 @@ public class FormModel
      * @param recursively whether also all sub-componets should be collected
      */
     public RADComponent[] getOtherComponents(boolean recursively) {
-        ArrayList list = new ArrayList();
-        for (Iterator it=otherComponents.iterator(); it.hasNext(); ) {
-            RADComponent comp = (RADComponent) it.next();
-            list.add(comp);
-            if (recursively && comp instanceof ComponentContainer)
-                collectMetaComponents((ComponentContainer) comp, list);
+        java.util.List list;
+        if (recursively) {
+            list = new ArrayList();
+            for (Iterator it=otherComponents.iterator(); it.hasNext(); ) {
+                RADComponent comp = (RADComponent) it.next();
+                list.add(comp);
+                if (recursively && comp instanceof ComponentContainer)
+                    collectMetaComponents((ComponentContainer) comp, list);
+            }
         }
+        else list = otherComponents;
 
         return (RADComponent[]) list.toArray(new RADComponent[list.size()]);
     }
 
     // for compatibility with previous version
-    public RADComponent[] getNonVisualComponents() {
-        return (RADComponent[]) otherComponents.toArray(
-                                new RADComponent[otherComponents.size()]); 
-    }
+//    public RADComponent[] getNonVisualComponents() {
+//        return (RADComponent[]) otherComponents.toArray(
+//                                new RADComponent[otherComponents.size()]); 
+//    }
 
     public FormEvents getFormEvents() {
         if (formEvents == null)
@@ -234,8 +255,9 @@ public class FormModel
     // -----------
     // adding/deleting components, setting layout, etc
 
-    /** Returns MetaComponentCreator which is responsible for creating new
-     * components and adding them to the model.
+    /**
+     * @return MetaComponentCreator responsible for creating new components and
+     *         adding them to the model.
      */
     public MetaComponentCreator getComponentCreator() {
         if (metaCreator == null)
@@ -243,6 +265,9 @@ public class FormModel
         return metaCreator;
     }
 
+    /** Adds a new component to given (non-visual) container in the model. If
+     * the container is not specified, the component is added to the
+     * "other components". */
     public void addComponent(RADComponent metacomp,
                              ComponentContainer parentContainer)
     {
@@ -261,57 +286,85 @@ public class FormModel
         fireComponentAdded(metacomp, newlyAdded);
     }
 
+    /** Adds a new visual component to given container managed by the old
+     * layout support. */
     public void addVisualComponent(RADVisualComponent metacomp,
                                    RADVisualContainer parentContainer,
                                    LayoutConstraints constraints)
     {
         LayoutSupportManager layoutSupport = parentContainer.getLayoutSupport();
-        RADVisualComponent[] compArray = new RADVisualComponent[] { metacomp };
-        LayoutConstraints[] constrArray = new LayoutConstraints[] { constraints };
+        if (layoutSupport != null) {
+            RADVisualComponent[] compArray = new RADVisualComponent[] { metacomp };
+            LayoutConstraints[] constrArray = new LayoutConstraints[] { constraints };
 
-        // this may throw a RuntimeException if the components are not accepted
-        layoutSupport.acceptNewComponents(compArray, constrArray, -1);
+            // this may throw a RuntimeException if the components are not accepted
+            layoutSupport.acceptNewComponents(compArray, constrArray, -1);
 
-        parentContainer.add(metacomp);
+            parentContainer.add(metacomp);
 
-        layoutSupport.addComponents(compArray, constrArray, -1);
+            layoutSupport.addComponents(compArray, constrArray, -1);
 
-        boolean newlyAdded = !metacomp.isInModel();
-        if (newlyAdded)
-            setInModelRecursively(metacomp, true);
+            boolean newlyAdded = !metacomp.isInModel();
+            if (newlyAdded)
+                setInModelRecursively(metacomp, true);
 
-        fireComponentAdded(metacomp, newlyAdded);
+            fireComponentAdded(metacomp, newlyAdded);
+        }
+        else {
+            addComponent(metacomp, parentContainer);
+        }
     }
 
     public void setContainerLayout(RADVisualContainer metacont,
                                    LayoutSupportDelegate layoutDelegate,
-                                   java.awt.LayoutManager lmInstance)
+                                   java.awt.LayoutManager initInstance)
         throws Exception
     {
-        LayoutSupportDelegate current =
-            metacont.getLayoutSupport().getLayoutDelegate();
+        LayoutSupportManager currentLS = metacont.getLayoutSupport();
+        LayoutSupportDelegate currentDel =
+            currentLS != null ? currentLS.getLayoutDelegate() : null;
 
-        metacont.setLayoutSupportDelegate(layoutDelegate, lmInstance);
+        if (currentLS == null) { // switching to old layout support
+            layoutModel.changeContainerToComponent(metacont.getId());
+            metacont.setOldLayoutSupport(true);
+        }
+        metacont.setLayoutSupportDelegate(layoutDelegate, initInstance);
 
-        fireContainerLayoutExchanged(metacont, current, layoutDelegate);
+        fireContainerLayoutExchanged(metacont, currentDel, layoutDelegate);
     }
 
-    public void removeComponentFromContainer(RADComponent metacomp) {
-        RADComponent parent = metacomp.getParentComponent();
-        ComponentContainer parentContainer =
-            parent instanceof ComponentContainer ?
-                (ComponentContainer) parent : getModelContainer();
+    public void setNaturalContainerLayout(RADVisualContainer metacont) {
+        LayoutSupportManager currentLS = metacont.getLayoutSupport();
+        if (currentLS == null)
+            return; // already set (no old layout support)
 
-        int index = parentContainer.getIndexOf(metacomp);
-        parentContainer.remove(metacomp);
+        LayoutSupportDelegate currentDel = currentLS.getLayoutDelegate();
 
-        fireComponentRemoved(metacomp, parentContainer, index, false,
-                             null, null);
+        metacont.setOldLayoutSupport(false);
+
+        if (!layoutModel.changeComponentToContainer(metacont.getId())) {
+            layoutModel.addRootComponent(
+                    new LayoutComponent(metacont.getId(), true));
+        }
+
+        fireContainerLayoutExchanged(metacont, currentDel, null);
     }
 
-    public void removeComponent(RADComponent metacomp) {
-        if (formEvents != null)
+    public void removeComponent(RADComponent metacomp, boolean fromModel) {
+        Object layoutStartMark = layoutModel.getChangeMark();
+        UndoableEdit ue = layoutModel.getUndoableEdit();
+        removeLayoutComponentsRecursively(metacomp);
+        removeComponentImpl(metacomp, fromModel);
+        // [TODO need effective multi-component remove from LayoutModel (start in ComponentInspector.DeleteActionPerformer)]
+        if (!layoutStartMark.equals(layoutModel.getChangeMark())) {
+            addUndoableEdit(ue); // is added to a compound edit
+        }
+    }
+
+    void removeComponentImpl(RADComponent metacomp, boolean fromModel) {
+        if (fromModel && formEvents != null) {
             removeEventHandlersRecursively(metacomp);
+        }
 
         RADComponent parent = metacomp.getParentComponent();
         ComponentContainer parentContainer =
@@ -321,30 +374,50 @@ public class FormModel
         int index = parentContainer.getIndexOf(metacomp);
         parentContainer.remove(metacomp);
 
-        // turn on undo/redo recording on code structure (if allowed)
         Object codeStructureMark1 = null, codeStructureMark2 = null;
-        boolean codeStructureUndoRedo = codeStructure.isUndoRedoRecording();
-        if (undoRedoRecording && !codeStructureUndoRedo) {
-            codeStructure.setUndoRedoRecording(true);
-            codeStructureMark1 = codeStructure.markForUndo();
+        if (fromModel) {
+            // turn on undo/redo recording on code structure (if allowed)
+            boolean codeStructureUndoRedo = codeStructure.isUndoRedoRecording();
+            if (undoRedoRecording && !codeStructureUndoRedo) {
+                codeStructure.setUndoRedoRecording(true);
+                codeStructureMark1 = codeStructure.markForUndo();
+            }
+
+            // [these changes modify also the code structure - what if undo/redo is just running on it ??]
+            metacomp.removeCodeExpression();
+            metacomp.setInModel(false);
+            if (metacomp instanceof ComponentContainer)
+                releaseSubcomponentsRecursively(metacomp);
+
+            // turn off undo/redo recording on code structure (if turned on)
+            if (undoRedoRecording && !codeStructureUndoRedo) {
+                codeStructureMark2 = codeStructure.markForUndo();
+                if (codeStructureMark2.equals(codeStructureMark1))
+                    codeStructureMark2 = codeStructureMark1 = null;
+
+                codeStructure.setUndoRedoRecording(false);
+            }
         }
 
-        metacomp.removeCodeExpression();
-        metacomp.setInModel(false);
-        if (metacomp instanceof ComponentContainer)
-            releaseComponent(metacomp);
-
-        // turn off undo/redo recording on code structure (if turned on)
-        if (undoRedoRecording && !codeStructureUndoRedo) {
-            codeStructureMark2 = codeStructure.markForUndo();
-            if (codeStructureMark2.equals(codeStructureMark1))
-                codeStructureMark2 = codeStructureMark1 = null;
-
-            codeStructure.setUndoRedoRecording(false);
+        FormModelEvent ev = fireComponentRemoved(metacomp, parentContainer, index, fromModel);
+        ev.setCodeChange(codeStructureMark1, codeStructureMark2);
+    }
+    
+    private void removeLayoutComponentsRecursively(RADComponent metacomp) {
+        if (metacomp instanceof ComponentContainer) {
+            RADComponent[] comps = ((ComponentContainer)metacomp).getSubBeans();
+            for (int i=0; i<comps.length; i++) {
+                removeLayoutComponentsRecursively(comps[i]);
+            }
         }
+        layoutModel.removeComponents(new String[] { metacomp.getId() });        
+    }
 
-        fireComponentRemoved(metacomp, parentContainer, index, true,
-                             codeStructureMark1, codeStructureMark2);
+    void updateMapping(RADComponent metacomp, boolean register) {
+        if (register)
+            idToComponents.put(metacomp.getId(), metacomp);
+        else
+            idToComponents.remove(metacomp.getId());
     }
 
     // removes all event handlers attached to given component and all
@@ -362,14 +435,14 @@ public class FormModel
                 getFormEvents().detachEvent(events[i]);
     }
 
-    private static void releaseComponent(RADComponent metacomp) {
+    private void releaseSubcomponentsRecursively(RADComponent metacomp) {
         RADComponent[] comps = ((ComponentContainer)metacomp).getSubBeans();
         for (int i=0, n=comps.length; i < n; i++) {
             metacomp = comps[i];
             metacomp.releaseCodeExpression();
             metacomp.setInModel(false);
             if (metacomp instanceof ComponentContainer)
-                releaseComponent(metacomp);
+                releaseSubcomponentsRecursively(metacomp);
         }
     }
 
@@ -403,13 +476,14 @@ public class FormModel
         return false;
     }
 
-    public CompoundEdit endCompoundEdit() {
+    public CompoundEdit endCompoundEdit(boolean commit) {
         if (compoundEdit != null) {
-            t("ending compound edit"); // NOI18N
+            t("ending compound edit: "+commit); // NOI18N
             compoundEdit.end();
-            if (undoRedoRecording && compoundEdit.isSignificant())
+            if (commit && undoRedoRecording && compoundEdit.isSignificant()) {
                 getUndoRedoManager().undoableEditHappened(
                     new UndoableEditEvent(this, compoundEdit));
+            }
             CompoundEdit edit = compoundEdit;
             compoundEdit = null;
             return edit;
@@ -431,10 +505,10 @@ public class FormModel
     }
 
     UndoRedo.Manager getUndoRedoManager() {
-        if (undoRedoManager == null) {
-            undoRedoManager = new UndoRedoManager();
-            undoRedoManager.setLimit(50);
-        }
+//        if (undoRedoManager == null) {
+//            undoRedoManager = new UndoRedoManager();
+//            undoRedoManager.setLimit(50);
+//        }
         return undoRedoManager;
     }
 
@@ -516,12 +590,16 @@ public class FormModel
     public void fireFormLoaded() {
         t("firing form loaded"); // NOI18N
 
-        formLoaded = true;
-        if (undoRedoManager != null)
-            undoRedoManager.discardAllEdits();
-        if (!readOnly && !Boolean.getBoolean("netbeans.form.no_undo")) // NOI18N
+//        formLoaded = true;
+        eventBroker = new EventBroker();
+//        if (undoRedoManager != null)
+//            undoRedoManager.discardAllEdits();
+        if (!readOnly && !Boolean.getBoolean("netbeans.form.no_undo")) { // NOI18N
+            undoRedoManager = new UndoRedoManager();
+            undoRedoManager.setLimit(50);
             setUndoRedoRecording(true);
-        initializeCodeGenerator();
+        }
+//        initializeCodeGenerator(); // [should go away]
 
         sendEventLater(new FormModelEvent(this, FormModelEvent.FORM_LOADED));
     }
@@ -585,7 +663,7 @@ public class FormModel
         sendEvent(ev);
 
         if (undoRedoRecording
-            && metacont != null && propName != null && oldValue != newValue)
+            && metacont != null && (propName == null || oldValue != newValue))
         {
             addUndoableEdit(ev.getUndoableEdit());
         }
@@ -643,17 +721,17 @@ public class FormModel
     public FormModelEvent fireComponentRemoved(RADComponent metacomp,
                                                ComponentContainer metacont,
                                                int index,
-                                               boolean removedFromModel,
-                                               Object codeStructureMark1,
-                                               Object codeStructureMark2)
+                                               boolean removedFromModel)
+//                                               Object codeStructureMark1,
+//                                               Object codeStructureMark2)
     {
         t("firing component removed: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
 
         FormModelEvent ev =
             new FormModelEvent(this, FormModelEvent.COMPONENT_REMOVED);
-        ev.setRemoveData(metacomp, metacont, index, removedFromModel,
-                        codeStructureMark1, codeStructureMark2);
+        ev.setRemoveData(metacomp, metacont, index, removedFromModel);
+//                        codeStructureMark1, codeStructureMark2);
         sendEvent(ev);
 
         if (undoRedoRecording && metacomp != null && metacont != null)
@@ -726,7 +804,8 @@ public class FormModel
         ev.setProperty(propName, oldValue, newValue);
         sendEvent(ev);
 
-        if (undoRedoRecording && propName != null && oldValue != newValue) {
+        if (undoRedoRecording && propName != null && oldValue != newValue)
+        {
             addUndoableEdit(ev.getUndoableEdit());
         }
 
@@ -845,8 +924,9 @@ public class FormModel
     }
 
     EventBroker getEventBroker() {
-        if (eventBroker == null && isFormLoaded())
-            eventBroker = new EventBroker();
+        // event broker is created when the form is loaded
+//        if (eventBroker == null && isFormLoaded())
+//            eventBroker = new EventBroker();
         return eventBroker;
     }
     
@@ -904,7 +984,7 @@ public class FormModel
             eventList = null;
             if (compoundUndoStarted) {
                 compoundUndoStarted = false;
-                FormModel.this.endCompoundEdit();
+                FormModel.this.endCompoundEdit(true);
             }
             return list;
         }
@@ -926,16 +1006,16 @@ public class FormModel
         return codeStructure;
     }
 
-    CodeGenerator getCodeGenerator() {
-//        return FormEditorSupport.getCodeGenerator(this);
-        if (codeGenerator == null)
-            codeGenerator = new JavaCodeGenerator();
-        return codeGenerator;
-    }
-
-    void initializeCodeGenerator() {
-        getCodeGenerator().initialize(this);
-    }
+//    CodeGenerator getCodeGenerator() {
+////        return FormEditorSupport.getCodeGenerator(this);
+//        if (codeGenerator == null)
+//            codeGenerator = new JavaCodeGenerator();
+//        return codeGenerator;
+//    }
+//
+//    void initializeCodeGenerator() {
+//        getCodeGenerator().initialize(this);
+//    }
 
     // ---------------
     // ModelContainer innerclass

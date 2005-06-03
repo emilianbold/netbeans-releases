@@ -206,7 +206,7 @@ class CopySupport {
                     return null; // not allowed, ignore paste
 
                 // remove source component from its parent
-                sourceForm.removeComponentFromContainer(sourceComponent);
+                sourceForm.removeComponent(sourceComponent, false);
 
                 if (sourceComponent instanceof RADVisualComponent
                     && targetComponent instanceof RADVisualContainer)

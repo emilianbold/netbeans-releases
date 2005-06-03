@@ -84,13 +84,18 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
                                      int newIndex,
                                      Graphics g)
     {
-        Dimension sz = container.getSize();
-        Insets insets = container.getInsets();
-        sz.width -= insets.left + insets.right;
-        sz.height -= insets.top + insets.bottom;
-        
-        g.drawRect(0, 0, sz.width, sz.height);
-        return true;
+        if (container instanceof JScrollPane
+            && ((JScrollPane)container).getViewport().getView() == null)
+        {   // empty JScrollPane - it makes sense to add something to it
+            Dimension sz = container.getSize();
+            Insets insets = container.getInsets();
+            sz.width -= insets.left + insets.right;
+            sz.height -= insets.top + insets.bottom;
+
+            g.drawRect(0, 0, sz.width, sz.height);
+            return true;
+        }
+        return false;
     }
 
     /** Adds real components to given container (according to layout

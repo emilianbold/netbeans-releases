@@ -58,7 +58,7 @@ public class FormNode extends AbstractNode implements FormCookie {
                 || CloseCookie.class.isAssignableFrom(type)
                 || PrintCookie.class.isAssignableFrom(type)))
         {
-            FormDataObject fdo = FormEditorSupport.getFormDataObject(formModel);
+            FormDataObject fdo = FormEditor.getFormDataObject(formModel);
             if (fdo != null)
                 cookie = fdo.getCookie(type);
         }
@@ -84,19 +84,18 @@ public class FormNode extends AbstractNode implements FormCookie {
         if (customizer instanceof Window) {
             // register the customizer window (probably a dialog) to be closed
             // automatically when the form is closed
-            FormEditorSupport fes = FormEditorSupport.getFormEditor(formModel);
-            if (fes != null) {
+            FormEditor formEditor = FormEditor.getFormEditor(formModel);
+            if (formEditor != null) {
                 Window customizerWindow = (Window) customizer;
-                fes.registerFloatingWindow(customizerWindow);
+                formEditor.registerFloatingWindow(customizerWindow);
                 // attach a listener to unregister the window when it is closed
                 customizerWindow.addWindowListener(new WindowAdapter() {
                     public void windowClosing(WindowEvent e) {
                         if (e.getSource() instanceof Window) {
                             Window window = (Window) e.getSource();
-                            FormEditorSupport fes =
-                                FormEditorSupport.getFormEditor(formModel);
-                            if (fes != null)
-                                fes.unregisterFloatingWindow(window);
+                            FormEditor formEditor = FormEditor.getFormEditor(formModel);
+                            if (formEditor != null)
+                                formEditor.unregisterFloatingWindow(window);
                             window.removeWindowListener(this);
                         }
                     }

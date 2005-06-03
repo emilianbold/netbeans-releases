@@ -70,6 +70,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        FormLoaderSettings.class,
                                        "getDragBorderColor", // NOI18N
                                        "setDragBorderColor"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_GUIDING_LINE_COLOR,
+                                       FormLoaderSettings.class,
+                                       "getGuidingLineColor", // NOI18N
+                                       "setGuidingLineColor"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_GRID_X,
                                        FormLoaderSettings.class,
                                        "getGridX", "setGridX"), // NOI18N
@@ -173,6 +177,9 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
             desc[++i].setDisplayName(bundle.getString("PROP_DRAG_BORDER_COLOR")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_DRAG_BORDER_COLOR")); // NOI18N
+            
+            desc[++i].setDisplayName(bundle.getString("PROP_GUIDING_LINE_COLOR")); // NOI18N
+            desc[i].setShortDescription(bundle.getString("HINT_GUIDING_LINE_COLOR")); // NOI18N
 
             desc[++i].setDisplayName(bundle.getString("PROP_GRID_X")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_GRID_X")); // NOI18N

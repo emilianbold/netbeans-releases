@@ -28,7 +28,7 @@ import org.netbeans.modules.form.codestructure.*;
  * @author Ian Formanek
  */
 
-public class RADComponent implements FormDesignValue, java.io.Serializable {
+public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
 
     // -----------------------------------------------------------------------------
     // Static variables
@@ -43,18 +43,24 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     // -----------------------------------------------------------------------------
     // Private variables
 
+    private static int idCounter;
+
+    private String id = Integer.toString(++idCounter);
+
     private Class beanClass;
     private Object beanInstance;
     private BeanInfo beanInfo;
 //    private String componentName;
 
-    private boolean readOnly;
+//    private boolean readOnly;
 
     protected Node.PropertySet[] propertySets;
     private Node.Property[] syntheticProperties;
     private RADProperty[] beanProperties1;
     private RADProperty[] beanProperties2;
     private EventProperty[] eventProperties;
+    private Map otherProperties;
+    private List actionProperties;
 
     private RADProperty[] knownBeanProperties;
     private Event[] knownEvents; // must be grouped by EventSetDescriptor
@@ -75,7 +81,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
 //    private String gotoMethod;
 
-    private String storedName; // component name preserved between Cut and Paste
+    private String storedName; // component name preserved e.g. for remove undo
 
     // -----------------------------------------------------------------------------
     // Constructors & Initialization
@@ -87,13 +93,13 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     public boolean initialize(FormModel formModel) {
         if (this.formModel == null) {
             this.formModel = formModel;
-            readOnly = formModel.isReadOnly();
+//            readOnly = formModel.isReadOnly();
 
             // properties and events will be created on first request
             clearProperties();
 
-            if (beanClass != null)
-                createCodeExpression();
+//            if (beanClass != null)
+//                createCodeExpression();
 
             return true;
         }
@@ -233,8 +239,12 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     // -----------------------------------------------------------------------------
     // Public interface
 
+    public final String getId() {
+        return id;
+    }
+
     public final boolean isReadOnly() {
-        return readOnly;
+        return formModel.isReadOnly(); //readOnly;
     }
 
     /** Provides access to the Class of the bean represented by this RADComponent
@@ -269,21 +279,21 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         return false;
     }
 
-    /** FormDesignValue implementation.
-     * @return description of the design value.
-     */
-    public String getDescription() {
-        return getName();
-    }
-
-    /**  FormDesignValue implementation.
-     * Provides a value which should be used during design-time as real value
-     * of the property (in case that RADComponent is used as property value).
-     * @return the bean instance of RADComponent
-     */
-    public Object getDesignValue() {
-        return getBeanInstance();
-    }
+//    /** FormDesignValue implementation.
+//     * @return description of the design value.
+//     */
+//    public String getDescription() {
+//        return getName();
+//    }
+//
+//    /**  FormDesignValue implementation.
+//     * Provides a value which should be used during design-time as real value
+//     * of the property (in case that RADComponent is used as property value).
+//     * @return the bean instance of RADComponent
+//     */
+//    public Object getDesignValue() {
+//        return getBeanInstance();
+//    }
 
     public Object cloneBeanInstance(Collection relativeProperties) {
         Object clone;
@@ -329,8 +339,10 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         return componentCodeExpression;
     }
 
-    /** Getter for the Name of the component - usually maps to variable
-     * declaration for holding the instance of the component
+    /** Getter for the name of the metacomponent - it maps to variable name
+     * declared for the instance of the component in the generated java code.
+     * It is a unique identification of the component within a form, but it may
+     * change (currently editable as "Variable Name" in code gen. properties).
      * @return current value of the Name property
      */
     public String getName() {
@@ -338,13 +350,13 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             CodeVariable var = componentCodeExpression.getVariable();
             if (var != null)
                 return var.getName();
-            // [maybe component name could generally differ from variable name]
         }
         return storedName;
     }
 
-    /** Setter for the name of the component - it is the name of component's
-     * node and the name of variable declaration for the component in generated code.
+    /** Setter for the name of the component - it is the name of the
+     * component's node and the name of the variable declared for the component
+     * in the generated code.
      * @param value new name of the component
      */
     public void setName(String name) {
@@ -499,6 +511,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
     final void setInModel(boolean in) {
         inModel = in;
+        formModel.updateMapping(this, in);
     }
 
     /** @return the map of all component's aux value-pairs of <String, Object>
@@ -525,19 +538,8 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     }
 
     public RADProperty[] getAllBeanProperties() {
-        if (knownBeanProperties == null || beanProperties1 == null) {
-            if (beanProperties1 == null)
-                createBeanProperties();
-            else {
-                knownBeanProperties = new RADProperty[beanProperties1.length
-                                                      + beanProperties2.length];
-                System.arraycopy(beanProperties1, 0,
-                                 knownBeanProperties, 0,
-                                 beanProperties1.length);
-                System.arraycopy(beanProperties2, 0,
-                                 knownBeanProperties, beanProperties1.length,
-                                 beanProperties2.length);
-            }
+        if (knownBeanProperties == null) {
+            createBeanProperties();
         }
 
         return knownBeanProperties;
@@ -587,6 +589,13 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         if (eventProperties == null)
             createEventProperties();
         return eventProperties;
+    }
+    
+    List getActionProperties() {
+        if (actionProperties == null) {
+            createBeanProperties();
+        }
+        return actionProperties;
     }
 
     protected Node.Property getPropertyByName(String name,
@@ -903,6 +912,23 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             }
         });
 
+        Node.PropertySet ps;
+        Iterator entries = otherProperties.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry entry = (Map.Entry)entries.next();
+            final String category = (String)entry.getKey();
+            ps = new Node.PropertySet(category, category, category) {        
+                public Node.Property[] getProperties() {
+                    if (otherProperties == null) {
+                        createBeanProperties();
+                    }
+                    return (Node.Property[])otherProperties.get(category);
+                }
+            };
+            //ps.setValue("tabName", category); // NOI18N
+            propSets.add(ps);
+        }
+
         if (beanProperties2.length > 0)
             propSets.add(new Node.PropertySet(
                     "properties2", // NOI18N
@@ -914,7 +940,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 }
             });
 
-        Node.PropertySet ps = new Node.PropertySet(
+        ps = new Node.PropertySet(
                 "events", // NOI18N
                 bundle.getString("CTL_EventsTab"), // NOI18N
                 bundle.getString("CTL_EventsTabHint")) // NOI18N
@@ -940,13 +966,15 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     }
 
     protected Node.Property[] createSyntheticProperties() {
-        return formModel.getCodeGenerator().getSyntheticProperties(this);
+        return FormEditor.getCodeGenerator(formModel).getSyntheticProperties(this);
     }
 
     private void createBeanProperties() {
         ArrayList prefProps = new ArrayList();
         ArrayList normalProps = new ArrayList();
         ArrayList expertProps = new ArrayList();
+        Map otherProps = new TreeMap();
+        List actionProps = new LinkedList();
 
         Object[] propsCats = FormUtils.getPropertiesCategoryClsf(
                                  beanClass, getBeanInfo().getBeanDescriptor());
@@ -955,23 +983,42 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
         for (int i = 0; i < props.length; i++) {
             PropertyDescriptor pd = props[i];
-
-            Object propCat = FormUtils.getPropertyCategory(pd, propsCats);
+            boolean action = (pd.getValue("action") != null); // NOI18N
+            Object category = pd.getValue("category"); // NOI18N
             List listToAdd;
-            if (propCat == FormUtils.PROP_PREFERRED)
-                listToAdd = prefProps;
-            else if (propCat == FormUtils.PROP_NORMAL)
-                listToAdd = normalProps;
-            else if (propCat == FormUtils.PROP_EXPERT)
-                listToAdd = expertProps;
-            else continue; // PROP_HIDDEN
+            
+            if ((category == null) || (!(category instanceof String))) {
+                Object propCat = FormUtils.getPropertyCategory(pd, propsCats);
+                if (propCat == FormUtils.PROP_PREFERRED)
+                    listToAdd = prefProps;
+                else if (propCat == FormUtils.PROP_NORMAL)
+                    listToAdd = normalProps;
+                else if (propCat == FormUtils.PROP_EXPERT)
+                    listToAdd = expertProps;
+                else continue; // PROP_HIDDEN
 
+            } else {
+                listToAdd = (List)otherProps.get(category);
+                if (listToAdd == null) {
+                    listToAdd = new ArrayList();
+                    otherProps.put(category, listToAdd);
+                }
+            }
+            
             FormProperty prop = (FormProperty) nameToProperty.get(pd.getName());
             if (prop == null)
                 prop = createBeanProperty(pd, propsAccess);
 
-            if (prop != null)
+            if (prop != null) {
                 listToAdd.add(prop);
+                if (action) {
+                    Object actionName = pd.getValue("actionName"); // NOI18N
+                    if (actionName instanceof String) {
+                        prop.setValue("actionName", actionName); // NOI18N
+                    }
+                    actionProps.add(prop);
+                }
+            }
         }
 
         changePropertiesExplicitly(prefProps, normalProps, expertProps);
@@ -979,6 +1026,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         int prefCount = prefProps.size();
         int normalCount = normalProps.size();
         int expertCount = expertProps.size();
+        int otherCount = 0;
 
         if (prefCount > 0) {
             beanProperties1 = new RADProperty[prefCount];
@@ -1000,17 +1048,41 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             else beanProperties2 = new RADProperty[0];
         }
         
+        Iterator entries = otherProps.entrySet().iterator();
+        RADProperty[] array = new RADProperty[0];
+        while (entries.hasNext()) {
+            Map.Entry entry = (Map.Entry)entries.next();
+            ArrayList catProps = (ArrayList)entry.getValue();
+            otherCount += catProps.size();
+            entry.setValue(catProps.toArray(array));
+        }
+        otherProperties = otherProps;
+        
         FormUtils.reorderProperties(beanClass, beanProperties1);
         FormUtils.reorderProperties(beanClass, beanProperties2);
 
         knownBeanProperties = new RADProperty[beanProperties1.length
-                                              + beanProperties2.length];
+                              + beanProperties2.length + otherCount];
         System.arraycopy(beanProperties1, 0,
                          knownBeanProperties, 0,
                          beanProperties1.length);
         System.arraycopy(beanProperties2, 0,
                          knownBeanProperties, beanProperties1.length,
                          beanProperties2.length);
+        
+        int where = beanProperties1.length + beanProperties2.length;
+        
+        entries = otherProperties.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry entry = (Map.Entry)entries.next();
+            RADProperty[] catProps = (RADProperty[])entry.getValue();
+            System.arraycopy(catProps, 0,
+                knownBeanProperties, where,
+                catProps.length);
+            where += catProps.length;
+        }
+
+        actionProperties = actionProps;
     }
 
     private void createEventProperties() {
@@ -1202,6 +1274,11 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     }
 
     // ----------
+/*
+    // Serialization of RADComponent was made for copy/pasting - JDK on
+    // Mac OS X used to force the serialization for the transferable object
+    // though it could just keep the instance (copied within one JVM) - as it
+    // works normally on other OSes. Issue 12050.
 
     Object writeReplace() {
         return new Replace(this);
@@ -1209,23 +1286,26 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
     private static class Replace implements java.io.Serializable {
         private FormDataObject dobj;
-        private String compName;
+        private String compId;
 
         Replace(RADComponent comp) {
+            // reference to RADComponent is stored; we expect the form
+            // containing the component remains opened all the time
             dobj = FormEditorSupport.getFormDataObject(comp.getFormModel());
-            compName = comp.getName();
+            compId = comp.getId();
         }
 
-        Object readResolve() /*throws java.io.ObjectStreamException*/ {
+        Object readResolve() { // throws java.io.ObjectStreamException
             FormModel[] forms = FormEditorSupport.getOpenedForms();
             for (int i=0; i < forms.length; i++) {
                 FormModel form = forms[i];
                 if (dobj.equals(FormEditorSupport.getFormDataObject(form)))
-                    return form.findRADComponent(compName);
+                    return form.getMetaComponent(compId);
             }
             return null; // or throw some exception?
         }
     }
+*/
 
     // -----------------------------------------------------------------------------
     // Debug methods

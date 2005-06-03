@@ -24,9 +24,6 @@ import org.netbeans.modules.form.codestructure.CodeGroup;
 
 class UnknownLayoutSupport extends AbstractLayoutSupport {
 
-    public UnknownLayoutSupport() {
-    }
-
     public Class getSupportedClass() {
         return null;
     }

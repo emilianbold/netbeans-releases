@@ -70,9 +70,9 @@ public class RADVisualComponent extends RADComponent {
     // Public interface
 
     /** @return The JavaBean visual component represented by this RADVisualComponent */
-    public java.awt.Component getComponent() { // [is it needed ???]
-        return (java.awt.Component) getBeanInstance();
-    }
+//    public java.awt.Component getComponent() { // [is it needed ???]
+//        return (java.awt.Component) getBeanInstance();
+//    }
 
     public final RADVisualContainer getParentContainer() {
         return (RADVisualContainer) getParentComponent();
@@ -168,7 +168,7 @@ public class RADVisualComponent extends RADComponent {
      * Properties may be added, removed etc. - due to specific needs
      * of subclasses. Here used for adding ButtonGroupProperty.
      */
-    protected void changePropertiesExplicitly(List prefProps,
+/*    protected void changePropertiesExplicitly(List prefProps,
                                               List normalProps,
                                               List expertProps) {
 
@@ -205,7 +205,7 @@ public class RADVisualComponent extends RADComponent {
 //                normalProps.add(createProperty(pd));
 //            }
 //            catch (IntrospectionException ex) {} // should not happen
-    }
+    } */
 
     protected void clearProperties() {
         super.clearProperties();

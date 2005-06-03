@@ -16,6 +16,7 @@ package org.netbeans.modules.form;
 import org.openide.nodes.*;
 import org.openide.actions.PropertiesAction;
 import org.openide.util.actions.SystemAction;
+
 import org.netbeans.modules.form.actions.*;
 
 /**
@@ -34,29 +35,6 @@ class FormRootNode extends FormNode {
         setIconBase("org/netbeans/modules/form/resources/formDesigner"); // NOI18N
         updateName(formModel.getName());
     }
-    
-    public Node.PropertySet[] getPropertySets() {
-        Node.PropertySet ps = new Node.PropertySet(
-            "synthetic", // NOI18N
-            FormUtils.getBundleString("CTL_SyntheticTab"), // NOI18N
-            FormUtils.getBundleString("CTL_SyntheticTabHint")) { // NOI18N
-                public Node.Property[] getProperties() {
-                    return getSyntheticProperties();
-                }
-            };
-        return new Node.PropertySet[] {ps};
-    }
-    
-    Node.Property[] getSyntheticProperties() {
-        if (syntheticProperties == null)
-            syntheticProperties = createSyntheticProperties();
-        return syntheticProperties;
-    }
-    
-    private Node.Property[] createSyntheticProperties() {
-        return getFormModel().getCodeGenerator().getSyntheticProperties(null);
-    }
-  
 
     // TODO: icons for visual and non-visual forms
 //    public Image getIcon(int iconType) {
@@ -87,6 +65,29 @@ class FormRootNode extends FormNode {
 
     FormOthersNode getOthersNode() {
         return ((RootChildren)getChildren()).othersNode;
+    }
+    
+    public Node.PropertySet[] getPropertySets() {
+        Node.PropertySet ps = new Node.PropertySet(
+                "synthetic", // NOI18N
+                FormUtils.getBundleString("CTL_SyntheticTab"), // NOI18N
+                FormUtils.getBundleString("CTL_SyntheticTabHint")) // NOI18N
+        {
+            public Node.Property[] getProperties() {
+                return getSyntheticProperties();
+            }
+        };
+        return new Node.PropertySet[] {ps};
+    }
+    
+    Node.Property[] getSyntheticProperties() {
+        if (syntheticProperties == null)
+            syntheticProperties = createSyntheticProperties();
+        return syntheticProperties;
+    }
+    
+    private Node.Property[] createSyntheticProperties() {
+        return FormEditor.getCodeGenerator(getFormModel()).getSyntheticProperties(null);
     }
 
     // ----------------
@@ -121,4 +122,5 @@ class FormRootNode extends FormNode {
             return formModel;
         }
     }
+    
 }
