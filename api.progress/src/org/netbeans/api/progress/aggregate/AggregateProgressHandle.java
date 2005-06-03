@@ -31,7 +31,7 @@ import org.openide.util.Cancellable;
  * For a more simple version of progress indication, see {@link org.netbeans.api.progress.ProgressHandle}
  * @author Milos Kleint (mkleint@netbeans.org)
  */
-public class AggregateProgressHandle {
+public final class AggregateProgressHandle {
     private ProgressMonitor monitor;
     private ProgressHandle handle;
     static final int WORKUNITS = 10000;

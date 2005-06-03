@@ -21,7 +21,7 @@ package org.netbeans.api.progress.aggregate;
  * 
  * @author mkleint
  */
-public class ProgressContributor {
+public final class ProgressContributor {
     private String id;
     private int workunits;
     private int current;

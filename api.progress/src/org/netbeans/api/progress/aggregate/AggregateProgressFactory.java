@@ -23,7 +23,7 @@ import org.openide.util.Cancellable;
  *
  * @author mkleint (mkleint@netbeans.org)
  */
-public class AggregateProgressFactory {
+public final class AggregateProgressFactory {
     
     /** Creates a new instance of AggregateProgressFactory */
     private AggregateProgressFactory() {
