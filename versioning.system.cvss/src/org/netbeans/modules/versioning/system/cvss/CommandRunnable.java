@@ -19,10 +19,12 @@ import org.netbeans.lib.cvsclient.Client;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
+import org.openide.util.RequestProcessor;
 
 /**
- * Runnable that actually performs a command and stores an exception it may throw and its isFinished state.
- * 
+ * Runnable that actually performs a command and stores
+ * an exception it may throw and its isFinished state.
+ *
  * @author Maros Sandor
  */
 class CommandRunnable implements Runnable, Cancellable {
@@ -35,6 +37,7 @@ class CommandRunnable implements Runnable, Cancellable {
     private boolean             finished;
     private boolean             aborted;
     private ProgressHandle      progressHandle;
+    private String              progressName;
 
     public CommandRunnable(Client client, GlobalOptions options, Command cmd) {
         this.client = client;
@@ -42,17 +45,23 @@ class CommandRunnable implements Runnable, Cancellable {
         this.cmd = cmd;
     }
 
-    void setProgressHandle(ProgressHandle handle) {
+    void setProgressHandle(ProgressHandle handle, String name) {
         progressHandle = handle;
+        progressName = name;
     }
     
     public void run() {
         progressHandle.start();
+        CounterRunnable counterUpdater = new CounterRunnable();
+        RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
+        counterUpdater.initTask(counterTask);
         try {
+            counterTask.schedule(500);
             client.executeCommand(cmd, options);
         } catch (Throwable e) {
             failure = e;
         } finally {
+            counterTask.cancel();
             progressHandle.finish();
             finished = true;
             try {
@@ -62,7 +71,15 @@ class CommandRunnable implements Runnable, Cancellable {
             }
         }
     }
-    
+
+    private static String format(long counter) {
+        if (counter < 1024*16) {
+            return "" + counter + " bytes";
+        }
+        counter /= 1024;
+        return "" + counter + " kbytes";
+    }
+
     public Throwable getFailure() {
         return failure;
     }
@@ -81,5 +98,20 @@ class CommandRunnable implements Runnable, Cancellable {
         client.abort();
         Thread.currentThread().interrupt();
         return true;
+    }
+
+    /** Periodic task updating progress name. */
+    private class CounterRunnable implements Runnable {
+
+        private RequestProcessor.Task task;
+
+        public void run() {
+            progressHandle.progress("" + progressName + " " + format(client.getCounter()));
+            task.schedule(500);
+        }
+
+        void initTask(RequestProcessor.Task task) {
+            this.task = task;
+        }
     }
 }

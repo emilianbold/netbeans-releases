@@ -128,7 +128,7 @@ public class ClientRuntime {
             name = cmd.getCVSCommand();
         }
         ProgressHandle handle = ProgressHandleFactory.createHandle(name, cr);
-        cr.setProgressHandle(handle);
+        cr.setProgressHandle(handle, name);
         task.addTaskListener(new TaskListener() {
             public void taskFinished(Task task) {
                 try {
