@@ -621,7 +621,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         "thread supended"
                     );
                 setState (STATE_RUNNING);
-                virtualMachine.resume ();
+                synchronized (LOCK) {
+                    virtualMachine.resume ();
+                }
                 if (startVerbose)
                     System.out.println("\nS JPDADebuggerImpl.setRunning () - " +
                         "thread supended - VM resumed - end"
@@ -738,9 +740,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public void resume () {
         synchronized (LOCK) {
-            JPDAThreadImpl t = (JPDAThreadImpl) getCurrentThread ();
             if (virtualMachine != null)
                 virtualMachine.resume ();
+            // XXX Fires under lock! Is this OK?
             setState (STATE_RUNNING);
         }
     }

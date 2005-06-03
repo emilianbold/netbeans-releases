@@ -82,10 +82,12 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
         return tgr.name ();
     }
     
+    // XXX Add some synchronization so that the threads can not be resumed at any time
     public void resume () {
         tgr.resume ();
     }
     
+    // XXX Add some synchronization
     public void suspend () {
         tgr.suspend ();
     }

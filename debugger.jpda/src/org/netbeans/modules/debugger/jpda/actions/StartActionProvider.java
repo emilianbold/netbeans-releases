@@ -117,7 +117,9 @@ public class StartActionProvider extends ActionsProvider {
                         // PATCH #46295 JSP breakpoint isn't reached during 
                         // second debugging
                         if (cookie instanceof AttachingDICookie) {
-                            virtualMachine.resume ();
+                            synchronized (debuggerImpl.LOCK) {
+                                virtualMachine.resume ();
+                            }
                         }
                         // PATCHEND Hanz
                         

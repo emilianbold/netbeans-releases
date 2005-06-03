@@ -77,11 +77,12 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider implemen
                             ActionsManager.ACTION_POP_TOPMOST_CALL,
                             false
                         );
+                    } else {
+                        setEnabled (
+                            ActionsManager.ACTION_POP_TOPMOST_CALL,
+                            t.getStackDepth () > 1
+                        );
                     }
-                    setEnabled (
-                        ActionsManager.ACTION_POP_TOPMOST_CALL,
-                        t.getStackDepth () > 1
-                    );
                 }
                 return;
             }
