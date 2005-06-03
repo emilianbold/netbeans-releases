@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
@@ -105,7 +105,7 @@ provided there.
 
 <h3><a name="nodes">Explorer Nodes</a></h3>
 <p>If your node extends <code>AbstractNode</code> or one of its subclasses, you should 
-  implement the <code>getHelpCtx</code> method to return a <a href="@OPENIDE@/org/openide/util/HelpCtx.html"> 
+  implement the <code>getHelpCtx</code> method to return a <a href="@org-openide-util@/org/openide/util/HelpCtx.html"> 
   <code>HelpCtx</code></a> for the node. The <code>HelpCtx</code> includes the specific 
   Help ID for the help topic for this node. If the node is selected in the explorer 
   and the user hits the F1 key, then the help associated with this node will be 
@@ -122,9 +122,9 @@ provided there.
 
 <h3><a name="wizards">Wizards</a></h3>
 <p>Wizards are basically a series of Swing Components that are displayed via a 
-  <a href="@OPENIDE@/org/openide/WizardDescriptor.Iterator.html"> 
+  <a href="@org-openide-dialogs@/org/openide/WizardDescriptor.Iterator.html"> 
   <code>WizardDescriptor.Iterator</code></a> object. The object that the developer 
-  creates must implement the <a href="@OPENIDE@/org/openide/WizardDescriptor.Panel.html"> 
+  creates must implement the <a href="@org-openide-dialogs@/org/openide/WizardDescriptor.Panel.html"> 
   <code>WizardDescriptor.Panel</code></a> interface which includes a method that the 
   developer implements to return the actual Swing Component that is to be displayed 
   (usually a <code>JPanel</code> is returned). Additionally, the developer must implement 
@@ -155,7 +155,7 @@ provided there.
 <h3><a name="dialogs">Dialogs</a></h3>
 <p>There are two different ways in which you can set help on a NetBeans dialog. 
   If you wish to display a dialog of some sort, you typically create the Swing 
-  components you wish to display and then create a <a href="@OPENIDE@/org/openide/DialogDescriptor.html"> 
+  components you wish to display and then create a <a href="@org-openide-dialogs@/org/openide/DialogDescriptor.html"> 
   <code>DialogDescriptor</code></a> object which is a NetBeans object that is used 
   to describe the behavior or the dialog. To display help: </p>
 <ol>
@@ -164,7 +164,7 @@ provided there.
     help ID for a dialog. There are a couple of ways to do this: 
     <ul>
       <li> Use one of the
-          <a href="@OPENIDE@/org/openide/DialogDescriptor.html#DialogDescriptor(java.lang.Object, java.lang.String, boolean, int, java.lang.Object, int, org.openide.util.HelpCtx, java.awt.event.ActionListener)"><code>DialogDescriptor</code> constructors</a>
+          <a href="@org-openide-dialogs@/org/openide/DialogDescriptor.html#DialogDescriptor(java.lang.Object,%20java.lang.String,%20boolean,%20int,%20java.lang.Object,%20int,%20org.openide.util.HelpCtx,%20java.awt.event.ActionListener)"><code>DialogDescriptor</code> constructors</a>
           that includes
         a <code>HelpCtx</code>.
       </li>
@@ -198,9 +198,9 @@ If you do not supply a <code>HelpCtx</code> object for the <code>DialogDescripto
 or set the help ID string for the displayed Swing Component, then no <i>Help</i> 
 button will be displayed on the <code>JDialog</code> that is displayed for this <code>DialogDescriptor</code>. 
 <h3><a name="propsheets"></a>Property Sheet</b>s </h3>
-<p>When creating a Property Sheet, the developer creates a <a href="@OPENIDE@/org/openide/nodes/Sheet.Set.html"> 
+<p>When creating a Property Sheet, the developer creates a <a href="@org-openide-nodes@/org/openide/nodes/Sheet.Set.html"> 
   <code>Sheet.Set</code></a> object. To populate the <code>Sheet.Set</code> the developer 
-  creates and adds a number of <a href="@OPENIDE@/org/openide/nodes/Node.Property.html"> 
+  creates and adds a number of <a href="@org-openide-nodes@/org/openide/nodes/Node.Property.html"> 
   <code>Node.Property</code></a> objects. To display help for the Property Sheet, 
   you must call the <code>setValue</code> method and set the <code>helpID</code> property: 
 </p>
@@ -377,7 +377,7 @@ look like the following:
 <h2><a name="makeknown">Making the Help Set Known to the IDE</a></h2>
 In order to use the result help set within the IDE at runtime, a couple of things 
 need to be added to various files associated with the module. These are outlined 
-in part in the <a href="@OPENIDE@/org/openide/modules/doc-files/api.html#helpctx"> 
+in part in the <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#helpctx"> 
 the NetBeans Module Document</a>.
 
 <h3><a name="manifest">Manifest File</a></h3>

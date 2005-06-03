@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <html>
@@ -85,7 +85,7 @@ main JAR or in an extension ZIP or JAR referenced via the
 <code>Class-Path</code> manifest attribute. There is a URL protocol
 <code>nbdocs</code> which is similar to <code>nbresloc</code> and will load anything it can.
 It also will try to load localized resources using
-<a href="@OPENIDE@/org/openide/modules/InstalledFileLocator.html"><code>InstalledFileLocator</code></a>
+<a href="@org-openide-modules@/org/openide/modules/InstalledFileLocator.html"><code>InstalledFileLocator</code></a>
 with a prefix of <samp>docs/</samp>.
 <span class="nonnormative">Given the current implementation of the
 NetBeans installation structure, this will permit the help set and
@@ -171,7 +171,7 @@ IDs and they do not themselves bind them). There are several ways
 to associate help IDs with module features so that they may be used
 by the IDE, mostly revolving around the API class
 
-<a href="@OPENIDE@/org/openide/util/HelpCtx.html"><code>HelpCtx</code></a>.
+<a href="@org-openide-util@/org/openide/util/HelpCtx.html"><code>HelpCtx</code></a>.
 
 <p>This class has several constructors for different
 purposes; the constructor which takes a <code>Class</code> is
@@ -207,25 +207,25 @@ specify a <code>HelpCtx</code> in this fashion:
 
 <ul>
 
-<li> <a href="@OPENIDE@/org/openide/nodes/Node.html#getHelpCtx()"><code>Node.getHelpCtx()</code></a>
+<li> <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getHelpCtx()"><code>Node.getHelpCtx()</code></a>
 
-<li> <a href="@OPENIDE@/org/openide/loaders/DataObject.html#getHelpCtx()"><code>DataObject.getHelpCtx()</code></a>
+<li> <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html#getHelpCtx()"><code>DataObject.getHelpCtx()</code></a>
 
-<li> <a href="@OPENIDE@/org/openide/windows/TopComponent.html#getHelpCtx()"><code>TopComponent.getHelpCtx()</code></a>
+<li> <a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getHelpCtx()"><code>TopComponent.getHelpCtx()</code></a>
 
-<li> <a href="@OPENIDE@/org/openide/util/actions/SystemAction.html#getHelpCtx()"><code>SystemAction.getHelpCtx()</code></a>
+<li> <a href="@org-openide-util@/org/openide/util/actions/SystemAction.html#getHelpCtx()"><code>SystemAction.getHelpCtx()</code></a>
 
-<li> <a href="@OPENIDE@/org/openide/util/datatransfer/NewType.html#getHelpCtx()"><code>NewType.getHelpCtx()</code></a>
+<li> <a href="@org-openide-util@/org/openide/util/datatransfer/NewType.html#getHelpCtx()"><code>NewType.getHelpCtx()</code></a>
 
-<li> <a href="@OPENIDE@/org/openide/util/datatransfer/PasteType.html#getHelpCtx()"><code>PasteType.getHelpCtx()</code></a>
+<li> <a href="@org-openide-util@/org/openide/util/datatransfer/PasteType.html#getHelpCtx()"><code>PasteType.getHelpCtx()</code></a>
 
-<li> <a href="@OPENIDE@/org/openide/DialogDescriptor.html#getHelpCtx()"><code>DialogDescriptor.getHelpCtx()</code></a>
+<li> <a href="@org-openide-dialogs@/org/openide/DialogDescriptor.html#getHelpCtx()"><code>DialogDescriptor.getHelpCtx()</code></a>
 
-<li> <a href="@OPENIDE@/org/openide/WizardDescriptor.Panel.html#getHelp()"><code>WizardDescriptor.Panel.getHelpCtx()</code></a>
+<li> <a href="@org-openide-dialogs@/org/openide/WizardDescriptor.Panel.html#getHelp()"><code>WizardDescriptor.Panel.getHelpCtx()</code></a>
 
-<li> <a href="@OPENIDE@/org/openide/options/SystemOption.html#getHelpCtx()"><code>SystemOption.getHelpCtx()</code></a>
+<li> <a href="@org-openide-options@/org/openide/options/SystemOption.html#getHelpCtx()"><code>SystemOption.getHelpCtx()</code></a>
 
-<li> <a href="@OPENIDE@/org/openide/ServiceType.html#getHelpCtx()"><code>ServiceType.getHelpCtx()</code></a>
+<li> <a href="@org-openide-util@/org/openide/ServiceType.html#getHelpCtx()"><code>ServiceType.getHelpCtx()</code></a>
 
 (applies equally to executors and compiler types)
 
@@ -238,7 +238,7 @@ There are some other points where you may specify a help ID directly:
 <li> On any (Swing lightweight) component you use in a GUI, by
 means of
 
-<a href="@OPENIDE@/org/openide/util/HelpCtx.html#setHelpIDString(javax.swing.JComponent, java.lang.String)"><code>HelpCtx.setHelpIDString(...)</code></a>.
+<a href="@org-openide-util@/org/openide/util/HelpCtx.html#setHelpIDString(javax.swing.JComponent,%20java.lang.String)"><code>HelpCtx.setHelpIDString(...)</code></a>.
 
 This is especially useful for custom property editor components.
 
@@ -248,22 +248,22 @@ the (<code>FeatureDescriptor</code>) attribute named
 by the JavaHelp specification in regards to beans. This will be
 interpreted by any bean container (e.g.
 
-<a href="@OPENIDE@/org/openide/loaders/InstanceDataObject.html"><code>InstanceDataObject</code></a>
+<a href="@org-openide-loaders@/org/openide/loaders/InstanceDataObject.html"><code>InstanceDataObject</code></a>
 
 or
 
-<a href="@OPENIDE@/org/openide/nodes/BeanNode.html"><code>BeanNode</code></a>
+<a href="@org-openide-nodes@/org/openide/nodes/BeanNode.html"><code>BeanNode</code></a>
 
 or <code>*.ser</code> files)
 
 that uses
 
-<a href="@OPENIDE@/org/openide/loaders/InstanceSupport.html#findHelp(org.openide.cookies.InstanceCookie)"><code>InstanceSupport.findHelp(...)</code></a>.
+<a href="@org-openide-loaders@/org/openide/loaders/InstanceSupport.html#findHelp(org.openide.cookies.InstanceCookie)"><code>InstanceSupport.findHelp(...)</code></a>.
 
 <p>This technique may also be used to add context help support to
 the editor kits used in the
 
-<a href="@OPENIDE@/org/openide/text/doc-files/api.html">Editor API</a>;
+<a href="@org-openide-text@/overview-summary.html">Editor API</a>;
 
 create the bean info for the subclass of
 
@@ -284,17 +284,17 @@ the <code>PropertyDescriptor</code>.
 
 of a
 
-<a href="@OPENIDE@/org/openide/nodes/Node.PropertySet.html"><code>Node.PropertySet</code></a>
+<a href="@org-openide-nodes@/org/openide/nodes/Node.PropertySet.html"><code>Node.PropertySet</code></a>
 
 or
 
-<a href="@OPENIDE@/org/openide/nodes/Node.PropertySet.html"><code>Node.Property</code></a>.
+<a href="@org-openide-nodes@/org/openide/nodes/Node.PropertySet.html"><code>Node.Property</code></a>.
 
 <li> For services on the system filesystem (typically installed via layer) and the folders
 they are in (typically beneath <samp>Services/</samp>), you may 
 use the file attribute <code>helpID</code>
 to specify the help ID right in the layer. See the
-<a href="@OPENIDE@/org/openide/doc-files/services-api.html#context-help">Services API</a> for details.
+<a href="@org-openide-util@/org/openide/util/doc-files/api.html#service-lookup">Services API</a> for details.
 
 <li> In the <code>&lt;homeID&gt;</code> tag of a help set file; in
 this case, the specified help ID is understood as applying
@@ -313,7 +313,7 @@ the current <code>TopComponent</code>, and nodes (or the objects
 they represent) when the node is selected in an Explorer window (or
 custom windows based on
 
-<a href="@OPENIDE@/org/openide/explorer/ExplorerPanel.html"><code>ExplorerPanel</code></a>).
+<a href="@org-openide-compat@/org/openide/explorer/ExplorerPanel.html"><code>ExplorerPanel</code></a>).
 
 Programmatically, you may also display help by using
 the
@@ -422,7 +422,7 @@ in a css termonolgy. Acceptable values are as follows:
 
 </div>
 
-<h2><a name="external-links">Extension of nbdocs protocol</a></h2>
+<h2><a name="extension">Extension of nbdocs protocol</a></h2>
 <div class="nonnormative">
 As documentation is modular ie. it is defined across modules it is possible to define
 link in documentation from one module to another module. When referred module is not
