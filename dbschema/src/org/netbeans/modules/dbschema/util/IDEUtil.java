@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,7 +19,7 @@ public class IDEUtil {
      * @returns true if the schema is used inside the IDE; false otherwise
      */
     public static boolean isIDERunning() {
-        if (System.getProperty("org.openide.specification.version") != null) //NOI18N
+        if (System.getProperty("netbeans.user") != null) //NOI18N
             return true;
         else
             return false;
