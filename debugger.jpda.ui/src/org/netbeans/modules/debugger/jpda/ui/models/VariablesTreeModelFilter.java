@@ -97,14 +97,12 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         int         from, 
         int         to
     ) throws UnknownTypeException {
-        Object[] ch = null;
-        if (ch == null) {
-            VariablesFilter vf = getFilter (parent, true);
-            if (vf == null) 
-                ch = original.getChildren (parent, from, to);
-            else
-                ch = vf.getChildren (original, (Variable) parent, from, to);
-        }
+        Object[] ch;
+        VariablesFilter vf = getFilter (parent, true);
+        if (vf == null) 
+            ch = original.getChildren (parent, from, to);
+        else
+            ch = vf.getChildren (original, (Variable) parent, from, to);
         synchronized (evaluatedNodes) {
             Set nodes = (Set) evaluatedNodesByModels.get(original);
             if (nodes == null) {
