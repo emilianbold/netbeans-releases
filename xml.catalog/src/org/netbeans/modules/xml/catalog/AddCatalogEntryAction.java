@@ -51,8 +51,8 @@ public class AddCatalogEntryAction extends NodeAction {
 
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes.length>0)  {
-            CatalogNode node = (CatalogNode) activatedNodes[0].getCookie(CatalogNode.class);
-            if (node!=null && node.getCatalogReader() instanceof CatalogWriter) return true;
+            Object node = activatedNodes[0].getCookie(CatalogNode.class);
+            if (node instanceof CatalogNode && ((CatalogNode)node).getCatalogReader() instanceof CatalogWriter) return true;
         }
         return false;
     }

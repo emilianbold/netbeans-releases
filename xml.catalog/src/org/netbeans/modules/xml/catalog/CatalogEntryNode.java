@@ -52,7 +52,7 @@ final class CatalogEntryNode extends BeanNode implements EditCookie {
     /** Creates new CatalogNode */
     public CatalogEntryNode(CatalogEntry entry) throws IntrospectionException {        
         super(entry);
-        getCookieSet().add(this);
+        //getCookieSet().add(this);
         catalogReader = entry.getCatalog();
         if (catalogReader instanceof CatalogWriter) {
             isCatalogWriter = true;
