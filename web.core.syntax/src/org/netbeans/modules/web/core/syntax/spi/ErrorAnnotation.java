@@ -80,6 +80,10 @@ public class ErrorAnnotation {
         if (document == null)
             return;
         
+        // Fix issue #59568
+        if(editor.getOpenedPanes()==null)
+            return;
+        
         // The approriate JText component
         JTextComponent component = editor.getOpenedPanes()[0];
         if (component != null){
