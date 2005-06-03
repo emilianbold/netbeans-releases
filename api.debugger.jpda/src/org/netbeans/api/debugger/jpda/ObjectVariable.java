@@ -73,10 +73,11 @@ public interface ObjectVariable extends Variable {
     /**
      * Returns non static fields defined in this object.
      *
-     * @param from a index of first field to be returned
-     * @param to a index of last field to be returned
+     * @param from the index of first field to be returned
+     * @param to the index of last field, exclusive
      *
-     * @return fields defined in this object
+     * @return fields defined in this object that are greater then or equal to
+     * <code>from</code> index and less then <code>to</code> index.
      */
     public abstract Field[] getFields (int from, int to);
 
