@@ -43,7 +43,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class Utils {
 
-    static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.share.Bundle");// NOI18N
+    static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle");// NOI18N
     static final File[] EMPTY_FILE_LIST = new File[0];
 
     /** Creates a new instance of Utils */
