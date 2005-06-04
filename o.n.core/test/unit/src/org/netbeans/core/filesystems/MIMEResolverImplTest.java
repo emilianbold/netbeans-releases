@@ -29,7 +29,6 @@ import org.openide.*;
 import org.netbeans.junit.*;
 
 public class MIMEResolverImplTest extends NbTestCase {
-
     List resolvers;
     FileObject root;
            

@@ -35,26 +35,13 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-  
-    <testbag testattribs="stable" executor="platform" name="Unit tests running in the IDE">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/core/filesystems/*.class"/>
-                <!-- Should be run in code mode: -->
-                <exclude name="org/netbeans/core/filesystems/NbinstURLMapperTest.class"/>
-                <include name="org/netbeans/beaninfo/editors/*.class"/>
-                <!-- this includes all tests testing layers -->
-                <include name="**/ValidateLayer*Test.class"/> 
-                <!-- org.netbeans.core.ValidateClassLinkageTest currently fails, -->
-                <!-- and also requires special VM options (see class for details). -->
-                <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
 
     <testbag testattribs="stable OR cache" executor="platform" name="Testing lookup in real IDE">
         <testset dir="unit/src">
             <patternset>
+                <!-- this includes all tests testing layers -->
+                <include name="**/ValidateLayer*Test.class"/> 
+                
                 <include name="org/netbeans/core/lookup/*Test.class"/>
                 <include name="org/netbeans/core/lookup/*Test?.class"/>
                 <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
@@ -65,10 +52,10 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="code" name="Unit tests in code mode">
         <testset dir="unit/src">
             <patternset>
+                <!-- Should be run in code mode: -->
+                <include name="org/netbeans/beaninfo/editors/*.class"/>
                 <include name="org/netbeans/core/*Test.class"/>
-                <exclude name="org/netbeans/core/ValidateClassLinkageTest.class"/>
-                <exclude name="org/netbeans/core/PlainTest.class/testPlainShowsNoGUI"/>
-                <include name="org/netbeans/core/filesystems/NbinstURLMapperTest.class"/>
+                <include name="org/netbeans/core/filesystems/*.class"/>
                 <include name="org/netbeans/core/modules/*Test.class"/>
                 <include name="org/netbeans/core/modules/*Test?.class"/>
                 <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>

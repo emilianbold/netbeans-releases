@@ -61,6 +61,8 @@ public final class MainLookup extends ProxyLookup {
             newDelegates[0] = Lookups.metaInfServices(classLoader);
             newDelegates[1] = Lookups.singleton(classLoader);
             l.setLookups(newDelegates);
+        } else {
+            moduleClassLoadersUp();
         }
     }
 

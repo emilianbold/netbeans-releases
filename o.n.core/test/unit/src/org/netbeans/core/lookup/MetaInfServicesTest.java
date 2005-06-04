@@ -37,12 +37,6 @@ public class MetaInfServicesTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) throws Exception {
-        File temp = File.createTempFile("MetaInfServicesTest", ".dummy");
-        System.setProperty("nbjunit.workdir", new File(temp.getParentFile(), temp.getName().substring(0, temp.getName().length() - 6)).getAbsolutePath());
-        TestRunner.run(new NbTestSuite(MetaInfServicesTest.class));
-    }
-    
     private ModuleManager mgr;
     private Module m1, m2;
     protected void setUp() throws Exception {

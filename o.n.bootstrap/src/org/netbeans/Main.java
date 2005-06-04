@@ -196,7 +196,10 @@ public class Main extends Object {
         
         public BootClassLoader(List cp, ClassLoader[] parents) {
             super(cp, parents);
-            
+    
+            if (cp.isEmpty ()) {
+                return;
+            }
             
             try {
                 java.util.jar.Manifest mf;

@@ -41,8 +41,6 @@ public class NbinstURLMapperTest extends NbTestCase {
 
     static {
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        URLStreamHandlerFactory fact = new NbinstURLStreamHandlerFactory();
-        URL.setURLStreamHandlerFactory(fact);
     }
 
     public NbinstURLMapperTest (String testName) throws IOException {
@@ -51,7 +49,12 @@ public class NbinstURLMapperTest extends NbTestCase {
 
 
     protected void setUp() throws Exception {
+        assertEquals ("My lookup is used ", Lkp.class, Lkp.getDefault().getClass());
+        
         super.setUp();
+
+        org.netbeans.core.startup.Main.initializeURLFactory ();
+        
         File f = this.getWorkDir();
         this.clearWorkDir();
         Lookup.Result result = Lookup.getDefault().lookup (new Lookup.Template(InstalledFileLocator.class));
