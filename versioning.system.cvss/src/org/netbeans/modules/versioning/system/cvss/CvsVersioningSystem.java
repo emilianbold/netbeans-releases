@@ -28,17 +28,16 @@ import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.core.modules.ModuleManager;
-import org.netbeans.core.modules.Module;
 import org.netbeans.core.NbTopManager;
+import org.netbeans.ModuleManager;
+import org.netbeans.Module;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.zip.InflaterInputStream;
-import java.util.zip.DeflaterOutputStream;
+import java.util.zip.*;
 import java.util.regex.Pattern;
 
 /**
@@ -128,20 +127,20 @@ public class CvsVersioningSystem {
      */ 
     private void loadCache() {
         HashMap kes = null;
-        ObjectInputStream ois = null;
-        FileObject cache = null;
+        ZipInputStream zis = null;
+        File cacheFile = null;
         try {
-            cache = Repository.getDefault().getDefaultFileSystem().getRoot().
-                    getFileObject("Versioning/org-netbeans-modules-versioning-simplecache.bin");
-            if (cache != null) {
-                ois = new ObjectInputStream(new InflaterInputStream(cache.getInputStream()));
-                kes = (HashMap) ois.readObject();
-            }
+            cacheFile = computeCacheFile();
+            zis = new ZipInputStream(new FileInputStream(cacheFile));
+            zis.getNextEntry();
+            kes = (HashMap) new ObjectInputStream(zis).readObject();
+        } catch (FileNotFoundException e) {
+            // cache not present, ignore
         } catch (Exception e) {
-            e.printStackTrace();
-            if (cache != null) try { cache.delete(); } catch (IOException ex) {}
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            if (cacheFile != null) cacheFile.delete();
         } finally {
-            if (ois != null) try { ois.close(); } catch (IOException e) {}
+            if (zis != null) try { zis.close(); } catch (IOException e) {}
         }
         fileStatusCache = new FileStatusCache(this, kes);
         RequestProcessor.getDefault().post(new Runnable() {
@@ -157,30 +156,35 @@ public class CvsVersioningSystem {
      * @return true
      */ 
     boolean closing() {
-        ObjectOutputStream oos = null;
+        ZipOutputStream zos = null;
         try {
-            FileObject cache = Repository.getDefault().getDefaultFileSystem().getRoot().
-                    getFileObject("Versioning/org-netbeans-modules-versioning-simplecache.bin");
-            if (cache == null) {
-                FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
-                cache = fo.getFileObject("Versioning");
-                if (cache == null) cache = fo.createFolder("Versioning");
-                fo = cache.getFileObject("org-netbeans-modules-versioning-simplecache.bin");
-                if (fo == null) fo = cache.createData("org-netbeans-modules-versioning-simplecache.bin");
-                cache = fo;
-            }
-            FileLock lock = cache.lock();
-            oos = new ObjectOutputStream(new DeflaterOutputStream(cache.getOutputStream(lock)));
-            fileStatusCache.writeCache(oos);
-            lock.releaseLock();
+            File cacheFile = computeCacheFile();
+            zos = new ZipOutputStream(new FileOutputStream(cacheFile));
+            ZipEntry ze = new ZipEntry("status-cache.bin");
+            zos.putNextEntry(ze);
+            fileStatusCache.writeCache(new ObjectOutputStream(zos));
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (oos != null) try { oos.close(); } catch (IOException e) {}
+            if (zos != null) try { zos.close(); } catch (IOException e) {}
         }
         return true;
     }
-    
+
+    private File computeCacheFile() {
+        File cacheFile;
+        String userDir = System.getProperty("netbeans.user");
+        if (userDir != null) {
+            File cachedir = new File(new File (userDir, "var"), "cache"); // NOI18N
+            cachedir.mkdirs();
+            cacheFile = new File(cachedir, "cvs-cache.zip"); // NOI18N
+        } else {
+            File cachedir = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            cacheFile = new File(cachedir, "cvs-cache.zip"); // NOI18N
+        }
+        return cacheFile;
+    }
+
     private CvsVersioningSystem() {
     }
 

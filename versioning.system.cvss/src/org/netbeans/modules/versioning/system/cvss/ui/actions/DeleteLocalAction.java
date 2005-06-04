@@ -13,9 +13,6 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions;
 
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;

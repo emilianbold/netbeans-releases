@@ -13,13 +13,13 @@
 
 package org.netbeans.modules.versioning.system.cvss;
 
-import org.openide.modules.ModuleInstall;
 import org.openide.ErrorManager;
+import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
-import org.netbeans.core.modules.Module;
-import org.netbeans.core.modules.ModuleManager;
-import org.netbeans.core.modules.InvalidException;
 import org.netbeans.core.NbTopManager;
+import org.netbeans.ModuleManager;
+import org.netbeans.Module;
+import org.netbeans.InvalidException;
 
 import javax.swing.*;
 import java.util.*;
