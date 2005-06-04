@@ -91,15 +91,17 @@ public class ArchiveURLMapperTest extends NbTestCase {
     
     public void testURLMapper () throws Exception {
         URL jarFileURL = createJarFile ();
+        FileSystem fs = mountFs();
         assertTrue (jarFileURL != null);
         URL url = new URL (MessageFormat.format("jar:{0}!/{1}", new Object[] {jarFileURL.toExternalForm(),  //NOI18N
             RESOURCE}));
         FileObject[] fos = URLMapper.findFileObjects(url);
-        assertTrue (fos.length == 1);
+        assertEquals ("There is one found file object", 1, fos.length);
         assertTrue (fos[0].getPath().equals(RESOURCE));
         URL newUrl = URLMapper.findURL(fos[0], URLMapper.EXTERNAL);
         assertEquals(url, newUrl);
         removeJarFile ();
+        umountFs(fs);
     }
 
 	public void testArchiveToRootURL () throws Exception {
