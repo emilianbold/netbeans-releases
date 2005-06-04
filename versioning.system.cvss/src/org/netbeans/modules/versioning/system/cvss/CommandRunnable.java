@@ -64,7 +64,6 @@ class CommandRunnable implements Runnable, Cancellable {
             failure = e;
         } finally {
             counterTask.cancel();
-            progressHandle.finish();
             finished = true;
             try {
                 client.getConnection().close();

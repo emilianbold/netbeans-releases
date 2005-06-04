@@ -127,7 +127,7 @@ public class ClientRuntime {
         if (name == null) {
             name = cmd.getCVSCommand();
         }
-        ProgressHandle handle = ProgressHandleFactory.createHandle(name, cr);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(name, cr);
         cr.setProgressHandle(handle, name);
         task.addTaskListener(new TaskListener() {
             public void taskFinished(Task task) {
@@ -137,6 +137,8 @@ public class ClientRuntime {
                     mgr.commandTerminated(new TerminationEvent(new Result(cr)));
                 } catch (Throwable e) {
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, e);                    
+                } finally {
+                    handle.finish();
                 }
             }
         });
