@@ -1,29 +1,19 @@
 package lookformyself;
 
-import java.io.IOException;
 import java.util.Iterator;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
-public class Loder extends UniFileLoader {
+public class Loder extends org.openide.util.actions.CallableSystemAction {
     
     public static boolean foundEarly;
     
     public Loder() {
-        super(DataObject.class);
+        initialize();
     }
     
     protected void initialize() {
-        super.initialize();
-        ExtensionList el = new ExtensionList();
-        el.addExtension("nonexistent");
-        setExtensions(el);
         // Now the real stuff:
         foundEarly = foundNow();
     }
@@ -39,8 +29,16 @@ public class Loder extends UniFileLoader {
         return false;
     }
     
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        throw new IOException("Never called");
+    public void performAction () {
+        throw new IllegalStateException("Never called");
+    }
+    
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return org.openide.util.HelpCtx.DEFAULT_HELP;
+    }
+    
+    public String getName() {
+        return "LoderAction";
     }
     
 }

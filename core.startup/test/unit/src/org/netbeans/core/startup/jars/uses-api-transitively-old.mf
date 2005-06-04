@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: usesapitransold
 OpenIDE-Module-Module-Dependencies: usesandexportsapi
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.11
+
 

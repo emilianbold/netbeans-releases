@@ -885,6 +885,7 @@ private static final class ShadowLoader extends UniFileLoader {
             if (d != null) return new DataShadow (primaryFile, d, this);
         } catch (IOException ex) {
             // broken link or damaged shadow file
+            ErrorManager.getDefault ().notify(ErrorManager.INFORMATIONAL, ex);
         }
         /* Link is broken, create BrokenDataShadow */
         return new BrokenDataShadow (primaryFile, this);

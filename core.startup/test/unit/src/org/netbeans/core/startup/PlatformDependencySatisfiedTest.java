@@ -72,6 +72,7 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         final FakeEvents ev = new FakeEvents();
         org.netbeans.core.startup.NbInstaller installer = new org.netbeans.core.startup.NbInstaller(ev);
         ModuleManager mgr = new ModuleManager(installer, ev);
+        ModuleFormatSatisfiedTest.addOpenideModules(mgr);
         installer.registerManager(mgr);
         mgr.mutexPrivileged().enterWriteAccess();
         try {

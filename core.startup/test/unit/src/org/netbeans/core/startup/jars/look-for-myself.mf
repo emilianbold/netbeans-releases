@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: lookformyself
 
 Name: lookformyself/Loder.class
-OpenIDE-Module-Class: Loader
+OpenIDE-Module-Class: Action
 

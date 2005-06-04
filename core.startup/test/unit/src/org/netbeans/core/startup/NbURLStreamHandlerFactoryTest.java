@@ -171,7 +171,6 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
             super(new Lookup[] {
                 Lookups.fixed(new Object[] {
                     new TestClassLoader(),
-                    new NbURLStreamHandlerFactory.Standard(),
                     new TestURLStreamHandlerFactory(),
                 }),
             });

@@ -53,6 +53,17 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
             }
             return handler;
         }
+        
+        if (protocol.equals("nbfs")) { // NOI18N
+             return FileUtil.nbfsURLStreamHandler();
+        }
+        
+        if (protocol.equals(NbResourceStreamHandler.PROTOCOL_SYSTEM_RESOURCE) ||
+                   protocol.equals(NbResourceStreamHandler.PROTOCOL_LOCALIZED_SYSTEM_RESOURCE)) {
+           return new NbResourceStreamHandler();
+        }
+        
+        
         URLStreamHandlerFactory[] _handlers;
         synchronized (this) {
             if (r == null) {
@@ -60,7 +71,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                 r.addLookupListener(this);
                 resultChanged(null);
             }
-            _handlers = (URLStreamHandlerFactory[])handlers.clone();
+            _handlers = handlers;
         }
         for (int i = 0; i < _handlers.length; i++) {
             URLStreamHandler h = _handlers[i].createURLStreamHandler(protocol);
@@ -74,26 +85,8 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
     public void resultChanged(LookupEvent ev) {
         Collection c = r.allInstances();
         synchronized (this) {
-            handlers = (URLStreamHandlerFactory[])c.toArray(new URLStreamHandlerFactory[c.size()]);
+            handlers = (URLStreamHandlerFactory[])c.toArray(new URLStreamHandlerFactory[0]);
         }
-    }
-
-    /** Implements standard protocols: nbfs, nbres, nbresloc.
-     * Registered into NbURLStreamHandlerFactory via lookup.
-     */
-    public static final class Standard implements URLStreamHandlerFactory {
-        
-        public URLStreamHandler createURLStreamHandler(String protocol) {
-            if (protocol.equals("nbfs")) { // NOI18N
-                 return FileUtil.nbfsURLStreamHandler();
-            } else if (protocol.equals(NbResourceStreamHandler.PROTOCOL_SYSTEM_RESOURCE) ||
-                       protocol.equals(NbResourceStreamHandler.PROTOCOL_LOCALIZED_SYSTEM_RESOURCE)) {
-               return new NbResourceStreamHandler();
-            } else {
-                return null;
-            }
-        }
-        
     }
     
     /** Stream handler for internal resource-based URLs.

@@ -69,7 +69,7 @@ public class ModuleFormatSatisfiedTest extends SetupHid {
         installer.registerManager(mgr);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
-            //addOpenideModules(mgr);
+            addOpenideModules(mgr);
             Module m1 = mgr.create(moduleJarFile, null, false, false, false);
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             mgr.enable(m1);
@@ -80,4 +80,22 @@ public class ModuleFormatSatisfiedTest extends SetupHid {
         }
     }
 
+    
+    static void addOpenideModules (ModuleManager mgr) throws Exception {
+        ClassLoader l = SetupHid.class.getClassLoader();
+        String openide =
+"Manifest-Version: 1.0\n" +
+"OpenIDE-Module: org.openide.modules\n" +
+"OpenIDE-Module-Localizing-Bundle: org/openide/modules/Bundle.properties\n" +
+"Specification-Title: NetBeans\n" +
+"OpenIDE-Module-Specification-Version: 6.2\n" +
+"\n" +
+"Name: /org/openide/modules/\n" +
+"Package-Title: org.openide.modules\n";
+               
+        Manifest mani = new Manifest (new java.io.ByteArrayInputStream (openide.getBytes ()));
+        mgr.enable(mgr.createFixed(mani, null, l));
+     }
+
+    
 }
