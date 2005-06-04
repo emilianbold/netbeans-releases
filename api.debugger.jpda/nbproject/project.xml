@@ -18,15 +18,6 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.api.debugger.jpda</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.openide</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>4.20</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.debugger</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
