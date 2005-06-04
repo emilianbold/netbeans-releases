@@ -42,14 +42,23 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 
-/** An action which can listen to the activated node selection.
-* This means that the set of nodes active in a window
-* may change the enabled state of the action according to {@link #enable}.
-* <p><strong>Note:</strong> if your action involves getting cookies
-* from nodes, which in many cases is the correct design, please use
-* {@link CookieAction} instead, as that permits sensitivity to cookies
-* and also listens to changes in supplied cookies.
-*/
+
+/**
+ * Whenever a list of activated nodes changes (a new <a href="@org-openide-windows@/org/openide/windows/TopComponent.html">
+ * TopComponent</a> is selected or
+ * its internal selection changes like in 
+ * <a href="@org-openide-explorer@/org/openide/explorer/ExplorerUtils.html">explorer</a>) 
+ * the overriden method {@link #enable}
+ * is called and state of the action is updated
+ * according to the result. When the action is performed, the subclasses are
+ * notified by a call to their {@link performAction(Node[])} where they
+ * can perform their operation on the currently selected array of nodes.
+ *
+ * <p><strong>Note:</strong> if your action involves getting cookies
+ * from nodes, which in many cases is the correct design, please use
+ * <a href="CookieAction.html">CookieAction</a> instead, as that permits sensitivity to cookies
+ * and also listens to changes in supplied cookies.
+ */
 public abstract class NodeAction extends CallableSystemAction implements ContextAwareAction {
     private static final long serialVersionUID = -5672895970450115226L;
 
