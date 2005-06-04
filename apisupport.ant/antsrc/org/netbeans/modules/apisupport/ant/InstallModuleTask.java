@@ -50,11 +50,7 @@ public class InstallModuleTask extends Task {
         if (action == null) throw new BuildException ("Required attribute: action", getLocation()); // NOI18N
         try {
             if (action.equals ("reinstall")) { // NOI18N
-                TestModuleDeployer deployer = (TestModuleDeployer)Lookup.getDefault().lookup(TestModuleDeployer.class);
-                if (deployer == null) {
-                    throw new BuildException("No test module deployer found. Probably you are trying to run <nbinstaller> from the command-line. It can only be run from inside the IDE."); // NOI18N
-                }
-                deployer.deployTestModule(module);
+                TestModuleDeployer.deployTestModule(module);
             } else {
                 throw new BuildException ("Unsupported action: " + action, getLocation()); // NOI18N
             }
