@@ -132,13 +132,12 @@ public class Main extends Object {
             }
         }
         
-        // XXX separate openide.jar and core*.jar into different classloaders
         BootClassLoader loader = new BootClassLoader(list, new ClassLoader[] {
             Main.class.getClassLoader()
         });
         
         String className = System.getProperty(
-            "netbeans.mainclass", "org.netbeans.core.Main" // NOI18N
+            "netbeans.mainclass", "org.netbeans.core.startup.Main" // NOI18N
         );
         
 	Class c = loader.loadClass(className);
@@ -197,6 +196,25 @@ public class Main extends Object {
         
         public BootClassLoader(List cp, ClassLoader[] parents) {
             super(cp, parents);
+            
+            
+            try {
+                java.util.jar.Manifest mf;
+                URL u = this.findResource ("META-INF/MANIFEST.MF"); // NOI18N
+                InputStream is = u.openStream();
+                mf = new java.util.jar.Manifest(is);
+                is.close();
+
+                String value = mf.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+                if (value == null) {
+                    System.err.println("Cannot set netbeans.buildnumber property no OpenIDE-Module-Implementation-Version found"); // NOI18N
+                } else {
+                    System.setProperty ("netbeans.buildnumber", value); // NOI18N
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            
         }
         
         /** Checks for new JARs in netbeans.user */
@@ -308,6 +326,13 @@ public class Main extends Object {
             }
 
             return allCLIs;
+        }
+
+        protected boolean isSpecialResource (String pkg) {
+            boolean retValue = super.isSpecialResource (pkg);
+            if (retValue) return true;
+
+            return false;
         }
     } // end of BootClassLoader
     

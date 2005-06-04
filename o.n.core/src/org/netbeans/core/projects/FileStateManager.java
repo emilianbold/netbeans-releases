@@ -13,6 +13,7 @@
 
 package org.netbeans.core.projects;
 
+import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.*;
 

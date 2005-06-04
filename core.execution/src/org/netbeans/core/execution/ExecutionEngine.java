@@ -168,7 +168,7 @@ public final class
     * @return class path to libraries
     */
     protected NbClassPath createLibraryPath() {
-        List l = NbTopManager.getUninitialized().getModuleSystem().getModuleJars();
+        List l = NbTopManager.getUninitialized().getModuleJars();
         return new NbClassPath ((File[]) l.toArray (new File[l.size ()]));
     }
 

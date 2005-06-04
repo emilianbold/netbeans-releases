@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: base.layer
+OpenIDE-Module-Layer: baselayer/layer.xml
+OpenIDE-Module-Name: Base Layer Module
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
+

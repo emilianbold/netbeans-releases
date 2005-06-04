@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.foo
 OpenIDE-Module-Name: Interface & Impl #1
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
 

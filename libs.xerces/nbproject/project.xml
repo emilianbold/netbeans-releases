@@ -17,14 +17,7 @@ Microsystems, Inc. All Rights Reserved.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.libs.xerces</code-name-base>
             <module-dependencies>
-                <dependency>
-                    <code-name-base>org.openide</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>3.17</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
+                </module-dependencies>
             <public-packages>
                 <subpackages>org</subpackages>
             </public-packages>

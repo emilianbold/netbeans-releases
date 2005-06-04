@@ -30,12 +30,9 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
 import org.netbeans.TopSecurityManager;
-import org.netbeans.core.NbTopManager;
 import org.netbeans.xtest.util.JNIKill;
 import org.netbeans.xtest.util.PNGEncoder;
 import org.openide.ErrorManager;
-import org.openide.LifecycleManager;
-import org.openide.loaders.DataObject;
 
 /**
  * Main part of XTest starter. Must not use anything outside lib/*.jar and lib/ext/*.jar.
@@ -103,6 +100,9 @@ public class Main extends Object {
     public static void main(String args[]) {
         
         System.out.println("!!!!! testlist is "+System.getProperty("testlist"));
+        
+        // use the console logging
+        System.setProperty ("netbeans.logger.console", "true");
                         
         // create the IDE flag file
         String workdir = System.getProperty("xtest.workdir");
@@ -143,7 +143,7 @@ public class Main extends Object {
         
         // do the expected stuff
         try {
-           org.netbeans.core.Main.main(args);
+           org.netbeans.core.startup.Main.main(args);
         }
         catch (Exception e) {
            e.printStackTrace();
@@ -194,6 +194,9 @@ public class Main extends Object {
         catch (RuntimeException ex) {
             ex.printStackTrace();
         }
+        catch (Error err) {
+            err.printStackTrace();
+        }
     }
     
     
@@ -226,9 +229,6 @@ public class Main extends Object {
     }
     
     private static void doTestPart() {
-        
-        NbTopManager.get();
-        
         final MainWithExecInterface handle;
         try {
             handle = (MainWithExecInterface)new WithExecClassLoader().loadClass("org.netbeans.xtest.plugin.ide.MainWithExec").newInstance();
@@ -323,18 +323,8 @@ public class Main extends Object {
                         System.out.println("Exception when terminating processes started from IDE");
                         e.printStackTrace();
                     }
-                    // discard all changes in modified files
-                    Object[] dobs = DataObject.getRegistry().getModifiedSet().toArray();
-                    if(dobs.length > 0) {
-                        errMan.log(ErrorManager.USER, new Date().toString() + ": discarding changes in unsaved files:");
-                        for(int i=0;i<dobs.length;i++) {
-                            DataObject obj = (DataObject)dobs[i];
-                            errMan.log(ErrorManager.USER, "        "+obj.getPrimaryFile().getPath());
-                            obj.setModified(false);
-                        }
-                    }
                     // exit IDE
-                    LifecycleManager.getDefault().exit();
+                    handle.exit ();
                 }
             });
             // try to exit nicely first
@@ -495,6 +485,7 @@ public class Main extends Object {
     public static interface MainWithExecInterface {
         void run() throws Exception;
         int terminateProcesses();
+        void exit();
         //void setRedirect();
     }
 

@@ -63,7 +63,7 @@ import org.openide.util.Lookup;
 public class NewPropertyPanelTest extends NbTestCase {
     
     static {
-        org.netbeans.core.NonGui.registerPropertyEditors();
+        ComboTest.registerPropertyEditors();
     }
     
     public NewPropertyPanelTest(String name) {

@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.settings.convertors;
 
-import org.netbeans.core.projects.SystemFileSystem;
+import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.loaders.*;

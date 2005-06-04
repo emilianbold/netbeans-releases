@@ -28,7 +28,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Common clean routine plus extra steps. -->
     <target name="cleantests" depends="xtest.cleantests">
-        <ant dir="unit/src/org/netbeans/core/modules" target="clean"/>
         <ant dir="unit/src/org/netbeans/core/projects" target="clean"/>
         <ant dir="unit/src/org/netbeans/core/lookup/data" target="clean"/>             
     </target> 

@@ -23,11 +23,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.JOptionPane;
 
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
@@ -92,26 +90,19 @@ public final class AutoUpgrade {
     }
     
     private static boolean showUpgradeDialog (final File source) {
-        /*
-        if (splash != null) {
-            Splash.hideSplash (splash);
-        }
-         */
-        
-        DialogDescriptor dd = new DialogDescriptor (
+        JOptionPane p = new JOptionPane (
             new AutoUpgradePanel (source.getAbsolutePath ()),
-            NbBundle.getMessage (AutoUpgrade.class, "MSG_Confirmation_Title"), // NOI18N
-            true,
-            NotifyDescriptor.YES_NO_OPTION,
-            NotifyDescriptor.NO_OPTION,
-            null
+            JOptionPane.QUESTION_MESSAGE,
+            JOptionPane.YES_NO_OPTION
         );
-        
-        
-        Dialog dlg = DialogDisplayer.getDefault ().createDialog (dd);
-        dlg.show ();
+        javax.swing.JDialog d = p.createDialog (
+            null,
+            NbBundle.getMessage (AutoUpgrade.class, "MSG_Confirmation_Title") // NOI18N
+        );
+        d.setModal (true);
+        d.show ();
           
-        return dd.getValue () == NotifyDescriptor.YES_OPTION;
+        return new Integer (JOptionPane.YES_OPTION).equals (p.getValue ());
     }
     
     private static void doUpgrade (File source, String oldVersion) 

@@ -2,5 +2,4 @@ Manifest-Version: 1.0
 OpenIDE-Module: test1
 OpenIDE-Module-Layer: test1/layer-with-ido.xml
 OpenIDE-Module-Name: IDOM test1
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
 

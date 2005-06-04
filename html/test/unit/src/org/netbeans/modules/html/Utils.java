@@ -51,7 +51,7 @@ public class Utils {
     private static final class Pool extends DataLoaderPool {
         
         protected java.util.Enumeration loaders () {
-            return new org.openide.util.enum.SingletonEnumeration (
+            return org.openide.util.Enumerations.singleton (
                 DataLoader.getLoader(HtmlLoader.class)
             );
         }

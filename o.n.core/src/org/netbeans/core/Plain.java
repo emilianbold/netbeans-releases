@@ -21,7 +21,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 
-import org.netbeans.core.modules.ModuleSystem;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.awt.StatusDisplayer;
 
 /** Default implementation of TopManager that is used when 

@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module: sfs_attr_test
 OpenIDE-Module-Layer: sfs_attr_test/layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
 

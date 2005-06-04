@@ -37,6 +37,11 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
+    <testbag testattribs="empty" executor="unit-executor" name="projectized">
+        <testset dir="unit/src">
+        </testset>
+    </testbag>
+    
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     

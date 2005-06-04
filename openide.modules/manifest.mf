@@ -1,5 +1,8 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.openide.modules
-OpenIDE-Module-Specification-Version: 6.2
 OpenIDE-Module-Localizing-Bundle: org/openide/modules/Bundle.properties
+Specification-Title: NetBeans
+OpenIDE-Module-Specification-Version: 6.2
 
+Name: /org/openide/modules/
+Package-Title: org.openide.modules

@@ -23,7 +23,7 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
 
-import org.netbeans.core.Splash;
+import org.netbeans.core.startup.Splash;
 
 /** The action that shows the AboutBox.
 *
@@ -36,7 +36,10 @@ public class AboutAction extends CallableSystemAction {
     }
 
     public void performAction () {
-        Splash.showSplashDialog ();
+        Splash.showSplashDialog (
+            org.openide.windows.WindowManager.getDefault ().getMainWindow (),
+            new org.netbeans.core.ui.ProductInformationPanel ()                
+        );
     }
     
     protected boolean asynchronous() {

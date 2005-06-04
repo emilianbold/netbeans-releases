@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 
@@ -28,17 +26,6 @@ import org.openide.util.NbBundle;
  */
 final class AutoUpgradePanel extends JPanel {
 
-    public static void main(String args[]) {
-        // display dialog
-        DialogDescriptor descriptor = new DialogDescriptor (
-            new AutoUpgradePanel("<directory>"), // NOI18N
-            bundle.getString("MSG_Confirmation_Title") // NOI18N
-        );
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.show();
-        dialog.dispose();
-    }
-    
     String source;
 
     /** Creates new form UpgradePanel */
@@ -46,7 +33,6 @@ final class AutoUpgradePanel extends JPanel {
         this.source = directory;
         initComponents();
         initAccessibility(); 
-        
     }
 
     /** Remove a listener to changes of the panel's validity.

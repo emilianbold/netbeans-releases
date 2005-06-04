@@ -109,14 +109,14 @@ public final class NbErrorManager extends ErrorManager {
     private PrintStream getLogWriter () {
         synchronized (this) {
             if (logWriter != null) return logWriter;
+            // to prevent further initializations during TopLogging.getLogOutputStream method
+            logWriter = System.err;
         }
         
-        PrintStream pw = TopLogging.getLogOutputStream();
+        PrintStream pw = org.netbeans.core.startup.TopLogging.getLogOutputStream();
         
         synchronized (this) {
-            if (logWriter == null) {
-                logWriter = pw;
-            }
+            logWriter = pw;
             return logWriter;
         }
     }

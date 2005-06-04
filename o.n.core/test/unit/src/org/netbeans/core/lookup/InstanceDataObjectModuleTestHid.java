@@ -18,10 +18,10 @@ import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 
 import java.io.File;
-import org.netbeans.core.modules.Module;
-import org.netbeans.core.modules.ModuleManager;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
 import org.netbeans.core.NbTopManager;
-import org.netbeans.core.modules.ModuleHistory;
+import org.netbeans.core.startup.ModuleHistory;
 import org.openide.util.Lookup;
 import javax.swing.Action;
 import java.util.Iterator;
@@ -65,9 +65,9 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     
     
     protected void setUp() throws Exception {
-        NbTopManager nb = NbTopManager.get ();
-        nb.register (new ErrManager ());
-        mgr = nb.getModuleSystem().getManager();
+        mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
+        org.netbeans.core.startup.MainLookup.register (new ErrManager ());
+        mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         final File jar1 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test1.jar"));
         final File jar2 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test2.jar"));
         try {

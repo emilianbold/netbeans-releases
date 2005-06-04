@@ -272,13 +272,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Getter for the environment that was provided in the constructor.
     * @return the environment
     */
-    final Env env() {
+    final Env cesEnv() {
         return (Env) env;
     }
 
     /** Getter for the kit that loaded the document.
     */
-    final EditorKit kit() {
+    final EditorKit cesKit() {
         return kit;
     }
 
@@ -715,7 +715,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     *   otherwise <code>false</code>
     */
     public boolean isModified() {
-        return env().isModified();
+        return cesEnv().isModified();
     }
 
     /** Save the document in this thread.
@@ -724,7 +724,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     public void saveDocument() throws IOException {
         // #17714: Don't try to save unmodified doc.
-        if (!env().isModified()) {
+        if (!cesEnv().isModified()) {
             return;
         }
 
@@ -737,7 +737,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             // asking for time should if necessary refresh the underlaying object
             // (eg. FileObject) and this change can result in document reload task
             // which will set externallyModified to true
-            env().getTime();
+            cesEnv().getTime();
 
             if (externallyModified) {
                 // save operation must be cancelled now. The user get message box
@@ -762,7 +762,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     try {
                         lastSaveTime = -1;
-                        os = new BufferedOutputStream(env().outputStream());
+                        os = new BufferedOutputStream(cesEnv().outputStream());
                         saveFromKitToStream(myDoc, kit, os);
 
                         os.close(); // performs firing
@@ -974,7 +974,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @return <code>true</code> if everything can be closed
     */
     protected boolean canClose() {
-        if (env().isModified()) {
+        if (cesEnv().isModified()) {
             String msg = messageSave();
 
             ResourceBundle bundle = NbBundle.getBundle(CloneableEditorSupport.class);
@@ -1156,7 +1156,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         StyledDocument doc = getDocument();
 
         if (doc == null) {
-            return env().inputStream();
+            return cesEnv().inputStream();
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1355,7 +1355,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         if (mimeType != null) {
             kit = JEditorPane.createEditorKitForContentType(mimeType);
         } else {
-            String defaultMIMEType = env().getMimeType();
+            String defaultMIMEType = cesEnv().getMimeType();
             kit = JEditorPane.createEditorKitForContentType(defaultMIMEType);
         }
 
@@ -1394,7 +1394,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     protected StyledDocument createStyledDocument(EditorKit kit) {
         StyledDocument sd = createNetBeansDocument(kit.createDefaultDocument());
-        sd.putProperty("mimeType", (mimeType != null) ? mimeType : env().getMimeType()); // NOI18N
+        sd.putProperty("mimeType", (mimeType != null) ? mimeType : cesEnv().getMimeType()); // NOI18N
 
         return sd;
     }
@@ -1664,7 +1664,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         Throwable aProblem = null;
 
         try {
-            InputStream is = new BufferedInputStream(env().inputStream());
+            InputStream is = new BufferedInputStream(cesEnv().inputStream());
 
             try {
                 // read the document
@@ -1746,7 +1746,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         prepareTask = null;
 
         // notifies the support that 
-        env().removePropertyChangeListener(getListener());
+        cesEnv().removePropertyChangeListener(getListener());
         callNotifyUnmodified();
 
         if (doc != null) {

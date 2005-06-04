@@ -5,8 +5,7 @@ OpenIDE-Module-Install: org/netbeans/modules/xml/tax/TAXModuleInstall.class
 OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Implementation-Version: 4
 OpenIDE-Module-Layer: org/netbeans/modules/xml/tax/resources/mf-layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.37
-OpenIDE-Module-Module-Dependencies: org.netbeans.api.xml/1 > 1.10, org.netbeans.modules.xml.core/2 = 4, org.netbeans.libs.xerces/1 = 2.6.2
+OpenIDE-Module-Module-Dependencies: org.netbeans.api.xml/1 > 1.10, org.netbeans.modules.xml.core/2 = 4, org.netbeans.libs.xerces/1 = 2.6.2, org.openide.util > 6.2, org.openide.filesystems > 6.2, org.openide.modules > 6.2, org.openide.awt > 6.2, org.openide.nodes > 6.2, org.openide.explorer > 6.2, org.openide.dialogs > 6.2, org.openide.loaders > 5.3, org.openide.text > 6.2
 Class-Path: ext/tax.jar
 OpenIDE-Module-Requires: org.openide.modules.InstalledFileLocator
 OpenIDE-Module-Public-Packages: -

@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.core.modules.ManifestSection;
+import org.netbeans.core.startup.ManifestSection;
 import org.openide.ErrorManager;
 import org.openide.actions.MoveDownAction;
 import org.openide.actions.MoveUpAction;

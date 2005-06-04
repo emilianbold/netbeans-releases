@@ -23,14 +23,7 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>2-3</release-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>3.17</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
+                </module-dependencies>
             <public-packages/>
         </data>
     </configuration>

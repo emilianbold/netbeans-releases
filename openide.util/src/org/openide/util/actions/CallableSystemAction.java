@@ -43,14 +43,9 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
      * {@link #asynchronous} was not overridden to return false.
      */
     private static final Set warnedAsynchronousActions = new WeakSet(); // Set<Class>
-    private static RequestProcessor RP = new RequestProcessor("Module-Actions", Integer.MAX_VALUE); // NOI18N
     private static final boolean DEFAULT_ASYNCH = !Boolean.getBoolean(
             "org.openide.util.actions.CallableSystemAction.synchronousByDefault"
         );
-
-    /** variables for invokeAction methods */
-    private static Object invokeInstance;
-    private static Object invokeAction;
 
     /* Returns a JMenuItem that presents the Action, that implements this
     * interface, in a MenuBar.
@@ -92,8 +87,9 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
     */
     public void actionPerformed(ActionEvent ev) {
         if (isEnabled()) {
-            doPerformAction(
-                new ActionRunnable(ev) {
+            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(
+                this,
+                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(ev, this, asynchronous()) {
                     public void run() {
                         performAction();
                     }
@@ -102,24 +98,6 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
         } else {
             // Should not normally happen.
             Toolkit.getDefaultToolkit().beep();
-        }
-    }
-
-    final void doPerformAction(final ActionRunnable r) {
-        assert EventQueue.isDispatchThread() : "Action " + getClass().getName() +
-        " may not be invoked from the thread " + Thread.currentThread().getName() +
-        ", only the event queue: http://www.netbeans.org/download/dev/javadoc/OpenAPIs/apichanges.html#actions-event-thread";
-
-        if (asynchronous() && !r.needsToBeSynchronous()) {
-            Runnable r2 = new Runnable() {
-                    public void run() {
-                        r.doRun();
-                    }
-                };
-
-            RP.post(r2);
-        } else {
-            r.run();
         }
     }
 
@@ -152,136 +130,4 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
 
         return DEFAULT_ASYNCH;
     }
-
-    /** Call ActionManager.invokeAction method.
-     */
-    private static void invokeAction(javax.swing.Action action, java.awt.event.ActionEvent ev) {
-        if (invokeAction == null) {
-            ClassLoader loader = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
-
-            if (loader == null) {
-                loader = CallableSystemAction.class.getClassLoader();
-            }
-
-            try {
-                Class clazz = Class.forName("org.openide.actions.ActionManager", true, loader);
-                invokeInstance = org.openide.util.Lookup.getDefault().lookup(clazz);
-
-                if (invokeInstance != null) {
-                    invokeAction = clazz.getMethod(
-                            "invokeAction", new Class[] { javax.swing.Action.class, java.awt.event.ActionEvent.class }
-                        );
-                } else {
-                    // dummy value
-                    invokeAction = new Object();
-                }
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-
-                // some empty value
-                invokeAction = new Object();
-            }
-        }
-
-        if (invokeAction instanceof java.lang.reflect.Method) {
-            java.lang.reflect.Method m = (java.lang.reflect.Method) invokeAction;
-
-            try {
-                m.invoke(invokeInstance, new Object[] { action, ev });
-
-                return;
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-
-        action.actionPerformed(ev);
-    }
-
-    /**
-     * Adds action to <code>runningActions</code> map using runnable as a key.
-     * @param r the block being run
-     * /
-    private void addRunningAction(Runnable r) {
-        synchronized (runningActions) {
-            runningActions.put(r, this);
-        }
-    }
-
-    /**
-     * Removes action from <code>runningActions</code> map.
-     * @param r the block just run
-     * /
-    private void removeRunningAction(Runnable r) {
-        synchronized (runningActions) {
-            runningActions.remove(r);
-        }
-    }
-
-    /** Gets collection of currently running actions. * /
-    public static Collection getRunningActions() {
-        synchronized (runningActions) {
-            return new HashSet(runningActions.values());
-        }
-    }
-
-    /** Tries to stop all processors executing currently running
-     * action tasks. * /
-    public static void killRunningActions() {
-        RP.stop();
-    }
-
-    private static void fireRunningActionsChange() {
-        // whatever
-    }
-     */
-    /** Special class that can be passed to invokeAction and delegates
-     * to correct values
-     */
-    abstract class ActionRunnable implements javax.swing.Action {
-        private ActionEvent ev;
-
-        public ActionRunnable(ActionEvent ev) {
-            this.ev = ev;
-        }
-
-        public final boolean needsToBeSynchronous() {
-            return "waitFinished".equals(ev.getActionCommand()); // NOI18N
-        }
-
-        public final void doRun() {
-            invokeAction(this, ev);
-        }
-
-        protected abstract void run();
-
-        public final void actionPerformed(ActionEvent e) {
-            run();
-        }
-
-        public final void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-            throw new java.lang.UnsupportedOperationException();
-        }
-
-        public final Object getValue(String key) {
-            return CallableSystemAction.this.getValue(key);
-        }
-
-        public final boolean isEnabled() {
-            return CallableSystemAction.this.isEnabled();
-        }
-
-        public final void putValue(String key, Object value) {
-            throw new java.lang.UnsupportedOperationException();
-        }
-
-        public final void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-            throw new java.lang.UnsupportedOperationException();
-        }
-
-        public final void setEnabled(boolean b) {
-            throw new java.lang.UnsupportedOperationException();
-        }
-    }
-     // end of ActionRunnable
 }

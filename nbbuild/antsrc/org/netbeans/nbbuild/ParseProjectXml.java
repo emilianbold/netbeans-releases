@@ -549,6 +549,43 @@ public final class ParseProjectXml extends Task {
             }
             Element cnbEl = XMLUtil.findElement(dep, "code-name-base", NBM_NS);
             String cnb = XMLUtil.findText(cnbEl);
+            
+            if ("org.openide".equals (cnb)) {
+                // XXX special handling of splited openide, can be removed
+                // after 4.2 release or when apisupport improved
+                getProject ().log ("Do not depend on org.openide anymore, depend on its libraries. Update " + getProjectFile (), getProject().MSG_ERR);
+                
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.util").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.util.enumerations").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.filesystems").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.modules").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.awt").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.dialogs").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.loaders").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.nodes").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.explorer").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.actions").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.text").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.windows").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.options").getAbsolutePath ());
+                cp.append(':');
+                cp.append (computeClasspathModuleLocation (modules, "org.openide.compat").getAbsolutePath ());
+                
+                continue;
+            }
+                        
             cp.append(computeClasspathModuleLocation(modules, cnb).getAbsolutePath());
             // #52354: look for <class-path-extension>s in dependent modules.
             ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);

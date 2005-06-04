@@ -81,6 +81,10 @@ public class JarWithModuleAttributes extends Jar {
             if (moduleDeps != null) {
                 added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Module-Dependencies", moduleDeps));
             }
+            if (!"lib".equals (getProject().getProperty("module.jar.dir"))) {
+                // modules in lib cannot request this token
+                added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Requires", "org.openide.modules.ModuleFormat1"));
+            }
             // Check to see if OpenIDE-Module-Implementation-Version is already defined.
             String implVers;
             String myself;

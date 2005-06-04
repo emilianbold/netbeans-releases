@@ -21,58 +21,350 @@ Microsystems, Inc. All Rights Reserved.
     <target name="release" depends="init">
         <copy file="release/lib/ide.ks" todir="${netbeans.dest.dir}/${cluster.dir}/core"/>
     </target>
+  
+  <selector id="boot-modules" >
+    <or>
+        <filename name="**/Util.java"/>
+        <filename name="**/Module.java"/>
+        <filename name="**/Events.java"/>
+        <filename name="**/ChangeFirer.java"/>
+        <filename name="**/ModuleManager.java"/>
+        <filename name="**/ModuleInstaller.java"/>
+        <filename name="**/DuplicateException.java"/>
+        <filename name="**/InvalidException.java"/>
+    </or>
+  </selector>
 
-<!-- XXX may be obsolete:
-  <target name="lib-modules" description="Create a standalone Modules API and implementation." depends="init">
-    <mkdir dir="modules-lib/src"/>
-    <copy todir="modules-lib/src">
-      <fileset dir="../openide/src">
-        <include name="org/openide/modules/SpecificationVersion.java"/>
-        <include name="org/openide/modules/ModuleInfo.java"/>
-        <include name="org/openide/modules/ModuleInstall.java"/>
-        <include name="org/openide/modules/Dependency.java"/>
+  <selector id="nb-modules" >
+        <and>
+            <or>
+                <!--   
+                <filename name="**/*.properties"/>
+                -->
+                <filename name="META-INF/services/org.openide.filesystems.Repository"/>
+                <filename name="META-INF/services/org.openide.filesystems.URLMapper"/>
+                <filename name="META-INF/services/java.net.URLStreamHandlerFactory"/>
+                <filename name="META-INF/services/org.openide.util.Lookup"/>
+                <filename name="META-INF/services/org.openide.modules.InstalledFileLocator"/>
+            </or>
+            <not>
+                <selector refid="boot-modules" />
+            </not>
+        </and>
+  </selector>
+        
+  <target name="clean-startup" description="Moves the core/startup classes back">
+    <move todir="src">
+      <fileset dir="startup/src">
+            <selector refid="nb-modules" />
       </fileset>
-      <fileset dir="src">
-        <include name="org/netbeans/core/modules/ChangeFirer.java"/>
-        <include name="org/netbeans/core/modules/DuplicateException.java"/>
-        <include name="org/netbeans/core/modules/Events.java"/>
-        <include name="org/netbeans/core/modules/InvalidException.java"/>
-        <include name="org/netbeans/core/modules/JarClassLoader.java"/>
-        <include name="org/netbeans/core/modules/ManifestSection.java"/>
-        <include name="org/netbeans/core/modules/Module.java"/>
-        <include name="org/netbeans/core/modules/ModuleInstaller.java"/>
-        <include name="org/netbeans/core/modules/ModuleManager.java"/>
-        <include name="org/netbeans/core/modules/ProxyClassLoader.java"/>
-        <include name="org/netbeans/core/modules/Util.java"/>
+    </move>
+    <move todir="src/org/netbeans/core/resources" >
+      <fileset dir="startup/src/org/netbeans/core/startup">
+        <filename name="splash.gif" />
       </fileset>
-    </copy>
-    <ant dir="../openide" target="lib-util"/>
-    <javac srcdir="modules-lib/src" destdir="modules-lib/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <exclude name="org/netbeans/core/modules/ManifestSection.java"/>
-      <classpath>
-        <pathelement location="../openide/netbeans/lib/openide-util.jar"/>
-      </classpath>
-    </javac>
-    <ant dir="../openide" target="jars"/>
-    <javac srcdir="modules-lib/src" destdir="modules-lib/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/netbeans/core/modules/ManifestSection.java"/>
-      <classpath>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-      </classpath>
-    </javac>
-    <tstamp>
-      <format property="buildnumber-default" pattern="yyyyMMddHHmm"/>
-    </tstamp>
-    <property name="buildnumber" value="${buildnumber-default}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest-modules.mf" tofile="modules-lib/manifest-modules-subst.mf" filtering="on"/>
-    <jar jarfile="modules-lib/modules.jar" manifest="modules-lib/manifest-modules-subst.mf">
-      <fileset dir="modules-lib/src">
-        <exclude name="**/*.java"/>
-        <exclude name="org/netbeans/core/modules/ManifestSection$*Section*.class"/>
+    </move>
+    <move todir="src/org/netbeans/core" >
+      <fileset dir="startup/src/org/netbeans/core/startup">
+        <or>
+            <filename name="Main.java" />
+            <filename name="MainLookup.java" />
+            <filename name="CLIOptions.java" />
+            <filename name="TopThreadGroup.java" />
+            <filename name="TopLogging.java" />
+            <filename name="NbRepository.java" />
+            <filename name="NbURLStreamHandlerFactory.java" />
+            <filename name="Splash.java" />
+        </or>
       </fileset>
-    </jar>
+    </move>
+    <move todir="src/org/netbeans/core/perftool" >
+      <fileset dir="startup/src/org/netbeans/core/startup">
+        <or>
+            <filename name="StartLog.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="src/org/netbeans/core/xml" >
+      <fileset dir="startup/src/org/netbeans/core/startup">
+        <or>
+            <filename name="*LazyIterator*.java" />
+            <filename name="*Factory*.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="src/org/netbeans/core/projects" >
+      <fileset dir="startup/src/org/netbeans/core/startup/layers">
+        <or>
+            <filename name="SessionManager.java" />
+            <filename name="LocalFileSystemEx.java" />
+            <filename name="SystemFileSystem.java" />
+            <filename name="FixedFileSystem.java" />
+            <filename name="ModuleLayeredFileSystem.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="src/org/netbeans/core/jse141urlpatch" >
+      <fileset dir="startup/src/org/netbeans/core/startup/layers">
+        <or>
+            <filename name="FileURLStreamHandler.java" />
+            <filename name="JarURLConnection.java" />
+            <filename name="JarURLStreamHandler.java" />
+            <filename name="PatchedURLStreamHandlerFactory.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="src/org/netbeans/core/filesystems" >
+      <fileset dir="startup/src/org/netbeans/core/startup/layers">
+        <or>
+            <filename name="*URLMapper*.java" />
+            <filename name="*URLStreamHandlerFactory*.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="src/org/netbeans/core/projects/cache" >
+      <fileset dir="startup/src/org/netbeans/core/startup/layers">
+        <or>
+            <filename name="BinaryFS.java" />
+            <filename name="BinaryCacheManager.java" />
+            <filename name="LayerCacheManager.java" />
+            <filename name="NonCacheManager.java" />
+            <filename name="ParsingLayerCacheManager.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="src/org/netbeans/core/modules/" >
+      <fileset dir="startup/src/org/netbeans/core/startup">
+        <or>
+            <filename name="AutomaticDependencies.java" />
+            <filename name="CoreBridge.java" />
+            <filename name="InstalledFileLocatorImpl.java" />
+            <filename name="ManifestSection.java" />
+            <filename name="module-*.dtd" />
+            <filename name="ModuleHistory.java" />
+            <filename name="ModuleList.java" />
+            <filename name="ModuleSystem.java" />
+            <filename name="NbEvents.java" />
+            <filename name="NbInstaller.java" />
+            <filename name="NbProblemDisplayer.java" />
+            <filename name="package.html" />
+            <filename name="RunLevel.java" />
+            <filename name="TestModuleDeployer.java" />
+        </or>
+      </fileset>
+    </move>
+    <!-- moving tests back -->
+    <move todir="test/unit/src/org/netbeans/core" >
+      <fileset dir="startup/test/unit/src/org/netbeans/core/startup/">
+        <or>
+            <filename name="NbURLStreamHandlerFactoryTest.java" />
+            <filename name="NonGuiHandleImportOfUserDirTest.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="test/unit/src/org/netbeans/core/modules" >
+      <fileset dir="startup/test/unit/src/org/netbeans/core/startup/">
+        <or>
+            <filename name="ModuleManagerTest.java" />
+            <filename name="ModuleListTest.java" />
+            <filename name="NbInstallerTest*.java" />
+            <filename name="PlatformDependencySatisfiedTest.java" />
+            <filename name="SetupHid.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="test/unit/src/org/netbeans/core/modules/jars" >
+      <fileset dir="startup/test/unit/src/org/netbeans/core/startup/jars">
+        <or>
+            <filename name="**/*.java" />
+            <filename name="**/*.mf" />
+            <filename name="**/*.xml" />
+            <filename name="**/*.properties" />
+            <filename name="**/.cvsignore" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="test/unit/src/org/netbeans/core/modules/" >
+      <fileset dir="startup/test/unit/src/org/netbeans/core/startup/">
+        <or>
+            <filename name="build.xml" />
+        </or>
+      </fileset>
+    </move>
+    
+    
+    
+    
+    
   </target>
--->
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <target name="lib-startup" description="Moves Nb modules API to core/startup">
+    <move todir="startup/src">
+      <fileset dir="src">
+            <selector refid="nb-modules" />
+      </fileset>
+    </move>
+    <move todir="startup/src/org/netbeans/core/startup" >
+      <fileset dir="src/org/netbeans/core/resources">
+        <filename name="splash.gif" />
+      </fileset>
+    </move>
+    <move todir="startup/src/org/netbeans/core/startup" >
+      <fileset dir="src/org/netbeans/core">
+        <or>
+            <filename name="Main.java" />
+            <filename name="MainLookup.java" />
+            <filename name="CLIOptions.java" />
+            <filename name="TopThreadGroup.java" />
+            <filename name="TopLogging.java" />
+            <filename name="NbRepository.java" />
+            <filename name="NbURLStreamHandlerFactory.java" />
+            <filename name="Splash.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="startup/src/org/netbeans/core/startup" >
+      <fileset dir="src/org/netbeans/core/perftool">
+        <or>
+            <filename name="StartLog.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="startup/src/org/netbeans/core/startup" >
+      <fileset dir="src/org/netbeans/core/xml">
+        <or>
+            <filename name="*LazyIterator*.java" />
+            <filename name="*Factory*.java" />
+        </or>
+      </fileset>
+    </move>
+    <mkdir dir="startup/src/org/netbeans/core/startup/layers" />
+    <move todir="startup/src/org/netbeans/core/startup/layers" >
+      <fileset dir="src/org/netbeans/core/projects">
+        <or>
+            <filename name="SessionManager.java" />
+            <filename name="LocalFileSystemEx.java" />
+            <filename name="SystemFileSystem.java" />
+            <filename name="FixedFileSystem.java" />
+            <filename name="ModuleLayeredFileSystem.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="startup/src/org/netbeans/core/startup/layers" >
+      <fileset dir="src/org/netbeans/core/filesystems">
+        <or>
+            <filename name="*URLMapper*.java" />
+            <filename name="*URLStreamHandlerFactory*.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="startup/src/org/netbeans/core/startup/layers" >
+      <fileset dir="src/org/netbeans/core/jse141urlpatch">
+        <or>
+            <filename name="FileURLStreamHandler.java" />
+            <filename name="JarURLConnection.java" />
+            <filename name="JarURLStreamHandler.java" />
+            <filename name="PatchedURLStreamHandlerFactory.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="startup/src/org/netbeans/core/startup/layers" >
+      <fileset dir="src/org/netbeans/core/projects/cache">
+        <or>
+            <filename name="BinaryFS.java" />
+            <filename name="BinaryCacheManager.java" />
+            <filename name="LayerCacheManager.java" />
+            <filename name="NonCacheManager.java" />
+            <filename name="ParsingLayerCacheManager.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="startup/src/org/netbeans/core/startup/" >
+      <fileset dir="src/org/netbeans/core/modules">
+        <or>
+            <filename name="AutomaticDependencies.java" />
+            <filename name="CoreBridge.java" />
+            <filename name="InstalledFileLocatorImpl.java" />
+            <filename name="ManifestSection.java" />
+            <filename name="module-*.dtd" />
+            <filename name="ModuleHistory.java" />
+            <filename name="ModuleList.java" />
+            <filename name="ModuleSystem.java" />
+            <filename name="NbEvents.java" />
+            <filename name="NbInstaller.java" />
+            <filename name="NbProblemDisplayer.java" />
+            <filename name="package.html" />
+            <filename name="RunLevel.java" />
+            <filename name="TestModuleDeployer.java" />
+        </or>
+      </fileset>
+    </move>
+    
+    <!-- moving tests -->
+    <move todir="startup/test/unit/src/org/netbeans/core/startup/" >
+      <fileset dir="test/unit/src/org/netbeans/core">
+        <or>
+            <filename name="NbURLStreamHandlerFactoryTest.java" />
+            <filename name="NonGuiHandleImportOfUserDirTest.java" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="startup/test/unit/src/org/netbeans/core/startup/" >
+      <fileset dir="test/unit/src/org/netbeans/core/modules">
+        <or>
+            <filename name="ModuleManagerTest.java" />
+            <filename name="ModuleListTest.java" />
+            <filename name="NbInstallerTest*.java" />
+            <filename name="PlatformDependencySatisfiedTest.java" />
+            <filename name="SetupHid.java" />
+        </or>
+      </fileset>
+    </move>
+    <mkdir dir="startup/test/unit/src/org/netbeans/core/startup/jars" />
+    <move todir="startup/test/unit/src/org/netbeans/core/startup/jars" >
+      <fileset dir="test/unit/src/org/netbeans/core/modules/jars">
+        <or>
+            <filename name="**/*.java" />
+            <filename name="**/*.mf" />
+            <filename name="**/*.xml" />
+            <filename name="**/*.properties" />
+            <filename name="**/.cvsignore" />
+        </or>
+      </fileset>
+    </move>
+    <move todir="startup/test/unit/src/org/netbeans/core/startup/" >
+      <fileset dir="test/unit/src/org/netbeans/core/modules/">
+        <or>
+            <filename name="build.xml" />
+        </or>
+      </fileset>
+    </move>
+  </target>
 
+  <target name="clean-modules" description="Moves the moved classes back">
+    <move todir="src/org/netbeans/core/modules">
+      <fileset dir="bootstrap/src/org/netbeans">
+        <selector refid="boot-modules" />
+      </fileset>
+    </move>
+  </target>
+  <target name="lib-modules" description="Moves independent modules API to core/bootstrap">
+    <move todir="bootstrap/src/org/netbeans">
+      <fileset dir="src/org/netbeans/core/modules">
+        <selector refid="boot-modules" />
+      </fileset>
+    </move>
+  </target>
 </project>

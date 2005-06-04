@@ -3,5 +3,4 @@ OpenIDE-Module: org.netbeans.modules.ide.branding/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ide/branding/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Public-Packages: -
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.34
 

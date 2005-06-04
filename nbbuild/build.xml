@@ -286,6 +286,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <!-- Platform modules: -->
   <target name="all-openide" depends="init,all-openide/awt,all-openide/util,all-openide/nodes,all-openide/windows,all-openide/text,all-openide/explorer,all-openide/fs,all-openide/actions,all-openide/compat,all-openide/util/enum,all-openide/modules">
+    <!--
     <echo message="Building Open APIs..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -293,6 +294,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../openide" target="netbeans"/>
+    -->
   </target>
   <target name="all-openide/loaders" depends="all-openide">
     <echo message="Building openide/loaders..."/>
@@ -321,7 +323,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../openide/io" target="netbeans"/>
   </target>
-  <target name="all-core/bootstrap" depends="init">
+  <target name="all-core/bootstrap" depends="all-openide/modules,all-openide/util,init">
     <echo message="Building module core/bootstrap..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -330,7 +332,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../core/bootstrap" target="netbeans"/>
   </target>
-  <target name="all-core" depends="all-openide,all-openide/loaders,all-core/bootstrap,all-core/swing/plaf">
+  <target name="all-core/startup" depends="all-core/bootstrap,all-openide/fs,all-openide/modules,all-openide/util,init">
+    <echo message="Building module core/startup..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../core/startup" target="netbeans"/>
+  </target>
+  <target name="all-core" depends="all-openide,all-openide/loaders,all-core/bootstrap,all-core/startup,all-core/swing/plaf">
     <echo message="Building IDE core implementation..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">

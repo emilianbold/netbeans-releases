@@ -25,7 +25,7 @@ import org.openide.util.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
-import org.netbeans.core.modules.ManifestSection;
+import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.core.ui.LookupNode;
 
 /** This object represents environment settings in the Corona system.

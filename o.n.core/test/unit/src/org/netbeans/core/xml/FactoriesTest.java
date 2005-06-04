@@ -19,6 +19,8 @@ import java.util.*;
 import javax.xml.parsers.*;
 import javax.xml.parsers.SAXParserFactory;
 import junit.framework.*;
+import org.netbeans.core.startup.DOMFactoryImpl;
+import org.netbeans.core.startup.SAXFactoryImpl;
 import org.netbeans.junit.*;
 import org.openide.util.*;
 import org.xml.sax.*;
@@ -59,6 +61,17 @@ public class FactoriesTest extends NbTestCase {
     protected void setUp () throws Exception {
         System.setProperty("org.openide.util.Lookup", "org.netbeans.core.xml.FactoriesTest$Lkp");
         assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
+        
+        SAXParserFactory sax = SAXParserFactory.newInstance ();
+        if (!(sax instanceof SAXFactoryImpl)) {
+            fail ("We expect to see our factory, but was: " + sax);
+        }
+        
+        DocumentBuilderFactory dom = DocumentBuilderFactory.newInstance ();
+        if (!(dom instanceof DOMFactoryImpl)) {
+            fail ("We expect to see our factory, but was: " + dom);
+        }
+        
     }
 
     

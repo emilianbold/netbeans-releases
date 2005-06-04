@@ -705,7 +705,13 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
                         action = SystemAction.get(Class.forName(actcn));
                         ((DatabaseAction)action).setName(locname);
                         ((DatabaseAction)action).setNode(actnode);
-                    } else action = SystemAction.get(Class.forName(actcn));
+                    } else {
+                        ClassLoader l = (ClassLoader)org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+                        if (l == null) {
+                            l = getClass().getClassLoader();
+                        }
+                        action = SystemAction.get(Class.forName(actcn, true, l));
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();

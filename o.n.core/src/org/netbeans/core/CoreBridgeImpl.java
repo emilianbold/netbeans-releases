@@ -12,37 +12,20 @@
  */
 package org.netbeans.core;
 
-import org.netbeans.core.modules.ManifestSection;
+import org.netbeans.core.startup.Main;
+import org.netbeans.core.startup.ManifestSection;
 
 /** Implements necessary callbacks from module system.
  *
  * @author Jaroslav Tulach
  */
-public final class CoreBridgeImpl extends org.netbeans.core.modules.CoreBridge {
+public final class CoreBridgeImpl extends org.netbeans.core.startup.CoreBridge {
     protected void attachToCategory (Object category) {
         ModuleActions.attachTo(category);
     }
-    protected org.netbeans.core.modules.ModuleSystem getModuleSystem () {
-        return NbTopManager.get().getModuleSystem();
-    }
-    protected void systemClassLoaderChanged (ClassLoader l) {
-        NbTopManager.Lkp.systemClassLoaderChanged(l);
-    }
-    
-    protected void moduleLookupReady (org.openide.util.Lookup l) {
-        NbTopManager.Lkp.moduleLookupReady(l);
-    }
-    
-    protected void moduleClassLoadersUp () {
-        NbTopManager.Lkp.moduleClassLoadersUp();
-    }
-    
-    protected void modulesClassPathInitialized () {
-        NbTopManager.Lkp.modulesClassPathInitialized();
-    }
     
     protected void loadDefaultSection (
-        org.netbeans.core.modules.ManifestSection s, 
+        org.netbeans.core.startup.ManifestSection s, 
         org.openide.util.lookup.InstanceContent.Convertor convertor, 
         boolean load
     ) {
@@ -84,6 +67,10 @@ public final class CoreBridgeImpl extends org.netbeans.core.modules.CoreBridge {
             LoaderPoolNode.endUpdates();
         }
     }
+    
+    public void setStatusText (String status) {
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(status);
+    }
 
     protected void addToSplashMaxSteps (int cnt) {
         Main.addToSplashMaxSteps (cnt);
@@ -91,11 +78,15 @@ public final class CoreBridgeImpl extends org.netbeans.core.modules.CoreBridge {
     protected void incrementSplashProgressBar () {
         Main.incrementSplashProgressBar ();
     }
-    
-    protected Layer getUserModuleLayer () {
-        return org.netbeans.core.projects.ModuleLayeredFileSystem.getUserModuleLayer();
+
+    public void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL) {
+          org.netbeans.swing.plaf.Startup.run(uiClass, uiFontSize, themeURL);
     }
-    protected Layer getInstallationModuleLayer () {
-        return org.netbeans.core.projects.ModuleLayeredFileSystem.getInstallationModuleLayer();
+
+    public org.openide.util.Lookup lookupCacheLoad () {
+        return LookupCache.load ();
+    }
+    public void lookupCacheStore (org.openide.util.Lookup l) throws java.io.IOException {
+        LookupCache.store (l);
     }
 }

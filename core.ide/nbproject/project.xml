@@ -24,13 +24,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>4.37</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <!-- needed as we override its files -->
                     <code-name-base>org.netbeans.core.ui</code-name-base>
                     <run-dependency>

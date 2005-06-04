@@ -20,6 +20,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
 import java.util.StringTokenizer;
+import org.netbeans.core.startup.layers.NbinstURLMapper;
+import org.netbeans.core.startup.layers.NbinstURLStreamHandlerFactory;
 import org.openide.filesystems.*;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;

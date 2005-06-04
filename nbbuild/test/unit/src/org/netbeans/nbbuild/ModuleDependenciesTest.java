@@ -325,7 +325,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         
         Manifest m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-IDE-Dependencies", "IDE/1 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "org.openide/1 > 4.17");
         File withoutPkgs = generateJar (new String[] { "notneeded" }, m);
         
         m = createManifest ();
@@ -368,11 +368,9 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("Result generated", output.exists ());
         
         String res = readFile (output);
-        int x = res.indexOf ("MODULE");
-        assertEquals ("The file starts with MODULE", 0, x);
         int y = res.indexOf ("MODULE", 1);
         if (y <= 0) {
-            fail ("There is another module: " + y);
+            fail ("There is another module: " + y + " res: " + res);
         }
         assertEquals ("No other", -1, res.indexOf ("MODULE", y + 1));
 
@@ -404,7 +402,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         
         Manifest m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-IDE-Dependencies", "IDE/1 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "org.openide/1 > 4.17");
         File withoutPkgs = generateJar (new String[] { "notneeded" }, m);
         
         m = createManifest ();
@@ -451,7 +449,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("The file starts with MODULE", 0, x);
         int y = res.indexOf ("MODULE", 1);
         if (y <= 0) {
-            fail ("There is another module: " + y);
+            fail ("There is another module: " + y + " res:\n" + res);
         }
         assertEquals ("No other", -1, res.indexOf ("MODULE", y + 1));
 

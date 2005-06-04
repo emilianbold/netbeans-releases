@@ -22,9 +22,11 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
     
-    <target name="buildtests" >
+    <target name="build-data" >
         <ant dir="unit/src/org/openide/util/data"/>
-        <antcall target="xtest.buildtests" />
+    </target>
+    
+    <target name="buildtests" depends="build-data,xtest.buildtests" >
     </target>
     
     <target name="cleantests" depends="xtest.cleantests" >

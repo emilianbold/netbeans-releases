@@ -34,6 +34,7 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 import junit.framework.*;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.*;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
@@ -56,8 +57,7 @@ public class ShortcutsFolderTest extends NbTestCase {
     static {
         // register lookup
         System.setProperty("org.openide.util.Lookup", "org.netbeans.core.ShortcutsFolderTest$LKP");
-        // we need to work with nbfs: protocol
-        java.net.URL.setURLStreamHandlerFactory(new NbURLStreamHandlerFactory.Standard ());
+        Main.initializeURLFactory ();
     }
     
     /** Constructor required by JUnit.

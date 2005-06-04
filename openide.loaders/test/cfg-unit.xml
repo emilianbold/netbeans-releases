@@ -31,6 +31,12 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+    <testbag testattribs="empty" executor="code" name="no tests">
+        <testset dir="">
+            <patternset>
+            </patternset>
+        </testset>
+    </testbag>
     
     <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
     <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>

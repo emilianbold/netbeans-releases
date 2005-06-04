@@ -19,22 +19,9 @@ Microsystems, Inc. All Rights Reserved.
     <property name="plugins.install.dir" location="../../plugins"/>
 
     <target name="compile">
-        <path id="basecp">
-            <pathelement location="${openide.dir}/core/openide.jar" />
-            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar" />
-            <pathelement location="${core.dir}/core/core.jar"/>
-            <pathelement location="${core.dir}/lib/boot.jar"/>
-            <pathelement location="${openide/execution.dir}/modules/org-openide-execution.jar"/>
-            <pathelement location="${openide/io.dir}/modules/org-openide-io.jar"/>
-            <pathelement location="${core/execution.dir}/modules/org-netbeans-core-execution.jar"/>
-            <!-- project support classpath -->
-            <pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
-            <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
-            <pathelement location="${java/j2seproject.dir}/modules/org-netbeans-modules-java-j2seproject.jar"/>
-            <pathelement location="${ant/project.dir}/modules/org-netbeans-modules-project-ant.jar"/>
-            <!-- metadata repository support classpath -->
-            <pathelement location="${java/javacore.dir}/modules/org-netbeans-modules-javacore.jar"/>
-            <pathelement location="${mdr/nbjmiutils.dir}/modules/ext/jmiutils.jar"/>
+        <path id="bootcp" >
+            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar" />
+            <pathelement location="${core/bootstrap.dir}/lib/boot.jar"/>
             <!-- use junit with already compiled extensions -->        
             <pathelement location="../../lib/xtest.jar"/>
             <pathelement location="../../lib/xtest-junit-testrunner.jar"/>
@@ -44,16 +31,65 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="junit*.jar"/>
             </fileset>            
         </path>
+
+        <path id="dynamiccp" >
+            <path refid="bootcp" />
+            <pathelement location="${core.dir}/core/core.jar"/>
+            <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
+        </path>    
+    
+        <path id="basecp">
+            <path refid="dynamiccp" />
+        
+            <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar" />
+            <pathelement location="${openide/dialogs.dir}/modules/org-openide-dialogs.jar" />
+            <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar" />
+            <pathelement location="${core.dir}/modules/org-netbeans-core.jar" />
+            <pathelement location="${core/execution.dir}/modules/org-netbeans-core-execution.jar"/>
+            <!-- project support classpath -->
+            <pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
+            <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
+            <pathelement location="${java/j2seproject.dir}/modules/org-netbeans-modules-java-j2seproject.jar"/>
+            <pathelement location="${ant/project.dir}/modules/org-netbeans-modules-project-ant.jar"/>
+            <!-- metadata repository support classpath -->
+            <pathelement location="${java/javacore.dir}/modules/org-netbeans-modules-javacore.jar"/>
+            <pathelement location="${mdr/nbjmiutils.dir}/modules/ext/jmiutils.jar"/>
+        </path>
         <mkdir dir="build/classes"/>
+        
         <javac srcdir="src" destdir="build/classes"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">          
-          <classpath refid="basecp"/>
-        </javac>
+          <classpath refid="basecp"/>  
+          <selector refid="xtest.ide.main" />
+        </javac> 
+ 
+        <javac srcdir="src" destdir="build/classes"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}">          
+          <classpath refid="bootcp"/>
+          <selector refid="xtest.ide.plugin" />
+        </javac> 
         <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
         <copy file="src/META-INF/services/org.openide.ErrorManager" todir="build/classes/META-INF/services"/>
-     </target>
+    </target>
+
     
+        
+    <selector id="xtest.ide.main" >
+      <or>
+        <filename name="org/netbeans/xtest/plugin/ide/Main*"/>
+        <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
+        <filename name="org/netbeans/xtest/plugin/ide/services/XTestErrorManager*"/>
+        <filename name="META-INF/**"/>
+      </or>
+    </selector>
+    
+    <selector id="xtest.ide.plugin">
+      <or>
+        <filename name="org/netbeans/xtest/plugin/ide/Ide*"/>
+      </or>
+    </selector>
     
     <target name="jar" depends="compile">
         <!-- ant tasks used in ide_plugin_targets.xml -->
@@ -61,7 +97,7 @@ Microsystems, Inc. All Rights Reserved.
             basedir="build/classes"
             excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
-            <include name="org/netbeans/xtest/plugin/ide/Ide*.class"/>
+            <selector refid="xtest.ide.plugin" />
         </jar>
         <!-- load by system classloader (-J-Dnetbeans.systemclassloader.patches) -->
         <jar jarfile="lib/xtest-ide-testexec.jar"
@@ -77,11 +113,7 @@ Microsystems, Inc. All Rights Reserved.
             basedir="build/classes"
             excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
-            <include name="org/netbeans/xtest/plugin/ide/Main*.class"/>
-            <include name="org/netbeans/xtest/plugin/ide/MainWithExec*.class"/>
-            <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
-            <include name="org/netbeans/xtest/plugin/ide/services/XTestErrorManager.class"/>
-            <include name="META-INF/**"/>
+            <selector refid="xtest.ide.main" />
         </jar>        
     </target>
     

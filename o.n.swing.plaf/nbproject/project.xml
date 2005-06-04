@@ -17,14 +17,6 @@ Microsystems, Inc. All Rights Reserved.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.swing.plaf</code-name-base>
              <module-dependencies>
-                <!-- XXX remove after openide split: -->
-                <dependency>
-                    <code-name-base>org.openide</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>4.27</specification-version>
-                    </run-dependency>
-                </dependency>
              </module-dependencies>
             <public-packages>
                 <package>org.netbeans.swing.plaf</package>

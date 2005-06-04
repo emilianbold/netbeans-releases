@@ -15,8 +15,9 @@ package org.netbeans.core.projects;
 
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
-import org.netbeans.core.modules.Module;
-import org.netbeans.core.modules.ModuleManager;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
+import org.netbeans.core.startup.ModuleHistory;
 
 import org.netbeans.core.NbTopManager;
 import org.openide.util.Mutex;
@@ -34,7 +35,6 @@ import java.net.URL;
 import java.beans.BeanInfo;
 import java.awt.image.PixelGrabber;
 import java.awt.image.ImageObserver;
-import org.netbeans.core.modules.ModuleHistory;
 
 /** Test operation of the SystemFileSystem.
  * For now, just display attributes.
@@ -46,17 +46,12 @@ public class SystemFileSystemTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(SystemFileSystemTest.class));
-        // Otherwise does not finish:
-        System.exit(0);
-    }
-    
     private ModuleManager mgr;
     private File satJar;
     private Module satModule;
     protected void setUp() throws Exception {
-        mgr = NbTopManager.get().getModuleSystem().getManager();
+        mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
+        org.netbeans.core.startup.Main.initializeURLFactory ();
         try {
             mgr.mutex().readAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {

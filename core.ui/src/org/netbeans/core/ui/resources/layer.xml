@@ -15,9 +15,9 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="WarmUp">
-        <file name="org-netbeans-core-ui-MenuWarmUpTask.instance"/>
-        <file name="org-netbeans-core-ui-ContextMenuWarmUpTask.instance"/>
-        <file name="org-netbeans-core-ui-DnDWarmUpTask.instance"/>
+        <file name="org-netbeans-core-ui-warmup-MenuWarmUpTask.instance"/>
+        <file name="org-netbeans-core-ui-warmup-ContextMenuWarmUpTask.instance"/>
+        <file name="org-netbeans-core-ui-warmup-DnDWarmUpTask.instance"/>
     </folder>
     <folder name="Actions" >
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />

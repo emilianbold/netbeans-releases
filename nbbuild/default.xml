@@ -51,6 +51,9 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="arch"
          classname="org.netbeans.nbbuild.Arch"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="fixdependencies"
+         classname="org.netbeans.nbbuild.FixDependencies"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
   

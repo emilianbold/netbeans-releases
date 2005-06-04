@@ -17,10 +17,10 @@ import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 
 import java.io.File;
-import org.netbeans.core.modules.Module;
-import org.netbeans.core.modules.ModuleManager;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
 import org.netbeans.core.NbTopManager;
-import org.netbeans.core.modules.ModuleHistory;
+import org.netbeans.core.startup.ModuleHistory;
 import org.openide.util.Lookup;
 import javax.swing.Action;
 import java.util.Iterator;

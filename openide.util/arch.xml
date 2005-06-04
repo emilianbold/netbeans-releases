@@ -500,8 +500,9 @@ org.my.netbeans.extramodule.ExtraTip
    <api category="devel" group="java" name="Lookups.metaInfServices" type="export" url="@TOP@/org/openide/util/lookup/Lookups.html#metaInfServices(java.lang.ClassLoader)">
    calls constructor of registered classes using reflection
    </api>. 
-   <api category="private" group="java" name="ActionManagerInvocation" type="import" >
-    because of the API separation, <a href="@TOP@/org/openide/util/actions/CallableSystemAction.html">CallableSystemAction</a> uses reflection
+   <api category="private" group="lookup" name="ActionManagerInvocation" type="export" >
+    because of the API separation, <a href="@TOP@/org/openide/util/actions/CallableSystemAction.html">CallableSystemAction</a> uses lookup for <code>ActionsBridge</code>
+    provided by <code>org-openide-actions</code> module
     when looking for <a href="@org-openide-actions@/org/openide/actions/ActionManager.html">org.openide.actions.ActionManager</a> implementation.
     </api>.
 

@@ -197,13 +197,13 @@ public class TopSecurityManager extends SecurityManager {
         
         if ("javax.xml.parsers.SAXParserFactory".equals(x)) {
             if (Thread.currentThread().getContextClassLoader().getResource(
-                    "org/netbeans/core/xml/SAXFactoryImpl.class") != null) return;
+                    "org/netbeans/core/startup/SAXFactoryImpl.class") != null) return;
             throw new SecurityException ("");            
         }
         
         if ("javax.xml.parsers.DocumentBuilderFactory".equals(x)) {
             if (Thread.currentThread().getContextClassLoader().getResource(
-                    "org/netbeans/core/xml/DOMFactoryImpl.class") != null) return;
+                    "org/netbeans/core/startup/DOMFactoryImpl.class") != null) return;
             throw new SecurityException ("");            
         }
         

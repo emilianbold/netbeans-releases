@@ -52,15 +52,15 @@ public final class Dependency {
     /** No comparison, just require the dependency to be present. */
     public final static int COMPARE_ANY = 3;
 
-    /** Name, for purposes of dependencies, of the IDE. */
+    /** @deprecated request dependencies on direct modules */
     public static final String IDE_NAME = System.getProperty("org.openide.major.version", "IDE"); // NOI18N
 
-    /** Specification version of the IDE. */
+    /** @deprecated request dependencies on direct modules */
     public static final SpecificationVersion IDE_SPEC = makeSpec(
             System.getProperty("org.openide.specification.version")
         ); // NOI18N
 
-    /** Implementation version of the IDE. */
+    /** @deprecated request dependencies on direct modules */
     public static final String IDE_IMPL = System.getProperty("org.openide.version"); // NOI18N
 
     /** Name, for purposes of dependencies, of the Java platform. */

@@ -13,6 +13,9 @@
 
 package org.netbeans.core.lookup;
 
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
+import org.netbeans.core.startup.ModuleHistory;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 import org.netbeans.core.NbTopManager;
@@ -48,7 +51,7 @@ public class MetaInfServicesTest extends NbTestCase {
         clearWorkDir();
         // Load Plain.
         // Make a couple of modules.
-        mgr = NbTopManager.get().getModuleSystem().getManager();
+        mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         try {
             mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {

@@ -163,6 +163,14 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         execute ("GarbageUnderPackages.xml", new String[] { "-Djavadoc.pac=some",  "-Dproject.file=" + f, "withjavadoc" });
     }
     
+    final static String readFile (java.io.File f) throws java.io.IOException {
+        int s = (int)f.length ();
+        byte[] data = new byte[s];
+        assertEquals ("Read all data", s, new java.io.FileInputStream (f).read (data));
+        
+        return new String (data);
+    }
+    
     final static File extractString (String res) throws Exception {
         File f = File.createTempFile("res", ".xml");
         f.deleteOnExit ();
@@ -210,10 +218,8 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         if (! (System.getSecurityManager () instanceof MySecMan)) {
             out = new java.io.ByteArrayOutputStream ();
             err = new java.io.ByteArrayOutputStream ();
-            /*
             System.setOut (new java.io.PrintStream (out));
             System.setErr (new java.io.PrintStream (err));
-             */
             
             System.setSecurityManager (new MySecMan ());
         }

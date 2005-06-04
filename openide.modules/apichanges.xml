@@ -18,7 +18,84 @@ Microsystems, Inc. All Rights Reserved.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
-	<change id="FriendModulesRestriction">
+    <change id="split-of-openide-jar">
+        <api name="modules"/>
+        <summary><code>openide.jar</code> is gone, update your module dependencies!</summary>
+        <version major="6" minor="2"/>
+        <date day="4" month="6" year="2005"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="yes" deletion="no" modification="yes"/>
+        <description>
+            <p>
+            The monolithic <code>openide.jar</code> has been split into many small
+            JAR files and most of them were made autoload modules. That means they
+            are loaded only on demand, which is going to simplify end of life of parts 
+            that are no longer needed.
+            </p>
+            
+            <p>
+            The layout of files on disk changed and their content as well, but these
+            changes shall have no effect on classes from <code>org.openide</code>
+            packages during runtime. Modules using them will run unmodified.
+            Althrough there will be printed warnings about upgraded module 
+            dependencies - one is adviced to use
+            <b>ant fix-dependencies</b> in his projectized module to 
+            modify the <code>nbproject/project.xml</code>. The 
+            manifest's <code>OpenIDE-Module-IDE-Dependencies</code>
+            attribute is deprecated and shall no longer be used. Enumerate the 
+            individual split submodules instead, as is done by the <b>fix-dependencies</b> 
+            task. Moreover one can depend on <code>
+OpenIDE-Module-Requires: org.openide.modules.ModuleFormat1</code>
+            to express that it requires current format of module manifests -
+            this tag is automatically inserted when running in projectized system.
+            </p>
+            
+            <p>
+            The current layout of platform cluster directory is:
+            </p>
+            <ul class="doing">
+                <li><code>lib/boot.jar</code> contains what it used to have
+                together with module system runtime <q>independent of other NetBeans APIs</q>.
+                </li>
+
+                <li><code>lib/org-openide-util.jar</code> is next to boot.jar to provide
+                the basic infrastructure used by boot.jar.
+                </li>
+
+                <li><code>lib/org-openide-modules.jar</code> provides the APIs that the
+                boot.jar implements.
+                </li>
+
+                <li><code>core/core.jar</code> is loaded dynamically
+                by the boot.jar and contains most of the startup code and the
+                <q>NetBeans dependent</q> part of module system. 
+                 For its implementation it needs
+                filesystems which are along as well.
+                </li>
+
+                <li><code>core/org-openide-filesystems.jar</code> the filesystems API is needed
+                for the standard launch code to read module config files and listen to changes in their
+                amount or content.
+                </li>
+
+                <li><code>modules/org-openide-nodes.jar</code> and other openide libraries
+                are now turned into real modules.
+                </li>
+
+
+                <li><code>modules/org-netbeans-core.jar</code> is also a module
+                and contains the rest of original core.jar. It is likely that this one is going
+                to be split even more, as the UI could be separated to core/ui, etc. 
+                </li>
+            </ul>
+        
+        </description>
+        <issue number="58258"/>
+    </change>
+  
+  
+  
+    <change id="FriendModulesRestriction">
         <api name="modules"/>
         <summary>Friend Modules</summary>
         <version major="6" minor="1"/>

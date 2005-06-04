@@ -41,7 +41,8 @@ Microsystems, Inc. All Rights Reserved.
 	<buildTests srcDir="unit/src"  compileExcludes="**/data/**">
             <classpath>
                 <path refid="jspparser_test_cp"/>  
-                <pathelement location="${openide.dir}/core/openide.jar"/>
+                <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
+                <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
                 <pathelement location="${web/core.dir}/modules/jsp.jar"/>
                 <pathelement location="${web/webapi.dir}/modules/org-netbeans-api-web-webmodule.jar"/>
 		<pathelement location="${web/webapi.dir}/modules/org-netbeans-modules-web-core.jar"/>

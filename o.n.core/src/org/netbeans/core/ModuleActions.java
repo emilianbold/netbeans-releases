@@ -22,7 +22,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 
-import org.netbeans.core.modules.ManifestSection;
+import org.netbeans.core.startup.ManifestSection;
 
 
 /**

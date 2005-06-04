@@ -4,7 +4,6 @@ OpenIDE-Module-Specification-Version: 2.0
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/tests/j2eeserver/plugin/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/tests/j2eeserver/plugin/Bundle.properties
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eeserver/3,
  org.openide.execution > 1.0,
  org.openide.debugger > 1.0,

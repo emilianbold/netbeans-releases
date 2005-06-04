@@ -41,7 +41,7 @@ public final class UINodes extends Object {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 4457929339850358728L;
 
-    private static java.util.ResourceBundle bundle = NbBundle.getBundle (org.netbeans.core.NbTopManager.class);
+    private static java.util.ResourceBundle bundle = NbBundle.getBundle (UINodes.class);
 
     private final static String templatesIconURL = "org/netbeans/core/resources/templates.gif"; // NOI18N
     private final static String templatesIcon32URL = "org/netbeans/core/resources/templates32.gif"; // NOI18N

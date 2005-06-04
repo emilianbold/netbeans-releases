@@ -42,8 +42,8 @@ import javax.swing.table.JTableHeader;
 import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbPlaces;
 import org.netbeans.core.NbTopManager;
-import org.netbeans.core.projects.SessionManager;
 import org.netbeans.core.projects.SettingChildren;
+import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
@@ -143,7 +143,7 @@ public class OptionsAction extends CallableSystemAction {
         /** Singleton instance of options panel */
         private static OptionsPanel singleton;
         
-        private static String TEMPLATES_DISPLAY_NAME = NbBundle.getBundle(NbTopManager.class).getString("CTL_Templates_name"); // NOI18N
+        private static String TEMPLATES_DISPLAY_NAME = NbBundle.getBundle(OptionsAction.class).getString("CTL_Templates_name"); // NOI18N
         
         /** list of String[] that should be expanded when the tree is shown */
         private Collection toExpand;

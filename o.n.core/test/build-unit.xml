@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     
     <target name="unit-compiler" depends="init,init-cp">
-        <ant dir="unit/src/org/netbeans/core/modules"/>
         <ant dir="unit/src/org/netbeans/core/projects"/>
         <ant dir="unit/src/org/netbeans/core/lookup/data"/>
         <buildTests srcdir="unit/src" compileexcludes="**/jars/**,**/data/**">

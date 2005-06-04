@@ -101,8 +101,13 @@ final class ModuleListParser {
         if (!projectxml.isFile()) {
             return false;
         }
-        Document doc = XMLUtil.parse(new InputSource(projectxml.toURI().toString()),
+        Document doc;
+        try {
+            doc = XMLUtil.parse(new InputSource(projectxml.toURI().toString()),
                                      false, true, /*XXX*/null, null);
+        } catch (SAXException ex) {
+            throw (SAXException)new SAXException ("Error parsing " + projectxml + "\n" + ex.getMessage ()).initCause (ex);
+        }
         Element typeEl = XMLUtil.findElement(doc.getDocumentElement(), "type", ParseProjectXml.PROJECT_NS);
         if (!XMLUtil.findText(typeEl).equals("org.netbeans.modules.apisupport.project")) {
             return false;

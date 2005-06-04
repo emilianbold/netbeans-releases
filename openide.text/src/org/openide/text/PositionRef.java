@@ -232,7 +232,7 @@ public final class PositionRef extends Object implements Serializable {
         private void writeObject(ObjectOutputStream out)
         throws IOException {
             // old serialization version            out.writeObject(support.findDataObject());
-            out.writeObject(support.env());
+            out.writeObject(support.cesEnv());
         }
 
         /** @return the styled document or null if the document is not loaded.

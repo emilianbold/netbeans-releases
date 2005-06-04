@@ -1046,7 +1046,11 @@ public class ListView extends JScrollPane implements Externalizable {
         public void focusGained(FocusEvent ev) {
             if (csa == null) {
                 try {
-                    Class popup = Class.forName("org.openide.actions.PopupAction"); // NOI18N
+                    ClassLoader l = (ClassLoader)org.openide.util.Lookup.getDefault().lookup (ClassLoader.class);
+                    if (l == null) {
+                        l = getClass ().getClassLoader ();
+                    }
+                    Class popup = Class.forName("org.openide.actions.PopupAction", true, l); // NOI18N
                     csa = (CallbackSystemAction) CallbackSystemAction.get(popup);
                 } catch (ClassNotFoundException e) {
                     Error err = new NoClassDefFoundError();

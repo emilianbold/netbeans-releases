@@ -210,16 +210,18 @@ public abstract class NodeAction extends CallableSystemAction implements Context
         final Object s = (ev == null) ? null : ev.getSource();
 
         if (s instanceof Node) {
-            doPerformAction(
-                new ActionRunnable(ev) {
+            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(
+                this,
+                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(ev, this, amIasynchronous()) {
                     public void run() {
                         performAction(new Node[] { (Node) s });
                     }
                 }
             );
         } else if (s instanceof Node[]) {
-            doPerformAction(
-                new ActionRunnable(ev) {
+            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(
+                this,
+                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(ev, this, amIasynchronous()) {
                     public void run() {
                         performAction((Node[]) s);
                     }
@@ -307,7 +309,13 @@ public abstract class NodeAction extends CallableSystemAction implements Context
             firePropertyChange(PROP_ENABLED, null, null);
         }
     }
-
+    
+    /** Package private accessor.
+     */
+    final boolean amIasynchronous() {
+        return asynchronous();
+    }
+    
     /** Node listener to check whether the action is enabled or not
     */
     private static final class NodesL implements LookupListener {
@@ -497,8 +505,9 @@ OUTER:
         /** Invoked when an action occurs.
          */
         public void actionPerformed(ActionEvent e) {
-            delegate.doPerformAction(
-                delegate.new ActionRunnable(e) {
+            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction (
+                delegate,
+                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(e, delegate, delegate.amIasynchronous()) {
                     public void run() {
                         delegate.performAction(nodes());
                     }

@@ -98,10 +98,10 @@ Microsystems, Inc. All Rights Reserved.
             	</file>
 
             	<!-- Modules -->
-            	<file name="DTD_Module_Status_1_0" url="nbres:/org/netbeans/core/modules/module-status-1_0.dtd">
+            	<file name="DTD_Module_Status_1_0" url="nbres:/org/netbeans/core/startup/module-status-1_0.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Status 1.0//EN"/>
             	</file>
-                <file name="DTD_Module_Automatic_Dependencies_1_0" url="nbres:/org/netbeans/core/modules/module-auto-deps-1_0.dtd">
+                <file name="DTD_Module_Automatic_Dependencies_1_0" url="nbres:/org/netbeans/core/startup/module-auto-deps-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Automatic Dependencies 1.0//EN"/>
                 </file>
 

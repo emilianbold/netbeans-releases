@@ -62,7 +62,7 @@ import org.openide.util.Lookup;
 public class CustomEditorDisplayerTest extends NbTestCase {
     
     static {
-        org.netbeans.core.NonGui.registerPropertyEditors();
+        ComboTest.registerPropertyEditors();
     }
     
     public CustomEditorDisplayerTest(String name) {

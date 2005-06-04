@@ -22,6 +22,7 @@ import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.lang.reflect.Method;
+import org.netbeans.core.startup.Main;
 
 import org.openide.*;
 import org.openide.awt.StatusDisplayer;
@@ -39,325 +40,31 @@ import org.openide.nodes.*;
 import org.netbeans.TopSecurityManager;
 
 import org.netbeans.core.actions.*;
-import org.netbeans.core.modules.InstalledFileLocatorImpl;
-import org.netbeans.core.perftool.StartLog;
-import org.netbeans.core.modules.ModuleSystem;
+import org.netbeans.core.startup.InstalledFileLocatorImpl;
+import org.netbeans.core.startup.StartLog;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.modules.InstalledFileLocator;
 
 /**
  * Most of the NetBeans startup logic that is not closely tied to the GUI.
  * The meat of the startup sequence is in {@link #run}.
  */
-public class NonGui extends NbTopManager implements Runnable {
+public class NonGui extends NbTopManager 
+implements Runnable, org.netbeans.core.startup.RunLevel {
+    private static int count;
     
-    /** directory for modules */
-    static final String DIR_MODULES = "modules"; // NOI18N
-    
-    /* The class of the UIManager to be used for netbeans - can be set by command-line argument -ui <class name> */
-    protected static Class uiClass;
-
-    /* The size of the fonts in the UI - 0 pt, the default value is set in NbTheme (for Metal L&F), for other L&Fs is set
-       in the class Main. The value can be changed in Themes.xml in system directory or by command-line argument -fontsize <size> */
-    protected static int uiFontSize = 0;
-
-    /** The netbeans home dir - acquired from property netbeans.home */
-    private static String homeDir;
-    /** The netbeans user dir - acquired from property netbeans.user */
-    private static String userDir;
-    /** The netbeans system dir - ${netbeans.user}/system */
-    private static String systemDir;
-
-    /** module subsystem */
-    private static ModuleSystem moduleSystem;
-
-    /** The flag whether to create the log - can be set via -nologging
-    * command line option */
-    protected static boolean noLogging = false;
-
-    /** The flag whether to show the Splash screen on the startup */
-    protected static boolean noSplash = false;
-
-    /** The Class that logs the IDE events to a log file */
-    protected static TopLogging logger;
-    
-    /** Tests need to clear some static variables.
-     */
-    static final void clearForTests () {
-        homeDir = null;
-        userDir = null;
-    }
-
-    /** Getter for home directory. */
-    protected static String getHomeDir () {
-        if (homeDir == null) {
-            homeDir = System.getProperty ("netbeans.home");
-        }
-        return homeDir;
-    }
-
-    /** Getter for user home directory. */
-    protected static String getUserDir () {
-        if (userDir == null) {
-            userDir = System.getProperty ("netbeans.user");
-            
-            if ("memory".equals (userDir)) { // NOI18N
-                return "memory"; // NOI18N
-            }
-            
-            if (userDir == null) {
-                System.err.println(NbBundle.getMessage(NonGui.class, "ERR_no_user_directory"));
-                Thread.dumpStack(); // likely to happen from misbehaving unit tests, etc.
-                doExit(1);
-            }
-            if (userDir.equals(getHomeDir())) { 
-                System.err.println(NbBundle.getMessage(NonGui.class, "ERR_user_directory_is_home"));
-                doExit(1);
-            }
-            
-            /** #11735. Relative userDir is converted to absolute*/
-            // #21085: userDir might contain ../ sequences which should be removed
-            userDir = FileUtil.normalizeFile(new File(userDir)).getPath();
-            System.setProperty("netbeans.user", userDir); // NOI18N
-            
-            File systemDirFile = new File (userDir, NbRepository.SYSTEM_FOLDER);
-            makedir (systemDirFile);
-            systemDir = systemDirFile.getAbsolutePath ();
-            makedir(new File(userDir, DIR_MODULES)); // NOI18N
-        }
-        return userDir;
-    }
-
-    private static void makedir (File f) {
-        if (f.isFile ()) {
-            Object[] arg = new Object[] {f};
-            System.err.println (new MessageFormat(getString("CTL_CannotCreate_text")).format(arg));
-            doExit (6);
-        }
-        if (! f.exists ()) {
-            if (! f.mkdirs ()) {
-                Object[] arg = new Object[] {f};
-                System.err.println (new MessageFormat(getString("CTL_CannotCreateSysDir_text")).format(arg));
-                doExit (7);
-            }
-        }
-    }
-
-    /** Directory to place logs into logging.
-    */
-    protected static String getLogDir () {
-        return new File (new File (getUserDir (), "var"), "log").toString ();
+    public NonGui () {
+        assert count++ == 0 : "Only one instance allowed"; // NOI18N
     }
     
-    /** System directory getter.
-    */
-    protected static String getSystemDir () {
-        getUserDir ();
-        return systemDir;
-    }
-
     /** Everything is interactive */
     public boolean isInteractive (int il) {
         return true;
     }
 
-    /** Lazily loads classes */ // #9951
-    private static final Class getKlass(String cls) {
-        try {
-            return Class.forName(cls, false, NonGui.class.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(e.getLocalizedMessage());
-        }
-    }
-    
-    /**Flag to avoid multiple adds of the same path to the
-     * of PropertyEditorManager if multiple tests call 
-     * registerPropertyEditors() */
-    private static boolean editorsRegistered=false;
-    /** Register NB specific property editors.
-     *  Allows property editor unit tests to work correctly without 
-     *  initializing full NetBeans environment.
-     *  @since 1.98 */
-    public static final void registerPropertyEditors() {
-        //issue 31879
-        if (editorsRegistered) return;
-        String[] syspesp = PropertyEditorManager.getEditorSearchPath();
-        String[] nbpesp = new String[] {
-            "org.netbeans.beaninfo.editors", // NOI18N
-            "org.openide.explorer.propertysheet.editors", // NOI18N
-        };
-        String[] allpesp = new String[syspesp.length + nbpesp.length];
-        System.arraycopy(nbpesp, 0, allpesp, 0, nbpesp.length);
-        System.arraycopy(syspesp, 0, allpesp, nbpesp.length, syspesp.length);
-        PropertyEditorManager.setEditorSearchPath(allpesp);
-        PropertyEditorManager.registerEditor (java.lang.Character.TYPE, getKlass("org.netbeans.beaninfo.editors.CharEditor")); //NOI18N
-        PropertyEditorManager.registerEditor(getKlass("[Ljava.lang.String;"), getKlass("org.netbeans.beaninfo.editors.StringArrayEditor")); // NOI18N
-        // bugfix #28676, register editor for a property which type is array of data objects
-        PropertyEditorManager.registerEditor(getKlass("[Lorg.openide.loaders.DataObject;"), getKlass("org.netbeans.beaninfo.editors.DataObjectArrayEditor")); // NOI18N
-        // use replacement hintable/internationalizable primitive editors - issues 20376, 5278
-        PropertyEditorManager.registerEditor (Integer.TYPE, getKlass("org.netbeans.beaninfo.editors.IntEditor"));
-        PropertyEditorManager.registerEditor (Boolean.TYPE, getKlass("org.netbeans.beaninfo.editors.BoolEditor"));
-        StartLog.logProgress ("PropertyEditors registered"); // NOI18N
-        editorsRegistered = true;
-    }
-    
-    /** Does import of userdir. Made non-private just for testing purposes.
-     *
-     * @return true if the execution should continue or false if it should
-     *     stop
-     */
-    static boolean handleImportOfUserDir () {
-        class ImportHandler implements Runnable {
-            private File installed = new File (new File (getUserDir (), "var"), "imported"); // NOI18N
-            private String classname;
-            private boolean executedOk; 
-            
-            public boolean shouldDoAnImport () {
-                classname = System.getProperty ("netbeans.importclass"); // NOI18N
-                
-                return classname != null && !installed.exists ();
-            }
-            
-            
-            public void run() {
-                Class clazz = getKlass (classname);
-                
-                // This module is included in our distro somewhere... may or may not be turned on.
-                // Whatever - try running some classes from it anyway.
-                try {
-                    // Method showMethod = wizardClass.getMethod( "handleUpgrade", new Class[] { Splash.SplashOutput.class } ); // NOI18N
-                    Method showMethod = clazz.getMethod( "main", new Class[] { String[].class } ); // NOI18N
-                    showMethod.invoke (null, new Object[] {
-                        new String[0]
-                    });
-                    executedOk = true;
-                } catch (java.lang.reflect.InvocationTargetException ex) {
-                    // canceled by user, all is fine
-                    if (ex.getTargetException () instanceof org.openide.util.UserCancelException) {
-                        executedOk = true;
-                    }
-                } catch (Exception e) {
-                    // If exceptions are thrown, notify them - something is broken.
-                    e.printStackTrace();
-                } catch (LinkageError e) {
-                    // These too...
-                    e.printStackTrace();
-                }
-            }
-            
-            
-            public boolean canContinue () {
-                if (shouldDoAnImport ()) {
-                    try {
-                        SwingUtilities.invokeAndWait (this);
-                        if (executedOk) {
-                            // if the import went fine, then we are fine
-                            // just create the file
-                            installed.getParentFile ().mkdirs ();
-                            installed.createNewFile ();
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } catch (IOException ex) {
-                        // file was not created a bit of problem but go on
-                        ex.printStackTrace();
-                        return true;
-                    } catch (java.lang.reflect.InvocationTargetException ex) {
-                        return false;
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                        return false;
-                    }
-                } else {
-                    // if there is no need to upgrade that every thing is good
-                    return true;
-                }
-            }
-        }
-        
-        
-        ImportHandler handler = new ImportHandler ();
-
-        return handler.canContinue ();
-    }
-
     /** Initialization of the manager.
     */
     public void run () {
-        StartLog.logStart ("TopManager initialization (org.netbeans.core.NonGui.run())"); //NOI18N
-        
-        InstalledFileLocatorImpl.prepareCache();
-        
-        // Initialize beans - [PENDING - better place for this ?]
-        //                    [PENDING - can PropertyEditorManager garbage collect ?]
-        String[] sysbisp = Introspector.getBeanInfoSearchPath();
-        String[] nbbisp = new String[] {
-            "org.netbeans.beaninfo", // NOI18N
-        };
-        String[] allbisp = new String[sysbisp.length + nbbisp.length];
-        System.arraycopy(nbbisp, 0, allbisp, 0, nbbisp.length);
-        System.arraycopy(sysbisp, 0, allbisp, nbbisp.length, sysbisp.length);
-        Introspector.setBeanInfoSearchPath(allbisp);
-        registerPropertyEditors();
-
-        // -----------------------------------------------------------------------------------------------------
-
-        StatusDisplayer.getDefault().setStatusText (getString("MSG_IDEInit"));
-
-
-        // -----------------------------------------------------------------------------------------------------
-        // 7. Initialize FileSystems
-        Repository.getDefault();
-        StartLog.logProgress ("Repository initialized"); // NOI18N
-
-        // -----------------------------------------------------------------------------------------------------
-        // this indirectly sets system properties for proxy servers with values
-        // taken from IDESettings
-        SharedClassObject.findObject(IDESettings.class, true);
-        StartLog.logProgress ("IDE settings loaded"); // NOI18N
-         
-        // -----------------------------------------------------------------------------------------------------
-        // Upgrade
-        try {
-            if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
-                if (!handleImportOfUserDir ()) {
-                    TopSecurityManager.exit(0);
-                }
-            }
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        StartLog.logProgress ("Upgrade wizard consulted"); // NOI18N
-        
-        //
-        // 8.5 - we can show the splash only after the upgrade wizard finished
-        //
-        
-        showSplash ();
-
-        // -----------------------------------------------------------------------------------------------------
-        // 9. Modules
-
-        {
-    	    StartLog.logStart ("Modules initialization"); // NOI18N
-            try {
-                moduleSystem = new ModuleSystem(Repository.getDefault().getDefaultFileSystem());
-            } catch (IOException ioe) {
-                // System will be screwed up.
-                IllegalStateException ise = new IllegalStateException("Module system cannot be created"); // NOI18N
-                ErrorManager.getDefault().annotate(ise, ioe);
-                throw ise;
-            }
-    	    StartLog.logProgress ("ModuleSystem created"); // NOI18N
-
-            moduleSystem.loadBootModules();
-            moduleSystem.readList();
-            Main.addAndSetSplashMaxSteps(30); // additional steps after loading all modules
-            moduleSystem.restore();
-    	    StartLog.logEnd ("Modules initialization"); // NOI18N
-        }
-
-        
         // autoload directories
         org.openide.util.Task automount = AutomountSupport.initialize ();
         StartLog.logProgress ("Automounter fired"); // NOI18N
@@ -388,7 +95,6 @@ public class NonGui extends NbTopManager implements Runnable {
 
         initializeMainWindow ();
         StartLog.logProgress ("Main window initialized"); // NOI18N
-        StartLog.logEnd ("TopManager initialization (org.netbeans.core.NonGui.run())"); //NOI18N
         Main.incrementSplashProgressBar();
 
         // -----------------------------------------------------------------------------------------------------
@@ -437,6 +143,148 @@ public class NonGui extends NbTopManager implements Runnable {
     /** Method to initialize the main window.
     */
     protected void initializeMainWindow () {
+        if (!org.netbeans.core.startup.CLIOptions.isGui ()) {
+            return;
+        }
+        
+        StartLog.logStart ("Main window initialization"); //NOI18N
+
+        // #28536: make sure a JRE bug does not prevent the event queue from having
+        // the right context class loader
+        // and #35470: do it early, before any module-loaded AWT code might run
+        // and #36820: even that isn't always early enough, so we need to push
+        // a new EQ to enforce the context loader
+        // XXX this is a hack!
+        try {
+            org.openide.util.Mutex.EVENT.writeAccess (new Runnable() {
+                public void run() {
+                    Thread.currentThread().setContextClassLoader(Main.getModuleSystem().getManager().getClassLoader());
+                    Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EventQueue());
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // -----------------------------------------------------------------------------------------------------
+        // 11. Initialization of main window
+        StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (NonGui.class, "MSG_MainWindowInit"));
+
+        // force to initialize timer
+        // sometimes happened that the timer thread was initialized under
+        // a TaskThreadGroup
+        // such task never ends or, if killed, timer is over
+        Timer timerInit = new Timer(0, new java.awt.event.ActionListener() {
+              public void actionPerformed(java.awt.event.ActionEvent ev) { }
+        });
+        timerInit.setRepeats(false);
+        timerInit.start();
+        Main.incrementSplashProgressBar(10);
+        StartLog.logProgress ("Timer initialized"); // NOI18N
+
+        // -----------------------------------------------------------------------------------------------------
+        // 13. Initialize Shortcuts
+        ShortcutsFolder.initShortcuts();
+        Main.incrementSplashProgressBar();
+        StartLog.logProgress ("Shortcuts initialized"); // NOI18N
+
+
+    // -----------------------------------------------------------------------------------------------------
+    // 14. Open main window
+        StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (NonGui.class, "MSG_WindowShowInit"));
+
+        // Starts GUI components to be created and shown on screen.
+        // I.e. main window + current workspace components.
+
+        // Access winsys from AWT thread only. In this case main thread wouldn't harm, just to be kosher.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                StartLog.logProgress ("Window system initialization"); // NOI18N
+                if (System.getProperty("netbeans.warmup.skip") == null // NOI18N
+                        && System.getProperty("netbeans.close") == null) // NOI18N
+                {
+                    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
+                    mainWindow.addComponentListener(new ComponentAdapter() {
+                        public void componentShown(ComponentEvent evt) {
+                            mainWindow.removeComponentListener(this);
+                            WarmUpSupport.warmUp();
+                        }
+                    });
+                }
+
+                NbTopManager.WindowSystem windowSystem = (NbTopManager.WindowSystem)
+                        org.openide.util.Lookup.getDefault().lookup(NbTopManager.WindowSystem.class);
+                if(windowSystem != null) {
+                    windowSystem.load();
+                    StartLog.logProgress ("Window system loaded"); // NOI18N
+                    if (StartLog.willLog()) {
+                        waitForMainWindowPaint();
+                    }
+                    windowSystem.show();
+                } else {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+                        new NullPointerException("\n\n\nWindowSystem is not supplied!!!\\n\n")); // NOI18N
+                }
+
+                StatusDisplayer.getDefault().setStatusText(""); // NOI18N
+
+                StartLog.logProgress ("Window system shown"); // NOI18N
+                if (!StartLog.willLog()) {
+                    maybeDie(null);
+                    // note that if we ARE logging and measuring startup,
+                    // the IDE is killed through wairForMainWindowPaint() called above
+                }
+            }
+        });
+        StartLog.logEnd ("Main window initialization"); //NOI18N
+    }
+  
+    private static void waitForMainWindowPaint() {
+        // Waits for notification about processed paint event for main window
+        // require modified java.awt.EventQueue to run succesfully
+        Runnable r = new Runnable() {
+          public void run() {
+              try {
+                  Class clz = Class.forName("org.netbeans.performance.test.guitracker.LoggingRepaintManager"); // NOI18N
+                  Method m = clz.getMethod("measureStartup", new Class[] {}); // NOI18N
+                  Object o = m.invoke(null, null);
+                  endOfStartupMeasuring(o);
+              } catch (ClassNotFoundException e) {
+                  StartLog.logProgress(e.toString());
+              } catch (NoSuchMethodException e) {
+                  StartLog.logProgress(e.toString());
+        //              } catch (InterruptedException e) {
+        //                  StartLog.logProgress(e.toString());
+              } catch (IllegalAccessException e) {
+                  StartLog.logProgress(e.toString());
+              } catch (java.lang.reflect.InvocationTargetException e) {
+                  StartLog.logProgress(e.toString());
+              }
+          }
+        };
+        new Thread(r).start();
+    }
+    private static void endOfStartupMeasuring(Object o) {
+      StartLog.logProgress("Startup memory and time measured"); // NOI18N
+      maybeDie(o);
+    }
+
+    private static void maybeDie(Object o) {
+        // finish starting
+        if (System.getProperty("netbeans.kill") != null) {
+            org.netbeans.TopSecurityManager.exit(5);
+        }
+
+        // close IDE
+        if (System.getProperty("netbeans.close") != null) {
+            if (Boolean.getBoolean("netbeans.warm.close")) {
+                // Do other stuff related to startup, to measure the effect.
+                // Useful for performance testing.
+                new WarmUpSupport().run(); // synchronous
+            }
+            if(o!=null) StartLog.logMeasuredStartupTime(((Long)o).longValue());
+            org.openide.LifecycleManager.getDefault().exit();
+        }
     }
 
     /** Getter for a text from resource.
@@ -467,7 +315,7 @@ public class NonGui extends NbTopManager implements Runnable {
 
     /** Get the module subsystem.  */
     public ModuleSystem getModuleSystem() {
-        return moduleSystem;
+        return Main.getModuleSystem ();
     }
 
     /** This is a notification about hiding wizards 
@@ -481,7 +329,7 @@ public class NonGui extends NbTopManager implements Runnable {
 
     /** Return splash screen if available.
      */
-    protected Splash.SplashOutput getSplash() {
+    protected org.netbeans.core.startup.Splash.SplashOutput getSplash() {
         return null;
     }
     

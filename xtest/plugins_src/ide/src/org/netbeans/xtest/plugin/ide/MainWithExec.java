@@ -183,7 +183,24 @@ public class MainWithExec implements Main.MainWithExecInterface {
             }
             return notTerminatedProcesses;
         }
+        
+        
+        // discard all changes in modified files
+        Object[] dobs = org.openide.loaders.DataObject.getRegistry().getModifiedSet().toArray();
+        if(dobs.length > 0) {
+            Main.errMan.log(ErrorManager.USER, new java.util.Date().toString() + ": discarding changes in unsaved files:");
+            for(int i=0;i<dobs.length;i++) {
+                org.openide.loaders.DataObject obj = (org.openide.loaders.DataObject)dobs[i];
+                Main.errMan.log(ErrorManager.USER, "        "+obj.getPrimaryFile().getPath());
+                obj.setModified(false);
+            }
+        }
+        
         return 0;
+    }
+    
+    public void exit() {
+        org.openide.LifecycleManager.getDefault().exit ();
     }
     
     public void run() throws Exception {

@@ -34,9 +34,6 @@ public class ProxyClassLoader extends ClassLoader {
     /** #38368: Allow disabling the default package warning */
     private static final boolean DO_NOT_WARN_DEFAULT_PACKAGE = Boolean.getBoolean("org.netbeans.do_not_warn_default_package"); // NOI18N
     
-    /** empty enumeration */
-    private static final Enumeration EMPTY = new ArrayEnumeration (new Object[0]);
-    
     /**
      * All known package owners.
      * Packages are given in format <samp>org/netbeans/modules/foo/</samp>.
@@ -148,7 +145,9 @@ public class ProxyClassLoader extends ClassLoader {
         }
         String pkg = filename.substring(0, idx + 1); // "org/netbeans/modules/foo/"
         Class c = smartLoadClass(name, filename, pkg);
-        if(c == null) throw new ClassNotFoundException(name);
+        if(c == null) {
+            throw new ClassNotFoundException(name);
+        }
         if (resolve) resolveClass(c);
         return c;
     }
@@ -280,7 +279,7 @@ public class ProxyClassLoader extends ClassLoader {
         Enumeration[] es = new Enumeration[parents.length + 1];
         for (int i = 0; i < parents.length; i++) {
             if (!shouldDelegateResource(pkg, parents[i])) {
-                es[i] = EMPTY;
+                es[i] = org.openide.util.Enumerations.empty ();
                 continue;
             }
             if (parents[i] instanceof ProxyClassLoader) {
@@ -619,39 +618,6 @@ public class ProxyClassLoader extends ClassLoader {
      */
     protected boolean shouldDelegateResource(String pkg, ClassLoader parent) {
         return true;
-    }
-    
-    
-    private static final class ArrayEnumeration implements Enumeration {
-        /** The array */
-        private Object[] array;
-        /** Current index in the array */
-        private int index = 0;
-
-        /** Constructs a new ArrayEnumeration for specified array */
-        public ArrayEnumeration (Object[] array) {
-            this.array = array;
-        }
-
-        /** Tests if this enumeration contains more elements.
-        * @return  <code>true</code> if this enumeration contains more elements;
-        *          <code>false</code> otherwise.
-        */
-        public boolean hasMoreElements() {
-            return (index < array.length);
-        }
-
-        /** Returns the next element of this enumeration.
-        * @return     the next element of this enumeration.
-        * @exception  NoSuchElementException  if no more elements exist.
-        */
-        public Object nextElement() {
-            try {
-                return array[index++];
-            } catch (ArrayIndexOutOfBoundsException e) {
-                throw new NoSuchElementException();
-            }
-        }
     }
     
     private static final class AAEnum implements Enumeration {

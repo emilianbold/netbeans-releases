@@ -22,7 +22,7 @@ import org.apache.tools.ant.types.EnumeratedAttribute;
 
 import org.openide.util.Lookup;
 
-import org.netbeans.core.modules.TestModuleDeployer;
+import org.netbeans.core.startup.TestModuleDeployer;
 
 // Note that Ant tasks in general are not internationalized.
 

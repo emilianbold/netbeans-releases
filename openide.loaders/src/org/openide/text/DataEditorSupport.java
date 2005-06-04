@@ -58,6 +58,13 @@ public class DataEditorSupport extends CloneableEditorSupport {
         this.obj = obj;
     }
     
+    /** Getter for the environment that was provided in the constructor.
+    * @return the environment
+    */
+    final CloneableEditorSupport.Env desEnv() {
+        return (CloneableEditorSupport.Env) env;
+    }
+    
     /** Factory method to create simple CloneableEditorSupport for a given
      * entry of a given DataObject. The common use inside DataObject looks like
      * this:
@@ -242,7 +249,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * Overrides superclass method, adds checking
      * for read-only property of saving file and warns user in that case. */
     protected boolean canClose() {
-        if(env().isModified() && isEnvReadOnly()) {
+        if(desEnv().isModified() && isEnvReadOnly()) {
             Object result = DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(DataObject.class,
@@ -261,7 +268,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     /** Saves document. Overrides superclass method, adds checking
      * for read-only property of saving file and warns user in that case. */
     public void saveDocument() throws IOException {
-        if(env().isModified() && isEnvReadOnly()) {
+        if(desEnv().isModified() && isEnvReadOnly()) {
             DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(
                     NbBundle.getMessage(DataObject.class,
@@ -276,13 +283,19 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
     /** Indicates whether the <code>Env</code> is read only. */
     boolean isEnvReadOnly() {
-        CloneableEditorSupport.Env env = env();
+        CloneableEditorSupport.Env env = desEnv();
         return env instanceof Env && ((Env)env).getFileImpl().isReadOnly();
     }
     
     /** Needed for EditorSupport */
     final DataObject getDataObjectHack2 () {
         return obj;
+    }
+    
+    /** Accessor for updateTitles.
+     */
+    final void callUpdateTitles () {
+        updateTitles ();
     }
     
     /** Support method that extracts a DataObject from a Line. If the 
@@ -617,7 +630,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             Mutex.EVENT.writeAccess(new Runnable() {
                 public void run() {
             if (Node.PROP_DISPLAY_NAME.equals(ev.getPropertyName())) {
-                updateTitles();
+                callUpdateTitles();
             }
             if (Node.PROP_ICON.equals(ev.getPropertyName())) {
                 if (obj.isValid()) {

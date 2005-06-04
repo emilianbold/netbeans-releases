@@ -25,7 +25,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.TestUtil;
-import org.netbeans.core.filesystems.ArchiveURLMapper;
+import org.netbeans.core.startup.layers.ArchiveURLMapper;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.JavaPlatformProviderImpl;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;

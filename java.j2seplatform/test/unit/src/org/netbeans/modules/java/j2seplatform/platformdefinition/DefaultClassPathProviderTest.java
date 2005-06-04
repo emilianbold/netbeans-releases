@@ -32,7 +32,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 
 
 import org.netbeans.api.project.TestUtil;
-import org.netbeans.core.filesystems.ArchiveURLMapper;
+import org.netbeans.core.startup.layers.ArchiveURLMapper;
 
 
 

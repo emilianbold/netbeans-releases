@@ -156,21 +156,10 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="failing" executor="ide" name="testbag_4">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/openide/loaders/CreateFromTemplate.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->
     <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
     <testbag testattribs="empty" executor="code" name="testbag_empty">
-        <testset dir="unit/src"/>
-    </testbag>
-    <testbag testattribs="emptyide" executor="ide" name="testbag_empty">
         <testset dir="unit/src"/>
     </testbag>
     
@@ -184,10 +173,9 @@ Microsystems, Inc. All Rights Reserved.
     
     <!--<executor name="code" antfile="build.xml" target="runcodetest"/>
     <executor name="ide" antfile="build.xml" target="runidetest"/>-->
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
-    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
     
     <!--<compiler name="unit-compiler" antfile="build.xml" target="unit-compiler" default="true"/>-->
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     
 </mconfig>

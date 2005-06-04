@@ -594,7 +594,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         pw.println ("<?xml version=\"1.0\"?>");
         pw.println ("<!DOCTYPE settings PUBLIC \"-//NetBeans//DTD Session settings 1.0//EN\" \"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd\">");
         pw.println ("<settings version=\"1.0\">");
-        pw.println ("  <module name=\"org.openide/1\" spec=\"1.13\"/>");
+        pw.println ("  <module name=\"org.openide.options\" spec=\"1.13\"/>");
         pw.println ("  <instanceof class=\"org.openide.options.SystemOption\"/>");
         pw.println ("  <instance class=\"" + Setting.class.getName () + "\"/>");
         pw.println ("</settings>");

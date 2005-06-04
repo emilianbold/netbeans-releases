@@ -53,7 +53,7 @@ public final class FilterFileSystem extends MultiFileSystem {
 
     protected java.util.Set createLocksOn (String name) throws IOException {
         String nn = root.getPath() + "/" + name;
-        LocalFileSystemEx.potentialLock (name, nn);
+        org.netbeans.core.startup.layers.LocalFileSystemEx.potentialLock (name, nn);
         return super.createLocksOn (name);
     }
 }

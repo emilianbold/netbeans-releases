@@ -122,7 +122,7 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
         if (f == null) f = sfs.getRoot().createFolder("Services");
         Lookup.getDefault().lookup(ModuleInfo.class);
         // XXX crude but the easiest thing to do here:
-        NbTopManager.Lkp.modulesClassPathInitialized();
+        org.netbeans.core.startup.MainLookup.modulesClassPathInitialized();
         DataFolder d = DataFolder.findFolder(f);
         InstanceDataObject.create(d, null, Cnv.class);
         /*

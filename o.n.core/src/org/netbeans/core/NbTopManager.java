@@ -30,6 +30,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.core.startup.MainLookup;
+import org.netbeans.core.startup.layers.SessionManager;
 
 import org.openide.*;
 import org.openide.loaders.*;
@@ -48,9 +50,9 @@ import org.openide.windows.WindowManager;
 
 import org.netbeans.core.actions.*;
 import org.netbeans.TopSecurityManager;
-import org.netbeans.core.modules.Module;
-import org.netbeans.core.perftool.StartLog;
-import org.netbeans.core.modules.ModuleSystem;
+import org.netbeans.Module;
+import org.netbeans.core.startup.StartLog;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.awt.HtmlBrowser;
 import org.openide.modules.ModuleInfo;
 
@@ -78,116 +80,24 @@ public abstract class NbTopManager {
     */
     public static final int IL_ALL = 0xffff;
     
-    /** inner access to dynamic lookup service for this top mangager */
-    private InstanceContent instanceContent;
-    /** dynamic lookup service for this top mangager */
-    private Lookup instanceLookup;
-
-    /** initializes properties about builds etc. */
-    static {
-        // Set up module-versioning properties, which logger prints.
-        // The package here must be one which exists only in a central openide-*.jar, not e.g. openide-deprecated.jar:
-        Object ignoreme = SpecificationVersion.class; // DO NOT DELETE UNUSED VAR
-        Package p = Package.getPackage("org.openide.modules"); // NOI18N
-        
-        // Normally the defaults here should not be used. openide.jar, not just openide/src/,
-        // must be in your classpath (this applies to tests too, even openide/test/build.xml).
-        // When that is done correctly, the package will be defined and these properties will
-        // be defined too. Otherwise there is no manifest and they will all be null.
-        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "99.9"); // NOI18N
-        putSystemProperty ("org.openide.version", p.getImplementationVersion (), "OwnBuild"); // NOI18N
-        putSystemProperty ("org.openide.major.version", p.getSpecificationTitle (), "IDE/1"); // NOI18N
-        putSystemProperty ("netbeans.buildnumber", p.getImplementationVersion (), "OwnBuild"); // NOI18N
-        
-        // Enforce JDK 1.4+ since we would not work without it.
-        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.4")) < 0) { // NOI18N
-            System.err.println("The IDE requires JDK 1.4 or higher to run."); // XXX I18N?
-            TopSecurityManager.exit(1);
-        }
-
-        // In the past we derived ${jdk.home} from ${java.home} by appending
-        // "/.." to the end of ${java.home} assuming that JRE is under JDK
-        // directory.  It does not always work.  On MacOS X JDK and JRE files
-        // are mixed together, thus ${jdk.home} == ${java.home}.  In several
-        // Linux distros JRE and JDK are installed at the same directory level
-        // with ${jdk.home}/jre a symlink to ${java.home}, which means
-        // ${java.home}/.. != ${jdk.home}.
-        //
-        // Now the launcher can set ${jdk.home} explicitly because it knows
-        // best where the JDK is.
-        
-        String jdkHome = System.getProperty("jdk.home");  // NOI18N
-        
-        if (jdkHome == null) {
-            jdkHome = System.getProperty("java.home");  // NOI18N
-            
-            if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
-                jdkHome += File.separator + "..";  // NOI18N
-            }
-                
-            System.setProperty("jdk.home", jdkHome);  // NOI18N
-        }
-
-        // read environment properties from external file, if any
-        try {
-            readEnvMap ();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // initialize the URL factory
-        URLStreamHandlerFactory fact = new NbURLStreamHandlerFactory();
-        try {
-            URL.setURLStreamHandlerFactory(fact);
-        } catch (Error e) {
-            // Can happen if we try to start NB twice in the same VM.
-            // Print the error but try to continue.
-            System.err.println("While calling URL.setURLStreamHandlerFactory, got: " + e);
-        }
-    }
-    
-    /** Puts a property into the system ones, but only if the value is not null.
-     * @param propName name of property
-     * @param value value to assign or null
-     * @param failbackValue value to assign if the previous value is null
-     */
-    private static void putSystemProperty (
-        String propName, String value, String failbackValue
-    ) {
-        if (System.getProperty (propName) == null) {
-            // only set it if not null
-            if (value != null) {
-                System.setProperty (propName, value);
-            } else {
-                if (!Boolean.getBoolean("netbeans.suppress.sysprop.warning")) {
-                    System.err.println(
-                        "Warning: Versioning property \"" + propName + // NOI18N
-                        "\" is not set. Defaulting to \"" + failbackValue + '"' // NOI18N
-                    ); 
-                    System.err.println("(to suppress this message run with -Dnetbeans.suppress.sysprop.warning=true)"); // NOI18N
-                }
-                System.setProperty (propName, failbackValue);
-            }
-        }
-    }
-
     /** Constructs a new manager.
     */
     public NbTopManager() {
-        instanceContent = new InstanceContent ();
-        instanceLookup = new AbstractLookup (instanceContent);
+        assert defaultTopManager == null : "Only one instance allowed"; // NOI18N
+        defaultTopManager = this;
+        
         Lookup lookup = Lookup.getDefault();
-        if (!(lookup instanceof Lkp)) {
+        if (!(lookup instanceof MainLookup)) {
             throw new ClassCastException("Wrong Lookup impl found: " + lookup);
         }
-        ((Lkp)lookup).startedNbTopManager();
+        ((MainLookup)lookup).startedNbTopManager();
     }
 
     /** Getter for instance of this manager.
     */
     public static NbTopManager get () {
-//        return (NbTopManager)TopManager.getDefault ();
-        return getNbTopManager();
+        assert defaultTopManager != null : "Must be initialized already"; // NOI18N
+        return defaultTopManager;
     }
     
     /** Danger method for clients who think they want an NbTM but don't actually
@@ -197,10 +107,6 @@ public abstract class NbTopManager {
      * @return a maybe half-constructed NbTM
      */
     public static NbTopManager getUninitialized() {
-        if (defaultTopManager != null) {
-            return defaultTopManager;
-        }
-        // Not even started - so synch and get it.
         return get();
     }
         
@@ -214,37 +120,6 @@ public abstract class NbTopManager {
         return defaultTopManager != null;
     }
     
-    private static NbTopManager getNbTopManager () {
-        boolean doInit = false;
-        synchronized(NbTopManager.class) {
-            if (defaultTopManager == null) {
-    
-                String className = System.getProperty(
-                                       "org.openide.TopManager", // NOI18N
-                                       "org.netbeans.core.Plain" // NOI18N
-                                   );
-    
-                try {
-                    Class c = Class.forName(className);
-                    defaultTopManager = (NbTopManager)c.newInstance();
-                    doInit = true;
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    throw new IllegalStateException();
-                }
-    
-            }
-        }
-        if (doInit) {
-            // late initialization of the manager if needed
-            if (defaultTopManager instanceof Runnable) {
-                ((Runnable)defaultTopManager).run ();
-            }
-        }
-
-        return defaultTopManager;
-    }
-
     /** Test method to check whether some level of interactivity is enabled.
      * XXX this method is unused; can it be deleted?
     * @param il mask composed of the constants of IL_XXXX
@@ -259,7 +134,7 @@ public abstract class NbTopManager {
     /** Register new instance.
      */
     public final void register (Object obj) {
-        instanceContent.add (obj);
+        MainLookup.register (obj);
     }
     
     /** Register new instance.
@@ -267,24 +142,18 @@ public abstract class NbTopManager {
      * @param conv convertor which postponing an instantiation
      */
     public final void register(Object obj, InstanceContent.Convertor conv) {
-        instanceContent.add(obj, conv);
+        MainLookup.register (obj, conv);
     }
     
     /** Unregisters the service.
      */
     public final void unregister (Object obj) {
-        instanceContent.remove (obj);
+        MainLookup.unregister (obj);
     }
     /** Unregisters the service registered with a convertor.
      */
     public final void unregister (Object obj, InstanceContent.Convertor conv) {
-        instanceContent.remove (obj, conv);
-    }
-    
-    /** Private get instance lookup.
-     */
-    private final Lookup getInstanceLookup () {
-        return instanceLookup;
+        MainLookup.unregister (obj, conv);
     }
     
     
@@ -374,7 +243,7 @@ public abstract class NbTopManager {
     }
 
     /** saves all opened objects */
-    public void saveAll () {
+    private static void saveAll () {
         DataObject dobj = null;
         ArrayList bad = new ArrayList ();
         DataObject[] modifs = DataObject.getRegistry ().getModified ();
@@ -448,8 +317,8 @@ public abstract class NbTopManager {
 
 
     
-    private boolean doingExit=false;
-    public void exit ( ) {
+    private static boolean doingExit=false;
+    public static void exit ( ) {
         // #37160 So there is avoided potential clash between hiding GUI in AWT
         // and accessing AWTTreeLock from saving routines (winsys).
         if(SwingUtilities.isEventDispatchThread()) {
@@ -466,11 +335,11 @@ public abstract class NbTopManager {
     /**
      * @return True if the IDE is shutting down.
      */
-    public boolean isExiting() {
+    public static boolean isExiting() {
         return doingExit;
     }
     
-    private void doExit() {
+    private static void doExit() {
         if (doingExit) {
             return ;
         }
@@ -497,7 +366,7 @@ public abstract class NbTopManager {
                     }
                 };
                 
-                if (getModuleSystem().shutDown(hideFrames)) {
+                if (org.netbeans.core.startup.Main.getModuleSystem().shutDown(hideFrames)) {
                     try {
                         try {
                             LoaderPoolNode.store();
@@ -511,11 +380,11 @@ public abstract class NbTopManager {
 //                            windowSystem.save();
 //                        }
                         try {
-                            ((Lkp)Lookup.getDefault()).storeCache();
+                            ((MainLookup)Lookup.getDefault()).storeCache();
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                         }
-                        org.netbeans.core.projects.SessionManager.getDefault().close();
+                        SessionManager.getDefault().close();
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable t) {
@@ -549,88 +418,23 @@ public abstract class NbTopManager {
         /** Default constructor for lookup. */
         public NbLifecycleManager() {}
         public void saveAll() {
-            NbTopManager.get().saveAll();
+            NbTopManager.saveAll();
         }
         public void exit() {
-            NbTopManager.get().exit();
+            NbTopManager.exit();
         }
     }
 
     /** Get the module subsystem. */
     public abstract ModuleSystem getModuleSystem();
-
-    /** Reads system properties from a file on a disk and stores them 
-     * in System.getPropeties ().
-     */
-    private static void readEnvMap () throws IOException {
-        java.util.Properties env = System.getProperties ();
-        
-        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.5")) >= 0) { // NOI18N
-            try {
-                java.lang.reflect.Method getenv = System.class.getMethod("getenv", null);
-                Map m = (Map)getenv.invoke(null, null);
-                for (Iterator it = m.entrySet().iterator(); it.hasNext(); ) {
-                    Map.Entry entry = (Map.Entry)it.next();
-                    String key = (String)entry.getKey();
-                    String value = (String)entry.getValue();
-                
-                    env.put("Env-".concat(key), value); // NOI18N
-                    // E.g. on Turkish Unix, want env-display not env-d\u0131splay:
-                    env.put("env-".concat(key.toLowerCase(Locale.US)), value); // NOI18N
-                }
-                return;
-            } catch (Exception e) {
-                IOException ioe = new IOException();
-                ioe.initCause(e);
-                throw ioe;
-            }
-        }
-
-        String envfile = System.getProperty("netbeans.osenv"); // NOI18N
-        if (envfile != null) {
-                // XXX is any non-ASCII encoding even defined? unclear...
-                BufferedReader in = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(envfile)));
-                // #30621: use \0 when possible, \n as a fallback
-                char sep = Boolean.getBoolean("netbeans.osenv.nullsep") ? '\0' : '\n';
-                StringBuffer key = new StringBuffer(100);
-                StringBuffer value = new StringBuffer(1000);
-                boolean inkey = true;
-                while (true) {
-                    int c = in.read();
-                    if (c == -1) {
-                        break;
-                    }
-                    char cc = (char)c;
-                    if (inkey) {
-                        if (cc == sep) {
-                            throw new IOException("Environment variable name starting with '" + key + "' contained the separator (char)" + (int)sep); // NOI18N
-                        } else if (cc == '=') {
-                            inkey = false;
-                        } else {
-                            key.append(cc);
-                        }
-                    } else {
-                        if (cc == sep) {
-                            // [pnejedly] These new String() calls are intentional
-                            // because of memory consumption. Don't touch them
-                            // unless you know what you're doing
-                            inkey = true;
-                            String k = key.toString();
-                            String v = new String(value.toString());
-                            env.put(new String("Env-" + k), v); // NOI18N
-                            // E.g. on Turkish Unix, want env-display not env-d\u0131splay:
-                            env.put(new String("env-" + k.toLowerCase(Locale.US)), v); // NOI18N
-                            key.setLength(0);
-                            value.setLength(0);
-                        } else {
-                            value.append(cc);
-                        }
-                    }
-                }
-        }
+    
+    public static Lookup getModuleLookup() {
+        return org.netbeans.core.startup.Main.getModuleSystem().getManager().getModuleLookup();
     }
 
+    public static List getModuleJars() {
+        return org.netbeans.core.startup.Main.getModuleSystem().getModuleJars();
+    }
 
     /**
      * Able to reuse HtmlBrowserComponent.
@@ -726,123 +530,4 @@ public abstract class NbTopManager {
             }
         }
     }
-    
-    /** The default lookup for the system.
-     */
-    public static final class Lkp extends ProxyLookup {
-        private static boolean started = false;
-        /** currently effective ClassLoader */
-        private static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        
-        /** Someone called NbTopManager.get().
-         * That means that subsequent calls to lookup on ModuleInfo
-         * need not try to get it again.
-         */
-        public static void startedNbTopManager() {
-            started = true;
-        }
-        
-        /** Initialize the lookup to delegate to NbTopManager.
-        */
-        public Lkp () {
-            super (new Lookup[] {
-                       // #14722: pay attention also to META-INF/services/class.Name resources:
-                       Lookups.metaInfServices(classLoader),
-                       Lookups.singleton(classLoader),
-                       Lookup.EMPTY, // will be moduleLookup
-                   });
-        }
-                
-        /** Called when a system classloader changes.
-         */
-        public static final void systemClassLoaderChanged (ClassLoader nue) {
-            if (classLoader != nue) {
-                classLoader = nue;
-                Lkp l = (Lkp)Lookup.getDefault();
-                Lookup[] delegates = l.getLookups();
-                Lookup[] newDelegates = (Lookup[])delegates.clone();
-                // Replace classloader.
-                newDelegates[0] = Lookups.metaInfServices(classLoader);
-                newDelegates[1] = Lookups.singleton(classLoader);
-                l.setLookups(newDelegates);
-            }
-        }
-
-        /** Called when modules are about to be turned on.
-         */
-        public static final void moduleClassLoadersUp() {
-            Lkp l = (Lkp)Lookup.getDefault();
-            Lookup[] newDelegates = null;
-            Lookup[] delegates = l.getLookups();
-            newDelegates = (Lookup[])delegates.clone();
-            newDelegates[0] = Lookups.metaInfServices(classLoader);
-            l.setLookups(newDelegates);
-        }
-
-        /** Called when Lookup<ModuleInfo> is ready from the ModuleManager.
-         * @see "#28465"
-         */
-        public static final void moduleLookupReady(Lookup moduleLookup) {
-            Lkp l = (Lkp)Lookup.getDefault();
-            Lookup[] newDelegates = (Lookup[])l.getLookups().clone();
-            newDelegates[2] = moduleLookup;
-            l.setLookups(newDelegates);
-        }
-
-        /** When all module classes are accessible thru systemClassLoader, this
-         * method is called to initialize the FolderLookup.
-         */
-	    
-        public static final void modulesClassPathInitialized () {
-            //System.err.println("mCPI");
-	    //StartLog.logStart ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
-
-            // replace the lookup by new one
-            Lookup lookup = Lookup.getDefault ();
-	    StartLog.logProgress ("Got Lookup"); // NOI18N
-
-            ((Lkp)lookup).doInitializeLookup ();
-        }
-        
-        private final void doInitializeLookup () {
-            //System.err.println("doInitializeLookup");
-
-            // extend the lookup
-            Lookup[] arr = new Lookup[] {
-                getLookups()[0], // metaInfServicesLookup
-                getLookups()[1], // ClassLoader lookup
-                getLookups()[2], // ModuleInfo lookup
-                // XXX figure out how to put this ahead of MetaInfServicesLookup (for NonGuiMain):
-                NbTopManager.get ().getInstanceLookup (),
-                LookupCache.load(),
-            };
-            StartLog.logProgress ("prepared other Lookups"); // NOI18N
-
-            setLookups (arr);
-            StartLog.logProgress ("Lookups set"); // NOI18N
-
-	    //StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
-        }
-        
-        public void storeCache() throws IOException {
-            Lookup[] ls = getLookups();
-            if (ls.length == 5) {
-                // modulesClassPathInitialized has been called, so store folder lookup
-                LookupCache.store(ls[4]);
-            }
-        }
-        
-        protected void beforeLookup(Lookup.Template templ) {
-            Class type = templ.getType();
-            
-            // Force module system to be initialize by looking up ModuleInfo.
-            // Good for unit tests, etc.
-            if (!started && (type == ModuleInfo.class || type == Module.class)) {
-                NbTopManager.get();
-            }
-            
-            super.beforeLookup(templ);
-        }
-    }
-    
 }

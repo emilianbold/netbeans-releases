@@ -183,9 +183,6 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                         if (tok.countTokens () != 2 || !tok.nextToken ().equals ("IDE/1")) {
                             throw new BuildException ("Wrong OpenIDE-Module-IDE-Dependencies: " + ideDeps);
                         }
-
-                        depends.add (new Dependency ("org.openide/1", Dependency.REQUIRES, false, tok.nextToken ()));
-
                     }
                 }
                 addDependencies (depends, file.getManifest (), Dependency.REQUIRES, "OpenIDE-Module-Module-Dependencies");
@@ -726,7 +723,8 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
          * tokens provided by real modules.
          */
         public boolean isSpecial () {
-            return token.startsWith ("org.openide.modules.os");
+            return token.startsWith ("org.openide.modules.os") ||
+                   token.startsWith ("org.openide.modules.ModuleFormat");
         }
         
         public boolean isDependingOn (ModuleInfo info) {

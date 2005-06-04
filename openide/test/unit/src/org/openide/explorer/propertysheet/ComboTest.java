@@ -57,7 +57,11 @@ public class ComboTest extends NbTestCase {
     private static boolean setup=false;
     
     static {
-        org.netbeans.core.NonGui.registerPropertyEditors();
+        registerPropertyEditors();
+    }
+    
+    public static void registerPropertyEditors () {
+        org.netbeans.core.startup.Main.registerPropertyEditors();
     }
     
     public ComboTest(String name) {

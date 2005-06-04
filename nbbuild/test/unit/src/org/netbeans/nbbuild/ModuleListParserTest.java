@@ -56,7 +56,7 @@ public class ModuleListParserTest extends TestCase {
         properties.put("netbeans.dest.dir", build.getAbsolutePath());
         properties.put("nb.cluster.foo", "beans,clazz");
         properties.put("nb.cluster.foo.dir", "foodir");
-        properties.put("nb.cluster.bar", "core");
+        properties.put("nb.cluster.bar", "core/startup");
         properties.put("nb.cluster.bar.dir", "bardir");
         ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_NB_ORG, null);
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.modules.beans");
@@ -85,9 +85,9 @@ public class ModuleListParserTest extends TestCase {
         }), Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.netbeans.modules.javanavigation");
         assertNotNull("found module in a subsubdir", e);
-        e = p.findByCodeNameBase("org.netbeans.core");
+        e = p.findByCodeNameBase("org.netbeans.core.startup");
         assertNotNull(e);
-        assertEquals("org.netbeans.core", e.getCnb());
+        assertEquals("org.netbeans.core.startup", e.getCnb());
         assertEquals("handling special JAR names correctly", file(build, "bardir/core/core.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.netbeans.modules.xml.tax");
@@ -141,7 +141,7 @@ public class ModuleListParserTest extends TestCase {
         e = p.findByCodeNameBase("org.openide.loaders");
         assertNotNull(e);
         assertEquals("org.openide.loaders", e.getCnb());
-        assertEquals(file(nball, "nbbuild/netbeans/platform5/core/openide-loaders.jar"), e.getJar());
+        assertEquals(file(nball, "nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.netbeans.bootstrap");
         assertNotNull(e);

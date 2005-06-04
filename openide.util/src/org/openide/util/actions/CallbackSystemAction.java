@@ -193,8 +193,9 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         final ActionPerformer ap = getActionPerformer();
 
         if (ap != null) {
-            doPerformAction(
-                new ActionRunnable(ev) {
+            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(
+                this,
+                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(ev, this, asynchronous ()) {
                     public void run() {
                         ap.performAction(CallbackSystemAction.this);
                     }
@@ -546,13 +547,14 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
             final javax.swing.Action a = findAction();
 
             if (a != null) {
-                ActionRunnable run = delegate.new ActionRunnable(e) {
+                org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable run;
+                run = new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(e, delegate, delegate.asynchronous()) {
                             public void run() {
                                 a.actionPerformed(e);
                             }
                         };
 
-                delegate.doPerformAction(run);
+                org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(delegate, run);
             } else {
                 // XXX #30303 if the action falls back to the old behaviour
                 // it may not be performed in case it is in dialog and

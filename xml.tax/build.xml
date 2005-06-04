@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
          <pathelement location="${openide/explorer.dir}/modules/org-openide-explorer.jar"/>
          <pathelement location="${openide/dialogs.dir}/modules/org-openide-dialogs.jar"/>
-         <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+         <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar"/>
          <pathelement location="${openide/text.dir}/modules/org-openide-text.jar"/>
          <pathelement location="${lib_root}/src"/>
          <pathelement location="${xml/api.dir}/modules/org-netbeans-api-xml.jar"/>

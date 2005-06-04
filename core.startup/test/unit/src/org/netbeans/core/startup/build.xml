@@ -1,0 +1,263 @@
+<?xml version="1.0"?><!-- -*- sgml-indent-step: 4 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="modules test setup" basedir="." default="build">
+    <import file="../../../../../../../../../nbbuild/default-properties.xml"/>
+
+    <target name="build" description="Build stuff for modules tests">
+	<path id="openide">
+	    <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
+            <pathelement location="${openide/modules.dir}/lib/org-openide-modules.jar"/>
+            <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
+	    <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar"/>
+        </path>
+        <property name="jars" location="jars"/>
+        <antcall target="create-jar">
+            <param name="name" value="simple-module"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="depends-on-simple-module"/>
+            <param name="cp" value="${jars}/simple-module.jar"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="dep-on-dep-on-simple"/>
+            <param name="cp" value="${jars}/simple-module.jar:${jars}/depends-on-simple-module.jar"/>
+        </antcall>
+        <!-- For cyclic stuff, we precompile them together. For other tests -->
+        <!-- this is illegal and we do not need to. -->
+        <javac destdir="jars/cyclic-1">
+            <src path="jars/cyclic-1"/>
+            <src path="jars/cyclic-2"/>
+        </javac>
+        <jar manifest="jars/cyclic-1.mf" compress="false" jarfile="jars/cyclic-1.jar">
+            <fileset dir="jars/cyclic-1">
+                <exclude name="**/*.java"/>
+                <exclude name="**/*.nbattrs"/>
+                <exclude name="org/bar/"/>
+            </fileset>
+        </jar>
+        <!-- Now should be able to continue normally. -->
+        <antcall target="create-jar">
+            <param name="name" value="cyclic-2"/>
+            <param name="cp" value="${jars}/cyclic-1.jar"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="depends-on-cyclic-1"/>
+            <param name="cp" value="${jars}/cyclic-1.jar:${jars}/cyclic-2.jar"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="library-undecl"/>
+            <param name="sourcedir" value="jars/library-src"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="library-unvers"/>
+            <param name="sourcedir" value="jars/library-src"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="library-vers"/>
+            <param name="sourcedir" value="jars/library-src"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="library-vers-partial"/>
+            <param name="sourcedir" value="jars/library-src"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="depends-on-lib-undecl"/>
+            <param name="sourcedir" value="jars/depends-on-library-src"/>
+            <param name="cp" value="${jars}/library-undecl.jar"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="depends-on-lib-unvers"/>
+            <param name="sourcedir" value="jars/depends-on-library-src"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="depends-on-lib-vers"/>
+            <param name="sourcedir" value="jars/depends-on-library-src"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="depends-on-lib-vers-partial"/>
+            <param name="sourcedir" value="jars/depends-on-library-src"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="fails-on-lib-undecl"/>
+            <param name="sourcedir" value="jars/depends-on-library-src"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="fails-on-lib-unvers"/>
+            <param name="sourcedir" value="jars/depends-on-library-src"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="fails-on-lib-old"/>
+            <param name="sourcedir" value="jars/depends-on-library-src"/>
+        </antcall>
+        <!-- Create this guy separately: -->
+        <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../../../../../../../../nbbuild/nbantext.jar"/>
+        <locjar jarfile="jars/localized-manifest.jar" manifest="jars/localized-manifest.mf" compress="false" preservemodulejar="false">
+            <fileset dir="jars/localized-manifest"/>
+            <locale name="cs"/>
+        </locjar>
+        <antcall target="create-jar">
+            <param name="name" value="patchable"/>
+        </antcall>
+        <!-- Make the patch JAR specially: -->
+        <javac srcdir="jars/patch" destdir="jars/patch">
+            <classpath>
+                <pathelement location="jars/patchable.jar"/>
+            </classpath>
+        </javac>
+        <mkdir dir="jars/patches/pkg-subpkg"/>
+        <jar jarfile="jars/patches/pkg-subpkg/some-patch.jar" compress="false">
+            <fileset dir="jars/patch">
+                <exclude name="**/*.java"/>
+                <exclude name="**/*.nbattrs"/>
+            </fileset>
+        </jar>
+        <!-- Provides/requires stuff. Most do not need any JAR contents. -->
+        <antcall target="create-jar">
+            <param name="name" value="prov-foo"/>
+        </antcall>
+        <jar jarfile="jars/req-foo.jar" manifest="jars/req-foo.mf"/>
+        <jar jarfile="jars/prov-foo-bar.jar" manifest="jars/prov-foo-bar.mf"/>
+        <jar jarfile="jars/req-foo-baz.jar" manifest="jars/req-foo-baz.mf"/>
+        <jar jarfile="jars/prov-baz.jar" manifest="jars/prov-baz.mf"/>
+        <jar jarfile="jars/prov-foo-req-bar.jar" manifest="jars/prov-foo-req-bar.mf"/>
+        <jar jarfile="jars/prov-bar-req-foo.jar" manifest="jars/prov-bar-req-foo.mf"/>
+        <jar jarfile="jars/prov-bar-dep-cyclic.jar" manifest="jars/prov-bar-dep-cyclic.mf"/>
+        <!-- Major release version tests. -->
+        <jar jarfile="jars/rel-ver-2.jar" manifest="jars/rel-ver-2.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-1.jar" manifest="jars/dep-on-relvertest-1.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-1-2.jar" manifest="jars/dep-on-relvertest-1-2.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-1-2-nospec.jar" manifest="jars/dep-on-relvertest-1-2-nospec.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-2.jar" manifest="jars/dep-on-relvertest-2.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-2-3.jar" manifest="jars/dep-on-relvertest-2-3.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-2-3-late.jar" manifest="jars/dep-on-relvertest-2-3-late.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-2-impl.jar" manifest="jars/dep-on-relvertest-2-impl.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-2-impl-wrong.jar" manifest="jars/dep-on-relvertest-2-impl-wrong.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-2-late.jar" manifest="jars/dep-on-relvertest-2-late.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-3-4.jar" manifest="jars/dep-on-relvertest-3-4.mf"/>
+        <jar jarfile="jars/dep-on-relvertest-some.jar" manifest="jars/dep-on-relvertest-some.mf"/>
+        <jar jarfile="jars/depends-on-simple-module-2.jar" manifest="jars/depends-on-simple-module-2.mf"/>
+        <antcall target="create-jar">
+            <param name="name" value="api-mod-export-all"/>
+            <param name="sourcedir" value="jars/exposes-api"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="api-mod-export-none"/>
+            <param name="sourcedir" value="jars/exposes-api"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="api-mod-export-api"/>
+            <param name="sourcedir" value="jars/exposes-api"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="api-mod-export-friend"/>
+            <param name="sourcedir" value="jars/exposes-api"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="uses-api-simple-dep"/>
+            <param name="sourcedir" value="jars/uses-api"/>
+            <param name="cp" value="${jars}/api-mod-export-api.jar"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="uses-api-impl-dep"/>
+            <param name="sourcedir" value="jars/uses-api"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="uses-api-impl-dep-for-friends"/>
+            <param name="sourcedir" value="jars/uses-api"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="uses-api-spec-dep"/>
+            <param name="sourcedir" value="jars/uses-api"/>
+        </antcall>
+        <locjar jarfile="jars/base-layer-mod.jar" manifest="jars/base-layer-mod.mf" compress="false" preservemodulejar="false">
+            <fileset dir="jars/base-layer-mod"/>
+            <locale name="cs"/>
+            <locale name="foo"/>
+        </locjar>
+        <jar jarfile="jars/override-layer-mod.jar" manifest="jars/override-layer-mod.mf" compress="false">
+            <fileset dir="jars/override-layer-mod"/>
+        </jar>
+        <jar jarfile="jars/dep-on-two-modules.jar" manifest="jars/dep-on-two-modules.mf"/>
+        <antcall target="create-jar">
+            <param name="name" value="uses-and-exports-api"/>
+            <param name="sourcedir" value="jars/uses-api"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="uses-api-transitively"/>
+            <param name="cp" value="${jars}/api-mod-export-api.jar:${jars}/uses-and-exports-api.jar"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="uses-api-directly"/>
+            <param name="sourcedir" value="jars/uses-api-transitively"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="uses-api-transitively-old"/>
+            <param name="sourcedir" value="jars/uses-api-transitively"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="uses-api-directly-old"/>
+            <param name="sourcedir" value="jars/uses-api-transitively"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="look-for-myself"/>
+        </antcall>
+        <antcall target="create-jar">
+            <param name="name" value="uses-api-friend"/>
+            <param name="sourcedir" value="jars/uses-api"/>
+        </antcall>
+        <!-- Don't use <jar>! It will add Created-By: Ant 1.nnn, which screws up results. -->
+        <zip zipfile="jars/little-manifest.jar" compress="false">
+            <zipfileset dir="jars" includes="little-manifest.mf" fullpath="META-INF/MANIFEST.MF"/>
+        </zip>
+        <zip zipfile="jars/medium-manifest.jar" compress="false">
+            <zipfileset dir="jars" includes="medium-manifest.mf" fullpath="META-INF/MANIFEST.MF"/>
+        </zip>
+        <zip zipfile="jars/big-manifest.jar" compress="false">
+            <zipfileset dir="jars" includes="big-manifest.mf" fullpath="META-INF/MANIFEST.MF"/>
+        </zip>
+    </target>
+
+    <!-- Create a JAR file under jars/; give the name (must have subdir w/ contents and manifest) -->
+    <target name="create-jar">
+        <property name="sourcedir" location="jars/${name}"/>
+        <javac destdir="${sourcedir}" srcdir="${sourcedir}">
+            <!-- Permit use of Open APIs from module code: -->
+            <classpath refid="openide"/>
+            <!-- Permit them to compile against one another -->
+            <!-- (note this means they must be built in a reasonable order): -->
+            <classpath>
+                <pathelement path="${cp}"/>
+            </classpath>
+        </javac>
+        <jar manifest="jars/${name}.mf" compress="false" jarfile="jars/${name}.jar">
+            <fileset dir="${sourcedir}">
+                <exclude name="**/*.java"/>
+                <exclude name="**/*.nbattrs"/>
+            </fileset>
+        </jar>
+    </target>
+
+    <target name="clean" description="Clean stuff from modules tests">
+        <delete>
+            <fileset dir="jars">
+                <include name="*.jar"/>
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+        <delete dir="jars/locale"/>
+        <delete dir="jars/patches"/>
+    </target>
+
+</project>

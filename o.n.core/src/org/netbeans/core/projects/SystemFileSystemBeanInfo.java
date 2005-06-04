@@ -15,6 +15,7 @@ package org.netbeans.core.projects;
 
 import java.awt.Image;
 import java.beans.*;
+import org.netbeans.core.startup.layers.SystemFileSystem;
 
 import org.openide.util.Utilities;
 import org.openide.ErrorManager;
@@ -22,6 +23,7 @@ import org.openide.ErrorManager;
 /** Object that provides beaninfo for a SystemFileSystem.
 *
 * @author Ian Formanek
+* // JST-PENDING this bean info in not in right place...
 */
 public class SystemFileSystemBeanInfo extends SimpleBeanInfo {
 

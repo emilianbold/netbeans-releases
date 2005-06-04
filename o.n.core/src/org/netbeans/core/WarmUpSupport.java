@@ -14,7 +14,7 @@
 package org.netbeans.core;
 
 import javax.swing.UIManager;
-import org.netbeans.core.perftool.StartLog;
+import org.netbeans.core.startup.StartLog;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;

@@ -117,7 +117,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * @return context help
      */
     public HelpCtx getHelpCtx() {
-        Object kit = support.kit();
+        Object kit = support.cesKit();
         HelpCtx fromKit = kit == null ? null : HelpCtx.findHelp(kit);
 
         if (fromKit != null) {
@@ -209,7 +209,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         paneMap.put("delete", getAction(DefaultEditorKit.deleteNextCharAction)); // NOI18N
         paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
 
-        pane.setEditorKit(support.kit());
+        pane.setEditorKit(support.cesKit());
 
         pane.setDocument(doc);
 
@@ -312,7 +312,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 "Can not open " + this + " component," // NOI18N
                  +" its support environment is not valid" // NOI18N
                  +" [support=" + support + ", env=" // NOI18N
-                 +((support == null) ? null : support.env()) + "]"
+                 +((support == null) ? null : support.cesEnv()) + "]"
             ); // NOI18N
         } else {
             Workspace realWorkspace = (workspace == null) ? WindowManager.getDefault().getCurrentWorkspace() : workspace;
@@ -418,7 +418,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
 
         // Try to find the action from kit.
-        EditorKit kit = support.kit();
+        EditorKit kit = support.cesKit();
 
         if (kit == null) { // kit is cleared in closeDocument()
 
@@ -485,7 +485,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         // Save environent if support is non-null.
         // XXX #13685: When support is null, the tc will be discarded 
         // after deserialization.
-        out.writeObject((support != null) ? support.env() : null);
+        out.writeObject((support != null) ? support.cesEnv() : null);
 
         // #16461 Caret could be null?!,
         // hot fix - making it robust for that case.
@@ -598,7 +598,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     * is not valid.
     */
     private boolean discard() {
-        return (support == null) || !support.env().isValid();
+        return (support == null) || !support.cesEnv().isValid();
     }
 
     /** Dock this top component to editor mode if it is not docked

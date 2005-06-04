@@ -21,7 +21,7 @@ import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.TestUtil;
-import org.netbeans.core.filesystems.ArchiveURLMapper;
+import org.netbeans.core.startup.layers.ArchiveURLMapper;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.JavaPlatformProviderImpl;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
