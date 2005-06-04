@@ -44,6 +44,10 @@ import javax.swing.JMenuItem;
 
 
 /**
+ * A type of action that listens on change in activated nodes selection and
+ * allows its subclasses to simply change their enabled state and handle
+ * action invocation requests.
+ * <p>
  * Whenever a list of activated nodes changes (a new <a href="@org-openide-windows@/org/openide/windows/TopComponent.html">
  * TopComponent</a> is selected or
  * its internal selection changes like in 
