@@ -37,7 +37,7 @@ public final class ModuleLifecycleManager extends ModuleInstall {
 
     public void validate() throws IllegalStateException {
         final Boolean [] oldEnabled = new Boolean[] { Boolean.FALSE };
-        final ModuleManager mgr = NbTopManager.get().getModuleSystem().getManager();
+        final ModuleManager mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         mgr.mutex().readAccess(new Runnable() {
             public void run() {
                 Module m;
