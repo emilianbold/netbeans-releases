@@ -27,6 +27,7 @@ import org.openide.xml.XMLUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings;
 import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
@@ -41,10 +42,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import java.io.*;
 import java.awt.*;
-import java.util.Set;
-import java.util.Vector;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.*;
 
 /**
  * Imports project into CVS repository.
@@ -171,6 +169,14 @@ public final class AddToRepositoryAction extends NodeAction {
                             dialog.show();
                             if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
 
+                                try {
+                                    ignorePrivateMetadata(project);
+                                } catch (IOException e) {
+                                    ErrorManager err = ErrorManager.getDefault();
+                                    err.annotate(e, "Can not setup .cvsignore for project's private metadata!");
+                                    err.notify(e);
+                                }
+
                                 String logMessage = importPanel.commentTextArea.getText();
                                 String module = importPanel.moduleTextField.getText();
                                 String vendorTag = "default_vendor";
@@ -222,7 +228,7 @@ public final class AddToRepositoryAction extends NodeAction {
         supportedMethod |= root.startsWith(":fork:"); // NOI18N
         supportedMethod |= root.startsWith(":ext:"); // NOI18N
         valid &= supportedMethod;
-        
+
         try {
             CVSRoot.parse(root);
         } catch (IllegalArgumentException ex) {
@@ -242,6 +248,49 @@ public final class AddToRepositoryAction extends NodeAction {
         return NbBundle.getMessage(AddToRepositoryAction.class, "BK0005");
     }
 
+    private void ignorePrivateMetadata(Project project) throws IOException {
+        FileObject projectFolder = project.getProjectDirectory();
+        File projectMetaDirectory = FileUtil.toFile(projectFolder);
+        // XXX seek for project metadata dirsctory, there is private section
+        if ("nbproject".equals(projectMetaDirectory.getName()) == false) { // NOi18N
+            projectMetaDirectory = new File(projectMetaDirectory, "nbproject"); // NOi18N
+        }
+        if (projectMetaDirectory.isDirectory()) {
+            File[] projectMeta = projectMetaDirectory.listFiles();
+            Set ignored = new HashSet();
+            for (int i = 0; i < projectMeta.length; i++) {
+                File file = projectMeta[i];
+                String name = file.getName();
+                if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) {
+                    if (".cvsignore".equals(name) == false) {  // NOI18N
+                        ignored.add(name);
+                    }
+                }
+            }
+
+            if (ignored.size() > 0) {
+                File cvsIgnore = new File(projectMetaDirectory, ".cvsignore"); // NOI18N
+                OutputStream out = null;
+                try {
+                    out = new FileOutputStream(cvsIgnore);
+                    PrintWriter pw = new PrintWriter(out);
+                    Iterator it = ignored.iterator();
+                    while (it.hasNext()) {
+                        String name = (String) it.next();
+                        pw.println(name);
+                    }
+                    pw.close();
+                } finally {
+                    if (out != null) {
+                        try {
+                            out.close();
+                        } catch (IOException alreadyClosed) {
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     protected boolean asynchronous() {
         return false;
