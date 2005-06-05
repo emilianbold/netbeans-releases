@@ -564,7 +564,7 @@ public final class CheckoutWizard {
                 ErrorManager err = ErrorManager.getDefault();
                 err.annotate(e, "Test connection failed, suggesting to use a proxy."); // NOi18N
                 err.notify(ErrorManager.INFORMATIONAL, e);
-                if (wizardIterator.current() == RepositoryStep.this) {
+                if (wizardIterator != null && wizardIterator.current() == RepositoryStep.this) {
                     String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1001", host);
                     invalid(msg);
                 }
@@ -572,7 +572,7 @@ public final class CheckoutWizard {
                 ErrorManager err = ErrorManager.getDefault();
                 err.annotate(e, "Connection authentification verification failed.");  // NOI18N
                 err.notify(ErrorManager.INFORMATIONAL, e);
-                if (wizardIterator.current() == RepositoryStep.this) {
+                if (wizardIterator != null && wizardIterator.current() == RepositoryStep.this) {
                     String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1002");
                     invalid(msg);
                 }
