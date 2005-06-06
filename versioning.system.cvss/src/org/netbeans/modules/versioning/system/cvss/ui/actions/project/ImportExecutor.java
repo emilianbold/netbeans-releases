@@ -24,6 +24,8 @@ import org.openide.util.actions.SystemAction;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 
+import java.io.File;
+
 /**
  * Simple import command ExecutorSupport subclass.
  *
@@ -33,21 +35,31 @@ final class ImportExecutor extends ExecutorSupport {
 
     private final String module;
     private final String cvsRoot;
+    private final boolean checkout;
+    private final String workDir;
 
-    public ImportExecutor(ImportCommand cmd, GlobalOptions options) {
+    /**
+     * Creates new executor that on succesfull import
+     * launches post checkout.
+     *
+     * @param cmd
+     * @param options
+     * @param checkout
+     * @param workDir
+     */
+    public ImportExecutor(ImportCommand cmd, GlobalOptions options, boolean checkout, String workDir) {
         super(CvsVersioningSystem.getInstance(), cmd, options);
         module = cmd.getModule();
         cvsRoot = options.getCVSRoot();
+        this.checkout = checkout;
+        this.workDir = workDir;
     }
 
     protected void commandFinished(ClientRuntime.Result result) {
         if (result.getError() == null) {
-            String msg = NbBundle.getMessage(ImportExecutor.class, "BK0009");
-            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.OK_CANCEL_OPTION);
-            Object value = DialogDisplayer.getDefault().notify(descriptor);
-            if (value == NotifyDescriptor.OK_OPTION) {
+            if (checkout) {
                 CheckoutAction checkoutAction = (CheckoutAction) SystemAction.get(CheckoutAction.class);
-                checkoutAction.checkout(cvsRoot, module);
+                checkoutAction.checkout(cvsRoot, module, null, workDir, true);
             }
         }
     }

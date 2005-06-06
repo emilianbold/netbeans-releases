@@ -71,27 +71,34 @@ public final class CheckoutAction extends SystemAction {
         return new HelpCtx(CheckoutAction.class);
     }
 
+    /**
+     * Shows interactive chekcout wizard.
+     */
     public void actionPerformed(ActionEvent ev) {
         CheckoutWizard wizard = new CheckoutWizard();
         if (wizard.show() == false) return;
 
-        perform(wizard);
+        String tag = wizard.getTag();
+        String modules = wizard.getModules();
+        String workDir = wizard.getWorkingDir();
+        String cvsRoot = wizard.getCvsRoot();
+        checkout(cvsRoot, modules, tag, workDir, false);
     }
+
 
     /**
      * Perform checkout action with preconfigured values.
+     * On succesfull finish shows open project dialog.
+     *
+     * @param modules comma separated list of modules
+     * @param tag branch name of <code>null</code> for trunk
+     * @param workingDir target directory
+     * @param openProject if true scan folder for projects and show UI
      */
-    public void checkout(String cvsRoot, String module) {
-        CheckoutWizard wizard = new CheckoutWizard(cvsRoot, module);
-        if (wizard.show() == false) return;
-
-        perform(wizard);
-    }
-
-    private void perform(CheckoutWizard wizard) {
+    public void checkout(String cvsRoot, String modules, String tag, String workingDir, boolean openProject) {
         CheckoutCommand cmd = new CheckoutCommand();
 
-        String moduleString = wizard.getModules();
+        String moduleString = modules;
         if (moduleString == null || moduleString.length() == 0) {
             moduleString = ".";  // NOI18N
         }
@@ -104,13 +111,12 @@ public final class CheckoutAction extends SystemAction {
                 String s = tokenizer.nextToken();
                 moduleList.add(s);
             }
-            String[] modules = (String[]) moduleList.toArray(new String[moduleList.size()]);
-            cmd.setModules(modules);
+            String[] modules2 = (String[]) moduleList.toArray(new String[moduleList.size()]);
+            cmd.setModules(modules2);
         }
 
         cmd.setDisplayName(NbBundle.getMessage(CheckoutAction.class, "BK1006"));
 
-        String tag = wizard.getTag();
         if (tag != null) {
             cmd.setCheckoutByRevision(tag);
         } else {
@@ -119,20 +125,19 @@ public final class CheckoutAction extends SystemAction {
         cmd.setPruneDirectories(true);
         cmd.setRecursive(true);
 
-        String workingDir = wizard.getWorkingDir();
         File workingFolder = new File(workingDir);
         File[] files = new File[] {workingFolder};
         cmd.setFiles(files);
 
         CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
         GlobalOptions gtx = new GlobalOptions();
-        gtx.setCVSRoot(wizard.getCvsRoot());
+        gtx.setCVSRoot(cvsRoot);
         CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
 
         executor.execute();
-        if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0) {
+        if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0 || openProject) {
             RequestProcessor.Task task = executor.getTask();
-            task.addTaskListener(new CheckoutCompletedController(executor, workingFolder));
+            task.addTaskListener(new CheckoutCompletedController(executor, workingFolder, openProject));
         }
     }
 
@@ -141,13 +146,16 @@ public final class CheckoutAction extends SystemAction {
 
         private final CheckoutExecutor executor;
         private final File workingFolder;
+        private final boolean openProject;
+
         private CheckoutCompletedPanel panel;
         private Dialog dialog;
         private Project projectToBeOpened;
 
-        public CheckoutCompletedController(CheckoutExecutor executor, File workingFolder) {
+        public CheckoutCompletedController(CheckoutExecutor executor, File workingFolder, boolean openProject) {
             this.executor = executor;
             this.workingFolder = workingFolder;
+            this.openProject = openProject;
         }
 
         public void taskFinished(Task task) {
@@ -177,6 +185,7 @@ public final class CheckoutAction extends SystemAction {
             panel.createButton.addActionListener(this);
             panel.closeButton.addActionListener(this);
             panel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
+            panel.againCheckBox.setVisible(openProject == false);
             String title = NbBundle.getMessage(CheckoutAction.class, "BK1008");
             DialogDescriptor descriptor = new DialogDescriptor(panel, title);
             descriptor.setModal(true);
@@ -186,7 +195,7 @@ public final class CheckoutAction extends SystemAction {
             panel.remove(panel.createButton);
             panel.remove(panel.closeButton);
 
-            Object[] options;
+            Object[] options = null;
             if (checkedOutProjects.size() > 1) {
                 String msg = NbBundle.getMessage(CheckoutAction.class, "BK1009", new Integer(checkedOutProjects.size()));
                 panel.jLabel1.setText(msg);
@@ -257,15 +266,7 @@ public final class CheckoutAction extends SystemAction {
 
                 if (p == null) return;
 
-                Project[] projects = new Project[] {p};
-                OpenProjects.getDefault().open(projects, true);
-
-                // set as main project and expand
-                ContextAwareAction action = (ContextAwareAction) CommonProjectActions.setAsMainProjectAction();
-                Lookup ctx = Lookups.singleton(p);
-                Action ctxAction = action.createContextAwareInstance(ctx);
-                ctxAction.actionPerformed(null);
-                ProjectUtilities.selectAndExpandProject(p);
+                openProject(p);
 
             } else if (panel.createButton.equals(src)) {
                 ProjectUtilities.newProjectWizard(workingFolder);
@@ -273,6 +274,18 @@ public final class CheckoutAction extends SystemAction {
             if (panel.againCheckBox.isSelected()) {
                HistorySettings.setFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, 0);
             }
+        }
+
+        private void openProject(Project p) {
+            Project[] projects = new Project[] {p};
+            OpenProjects.getDefault().open(projects, true);
+
+            // set as main project and expand
+            ContextAwareAction action = (ContextAwareAction) CommonProjectActions.setAsMainProjectAction();
+            Lookup ctx = Lookups.singleton(p);
+            Action ctxAction = action.createContextAwareInstance(ctx);
+            ctxAction.actionPerformed(null);
+            ProjectUtilities.selectAndExpandProject(p);
         }
     }
 }

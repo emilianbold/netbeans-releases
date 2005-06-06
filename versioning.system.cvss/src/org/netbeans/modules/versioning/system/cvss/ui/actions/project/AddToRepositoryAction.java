@@ -27,6 +27,8 @@ import org.openide.xml.XMLUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings;
 import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
@@ -147,6 +149,11 @@ public final class AddToRepositoryAction extends NodeAction {
                             final DialogDescriptor descriptor = new DialogDescriptor(importPanel, title);
                             descriptor.setModal(true);
 
+                            FileObject checkoutFolder = project.getProjectDirectory();
+                            String parentPath = FileUtil.toFile(checkoutFolder.getParent()).getAbsolutePath();
+                            String freeName = FileUtil.findFreeFolderName(checkoutFolder.getParent(), "versioned_" + checkoutFolder.getName());
+                            importPanel.workdirTextField.setText(parentPath + File.separator + freeName);
+
                             // user input validation
                             DocumentListener validation = new DocumentListener() {
                                 public void changedUpdate(DocumentEvent e) {
@@ -160,6 +167,7 @@ public final class AddToRepositoryAction extends NodeAction {
                             };
                             importPanel.moduleTextField.getDocument().addDocumentListener(validation);
                             importPanel.commentTextArea.getDocument().addDocumentListener(validation);
+                            importPanel.workdirTextField.getDocument().addDocumentListener(validation);
                             Component editor = importPanel.rootComboBox.getEditor().getEditorComponent();
                             JTextComponent textEditor = (JTextComponent) editor;
                             textEditor.getDocument().addDocumentListener(validation);
@@ -169,6 +177,19 @@ public final class AddToRepositoryAction extends NodeAction {
                             dialog.show();
                             if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
 
+                                boolean checkout = importPanel.checkoutCheckBox.isSelected();
+                                String workDir = importPanel.workdirTextField.getText();
+                                String logMessage = importPanel.commentTextArea.getText();
+                                String module = importPanel.moduleTextField.getText();
+                                String vendorTag = "default_vendor";
+                                String releaseTag = "default_release";
+                                String selectedRoot = (String) importPanel.rootComboBox.getSelectedItem();
+
+                                if (checkout) {
+                                    Project[] closeCurrent = new Project[] {project};
+                                    OpenProjects.getDefault().close(closeCurrent);
+                                }
+
                                 try {
                                     ignorePrivateMetadata(project);
                                 } catch (IOException e) {
@@ -176,12 +197,6 @@ public final class AddToRepositoryAction extends NodeAction {
                                     err.annotate(e, "Can not setup .cvsignore for project's private metadata!");
                                     err.notify(e);
                                 }
-
-                                String logMessage = importPanel.commentTextArea.getText();
-                                String module = importPanel.moduleTextField.getText();
-                                String vendorTag = "default_vendor";
-                                String releaseTag = "default_release";
-                                String selectedRoot = (String) importPanel.rootComboBox.getSelectedItem();
 
                                 GlobalOptions gtx = new GlobalOptions();
                                 gtx.setCVSRoot(selectedRoot);
@@ -191,7 +206,7 @@ public final class AddToRepositoryAction extends NodeAction {
                                 importCommand.setVendorTag(vendorTag);
                                 importCommand.setReleaseTag(releaseTag);
                                 importCommand.setImportDirectory(importDirectory.getPath());
-                                ImportExecutor executor = new ImportExecutor(importCommand, gtx);
+                                ImportExecutor executor = new ImportExecutor(importCommand, gtx, checkout, workDir);
                                 executor.execute();
                             }
 
@@ -233,6 +248,11 @@ public final class AddToRepositoryAction extends NodeAction {
             CVSRoot.parse(root);
         } catch (IllegalArgumentException ex) {
             valid = false;
+        }
+
+        if (importPanel.checkoutCheckBox.isSelected()) {
+            File file = new File(importPanel.workdirTextField.getText());
+            valid &= file.exists() == false;
         }
         descriptor.setValid(valid);
     }
