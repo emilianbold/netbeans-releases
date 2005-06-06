@@ -250,46 +250,56 @@ public final class AddToRepositoryAction extends NodeAction {
 
     private void ignorePrivateMetadata(Project project) throws IOException {
         FileObject projectFolder = project.getProjectDirectory();
-        File projectMetaDirectory = FileUtil.toFile(projectFolder);
+        File projectDir = FileUtil.toFile(projectFolder);
+        prepareIgnore(projectDir);
         // XXX seek for project metadata dirsctory, there is private section
-        if ("nbproject".equals(projectMetaDirectory.getName()) == false) { // NOi18N
-            projectMetaDirectory = new File(projectMetaDirectory, "nbproject"); // NOi18N
-        }
-        if (projectMetaDirectory.isDirectory()) {
-            File[] projectMeta = projectMetaDirectory.listFiles();
-            Set ignored = new HashSet();
-            for (int i = 0; i < projectMeta.length; i++) {
-                File file = projectMeta[i];
-                String name = file.getName();
-                if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) {
-                    if (".cvsignore".equals(name) == false) {  // NOI18N
-                        ignored.add(name);
-                    }
-                }
-            }
+//        if ("nbproject".equals(projectDir.getName()) == false) { // NOi18N
+//            File projectMetaDir = new File(projectDir, "nbproject"); // NOi18N
+//            if (projectMetaDir.isDirectory()) {
+//                prepareIgnore(projectMetaDir);
+//            }
+//        }
+    }
 
-            if (ignored.size() > 0) {
-                File cvsIgnore = new File(projectMetaDirectory, ".cvsignore"); // NOI18N
-                OutputStream out = null;
-                try {
-                    out = new FileOutputStream(cvsIgnore);
-                    PrintWriter pw = new PrintWriter(out);
-                    Iterator it = ignored.iterator();
-                    while (it.hasNext()) {
-                        String name = (String) it.next();
-                        pw.println(name);
-                    }
-                    pw.close();
-                } finally {
-                    if (out != null) {
-                        try {
-                            out.close();
-                        } catch (IOException alreadyClosed) {
-                        }
+    private void prepareIgnore(File dir) throws IOException {
+        File[] projectMeta = dir.listFiles();
+        Set ignored = new HashSet();
+        for (int i = 0; i < projectMeta.length; i++) {
+            File file = projectMeta[i];
+            String name = file.getName();
+            int sharability = SharabilityQuery.getSharability(file);
+            if (sharability == SharabilityQuery.NOT_SHARABLE) {
+                if (".cvsignore".equals(name) == false) {  // NOI18N
+                    ignored.add(name);
+                }
+            } else if (sharability == SharabilityQuery.MIXED) {
+                assert file.isDirectory() : file;
+                prepareIgnore(file);
+            }
+        }
+
+        if (ignored.size() > 0) {
+            File cvsIgnore = new File(dir, ".cvsignore"); // NOI18N
+            OutputStream out = null;
+            try {
+                out = new FileOutputStream(cvsIgnore);
+                PrintWriter pw = new PrintWriter(out);
+                Iterator it = ignored.iterator();
+                while (it.hasNext()) {
+                    String name = (String) it.next();
+                    pw.println(name);
+                }
+                pw.close();
+            } finally {
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException alreadyClosed) {
                     }
                 }
             }
         }
+
     }
 
     protected boolean asynchronous() {
