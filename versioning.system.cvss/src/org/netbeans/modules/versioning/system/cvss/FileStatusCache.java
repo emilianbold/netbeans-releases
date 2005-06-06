@@ -157,6 +157,9 @@ public class FileStatusCache {
      */ 
     public FileInformation getStatus(File file) {
         File dir = file.getParentFile();
+        if (dir == null) {
+            return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
+        }
         Map files = getScannedFiles(dir);
         if (files == NOT_MANAGED_MAP) return FILE_INFORMATION_NOTMANAGED;
         FileInformation fi = (FileInformation) files.get(file);
