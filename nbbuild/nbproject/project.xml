@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>NetBeans Build System</name>
+            <properties>
+                <property name="ant.script">build.xml</property>
+            </properties>
+            <folders>
+                <source-folder>
+                    <label>Ant Tasks</label>
+                    <location>antsrc</location>
+                </source-folder>
+                <source-folder>
+                    <label>Tests for Ant Tasks</label>
+                    <location>test/unit/src</location>
+                </source-folder>
+                <source-folder>
+                    <label>Ant Tasks</label>
+                    <type>java</type>
+                    <location>antsrc</location>
+                </source-folder>
+                <source-folder>
+                    <label>Tests for Ant Tasks</label>
+                    <type>java</type>
+                    <location>test/unit/src</location>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <script>${ant.script}</script>
+                    <target>bootstrap</target>
+                </action>
+                <action name="rebuild">
+                    <script>${ant.script}</script>
+                    <target>localclean</target>
+                    <target>bootstrap</target>
+                </action>
+                <action name="clean">
+                    <script>${ant.script}</script>
+                    <target>localclean</target>
+                </action>
+                <action name="test">
+                    <script>${ant.script}</script>
+                    <target>localtest-nb</target>
+                </action>
+                <action name="javadoc">
+                    <script>${ant.script}</script>
+                    <target>bootstrap-javadoc</target>
+                </action>
+                <action name="run">
+                    <script>${ant.script}</script>
+                    <target>tryme</target>
+                </action>
+                <action name="debug">
+                    <script>${ant.script}</script>
+                    <target>tryme-debug</target>
+                </action>
+            </ide-actions>
+            <export>
+                <type>jar</type>
+                <location>nbantext.jar</location>
+                <script>${ant.script}</script>
+                <build-target>bootstrap</build-target>
+            </export>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>Ant Tasks</label>
+                        <location>antsrc</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>Tests for Ant Tasks</label>
+                        <location>test/unit/src</location>
+                    </source-folder>
+                    <source-file>
+                        <location>${ant.script}</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="clean"/>
+                    <ide-action name="test"/>
+                    <ide-action name="javadoc"/>
+                    <separator/>
+                    <action>
+                        <script>${ant.script}</script>
+                        <label>Build IDE (no ZIP file)</label>
+                        <target>build-nozip</target>
+                    </action>
+                    <action>
+                        <script>${ant.script}</script>
+                        <label>Clean Everything</label>
+                        <target>real-clean</target>
+                    </action>
+                    <separator/>
+                    <ide-action name="run"/>
+                    <ide-action name="debug"/>
+                    <action>
+                        <script>${ant.script}</script>
+                        <label>Run Commit Validation</label>
+                        <target>commit-validation</target>
+                    </action>
+                    <separator/>
+                    <action>
+                        <script>${ant.script}</script>
+                        <label>Build All API Javadoc</label>
+                        <target>build-javadoc</target>
+                    </action>
+                    <action>
+                        <script>${ant.script}</script>
+                        <label>Build Daily Alpha NBMs</label>
+                        <target>merge</target>
+                        <target>build-nbms</target>
+                        <property name="moduleconfig">daily-alpha-nbms</property>
+                    </action>
+                    <action>
+                        <script>../xtest/instance/build.xml</script>
+                        <label>Run All Unit Tests</label>
+                        <target>cleanresults</target>
+                        <target>runtests</target>
+                    </action>
+                </context-menu>
+            </view>
+            <subprojects>
+                <!-- Generated with: -->
+                <!-- ant -f nbbuild/build.xml print-selected-modules | perl -n -e 'if (/modules=(.+)/) {for (sort split /, ?/, $1) {if (-f "$_/nbproject/project.xml") {print "                <project>../$_</project>\n"} else {print "                <!-" . "- Unprojectized: $_ -" . "->\n"}}}' | uniq -->
+                <project>../ant</project>
+                <project>../ant/browsetask</project>
+                <project>../ant/freeform</project>
+                <project>../ant/grammar</project>
+                <project>../ant/project</project>
+                <project>../apisupport/ant</project>
+                <project>../apisupport/project</project>
+                <project>../autoupdate</project>
+                <project>../beans</project>
+                <project>../classfile</project>
+                <project>../clazz</project>
+                <project>../core</project>
+                <project>../core/bootstrap</project>
+                <project>../core/execution</project>
+                <project>../core/favorites</project>
+                <project>../core/ide</project>
+                <project>../core/javahelp</project>
+                <project>../core/multiview</project>
+                <project>../core/output2</project>
+                <project>../core/progress</project>
+                <project>../core/settings</project>
+                <project>../core/startup</project>
+                <project>../core/swing/plaf</project>
+                <project>../core/swing/tabcontrol</project>
+                <project>../core/ui</project>
+                <project>../core/windows</project>
+                <project>../db</project>
+                <project>../db/model</project>
+                <project>../debuggercore</project>
+                <project>../debuggercore/api</project>
+                <project>../debuggercore/viewmodel</project>
+                <project>../debuggerjpda</project>
+                <project>../debuggerjpda/ant</project>
+                <project>../debuggerjpda/api</project>
+                <project>../debuggerjpda/ui</project>
+                <project>../diff</project>
+                <project>../editor</project>
+                <project>../editor/bookmarks</project>
+                <project>../editor/fold</project>
+                <project>../editor/lib</project>
+                <project>../editor/plain</project>
+                <project>../editor/plain/lib</project>
+                <project>../editor/util</project>
+                <project>../extbrowser</project>
+                <project>../form</project>
+                <project>../html</project>
+                <project>../html/editor</project>
+                <project>../html/editor/lib</project>
+                <project>../httpserver</project>
+                <project>../httpserver/servletapi</project>
+                <project>../i18n</project>
+                <project>../i18n/form</project>
+                <project>../ide/applemenu</project>
+                <!-- Unprojectized: ide/branding -->
+                <project>../ide/updatecenters</project>
+                <project>../ide/welcome</project>
+                <project>../image</project>
+                <project>../j2ee/blueprints</project>
+                <project>../j2ee/ddapi</project>
+                <project>../j2ee/ddloaders</project>
+                <project>../j2ee/debug</project>
+                <project>../j2ee/earproject</project>
+                <project>../j2ee/ejbapi</project>
+                <project>../j2ee/ejbfreeform</project>
+                <project>../j2ee/ejbjarproject</project>
+                <project>../j2ee/genericserver</project>
+                <project>../j2ee/platform</project>
+                <project>../j2ee/refactoring</project>
+                <!-- Unprojectized: j2ee/sunappsrv8 -->
+                <project>../j2ee/utilities</project>
+                <project>../j2eeserver</project>
+                <project>../j2eeserver/ant</project>
+                <project>../j2eeserver/j2eeapis</project>
+                <project>../java</project>
+                <project>../java/api</project>
+                <project>../java/editor</project>
+                <project>../java/editor/lib</project>
+                <project>../java/freeform</project>
+                <project>../java/j2seplatform</project>
+                <project>../java/j2seproject</project>
+                <project>../java/javacore</project>
+                <project>../java/javamodel</project>
+                <project>../java/parser</project>
+                <project>../java/platform</project>
+                <project>../java/project</project>
+                <project>../java/srcmodel</project>
+                <project>../javacvs/libmodule</project>
+                <project>../javadoc</project>
+                <project>../junit</project>
+                <project>../libs/commons_logging</project>
+                <project>../libs/j2eeeditor</project>
+                <project>../libs/xerces</project>
+                <project>../mdr</project>
+                <project>../mdr/jmi</project>
+                <project>../mdr/jmiutils</project>
+                <project>../mdr/mdrapi</project>
+                <project>../mdr/module</project>
+                <project>../mdr/mof</project>
+                <project>../mdr/nbjmiutils</project>
+                <project>../monitor</project>
+                <project>../objectbrowser/navigator</project>
+                <project>../objectbrowser/navigator/javanavigation</project>
+                <project>../openide/actions</project>
+                <project>../openide/awt</project>
+                <project>../openide/compat</project>
+                <project>../openide/dialogs</project>
+                <project>../openide/execution</project>
+                <project>../openide/explorer</project>
+                <project>../openide/fs</project>
+                <project>../openide/io</project>
+                <project>../openide/loaders</project>
+                <project>../openide/masterfs</project>
+                <project>../openide/modules</project>
+                <project>../openide/nodes</project>
+                <project>../openide/options</project>
+                <project>../openide/text</project>
+                <project>../openide/util</project>
+                <project>../openide/util/enum</project>
+                <project>../openide/windows</project>
+                <project>../openidex</project>
+                <project>../projects/libraries</project>
+                <project>../projects/projectapi</project>
+                <project>../projects/projectui</project>
+                <project>../projects/projectuiapi</project>
+                <project>../projects/queries</project>
+                <project>../properties</project>
+                <project>../properties/syntax</project>
+                <project>../refactoring</project>
+                <project>../schema2beans/rt</project>
+                <project>../tasklist/api</project>
+                <project>../tasklist/core</project>
+                <project>../tasklist/docscan</project>
+                <project>../tasklist/suggestions</project>
+                <project>../tomcatint/tomcat5</project>
+                <!-- Unprojectized: tomcatint/tomcat5/bundled -->
+                <project>../usersguide</project>
+                <project>../usersguide/j2seexamples</project>
+                <project>../utilities</project>
+                <project>../utilities/project</project>
+                <project>../vcscore</project>
+                <project>../vcscore/javacorebridge</project>
+                <project>../vcsgeneric</project>
+                <project>../vcsgeneric/profiles/cvsprofiles</project>
+                <project>../vcsgeneric/profiles/pvcs</project>
+                <project>../vcsgeneric/profiles/vss</project>
+                <project>../web/core</project>
+                <project>../web/ddapi</project>
+                <project>../web/examples</project>
+                <project>../web/freeform</project>
+                <project>../web/jspdebug</project>
+                <project>../web/jspparser</project>
+                <project>../web/jspsyntax</project>
+                <project>../web/jstl11</project>
+                <project>../web/project</project>
+                <project>../web/servletapi24</project>
+                <project>../web/webapi</project>
+                <project>../websvc/core</project>
+                <project>../websvc/dev</project>
+                <project>../websvc/registry</project>
+                <project>../websvc/websvcapi</project>
+                <project>../websvc/websvcddapi</project>
+                <project>../xml/api</project>
+                <project>../xml/catalog</project>
+                <project>../xml/core</project>
+                <project>../xml/css</project>
+                <project>../xml/schema</project>
+                <project>../xml/tax</project>
+                <project>../xml/text-edit</project>
+                <project>../xml/tools</project>
+                <project>../xml/xsl</project>
+            </subprojects>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
+            <compilation-unit>
+                <package-root>antsrc</package-root>
+                <classpath mode="compile">${ant.home}/lib/ant.jar</classpath>
+                <built-to>build/antclasses</built-to>
+                <built-to>nbantext.jar</built-to>
+                <source-level>1.4</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>test/unit/src</package-root>
+                <unit-tests/>
+                <classpath mode="compile">../junit/external/junit-3.8.1.jar:netbeans/testtools/modules/ext/nbjunit.jar:../ant/external/lib/ant.jar:nbantext.jar</classpath>
+                <source-level>1.4</source-level>
+            </compilation-unit>
+        </java-data>
+    </configuration>
+</project>

@@ -182,6 +182,7 @@ final class NbModuleProject implements Project {
             new Actions(this),
             new ClassPathProviderImpl(this),
             new SourceForBinaryImpl(this),
+            new JavadocForBinaryImpl(this),
             new UnitTestForSourceQueryImpl(this),
             new LogicalView(this),
             new SubprojectProviderImpl(this),
