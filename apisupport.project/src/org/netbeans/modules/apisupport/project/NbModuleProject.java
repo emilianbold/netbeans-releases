@@ -99,9 +99,12 @@ final class NbModuleProject implements Project {
         }
         ModuleList ml = getModuleList();
         if (ml.getEntry(getCodeNameBase()) == null) {
-            // XXX try to give better diagnostics - as examples are discovered
-            // XXX might also try resetting ModuleList and trying again, in case it was just added
-            throw new IOException("Project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " does not appear to be listed in its own module list; some sort of misconfiguration (e.g. not listed in its own suite)"); // NOI18N
+            ModuleList.refresh();
+            ml = getModuleList();
+            if (ml.getEntry(getCodeNameBase()) == null) {
+                // XXX try to give better diagnostics - as examples are discovered
+                throw new IOException("Project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " does not appear to be listed in its own module list; some sort of misconfiguration (e.g. not listed in its own suite)"); // NOI18N
+            }
         }
         eval = createEvaluator(ml);
         FileBuiltQueryImplementation fileBuilt;
