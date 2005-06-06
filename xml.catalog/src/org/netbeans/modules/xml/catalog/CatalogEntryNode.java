@@ -162,6 +162,10 @@ final class CatalogEntryNode extends BeanNode implements EditCookie {
     private String getSystemID() {
         return ((CatalogEntry)getBean()).getSystemID();
     }
+    
+    public String getShortDescription() {
+        return getSystemID();
+    }
 
     public void destroy() throws IOException {
         super.destroy();

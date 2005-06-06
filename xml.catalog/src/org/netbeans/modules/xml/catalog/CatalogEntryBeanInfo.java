@@ -25,48 +25,54 @@ public class CatalogEntryBeanInfo extends SimpleBeanInfo {
     private static final String PUBLICID_D = Util.THIS.getString("PROP_public_id_desc");
     private static final String SYSTEMID_D = Util.THIS.getString("PROP_system_id_desc");
     private static final String SYSTEMID_N = Util.THIS.getString("PROP_system_id");
+    private static final String URI_D = Util.THIS.getString("PROP_uri_desc");
+    private static final String URI_N = Util.THIS.getString("PROP_uri");
     
-    // Property identifiers //GEN-FIRST:Properties
+    // Property identifiers
     private static final int PROPERTY_publicID = 0;
     private static final int PROPERTY_systemID = 1;
+    private static final int PROPERTY_URI = 2;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
 
     static {
         try {
-            properties[PROPERTY_publicID] = new PropertyDescriptor ( "publicID", CatalogEntry.class, "getName", null ); // NOI18N
+            properties[PROPERTY_publicID] = new PropertyDescriptor ( "publicID", CatalogEntry.class, "getPublicIDValue", null ); // NOI18N
             properties[PROPERTY_publicID].setDisplayName ( PUBLICID_N );
             properties[PROPERTY_publicID].setShortDescription ( PUBLICID_D );
-            properties[PROPERTY_systemID] = new PropertyDescriptor ( "systemID", CatalogEntry.class, "getSystemID", null ); // NOI18N
+            properties[PROPERTY_systemID] = new PropertyDescriptor ( "systemID", CatalogEntry.class, "getSystemIDValue", null ); // NOI18N
             properties[PROPERTY_systemID].setDisplayName ( SYSTEMID_N );
             properties[PROPERTY_systemID].setShortDescription ( SYSTEMID_D );
+            properties[PROPERTY_URI] = new PropertyDescriptor ( "uri", CatalogEntry.class, "getUriValue", null ); // NOI18N
+            properties[PROPERTY_URI].setDisplayName ( URI_N );
+            properties[PROPERTY_URI].setShortDescription ( URI_D );
         }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        catch( IntrospectionException e) {}                          
 
         // Here you can add code for customizing the properties array.
 
-    }//GEN-LAST:Properties
+    }
 
     // EventSet identifiers//GEN-FIRST:Events
 
     // EventSet array
     private static EventSetDescriptor[] eventSets = new EventSetDescriptor[0];
-    //GEN-HEADEREND:Events
+//GEN-HEADEREND:Events
 
     // Here you can add code for customizing the event sets array.
 
-    //GEN-LAST:Events
+//GEN-LAST:Events
 
-    // Method identifiers //GEN-FIRST:Methods
+    // Method identifiers//GEN-FIRST:Methods
 
     // Method array 
     private static MethodDescriptor[] methods = new MethodDescriptor[0];
-    //GEN-HEADEREND:Methods
+//GEN-HEADEREND:Methods
 
     // Here you can add code for customizing the methods array.
     
-    //GEN-LAST:Methods
+//GEN-LAST:Methods
 
 
     private static int defaultPropertyIndex = -1;//GEN-BEGIN:Idx

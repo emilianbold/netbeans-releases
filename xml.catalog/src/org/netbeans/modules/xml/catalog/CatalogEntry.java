@@ -71,13 +71,33 @@ public final class CatalogEntry extends Object {
         return publicID;
     }
     
-    public String getName() {
+    public String getPublicIDValue() {
         String id = getPublicID();
         if (id.startsWith("PUBLIC:")) return id.substring(7); //NOI18N
-        if (id.startsWith("SYSTEM:")) return id.substring(7); //NOI18N
         if (id.startsWith("URI:")) return id.substring(4); //NOI18N
-        if (id.startsWith("SCHEMA:")) return id.substring(7); //NOI18N
+        if (id.startsWith("SYSTEM:")) return ""; //NOI18N
+        if (id.startsWith("SCHEMA:")) return ""; //NOI18N
         return id;
+    }
+    
+    public String getSystemIDValue() {
+        String id = getPublicID();
+        if (id.startsWith("SYSTEM:")) return id.substring(7); //NOI18N
+        if (id.startsWith("SCHEMA:")) return id.substring(7); //NOI18N
+        return "";
+    }
+    
+    public String getUriValue() {
+        return getSystemID();
+    }
+    
+    public String getName() {
+        String id = getPublicID();
+        if (id.startsWith("PUBLIC:")) return Util.THIS.getString("TXT_publicEntry",id.substring(7)); //NOI18N
+        if (id.startsWith("SYSTEM:")) return Util.THIS.getString("TXT_systemEntry",id.substring(7)); //NOI18N
+        if (id.startsWith("URI:")) return Util.THIS.getString("TXT_publicEntry",id.substring(4)); //NOI18N
+        if (id.startsWith("SCHEMA:")) return Util.THIS.getString("TXT_systemEntry",id.substring(7)); //NOI18N
+        return Util.THIS.getString("TXT_publicEntry",id);
     }
     
     public String toString() {
