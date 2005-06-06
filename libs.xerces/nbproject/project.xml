@@ -16,8 +16,7 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.libs.xerces</code-name-base>
-            <module-dependencies>
-                </module-dependencies>
+            <module-dependencies/>
             <public-packages>
                 <subpackages>org</subpackages>
             </public-packages>
