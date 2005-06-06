@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -392,14 +392,14 @@ public class StorageBuilderAction extends ProductAction {
         String line;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("NB_PATH=")) {
-                line = "NB_PATH=" + nbInstallDir;
+                line = "NB_PATH=" + "\"" + nbInstallDir + "\"";
             } else if (line.startsWith("JAVA_HOME=")) {
-                line = "JAVA_HOME=" + Util.getJdkHome();
+                line = "JAVA_HOME=" + "\"" + Util.getJdkHome() + "\"";
             } else if (line.startsWith("MDR_TMP_FILE=")) {
-                line = "MDR_TMP_FILE=" + mdrTempPath;
+                line = "MDR_TMP_FILE=" + "\"" + mdrTempPath + "\"";
             } else if (line.startsWith("LOGFILE=")) {
-                line = "LOGFILE=" + uninstDir + File.separator 
-                + "storagebuilder" + File.separator + "storagebuilder.log";
+                line = "LOGFILE=" + "\"" + uninstDir + File.separator 
+                + "storagebuilder" + File.separator + "storagebuilder.log" + "\"";
             }
             writer.write(line + System.getProperty("line.separator"));
         }
