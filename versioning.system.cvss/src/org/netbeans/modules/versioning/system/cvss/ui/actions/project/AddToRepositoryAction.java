@@ -250,7 +250,7 @@ public final class AddToRepositoryAction extends NodeAction {
         try {
             CVSRoot cvsRoot = CVSRoot.parse(root);
             if (cvsRoot.isLocal()) {
-                // XXX :fork: usually works on UNIXes only 
+                // XXX :fork: usually works on UNIXes only
                 valid &= cvsRoot.getRepository().length() > 1 && cvsRoot.getRepository().startsWith("/"); // NOI18N
             }
         } catch (IllegalArgumentException ex) {
@@ -279,13 +279,6 @@ public final class AddToRepositoryAction extends NodeAction {
         FileObject projectFolder = project.getProjectDirectory();
         File projectDir = FileUtil.toFile(projectFolder);
         prepareIgnore(projectDir);
-        // XXX seek for project metadata dirsctory, there is private section
-//        if ("nbproject".equals(projectDir.getName()) == false) { // NOi18N
-//            File projectMetaDir = new File(projectDir, "nbproject"); // NOi18N
-//            if (projectMetaDir.isDirectory()) {
-//                prepareIgnore(projectMetaDir);
-//            }
-//        }
     }
 
     private void prepareIgnore(File dir) throws IOException {
