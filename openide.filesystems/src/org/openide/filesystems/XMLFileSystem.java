@@ -458,30 +458,45 @@ public final class XMLFileSystem extends AbstractFileSystem {
         for (int i = 0; i < children.length; i++) {
             AbstractFolder fo2 = (AbstractFolder) fo.getFileObject(names[i]);
             FileObjRef currentRef = (FileObjRef) findReference(fo2.getPath());
-            initializeReference(currentRef, children[i]);
+            boolean diff = initializeReference(currentRef, children[i]);
             fo2.lastModified();
 
             if (fo2.isFolder()) {
                 refreshChildren(fo2, children[i]);
+            } else {
+                if (diff) {
+                    fo2.fileChanged0(new FileEvent(fo2));
+                }
             }
         }
     }
 
-    private void initializeReference(FileObjRef currentRef, ResourceElem resElem) {
+    /** Initialize a reference with parsed element.
+     * @param currentRef the reference
+     * @param resElem the new element
+     * @return true if there was a modification - e.g. previous instance existed and it changed content.
+     */
+    private boolean initializeReference(FileObjRef currentRef, ResourceElem resElem) {
         if (!currentRef.isInitialized()) {
             currentRef.initialize(resElem);
+            return false;
         } else {
             currentRef.attacheAttrs(resElem.getAttr(false));
             currentRef.setUrlContext(resElem.getUrlContext());
 
+            boolean diff = false;
             if (resElem.getContent() != null) {
+                diff = !(currentRef.content instanceof byte[]) || !java.util.Arrays.equals((byte[])currentRef.content, resElem.getContent());
                 currentRef.content = resElem.getContent();
             } else if (resElem.getURI() != null) {
+                diff = !resElem.getURI().equals(currentRef.content);
                 currentRef.content = resElem.getURI();
             }
+            
+            return diff;
         }
     }
-
+    
     /** Temporary hierarchical structure of resources. Used while parsing.*/
     private static class ResourceElem {
         private java.util.List children;

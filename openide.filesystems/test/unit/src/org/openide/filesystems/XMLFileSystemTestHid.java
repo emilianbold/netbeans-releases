@@ -46,6 +46,8 @@ public class XMLFileSystemTestHid extends TestBaseHid {
     }
     
     protected void setUp() throws Exception {
+        super.setUp();
+        
         File f = createXMLLayer();
         xfs = new XMLFileSystem ();
         xfs.setXmlUrl(f.toURL());
@@ -58,4 +60,80 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         return f;
     }
 
+    public void testChangesAreFiredOnSetXMLUrlsIssue59160() throws Exception {
+        File f = writeFile ("layer1.xml", 
+"<filesystem>\n" +
+    "<folder name='TestModule'>\n" +
+        "<file name='sample.txt' >Ahoj</file>\n" +
+    "</folder>\n" +
+"</filesystem>\n"
+        );
+        
+        File f2 = writeFile ("layer2.xml", 
+"<filesystem>\n" +
+    "<folder name='TestModule'>\n" +
+        "<file name='sample.txt' >Hello!</file>\n" +
+    "</folder>\n" +
+"</filesystem>\n"
+        );
+
+        
+        
+        
+        xfs = new XMLFileSystem (f.toURL());
+        
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertEquals ("Four bytes there", 4, fo.getSize ());
+        registerDefaultListener (fo);
+        
+        xfs.setXmlUrl (f2.toURL ());
+        
+        assertEquals ("Six bytes there", 6, fo.getSize ());
+        
+        fileChangedAssert ("Change in the content", 1);
+    }
+
+    public void testChangesAreFiredOnSetXMLUrlsWithURLsIssue59160() throws Exception {
+        File u1 = writeFile("u1.txt", "Ahoj");
+        File u2 = writeFile("u2.txt", "Hello!");
+        
+        File f = writeFile ("layer1.xml", 
+"<filesystem>\n" +
+    "<folder name='TestModule'>\n" +
+        "<file name='sample.txt' url='u1.txt' />\n" +
+    "</folder>\n" +
+"</filesystem>\n"
+        );
+        
+        File f2 = writeFile ("layer2.xml", 
+"<filesystem>\n" +
+    "<folder name='TestModule'>\n" +
+        "<file name='sample.txt' url='u2.txt' />\n" +
+    "</folder>\n" +
+"</filesystem>\n"
+        );
+
+        
+        
+        
+        xfs = new XMLFileSystem (f.toURL());
+        
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertEquals ("Four bytes there", 4, fo.getSize ());
+        registerDefaultListener (fo);
+        
+        xfs.setXmlUrl (f2.toURL ());
+        
+        assertEquals ("Six bytes there", 6, fo.getSize ());
+        
+        fileChangedAssert ("Change in the content", 1);
+    }
+    
+    private File writeFile(String name, String content) throws IOException {
+        File f = new File (getWorkDir (), name);
+        java.io.FileWriter w = new java.io.FileWriter (f);
+        w.write(content);
+        w.close();
+        return f;
+    }
 }
