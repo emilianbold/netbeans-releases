@@ -58,6 +58,7 @@ public final class ModuleDependency implements Comparable {
         this.specVersion = specVersion;
     }
     
+    /** may be null for none */
     public String getReleaseVersion() {
         return releaseVersion;
     }
