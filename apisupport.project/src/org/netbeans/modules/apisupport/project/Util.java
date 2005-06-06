@@ -35,38 +35,6 @@ public class Util {
     
     private Util() {}
     
-    // XXX openide split hack data, remove when openide.jar is gone and deps are precise:
-    static final String[] OPENIDE_SUBMODULES = {
-        "actions", // NOI18N
-        "dialogs", // NOI18N
-        "explorer", // NOI18N
-        "fs", // NOI18N
-        "nodes", // NOI18N
-        "modules", // NOI18N
-        "options", // NOI18N
-        "text", // NOI18N
-        "util", // NOI18N
-        "util/enum", // NOI18N
-        "windows", // NOI18N
-        "awt", // NOI18N
-        "compat", // NOI18N
-    };
-    static final String[] OPENIDE_SUBMODULE_CNBS = {
-        "org.openide.actions",
-        "org.openide.dialogs",
-        "org.openide.explorer",
-        "org.openide.filesystems",
-        "org.openide.nodes",
-        "org.openide.modules",
-        "org.openide.options",
-        "org.openide.text",
-        "org.openide.util",
-        "org.openide.util.enumerations", 
-        "org.openide.windows",
-        "org.openide.awt",
-        "org.openide.compat",
-    };
-
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project"); // NOI18N
     
     // COPIED FROM org.netbeans.modules.project.ant:

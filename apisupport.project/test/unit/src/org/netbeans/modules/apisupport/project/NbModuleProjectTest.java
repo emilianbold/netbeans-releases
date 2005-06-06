@@ -61,10 +61,16 @@ public class NbModuleProjectTest extends TestBase {
         // Keep the following in synch with java/project/nbproject/project.xml etc.:
         String[] cp = {
             "ide5/modules/org-apache-tools-ant-module.jar",
-            "platform5/core/openide.jar",
-            "platform5/modules/org-openide-execution.jar",
+            "platform5/core/org-openide-filesystems.jar",
+            "platform5/lib/org-openide-util.jar",
+            "platform5/lib/org-openide-modules.jar",
+            "platform5/modules/org-openide-nodes.jar",
+            "platform5/modules/org-openide-awt.jar",
+            "platform5/modules/org-openide-dialogs.jar",
+            "platform5/modules/org-openide-options.jar",
+            "platform5/modules/org-openide-actions.jar",
             "platform5/modules/org-openide-io.jar",
-            "platform5/core/openide-loaders.jar",
+            "platform5/modules/org-openide-loaders.jar",
             "ide5/modules/org-netbeans-modules-java-platform.jar",
             "ide5/modules/org-netbeans-modules-project-ant.jar",
             "ide5/modules/org-netbeans-modules-project-libraries.jar",
@@ -74,6 +80,19 @@ public class NbModuleProjectTest extends TestBase {
             "platform5/modules/org-netbeans-modules-queries.jar",
             "ide5/modules/org-netbeans-api-java.jar",
         };
+        assertEquals("right module.classpath", createCP(cp), eval.getProperty("module.classpath"));
+        assertEquals("right core.dir", file("nbbuild/netbeans/platform5"),
+            javaProjectProject.getHelper().resolveFile(eval.getProperty("core.dir")));
+        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/ide5"),
+            javaProjectProject.getHelper().resolveFile(eval.getProperty("apisupport/project.dir")));
+        assertEquals("right module JAR", file("nbbuild/netbeans/ide5/modules/org-netbeans-modules-java-project.jar"),
+            javaProjectProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
+        eval = loadersProject.evaluator();
+        assertEquals("right module JAR", file("nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"),
+            loadersProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
+    }
+    
+    private String createCP(String[] cp) {
         StringBuffer cpS = new StringBuffer();
         for (int i = 0; i < cp.length; i++) {
             if (i > 0) {
@@ -81,18 +100,7 @@ public class NbModuleProjectTest extends TestBase {
             }
             cpS.append(file("nbbuild/netbeans/" + cp[i]).getAbsolutePath());
         }
-        assertEquals("right module.classpath", cpS.toString(), eval.getProperty("module.classpath"));
-        assertEquals("right core.dir", file("nbbuild/netbeans/platform5"),
-            javaProjectProject.getHelper().resolveFile(eval.getProperty("core.dir")));
-        /* Will not work in branches:
-        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/ide5"),
-            javaProjectProject.getHelper().resolveFile(eval.getProperty("apisupport/project.dir")));
-         */
-        assertEquals("right module JAR", file("nbbuild/netbeans/ide5/modules/org-netbeans-modules-java-project.jar"),
-            javaProjectProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
-        eval = loadersProject.evaluator();
-        assertEquals("right module JAR", file("nbbuild/netbeans/platform5/core/openide-loaders.jar"),
-            loadersProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
+        return cpS.toString();
     }
     
     /** #56457 */
@@ -113,17 +121,10 @@ public class NbModuleProjectTest extends TestBase {
         NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(action);
         PropertyEvaluator eval = actionProject.evaluator();
         String[] cp = {
-            "platform5/core/openide.jar",
+            "platform5/modules/org-openide-dialogs.jar",
             "devel/modules/org-netbeans-examples-modules-lib.jar",
         };
-        StringBuffer cpS = new StringBuffer();
-        for (int i = 0; i < cp.length; i++) {
-            if (i > 0) {
-                cpS.append(File.pathSeparatorChar);
-            }
-            cpS.append(file("nbbuild/netbeans/" + cp[i]).getAbsolutePath());
-        }
-        assertEquals("right module.classpath", cpS.toString(), eval.getProperty("module.classpath"));
+        assertEquals("right module.classpath", createCP(cp), eval.getProperty("module.classpath"));
         String nbdestdir = eval.getProperty("netbeans.dest.dir");
         assertNotNull("defined netbeans.dest.dir", nbdestdir);
         assertEquals("right netbeans.dest.dir", file("nbbuild/netbeans"), PropertyUtils.resolveFile(FileUtil.toFile(action), nbdestdir));
@@ -135,7 +136,7 @@ public class NbModuleProjectTest extends TestBase {
             "random/modules/random.jar",
             "random/modules/ext/stuff.jar",
         };
-        cpS = new StringBuffer();
+        StringBuffer cpS = new StringBuffer();
         for (int i = 0; i < cp.length; i++) {
             if (i > 0) {
                 cpS.append(File.pathSeparatorChar);

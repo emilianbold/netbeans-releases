@@ -64,12 +64,12 @@ public class ProjectXMLManagerTest extends TestBase {
         
         Set assumed = new HashSet();
         assumed.add("org.netbeans.examples.modules.lib");
-        assumed.add("org.openide");
+        assumed.add("org.openide.dialogs");
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
-            if (md.getModuleEntry().getCodeNameBase().equals("org.openide")) {
-                assertEquals("release version", "1", md.getReleaseVersion());
-                assertEquals("specification version", "5.9", md.getSpecificationVersion());
+            if (md.getModuleEntry().getCodeNameBase().equals("org.openide.dialogs")) {
+                assertEquals("release version", null, md.getReleaseVersion());
+                assertEquals("specification version", "6.2", md.getSpecificationVersion());
             }
             if (md.getModuleEntry().getCodeNameBase().equals("org.netbeans.examples.modules.lib")) {
                 assertNull("release version", md.getReleaseVersion());
@@ -84,7 +84,7 @@ public class ProjectXMLManagerTest extends TestBase {
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
-                actionPXM.removeDependency("org.openide");
+                actionPXM.removeDependency("org.openide.dialogs");
                 return Boolean.TRUE;
             }
         });
@@ -148,8 +148,10 @@ public class ProjectXMLManagerTest extends TestBase {
         final Set newDeps = new HashSet();
         ModuleList.Entry me =
                 actionProject.getModuleList().getEntry("org.netbeans.modules.java.project");
+        assertNotNull("java/project must be built", me);
         newDeps.add(new ModuleDependency(me));
         me = actionProject.getModuleList().getEntry("org.netbeans.modules.java.j2seplatform");
+        assertNotNull("java/j2seplatform must be built", me);
         newDeps.add(new ModuleDependency(me, "1", null, false, true));
         
         // apply and save project
@@ -166,7 +168,7 @@ public class ProjectXMLManagerTest extends TestBase {
         
         Set assumed = new HashSet();
         assumed.add("org.netbeans.examples.modules.lib");
-        assumed.add("org.openide");
+        assumed.add("org.openide.dialogs");
         assumed.add("org.netbeans.modules.java.project");
         assumed.add("org.netbeans.modules.java.j2seplatform");
         
@@ -231,6 +233,7 @@ public class ProjectXMLManagerTest extends TestBase {
     private FileObject prepareSuiteRepo(FileObject what) throws Exception {
         int srcFolderLen = what.getPath().length();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        // XXX this should be probably be using (TestBase.this.)copyFolder
         for (Enumeration en = what.getFolders(true); en.hasMoreElements(); ) {
             FileObject src = (FileObject) en.nextElement();
             if (src.getName().equals("CVS")) {
