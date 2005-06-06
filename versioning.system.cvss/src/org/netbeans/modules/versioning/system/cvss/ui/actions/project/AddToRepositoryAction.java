@@ -248,7 +248,11 @@ public final class AddToRepositoryAction extends NodeAction {
         valid &= supportedMethod;
 
         try {
-            CVSRoot.parse(root);
+            CVSRoot cvsRoot = CVSRoot.parse(root);
+            if (cvsRoot.isLocal()) {
+                // XXX :fork: usually works on UNIXes only 
+                valid &= cvsRoot.getRepository().length() > 1 && cvsRoot.getRepository().startsWith("/"); // NOI18N
+            }
         } catch (IllegalArgumentException ex) {
             valid = false;
         }
