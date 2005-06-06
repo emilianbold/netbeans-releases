@@ -343,46 +343,54 @@ public class JavaKit extends NbEditorKit {
         }
 
         protected boolean asynchonous() {
-            return true;
+            return false;
         }
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                SyntaxSupport sup = Utilities.getSyntaxSupport(target);
-                NbJavaJMISyntaxSupport nbJavaSup = (NbJavaJMISyntaxSupport)sup.get(NbJavaJMISyntaxSupport.class);
-
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                JMIUtils jmiUtils = JMIUtils.get(doc);
-
-                Object item = null;
-                String itemDesc = null;
-                jmiUtils.beginTrans(false);
-                try {
-                    item = jmiUtils.findItemAtCaretPos(target);
-                    if (item instanceof NbJMIResultItem.VarResultItem) {
-                        int pos = nbJavaSup.findLocalDeclarationPosition(((NbJMIResultItem.VarResultItem)item).getItemText(), target.getCaretPosition());
-                        target.setCaretPosition(pos);
-                        JumpList.checkAddEntry(target);
-                    } else {
-                        if (item instanceof ClassDefinition)
-                            item = JMIUtils.getSourceElementIfExists((ClassDefinition)item);
-                        itemDesc = nbJavaSup.openSource(item, true);
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
+            Runnable run = new Runnable() {
+                public void run() {
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        RequestProcessor.getDefault().post(this);
+                        return;
                     }
-                } finally {
-                    jmiUtils.endTrans(false);
+                    if (target != null) {
+                        SyntaxSupport sup = Utilities.getSyntaxSupport(target);
+                        NbJavaJMISyntaxSupport nbJavaSup = (NbJavaJMISyntaxSupport)sup.get(NbJavaJMISyntaxSupport.class);
+                        
+                        BaseDocument doc = (BaseDocument)target.getDocument();
+                        JMIUtils jmiUtils = JMIUtils.get(doc);
+                        
+                        Object item = null;
+                        String itemDesc = null;
+                        jmiUtils.beginTrans(false);
+                        try {
+                            item = jmiUtils.findItemAtCaretPos(target);
+                            if (item instanceof NbJMIResultItem.VarResultItem) {
+                                int pos = nbJavaSup.findLocalDeclarationPosition(((NbJMIResultItem.VarResultItem)item).getItemText(), target.getCaretPosition());
+                                target.setCaretPosition(pos);
+                                JumpList.checkAddEntry(target);
+                            } else {
+                                if (item instanceof ClassDefinition)
+                                    item = JMIUtils.getSourceElementIfExists((ClassDefinition)item);
+                                itemDesc = nbJavaSup.openSource(item, true);
+                            }
+                        } finally {
+                            jmiUtils.endTrans(false);
+                        }
+                        if (itemDesc != null) { // not found
+                            java.awt.Toolkit.getDefaultToolkit().beep();
+                            boolean isPkg = (item instanceof JavaPackage);
+                            String msg = NbBundle.getBundle(JavaKit.class).getString(
+                                    isPkg ? "goto_source_package_not_found" : "goto_source_source_not_found"); // NOI18N
+                            org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { itemDesc } ));
+                        }
+                    }
                 }
-                if (itemDesc != null) { // not found
-                    java.awt.Toolkit.getDefaultToolkit().beep();
-                    boolean isPkg = (item instanceof JavaPackage);
-                    String msg = NbBundle.getBundle(JavaKit.class).getString(
-                              isPkg ? "goto_source_package_not_found" : "goto_source_source_not_found"); // NOI18N
-                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { itemDesc } ));
-                }
-            }
+            };
+            JavaMetamodel.getManager().invokeAfterScanFinished(run, NbBundle.getMessage(BaseAction.class, "goto-declaration"));
         }
     }
-
-
+    
     public static class JavaGotoSourceAction extends BaseAction {
         
         public JavaGotoSourceAction() {
@@ -392,14 +400,23 @@ public class JavaKit extends NbEditorKit {
                 "org/netbeans/modules/editor/resources/gotosource.gif"); // NOI18N
         }
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                String msg = openSource(target);
-                if (msg != null) { // not found
-                    java.awt.Toolkit.getDefaultToolkit().beep();
-                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
+            Runnable run = new Runnable() {
+                public void run() {
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        RequestProcessor.getDefault().post(this);
+                        return;
+                    }
+                    if (target != null) {
+                        String msg = openSource(target);
+                        if (msg != null) { // not found
+                            java.awt.Toolkit.getDefaultToolkit().beep();
+                            org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
+                        }
+                    }
                 }
-            }
+            };
+            JavaMetamodel.getManager().invokeAfterScanFinished(run, NbBundle.getMessage(BaseAction.class, "goto-source"));
         }
 
         public String openSource(JTextComponent target) {
@@ -426,7 +443,7 @@ public class JavaKit extends NbEditorKit {
     public static class JavaJMIGotoSourceAction extends JavaGotoSourceAction {
 
         protected boolean asynchonous() {
-            return true;
+            return false;
         }
 
         public String openSource(JTextComponent target) {
@@ -507,32 +524,41 @@ public class JavaKit extends NbEditorKit {
         }
 
         protected boolean asynchonous() {
-            return true;
+            return false;
         }
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            Node selNode = NbEditorUtilities.getTopComponent(target).getActivatedNodes()[0];
-            Element feature = (Element) selNode.getLookup().lookup(Element.class);
-
-            if (!(feature instanceof Method)) { 
-                return;
-            }
-            
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            JMIUtils jmiUtils = JMIUtils.get(doc);
-
-            Method f;
-            jmiUtils.beginTrans(false);
-            try {
-                f = findOverridenMethods((Method) feature);
-            } finally {
-                jmiUtils.endTrans(false);
-            }
-
-            SyntaxSupport sup = Utilities.getSyntaxSupport(target);
-            NbJavaJMISyntaxSupport nbJavaSup = (NbJavaJMISyntaxSupport)sup.get(NbJavaJMISyntaxSupport.class);
-            
-            nbJavaSup.openSource(f, false);
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
+            Runnable run = new Runnable() {
+                public void run() {
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        RequestProcessor.getDefault().post(this);
+                        return;
+                    }
+                    Node selNode = NbEditorUtilities.getTopComponent(target).getActivatedNodes()[0];
+                    Element feature = (Element) selNode.getLookup().lookup(Element.class);
+                    
+                    if (!(feature instanceof Method)) {
+                        return;
+                    }
+                    
+                    BaseDocument doc = (BaseDocument)target.getDocument();
+                    JMIUtils jmiUtils = JMIUtils.get(doc);
+                    
+                    Method f;
+                    jmiUtils.beginTrans(false);
+                    try {
+                        f = findOverridenMethods((Method) feature);
+                    } finally {
+                        jmiUtils.endTrans(false);
+                    }
+                    
+                    SyntaxSupport sup = Utilities.getSyntaxSupport(target);
+                    NbJavaJMISyntaxSupport nbJavaSup = (NbJavaJMISyntaxSupport)sup.get(NbJavaJMISyntaxSupport.class);
+                    
+                    nbJavaSup.openSource(f, false);
+                }
+            };
+            JavaMetamodel.getManager().invokeAfterScanFinished(run, NbBundle.getMessage(BaseAction.class, "goto-super-implementation"));
         }
     }
 
@@ -784,10 +810,15 @@ public class JavaKit extends NbEditorKit {
             super(fastImportAction);
         }
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                new NbJavaJMIFastImport(target).setDialogVisible(true);
-            }
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
+            Runnable run = new Runnable() {
+                public void run() {
+                    if (target != null) {
+                        new NbJavaJMIFastImport(target).setDialogVisible(true);
+                    }
+                }
+            };
+            JavaMetamodel.getManager().invokeAfterScanFinished(run, NbBundle.getMessage(BaseAction.class, "fast-import"));
         }
         
     }

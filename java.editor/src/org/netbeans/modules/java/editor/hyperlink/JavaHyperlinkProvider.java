@@ -27,6 +27,7 @@ import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.jmi.javamodel.ClassDefinition;
 import org.netbeans.jmi.javamodel.JavaPackage;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.ErrorManager;
 import org.netbeans.modules.editor.java.*;
 import org.openide.util.NbBundle;
@@ -103,57 +104,62 @@ public final class JavaHyperlinkProvider implements HyperlinkProvider {
         return name;
     }
     
-    public void performClickAction(Document originalDoc, int offset) {
+    public void performClickAction(Document originalDoc, final int offset) {
         if (!(originalDoc instanceof BaseDocument))
             return ;
         
-        BaseDocument doc = (BaseDocument) originalDoc;
-        JTextComponent target = Utilities.getFocusedComponent();
+        final BaseDocument doc = (BaseDocument) originalDoc;
+        final JTextComponent target = Utilities.getFocusedComponent();
         
         if (target == null || target.getDocument() != doc)
             return ;
         
-        SyntaxSupport sup = doc.getSyntaxSupport();
-        NbJavaJMISyntaxSupport nbJavaSup = (NbJavaJMISyntaxSupport)sup.get(NbJavaJMISyntaxSupport.class);
-        
-        JMIUtils jmiUtils = JMIUtils.get(doc);
-        
-        Object item = null;
-        String itemDesc = null;
-        jmiUtils.beginTrans(false);
-        try {
-            item = jmiUtils.findItemAtCaretPos(target);
-            if (item instanceof NbJMIResultItem.VarResultItem) {
-                int pos = nbJavaSup.findLocalDeclarationPosition(((NbJMIResultItem.VarResultItem)item).getItemText(), target.getCaretPosition());
-                target.setCaretPosition(pos);
-            } else {
-                if (item instanceof ClassDefinition)
-                    item = JMIUtils.getSourceElementIfExists((ClassDefinition)item);
+        Runnable run = new Runnable() {
+            public void run() {
+                SyntaxSupport sup = doc.getSyntaxSupport();
+                NbJavaJMISyntaxSupport nbJavaSup = (NbJavaJMISyntaxSupport)sup.get(NbJavaJMISyntaxSupport.class);
                 
-                if (item == null || item instanceof JavaPackage || (itemDesc = nbJavaSup.openSource(item, true)) != null) {
-                    //nothing found (item == null), package (item instanceof JavaPackage) or no source found (itemDesc != null)
-                    //inform user, that we were not able to open the resource.
-                    Toolkit.getDefaultToolkit().beep();
-                    
-                    String key;
-                    String name;
-                    
-                    if (itemDesc != null) {
-                        key = "goto_source_source_not_found"; // NOI18N
-                        name = itemDesc;
+                JMIUtils jmiUtils = JMIUtils.get(doc);
+                
+                Object item = null;
+                String itemDesc = null;
+                jmiUtils.beginTrans(false);
+                try {
+                    item = jmiUtils.findItemAtCaretPos(target);
+                    if (item instanceof NbJMIResultItem.VarResultItem) {
+                        int pos = nbJavaSup.findLocalDeclarationPosition(((NbJMIResultItem.VarResultItem)item).getItemText(), target.getCaretPosition());
+                        target.setCaretPosition(pos);
                     } else {
-                        key = "cannot-open-element";// NOI18N
-                        name = findName((BaseDocument) doc, offset);
+                        if (item instanceof ClassDefinition)
+                            item = JMIUtils.getSourceElementIfExists((ClassDefinition)item);
+                        
+                        if (item == null || item instanceof JavaPackage || (itemDesc = nbJavaSup.openSource(item, true)) != null) {
+                            //nothing found (item == null), package (item instanceof JavaPackage) or no source found (itemDesc != null)
+                            //inform user, that we were not able to open the resource.
+                            Toolkit.getDefaultToolkit().beep();
+                            
+                            String key;
+                            String name;
+                            
+                            if (itemDesc != null) {
+                                key = "goto_source_source_not_found"; // NOI18N
+                                name = itemDesc;
+                            } else {
+                                key = "cannot-open-element";// NOI18N
+                                name = findName((BaseDocument) doc, offset);
+                            }
+                            
+                            String msg = NbBundle.getBundle(JavaKit.class).getString(key);
+                            
+                            org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { name } ));
+                        }
                     }
-                    
-                    String msg = NbBundle.getBundle(JavaKit.class).getString(key);
-                    
-                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { name } ));
+                } finally {
+                    jmiUtils.endTrans(false);
                 }
             }
-        } finally {
-            jmiUtils.endTrans(false);
-        }
+        };
+        JavaMetamodel.getManager().invokeAfterScanFinished(run, NbBundle.getMessage(BaseDocument.class, "goto-source"));
     }
 
     public boolean isHyperlinkPoint(Document doc, int offset) {
