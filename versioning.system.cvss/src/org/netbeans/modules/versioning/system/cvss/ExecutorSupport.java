@@ -18,15 +18,8 @@ import org.netbeans.lib.cvsclient.event.*;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.BasicCommand;
-import org.netbeans.lib.cvsclient.connection.AuthenticationException;
-import org.netbeans.lib.cvsclient.connection.PasswordsFile;
-import org.netbeans.lib.cvsclient.connection.StandardScrambler;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings;
-import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
-import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxySelector;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.CommandDuplicator;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.RootWizard;
 import org.netbeans.modules.versioning.system.cvss.ui.UIUtils;
 import org.openide.ErrorManager;
@@ -34,7 +27,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.awt.StatusDisplayer;
 
 import javax.swing.*;
 import java.util.*;
@@ -430,17 +422,5 @@ public abstract class ExecutorSupport implements CVSListener  {
                 ErrorManager.getDefault().notify(executor.getFailure());
             }
         }
-    }
-
-    public static void executeInAwtAfter(final UpdateExecutor[] executors, final Runnable runnable) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                for (int i = 0; i < executors.length; i++) {
-                    UpdateExecutor executor = executors[i];
-                    executor.getTask().waitFinished();
-                }
-                SwingUtilities.invokeLater(runnable);
-            }
-        });
     }
 }

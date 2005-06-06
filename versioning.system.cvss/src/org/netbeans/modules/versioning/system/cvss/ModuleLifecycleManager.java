@@ -16,7 +16,6 @@ package org.netbeans.modules.versioning.system.cvss;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
-import org.netbeans.core.NbTopManager;
 import org.netbeans.ModuleManager;
 import org.netbeans.Module;
 import org.netbeans.InvalidException;
@@ -67,7 +66,7 @@ public final class ModuleLifecycleManager extends ModuleInstall {
      * Enables old VCS modules. 
      */ 
     private void enableCurrentModules() {
-        final ModuleManager mgr = NbTopManager.get().getModuleSystem().getManager();
+        final ModuleManager mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         mgr.mutex().writeAccess(new Runnable() {
             public void run() {
                 Module m;

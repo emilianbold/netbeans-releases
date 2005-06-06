@@ -28,7 +28,6 @@ import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.core.NbTopManager;
 import org.netbeans.ModuleManager;
 import org.netbeans.Module;
 import org.openide.ErrorManager;
@@ -100,7 +99,7 @@ public class CvsVersioningSystem {
     private void disableCurrentModules() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                final ModuleManager mgr = NbTopManager.get().getModuleSystem().getManager();
+                final ModuleManager mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
                 mgr.mutex().writeAccess(new Runnable() {
                     public void run() {
                         Module m;
