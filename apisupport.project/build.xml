@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
         <available property="ant/project.test.built" file="../../ant/project/build/test/unit/classes"/>
     </target>
     <target name="build-misc-project">
+        <ant dir="../harness"/>
         <ant dir="test/unit/data/example-external-projects/suite2/misc-project" inheritall="false">
             <property name="netbeans.dest.dir" location="${netbeans.dest.dir}"/>
             <property name="harness.dir" location="${netbeans.dest.dir}/harness"/>
