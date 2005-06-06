@@ -29,6 +29,16 @@ ToDo:
 
   <target name="all-nozip" depends="build-nozip,commit-validation" description="Build the IDE (no ZIP file, unpacked) and run basic validation tests."/>
 
+  <target name="assure-ant">
+      <condition property="ant.version.is.good">
+          <!-- this is in 1.6 only -->
+          <available classname="org.apache.tools.ant.util.FileUtils"/>
+    </condition>
+    <fail unless="ant.version.is.good">
+        You need to have ant 1.6 at least to build NetBeans.
+    </fail>
+  </target>
+  
   <target name="check-for-jdk-1.4">
     <available property="have-jdk-1.4" classname="java.lang.CharSequence"/>
     <available property="have-jdk-1.5" classname="java.lang.StringBuilder"/>
@@ -39,7 +49,7 @@ ToDo:
 
   <target name="bootstrap"
           description="Bootstrap NetBeans-specific Ant extensions."
-          depends="assure-jdk-1.4">
+          depends="assure-jdk-1.4,assure-ant">
     <!-- First things first: read the user's and/or -->
     <!-- the site's build properties files.         -->
     <property file="user.build.properties"/>
