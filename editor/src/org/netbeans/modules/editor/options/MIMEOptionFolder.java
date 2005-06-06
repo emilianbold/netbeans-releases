@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -65,6 +67,17 @@ public class MIMEOptionFolder{
     /** Creates new MIMEOptionFolder */
     public MIMEOptionFolder(DataFolder f, BaseOptions bean){
         folder = f;
+        folder.getPrimaryFile().addFileChangeListener(new FileChangeAdapter(){
+            // update settings if new xml settings files appear
+            public void fileDataCreated(FileEvent fe) {
+                loadAllFiles();
+            }
+
+            public void fileChanged(FileEvent fe) {
+                loadAllFiles();
+            }
+            
+        });
         base = bean;
         mime=BaseOptions.BASE.equals(base.getTypeName())? "text/base" : BaseKit.getKit(base.getKitClass()).getContentType(); //NOI18N
         if (mime == null) mime = base.getTypeName();
@@ -86,6 +99,11 @@ public class MIMEOptionFolder{
                     mp.instanceClass(),
                     mp.createMIMEOptionFile(base, mp)
                     );
+                }
+            } else {
+                MIMEOptionFile mof = (MIMEOptionFile) files.get(mp.instanceClass());
+                if (mof != null){
+                    mof.reloadSettings();
                 }
             }
         }
