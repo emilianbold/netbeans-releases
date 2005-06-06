@@ -100,7 +100,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         File targetPrjDir = new File(suiteDir, "testModuleRel");
         NbModuleProjectGenerator.createSuiteComponentModule(
                 targetPrjDir,
-                "org.example.testModule", // cnb
+                "org.example.testModuleRel", // cnb
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
@@ -127,7 +127,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         targetPrjDir = new File(getWorkDir(), "testModuleAbs");
         NbModuleProjectGenerator.createSuiteComponentModule(
                 targetPrjDir,
-                "org.example.testModule", // cnb
+                "org.example.testModuleAbs", // cnb
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
