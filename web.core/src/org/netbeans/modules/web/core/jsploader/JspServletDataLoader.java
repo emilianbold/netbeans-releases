@@ -18,7 +18,6 @@ import org.openide.loaders.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.actions.*;
-import org.openide.src.*;
 
 import org.netbeans.modules.java.*;
 
