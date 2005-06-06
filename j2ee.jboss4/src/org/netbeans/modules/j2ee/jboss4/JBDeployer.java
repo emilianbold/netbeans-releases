@@ -34,10 +34,7 @@ import org.netbeans.modules.j2ee.jboss4.ide.JBDeploymentStatus;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
-import java.util.Hashtable;
-import javax.naming.*;
-import javax.management.*;
-import java.net.URLClassLoader;
+
 import org.openide.util.NbBundle;
 
 /**
@@ -71,8 +68,7 @@ public class JBDeployer implements ProgressObject, Runnable {
     
     
     public void run(){
-        
-        
+
         String deployDir = InstanceProperties.getInstanceProperties(uri).getProperty(JBInstantiatingIterator.PROPERTY_DEPLOY_DIR);
         FileObject foIn = FileUtil.toFileObject(file);
         FileObject foDestDir = FileUtil.toFileObject(new File(deployDir));
@@ -89,45 +85,21 @@ public class JBDeployer implements ProgressObject, Runnable {
         try{
             wait(2000);
         }catch(Exception e){
-            
         }
         
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
         
-        ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
-        URLClassLoader loader = ((JBDeploymentFactory)JBDeploymentFactory.create()).getJBClassLoader();
-        Thread.currentThread().setContextClassLoader(loader);
         try{
-            //org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
-            
-            // mainDeployer version
-            Hashtable env = new Hashtable();
-            
-            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-            env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort(InstanceProperties.getInstanceProperties(uri).getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR)));
-            env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
-            env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
-            
-            ObjectName mainDeployer = new ObjectName("jboss.system:service=MainDeployer");
-            
-            Object[] args = {file.toURL().toString()};
-            
-            String[] sig = {String.class.getName()};
-            
-            InitialContext ctx = new InitialContext(env);
-            
-            MBeanServerConnection srv = (MBeanServerConnection)ctx.lookup("/jmx/invoker/RMIAdaptor");
-            
-            srv.invoke(mainDeployer, "undeploy", args, sig);
-            srv.invoke(mainDeployer, "deploy", args, sig);        
+            org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
         }catch(Exception e){
             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
-        }finally{
-            Thread.currentThread().setContextClassLoader(oldLoader);
         }
-        
+        try{
+            wait(2000);
+        }catch(Exception e){
+        }
+
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, "Applicaton Deployed"));
-        
     }
     
     
