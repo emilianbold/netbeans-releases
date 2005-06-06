@@ -14,65 +14,6 @@ Microsystems, Inc. All Rights Reserved.
 <project name="openide" default="netbeans" basedir=".">
   <import file="../nbbuild/default.xml"/>
 
-  <target name="init" depends="default.init">
-    <patternset id="openide.files">
-      <include name="core/openide.jar"/>
-      <include name="config/ModuleAutoDeps/org-openide.xml"/>
-    </patternset>
-    <path id="openide-cp">
-      <!-- nothing -->
-    </path>
-    <property name="build.compiler.debug" value="true"/> <!-- by default -->
-  </target>
-
-  <!-- See #11746. -->
-  <target name="vers-prep-1">
-    <uptodate targetfile="build/manifest-subst.mf" property="spec-vers-up-to-date">
-      <srcfiles dir=".">
-        <include name="openide-spec-vers.properties"/>
-      </srcfiles>
-    </uptodate>
-  </target>
-  <target name="vers-prep-2" depends="vers-prep-1" unless="spec-vers-up-to-date">
-    <!-- Either manifest-subst.mf is missing or openide-spec-vers.properties is newer. -->
-    <delete>
-      <fileset dir=".">
-        <include name="build/*-subst.mf"/>
-      </fileset>
-    </delete>
-  </target>
-  <target name="vers-prep" depends="vers-prep-2">
-    <property file="openide-spec-vers.properties"/>
-    <filter token="SPEC_VERS_SUBST" value="${openide.specification.version}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-  </target>
-  
-  <target name="release" depends="init">
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}" includeEmptyDirs="false">
-      <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-    </copy>
-  </target>
-
-  <target name="netbeans" depends="init,jar-from-submodules,release" description="Build everything needed for inclusion in the IDE.">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="core/openide.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="openide.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="build/openide.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="core/openide.jar"
-	     homepage="http://openide.${homepage.base}/"
-	     distribution="http://${dist.base}/openide.nbm">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-
    <!--    
     <property name="netbeans.jalopy.convention" location="convention-netbeans.xml" />
     
@@ -96,28 +37,6 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   -->
 
-  <!-- Build whole openide.jar from separate libraries -->
-  <target name="jar-from-submodules" depends="init,vers-prep" description="Create JAR files from copied directories." unless="no-openide.jar">
-    <property name="openide.jar" value="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar" />
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/core"/>
-    <copy file="manifest.mf" tofile="build/manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${openide.jar}" manifest="build/manifest-subst.mf" compress="false" duplicate="fail" >
-      <fileset dir="actions/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="awt/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="dialogs/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt" />
-      <fileset dir="explorer/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="fs/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="nodes/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="options/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="text/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="util/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="util/enum/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="modules/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="windows/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="compat/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-    </jar>
-  </target>
-  
   <target name="clean" description="Remove all build products." depends="init">
     <delete dir="build"/>
     <delete>
@@ -141,8 +60,10 @@ Microsystems, Inc. All Rights Reserved.
             <batchtest todir="test/results">
                 <fileset dir="test/unit/src" includes="${test.includes}"/>
             </batchtest>
-            <classpath >
-                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar" />
+            <classpath>
+                <!-- XXX what now?
+                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar"/>
+                -->
                 <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide-loaders.jar" />
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
@@ -158,7 +79,9 @@ Microsystems, Inc. All Rights Reserved.
         <fail unless="test.class">Must set test.class</fail>
         <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
             <classpath> 
+                <!-- XXX what now?
                 <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar"/>
+                -->
                 <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide-loaders.jar" />
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
@@ -176,8 +99,10 @@ Microsystems, Inc. All Rights Reserved.
             <jvmarg value="-Xnoagent"/>
             <jvmarg value="-Djava.compiler=none"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
-            <classpath >
-                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar" />
+            <classpath>
+                <!-- XXX what now?
+                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar"/>
+                -->
                 <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide-loaders.jar" />
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
