@@ -184,7 +184,7 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages/>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
-                <classpath>${ant.home}/lib/ant.jar:${openide.dir}/core/openide.jar</classpath>
+                <classpath>${antsrc.cp}</classpath>
                 <built-to>build/antclasses</built-to>
             </extra-compilation-unit>
         </data>
