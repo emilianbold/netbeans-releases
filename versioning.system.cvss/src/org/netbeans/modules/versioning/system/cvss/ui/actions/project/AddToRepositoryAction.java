@@ -142,6 +142,7 @@ public final class AddToRepositoryAction extends NodeAction {
                             vector.addAll(roots);
                             DefaultComboBoxModel model = new DefaultComboBoxModel(vector);
                             importPanel.rootComboBox.setModel(model);
+                            importPanel.rootComboBox.getEditor().selectAll();
 
                             importPanel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
 
@@ -184,6 +185,8 @@ public final class AddToRepositoryAction extends NodeAction {
                                 String vendorTag = "default_vendor";
                                 String releaseTag = "default_release";
                                 String selectedRoot = (String) importPanel.rootComboBox.getSelectedItem();
+
+                                HistorySettings.addRecent(HistorySettings.PROP_CVS_ROOTS, selectedRoot);
 
                                 if (checkout) {
                                     Project[] closeCurrent = new Project[] {project};
