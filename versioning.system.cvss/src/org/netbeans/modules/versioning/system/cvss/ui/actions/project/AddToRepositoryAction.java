@@ -238,7 +238,9 @@ public final class AddToRepositoryAction extends NodeAction {
     }
 
     private static void checkInput(ImportPanel importPanel, DialogDescriptor descriptor) {
-        boolean valid = importPanel.moduleTextField.getText().trim().length() > 0;
+        String module = importPanel.moduleTextField.getText().trim();
+        boolean valid = module.length() > 0;
+        valid &= module.indexOf(" ") == -1;  // NOI18N
         valid &= importPanel.commentTextArea.getText().trim().length() > 0;
         String root = (String) importPanel.rootComboBox.getEditor().getItem();
         boolean supportedMethod = root.startsWith(":pserver:"); // NOI18N
