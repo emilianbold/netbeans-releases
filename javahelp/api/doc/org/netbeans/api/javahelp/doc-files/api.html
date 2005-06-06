@@ -25,33 +25,11 @@ Microsystems, Inc. All Rights Reserved.
 This API module makes that possible. It also includes the JavaHelp standard
 extension library itself.</p>
 
-<!--
-<p><em>As of Open APIs 2.2</em> JavaHelp capability is <em>not</em>
-automatically guaranteed to modules. Rather, modules supplying
-JavaHelp documentation which wish to ensure that this documentation
-will be visible, must declare an explicit dependency on a newly
-separated JavaHelp library. This library provides the capability
-<code>org.netbeans.api.javahelp.Help</code>, so a module may declare
-the dependency as follows:</p>
+<h2><a name="helpctx-layer">JavaHelp installation</a></h2>
 
-<pre>
-OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
-</pre>
+<h3>Helpset registration</h3>
 
-<p>For the sake of compatibility with older modules, this dependency
-is added to your module <em>automatically</em> in case your module
-does not already provide it; and either declares no API specification
-version dependency at all, or declares one but on an API version
-earlier than 2.2. Modules declaring an API dependency on 2.2 or some
-later specification version should explicitly declare a JavaHelp
-dependency if they need one.</p>
--->
-
-<h2><a name="helpctx-layer">JavaHelp via layer</a></h2>
-
-<p><em>As of Open APIs 1.6</em>
-
-<p>The most flexible way to add JavaHelp is via your XML layer. First you
+<p>You can add JavaHelp via your XML layer. First you
 need to add the helpset to the IDE. This has several effects: it ensures that
 context help can use your helpset; it enabled help links to use help IDs
 defined in this helpset; and assuming the helpset is marked to be merged into
@@ -93,9 +71,10 @@ associated files to reside in a package hierarchy underneath the
 <samp>docs/</samp> folder (of the IDE installation or user directory),
 if not in the module classloader.</span></p>
 
+<h3>Shortcut registration</h3>
+
 <p>To add a shortcut to a specific help ID in your help set, there is a different
-XML DTD you can use. Normally such shortcuts would go into the folder
-<samp>Menu/Help/HelpShortcuts/</samp> so as to appear in <b>Help&nbsp;| Help&nbsp;Sets</b>.
+XML DTD you can use.
 The shortcut XML specifies the help ID to display (which must be present in some
 registered help set of course), for example:
 
@@ -119,48 +98,22 @@ You could provide an alternate means of displaying help shortcuts,
 however the functionality of showing the master navigators is only
 accessible via the presenters of this kind of XML file.
 
-<!--
-<h2><a name="helpctx-manifest">JavaHelp via manifest</a></h2>
+<p class="nonnormative">Note that usage of help shortcuts is no longer recommended by NetBeans style
+guidelines.</p>
 
-<p>If you are using a version of the Open APIs older than 1.6, or simply
-prefer the default mode of displaying JavaHelp and do not require
-any customization, you may also install JavaHelp via module manifest.
+<h3>Module dependency</h3>
 
-<p>The tag
-<code>OpenIDE-Module-Description</code> specifies a
-help-set file according to the standard
+<p>Note that JavaHelp capability is <em>not</em>
+automatically guaranteed to modules. Rather, modules supplying
+JavaHelp documentation which wish to ensure that this documentation
+will be visible, must declare an explicit dependency on the
+JavaHelp library. This library provides the capability
+<code>org.netbeans.api.javahelp.Help</code>, so a module may declare
+the dependency as follows:</p>
 
-<a href="http://java.sun.com/products/javahelp/index.html">JavaHelp specification</a>.
-
-The tag value gives the location of the help set within the module
-JAR, and supports localization; for example, the description
-<code>com.mycom.mymodule.docs.TheHelpSet</code> might look for JAR
-entries such as:
-
-<ol>
-
-<li> <code>/com/mycom/mymodule/docs/TheHelpSet_en_US.hs</code>
-
-<li> <code>/com/mycom/mymodule/docs/TheHelpSet_en.hs</code>
-
-<li> <code>/com/mycom/mymodule/docs/TheHelpSet.hs</code>
-
-</ol>
-
-(This is the standard order used by property bundle searches, etc.)
-
-<p>First of all, providing a help set means the IDE will permit users
-to see it via the normal JavaHelp viewer, and employ standard merging
-of navigational views. If you provide a home ID, a menu item linking
-to that home page will be added to the <b>Help</b> menu automatically,
-named according to the help set title; if it ends with an asterisk
-(<samp>*</samp>) it will be treated as a <em>distinguished</em> help
-set covering a prominent area of documentation. If you provide various
-navigational views, they will appear in merged form. Modules are
-strongly encouraged to provide a home ID, and views in the table of
-contents, index, and full-text search modes, making for a
-well-integrated help system.
--->
+<pre>
+OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
+</pre>
 
 <h2><a name="helpctx-context-help">Context Help</a></h2>
 

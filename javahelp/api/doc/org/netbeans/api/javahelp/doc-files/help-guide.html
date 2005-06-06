@@ -377,25 +377,16 @@ look like the following:
 <h2><a name="makeknown">Making the Help Set Known to the IDE</a></h2>
 In order to use the result help set within the IDE at runtime, a couple of things 
 need to be added to various files associated with the module. These are outlined 
-in part in the <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#helpctx"> 
-the NetBeans Module Document</a>.
+in part in the <a href="api.html#helpctx-layer">reference documentation</a>.
+This description assumes you are using a NetBeans module project.
 
 <h3><a name="manifest">Manifest File</a></h3>
-<p>There are two lines you need to add to your module's manifest file in order 
+<p>You need to add an entry to your module's manifest file in order 
   for your help set to be used at runtime: </p>
-<ul>
-  <li> <samp>OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help</samp> <br>
-  </li>
-  <li> <samp>Class-Path: docs/modulename.jar</samp> <br>
-    As a result of the build process for a module that includes a help set, two 
-    JAR files will be produced: one for the module class files and another for 
-    the module help set. The will both have the same name, but will be installed 
-    into different directories. The module with the class files is installed into 
-    <samp><i>IDE-install</i>/modules</samp> and its corresponding help set jar is 
-    installed into <samp><i>IDE-install</i>/modules/docs</samp>. The <code>Class-Path</code> 
-    entry above is required so that the help set jar can be found at runtime when 
-    the corresponding class file module is loaded. </li>
-</ul>
+<pre>OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help</pre>
+<p>You can use the module's project properties dialog to add this dependency.</p>
+<p>The projectized build process will also add a <code>Class-Path</code> entry,
+as the documentation will be built into a separate JAR file.</p>
 
 <h3><a name="layer">Layer File</a></h3>
 <p>A module's help set must be defined in its layer file. Layer files are typically called
@@ -431,79 +422,14 @@ in the layer file for the HTTP Monitor module:</p>
 </pre>
 
 <h2><a name="putfiles">Where to Put Help Files in the Module Source</a></h2>
-<p>Typically, the Help files are added under a <samp>javahelp</samp> subdirectory 
+<p>Help files should be kept under a <samp>javahelp</samp> subdirectory 
   off of the module root directory. Like source code, all JavaHelp documentation 
   must be placed into a globally unique package to avoid conflicts. If two modules 
-  put help files into the same package, it will result in broken links. Therefore, 
-  the <samp>javahelp</samp> subdirectories should mirror the package structure of 
-  the <samp>src</samp> directory where the java source is located. While this is not 
-  a hard requirement and Help files can be put anywhere, this is the best way 
-  to avoid conflicts between module help sets. </p>
-<p>For example, the structure of the module source and documentation of the EJB 
-  module in Sun<tt><sup>TM</sup></tt> ONE Studio 4, Enterprise Edition for Java<tt><sup>TM</sup></tt> 
-  is as follows:</p>
-
-<pre>    ejb (module root directory)
-     |
-     src/com/sun/forte4j/j2ee/ejb/ (several subdirectories of source files)
-     |
-     javahelp/com/sun/forte4j/j2ee/ejb/docs/ (several subdirectories of documentation files)
-</pre>
-
-Wherever you choose to place your documentation files, your <samp>build.xml</samp> 
-file must correctly that specify where the Help files are located so that the 
-module build process can find them and build the help set. 
-
-<h2><a name="building">Building the Help Set</a></h2>
-In order to build the module help set, the <code>javahelp</code> target must be specified 
-in the module's <samp>build.xml</samp> file. Additionally the <code>netbeans</code> target 
-must depend on the <code>javahelp</code> target since that is the target that is built 
-during a full build of the source. Here is a sample from the EJB <samp>build.xml</samp> 
-in Sun ONE Studio 4, Enterprise Edition:
-
-<pre>
-&lt;<span class="function-name">target</span> <span class="variable-name">name</span>=<span class="string">"netbeans"</span> <span class="variable-name">depends</span>=<span class="string">"jars,javahelp"</span>&gt;
-  &lt;<span class="function-name">genlist</span> <span class="variable-name">targetname</span>=<span class="string">"nbm"</span> <span class="variable-name">outputfiledir</span>=<span class="string">"netbeans"</span>/&gt;
-&lt;/<span class="function-name">target</span>&gt;
-
-&lt;<span class="function-name">target</span> <span class="variable-name">name</span>=<span class="string">"javahelp"</span>&gt;
-  &lt;<span class="function-name">mkdir</span> <span class="variable-name">dir</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/JavaHelpSearch2"</span>/&gt;
-  &lt;<span class="function-name">jhindexer</span> <span class="variable-name">basedir</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/"</span>
-             <span class="variable-name">db</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/JavaHelpSearch2"</span>
-             <span class="variable-name">jhall</span>=<span class="string">"${nbroot}/nbbuild/external/jhall-1.1.2_02.jar"</span>&gt;
-    &lt;<span class="function-name">include</span> <span class="variable-name">name</span>=<span class="string">"**/*.html"</span>/&gt;
-    &lt;<span class="function-name">include</span> <span class="variable-name">name</span>=<span class="string">"**/*.htm"</span>/&gt;
-    &lt;<span class="function-name">exclude</span> <span class="variable-name">name</span>=<span class="string">"JavaHelpSearch2/"</span>/&gt;
-    &lt;<span class="function-name">exclude</span> <span class="variable-name">name</span>=<span class="string">"ja/"</span>/&gt;
-    &lt;<span class="function-name">exclude</span> <span class="variable-name">name</span>=<span class="string">"credits.html"</span>/&gt;
-  &lt;/<span class="function-name">jhindexer</span>&gt;
-  &lt;<span class="function-name">mkdir</span> <span class="variable-name">dir</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/ja/JavaHelpSearch2"</span>/&gt;
-  &lt;<span class="function-name">jhindexer</span> <span class="variable-name">basedir</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/"</span>
-             <span class="variable-name">db</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/ja/JavaHelpSearch2"</span>
-             <span class="variable-name">locale</span>=<span class="string">"ja"</span>
-             <span class="variable-name">jhall</span>=<span class="string">"${nbroot}/nbbuild/external/jhall-1.1.2_02.jar"</span>&gt;
-    &lt;<span class="function-name">include</span> <span class="variable-name">name</span>=<span class="string">"ja/**/*.html"</span>/&gt;
-    &lt;<span class="function-name">include</span> <span class="variable-name">name</span>=<span class="string">"ja/**/*.htm"</span>/&gt;
-    &lt;<span class="function-name">exclude</span> <span class="variable-name">name</span>=<span class="string">"ja/JavaHelpSearch2/"</span>/&gt;
-    &lt;<span class="function-name">exclude</span> <span class="variable-name">name</span>=<span class="string">"ja/credits.html"</span>/&gt;
-  &lt;/<span class="function-name">jhindexer</span>&gt;
-  &lt;<span class="function-name">mkdir</span> <span class="variable-name">dir</span>=<span class="string">"netbeans/modules/docs"</span>/&gt;
-  &lt;<span class="function-name">locjar</span> <span class="variable-name">jarfile</span>=<span class="string">"netbeans/modules/docs/ejb.jar"</span>
-          <span class="variable-name">compress</span>=<span class="string">"true"</span>&gt;
-    &lt;<span class="function-name">fileset</span> <span class="variable-name">dir</span>=<span class="string">"javahelp"</span> <span class="variable-name">excludesfile</span>=<span class="string">"${nbroot}/nbbuild/standard-jar-excludes.txt"</span>/&gt;
-    &lt;<span class="function-name">locale</span> <span class="variable-name">name</span>=<span class="string">"ja"</span>/&gt;
-  &lt;/<span class="function-name">locjar</span>&gt;
-&lt;/<span class="function-name">target</span>&gt;
-</pre>
-
-<p>The path to the javahelp sources above follows the standard NetBeans pattern 
-  of matching documentation package hierarchies to source package heirarchies 
-  as described above. If you want to use a different directory structure, you 
-  must alter the entries in the <code>javahelp</code> target to correctly locate the 
-  directory where the files are located.</p>
-<p><i>Note: The details of how build scripts work may vary from release to release. 
-  You should always compare against existing scripts in case of problems.</i> 
-</p>
+  put help files into the same package, it will result in broken links.
+  The <samp>javahelp</samp> subdirectory should therefore use a distinctive "package"
+  name prefix. It is conventional to use <code><em>module.code.name.base</em>.docs</code>,
+  e.g. for a module named <code>org.netbeans.modules.foo</code>, place the JavaHelp
+  into <code>org.netbeans.modules.foo.docs</code> (plus perhaps subpackages).
 
 <h2><a name="notes">Additional Notes</a></h2>
 This section includes any additional comments or issues regarding Help for IDE 
