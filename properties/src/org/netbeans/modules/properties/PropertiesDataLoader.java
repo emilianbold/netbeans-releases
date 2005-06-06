@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,6 +30,7 @@ import org.openide.util.io.SafeException;
  * can be unfinaled if desired.
  *
  * @author Ian Formanek, Petr Jiricka
+ * @author Marian Petras
  */
 public final class PropertiesDataLoader extends MultiFileLoader {
 
@@ -68,29 +69,24 @@ public final class PropertiesDataLoader extends MultiFileLoader {
                                    "PROP_PropertiesLoader_Name");       //NOI18N
     }
     
+    /**
+     * This methods uses the layer action context so it returns
+     * a non-<code>null</code> value.
+     *
+     * @return  name of the context on layer files to read/write actions to
+     */
+    protected String actionsContext () {
+        return "Loaders/text/x-properties/Actions/";                    //NOI18N
+    }
+    
+    /**
+     * This method returns <code>null</code> because it uses method
+     * {@link #actionsContext}.
+     *
+     * @return  <code>null</code>
+     */
     protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            // Open as text by default, but leave the ability to open
-            // the table view, and the ability to customize the
-            // default. First item in the list serves as the default
-            // action by default.
-            SystemAction.get(EditAction.class),
-            SystemAction.get(OpenAction.class),
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(CutAction.class),
-            SystemAction.get(CopyAction.class),
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            null,
-            SystemAction.get(NewAction.class),
-            SystemAction.get(SaveAsTemplateAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class)
-        };
+        return null;
     }
 
     /**
