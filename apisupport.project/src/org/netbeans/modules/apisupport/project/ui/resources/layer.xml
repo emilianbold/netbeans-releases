@@ -13,6 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    
     <folder name="Templates">
         <folder name="Project">
             <attr name="Standard/APISupport" boolvalue="true"/>
@@ -39,4 +40,16 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="APISupport/Samples" boolvalue="true"/>
         </folder>
     </folder>
+
+    <folder name="Menu">
+        <folder name="Tools">
+            <attr name="JavaPlatformsCustomizerAction.instance/org-netbeans-modules-apisupport-project-ui-NbPlatformsCustomizerAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-apisupport-project-ui-NbPlatformsCustomizerAction.instance/LibrariesCustomizerAction.instance" boolvalue="true"/>            
+            <file name="org-netbeans-modules-apisupport-project-ui-NbPlatformsCustomizerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.apisupport.project.ui.NbPlatformCustomizerAction"/>
+            </file>
+        </folder>
+    </folder>
+
 </filesystem>
+
