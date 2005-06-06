@@ -121,8 +121,6 @@ class FormToolBar extends JToolBar {
         separator1.setOrientation(JSeparator.VERTICAL);
         JToolBar.Separator separator2 = new JToolBar.Separator();
         separator2.setOrientation(JSeparator.VERTICAL);
-        JToolBar.Separator separator3 = new JToolBar.Separator();
-        separator3.setOrientation(JSeparator.VERTICAL);
 
         TestAction testAction = (TestAction) SystemAction.get(TestAction.class);
         JButton testButton = (JButton) testAction.getToolbarPresenter();
@@ -163,8 +161,6 @@ class FormToolBar extends JToolBar {
             add(Box.createHorizontalStrut(4));
 
             installDesignerActions();
-            add(separator3);
-            installAlignmentButtons();
         }
 
         // Add "addLabel" at the end of the toolbar
@@ -185,14 +181,6 @@ class FormToolBar extends JToolBar {
             JButton button = add(action);
             initButton(button);
         }        
-    }
-    
-    void installAlignmentButtons() {
-        JToggleButton[] buttons = formDesigner.getAlignmentButtons();
-        for (int i=0; i<buttons.length; i++) {
-            initButton(buttons[i]);
-            add(buttons[i]);
-        }
     }
 
     // --------
