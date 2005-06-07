@@ -8,14 +8,8 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-
-/*
- * JUnitTestRunner.java
- *
- * Created on November 19, 2002, 1:51 PM
  */
 
 package org.netbeans.xtest.testrunner;
@@ -36,10 +30,7 @@ import org.netbeans.xtest.pe.*;
 
 import java.io.*;
 
-
-
 /**
- *
  * @author  breh
  */
 public class JUnitTestRunner {
@@ -268,7 +259,7 @@ public class JUnitTestRunner {
         if (suiteMethod != null) {
             // call suite method and see what happens
             try {
-                Test aTest = (Test)(suiteMethod.invoke(null, new Class[0]));
+                Test aTest = (Test)(suiteMethod.invoke(null, new Object[0]));
                 if (aTest instanceof TestSuite) {
                     // ok, we have the suite - everything is ok
                     TestSuite aTestSuite = (TestSuite)aTest;
@@ -357,10 +348,10 @@ public class JUnitTestRunner {
         try {
             Class setupClass = getClassForName(className);
             // try to find the method
-            Method setupMethod = setupClass.getMethod(methodName, null);
+            Method setupMethod = setupClass.getMethod(methodName, new Class[0]);
             // instintiate the object
             Object obj = setupClass.newInstance();
-            setupMethod.invoke(obj, null);
+            setupMethod.invoke(obj, new Object[0]);
         } catch (ClassNotFoundException cnfe) {
             throw new InvocationTargetException(cnfe,"Cannot invoke setup/teardown method, because of ClassNotFoundException.");
         } catch (InstantiationException ie) {
