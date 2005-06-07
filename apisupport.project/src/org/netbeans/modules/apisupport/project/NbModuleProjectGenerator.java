@@ -40,7 +40,7 @@ import org.w3c.dom.Element;
 public class NbModuleProjectGenerator {
     
     private static final String PLATFORM_PROPERTIES_PATH =
-            "nbproject" + File.separator + "platform.properties"; // NOI18N
+            "nbproject/platform.properties"; // NOI18N
     
     /** Use static factory methods instead. */
     private NbModuleProjectGenerator() {/* empty constructor*/}
