@@ -577,6 +577,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../contrib/naming" target="netbeans"/>
   </target>
+  <target name="all-contrib/profiles" depends="all-openide,all-core,all-core/startup">
+    <echo message="Building module contrib/profiles ..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../contrib/profiles" target="netbeans"/>
+  </target>
   <target name="all-contrib/bookmarks" depends="all-contrib/naming">
     <echo message="Building module bookmarks ..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
