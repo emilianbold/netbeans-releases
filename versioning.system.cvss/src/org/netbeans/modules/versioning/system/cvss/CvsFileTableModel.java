@@ -14,8 +14,10 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
+import org.openide.ErrorManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -134,9 +136,22 @@ public class CvsFileTableModel {
         FileInformation info = cache.getStatus(file);
         if (info.isDirectory()) {
             File [] files = cache.listFiles(file);
-            for (int i = 0; i < files.length; i++) {
-                addRecursively(nodes, files[i]);
+            try {
+                String parentPath = file.getCanonicalPath();
+                for (int i = 0; i < files.length; i++) {
+                    File f = files[i];
+                    if (f.getCanonicalPath().startsWith(parentPath)) {
+                        addRecursively(nodes, files[i]);
+                    } else {
+                        ErrorManager.getDefault().log("Detected non-hiearchical folder structure: " + f.getAbsolutePath());
+                    }
+                }
+            } catch (IOException e) {
+                ErrorManager err = ErrorManager.getDefault();
+                err.annotate(e, "Can not apply upward symbolic link detection algorithm, assuming cycle risk...");
+                err.notify(e);
             }
+
         } else {
             if ((includeStatus & info.getStatus()) != 0) {
                 nodes.add(new CvsFileNode(file));
