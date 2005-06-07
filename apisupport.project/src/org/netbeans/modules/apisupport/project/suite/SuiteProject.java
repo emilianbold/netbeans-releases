@@ -68,8 +68,8 @@ final class SuiteProject implements Project {
             helper.createSharabilityQuery(eval, new String[0], new String[/*XXX anything?*/0]),
             new SuiteSubprojectProviderImpl(this, helper, eval),
             new SuiteProviderImpl(),
-            //new SuiteActions(this),
-            //new SuiteLogicalView(this),
+            new SuiteActions(this),
+            new SuiteLogicalView(this),
             //new SuiteCustomizer(this, helper, eval),
         });
     }
