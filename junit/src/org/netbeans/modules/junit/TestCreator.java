@@ -663,7 +663,7 @@ public final class TestCreator {
      */
     private Method createTestMethod(JavaClass sclass, Method sm, JavaModelPackage pkg) {
         
-        final String shortClsName = sclass.getSimpleName();
+        final String shortClsName = getShortClsName(sclass);
         final boolean isStatic = (sm.getModifiers() & Modifier.STATIC) != 0;
         String smName = sm.getName();
         
@@ -822,6 +822,43 @@ public final class TestCreator {
                                                   typeName,
                                                   0);
         return ret;
+    }
+    
+    /**
+     * Returns a short name of the given class.
+     * For plain (not nested or inner) classes, it simply delegates to
+     * <code>JavaClass.getSimpleName()</code>. For inner/nested classes,
+     * it prepends simple names of the outer classes.
+     * For example, if the passed class's fully qualified name
+     * is <code>foo.bar.baz.MyClass.Inner</code>, this method
+     * returns <code>MyClass.Inner</code>
+     * (unlike <code>JavaClass.getSimpleName()</code> which simply returns
+     * <code>Inner</code>).
+     *
+     * @param  cls  class whose short name is requested
+     * @return  short name of the given class
+     */
+    private static String getShortClsName(JavaClass cls) {
+        if (!cls.isInner()) {
+            return cls.getSimpleName();
+        }
+        
+        List/*<String>*/ chain = new ArrayList/*<String>*/(4);
+        chain.add(cls.getSimpleName());
+        ClassDefinition def = cls.getDeclaringClass();
+        while (def instanceof JavaClass) {
+            cls = (JavaClass) def;
+            chain.add(cls.getSimpleName());
+            def = cls.isInner() ? cls.getDeclaringClass() : null;
+        }
+        
+        StringBuffer buf = new StringBuffer(40);
+        int i = chain.size() - 1;
+        buf.append(chain.get(i--));
+        while (i >= 0) {
+            buf.append('.').append(chain.get(i--));
+        }
+        return buf.toString();
     }
     
     /**
