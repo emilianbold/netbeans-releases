@@ -516,7 +516,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
                                 public void run () throws IOException {
                                     result[0] = handleCopy (f);
                                 }
-                            });
+                            }, null);
         fireOperationEvent (
             new OperationEvent.Copy (result[0], this), OperationEvent.COPY
         );
@@ -535,16 +535,14 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     * @exception IOException if an error occures
     */
     public final void delete () throws IOException {
-        synchronized ( synchObject() ) {
-            // the object is ready to be closed
-            invokeAtomicAction (getPrimaryFile (), new FileSystem.AtomicAction () {
-                    public void run () throws IOException {
-                        handleDelete ();
-                        item.deregister(false);
-                        item.setDataObject(null);
-                    }
-                });
-        }
+        // the object is ready to be closed
+        invokeAtomicAction (getPrimaryFile (), new FileSystem.AtomicAction () {
+                public void run () throws IOException {
+                    handleDelete ();
+                    item.deregister(false);
+                    item.setDataObject(null);
+                }
+            }, synchObject());
         firePropertyChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
         fireOperationEvent (new OperationEvent (this), OperationEvent.DELETE);
     }
@@ -562,7 +560,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     *
     * @exception IOException if an error occurs
     */
-    public final void rename (final String name) throws IOException {
+    public final void rename (String name) throws IOException {
         if (name != null && name.trim ().length ()==0) {
             IllegalArgumentException iae = new IllegalArgumentException (this.getName ());
             String msg = NbBundle.getMessage (DataObject.class,
@@ -570,32 +568,42 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             ErrorManager.getDefault ().annotate (iae, ErrorManager.INFORMATIONAL, null, msg, null, null);
             throw iae;
         }
-        String oldName;
-        String newName;
-        final FileObject[] files = new FileObject[2]; // [old, new]
         
-        synchronized ( synchObject() ) {
-            oldName = getName ();
-
-            if (oldName.equals (name)) return; // the new name is the same as the old one
-
-            files[0] = getPrimaryFile ();
+        
+        class Op implements FileSystem.AtomicAction {
+            FileObject oldPf;
+            FileObject newPf;
             
-            // executes atomic action with renaming
-            invokeAtomicAction (files[0].getParent(), new FileSystem.AtomicAction () {
-                    public void run () throws IOException {
-                        files[1] = handleRename (name);
-                        if (files[0] != files[1])
-                            item.changePrimaryFile (files[1]);
-                    }
-                });
-             newName = getName ();
+            String oldName;
+            String newName;
+            public void run() throws IOException {
+                oldName = getName ();
+
+                if (oldName.equals (newName)) return; // the new name is the same as the old one
+
+                oldPf = getPrimaryFile ();
+                newPf = handleRename (newName);
+                if (oldPf != newPf)
+                    item.changePrimaryFile (newPf);
+                 newName = getName ();
+            }
         }
-        if (files[0] != files[1])
-            firePropertyChange (PROP_PRIMARY_FILE, files[0], getPrimaryFile ());
-        firePropertyChange (PROP_NAME, oldName, newName);
         
-        fireOperationEvent (new OperationEvent.Rename (this, oldName), OperationEvent.RENAME);
+        // executes atomic action with renaming
+        Op op = new Op();
+        op.newName = name;
+        invokeAtomicAction (getPrimaryFile().getParent(), op, synchObject());
+
+        if (op.oldName.equals (op.newName)) {
+            return; // the new name is the same as the old one
+        }
+        
+        if (op.oldPf != op.newPf) {
+            firePropertyChange (PROP_PRIMARY_FILE, op.oldPf, op.newPf);
+        }
+        firePropertyChange (PROP_NAME, op.oldName, op.newName);
+        
+        fireOperationEvent (new OperationEvent.Rename (this, op.oldName), OperationEvent.RENAME);
     }
 
     /** Rename this object (implemented in subclasses).
@@ -612,24 +620,25 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     * @exception IOException if an error occurs
     */
     public final void move (final DataFolder df) throws IOException {
-        FileObject old;
-        synchronized ( synchObject() ) {
-            if ((getFolder () == null)) return; // cannot move filesystem root
-            if (df.equals (getFolder ())) return; // if the destination folder is the same as the current one ==>> do nothing
+        class Op implements FileSystem.AtomicAction {
+            FileObject old;
+            public void run () throws IOException {
+                if ((getFolder () == null)) return; // cannot move filesystem root
+                if (df.equals (getFolder ())) return; // if the destination folder is the same as the current one ==>> do nothing
 
-            // executes atomic action for moving
-            old = getPrimaryFile ();
-            invokeAtomicAction (df.getPrimaryFile(), new FileSystem.AtomicAction () {
-                                    public void run () throws IOException {
-                                        FileObject mf = handleMove (df);
-                                        item.changePrimaryFile (mf);
-                                    }
-                                });
+                // executes atomic action for moving
+                old = getPrimaryFile ();
+                FileObject mf = handleMove (df);
+                item.changePrimaryFile (mf);
+            }
         }
+        Op op = new Op();
         
-        firePropertyChange (PROP_PRIMARY_FILE, old, getPrimaryFile ());
+        invokeAtomicAction (df.getPrimaryFile(), op, synchObject());
+        
+        firePropertyChange (PROP_PRIMARY_FILE, op.old, getPrimaryFile ());
         fireOperationEvent (
-            new OperationEvent.Move (this, old), OperationEvent.MOVE
+            new OperationEvent.Move (this, op.old), OperationEvent.MOVE
         );
     }
 
@@ -666,7 +675,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
                                 public void run () throws IOException {
                                     result[0] =  handleCreateShadow (f);
                                 }
-                            });
+                            }, null);
         fireOperationEvent (
             new OperationEvent.Copy (result[0], this), OperationEvent.SHADOW
         );
@@ -703,7 +712,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
                                 public void run () throws IOException {
                                     result[0] = handleCreateFromTemplate (f, name);
                                 }
-                            });
+                            }, null);
 
         fireOperationEvent (
             new OperationEvent.Copy (result[0], this), OperationEvent.TEMPL
@@ -746,19 +755,34 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     
     /** Invokes atomic action. 
      */
-    private void invokeAtomicAction (FileObject target, FileSystem.AtomicAction action) throws IOException {
+    private void invokeAtomicAction (FileObject target, final FileSystem.AtomicAction action, final Object lockTheSession) throws IOException {
+        FileSystem.AtomicAction toRun;
+        
+        if (lockTheSession != null) {
+            class WrapRun implements FileSystem.AtomicAction {
+                public void run() throws IOException {
+                    synchronized (lockTheSession) {
+                        action.run();
+                    }
+                }
+            }
+            toRun = new WrapRun();
+        } else {
+            toRun = action;
+        }
+        
         if (Boolean.getBoolean ("netbeans.dataobject.insecure.operation")) {
-            DataObjectPool.getPOOL ().runAtomicActionSimple (target, action);
+            DataObjectPool.getPOOL ().runAtomicActionSimple (target, toRun);
             return;
         }
             
         
         if (this instanceof DataFolder) {
             // action is slow
-            DataObjectPool.getPOOL ().runAtomicActionSimple (target, action);
+            DataObjectPool.getPOOL ().runAtomicActionSimple (target, toRun);
         } else {
             // it is quick, make it block DataObject recognition
-            DataObjectPool.getPOOL ().runAtomicAction (target, action);
+            DataObjectPool.getPOOL ().runAtomicAction (target, toRun);
         }
     }
      
