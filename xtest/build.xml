@@ -11,7 +11,6 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="xtest" default="netbeans" basedir=".">
   <import file="../nbbuild/default.xml"/> 
   
@@ -52,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="${build.classes.dir}"/>
     <javac srcdir="src" destdir="${build.classes.dir}"
            deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}">       
+           debug="${build.compiler.debug}" source="1.4">
       <classpath refid="basecp"/>
     </javac>
 
@@ -173,7 +172,5 @@ Microsystems, Inc. All Rights Reserved.
   <target name="clean-pes">
     <ant dir="pes" target="clean"/>
   </target>
-  
-  
  
 </project>
