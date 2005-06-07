@@ -56,8 +56,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     public static final ErrorManager err = ErrorManager.getDefault().getInstance(
         "org.netbeans.modules.apisupport.project.ui.customizer"); // NOI18N
 
-    private static final JPanel EMPTY_PANEL = new JPanel();
-    
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -242,7 +240,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
             public JComponent create(ProjectCustomizer.Category category) {
                 JComponent panel = (JComponent) panels.get(category);
-                return panel == null ? EMPTY_PANEL : panel;
+                return panel == null ? new JPanel() : panel;
             }
         };
     }
