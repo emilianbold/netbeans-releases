@@ -18,6 +18,19 @@ Microsystems, Inc. All Rights Reserved.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="split-of-openide-branding-files">
+        <api name="modules"/>
+        <summary>Branding files used during startup have new location</summary>
+        <version major="6" minor="2"/>
+        <date day="7" month="6" year="2005"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" source="compatible" semantic="incompatible" deprecation="no" addition="yes" deletion="no" modification="yes"/>
+        <description>
+            Due to <a href="#split-of-openide-jar">split of openide.jar</a> some important branding files used during startup change their location. 
+            Especially the to splash screen picture, location and color of progress bar and the application icon are now in <code>org.netbeans.core.startup</code>
+            package. Here is an example of the branding <a href="http://www.netbeans.org/source/browse/ide/branding/core/src/org/netbeans/core/startup/">as used by NetBeans IDE</a>.
+        </description>
+    </change>
     <change id="split-of-openide-jar">
         <api name="modules"/>
         <summary><code>openide.jar</code> is gone, update your module dependencies!</summary>

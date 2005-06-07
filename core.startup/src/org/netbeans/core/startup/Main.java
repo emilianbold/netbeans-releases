@@ -106,7 +106,7 @@ public final class Main extends Object {
             splash.print (msg);
         }
         if (moduleSystemInitialized) {
-            org.netbeans.core.startup.CoreBridge.getDefault ().setStatusText (msg);
+            org.netbeans.core.startup.CoreBridge.conditionallyPrintStatus (msg);
         }
   }
   

@@ -41,6 +41,16 @@ public abstract class CoreBridge {
         }
     }
     
+    static void conditionallyPrintStatus (String txt) {
+        CoreBridge b = (CoreBridge)Lookup.getDefault().lookup(CoreBridge.class);
+        if (b != null) {
+            b.setStatusText(txt);
+        } else {
+            System.err.println(txt);
+        }
+        
+    }
+    
     /** Attaches or detaches to current category of actions.
      * @param category name or null
      */

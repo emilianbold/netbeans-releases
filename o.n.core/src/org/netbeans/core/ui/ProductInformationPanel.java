@@ -389,7 +389,7 @@ public class ProductInformationPanel extends JPanel {
     private ImageIcon getIcon () {
         return new ImageIcon(Toolkit.getDefaultToolkit().getImage(
             NbBundle.getLocalizedFile(
-                "org.netbeans.core.resources.frames.ide48", // NOI18N
+                "org.netbeans.core.startup.frame48", // NOI18N
                 "gif", // NOI18N
                 Locale.getDefault(),
                 ProductInformationPanel.class.getClassLoader())));
