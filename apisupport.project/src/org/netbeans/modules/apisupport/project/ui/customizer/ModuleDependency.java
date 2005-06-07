@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.text.Collator;
 import java.util.Comparator;
 import org.netbeans.modules.apisupport.project.ModuleList;
 
@@ -43,6 +44,8 @@ public final class ModuleDependency implements Comparable {
         };
     }
     
+    private static final Collator LOC_COLLATOR = Collator.getInstance();
+    
     public ModuleDependency(ModuleList.Entry me) {
         this(me, null, null, true, false);
     }
@@ -72,8 +75,9 @@ public final class ModuleDependency implements Comparable {
     }
     
     public int compareTo(Object o) {
-        return this.getModuleEntry().getLocalizedName().compareTo(
-                ((ModuleDependency) o).getModuleEntry().getLocalizedName());
+        return LOC_COLLATOR.compare(
+            getModuleEntry().getLocalizedName(),
+            ((ModuleDependency) o).getModuleEntry().getLocalizedName());
     }
     
     public boolean hasCompileDependency() {
