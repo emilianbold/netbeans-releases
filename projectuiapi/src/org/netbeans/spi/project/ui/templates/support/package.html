@@ -17,7 +17,12 @@ Support for providing own templates visible in <b>New File...</b> action.
 
 <p>Project types may declare the templates for projects in the folder <code>Templates/Projects</code>
 on the system filesystem using a module XML layer file. Registering project type templates is similar to
-registering file templates described below.</p>
+registering file templates described below.
+The wizard for a project can currently only return {@link org.openide.loaders.DataObject}s
+corresponding to the project directories of created files. Currently the
+{@link org.openide.WizardDescriptor} may also have a property defined on it called
+<code>setAsMain</code>, which may be {@link Boolean#TRUE} or {@link Boolean#FALSE}, according
+to whether the new project should be set as the main project or not.</p>
 
 <p>Each project can also declare own file templates to be exposed it in <b>New File...</b> wizard. This 
 permits users to create new files, which are of types supported by given project type. The project may also
