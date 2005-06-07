@@ -26,13 +26,16 @@ import org.netbeans.lib.cvsclient.command.annotate.AnnotateLine;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.text.Line;
 import org.openide.util.Lookup;
 import org.openide.text.NbDocument;
 import org.openide.xml.XMLUtil;
+import org.openide.text.Annotation;
 import org.xml.sax.InputSource;
 
 import javax.swing.*;
@@ -105,6 +108,8 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
      */
     private Map commitMessages;
 
+    private final Set errorStripeAnnotations = new HashSet();
+    
     /**
      * Represents text that should be displayed in
      * visible bar with yet <code>null</code> elementAnnotations.
@@ -348,6 +353,8 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             return;
         }
 
+        detachStripeAnnotations();
+
         // handle locally modified lines
         AnnotateLine al = getAnnotateLine(line);
         if (al == null) {
@@ -365,6 +372,30 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         if (revision.equals(recentRevision) == false) {
             recentRevision = revision;
             repaint();
+            
+            // error stripe support
+
+            DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+            if (dobj != null) {
+                LineCookie lineCookie = (LineCookie) dobj.getCookie(LineCookie.class);
+                if (lineCookie != null) {
+                    Line.Set lines = lineCookie.getLineSet();
+                    Iterator it2 = elementAnnotations.entrySet().iterator();
+                    while (it2.hasNext()) {
+                        Map.Entry next = (Map.Entry) it2.next();                        
+                        AnnotateLine annotateLine = (AnnotateLine) next.getValue();
+                        if (revision.equals(annotateLine.getRevision())) {
+                            Element element = (Element) next.getKey();
+                            int elementOffset = element.getStartOffset();
+                            int lineNumber = NbDocument.findLineNumber((StyledDocument)doc, elementOffset);
+                            Line currentLine = lines.getCurrent(lineNumber);
+                            CvsAnnotation ann = new CvsAnnotation(revision);
+                            ann.attach(currentLine);
+                            errorStripeAnnotations.add(ann);
+                        }
+                    }
+                }
+            }
         }
 
         if (commitMessages == null) return;
@@ -377,6 +408,15 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             clearRecentFeedback();
         }
 
+    }
+
+    private void detachStripeAnnotations() {
+        Iterator it = errorStripeAnnotations.iterator();
+        while (it.hasNext()) {
+            Annotation next = (Annotation) it.next();
+            next.detach();
+            it.remove();
+        }
     }
 
     private void clearRecentFeedback() {
@@ -433,6 +473,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         }
         commitMessages = null;
         elementAnnotations = null;
+        detachStripeAnnotations();
     }
 
     /**
@@ -728,5 +769,22 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         onCurrentLine();
     }
 
+    private static class CvsAnnotation extends Annotation {
+        
+        private final String text;
+        
+        public CvsAnnotation(String tooltip) {
+            text = tooltip;
+        }
+        
+        public String getShortDescription() {
+            return text;
+        }
+
+        public String getAnnotationType() {
+            return "org-netbeans-modules-versioning-system-cvss-Annotation";  // NOI18N
+        }
+        
+    }
 
 }
