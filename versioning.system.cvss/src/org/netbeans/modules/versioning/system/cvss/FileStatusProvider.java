@@ -44,9 +44,15 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
 
     private final Set foldersToCompute = new HashSet(); 
     private RequestProcessor.Task       computeIconsTask;
-    
+
+    private static boolean alreadyCreated;
+
     public FileStatusProvider() {
-        computeIconsTask = RequestProcessor.getDefault().create(new ComputeIconTask());            
+        synchronized(FileStatusProvider.class) {
+            assert alreadyCreated == false : "It must be singleton, otherwise two paralel computeIconsTasks, ..."; // NOI18N
+            alreadyCreated = true;
+        }
+        computeIconsTask = RequestProcessor.getDefault().create(new ComputeIconTask());
     }
 
     private Annotator getAnnotator() {
