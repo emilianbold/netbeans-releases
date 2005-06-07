@@ -16,8 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="unscramble">
         <taskdef name="unscramble" classname="org.netbeans.nbbuild.Unscramble" classpath="${extnl}/scrambler.jar"/>
         <unscramble logfile="${extnl}/unscrambling.log">
-            <!-- LFI #2044: -->
-            <binary clear="ant-1.4.1.jar" scrambled="ant-1.4.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <!-- LFI #1318: -->
             <binary clear="junit-3.8.1.jar" scrambled="junit-3.8.1.jar.scrambled" license="ibm-public-license.txt"/>
         </unscramble>
@@ -25,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="scramble">
         <taskdef name="scramble" classname="org.netbeans.nbbuild.Scramble" classpath="${extnl}/scrambler.jar"/>
         <scramble>
-            <binary clear="ant-1.4.1.jar.master" scrambled="ant-1.4.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <binary clear="junit-3.8.1.jar.master" scrambled="junit-3.8.1.jar.scrambled" license="ibm-public-license.txt"/>
         </scramble>
     </target>
@@ -46,7 +43,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="clean">
-        <delete file="ant-1.4.1.jar"/>
         <delete file="junit-3.8.1.jar"/>
         <delete file="emma.jar" />
         <delete file="emma_ant.jar" />

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,57 +21,52 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.lang.reflect.*;
 import java.text.MessageFormat;
+import java.util.jar.Manifest;
 
 
 /** Class for getting information about version and build number
  * from given IDE build. Examples of use:
  *
- * new BuildInfo("/tmp/netbeans/platform4/core").getBuildNumber()
+ * new BuildInfo("/tmp/netbeans/platform5").getBuildNumber()
  *
  * @author breh
  */
 public class BuildInfo {
 
 	private URLClassLoader coreClassLoader;
-	private Package pkg;
 	private Method getBundleMethod;
-        private Method setBrandingMethod;
-        private String branding = null;
       
         /** Creates new object
-         * @param ideLibDirPath path to ide lib directory with openide.jar, core.jar and other libraries
+         * @param idePlatformDirPath path to ide lib directory with openide.jar, core.jar and other libraries
          * @throws IOException in the case there is any problem with accessing required
          * directories in given path
          */        
-	public BuildInfo(String ideLibDirPath) throws IOException {
-                this(new File(ideLibDirPath));
+	public BuildInfo(String idePlatformDirPath) throws IOException {
+                this(new File(idePlatformDirPath));
 	}
 	
         /** Creates new object
-         * @param ideLibDir ide lib dir file object point to directory with 
-         * openide.jar, core.jar and other libraries
+         * @param idePlatformDir ide platform dir file object point to directory with 
+         * lib/org-openide-util.jar, core/core.jar and other libraries
          * @throws IOException in the case there is any problem with accessing required
          * directories in given directory
          */        
-	public BuildInfo(File ideLibDir) throws IOException {
-		if (ideLibDir == null) {
+	public BuildInfo(File idePlatformDir) throws IOException {
+		if (idePlatformDir == null) {
 			throw new NullPointerException("argument cannot be null");
 		}
-		if (!ideLibDir.isDirectory()) {
+		if (!idePlatformDir.isDirectory()) {
 			throw new IOException("Supplied file is not a directory");
 		}
-		if (!new File(ideLibDir,"openide.jar").exists()) {
-			throw new IOException("Supplied directory is not IDE lib dir, because it does not contain openide.jar.");
+		if (!new File(idePlatformDir,"lib/org-openide-util.jar").exists()) {
+			throw new IOException("Supplied directory is not IDE platform dir, because it does not contain lib/org-openide-util.jar.");
 		}
 		// now create a classloader 
-		coreClassLoader = BuildInfo.createClassLoaderForCore(ideLibDir);
+		coreClassLoader = BuildInfo.createClassLoaderForCore(idePlatformDir);
 		// load NbBundle stuff
 		try {
 			Class nbBundleClass = coreClassLoader.loadClass("org.openide.util.NbBundle");
 			getBundleMethod = nbBundleClass.getMethod("getBundle",new Class[] {String.class, Locale.class, ClassLoader.class});
-                        setBrandingMethod = nbBundleClass.getMethod("setBranding",new Class[] {String.class});		
-			pkg = nbBundleClass.getPackage();
-                        branding = getBranding(ideLibDir);
 		} catch (ClassNotFoundException cnfe) {
 			throw new IOException("Cannot find org.openide.util.NbBundle class in this IDE");
 		} catch (NoSuchMethodException nsme) {
@@ -85,14 +80,14 @@ public class BuildInfo {
         public String getProductVersion() {
             String productVersion = "Unknown";
             try {                
-                if (branding != null) {
-                    // only use this if there is any branding set for this ide
-                    setBrandingMethod.invoke(null, new Object[] {branding});
-                }
-                ResourceBundle rb = (ResourceBundle) getBundleMethod.invoke(null,
-                new Object[] {"org.netbeans.core.Bundle",Locale.getDefault(),coreClassLoader});
-                //ResourceBundle rb = NbBundle.getBundle("org.netbeans.core.Bundle",Locale.getDefault(),coreClassLoader);
-                productVersion =  MessageFormat.format(rb.getString("currentVersion"), new Object[] {getBuildNumber()});;
+                ResourceBundle rb = (ResourceBundle) getBundleMethod.invoke(
+                                null,
+                                new Object[] {"org.netbeans.core.startup.Bundle", // NOI18N
+                                              Locale.getDefault(), 
+                                              coreClassLoader}
+                );
+                productVersion =  MessageFormat.format(rb.getString("currentVersion"), //NOI18N
+                                                       new Object[] {getBuildNumber()});
                 
             } catch (Exception e) {
                 // something bad happened - ingore it for now
@@ -116,45 +111,38 @@ public class BuildInfo {
          * @return build number
          */        
 	public String getBuildNumber() {
-		String buildNumber = pkg.getImplementationVersion ();
-		return (buildNumber == null) ? "Unknown": buildNumber ;
+            String buildNumber = null;
+            try {
+                URL u = coreClassLoader.findResource ("META-INF/MANIFEST.MF"); // NOI18N
+                InputStream is = u.openStream();
+                Manifest mf = new Manifest(is);
+                is.close();
+
+                buildNumber = mf.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            return (buildNumber == null) ? "Unknown": buildNumber ; // NOI18N
 	}
-	
-	
-	// private stuff
-	
-        // get branding of this ide (if applicable)
-        private static String getBranding(File libDir) throws IOException {
-            File brandingFile = new File(libDir,"branding");
-            if (!brandingFile.isFile()) {
-                // branding is not available - 
-                return null;
-            }
-            // read the branding information            
-            FileReader fr = new FileReader(brandingFile);
-            try {                
-                BufferedReader in =new BufferedReader(fr);
-                return in.readLine();
-            } finally {
-                if (fr!= null) {
-                    fr.close();
-                }
-            }
-            
-        }
         
-	// create URLClassLoader for all core jars (including brandings)
+	// create URLClassLoader for all core jars
 	private static URLClassLoader createClassLoaderForCore(File libDir) throws MalformedURLException {
 		Collection urls = new ArrayList();
 
 		// get patches jars
-		File[] patches = (new File(libDir,"patches")).listFiles(new FilenameFilter() {
+		File[] patches = (new File(libDir,"core/patches")).listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				if (name.endsWith(".jar")) {
-					return true;
-				} else {
-					return false;
-				}
+				return name.endsWith(".jar");
+			}
+		});
+                if(patches != null) {
+                    for (int i=0; i < patches.length; i++) {
+                            urls.add(patches[i].toURI().toURL());
+                    }
+                }
+                patches = (new File(libDir,"lib/patches")).listFiles(new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				return name.endsWith(".jar");
 			}
 		});
                 if(patches != null) {
@@ -164,13 +152,9 @@ public class BuildInfo {
                 }
 
 		// get locale jars (just the ones starting with core)
-		File[] locales = (new File(libDir,"locale")).listFiles(new FilenameFilter() {
+		File[] locales = (new File(libDir,"core/locale")).listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				if (name.startsWith("core")&name.endsWith(".jar")) {
-					return true;
-				} else {
-					return false;
-				}
+				return  name.startsWith("core") & name.endsWith(".jar");
 			}
 		});
                 
@@ -181,10 +165,10 @@ public class BuildInfo {
                 }
 		
 		// get openide jar
-		urls.add(new File(libDir,"openide.jar").toURI().toURL());
+                urls.add(new File(libDir,"lib/org-openide-util.jar").toURI().toURL());
 				
 		// get core jar
-		urls.add(new File(libDir,"core.jar").toURI().toURL());
+		urls.add(new File(libDir,"core/core.jar").toURI().toURL());
 
 		// get the urls as an array
 		// now create the classloader;

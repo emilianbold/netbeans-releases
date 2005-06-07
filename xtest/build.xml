@@ -165,12 +165,6 @@ Microsystems, Inc. All Rights Reserved.
      </ant>
   </target>  
   
-  <!-- xtest module targets -> module is currently not maintained -->
-  <target name="nbm" depends="init">
-    <ant antfile="module_build.xml" target="nbm"/>
-  </target>
-  
-  
   <!-- XTest PES proxy targets -->
   <target name="makedist-pes">
     <ant dir="pes" target="makedist"/>

@@ -65,8 +65,6 @@ Microsystems, Inc. All Rights Reserved.
     <zip zipfile="xtest-pes-distribution.zip">
      	<zipfileset dir="lib" prefix="lib" includes="**/*.jar,**/*.xsl"/>
      	<zipfileset dir="bin" prefix="bin" includes="xtest-pes.sh"/>
-        <!-- This could be removed when bin/xtest-pes.sh uses $ANT_HOME/lib/ant.jar -->
-     	<zipfileset  dir="../external/" prefix="lib" includes="ant-1.4.1.jar"/>
      </zip>  
   </target>
   

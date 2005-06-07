@@ -24,8 +24,8 @@ import org.apache.tools.ant.Task;
 import org.netbeans.xtest.driver.ide.BuildInfo;
 
 /**
- * From given IDE lib dir it parses build number, project name and timestamp.
- * IDE lib dir is the directory with openide.jar, core.jar and other libraries.
+ * From given IDE platform dir it parses build number, project name and timestamp.
+ * IDE platform dir is the directory with lib/org-openide-util.jar, core/core.jar and other libraries.
  */
 public class ParseBuildInfo extends Task {
     
@@ -36,14 +36,14 @@ public class ParseBuildInfo extends Task {
     private String buildProject = "Unknown";
     private String buildTimestampProperty = null;
     
-    private String ideLibDir;
+    private String idePlatformDir;
     
-    public void setIdeLibDir(String ideLibDir) {
-        this.ideLibDir = ideLibDir;
+    public void setIdePlatformDir(String idePlatformDir) {
+        this.idePlatformDir = idePlatformDir;
     }
     
-    public String getIdeLibDir() {
-        return ideLibDir;
+    public String getIdePlatformDir() {
+        return idePlatformDir;
     }
 
     public void setBuildNumberProperty(String property) {
@@ -92,10 +92,10 @@ public class ParseBuildInfo extends Task {
         
         BuildInfo bi;
         try {
-            bi = new BuildInfo(ideLibDir);
+            bi = new BuildInfo(idePlatformDir);
         } catch (IOException e) {
-            log("Not setting properties! Getting build info from IDE with supplied lib directory "+
-                ideLibDir+" failed for the following reason: "+e.getMessage()+".",
+            log("Not setting properties! Getting build info from IDE with supplied platform directory "+
+                idePlatformDir+" failed for the following reason: "+e.getMessage()+".",
                 Project.MSG_WARN);
             return;
         }
