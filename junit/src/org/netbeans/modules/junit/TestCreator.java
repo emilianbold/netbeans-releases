@@ -51,6 +51,32 @@ public final class TestCreator {
     static private final String CLASS_COMMENT_LINE2 = "TestCreator.javaClass.addTestsHereComment.l2";
     
     /**
+     * name of the 'instance' variable in the generated test method skeleton
+     *
+     * @see  #RESULT_VAR_NAME
+     * @see  #EXP_RESULT_VAR_NAME
+     */
+    private static final String INSTANCE_VAR_NAME = "instance";         //NOI18N
+    /**
+     * name of the 'result' variable in the generated test method skeleton
+     *
+     * @see  #EXP_RESULT_VAR_NAME
+     */
+    private static final String RESULT_VAR_NAME = "result";             //NOI18N
+    /**
+     * name of the 'expected result' variable in the generated test method
+     * skeleton
+     *
+     * @see  #RESULT_VAR_NAME
+     */
+    private static final String EXP_RESULT_VAR_NAME = "expResult";      //NOI18N
+    /**
+     * base for artificial names of variables
+     * (if there is no name to derive from)
+     */
+    private static final String ARTIFICAL_VAR_NAME_BASE = "arg";        //NOI18N
+    
+    /**
      * bitmap combining modifiers PUBLIC, PROTECTED and PRIVATE
      *
      * @see  java.lang.reflect.Modifier
@@ -624,16 +650,21 @@ public final class TestCreator {
         return constr;
     }
     
-    static private List createTestMethodParams(Method sm, JavaModelPackage pkg) {
-        return Collections.EMPTY_LIST;
-    }
-    
     static private String createTestMethodName(String smName) {
         return "test" + smName.substring(0,1).toUpperCase() + smName.substring(1);
     }
     
+    /**
+     * Creates a test method from a source method.
+     *
+     * @param  sclass  source class containing the source method
+     * @param  sm      source method
+     * @param  pkg
+     */
     private Method createTestMethod(JavaClass sclass, Method sm, JavaModelPackage pkg) {
         
+        final String shortClsName = sclass.getSimpleName();
+        final boolean isStatic = (sm.getModifiers() & Modifier.STATIC) != 0;
         String smName = sm.getName();
         
         // method name
@@ -652,24 +683,131 @@ public final class TestCreator {
             
         // create body of the method
         StringBuffer newBody = new StringBuffer(512);
+        boolean needsEmptyLine = false;
+            
         if (generateDefMethodBody) {
             // generate default bodies, printing the name of method
             newBody.append("System.out.println(\"" + newName + "\");\n");
+            needsEmptyLine = true;
         }
+        
+        if (needsEmptyLine) {
+            newBody.append('\n');
+            needsEmptyLine = false;
+        }
+        
+        final List/*<Parameter>*/ params = sm.getParameters();
+        final String[] varNames = getTestSkeletonVarNames(params);
+        
+        Iterator i = params.iterator();
+        for (int j = 0; j < varNames.length; j++) {
+            final Parameter param = ((Parameter) i.next());
+            final Type paramType = param.getType();
+            String paramTypeName = paramType.getName();
+            if (paramTypeName.startsWith("java.lang.")) {               //NOI18N
+                paramTypeName = paramTypeName.substring(10);
+            }
+            final String paramName = param.getName();
+            
+            newBody.append(paramTypeName).append(' ')
+                   .append(varNames[j]).append(" = ")                   //NOI18N
+                   .append(getDefaultValue(paramType))
+                   .append(";\n");                                      //NOI18N
+        }
+        assert !i.hasNext();
+        needsEmptyLine |= (varNames.length != 0);
+        
+        if (!isStatic) {
+            boolean hasDefConstr = false;
+            
+            Constructor constructor = sclass.getConstructor(
+                    Collections.EMPTY_LIST, false);
+            if (constructor == null) {
+                /*
+                 * No no-arguments constructor found. But if there is 
+                 * no constructor defined in the class, we can count with
+                 * the automatically generated public no-argument constructor.
+                 */
+                boolean constrFound = false;
+                Iterator/*<ClassMember>*/ j = sclass.getContents().iterator();
+                while (j.hasNext()) {
+                    if (j.next() instanceof Constructor) {
+                        constrFound = true;
+                        break;
+                    }
+                }
+                hasDefConstr = !constrFound;
+            } else {
+                hasDefConstr =
+                        (constructor.getModifiers() & Modifier.PRIVATE) == 0;
+            }
+
+            newBody.append(shortClsName).append(' ')
+                   .append(INSTANCE_VAR_NAME).append(" = ");            //NOI18N
+            if (hasDefConstr) {
+               newBody.append("new ").append(shortClsName).append("()");//NOI18N
+            } else {
+               newBody.append("null");                                  //NOI18N
+            }
+            newBody.append(";\n");                                      //NOI18N
+            needsEmptyLine |= true;
+        }
+        
+        if (needsEmptyLine) {
+            newBody.append('\n');
+            needsEmptyLine = false;
+        }
+        
+        final Type returnType = sm.getType();
+        String returnTypeName = returnType.getName();
+        if (returnTypeName.startsWith("java.lang.")) {                  //NOI18N
+            returnTypeName = returnTypeName.substring(10);
+        }
+        final String defaultRetValue = getDefaultValue(returnType);
+        final boolean isVoid = (defaultRetValue == null);
+        
+        if (!isVoid) {
+            newBody.append(returnTypeName).append(' ')
+                   .append(EXP_RESULT_VAR_NAME).append(" = ")           //NOI18N
+                   .append(defaultRetValue)
+                   .append(";\n");                                      //NOI18N
+            newBody.append(returnTypeName).append(' ')
+                   .append(RESULT_VAR_NAME).append(" = ");              //NOI18N
+        }
+        newBody.append(isStatic ? shortClsName : INSTANCE_VAR_NAME)
+               .append('.').append(sm.getName()).append('(');
+        if (varNames.length != 0) {
+            newBody.append(varNames[0]);
+            for (int j = 1; j < varNames.length; j++) {
+                newBody.append(", ").append(varNames[j]);               //NOI18N
+            }
+        }
+        newBody.append(");\n");                                         //NOI18N
+        if (!isVoid) {
+            newBody.append("assertEquals(").append(EXP_RESULT_VAR_NAME) //NOI18N
+                   .append(", ").append(RESULT_VAR_NAME).append(");\n");//NOI18N
+        }
+        needsEmptyLine = true;
+        
         if (generateSourceCodeHints) {
             // generate comments to bodies
-            newBody.append("\n"+NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultComment")+"\n");
+            if (needsEmptyLine) {
+                newBody.append('\n');
+                needsEmptyLine = false;
+            }
+            newBody.append(NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultComment")+"\n");
         }
         if (generateDefMethodBody) {
             // generate a test failuare by default (in response to request 022).
+            if (needsEmptyLine) {
+                newBody.append('\n');
+                needsEmptyLine = false;
+            }
             newBody.append(NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultBody")+"\n");
         }
-            
+
         // return type
         TypeReference typeName = pkg.getMultipartId().createMultipartId("void", null, Collections.EMPTY_LIST);
-            
-        // method parameters
-        List params = createTestMethodParams(sm, pkg);
             
         Method ret = pkg.getMethod().createMethod(newName,
                                                   annotations,
@@ -679,13 +817,122 @@ public final class TestCreator {
                                                   null, // body
                                                   newBody.toString(),
                                                   Collections.EMPTY_LIST, // type parameters
-                                                  params,
+                                                  Collections.EMPTY_LIST, // parameters
                                                   Collections.EMPTY_LIST, // exceptions
                                                   typeName,
                                                   0);
         return ret;
     }
     
+    /**
+     */
+    private static String getDefaultValue(final Type varType) {
+        final String varTypeName = varType.getName();
+        
+        if (varTypeName.equals("void")) {                               //NOI18N
+            return null;
+        } else if (varTypeName.equals("int")) {                         //NOI18N
+            return "0";                                                 //NOI18N
+        } else if (varTypeName.equals("float")) {                       //NOI18N
+            return "0.0F";                                              //NOI18N
+        } else if (varTypeName.equals("long")) {                        //NOI18N
+            return "0L";                                                //NOI18N
+        } else if (varTypeName.equals("double")) {                      //NOI18N
+            return "0.0";                                               //NOI18N
+        } else if (varTypeName.equals("boolean")) {                     //NOI18N
+            return "true";                                              //NOI18N
+        } else if (varTypeName.equals("java.lang.String")) {            //NOI18N
+            return "\"\"";                                              //NOI18N
+        } else if (varTypeName.equals("short")) {                       //NOI18N
+            return "0";                                                 //NOI18N
+        } else if (varTypeName.equals("byte")) {                        //NOI18N
+            return "0";                                                 //NOI18N
+        } else if (varTypeName.equals("char")) {                        //NOI18N
+            return "' '";                                               //NOI18N
+        } else {
+            assert !(varType instanceof PrimitiveType);
+            return "null";                                              //NOI18N
+        }
+    }
+    
+    /**
+     * Builds list of variable names for use in a test method skeleton.
+     * By default, names of variables are same as names of tested method's
+     * declared parameters. There are three variable names reserved
+     * for variables holding the instance the tested method will be called on,
+     * the expected result and the actual result returned
+     * by the tested method. This method resolves a potential conflict
+     * if some of the tested method's parameter's name is one of these
+     * reserved names - in this case, the variable name used is a slight
+     * modification of the declared parameter's name. The method also resolves
+     * cases that some or all parameters are without name - in this case,
+     * an arbitrary name is assigned to each of these unnamed parameters.
+     * The goal is to ensure that all of the used variable names are unique.
+     *
+     * @param  sourceMethodParams 
+     *                  list of tested method's parameters (items are of type
+     *                  <code>org.netbeans.jmi.javamodel.TypeParameter</code>)
+     * @return  variable names used for default values of the tested method's
+     *          parameters (the reserved variable names are not included)
+     */
+    private static String[] getTestSkeletonVarNames(
+            final List/*<TypeParameter>*/ sourceMethodParams) {
+        
+        /* Handle the trivial case: */
+        if (sourceMethodParams.isEmpty()) {
+            return new String[0];
+        }
+        
+        final int count = sourceMethodParams.size();
+        String[] varNames = new String[count];
+        boolean[] conflicts = new boolean[count];
+        boolean issueFound = false;
+        
+        HashSet varNamesSet = new HashSet((int) ((count + 2) * 1.4));
+        varNamesSet.add(INSTANCE_VAR_NAME);
+        varNamesSet.add(RESULT_VAR_NAME);
+        varNamesSet.add(EXP_RESULT_VAR_NAME);
+        
+        Iterator it = sourceMethodParams.iterator();
+        for (int i = 0; i < count; i++) {
+            String paramName = ((Parameter) it.next()).getName();
+            varNames[i] = paramName;
+            
+            if (paramName == null) {
+                issueFound = true;
+            } else if (!varNamesSet.add(paramName)) {
+                conflicts[i] = true;
+                issueFound = true;
+            } else {
+                conflicts[i] = false;
+            }
+        }
+        
+        if (issueFound) {
+            for (int i = 0; i < count; i++) {
+                String paramName;
+                if (varNames[i] == null) {
+                    paramName = ARTIFICAL_VAR_NAME_BASE + i;
+                    if (varNamesSet.add(paramName)) {
+                        varNames[i] = paramName;
+                        continue;
+                    } else {
+                        conflicts[i] = true;
+                    }
+                }
+                if (conflicts[i]) {
+                    String paramNamePrefix = varNames[i] + '_';
+
+                    int index = 2;
+                    while (!varNamesSet.add(
+                                    paramName = (paramNamePrefix + (index++))));
+                    varNames[i] = paramName;
+                }
+            }
+        }
+        
+        return varNames;
+    }
     
     
     
@@ -837,7 +1084,7 @@ public final class TestCreator {
             Method sm = (Method)methit.next();
             if (isMethodAcceptable(sm) &&
                 tgtClass.getMethod(createTestMethodName(sm.getName()),
-                                   createTestMethodParams(sm, (JavaModelPackage)tgtClass.refImmediatePackage()),
+                                   Collections.EMPTY_LIST,
                                    false) == null) {
                 Method tm = createTestMethod(srcClass, sm, (JavaModelPackage)tgtClass.refImmediatePackage());
                 tgtClass.getFeatures().add(tm);
