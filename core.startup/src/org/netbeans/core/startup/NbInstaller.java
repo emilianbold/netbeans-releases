@@ -876,7 +876,7 @@ final class NbInstaller extends ModuleInstaller {
             if ("org/openide/resources/".equals (pkg)) return true; // NOI18N
             if ("org/openide/resources/propertysheet".equals (pkg)) return true; // NOI18N
 
-            // I do not know much
+            // some are provided by java/srcmodel
             if ("org/openide/explorer/propertysheet/editors".equals (pkg)) return true; // NOI18N
 
             // windows & io 
