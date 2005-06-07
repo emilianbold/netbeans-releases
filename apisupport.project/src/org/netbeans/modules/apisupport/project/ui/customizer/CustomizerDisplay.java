@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Set;
 import javax.swing.JPanel;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.Utilities;
 
 /**
  * Represents <em>Display</em> panel in Netbeans Module customizer.
@@ -71,6 +72,9 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
     }
     
     private void storeOneProperty(String name, String value, boolean split) {
+        if (Utilities.compareObjects(value, bundleProps.getProperty(name))) {
+            return;
+        }
         if (value != null) {
             value = value.trim();
         }
