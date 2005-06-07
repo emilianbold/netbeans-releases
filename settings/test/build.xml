@@ -23,13 +23,5 @@ Microsystems, Inc. All Rights Reserved.
      <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable,all,code,ide"/>
-
-    <target name="build-workaround-issue-59632" >
-        <replace file="unit/src/META-INF/MANIFEST.MF" token="OpenIDE-Module-IDE-Dependencies" value="better-to-remove" />
-    </target>
-    
-    <target name="buildtests" depends="build-workaround-issue-59632,xtest.buildtests" >
-    </target>
-    
 </project>
 
