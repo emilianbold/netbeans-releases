@@ -315,6 +315,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         typeChooserPanel.add(standAloneModule, gridBagConstraints);
 
+        platform.setLabelFor(platformValue);
         org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_NetBeansPlatform"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -348,6 +349,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         typeChooserPanel.add(suiteModule, gridBagConstraints);
 
+        moduleSuite.setLabelFor(moduleSuiteValue);
         org.openide.awt.Mnemonics.setLocalizedText(moduleSuite, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_ModuleSuite"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
