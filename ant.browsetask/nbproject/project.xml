@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages/>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
-                <classpath>${ant.jar}:${openide/awt.dir}/modules/org-openide-awt.jar</classpath>
+                <classpath>${antsrc.cp}</classpath>
                 <built-to>build/antclasses</built-to>
                 <built-to>${netbeans.dest.dir}/${cluster.dir}/ant/nblib/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>

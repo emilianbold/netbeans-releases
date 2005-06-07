@@ -13,34 +13,27 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="db" default="netbeans" basedir=".">
 
-	<import file="../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
-	<target name="init" depends="projectized.init">
-		<path id="libcp">
-			<pathelement location="${openide/util.dir}/lib/org-openide-util.jar" />
-			<pathelement location="${openide/dialogs.dir}/modules/org-openide-dialogs.jar" />
-			<pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-      		<pathelement location="${openide/io.dir}/modules/org-openide-io.jar"/>
-		</path>
-	</target>
+    <target name="compile-lib" depends="init">
+        <mkdir dir="build/lib-classes" />
+        <javac srcdir="libsrc" destdir="build/lib-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+            <classpath>
+                <pathelement path="${lib.cp}"/>
+            </classpath>
+        </javac>
+        <copy todir="build/lib-classes">
+            <fileset dir="libsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt" />
+        </copy>
+    </target>
 
-	<target name="compile-lib" depends="init">
-		<mkdir dir="build/lib-classes" />
-		<javac srcdir="libsrc" destdir="build/lib-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-			<classpath refId="libcp" />
-		</javac>
-		<copy todir="build/lib-classes">
-			<fileset dir="libsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt" />
-		</copy>
-	</target>
+    <target name="jar-lib" depends="compile-lib">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext" />
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/ddl.jar" compress="false">
+            <fileset dir="build/lib-classes" />
+        </jar>
+    </target>
 
-	<target name="jar-lib" depends="compile-lib">
-		<mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext" />
-		<jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/ddl.jar" compress="false">
-			<fileset dir="build/lib-classes" />
-		</jar>
-	</target>
-
-	<target name="compile" depends="jar-lib, projectized-common.compile" />
+    <target name="compile" depends="jar-lib, projectized-common.compile" />
     
 </project>

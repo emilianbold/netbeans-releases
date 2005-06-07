@@ -88,7 +88,7 @@ Microsystems, Inc. All Rights Reserved.
             </class-path-extension>
             <extra-compilation-unit>
                 <package-root>libsrc</package-root>
-                <classpath>${openide.dir}/core/openide.jar</classpath>
+                <classpath>${lib.cp}</classpath>
                 <built-to>build/lib-classes</built-to>
                 <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/ddl.jar</built-to>
             </extra-compilation-unit>
