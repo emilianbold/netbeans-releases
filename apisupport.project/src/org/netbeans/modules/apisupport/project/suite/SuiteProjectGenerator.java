@@ -35,7 +35,7 @@ import org.openide.filesystems.FileUtil;
 public class SuiteProjectGenerator {
     
     private static final String PLATFORM_PROPERTIES_PATH =
-            "nbproject" + File.separator + "platform.properties"; // NOI18N
+            "nbproject/platform.properties"; // NOI18N
     
     /** Use static factory methods instead. */
     private SuiteProjectGenerator() {/* empty constructor*/}
