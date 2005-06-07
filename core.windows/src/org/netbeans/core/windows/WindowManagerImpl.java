@@ -794,6 +794,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             //HTML SHOULD BE PRE-SUPPLIED
             if (displayName.endsWith("*")) { 
                 
+                if (displayName.startsWith("<html>")) {
+                    displayName = displayName.substring(6);
+                }
+                
                 displayName = "<html><b>" + 
                     displayName.substring(0, displayName.length()-2);
                 
@@ -801,6 +805,12 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 
                 int i = displayName.indexOf ("[r/o]"); 
                 if (i > 0) {
+                    
+                    if (displayName.startsWith("<html>")) {
+                        displayName = displayName.substring(6);
+                        i -= 6;
+                    }
+
                     int roLength = "[r/o]".length();
                     String nuName = "<html><font color='#555555'><i>" + //NOI18N
                         displayName.substring (0, i-1);
