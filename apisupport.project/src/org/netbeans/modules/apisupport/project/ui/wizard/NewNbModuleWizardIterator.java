@@ -102,6 +102,9 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
             ProjectChooser.setProjectsFolder(chooserFolder);
         }
         
+        // XXX this constant should be defined somewhere!
+        settings.putProperty("setAsMain", Boolean.valueOf(data.isMainProject()));
+        
         return resultSet;
     }
     
