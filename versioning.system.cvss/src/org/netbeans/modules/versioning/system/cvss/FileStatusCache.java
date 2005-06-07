@@ -115,9 +115,10 @@ public class FileStatusCache {
     // --- Public interface -------------------------------------------------
 
     /**
-     * Lists files that are known to be inside this folder. These are all local files present
-     * in the folder plus any files that exist in the folder in the remote repository. It
-     * returns all files, including CVS folders.
+     * Lists <b>modified files</b> and all folders that are known to be inside
+     * this folder. There are locally modified files present
+     * plus any files that exist in the folder in the remote repository. It
+     * returns all folders, including CVS folders.
      *    
      * @param dir folder to list
      * @return

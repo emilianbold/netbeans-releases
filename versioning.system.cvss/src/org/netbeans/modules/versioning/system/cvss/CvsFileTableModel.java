@@ -140,7 +140,7 @@ public class CvsFileTableModel {
                 String parentPath = file.getCanonicalPath();
                 for (int i = 0; i < files.length; i++) {
                     File f = files[i];
-                    if (f.getCanonicalPath().startsWith(parentPath)) {
+                    if (f.isFile() || f.getCanonicalPath().startsWith(parentPath)) {
                         addRecursively(nodes, files[i]);
                     } else {
                         ErrorManager.getDefault().log("Detected non-hiearchical folder structure: " + f.getAbsolutePath());
