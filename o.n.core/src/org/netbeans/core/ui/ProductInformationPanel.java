@@ -15,21 +15,26 @@ package org.netbeans.core.ui;
 
 import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Toolkit;
+import java.awt.Graphics;
+import java.awt.event.FocusEvent;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Locale;
-
+import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-import org.openide.util.NbBundle;
-
+import javax.swing.UIManager;
 import org.netbeans.core.startup.TopLogging;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Enumerations;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
 
 public class ProductInformationPanel extends JPanel {
 
@@ -387,43 +392,24 @@ public class ProductInformationPanel extends JPanel {
     }
 
     private ImageIcon getIcon () {
-        return new ImageIcon(Toolkit.getDefaultToolkit().getImage(
-            NbBundle.getLocalizedFile(
-                "org.netbeans.core.startup.frame48", // NOI18N
-                "gif", // NOI18N
-                Locale.getDefault(),
-                ProductInformationPanel.class.getClassLoader())));
+        return new ImageIcon(Utilities.loadImage("org/netbeans/core/startup/frame48.gif", true));
     }
 
     private String getProductInformationTitle () {
-        return NbBundle.getBundle("org.netbeans.core.ui.Bundle", // NOI18N
-                                   Locale.getDefault(),
-                                   ProductInformationPanel.class.getClassLoader()
-                ).getString("LBL_ProductInformation");
+        return NbBundle.getMessage(ProductInformationPanel.class, "LBL_ProductInformation");
     }
 
     private String getProductVersionValue () {
-        return new MessageFormat(
-                NbBundle.getBundle("org.netbeans.core.startup.Bundle", // NOI18N
-                                   Locale.getDefault(),
-                                   TopLogging.class.getClassLoader()
-                ).getString("currentVersion")
-            ).format(
-                new Object[] {
-            System.getProperty("netbeans.buildnumber")});
+        return MessageFormat.format(
+            NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"),
+            new Object[] {System.getProperty("netbeans.buildnumber")});
     }
 
     private String getOperatingSystemValue () {
-        return new MessageFormat(
-                NbBundle.getBundle("org.netbeans.core.ui.Bundle", // NOI18N
-                                   Locale.getDefault(),
-                                   ProductInformationPanel.class.getClassLoader()
-                ).getString("Format_OperatingSystem_Value")
-            ).format(
-                new Object[] {
-                    System.getProperty("os.name", "unknown"),
-                    System.getProperty("os.version", "unknown"),
-                    System.getProperty("os.arch", "unknown")});
+        return NbBundle.getMessage(ProductInformationPanel.class, "Format_OperatingSystem_Value",
+            System.getProperty("os.name", "unknown"),
+            System.getProperty("os.version", "unknown"),
+            System.getProperty("os.arch", "unknown"));
     }
 
     private String getJavaValue () {
@@ -459,23 +445,21 @@ public class ProductInformationPanel extends JPanel {
         String nbhome = System.getProperty("netbeans.home");
         String nbdirs = System.getProperty("netbeans.dirs");
         
-        java.util.Enumeration more;
+        Enumeration more;
         if (nbdirs != null) {
-            more = new java.util.StringTokenizer (nbdirs, File.pathSeparator);
+            more = new StringTokenizer(nbdirs, File.pathSeparator);
         } else {
-            more = org.openide.util.Enumerations.empty();
+            more = Enumerations.empty();
         }
             
-        java.util.Enumeration all = org.openide.util.Enumerations.concat (
-            org.openide.util.Enumerations.singleton (nbhome), more
-        );
+        Enumeration all = Enumerations.concat(Enumerations.singleton(nbhome), more);
         
-        java.util.HashSet files = new java.util.HashSet ();
+        Set/*<File>*/ files = new HashSet();
         StringBuffer sb = new StringBuffer ();
         String prefix = "";
         while (all.hasMoreElements ()) {
             String s = (String)all.nextElement ();
-            File f = new File (s);
+            File f = FileUtil.normalizeFile(new File(s));
             if (files.add (f)) {
                 // new file
                 sb.append (prefix);
@@ -500,11 +484,11 @@ public class ProductInformationPanel extends JPanel {
         public FocusableLabel(){
             addFocusListener(
             new java.awt.event.FocusListener() {
-                public void focusGained(java.awt.event.FocusEvent event) {
+                public void focusGained(FocusEvent event) {
                     isFocused = true;
                     repaint();
                 }
-                public void focusLost(java.awt.event.FocusEvent event) {
+                public void focusLost(FocusEvent event) {
                     isFocused = false;
                     repaint();
                 }
@@ -518,7 +502,7 @@ public class ProductInformationPanel extends JPanel {
             return (true);
         }
         
-        public void paintComponent(java.awt.Graphics g) {
+        public void paintComponent(Graphics g) {
             if (ui != null) {
                 try {
                     ui.update(g, this);
@@ -529,8 +513,8 @@ public class ProductInformationPanel extends JPanel {
             }
         
             if (isFocused) {
-                java.awt.Dimension size = getSize();
-                g.setColor(javax.swing.UIManager.getColor("Button.focus")); // NOI18N
+                Dimension size = getSize();
+                g.setColor(UIManager.getColor("Button.focus")); // NOI18N
                 g.drawRect(0, 0, size.width-1, size.height-1);
             }
         }
