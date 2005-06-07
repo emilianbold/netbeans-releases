@@ -18,6 +18,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import javax.swing.Action;
 import org.netbeans.modules.beans.PatternAnalyser;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
@@ -551,7 +552,7 @@ public final class BiNode extends AbstractNode {
         Wait () {
 
             super( Children.LEAF );
-            setDisplayName( NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_Wait" ) );
+            setDisplayName( JavaMetamodel.getManager().isScanInProgress()? NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_WaitScan" ) : NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_Wait" ) );
             setIconBase( WAIT_ICON_BASE );
 
         }
