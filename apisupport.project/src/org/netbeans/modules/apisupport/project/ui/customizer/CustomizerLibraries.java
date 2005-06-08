@@ -176,7 +176,10 @@ public class CustomizerLibraries extends JPanel {
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-            moduleDeps.addDependency(addPanel.getSelectedDependency());
+            ModuleDependency newDep = addPanel.getSelectedDependency();
+            moduleDeps.addDependency(newDep);
+            dependencyList.requestFocus();
+            dependencyList.setSelectedValue(newDep, true);
         }
         d.dispose();
     }//GEN-LAST:event_addModuleDependency
