@@ -23,8 +23,11 @@ import javax.swing.JPanel;
 final class CustomizerVersioning extends JPanel {
     
     /** Creates new form CustomizerVersioning */
-    CustomizerVersioning() {
+    CustomizerVersioning(NbModuleProperties props) {
         initComponents();
+        cnbValue.setText(props.getCodeNameBase());
+        majorRelVerValue.setText(props.getMajorReleaseVersion());
+        specificationVerValue.setText(props.getSpecificationVersion());
     }
     
     /** This method is called from within the constructor to
@@ -36,6 +39,7 @@ final class CustomizerVersioning extends JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        moduleTypeGroup = new javax.swing.ButtonGroup();
         cnb = new javax.swing.JLabel();
         cnbValue = new javax.swing.JTextField();
         majorRelVer = new javax.swing.JLabel();
@@ -91,7 +95,6 @@ final class CustomizerVersioning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
         add(majorRelVer, gridBagConstraints);
 
-        majorRelVerValue.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -116,7 +119,6 @@ final class CustomizerVersioning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 12);
         add(specificationVer, gridBagConstraints);
 
-        specificationVerValue.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -135,7 +137,6 @@ final class CustomizerVersioning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(implVer, gridBagConstraints);
 
-        implVerValue.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -154,7 +155,6 @@ final class CustomizerVersioning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 12);
         add(tokens, gridBagConstraints);
 
-        tokensValue.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
@@ -175,6 +175,8 @@ final class CustomizerVersioning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         add(appendImpl, gridBagConstraints);
 
+        moduleTypeGroup.add(regularMod);
+        regularMod.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(regularMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_RegularModule"));
         regularMod.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         regularMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -186,6 +188,7 @@ final class CustomizerVersioning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(regularMod, gridBagConstraints);
 
+        moduleTypeGroup.add(autoloadMod);
         org.openide.awt.Mnemonics.setLocalizedText(autoloadMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_AutoloadModule"));
         autoloadMod.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         autoloadMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -197,6 +200,7 @@ final class CustomizerVersioning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         add(autoloadMod, gridBagConstraints);
 
+        moduleTypeGroup.add(eagerMod);
         org.openide.awt.Mnemonics.setLocalizedText(eagerMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_EagerModule"));
         eagerMod.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         eagerMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -305,6 +309,7 @@ final class CustomizerVersioning extends JPanel {
     private javax.swing.JTextField implVerValue;
     private javax.swing.JLabel majorRelVer;
     private javax.swing.JTextField majorRelVerValue;
+    private javax.swing.ButtonGroup moduleTypeGroup;
     private javax.swing.JLabel publicPkgs;
     private javax.swing.JScrollPane publicPkgsSP;
     private javax.swing.JTextArea publicPkgsValue;

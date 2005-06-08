@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.ModuleList;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -173,7 +174,10 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         } else {
-            this.moduleProps = new NbModuleProperties(helper, evaluator, isStandalone);
+            ManifestManager manifestManager = ManifestManager.getInstance(helper.resolveFile(
+                    evaluator.getProperty("manifest.mf")), false); // NOI18N
+            this.moduleProps = new NbModuleProperties(helper, evaluator, 
+                    manifestManager, isStandalone);
             // XXX may be temporary solution - there is not exact spec what should be done
             this.locBundleProps = locBundlePropsPath == null ?
                 new EditableProperties() :
@@ -212,6 +216,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private static final String SOURCES = "Sources"; // NOI18N
     private static final String DISPLAY = "Display"; // NOI18N
     private static final String LIBRARIES = "Libraries"; // NOI18N
+    private static final String VERSIONING = "Versioning"; // NOI18N
 
     private SuiteProvider getSuiteProvider() {
         return (SuiteProvider) project.getLookup().lookup(SuiteProvider.class);
@@ -226,9 +231,11 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 bundle.getString("LBL_ConfigDisplay")); // NOI18N
         ProjectCustomizer.Category libraries = createCategory(LIBRARIES,
                 bundle.getString("LBL_ConfigLibraries")); // NOI18N
+        ProjectCustomizer.Category versioning = createCategory(VERSIONING,
+                bundle.getString("LBL_ConfigVersioning")); // NOI18N
         
         categories = new ProjectCustomizer.Category[] {
-            sources, display, libraries
+            sources, display, libraries //, versioning
         };
         
         // sources customizer
@@ -243,6 +250,9 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         universeDepsListModel = ComponentFactory.createDependencyListModel(getUniverseDependencies());
         panels.put(libraries, new CustomizerLibraries(moduleProps,
                 moduleDepsListModel, universeDepsListModel));
+        
+        // versioning customizer
+        panels.put(versioning, new CustomizerVersioning(moduleProps));
         
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
             public JComponent create(ProjectCustomizer.Category category) {

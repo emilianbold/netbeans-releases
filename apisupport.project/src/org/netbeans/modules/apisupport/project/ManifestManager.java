@@ -71,7 +71,7 @@ public final class ManifestManager {
         this.publicPackages = publicPackages;
     }
     
-    static ManifestManager getInstance(File manifest, boolean loadPublicPackages) {
+    public static ManifestManager getInstance(File manifest, boolean loadPublicPackages) {
         ManifestManager mm = null;
         InputStream mis = null;
         try {
@@ -204,15 +204,15 @@ public final class ManifestManager {
         return exportedPackages;
     }
     
-    String getCodeNameBase() {
+    public String getCodeNameBase() {
         return codeNameBase;
     }
     
-    String getReleaseVersion() {
+    public String getReleaseVersion() {
         return releaseVersion;
     }
     
-    String getSpecificationVersion() {
+    public String getSpecificationVersion() {
         return specificationVersion;
     }
     
