@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.apisupport.project.NbPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -28,15 +29,24 @@ import org.openide.util.NbBundle;
  *
  * @author mkrauskopf
  */
-public class CustomizerLibraries extends JPanel {
+public class CustomizerLibraries extends JPanel implements ComponentFactory.StoragePanel {
     
     private ComponentFactory.DependencyListModel moduleDeps;
     private ComponentFactory.DependencyListModel universeModulesModel;
+    private NbModuleProperties modProps;
     
     /** Creates new form CustomizerLibraries */
-    public CustomizerLibraries(final ComponentFactory.DependencyListModel subModules,
+    public CustomizerLibraries(final NbModuleProperties modProps,
+            final ComponentFactory.DependencyListModel subModules,
             final ComponentFactory.DependencyListModel universeModules) {
         initComponents();
+        platformValue.setSelectedItem(modProps.getActivePlatform());
+        if (!modProps.isStandalone()) {
+            platform.setEnabled(false);
+            platformValue.setEnabled(false);
+            managePlafsButton.setEnabled(false);
+        }
+        this.modProps = modProps;
         this.moduleDeps = subModules;
         this.universeModulesModel = universeModules;
         updateEnabled();
@@ -49,6 +59,10 @@ public class CustomizerLibraries extends JPanel {
                 }
             }
         });
+    }
+    
+    public void store() {
+        modProps.setActivePlatform((NbPlatform) platformValue.getSelectedItem());
     }
     
     private void updateEnabled() {
@@ -75,23 +89,26 @@ public class CustomizerLibraries extends JPanel {
         editDepButton = new javax.swing.JButton();
         dependencySP = new javax.swing.JScrollPane();
         dependencyList = new javax.swing.JList();
+        platformPanel = new javax.swing.JPanel();
+        platformValue = org.netbeans.modules.apisupport.project.ui.ComponentFactory.getNbPlatformsComboxBox();
+        platform = new javax.swing.JLabel();
+        managePlafsButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
-        modDepLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_ModuleDependencies_Mnem").charAt(0));
         modDepLabel.setLabelFor(dependencyList);
-        modDepLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_ModuleDependencies"));
+        org.openide.awt.Mnemonics.setLocalizedText(modDepLabel, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_ModuleDependencies"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(modDepLabel, gridBagConstraints);
 
         depButtonPanel.setLayout(new java.awt.GridLayout(4, 1));
 
-        addDepButton.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddButton_Mnem").charAt(0));
-        addDepButton.setText(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(addDepButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddButton"));
         addDepButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addModuleDependency(evt);
@@ -100,8 +117,7 @@ public class CustomizerLibraries extends JPanel {
 
         depButtonPanel.add(addDepButton);
 
-        removeDepButton.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton_Mnem").charAt(0));
-        removeDepButton.setText(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeDepButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton"));
         removeDepButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeModuleDependency(evt);
@@ -112,8 +128,7 @@ public class CustomizerLibraries extends JPanel {
 
         depButtonPanel.add(space1);
 
-        editDepButton.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_EditButton_Mnem").charAt(0));
-        editDepButton.setText(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_EditButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(editDepButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_EditButton"));
         editDepButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editModuleDependency(evt);
@@ -124,7 +139,7 @@ public class CustomizerLibraries extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(depButtonPanel, gridBagConstraints);
 
@@ -132,15 +147,59 @@ public class CustomizerLibraries extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(dependencySP, gridBagConstraints);
 
+        platformPanel.setLayout(new java.awt.GridBagLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        platformPanel.add(platformValue, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_NetBeansPlatform"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        platformPanel.add(platform, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(managePlafsButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_ManagePlatform"));
+        managePlafsButton.setEnabled(false);
+        managePlafsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                managePlatforms(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        platformPanel.add(managePlafsButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(platformPanel, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
+    
+    private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
+// TODO add your handling code here:
+    }//GEN-LAST:event_managePlatforms
     
     private void editModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModuleDependency
         ModuleDependency origDep = moduleDeps.getDependency(
@@ -190,7 +249,11 @@ public class CustomizerLibraries extends JPanel {
     private javax.swing.JList dependencyList;
     private javax.swing.JScrollPane dependencySP;
     private javax.swing.JButton editDepButton;
+    private javax.swing.JButton managePlafsButton;
     private javax.swing.JLabel modDepLabel;
+    private javax.swing.JLabel platform;
+    private javax.swing.JPanel platformPanel;
+    private javax.swing.JComboBox platformValue;
     private javax.swing.JButton removeDepButton;
     private javax.swing.JLabel space1;
     // End of variables declaration//GEN-END:variables

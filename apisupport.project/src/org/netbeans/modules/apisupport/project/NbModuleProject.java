@@ -199,7 +199,7 @@ final class NbModuleProject implements Project {
             sourcesHelper.createSources(),
             new AntArtifactProviderImpl(this, helper, evaluator()),
             new CustomizerProviderImpl(this, getHelper(), evaluator(), 
-                    locBundlePropsPath),
+                    getModuleType() == TYPE_STANDALONE, locBundlePropsPath),
             new SuiteProviderImpl(),
         });
     }

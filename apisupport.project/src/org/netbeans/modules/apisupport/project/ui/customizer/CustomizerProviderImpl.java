@@ -60,6 +60,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final String locBundlePropsPath;
+    private final boolean isStandalone;
     private ProjectXMLManager projectXMLManipulator;
     
     private Set/*<String>*/ modCategories;
@@ -85,10 +86,11 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private ComponentFactory.DependencyListModel universeDepsListModel;
 
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
-            PropertyEvaluator evaluator, String locBundlePropsPath) {
+            PropertyEvaluator evaluator, boolean isStandalone, String locBundlePropsPath) {
         this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
+        this.isStandalone = isStandalone;
         this.locBundlePropsPath = locBundlePropsPath;
     }
     
@@ -170,7 +172,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         } else {
-            this.moduleProps = new NbModuleProperties(helper);
+            this.moduleProps = new NbModuleProperties(helper, evaluator, isStandalone);
             // XXX may be temporary solution - there is not exact spec what should be done
             this.locBundleProps = locBundlePropsPath == null ? 
                 new EditableProperties() :
@@ -234,7 +236,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         // libraries customizer
         moduleDepsListModel = ComponentFactory.createDependencyListModel(new TreeSet(getModuleDependencies()));
         universeDepsListModel = ComponentFactory.createDependencyListModel(getUniverseDependencies());
-        panels.put(libraries, new CustomizerLibraries(
+        panels.put(libraries, new CustomizerLibraries(moduleProps,
                 moduleDepsListModel, universeDepsListModel));
 
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
