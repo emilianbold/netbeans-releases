@@ -309,6 +309,12 @@ public class FileStatusCache {
     void cleanUp() {
         Set toRefresh = new HashSet();
         synchronized(onFolderInfp()) {
+            for (Iterator i = scannedFolders.keySet().iterator(); i.hasNext();) {
+                File key = (File) i.next();
+                if (!key.isDirectory()) {
+                    toRefresh.add(key);
+                }
+            }
             for (Iterator i = scannedFolders.values().iterator(); i.hasNext();) {
                 Map map = (Map) i.next();
                 Set files = map.keySet();

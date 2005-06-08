@@ -84,12 +84,12 @@ public class CvsVersioningSystem {
     private void init() {
         disableCurrentModules();
         defaultGlobalOptions = new GlobalOptions();
+        MetadataAttic.cleanUp();
         sah = new CvsLiteAdminHandler();
         loadCache();
         filesystemHandler  = new FilesystemHandler(this);
         refreshManager = new RefreshManager(this);
         annotator = new Annotator(this);
-        MetadataAttic.cleanUp();
         filesystemHandler.init();
     }
 
