@@ -148,7 +148,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         confPanel.setLayout(new java.awt.GridBagLayout());
 
         codeNameBase.setLabelFor(codeNameBaseValue);
-        org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_CodeBaseName"));
+        org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_CodeNameBase"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 12);
