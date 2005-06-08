@@ -42,11 +42,13 @@ final class AddModulePanel extends JPanel {
     }
     
     private void showDescriptionFor(int index) {
-        descValue.setText(universeModules.getDependency(index).getModuleEntry().getLongDescription());
+        descValue.setText(index == -1 ? "" : // NOI18N
+            universeModules.getDependency(index).getModuleEntry().getLongDescription());
     }
     
     ModuleDependency getSelectedDependency() {
-        return universeModules.getDependency(moduleList.getSelectedIndex());
+        int selInd = moduleList.getSelectedIndex();
+        return selInd == -1 ? null : universeModules.getDependency(selInd);
     }
     
     /** This method is called from within the constructor to

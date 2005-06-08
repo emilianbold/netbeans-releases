@@ -14,6 +14,8 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
@@ -228,11 +230,22 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         depsToAdd.removeAll(moduleDeps.getDependencies());
         ComponentFactory.DependencyListModel model =
                 ComponentFactory.createDependencyListModel(depsToAdd);
-        AddModulePanel addPanel = new AddModulePanel(model);
-        DialogDescriptor descriptor = new DialogDescriptor(addPanel,
+        final AddModulePanel addPanel = new AddModulePanel(model);
+        final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,
-                "CTL_AddModuleDependencyTitle")); // NOI18N
-        Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
+                "CTL_AddModuleDependencyTitle"));// NOI18N
+        descriptor.setClosingOptions(new Object[0]);
+        final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
+        descriptor.setButtonListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (DialogDescriptor.OK_OPTION.equals(e.getSource()) &&
+                        addPanel.getSelectedDependency() == null) {
+                    return;
+                }
+                d.setVisible(false);
+                d.dispose();
+            }
+        });
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
             ModuleDependency newDep = addPanel.getSelectedDependency();
