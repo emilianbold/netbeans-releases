@@ -73,7 +73,7 @@ public class CommitExecutor extends ExecutorSupport {
 
     /**
      * Refreshes statuse of relevant files after this command terminates.
-     */ 
+     */
     protected void commandFinished(ClientRuntime.Result result) {
         
         CommitCommand xcmd = (CommitCommand) cmd;
@@ -85,22 +85,22 @@ public class CommitExecutor extends ExecutorSupport {
             CommitInformation info = (CommitInformation) i.next();
             if (info.getFile() == null) continue;
             int repositoryStatus = FileStatusCache.REPOSITORY_STATUS_UNKNOWN;
-            if (CommitInformation.CHANGED.equals(info.getType()) || CommitInformation.ADDED.equals(info.getType())) {
+            String type = info.getType();
+            if (CommitInformation.CHANGED.equals(type) || CommitInformation.ADDED.equals(type)) {
                 repositoryStatus = FileStatusCache.REPOSITORY_STATUS_UPTODATE;                
-            } else if (CommitInformation.REMOVED.equals(info.getType()) || CommitInformation.TO_ADD.equals(info.getType())) {
+            } else if (CommitInformation.REMOVED.equals(type) || CommitInformation.TO_ADD.equals(type)) {
                 repositoryStatus = FileStatusCache.REPOSITORY_STATUS_UNKNOWN;
             }
             cache.refreshCached(info.getFile(), repositoryStatus);
             refreshedFiles.add(info.getFile());
         }
-        
+
+        if (cmd.hasFailed()) return;
+
         // refresh all command roots
         File [] files = xcmd.getFiles();
         for (int i = 0; i < files.length; i++) {
             refreshRecursively(files[i]);
-            if (files[i].isFile()) {
-                cache.refreshCached(files[i].getParentFile(), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                
-            }
             FileObject fo = FileUtil.toFileObject(files[i]);
             if (fo != null) {
                 fo.refresh(true);
@@ -119,7 +119,7 @@ public class CommitExecutor extends ExecutorSupport {
             cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         } else {
             if (cache.getStatus(file.getParentFile()).getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                // do nothing
+                cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
             } else {
                 cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                
             }
