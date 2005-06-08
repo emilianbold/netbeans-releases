@@ -15,7 +15,6 @@ Microsystems, Inc. All Rights Reserved.
 <project name="java/editor/test/unit" basedir="." default="all">
     
     <target name="init">
-    
         <path id="compiletest.classpath">
             <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
             <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
@@ -24,9 +23,13 @@ Microsystems, Inc. All Rights Reserved.
 
             <pathelement location="${core.dir}/core/core.jar"/>
             <pathelement location="${core.dir}/lib/boot.jar"/>
-            <pathelement location="${openide.dir}/core/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+            <!--<pathelement location="${openide.dir}/core/openide.jar"/>-->
+            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>          
+            <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar" />
+            <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
             <pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
+
+            <pathelement location="${java/javacore.dir}/modules/org-netbeans-modules-javacore.jar"/>  
             <pathelement location="${java/api.dir}/modules/org-netbeans-api-java.jar"/>
             <pathelement location="${java/editor.dir}/modules/org-netbeans-modules-java-editor.jar" />       
             <pathelement location="${java/editor.dir}/modules/org-netbeans-modules-java-editor-lib.jar" /> 
@@ -45,8 +48,20 @@ Microsystems, Inc. All Rights Reserved.
 
             <pathelement location="${core.dir}/core/core.jar"/>
             <pathelement location="${core.dir}/lib/boot.jar"/>
-            <pathelement location="${openide.dir}/core/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+            <!--<pathelement location="${openide.dir}/core/openide.jar"/>-->
+            <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar" />
+            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>          
+            <pathelement location="${openide/modules.dir}/lib/org-openide-modules.jar"/>          
+            <pathelement location="${openide/awt.dir}/modules/org-openide-awt.jar"/>
+            <pathelement location="${openide/options.dir}/modules/org-openide-options.jar"/>                            
+            <pathelement location="${openide/actions.dir}/modules/org-openide-actions.jar"/>            
+            <pathelement location="${openide/dialogs.dir}/modules/org-openide-dialogs.jar"/>
+            <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>            
+            <pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
+            <pathelement location="${openide/text.dir}/modules/org-openide-text.jar"/>
+            <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
+            <pathelement location="${openide/windows.dir}/modules/org-openide-windows.jar"/>            
+            
             <pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
             <pathelement location="${java/api.dir}/modules/org-netbeans-api-java.jar"/>
 <!--            <pathelement location="${debuggercore/oldapi.dir}/modules/org-openide-debugger.jar"/> -->
