@@ -349,6 +349,9 @@ public class AbstractVariable implements ObjectVariable {
     
     protected void setInnerValue (Value v) {
         value = v;
+        fields = null;
+        staticFields = null;
+        inheritedFields = null;
     }
     
     LocalsTreeModel getModel () {

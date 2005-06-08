@@ -110,6 +110,14 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     
     // other methods ...........................................................
     
+    void setFrame(CallStackFrameImpl frame) {
+        this.frame = frame;
+    }
+    
+    void setLocalVariable(LocalVariable local) {
+        this.local = local;
+    }
+    
     public String toString () {
         return "LocalVariable " + local.name ();
     }

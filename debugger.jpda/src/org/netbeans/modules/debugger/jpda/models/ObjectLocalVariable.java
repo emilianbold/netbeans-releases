@@ -55,6 +55,10 @@ org.netbeans.api.debugger.jpda.ObjectVariable {
         }
     }
     
+    void setFrame(CallStackFrameImpl frame) {
+        this.frame = frame;
+    }
+    
     
     // other methods ...........................................................
     

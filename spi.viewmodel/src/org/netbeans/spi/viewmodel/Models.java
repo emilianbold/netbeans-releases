@@ -24,6 +24,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -45,6 +46,7 @@ import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.nodes.Node;
+import org.openide.util.WeakSet;
 
 import org.openide.windows.TopComponent;
 
@@ -1299,8 +1301,15 @@ public final class Models {
         }
 
         private static TreeExpansionModel[] convert (List l) {
-            TreeExpansionModel[] models = new TreeExpansionModel [l.size ()];
-            return (TreeExpansionModel[]) l.toArray (models);
+            int size = l.size ();
+            if (size == 0) {
+                return new TreeExpansionModel[] {
+                    new DefaultTreeExpansionModel()
+                };
+            } else {
+                TreeExpansionModel[] models = new TreeExpansionModel [size];
+                return (TreeExpansionModel[]) l.toArray (models);
+            }
         }
 
         /**
@@ -1309,7 +1318,7 @@ public final class Models {
          *
          * @param models a array of TableModels
          */
-        DelegatingTreeExpansionModel (TreeExpansionModel[] models) {
+        private DelegatingTreeExpansionModel (TreeExpansionModel[] models) {
             this.models = models;        
         }
 
@@ -1384,6 +1393,57 @@ public final class Models {
             sb.append (models [i]);
             return new String (sb);
         }
+    }
+    
+    private static class DefaultTreeExpansionModel implements TreeExpansionModel {
+        
+        private Set expandedNodes = new WeakSet();
+        private Set collapsedNodes = new WeakSet();
+
+        /**
+         * Defines default state (collapsed, expanded) of given node.
+         *
+         * @param node a node
+         * @return default state (collapsed, expanded) of given node
+         */
+        public boolean isExpanded (Object node) 
+        throws UnknownTypeException {
+            synchronized (this) {
+                if (expandedNodes.contains(node)) {
+                    return true;
+                }
+                if (collapsedNodes.contains(node)) {
+                    return false;
+                }
+            }
+            // Default behavior follows:
+            return false;
+        }
+
+        /**
+         * Called when given node is expanded.
+         *
+         * @param node a expanded node
+         */
+        public void nodeExpanded (Object node) {
+            synchronized (this) {
+                expandedNodes.add(node);
+                collapsedNodes.remove(node);
+            }
+        }
+
+        /**
+         * Called when given node is collapsed.
+         *
+         * @param node a collapsed node
+         */
+        public void nodeCollapsed (Object node) {
+            synchronized (this) {
+                collapsedNodes.add(node);
+                expandedNodes.remove(node);
+            }
+        }
+        
     }
 
     /**

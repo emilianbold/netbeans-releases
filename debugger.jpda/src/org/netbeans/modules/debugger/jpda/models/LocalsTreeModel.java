@@ -28,8 +28,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -60,6 +63,8 @@ public class LocalsTreeModel implements TreeModel {
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
     private Vector              listeners = new Vector ();
+    private Map                 cachedLocals = new WeakHashMap();
+    private Map                 cachedArrayChildren = new WeakHashMap();
     
     
     public LocalsTreeModel (ContextProvider lookupProvider) {
@@ -88,7 +93,15 @@ public class LocalsTreeModel implements TreeModel {
                 }
                 Object[] avs = abstractVariable.getFields (from, to);
                 if (isArray && avs.length > ARRAY_CHILDREN_NESTED_LENGTH) {
-                    return new ArrayChildrenNode(avs).getChildren();
+                    ArrayChildrenNode achn =
+                            (ArrayChildrenNode) cachedArrayChildren.get(abstractVariable.getInnerValue ());
+                    if (achn == null) {
+                        achn = new ArrayChildrenNode(avs);
+                        cachedArrayChildren.put(abstractVariable.getInnerValue (), achn);
+                    } else {
+                        achn.update(avs);
+                    }
+                    return achn.getChildren();
                 }
                 return avs;
             } else
@@ -286,16 +299,27 @@ public class LocalsTreeModel implements TreeModel {
     
     private Local getLocal (LocalVariable lv, CallStackFrameImpl frame, String className) {
         Value v = frame.getStackFrame ().getValue (lv);
-        if (v instanceof ObjectReference)
-            return new ObjectLocalVariable (
-                this, 
-                v, 
-                className, 
-                lv, 
-                JPDADebuggerImpl.getGenericSignature (lv), 
-                frame
-            );
-        return new Local (this, v, className, lv, frame);
+        Local local = (Local) cachedLocals.get(lv);
+        if (local != null) {
+            local.setInnerValue(v);
+            local.setFrame(frame);
+            local.setLocalVariable(lv);
+        } else {
+            if (v instanceof ObjectReference) {
+                local = new ObjectLocalVariable (
+                    this, 
+                    v, 
+                    className, 
+                    lv, 
+                    JPDADebuggerImpl.getGenericSignature (lv), 
+                    frame
+                );
+            } else {
+                local = new Local (this, v, className, lv, frame);
+            }
+            cachedLocals.put(lv, local);
+        }
+        return local;
     }
     
     public Variable getVariable (Value v) {
@@ -451,6 +475,27 @@ public class LocalsTreeModel implements TreeModel {
                 System.arraycopy(allChildren, from, ch, 0, length);
                 return ch;
             }
+        }
+        
+        public void update(Object[] newChildren) {
+            if (newChildren.length == allChildren.length) {
+                System.arraycopy(newChildren, 0, allChildren, 0, allChildren.length);
+            } else {
+                allChildren = newChildren;
+            }
+        }
+        
+        /** Overriden equals so that the nodes are not re-created when not necessary. */
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ArrayChildrenNode)) return false;
+            ArrayChildrenNode achn = (ArrayChildrenNode) obj;
+            return achn.allChildren == this.allChildren &&
+                   achn.from == this.from &&
+                   achn.length == this.length;
+        }
+        
+        public int hashCode() {
+            return allChildren.hashCode() + from + length;
         }
         
         public String toString() {
