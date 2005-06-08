@@ -109,7 +109,8 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
     private Map commitMessages;
 
     private final Set errorStripeAnnotations = new HashSet();
-    
+    private int annotationsPerfomanceLimit = Integer.MAX_VALUE;
+
     /**
      * Represents text that should be displayed in
      * visible bar with yet <code>null</code> elementAnnotations.
@@ -240,9 +241,15 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             while (it.hasNext()) {
                 AnnotateLine line = (AnnotateLine) it.next();
                 int lineNum = ann2editorPermutation[line.getLineNum() -1];
-                int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
-                Element element = sd.getParagraphElement(lineOffset);
-                elementAnnotations.put(element, line);
+                try {
+                    int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
+                    Element element = sd.getParagraphElement(lineOffset);
+                    elementAnnotations.put(element, line);
+                } catch (IndexOutOfBoundsException ex) {
+                    // TODO how could I get line behind document end?
+                    // furtunately user does not spot it
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
             }
         } finally {
             doc.atomicUnlock();
@@ -379,6 +386,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             if (dobj != null) {
                 LineCookie lineCookie = (LineCookie) dobj.getCookie(LineCookie.class);
                 if (lineCookie != null) {
+                    Set annotations = new HashSet();
                     Line.Set lines = lineCookie.getLineSet();
                     Iterator it2 = elementAnnotations.entrySet().iterator();
                     while (it2.hasNext()) {
@@ -389,9 +397,28 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                             int elementOffset = element.getStartOffset();
                             int lineNumber = NbDocument.findLineNumber((StyledDocument)doc, elementOffset);
                             Line currentLine = lines.getCurrent(lineNumber);
-                            CvsAnnotation ann = new CvsAnnotation(revision);
-                            ann.attach(currentLine);
-                            errorStripeAnnotations.add(ann);
+                            CvsAnnotation ann = new CvsAnnotation(revision, currentLine);
+                            annotations.add(ann);
+                        }
+                    }
+
+                    // do not trust annotations implementation scalability
+                    // explictly monitor its performance and do not overload it
+                    if (annotations.size() < annotationsPerfomanceLimit) {
+                        long startTime = System.currentTimeMillis();
+                        Iterator it = annotations.iterator();
+                        int counter = 0;
+                        while (it.hasNext()) {
+                            CvsAnnotation cvsAnnotation = (CvsAnnotation) it.next();
+                            cvsAnnotation.attach();
+                            errorStripeAnnotations.add(cvsAnnotation);
+                            counter++;
+                            long ms = System.currentTimeMillis() - startTime;
+                            if (ms > 703) {  // 0.7 sec
+                                annotationsPerfomanceLimit = counter;
+                                ErrorManager.getDefault().log(ErrorManager.WARNING, "#59721 should be reopened: " + counter + " of " + annotations.size() + " annotations attached in " + ms + "ms. Setting performance limit.");  // NOI18N
+                                break;
+                            }
                         }
                     }
                 }
@@ -474,6 +501,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         commitMessages = null;
         elementAnnotations = null;
         detachStripeAnnotations();
+        annotationsPerfomanceLimit = Integer.MAX_VALUE;
     }
 
     /**
@@ -772,11 +800,19 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
     private static class CvsAnnotation extends Annotation {
         
         private final String text;
-        
-        public CvsAnnotation(String tooltip) {
+
+        private Line line;
+
+        public CvsAnnotation(String tooltip, Line line) {
             text = tooltip;
+            this.line = line;
         }
-        
+
+        public void attach() {
+            attach(line);
+            line = null;
+        }
+
         public String getShortDescription() {
             return text;
         }
