@@ -15,6 +15,8 @@ package org.netbeans.performance.results;
 
 import java.io.*;
 import java.io.File;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import javax.xml.parsers.*;
 
@@ -242,6 +244,8 @@ public class AnalyzeResultsTask extends Task {
      * When refCases is supplied it also prints the difference and result of ttest.
      */
     private void printCases (OutputStreamWriter ow, Iterator it, Map refCases) throws IOException {
+        NumberFormat f = new DecimalFormat ("#######0.00");
+        NumberFormat f2 = new DecimalFormat ("#######0.0000");
         while (it.hasNext()) {
             TestCaseResults oneCase = (TestCaseResults)it.next();
             ow.write("<testcase");
@@ -249,9 +253,9 @@ public class AnalyzeResultsTask extends Task {
             ow.write(" threshold=\""+oneCase.getThreshold()+"\"");
             ow.write(" unit=\""+oneCase.getUnit()+"\"");
             ow.write(" order=\""+oneCase.getOrder()+"\"\n");
-            ow.write(" average=\""+oneCase.getAverage()+"\"");
-            ow.write(" stddev=\""+oneCase.getStdDev()+"\"");
-            ow.write(" variance=\""+oneCase.getVariance()+"\">\n");
+            ow.write(" average=\""+f.format(oneCase.getAverage())+"\"");
+            ow.write(" stddev=\""+f.format(oneCase.getStdDev())+"\"");
+            ow.write(" variance=\""+f.format(oneCase.getVariance())+"\">\n");
             Iterator it2 = oneCase.getValues().iterator();
             while (it2.hasNext()) {
                 ow.write("\t<result value=\""+it2.next().toString()+"\"/>\n");
@@ -260,11 +264,11 @@ public class AnalyzeResultsTask extends Task {
                 Object o = refCases.get(oneCase);
                 if (o != null) {
                     TestCaseResults refResult = (TestCaseResults)o;
-                    ow.write("<difference value=\""+(oneCase.getAverage()/refResult.getAverage()*100-100)+"\"/>\n");
+                    ow.write("<difference value=\""+f.format(oneCase.getAverage()/refResult.getAverage()*100-100)+"\"/>\n");
                     
             	TestCaseResults.TTestValue tt = oneCase.getTTest();
             	if (tt != null) {
-            	    ow.write ("<ttest p=\""+tt.getP()+"\" tvalue=\""+tt.getT()+"\" df=\""+tt.getDF()+"\">\n");
+            	    ow.write ("<ttest p=\""+f2.format(tt.getP())+"\" tvalue=\""+f.format(tt.getT())+"\" df=\""+f.format(tt.getDF())+"\">\n");
             	    ow.write (tt.getComment()+"\n");
             	    ow.write ("</ttest>\n");
             	}
