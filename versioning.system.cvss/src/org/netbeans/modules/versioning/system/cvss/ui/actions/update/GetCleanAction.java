@@ -45,8 +45,7 @@ public class GetCleanAction extends AbstractSystemAction {
 
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_IN_REPOSITORY & 
-                ~FileInformation.STATUS_VERSIONED_UPTODATE & 
-                ~FileInformation.STATUS_VERSIONED_CONFLICT;
+                ~FileInformation.STATUS_VERSIONED_UPTODATE;
     }
     
     public void actionPerformed(ActionEvent ev) {
