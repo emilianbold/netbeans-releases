@@ -360,11 +360,10 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             return;
         }
 
-        detachStripeAnnotations();
-
         // handle locally modified lines
         AnnotateLine al = getAnnotateLine(line);
         if (al == null) {
+            detachStripeAnnotations();
             clearRecentFeedback();
             if (recentRevision != null) {
                 recentRevision = null;
@@ -381,6 +380,8 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             repaint();
             
             // error stripe support
+
+            detachStripeAnnotations();
 
             DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
             if (dobj != null) {
