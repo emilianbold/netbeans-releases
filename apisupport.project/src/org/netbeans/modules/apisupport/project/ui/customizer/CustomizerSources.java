@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
 
 /**
  * Represents <em>Sources</em> panel in Netbeans Module customizer.
@@ -24,8 +25,15 @@ import javax.swing.JPanel;
 final class CustomizerSources extends JPanel {
     
     /** Creates new form CustomizerSources */
-    CustomizerSources(final NbModuleProperties moduleProps, String prjFolder) {
+    CustomizerSources(final NbModuleProperties moduleProps, SuiteProvider sp,
+            String prjFolder) {
         initComponents();
+        if (sp.getSuiteDirectory() == null) {
+            moduleSuite.setVisible(false);
+            moduleSuiteValue.setVisible(false);
+        } else {
+            moduleSuiteValue.setText(sp.getSuiteDirectory().getPath());
+        }
         for (int i = 0; i < NbModuleProperties.SOURCE_LEVELS.length; i++) {
             srcLevelValue.addItem(NbModuleProperties.SOURCE_LEVELS[i]);
         }
@@ -54,6 +62,8 @@ final class CustomizerSources extends JPanel {
         srcLevelValue = new javax.swing.JComboBox();
         filler = new javax.swing.JLabel();
         prjFolderValue = new javax.swing.JTextField();
+        moduleSuite = new javax.swing.JLabel();
+        moduleSuiteValue = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -70,21 +80,21 @@ final class CustomizerSources extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(srcLevel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_SourceLevel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
         add(srcLevel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(srcLevelValue, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.weighty = 1.0;
         add(filler, gridBagConstraints);
 
@@ -97,12 +107,33 @@ final class CustomizerSources extends JPanel {
         gridBagConstraints.weightx = 1.0;
         add(prjFolderValue, gridBagConstraints);
 
+        moduleSuite.setLabelFor(moduleSuiteValue);
+        org.openide.awt.Mnemonics.setLocalizedText(moduleSuite, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_ModeleSuite"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
+        add(moduleSuite, gridBagConstraints);
+
+        moduleSuiteValue.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        add(moduleSuiteValue, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel filler;
+    private javax.swing.JLabel moduleSuite;
+    private javax.swing.JTextField moduleSuiteValue;
     private javax.swing.JLabel prjFolder;
     private javax.swing.JTextField prjFolderValue;
     private javax.swing.JLabel srcLevel;

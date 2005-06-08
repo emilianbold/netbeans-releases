@@ -34,6 +34,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.ModuleList;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -54,8 +55,8 @@ import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 public final class CustomizerProviderImpl implements CustomizerProvider {
     
     public static final ErrorManager err = ErrorManager.getDefault().getInstance(
-        "org.netbeans.modules.apisupport.project.ui.customizer"); // NOI18N
-
+            "org.netbeans.modules.apisupport.project.ui.customizer"); // NOI18N
+    
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -80,11 +81,11 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     
     // Keeps already displayed dialogs
     private static Map/*<Project,Dialog>*/ displayedDialogs = new HashMap();
-
+    
     // models
     private ComponentFactory.DependencyListModel moduleDepsListModel;
     private ComponentFactory.DependencyListModel universeDepsListModel;
-
+    
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
             PropertyEvaluator evaluator, boolean isStandalone, String locBundlePropsPath) {
         this.project = project;
@@ -133,7 +134,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     /**
-     * Prepare all ModuleList.Entries from this module's universe. Also prepare 
+     * Prepare all ModuleList.Entries from this module's universe. Also prepare
      * all categories.
      */
     private void loadModuleListInfo() {
@@ -159,7 +160,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     public void showCustomizer() {
         showCustomizer(null);
     }
-
+    
     /** Show customizer with preselected category. */
     public void showCustomizer(String preselectedCategory) {
         showCustomizer(preselectedCategory, null);
@@ -174,7 +175,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         } else {
             this.moduleProps = new NbModuleProperties(helper, evaluator, isStandalone);
             // XXX may be temporary solution - there is not exact spec what should be done
-            this.locBundleProps = locBundlePropsPath == null ? 
+            this.locBundleProps = locBundlePropsPath == null ?
                 new EditableProperties() :
                 helper.getProperties(locBundlePropsPath);
             init();
@@ -191,7 +192,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 }
             }
             OptionListener listener = new OptionListener();
-            dialog = ProjectCustomizer.createCustomizerDialog(categories, 
+            dialog = ProjectCustomizer.createCustomizerDialog(categories,
                     panelProvider, preselectedCategory, listener, null);
             dialog.addWindowListener(listener);
             dialog.setTitle(MessageFormat.format(
@@ -211,6 +212,10 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private static final String SOURCES = "Sources"; // NOI18N
     private static final String DISPLAY = "Display"; // NOI18N
     private static final String LIBRARIES = "Libraries"; // NOI18N
+
+    private SuiteProvider getSuiteProvider() {
+        return (SuiteProvider) project.getLookup().lookup(SuiteProvider.class);
+    }
     
     private void init() {
         ResourceBundle bundle = NbBundle.getBundle(CustomizerProviderImpl.class);
@@ -221,14 +226,14 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 bundle.getString("LBL_ConfigDisplay")); // NOI18N
         ProjectCustomizer.Category libraries = createCategory(LIBRARIES,
                 bundle.getString("LBL_ConfigLibraries")); // NOI18N
-
+        
         categories = new ProjectCustomizer.Category[] {
             sources, display, libraries
         };
         
         // sources customizer
-        panels.put(sources, new CustomizerSources(moduleProps,
-            FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath()));
+        panels.put(sources, new CustomizerSources(moduleProps, getSuiteProvider(),
+                FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath()));
         
         // display customizer
         panels.put(display, new CustomizerDisplay(locBundleProps, getModuleCategories()));
@@ -238,7 +243,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         universeDepsListModel = ComponentFactory.createDependencyListModel(getUniverseDependencies());
         panels.put(libraries, new CustomizerLibraries(moduleProps,
                 moduleDepsListModel, universeDepsListModel));
-
+        
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
             public JComponent create(ProjectCustomizer.Category category) {
                 JComponent panel = (JComponent) panels.get(category);
@@ -253,10 +258,10 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         return ProjectCustomizer.Category.create(
                 progName, displayName, null, null);
     }
-
+    
     /** Listens to the actions on the Customizer's option buttons */
     private class OptionListener extends WindowAdapter implements ActionListener {
-
+        
         // Listening to OK button ----------------------------------------------
         public void actionPerformed(ActionEvent e) {
             // Store the properties into project
@@ -282,7 +287,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         }
         
         public void windowClosing(WindowEvent e) {
-            // Dispose the dialog otherwsie the 
+            // Dispose the dialog otherwise the
             // {@link WindowAdapter#windowClosed} may not be called
             Dialog dialog = (Dialog) displayedDialogs.get(project);
             if (dialog != null) {
