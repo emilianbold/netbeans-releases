@@ -18,10 +18,12 @@ import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.command.add.AddInformation;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 import java.util.*;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 
 /**
  * Executes a given 'add' command and refreshes file statuses.
@@ -29,7 +31,9 @@ import java.io.IOException;
  * @author Maros Sandor
  */
 public class AddExecutor extends ExecutorSupport {
-    
+
+    private static final ResourceBundle loc = NbBundle.getBundle(AddExecutor.class);
+
     /**
      * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
      * executed in the background. This method may split the original command into more commands if the original
@@ -77,6 +81,9 @@ public class AddExecutor extends ExecutorSupport {
         AddExecutor [] executors = new AddExecutor[commands.length]; 
         for (int i = 0; i < commands.length; i++) {
             AddCommand command = commands[i];
+            int len = command.getFiles().length;
+            String param = len == 1 ? command.getFiles()[0].getName() : Integer.toString(len);
+            command.setDisplayName(MessageFormat.format(loc.getString("MSG_AddExecutor_CmdDisplayName"), new Object [] { param }));
             executors[i] = new AddExecutor(cvs, command, options);
             executors[i].execute();
         }
