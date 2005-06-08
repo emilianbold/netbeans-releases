@@ -46,8 +46,14 @@ public final class ModuleDependency implements Comparable {
     
     private static final Collator LOC_COLLATOR = Collator.getInstance();
     
+    /**
+     * Creates a new instance based on the given entry. The instance will be
+     * initialized with given entry's release and specification versions.
+     * Compile dependency is set to true by default, implementation version to
+     * false.
+     */
     public ModuleDependency(ModuleList.Entry me) {
-        this(me, null, null, true, false);
+        this(me, me.getReleaseVersion(), me.getSpecificationVersion(), true, false);
     }
     
     public ModuleDependency(ModuleList.Entry me, String releaseVersion,

@@ -149,6 +149,8 @@ public class ProjectXMLManagerTest extends TestBase {
         ModuleList.Entry me =
                 actionProject.getModuleList().getEntry("org.netbeans.modules.java.project");
         assertNotNull("java/project must be built", me);
+        String javaProjectRV = me.getReleaseVersion();
+        String javaProjectSV = me.getSpecificationVersion();
         newDeps.add(new ModuleDependency(me));
         me = actionProject.getModuleList().getEntry("org.netbeans.modules.java.j2seplatform");
         assertNotNull("java/j2seplatform must be built", me);
@@ -178,6 +180,10 @@ public class ProjectXMLManagerTest extends TestBase {
             ModuleDependency md = (ModuleDependency) it.next();
             assertTrue("unknown dependency",
                     assumed.remove(md.getModuleEntry().getCodeNameBase()));
+            if ("org.netbeans.modules.java.project".equals(md.getModuleEntry().getCodeNameBase())) {
+                assertEquals("initial release version", javaProjectRV, md.getReleaseVersion());
+                assertEquals("initial specification version", javaProjectSV, md.getSpecificationVersion());
+            }
             if ("org.netbeans.modules.java.j2seplatform".equals(md.getModuleEntry().getCodeNameBase())) {
                 assertEquals("edited release version", "1", md.getReleaseVersion());
                 assertFalse("has compile depedendency", md.hasCompileDependency());
