@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="init" depends="bootstrap">
-        <taskdef name="compare" classname="org.netbeans.performance.results.AnalyzeResultsTask" classpath="perfresults.jar"/>
         <taskdef name="issues" classname="org.netbeans.nbbuild.PlansPreprocess" classpath="${nbroot}/nbbuild/nbantext.jar"/>
          <available property="already-converted" file="all_features-subst.xml"/>
          <property name="http.proxyPort" value="-1" />
@@ -29,6 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="all" depends="init">
+        <taskdef name="compare" classname="org.netbeans.performance.results.AnalyzeResultsTask" classpath="perfresults.jar"/>
     <!--
 	<style destdir="." 
                in="${nbroot}/core/test/results/xmlresults/testreport-performance.xml" 
@@ -36,11 +36,11 @@ Microsystems, Inc. All Rights Reserved.
                style="style-html.xsl"/>
                -->
 <!--        <compare refFile="${nbroot}/core/test/results/xmlresults/testreport-performance.xml"-->
-        <compare refFile="${nbroot}/core/test/results/testrun_040222-155643/xmlresults/testrun-performance.xml"
+        <compare refFile="/home/radim/tmp/tiger_mustang/LinRHEL3_jdk150_03_testreport-performance.xml"
                  destFile="output.xml">
-           <fileset dir="${nbroot}/core/test/results">
-               <include name="testrun_*/xmlresults/testrun-performance.xml"/>
-               <exclude name="testrun_040222-155643/xmlresults/testrun-performance.xml"/>
+           <fileset dir="/home/radim/tmp/tiger_mustang">
+               <include name="LinRHEL3_jdk160_b38_testreport-performance.xml"/>
+               <!--<exclude name="testrun_040222-155643/xmlresults/testrun-performance.xml"/>-->
            </fileset>
         </compare>
     </target>
