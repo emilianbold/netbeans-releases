@@ -125,9 +125,8 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
 
         setLayout(new java.awt.GridBagLayout());
 
-        name.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayName_Mnem").charAt(0));
         name.setLabelFor(nameValue);
-        name.setText(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayName"));
+        org.openide.awt.Mnemonics.setLocalizedText(name, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -143,9 +142,8 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(nameValue, gridBagConstraints);
 
-        category.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayCategory_Mnem").charAt(0));
         category.setLabelFor(categoryValue);
-        category.setText(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayCategory"));
+        org.openide.awt.Mnemonics.setLocalizedText(category, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayCategory"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -162,9 +160,8 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(categoryValue, gridBagConstraints);
 
-        shortDesc.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_ShortDescription_Mnem").charAt(0));
         shortDesc.setLabelFor(shortDescValue);
-        shortDesc.setText(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_ShortDescription"));
+        org.openide.awt.Mnemonics.setLocalizedText(shortDesc, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_ShortDescription"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -180,9 +177,8 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(shortDescValue, gridBagConstraints);
 
-        longDesc.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_LongDescription_Mnem").charAt(0));
         longDesc.setLabelFor(longDescValue);
-        longDesc.setText(org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_LongDescription"));
+        org.openide.awt.Mnemonics.setLocalizedText(longDesc, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_LongDescription"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;

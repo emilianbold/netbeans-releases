@@ -94,9 +94,8 @@ final class EditDependencyPanel extends JPanel {
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(6, 6, 6, 6)));
         setPreferredSize(new java.awt.Dimension(400, 300));
-        codeNameBase.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_CNB_Mnem").charAt(0));
         codeNameBase.setLabelFor(codeNameBaseValue);
-        codeNameBase.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_CNB"));
+        org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_CNB"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -104,9 +103,8 @@ final class EditDependencyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(codeNameBase, gridBagConstraints);
 
-        jarLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_JAR_Mnem").charAt(0));
         jarLocation.setLabelFor(jarLocationValue);
-        jarLocation.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_JAR"));
+        org.openide.awt.Mnemonics.setLocalizedText(jarLocation, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_JAR"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -114,8 +112,8 @@ final class EditDependencyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
         add(jarLocation, gridBagConstraints);
 
-        releaseVersion.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_MajorReleaseVersion_Mnem").charAt(0));
-        releaseVersion.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_MajorReleaseVersion"));
+        releaseVersion.setLabelFor(releaseVersionValue);
+        org.openide.awt.Mnemonics.setLocalizedText(releaseVersion, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_MajorReleaseVersion"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -133,9 +131,8 @@ final class EditDependencyPanel extends JPanel {
         add(releaseVersionValue, gridBagConstraints);
 
         versionGroup.add(specVer);
-        specVer.setMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_SpecificationVersion_Mnem").charAt(0));
         specVer.setSelected(true);
-        specVer.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_SpecificationVersion"));
+        org.openide.awt.Mnemonics.setLocalizedText(specVer, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_SpecificationVersion"));
         specVer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 versionChanged(evt);
@@ -157,8 +154,7 @@ final class EditDependencyPanel extends JPanel {
         add(specVerValue, gridBagConstraints);
 
         versionGroup.add(implVer);
-        implVer.setMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_ImplementationVersion_Mnem").charAt(0));
-        implVer.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_ImplementationVersion"));
+        org.openide.awt.Mnemonics.setLocalizedText(implVer, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_ImplementationVersion"));
         implVer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 versionChanged(evt);
@@ -172,8 +168,7 @@ final class EditDependencyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(implVer, gridBagConstraints);
 
-        includeInCP.setMnemonic(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_IncludeAPIPackages_Mnem").charAt(0));
-        includeInCP.setText(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_IncludeAPIPackages"));
+        org.openide.awt.Mnemonics.setLocalizedText(includeInCP, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_IncludeAPIPackages"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
