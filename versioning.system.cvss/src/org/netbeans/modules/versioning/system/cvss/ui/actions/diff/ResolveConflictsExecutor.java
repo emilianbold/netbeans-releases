@@ -25,19 +25,25 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
-import javax.swing.SwingUtilities;
+import java.util.Set;
+import java.util.Iterator;
+import java.awt.*;
 
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.windows.TopComponent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.util.Lookup;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.spi.diff.MergeVisualizer;
 import org.netbeans.modules.diff.EncodedReaderFactory;
+
+import javax.swing.*;
 
 /**
  * This class is used to resolve merge conflicts in a graphical way using a merge visualizer.
@@ -59,7 +65,7 @@ public class ResolveConflictsExecutor {
     private String rightFileRevision = null;
 
     public void exec(File file) {
-
+        assert SwingUtilities.isEventDispatchThread();
         MergeVisualizer merge = (MergeVisualizer) Lookup.getDefault().lookup(MergeVisualizer.class);
         if (merge == null) {
             throw new IllegalStateException("No Merge engine found.");
@@ -68,6 +74,14 @@ public class ResolveConflictsExecutor {
         try {
             FileObject fo = FileUtil.toFileObject(file);
             handleMergeFor(file, fo, fo.lock(), merge);
+        } catch (FileAlreadyLockedException e) {
+            Set components = TopComponent.getRegistry().getOpened();
+            for (Iterator i = components.iterator(); i.hasNext();) {
+                TopComponent tc = (TopComponent) i.next();
+                if (tc.getClientProperty(ResolveConflictsExecutor.class.getName()) != null) {
+                    tc.requestActive();
+                }
+            }
         } catch (IOException ioex) {
             org.openide.ErrorManager.getDefault().notify(ioex);
         }
@@ -121,17 +135,17 @@ public class ResolveConflictsExecutor {
                                                               originalLeftFileRevision,
                                                               originalRightFileRevision,
                                                               fo, lock, encoding);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    merge.createView(diffs, s1, s2, result);
-                } catch (IOException ioex) {
-                    org.openide.ErrorManager.getDefault().notify(ioex);
-                }
+
+        try {
+            Component c = merge.createView(diffs, s1, s2, result);
+            if (c instanceof TopComponent) {
+                ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
             }
-        });
+        } catch (IOException ioex) {
+            org.openide.ErrorManager.getDefault().notify(ioex);
+        }
     }
-    
+
     /**
      * Copy the file and conflict parts into another file.
      */
