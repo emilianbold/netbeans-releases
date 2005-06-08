@@ -298,7 +298,9 @@ public class FileInformation implements Serializable {
      * @return true if status constants of both object are equal, false otherwise
      */ 
     public boolean equals(Object o) {
-        return o instanceof FileInformation && status == ((FileInformation) o).status;
+        if (!(o instanceof FileInformation)) return false;
+        FileInformation other = (FileInformation) o;
+        return o instanceof FileInformation && status == other.status && isDirectory == other.isDirectory;
     }
 
     public int hashCode() {

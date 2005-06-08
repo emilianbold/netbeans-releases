@@ -198,7 +198,9 @@ public class FileStatusCache {
         if (files == NOT_MANAGED_MAP) return FILE_INFORMATION_NOTMANAGED;
         FileInformation current = (FileInformation) files.get(file);
         FileInformation fi = createFileInformation(file, repositoryStatus);
-        if (fi.equals(current) || current == null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_UPTODATE) != 0) {
+        if (fi.equals(current)) return fi;
+        // do not include uptodate files into cache, missing directories must be included
+        if (current == null && !fi.isDirectory() && fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
             return fi;
         }
         synchronized(onFolderInfp()) {
