@@ -16,7 +16,6 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -122,7 +121,6 @@ public class SortSuiteModules extends Task {
         // Stolen from org.openide.util.Utilities.topologicalSort, with various simplifications:
         List/*<String>*/ cnbs = new ArrayList();
         List cRev = new ArrayList(basedirsByCNB.keySet());
-        Collections.reverse(cRev);
         Map finished = new HashMap();
         it = cRev.iterator();
         while (it.hasNext()) {
