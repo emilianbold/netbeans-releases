@@ -307,8 +307,8 @@ public class FileStatusCache {
      * TODO: implement full cleanup, may also speculatively delete some entries to limit cache size 
      */ 
     void cleanUp() {
+        Set toRefresh = new HashSet();
         synchronized(onFolderInfp()) {
-            Set toRefresh = new HashSet();
             for (Iterator i = scannedFolders.values().iterator(); i.hasNext();) {
                 Map map = (Map) i.next();
                 Set files = map.keySet();
@@ -320,10 +320,10 @@ public class FileStatusCache {
                     }
                 }
             }
-            for (Iterator i = toRefresh.iterator(); i.hasNext();) {
-                File file = (File) i.next();
-                refresh(file, REPOSITORY_STATUS_UNKNOWN);
-            }
+        }
+        for (Iterator i = toRefresh.iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            refresh(file, REPOSITORY_STATUS_UNKNOWN);
         }
     }
         
