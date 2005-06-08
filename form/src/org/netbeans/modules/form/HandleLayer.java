@@ -54,13 +54,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     static final int COMP_ABOVE_SELECTED = 2; // get the component above the deepest selected component
     static final int COMP_UNDER_SELECTED = 3; // get the component under the deepest selected component
     
-    // Design mode constants
-    static final int DESIGN_MODE_NONE = 0;
-    static final int DESIGN_MODE_HORIZONTAL = 1;
-    static final int DESIGN_MODE_VERTICAL = 2;
-
-    private int designMode = DESIGN_MODE_NONE;
-
     private static final int DESIGNER_RESIZING = 256; // flag for resizeType
     private static MessageFormat resizingHintFormat;
 
@@ -140,10 +133,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
 static int ncount;
     protected void paintComponent(Graphics g) {
-        paintDesignInfo(g);
-//        System.out.println(Integer.toString(++ncount)+": handle layer paint");
-//        System.out.println(" - clip: "+g.getClipBounds());
-////            Thread.dumpStack();
         Graphics2D g2 = (Graphics2D) g;
 
         // paint component in the connection mode (if any)
@@ -179,27 +168,6 @@ static int ncount;
                 selectionDragger.paintDragFeedback(g2);
             else if (designerResizer != null)
                 designerResizer.paintDragFeedback(g2);
-        }
-    }
-    
-    private void paintDesignInfo(Graphics g) {
-        if (designMode != DESIGN_MODE_NONE) {
-            Container topCont = formDesigner.getTopVisualContainer();
-            if (topCont != null) {
-                Point contPos = convertPointFromComponent(0, 0, topCont);
-                g.translate(contPos.x, contPos.y);
-                Shape clip = g.getClip();
-                Area area = new Area(new Rectangle(0, 0, topCont.getWidth(), topCont.getHeight()));
-                if (clip != null) {
-                    area.intersect(new Area(clip));
-                }
-                g.setClip(area);
-                Collection selectedIds = formDesigner.selectedLayoutComponentIds();
-                formDesigner.getLayoutDesigner().paintDesign((Graphics2D)g,
-                    selectedIds, designMode == DESIGN_MODE_HORIZONTAL);
-                g.setClip(clip);
-                g.translate(-contPos.x, -contPos.y);
-            }
         }
     }
 
@@ -382,11 +350,6 @@ static int ncount;
                     e.consume();
                     return;
                 }
-            }
-        } else if ((keyCode == KeyEvent.VK_H) || (keyCode == KeyEvent.VK_V)) {
-            if (e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
-                switchDesignMode((keyCode == KeyEvent.VK_H) ? DESIGN_MODE_HORIZONTAL : DESIGN_MODE_VERTICAL);
-                e.consume();
             }
         } else if (keyCode == KeyEvent.VK_D && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
             FormModel formModel = formDesigner.getFormModel();
@@ -1519,16 +1482,7 @@ static int ncount;
         }
         highlightPanel(e);
     }
-    
-    private void switchDesignMode(int mode) {
-        if ((designMode == DESIGN_MODE_NONE) || (designMode != mode)) {
-            designMode = mode;
-        } else {
-            designMode = DESIGN_MODE_NONE;
-        }
-        repaint();
-    }
-    
+
     /**
      * Dispatches the mouse event to the non-visual tray.
      *

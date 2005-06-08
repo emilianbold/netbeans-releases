@@ -13,10 +13,12 @@
 
 package org.netbeans.modules.form.layoutdesign;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.util.*;
 
 public class LayoutDesigner implements LayoutConstants {
@@ -476,25 +478,12 @@ public class LayoutDesigner implements LayoutConstants {
      */
     private void paintSelection(Graphics2D g, LayoutComponent component, int dimension) {
         LayoutInterval interval = component.getLayoutInterval(dimension);
-        int alignment = interval.getAlignment();
-        LayoutInterval alignedParent = interval;
-        LayoutInterval parent = interval.getParent();
-        if (alignment == BASELINE) {
-            alignedParent = parent;
-        } /*else {
-            while ((parent != null) && (parent.getType() != PARALLEL)) {
-                alignment = parent.getAlignment();
-                parent = parent.getParent();
-            }
-            while ((parent != null) && LayoutInterval.isAlignedAtBorder(interval, parent, alignment)) {
-                alignedParent = parent;
-                parent = LayoutInterval.getFirstParent(parent, PARALLEL);
-            }
-        }*/
-        if (alignedParent != interval) {
+        // Paint baseline alignment
+        if (interval.getAlignment() == BASELINE) {
+            LayoutInterval alignedParent = interval.getParent();
             int oppDimension = (dimension == HORIZONTAL) ? VERTICAL : HORIZONTAL;
             LayoutRegion region = alignedParent.getCurrentSpace();
-            int x = region.positions[dimension][alignment];
+            int x = region.positions[dimension][BASELINE];
             int y1 = region.positions[oppDimension][LEADING];
             int y2 = region.positions[oppDimension][TRAILING];
             if ((y1 != LayoutRegion.UNKNOWN) && (y2 != LayoutRegion.UNKNOWN)) {
@@ -509,111 +498,87 @@ public class LayoutDesigner implements LayoutConstants {
                 g.setStroke(oldStroke);
             }
         }
-    }
-    
-    public void paintDesign(Graphics2D g, Collection selectedIds, boolean horizontal) {
-        /*Composite oldComposite = g.getComposite();
-        Composite composite = AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f);
-        g.setComposite(composite);*/
-        Iterator iter = selectedIds.iterator();
-        while (iter.hasNext()) {
-            String id = (String)iter.next();
-            LayoutComponent comp = layoutModel.getLayoutComponent(id);
-            if (comp == null) continue;
-            int dimension = horizontal ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL;
-            LayoutInterval previousInterval = null;
-            LayoutInterval interval = comp.getLayoutInterval(dimension);
-            while (interval != null) {
-                LayoutRegion region = interval.getCurrentSpace();
-                if (interval.isGroup()) {
-                    Iterator subIter = interval.getSubIntervals();
-                    boolean wasEmpty = false;
-                    //boolean wasDefaultPadding = false;
-                    boolean wasResizable = false;
-                    LayoutRegion lastRegion = null;
-                    while (subIter.hasNext()) {
-                        LayoutInterval subInterval = (LayoutInterval)subIter.next();
-                        if (interval.isParallel() && (subInterval != previousInterval)) {
-                            continue;
-                        }
-                        if (!subInterval.isEmptySpace()) {
-                            LayoutRegion subRegion = subInterval.getCurrentSpace();
-                            if (interval.isParallel()) {
-                                int alignment = subInterval.getAlignment();
-                                paintAlignment(g, region, subRegion, dimension, alignment);
-                            }
-                            paintRegion(g, subRegion, horizontal);
-                            if (wasEmpty) {
-                                paintEmptySpace(g, region, lastRegion, subRegion, dimension, /*wasDefaultPadding*/ wasResizable);
-                            }
-                            lastRegion = subRegion;
-                            wasEmpty = false;
-                            //wasDefaultPadding = false;
-                            wasResizable = false;
-                        } else {
-                            wasEmpty = true;
-                            wasResizable = LayoutInterval.canResize(subInterval);
-                            /*wasDefaultPadding = (
-                                (subInterval.getMaximumSize() == NOT_EXPLICITLY_DEFINED) &&
-                                (subInterval.getPreferredSize() == NOT_EXPLICITLY_DEFINED) &&
-                                (subInterval.getMinimumSize() == NOT_EXPLICITLY_DEFINED));*/
-                        }
-                    }
-                    if (wasEmpty) {
-                        paintEmptySpace(g, region, lastRegion, null, dimension, /*wasDefaultPadding*/ wasResizable);
+        int lastAlignment = -1;
+        while (interval.getParent() != null) {
+            LayoutInterval parent = interval.getParent();
+            if (parent.getType() == SEQUENTIAL) {
+                int alignment = getEffectiveAlignment(interval);
+                int index = parent.indexOf(interval);
+                int start, end;
+                switch (alignment) {
+                    case LEADING:
+                        start = 0;
+                        end = index;
+                        lastAlignment = LEADING;
+                        break;
+                    case TRAILING:
+                        start = index + 1;
+                        end = parent.getSubIntervalCount();
+                        lastAlignment = TRAILING;
+                        break;
+                    default: switch (lastAlignment) {
+                        case LEADING: start = 0; end = index; break;
+                        case TRAILING: start = index+1; end = parent.getSubIntervalCount(); break;
+                        default: start = 0; end = parent.getSubIntervalCount(); break;
                     }
                 }
-                previousInterval = interval;
-                interval = interval.getParent();
+                for (int i=start; i<end; i++) {
+                    LayoutInterval candidate = parent.getSubInterval(i);
+                    if (candidate.isEmptySpace()) {
+                        paintAlignment(g, candidate, dimension, getEffectiveAlignment(candidate));
+                    }
+                }
+            } else {
+                int alignment = interval.getAlignment();
+                if (!LayoutInterval.wantResize(interval, true)) {
+                    lastAlignment = alignment;
+                }
+                paintAlignment(g, interval, dimension, lastAlignment);
             }
-        }
-        //g.setComposite(oldComposite);
-    }
-    
-    private void paintRegion(Graphics2D g, LayoutRegion region, boolean horizontal) {
-        int x1 = region.positions[HORIZONTAL][LEADING];
-        int x2 = region.positions[HORIZONTAL][TRAILING]-1;
-        int y1 = region.positions[VERTICAL][LEADING];
-        int y2 = region.positions[VERTICAL][TRAILING]-1;
-        if (horizontal) {
-            g.drawLine(x1, y1, x1, y2);
-            g.drawLine(x2, y1, x2, y2);
-        } else {
-            g.drawLine(x1, y1, x2, y1);
-            g.drawLine(x1, y2, x2, y2);
+            interval = interval.getParent();
         }
     }
-    
-    private void paintEmptySpace(Graphics2D g, LayoutRegion group,
-        LayoutRegion leading, LayoutRegion trailing, int dimension, /*boolean defaultPadding*/ boolean resizable) {
-        Color oldColor = g.getColor();
-        /*if (defaultPadding) {
-            g.setColor(brighterColor(oldColor, 0.4f));
-        }*/
+
+    private void paintAlignment(Graphics2D g, LayoutInterval interval, int dimension, int alignment) {
+        LayoutInterval parent = interval.getParent();
+        LayoutRegion group = parent.getCurrentSpace();
         int opposite = (dimension == HORIZONTAL) ? VERTICAL : HORIZONTAL;
-        int x1, x2, y1, y2;
-        if (leading == null) {
-            x1 = group.positions[dimension][LEADING];
-            x2 = trailing.positions[dimension][LEADING];
-            y1 = trailing.positions[opposite][LEADING];
-            y2 = trailing.positions[opposite][TRAILING];
-        } else if (trailing == null) {
-            x1 = leading.positions[dimension][TRAILING];
-            x2 = group.positions[dimension][TRAILING];
-            y1 = leading.positions[opposite][LEADING];
-            y2 = leading.positions[opposite][TRAILING];
-        } else {
-            x1 = leading.positions[dimension][TRAILING];
-            x2 = trailing.positions[dimension][LEADING];
-            int y1a = leading.positions[opposite][LEADING];
-            int y2a = leading.positions[opposite][TRAILING];
-            int y1b = trailing.positions[opposite][LEADING];
-            int y2b = trailing.positions[opposite][TRAILING];
+        int x1, x2, y;
+        if (interval.isEmptySpace()) {
+            int index = parent.indexOf(interval);
+            int y1a, y2a, y1b, y2b;
+            boolean x1group, x2group;
+            if (index == 0) {
+                x1 = group.positions[dimension][LEADING];
+                y1a = group.positions[opposite][LEADING];
+                y2a = group.positions[opposite][TRAILING];
+                x1group = LayoutInterval.getFirstParent(interval, PARALLEL).getParent() != null;
+            } else {
+                LayoutInterval x1int = parent.getSubInterval(index-1);
+                LayoutRegion region = x1int.getCurrentSpace();
+                x1 = region.positions[dimension][TRAILING];
+                y1a = region.positions[opposite][LEADING];
+                y2a = region.positions[opposite][TRAILING];
+                x1group = x1int.isGroup();
+            }
+            if (index + 1 == parent.getSubIntervalCount()) {
+                x2 = group.positions[dimension][TRAILING];
+                y1b = group.positions[opposite][LEADING];
+                y2b = group.positions[opposite][TRAILING];
+                x2group = LayoutInterval.getFirstParent(interval, PARALLEL).getParent() != null;
+            } else {
+                LayoutInterval x2int = parent.getSubInterval(index+1);
+                LayoutRegion region = x2int.getCurrentSpace();
+                x2 = region.positions[dimension][LEADING];
+                y1b = region.positions[opposite][LEADING];
+                y2b = region.positions[opposite][TRAILING];                
+                x2group = x2int.isGroup();
+            }
             if ((y2a < y1b) || (y2b < y1a)) {
                 // no intersection
-                y1 = Math.max(y2a, y2b);
-                y2 = Math.min(y1a, y1b);
-                int y = (y1 + y2)/2;
+                int y1 = Math.min(y2a, y2b);
+                int y2 = Math.max(y1a, y1b);
+                y = (y1 + y2)/2;
                 if (dimension == HORIZONTAL) {
                     g.drawLine(x1, y1a, x1, y);
                     g.drawLine(x2, y1b, x2, y);
@@ -622,74 +587,79 @@ public class LayoutDesigner implements LayoutConstants {
                     g.drawLine(y1b, x2, y, x2);
                 }
             } else {
-                y1 = Math.max(y1a, y1b);
-                y2 = Math.min(y2a, y2b);
-            }
-        }
-        int y = (y1 + y2)/2;
-        x2--;
-        if (dimension == HORIZONTAL) {
-            //g.fillRect(x1, y1, x2-x1, y2-y1);
-            g.drawLine(x1, y, x2, y);
-            if (!resizable) {
-                g.drawLine(x1, y-1, x2, y-1);
-                g.drawLine(x1, y+1, x2, y+1);
+                int y1 = Math.max(y2a, y2b);
+                int y2 = Math.min(y1a, y1b);
+                y = (Math.min(y2a, y2b) + Math.max(y1a, y1b))/2;
+                if (dimension == HORIZONTAL) {
+                    if (x1group) g.drawLine(x1, y1, x1, y2);
+                    if (x2group) g.drawLine(x2, y1, x2, y2);
+                } else {
+                    if (x1group) g.drawLine(y1, x1, y2, x1);
+                    if (x2group) g.drawLine(y1, x2, y2, x2);
+                }
             }
         } else {
-            //g.fillRect(y1, x1, y2-y1, x2-x1);
-            g.drawLine(y, x1, y, x2);
-            if (!resizable) {
-                g.drawLine(y-1, x1, y-1, x2);
-                g.drawLine(y+1, x1, y+1, x2);
+            LayoutRegion child = interval.getCurrentSpace();
+            int y1 = child.positions[opposite][LEADING];
+            int y2 = child.positions[opposite][TRAILING];
+            y = (y1 + y2)/2;
+            switch (alignment) {
+                case LEADING:
+                    x1 = group.positions[dimension][LEADING];
+                    x2 = child.positions[dimension][LEADING];
+                    break;
+                case TRAILING:
+                    x1 = child.positions[dimension][TRAILING];
+                    x2 = group.positions[dimension][TRAILING];
+                    break;
+                default:
+                    return;
+            }
+            y1 = group.positions[opposite][LEADING];
+            y2 = group.positions[opposite][TRAILING];
+            int xa = group.positions[dimension][LEADING];
+            int xb = group.positions[dimension][TRAILING];
+            if (parent.getParent() != null) {
+                if (dimension == HORIZONTAL) {
+                    if (alignment == LEADING) {
+                        g.drawLine(xa, y1, xa, y2);
+                    } else if (alignment == TRAILING) {
+                        g.drawLine(xb, y1, xb, y2);
+                    }
+                } else {
+                    if (alignment == LEADING) {
+                        g.drawLine(y1, xa, y2, xa);
+                    } else if (alignment == TRAILING) {
+                        g.drawLine(y1, xb, y2, xb);
+                    }
+                }
             }
         }
-        g.setColor(oldColor);
-    }
-    
-    private void paintAlignment(Graphics2D g, LayoutRegion group, LayoutRegion child,
-        int dimension, int alignment) {
-        int opposite = (dimension == HORIZONTAL) ? VERTICAL : HORIZONTAL;
-        int gx1 = group.positions[dimension][LEADING];
-        int gx2 = group.positions[dimension][TRAILING];
-        int x1 = child.positions[dimension][LEADING];
-        int x2 = child.positions[dimension][TRAILING];
-        int y1 = child.positions[opposite][LEADING];
-        int y2 = child.positions[opposite][TRAILING];
-        int mid = (y1+y2)/2;
-        if (x1 != gx1) {
-            x1--;
-            if (dimension == HORIZONTAL) {
-                if ((alignment == TRAILING) || (alignment == CENTER)) {
-                    paintArrow(g, gx1, mid, x1, mid);
-                }
+        if ((x1 != LayoutRegion.UNKNOWN) && (x2 != LayoutRegion.UNKNOWN) && (x2 - x1 > 1)) {
+            int x, angle;            
+            if (alignment == LEADING) {
+                x = x1;
+                angle = 180;
             } else {
-                if ((alignment == BASELINE) || (alignment == TRAILING) || (alignment == CENTER)) {
-                    paintArrow(g, mid, gx1, mid, x1);
-                }
+                x = x2;
+                angle = 0;
             }
-        }
-        if (x2 != gx2) {
-            gx2--;
+            x2--;
+            int diam = Math.min(4, x2-x1);
+            Stroke stroke = new BasicStroke(1, BasicStroke.CAP_BUTT, 
+                BasicStroke.JOIN_BEVEL, 0, new float[] {1, 1}, 0);
+            Stroke oldStroke = g.getStroke();
+            g.setStroke(stroke);
             if (dimension == HORIZONTAL) {
-                if ((alignment == LEADING) || (alignment == CENTER)) {
-                    paintArrow(g, gx2, mid, x2, mid);
-                }
+                g.drawLine(x1, y, x2, y);
+                angle += 90;
             } else {
-                if ((alignment == BASELINE) || (alignment == LEADING) || (alignment == CENTER)) {
-                    paintArrow(g, mid, gx2, mid, x2);
-                }
+                g.drawLine(y, x1, y, x2);
+                int temp = x; x = y; y = temp;
             }
+            g.setStroke(oldStroke);
+            g.fillArc(x-diam, y-diam, 2*diam, 2*diam, angle, 180);
         }
-    }
-    
-    private void paintArrow(Graphics2D g, int x1, int y1, int x2, int y2) {
-        int xcoef = (x1 == x2) ? 0 : ((x1>x2) ? 1 : -1);
-        int ycoef = (y1 == y2) ? 0 : ((y1>y2) ? 1 : -1);        
-        g.drawLine(x1, y1, x2, y2);
-        /*if (Math.abs(x2-x1)+Math.abs(y2-y1) > 5) {
-            g.drawLine(x2+xcoef, y2+ycoef, x2+6*xcoef+5*ycoef, y2+5*xcoef+6*ycoef);
-            g.drawLine(x2+xcoef, y2+ycoef, x2+6*xcoef-5*ycoef, y2-5*xcoef+6*ycoef);
-        }*/
     }
     
     // -----
