@@ -15,7 +15,12 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.text.Collator;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Set;
 import org.netbeans.modules.apisupport.project.ModuleList;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
  * Represents one module dependency. i.e. <em>&lt;dependency&gt;</em> element
@@ -32,6 +37,8 @@ public final class ModuleDependency implements Comparable {
     private boolean compileDep;
     
     private ModuleList.Entry me;
+    
+    private Set/*<String>*/ filterTokens;
     
     public static final Comparator CODE_NAME_BASE_COMPARATOR;
     
@@ -93,4 +100,44 @@ public final class ModuleDependency implements Comparable {
     public boolean hasImplementationDepedendency() {
         return implDep;
     }
+    
+    /**
+     * Return a set of tokens that can be used to search for this dependency.
+     * Per UI spec, includes lower-case versions of:
+     * <ol>
+     * <li>the code name base
+     * <li>the localized display name
+     * <li> the full path to the module JAR or any Class-Path extension
+     * <li> the fully-qualified class name (use . for inner classes) of any class
+     * contained in the module JAR or any Class-Path extension which is in an package
+     * which would be made available to the depending module when using a specification version dependency
+     * </ol>
+     * Note that the last item means that this can behave differently according to the depending
+     * module (according to whether or not it would be listed as a friend).
+     */
+    Set/*<String>*/ getFilterTokens() {
+        if (filterTokens == null) {
+            filterTokens = new HashSet();
+            addToken(me.getCodeNameBase());
+            addToken(me.getLocalizedName());
+            addToken(me.getJarLocation().getAbsolutePath());
+            String[] cpext = PropertyUtils.tokenizePath(me.getClassPathExtensions());
+            for (int i = 0; i < cpext.length; i++) {
+                addToken(cpext[i]);
+            }
+            boolean friend = true; // XXX ModuleDependency has to include a ref to the depending module!
+            if (friend) {
+                Iterator it = me.getPublicClassNames().iterator();
+                while (it.hasNext()) {
+                    String clazz = (String) it.next();
+                    addToken(clazz.replace('$', '.'));
+                }
+            }
+        }
+        return filterTokens;
+    }
+    private void addToken(String token) {
+        filterTokens.add(token.toLowerCase(Locale.US));
+    }
+    
 }

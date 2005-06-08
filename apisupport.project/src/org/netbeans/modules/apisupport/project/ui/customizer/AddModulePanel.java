@@ -13,9 +13,21 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.DefaultListModel;
+import javax.swing.InputMap;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.openide.util.RequestProcessor;
 
 /**
  * Represents panel for adding new dependency for a module. Shown after
@@ -27,8 +39,9 @@ import javax.swing.event.ListSelectionListener;
 final class AddModulePanel extends JPanel {
     
     private ComponentFactory.DependencyListModel universeModules;
+    private RequestProcessor.Task filterTask;
+    private AddModuleFilter filterer;
     
-    /** Creates new form AddModulePanel */
     AddModulePanel(ComponentFactory.DependencyListModel universeModules) {
         this.universeModules = universeModules;
         initComponents();
@@ -36,19 +49,98 @@ final class AddModulePanel extends JPanel {
         moduleList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(true));
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                showDescriptionFor(moduleList.getSelectedIndex());
+                showDescriptionFor(filterTask != null ? -1 : moduleList.getSelectedIndex());
             }
         });
+        filterValue.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                search();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                search();
+            }
+            public void changedUpdate(DocumentEvent e) {}
+        });
+        // Make basic navigation commands from the list work from the text field.
+        String[] listNavCommands = {
+            "selectPreviousRow", // NOI18N
+            "selectNextRow", // NOI18N
+            "selectFirstRow", // NOI18N
+            "selectLastRow", // NOI18N
+            "scrollUp", // NOI18N
+            "scrollDown", // NOI18N
+        };
+        InputMap listBindings = moduleList.getInputMap();
+        KeyStroke[] listBindingKeys = listBindings.allKeys();
+        ActionMap listActions = moduleList.getActionMap();
+        InputMap textBindings = filterValue.getInputMap();
+        ActionMap textActions = filterValue.getActionMap();
+        for (int i = 0; i < listNavCommands.length; i++) {
+            String command = listNavCommands[i];
+            final Action orig = listActions.get(command);
+            if (orig == null) {
+                continue;
+            }
+            textActions.put(command, new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    orig.actionPerformed(new ActionEvent(moduleList, e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers()));
+                }
+            });
+            for (int j = 0; j < listBindingKeys.length; j++) {
+                if (listBindings.get(listBindingKeys[j]).equals(command)) {
+                    textBindings.put(listBindingKeys[j], command);
+                }
+            }
+        }
     }
     
     private void showDescriptionFor(int index) {
-        descValue.setText(index == -1 ? "" : // NOI18N
-            universeModules.getDependency(index).getModuleEntry().getLongDescription());
+        ModuleDependency dep = getSelectedDependency();
+        descValue.setText(dep == null ? "" : // NOI18N
+            dep.getModuleEntry().getLongDescription());
     }
     
     ModuleDependency getSelectedDependency() {
-        int selInd = moduleList.getSelectedIndex();
-        return selInd == -1 ? null : universeModules.getDependency(selInd);
+        Object o = moduleList.getSelectedValue();
+        if (o == ComponentFactory.PLEASE_WAIT) {
+            return null;
+        } else {
+            return (ModuleDependency) o;
+        }
+    }
+    
+    private void search() {
+        if (filterTask != null) {
+            filterTask.cancel();
+            filterTask = null;
+        }
+        final String text = filterValue.getText();
+        if (text.length() == 0) {
+            moduleList.setModel(universeModules);
+            moduleList.setSelectedIndex(0);
+            moduleList.ensureIndexIsVisible(0);
+        } else {
+            DefaultListModel dummy = new DefaultListModel();
+            dummy.addElement(ComponentFactory.PLEASE_WAIT);
+            moduleList.setModel(dummy);
+            filterTask = RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    if (filterer == null) {
+                        filterer = new AddModuleFilter(universeModules.getDependencies());
+                    }
+                    final Set/*<ModuleDependency>*/ matches = filterer.getMatches(text);
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            moduleList.setModel(ComponentFactory.createDependencyListModel(matches));
+                            int index = matches.isEmpty() ? -1 : 0;
+                            moduleList.setSelectedIndex(index);
+                            moduleList.ensureIndexIsVisible(index);
+                        }
+                    });
+                    filterTask = null;
+                }
+            });
+        }
     }
     
     /** This method is called from within the constructor to
@@ -132,8 +224,6 @@ final class AddModulePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(filter, gridBagConstraints);
 
-        filterValue.setText("<not implemented yet>");
-        filterValue.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;

@@ -170,6 +170,7 @@ public final class ManifestManager {
         // XXX a lot of code in this method is duplicated from
         // org.netbeans.core.modules.Module class. It would be nice to maintain this
         // code only once.
+        // XXX we need to parse friends list too!
         PackageExport[] exportedPackages = null;
         if (exportsS.trim().equals("-")) { // NOI18N
             exportedPackages = EMPTY_EXPORTED_PACKAGES;
