@@ -300,7 +300,7 @@ public class FileInformation implements Serializable {
     public boolean equals(Object o) {
         if (!(o instanceof FileInformation)) return false;
         FileInformation other = (FileInformation) o;
-        return o instanceof FileInformation && status == other.status && isDirectory == other.isDirectory;
+        return status == other.status && isDirectory == other.isDirectory;
     }
 
     public int hashCode() {
