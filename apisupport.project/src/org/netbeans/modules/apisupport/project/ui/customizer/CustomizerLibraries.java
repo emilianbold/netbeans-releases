@@ -22,6 +22,8 @@ import java.util.TreeSet;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.apisupport.project.NbPlatform;
+import org.netbeans.modules.apisupport.project.ui.ComponentFactory.NbPlatformListModel;
+import org.netbeans.modules.apisupport.project.ui.NbPlatformCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -44,9 +46,7 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         initComponents();
         platformValue.setSelectedItem(modProps.getActivePlatform());
         if (!modProps.isStandalone()) {
-            platform.setEnabled(false);
             platformValue.setEnabled(false);
-            managePlafsButton.setEnabled(false);
         }
         this.modProps = modProps;
         this.moduleDeps = subModules;
@@ -176,7 +176,6 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         platformPanel.add(platform, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(managePlafsButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_ManagePlatform"));
-        managePlafsButton.setEnabled(false);
         managePlafsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 managePlatforms(evt);
@@ -200,7 +199,8 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
     // </editor-fold>//GEN-END:initComponents
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
-// TODO add your handling code here:
+        NbPlatformCustomizer.showCustomizer();
+        platformValue.setModel(new NbPlatformListModel()); // refresh
     }//GEN-LAST:event_managePlatforms
     
     private void editModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModuleDependency
