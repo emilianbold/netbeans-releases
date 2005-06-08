@@ -169,7 +169,6 @@ OptionalDeploymentManagerFactory</a>.
 <a href="org/netbeans/modules/j2ee/deployment/plugins/api/ModuleChangeDescriptor.html">ModuleChangeDescriptor</a>, 
 <a href="org/netbeans/modules/j2ee/deployment/plugins/api/AppChangeDescriptor.html">AppChangeDescriptor</a>, 
 <a href="org/netbeans/modules/j2ee/deployment/plugins/api/TargetModuleIDResolver.html">TargetModuleIDResolver</a>, 
-<a href="org/netbeans/modules/j2ee/deployment/plugins/api/MappingProviderFactory.html">MappingProviderFactory</a>, 
 <a href="org/netbeans/modules/j2ee/deployment/common/api/EjbChangeDescriptor.html">EjbChangeDescriptor</a>, 
 <a href="org/netbeans/modules/j2ee/deployment/common/api/OriginalCMPMapping.html">OriginalCMPMapping</a> 
 (note that the last two classes are also used in devmodules part of API).
@@ -193,10 +192,6 @@ OptionalDeploymentManagerFactory</a>.
 
 <li><b>JSP -&gt; Servlet mapping:</b>
 <a href="org/netbeans/modules/j2ee/deployment/plugins/api/FindJSPServlet.html">FindJSPServlet</a>
-</li>
-
-<li><b>Providing support for Management API:</b>
-<a href="org/netbeans/modules/j2ee/deployment/plugins/api/ManagementMapper.html">ManagementMapper</a>
 </li>
 
 <li><b>General Utilities:</b>
@@ -229,7 +224,7 @@ is the least stable.
 <p>
 The API package provides abstractions of 
 <a href="org/netbeans/modules/j2ee/deployment/devmodules/api/J2eeModule.html">J2eeModule</a> and a
-<a href="org/netbeans/modules/j2ee/deployment/devmodules/api/J2EEModuleContainer.html">J2EEModuleContainer</a>
+<a href="org/netbeans/modules/j2ee/deployment/devmodules/api/J2eeModuleContainer.html">J2EEModuleContainer</a>
 (a module that contains other modules, such as J2EE application).
 Two utility classes provide direct access to 
 <a href="org/netbeans/modules/j2ee/deployment/devmodules/api/Deployment.html">Deployment</a>
@@ -425,16 +420,6 @@ Used for definition of server libraries.
                     server plugins and with devmodules.
                 </api>
             </li>
-            <li>
-                <api name="J2EEManagementAPI" type="import" category="standard" url="http://java.sun.com/j2ee/tools/management/index.jsp" group="java">
-                    J2EE Management/JSR77. Used to communicate with server plugins.
-                </api>
-            </li>
-            <li>
-                <api name="JMXRI" type="import" category="standard" url="http://wwws.sun.com/software/communitysource/jmx/download.html" group="java">
-                    Java Management Extensions RI 1.2. Used for event logging.
-                </api>
-            </li>
         </ul>
 </answer>
 <!-- 
@@ -494,8 +479,6 @@ The module deploys the following jar files into <code>modules/</code> folder: (X
 <li>j2eeeditor.jar - an external library with the editor for server specific configuration files</li>
 <li>ext/ejb20.jar - EJB API 2.0</li>
 <li>ext/jsr88javax.jar - J2EE Deployment API</li>
-<li>ext/javax77.jar - J2EE Management API</li>
-<li>ext/jmxri.jar - Java Management Extensions RI 1.2</li>
 </ul>
 </answer>
 <!-- 
@@ -802,7 +785,7 @@ No.
         </question>
 -->
 <answer id="exec-reflection">
-Reflection is used in UI code that uses management API, deployment configuration code.
+Reflection is used in deployment configuration code.
 </answer>
 <!--
         <question id="exec-privateaccess" when="final" >

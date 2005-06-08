@@ -329,7 +329,7 @@ is the proper place.
                     See Javadoc for details.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2eeserver.deployment.common.api" name="SourceFileMap"/>
+            <class package="org.netbeans.modules.j2ee.deployment.common.api" name="SourceFileMap"/>
         </change>
         <change id="CMP-Mapping-and-Auto-Resources.plugins">
             <api name="plugins"/>
@@ -351,7 +351,7 @@ is the proper place.
                     See Javadoc for details.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2eeserver.deployment.plugins.api" name="ConfigurationSupport"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
         </change>
         <change id="Deprecating-DeploymentPlanSplitter.getDeploymentPlanFileNames">
             <api name="plugins"/>
@@ -374,7 +374,7 @@ is the proper place.
                     See Javadoc for details.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2eeserver.deployment.plugins.api" name="DeploymentPlanSplitter"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DeploymentPlanSplitter"/>
         </change>
         <change id="Batched-CMPMappingInfo">
             <api name="j2eeserver"/>
@@ -399,7 +399,7 @@ is the proper place.
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
             <class package="org.netbeans.modules.j2ee.deployment.common.api" name="OriginalCMPMapping"/>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
-            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="OriginalMappingProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="OriginalMappingProvider" link="no"/>
          </change>
     </changes>
 
