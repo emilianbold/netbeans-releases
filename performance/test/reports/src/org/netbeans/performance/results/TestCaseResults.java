@@ -545,6 +545,19 @@ public class TestCaseResults implements Comparable {
         
         public double getDF() { return degree; }
         
-	public String getComment() { return comment; }
+	public String getComment() { 
+            String s = comment;
+            int i = s.indexOf('>');
+            while (i >= 0) {
+                s = s.substring(0, i)+"&gt;"+s.substring(i+1);
+                i = s.indexOf('>');
+            }
+            i = s.indexOf('<');
+            while (i >= 0) {
+                s = s.substring(0, i)+"&lt;"+s.substring(i+1);
+                i = s.indexOf('<');
+            }
+            return s; 
+        }
     }
 }
