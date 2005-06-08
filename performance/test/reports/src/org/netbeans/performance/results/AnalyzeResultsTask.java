@@ -264,7 +264,9 @@ public class AnalyzeResultsTask extends Task {
                     
             	TestCaseResults.TTestValue tt = oneCase.getTTest();
             	if (tt != null) {
-            	    ow.write ("<ttest p=\""+tt.getP()+"\" tvalue=\""+tt.getT()+"\" df=\""+tt.getDF()+"\"/>\n");
+            	    ow.write ("<ttest p=\""+tt.getP()+"\" tvalue=\""+tt.getT()+"\" df=\""+tt.getDF()+"\">\n");
+            	    ow.write (tt.getComment()+"\n");
+            	    ow.write ("</ttest>\n");
             	}
                 }
             }

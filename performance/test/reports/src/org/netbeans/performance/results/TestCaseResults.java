@@ -166,7 +166,7 @@ public class TestCaseResults implements Comparable {
         
         System.out.println(cs);
         
-        return new TTestValue (pVal ,t, df);
+        return new TTestValue (pVal ,t, df, cs);
     }
 
     /** Name of test case. */
@@ -528,11 +528,15 @@ public class TestCaseResults implements Comparable {
         
         /** Degree of freedom. */
         private double degree;
+
+	/** Comment. */
+        private String comment;
         
-        public TTestValue (double p, double t, double degree) {
+        public TTestValue (double p, double t, double degree, String c) {
             this.p = p;
             this.t = t;
             this.degree = degree;
+	    comment = c;
         }
         
         public double getP() { return p; }
@@ -541,5 +545,6 @@ public class TestCaseResults implements Comparable {
         
         public double getDF() { return degree; }
         
+	public String getComment() { return comment; }
     }
 }
