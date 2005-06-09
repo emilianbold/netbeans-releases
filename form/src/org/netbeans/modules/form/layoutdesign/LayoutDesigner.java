@@ -487,15 +487,11 @@ public class LayoutDesigner implements LayoutConstants {
             int y1 = region.positions[oppDimension][LEADING];
             int y2 = region.positions[oppDimension][TRAILING];
             if ((y1 != LayoutRegion.UNKNOWN) && (y2 != LayoutRegion.UNKNOWN)) {
-                y1 -= 8; y2 += 8;
-                java.awt.Stroke oldStroke = g.getStroke();
-                g.setStroke(LayoutDragger.dashedStroke);
                 if (dimension == HORIZONTAL) {
                     g.drawLine(x, y1, x, y2);
                 } else {
                     g.drawLine(y1, x, y2, x);
                 }
-                g.setStroke(oldStroke);
             }
         }
         int lastAlignment = -1;
@@ -546,63 +542,55 @@ public class LayoutDesigner implements LayoutConstants {
         int x1, x2, y;
         if (interval.isEmptySpace()) {
             int index = parent.indexOf(interval);
-            int y1a, y2a, y1b, y2b;
+            int[] ya, yb;
             boolean x1group, x2group;
             if (index == 0) {
                 x1 = group.positions[dimension][LEADING];
-                y1a = group.positions[opposite][LEADING];
-                y2a = group.positions[opposite][TRAILING];
+                ya = visualIntervalPosition(parent, opposite, LEADING);
                 x1group = LayoutInterval.getFirstParent(interval, PARALLEL).getParent() != null;
             } else {
                 LayoutInterval x1int = parent.getSubInterval(index-1);
-                LayoutRegion region = x1int.getCurrentSpace();
-                x1 = region.positions[dimension][TRAILING];
-                y1a = region.positions[opposite][LEADING];
-                y2a = region.positions[opposite][TRAILING];
+                x1 = x1int.getCurrentSpace().positions[dimension][TRAILING];
+                ya = visualIntervalPosition(x1int, opposite, TRAILING);
                 x1group = x1int.isGroup();
             }
             if (index + 1 == parent.getSubIntervalCount()) {
                 x2 = group.positions[dimension][TRAILING];
-                y1b = group.positions[opposite][LEADING];
-                y2b = group.positions[opposite][TRAILING];
+                yb = visualIntervalPosition(parent, opposite, TRAILING);
                 x2group = LayoutInterval.getFirstParent(interval, PARALLEL).getParent() != null;
             } else {
                 LayoutInterval x2int = parent.getSubInterval(index+1);
-                LayoutRegion region = x2int.getCurrentSpace();
-                x2 = region.positions[dimension][LEADING];
-                y1b = region.positions[opposite][LEADING];
-                y2b = region.positions[opposite][TRAILING];                
+                x2 = x2int.getCurrentSpace().positions[dimension][LEADING];
+                yb = visualIntervalPosition(x2int, opposite, LEADING);
                 x2group = x2int.isGroup();
             }
-            if ((y2a < y1b) || (y2b < y1a)) {
+            int y1 = Math.min(ya[1], yb[1]);
+            int y2 = Math.max(ya[0], yb[0]);
+            y = (y1 + y2)/2;
+            if ((ya[1] < yb[0]) || (yb[1] < ya[0])) {
                 // no intersection
-                int y1 = Math.min(y2a, y2b);
-                int y2 = Math.max(y1a, y1b);
-                y = (y1 + y2)/2;
                 if (dimension == HORIZONTAL) {
-                    g.drawLine(x1, y1a, x1, y);
-                    g.drawLine(x2, y1b, x2, y);
+                    g.drawLine(x1, ya[0], x1, y);
+                    g.drawLine(x1, ya[0], x1, ya[1]);
+                    g.drawLine(x2, yb[0], x2, y);
+                    g.drawLine(x2, yb[0], x2, yb[1]);
                 } else {
-                    g.drawLine(y1a, x1, y, x1);
-                    g.drawLine(y1b, x2, y, x2);
+                    g.drawLine(ya[0], x1, y, x1);
+                    g.drawLine(ya[0], x1, ya[1], x1);
+                    g.drawLine(yb[0], x2, y, x2);
+                    g.drawLine(yb[0], x2, yb[1], x2);
                 }
             } else {
-                int y1 = Math.max(y2a, y2b);
-                int y2 = Math.min(y1a, y1b);
-                y = (Math.min(y2a, y2b) + Math.max(y1a, y1b))/2;
                 if (dimension == HORIZONTAL) {
-                    if (x1group) g.drawLine(x1, y1, x1, y2);
-                    if (x2group) g.drawLine(x2, y1, x2, y2);
+                    if (x1group) g.drawLine(x1, ya[0], x1, ya[1]);
+                    if (x2group) g.drawLine(x2, yb[0], x2, yb[1]);
                 } else {
-                    if (x1group) g.drawLine(y1, x1, y2, x1);
-                    if (x2group) g.drawLine(y1, x2, y2, x2);
+                    if (x1group) g.drawLine(ya[0], x1, ya[1], x1);
+                    if (x2group) g.drawLine(yb[0], x2, yb[1], x2);
                 }
             }
         } else {
             LayoutRegion child = interval.getCurrentSpace();
-            int y1 = child.positions[opposite][LEADING];
-            int y2 = child.positions[opposite][TRAILING];
-            y = (y1 + y2)/2;
             switch (alignment) {
                 case LEADING:
                     x1 = group.positions[dimension][LEADING];
@@ -615,22 +603,22 @@ public class LayoutDesigner implements LayoutConstants {
                 default:
                     return;
             }
-            y1 = group.positions[opposite][LEADING];
-            y2 = group.positions[opposite][TRAILING];
+            int[] pos = visualIntervalPosition(parent, opposite, alignment);
+            y = (pos[0] + pos[1])/2;
             int xa = group.positions[dimension][LEADING];
             int xb = group.positions[dimension][TRAILING];
             if (parent.getParent() != null) {
                 if (dimension == HORIZONTAL) {
                     if (alignment == LEADING) {
-                        g.drawLine(xa, y1, xa, y2);
+                        g.drawLine(xa, pos[0], xa, pos[1]);
                     } else if (alignment == TRAILING) {
-                        g.drawLine(xb, y1, xb, y2);
+                        g.drawLine(xb, pos[0], xb, pos[1]);
                     }
                 } else {
                     if (alignment == LEADING) {
-                        g.drawLine(y1, xa, y2, xa);
+                        g.drawLine(pos[0], xa, pos[1], xa);
                     } else if (alignment == TRAILING) {
-                        g.drawLine(y1, xb, y2, xb);
+                        g.drawLine(pos[0], xb, pos[1], xb);
                     }
                 }
             }
@@ -660,6 +648,41 @@ public class LayoutDesigner implements LayoutConstants {
             g.setStroke(oldStroke);
             g.fillArc(x-diam, y-diam, 2*diam, 2*diam, angle, 180);
         }
+    }
+    
+    private int[] visualIntervalPosition(LayoutInterval interval, int dimension, int alignment) {
+        int min = Short.MAX_VALUE;
+        int max = Short.MIN_VALUE;
+        if (interval.isParallel() && (interval.getGroupAlignment() != BASELINE)) {
+            Iterator iter = interval.getSubIntervals();
+            while (iter.hasNext()) {
+                LayoutInterval subInterval = (LayoutInterval)iter.next();
+                int imin, imax;
+                int oppDim = (dimension == HORIZONTAL) ? VERTICAL : HORIZONTAL;
+                if (LayoutInterval.isPlacedAtBorder(subInterval, oppDim, alignment)) {
+                    if (subInterval.isParallel()) {
+                        int[] ipos = visualIntervalPosition(subInterval, dimension, alignment);
+                        imin = ipos[0]; imax = ipos[1];
+                    } else if (!subInterval.isEmptySpace()) {
+                        LayoutRegion region = subInterval.getCurrentSpace();
+                        imin = region.positions[dimension][LEADING];
+                        imax = region.positions[dimension][TRAILING];                        
+                    } else {
+                        imin = min; imax = max;
+                    }
+                } else {
+                    imin = min; imax = max;
+                }
+                if (min > imin) min = imin;
+                if (max < imax) max = imax;
+            }
+        }
+        if (!interval.isParallel() || (min == Short.MAX_VALUE)) {
+            LayoutRegion region = interval.getCurrentSpace();
+            min = region.positions[dimension][LEADING];
+            max = region.positions[dimension][TRAILING];
+        }
+        return new int[] {min, max};
     }
     
     // -----

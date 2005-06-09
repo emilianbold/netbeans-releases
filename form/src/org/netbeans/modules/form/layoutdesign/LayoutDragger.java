@@ -122,7 +122,7 @@ class LayoutDragger implements LayoutConstants {
     // max. orthogonal distance from a component to be still recognized as "next to"
     private static final int ORT_DISTANCE = 8;
     
-    static BasicStroke dashedStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
+    private static BasicStroke dashedStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
         BasicStroke.JOIN_MITER, 5.0f, new float[]{5.0f, 2.0f}, 0.0f);
 
     // -----
