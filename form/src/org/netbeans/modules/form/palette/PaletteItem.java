@@ -19,6 +19,7 @@ import java.awt.Image;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
+import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.project.*;
 
 /**
@@ -192,6 +193,10 @@ public final class PaletteItem implements Node.Cookie {
     // -------
 
     private Class loadComponentClass() {
+        try {
+            return FormUtils.loadSystemClass(getComponentClassName());   
+        } catch (ClassNotFoundException cnfex) {}
+
         try {
             return ClassPathUtils.loadClass(getComponentClassSource());
         }
