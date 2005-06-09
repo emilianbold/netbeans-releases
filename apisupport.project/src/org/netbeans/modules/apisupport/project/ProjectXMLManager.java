@@ -61,11 +61,13 @@ public final class ProjectXMLManager {
     private static final String BUILD_PREREQUISITE = "build-prerequisite"; // NOI18N
     private static final String IMPLEMENTATION_VERSION = "implementation-version"; // NOI18N
     private static final String PUBLIC_PACKAGES= "public-packages"; // NOI18N
+    private static final String PACKAGE = "package"; // NOI18N
     
     private AntProjectHelper helper;
     private Project project;
     
     private Set/*<ModuleDependency>*/ directDeps;
+    private String[] publicPackages;
     
     /** Creates a new instance of ProjectXMLManager */
     public ProjectXMLManager(AntProjectHelper helper, Project project) {
@@ -212,7 +214,6 @@ public final class ProjectXMLManager {
     public void addDependencies(Set/*<ModuleDependency>*/ toAdd) {
         Element confData = helper.getPrimaryConfigurationData(true);
         Element moduleDependencies = findModuleDependencies(confData);
-        Document doc = moduleDependencies.getOwnerDocument();
         for (Iterator it = toAdd.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             createModuleDependencyElement(moduleDependencies, md, null);
@@ -224,16 +225,42 @@ public final class ProjectXMLManager {
         Element confData = helper.getPrimaryConfigurationData(true);
         Document doc = confData.getOwnerDocument();
         Element moduleDependencies = findModuleDependencies(confData);
-        Element publicPackages = Util.findElement(confData,
-                ProjectXMLManager.PUBLIC_PACKAGES, NbModuleProjectType.NAMESPACE_SHARED);
         confData.removeChild(moduleDependencies);
         moduleDependencies = createModuleElement(doc, ProjectXMLManager.MODULE_DEPENDENCIES);
+        Element publicPackages = findPublicPackagesElement(confData);
         confData.insertBefore(moduleDependencies, publicPackages);
         for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             createModuleDependencyElement(moduleDependencies, md, null);
         }
         helper.putPrimaryConfigurationData(confData, true);
+    }
+    
+    public void replacePublicPackages(String[] newPackages) {
+        Element confData = helper.getPrimaryConfigurationData(true);
+        Document doc = confData.getOwnerDocument();
+        Element publicPackages = findPublicPackagesElement(confData);
+        confData.removeChild(publicPackages);
+        publicPackages = createModuleElement(doc, ProjectXMLManager.PUBLIC_PACKAGES);
+        confData.appendChild(publicPackages);
+        for (int i = 0; i < newPackages.length; i++) {
+            publicPackages.appendChild(
+                    createModuleElement(doc, ProjectXMLManager.PACKAGE, newPackages[i]));
+        }
+        helper.putPrimaryConfigurationData(confData, true);
+    }
+    
+    public String[] getPublicPackages() {
+        if (publicPackages != null) {
+            return publicPackages;
+        }
+        Element confData = helper.getPrimaryConfigurationData(true);
+        ManifestManager.PackageExport[] pp = ProjectXMLManager.findPublicPackages(confData);
+        publicPackages = new String[pp.length];
+        for (int i = 0; i < pp.length; i++) {
+            publicPackages[i] = pp[i].getPackage();
+        }
+        return publicPackages;
     }
     
     private void createModuleDependencyElement(
@@ -270,8 +297,13 @@ public final class ProjectXMLManager {
         }
     }
     
-    private Element findModuleDependencies(Element confData) {
+    private static Element findModuleDependencies(Element confData) {
         return Util.findElement(confData, ProjectXMLManager.MODULE_DEPENDENCIES,
+                NbModuleProjectType.NAMESPACE_SHARED);
+    }
+    
+    private static Element findPublicPackagesElement(Element confData) {
+        return Util.findElement(confData, ProjectXMLManager.PUBLIC_PACKAGES,
                 NbModuleProjectType.NAMESPACE_SHARED);
     }
     
@@ -305,8 +337,7 @@ public final class ProjectXMLManager {
     
     /** Utility method for finding public packages. */
     public static ManifestManager.PackageExport[] findPublicPackages(final Element confData) {
-        Element ppEl = Util.findElement(confData, ProjectXMLManager.PUBLIC_PACKAGES,
-                NbModuleProjectType.NAMESPACE_SHARED);
+        Element ppEl = findPublicPackagesElement(confData);
         Set/*<ManifestManager.PackageExport>*/ pps = null;
         if (ppEl != null) {
             pps = new HashSet();
@@ -367,7 +398,7 @@ public final class ProjectXMLManager {
      * <code>projectXml</code> for <em>Suite</em>.
      */
     public static void generateEmptySuiteTemplate(FileObject projectXml, String name) throws IOException {
-        // XXX this method could be moved in a future (depends on how complex 
+        // XXX this method could be moved in a future (depends on how complex
         // suite's project.xml will be) to the .suite package dedicated class
         Document prjDoc = XMLUtil.createDocument("project", PROJECT_NS, null, null); // NOI18N
         

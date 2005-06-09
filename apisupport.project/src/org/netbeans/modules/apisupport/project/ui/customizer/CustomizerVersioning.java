@@ -13,9 +13,18 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableModel;
 
 /**
  * Represents <em>Versioning</em> panel in Netbeans Module customizer.
@@ -24,13 +33,16 @@ import javax.swing.event.DocumentListener;
  */
 final class CustomizerVersioning extends JPanel implements ComponentFactory.StoragePanel {
     
+    private static final int CHECKBOX_WIDTH = new JCheckBox().getWidth();
+    
     private NbModuleProperties props;
     private boolean lastAppImplChecked;
     
     /** Creates new form CustomizerVersioning */
-    CustomizerVersioning(NbModuleProperties props) {
+    CustomizerVersioning(NbModuleProperties props, TableModel model) {
         this.props = props;
         initComponents();
+        initPublicPackageTable(model);
         cnbValue.setText(props.getCodeNameBase());
         majorRelVerValue.setText(props.getMajorReleaseVersion());
         String specVersion = props.getSpecificationVersion();
@@ -53,6 +65,30 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
             public void changedUpdate(DocumentEvent e) {}
         });
         updateAppendImpl();
+    }
+    
+    private void initPublicPackageTable(TableModel model) {
+        publicPkgsTable.setModel(model);
+        publicPkgsTable.getColumnModel().getColumn(0).setMaxWidth(CHECKBOX_WIDTH + 20);
+        publicPkgsTable.setTableHeader(null);
+        publicPkgsTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        publicPkgsSP.getViewport().setBackground(publicPkgsTable.getBackground());
+        final Action switchAction = new AbstractAction() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                Boolean b = (Boolean) publicPkgsTable.
+                        getValueAt(publicPkgsTable.getSelectedRow(), 0);
+                publicPkgsTable.setValueAt(Boolean.valueOf(!b.booleanValue()),
+                        publicPkgsTable.getSelectedRow(), 0);
+            }
+        };
+        publicPkgsTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                switchAction.actionPerformed(null);
+            }
+        });
+        publicPkgsTable.getInputMap().put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "startEditing"); // NOI18N
+        publicPkgsTable.getActionMap().put("startEditing", switchAction); // NOI18N
     }
     
     // XXX this is not correct yet. Impl. deps. in Libraries panel have to be
@@ -103,7 +139,6 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         cnbValue = new javax.swing.JTextField();
         majorRelVer = new javax.swing.JLabel();
         majorRelVerValue = new javax.swing.JTextField();
-        filler = new javax.swing.JLabel();
         specificationVer = new javax.swing.JLabel();
         specificationVerValue = new javax.swing.JTextField();
         implVer = new javax.swing.JLabel();
@@ -115,8 +150,6 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         autoloadMod = new javax.swing.JRadioButton();
         eagerMod = new javax.swing.JRadioButton();
         publicPkgs = new javax.swing.JLabel();
-        publicPkgsSP = new javax.swing.JScrollPane();
-        publicPkgsValue = new javax.swing.JTextArea();
         friends = new javax.swing.JLabel();
         bottomPanel = new javax.swing.JPanel();
         friendsSP = new javax.swing.JScrollPane();
@@ -125,6 +158,8 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         addFriendButton = new javax.swing.JButton();
         removeFriendButton = new javax.swing.JButton();
         filler1 = new javax.swing.JLabel();
+        publicPkgsSP = new javax.swing.JScrollPane();
+        publicPkgsTable = new javax.swing.JTable();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -162,12 +197,6 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(majorRelVerValue, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
-        gridBagConstraints.weighty = 1.0;
-        add(filler, gridBagConstraints);
 
         specificationVer.setLabelFor(specificationVerValue);
         org.openide.awt.Mnemonics.setLocalizedText(specificationVer, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_SpecificationVersion"));
@@ -274,7 +303,6 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
 
         publicPkgs.setLabelFor(implVerValue);
         org.openide.awt.Mnemonics.setLocalizedText(publicPkgs, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_PublicPackages"));
-        publicPkgs.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -282,20 +310,6 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 12);
         add(publicPkgs, gridBagConstraints);
-
-        publicPkgsValue.setColumns(20);
-        publicPkgsValue.setRows(5);
-        publicPkgsValue.setEnabled(false);
-        publicPkgsSP.setViewportView(publicPkgsValue);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        add(publicPkgsSP, gridBagConstraints);
 
         friends.setLabelFor(implVerValue);
         org.openide.awt.Mnemonics.setLocalizedText(friends, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_Friends"));
@@ -316,8 +330,12 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         friendsSP.setViewportView(friendsValue);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         bottomPanel.add(friendsSP, gridBagConstraints);
 
         buttonPanel.setLayout(new java.awt.GridBagLayout());
@@ -334,7 +352,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         buttonPanel.add(removeFriendButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -343,16 +361,29 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.weighty = 1.0;
         buttonPanel.add(filler1, gridBagConstraints);
 
-        bottomPanel.add(buttonPanel, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        bottomPanel.add(buttonPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 0.3;
+        gridBagConstraints.weighty = 0.2;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(bottomPanel, gridBagConstraints);
+
+        publicPkgsTable.setShowHorizontalLines(false);
+        publicPkgsSP.setViewportView(publicPkgsTable);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 0.8;
+        add(publicPkgsSP, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -367,7 +398,6 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
     private javax.swing.JLabel cnb;
     private javax.swing.JTextField cnbValue;
     private javax.swing.JRadioButton eagerMod;
-    private javax.swing.JLabel filler;
     private javax.swing.JLabel filler1;
     private javax.swing.JLabel friends;
     private javax.swing.JScrollPane friendsSP;
@@ -379,7 +409,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
     private javax.swing.ButtonGroup moduleTypeGroup;
     private javax.swing.JLabel publicPkgs;
     private javax.swing.JScrollPane publicPkgsSP;
-    private javax.swing.JTextArea publicPkgsValue;
+    private javax.swing.JTable publicPkgsTable;
     private javax.swing.JRadioButton regularMod;
     private javax.swing.JButton removeFriendButton;
     private javax.swing.JLabel specificationVer;

@@ -43,7 +43,9 @@ public class ProjectXMLManagerTest extends TestBase {
     private FileObject suiteRepoFO;
     
     private ProjectXMLManager actionPXM;
+    private ProjectXMLManager miscPXM;
     private NbModuleProject actionProject;
+    private NbModuleProject miscProject;
     
     public ProjectXMLManagerTest(String testName) {
         super(testName);
@@ -54,9 +56,17 @@ public class ProjectXMLManagerTest extends TestBase {
         super.setUp();
         suiteRepoFO = prepareSuiteRepo(extexamples);
         FileObject suite1FO = suiteRepoFO.getFileObject("suite1");
+        FileObject suite2FO = suiteRepoFO.getFileObject("suite2");
         FileObject actionFO = suite1FO.getFileObject("action-project");
+        FileObject miscFO = suite2FO.getFileObject("misc-project");
         this.actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(actionFO);
+        this.miscProject = (NbModuleProject) ProjectManager.getDefault().findProject(miscFO);
         this.actionPXM = new ProjectXMLManager(actionProject.getHelper(), actionProject);
+        this.miscPXM = getNewMiscPXM();
+    }
+    
+    private ProjectXMLManager getNewMiscPXM() {
+        return new ProjectXMLManager(miscProject.getHelper(), miscProject);
     }
     
     public void testGetDirectDependencies() throws Exception {
@@ -110,7 +120,6 @@ public class ProjectXMLManagerTest extends TestBase {
     public void testEditDependency() throws Exception {
         final Set deps = actionPXM.getDirectDependencies();
         
-        ModuleDependency origDep;
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
@@ -235,6 +244,24 @@ public class ProjectXMLManagerTest extends TestBase {
         });
         assertTrue("replace dependencies", result.booleanValue());
         ProjectManager.getDefault().saveProject(actionProject);
+    }
+    
+    public void testReplacePublicPackages() throws Exception {
+        // XXX make this test meaningful
+        final String[] publicPackages = miscPXM.getPublicPackages();
+        assertEquals("number of public packages", new Integer(publicPackages.length), new Integer(1));
+        
+        // apply and save project
+        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws IOException {
+                actionPXM.replacePublicPackages(publicPackages);
+                return Boolean.TRUE;
+            }
+        });
+        assertTrue("replace public packages", result.booleanValue());
+        ProjectManager.getDefault().saveProject(miscProject);
+        String[] newPublicPackages = getNewMiscPXM().getPublicPackages();
+        assertEquals("number of new public packages", new Integer(newPublicPackages.length), new Integer(1));
     }
     
     private FileObject prepareSuiteRepo(FileObject what) throws Exception {
