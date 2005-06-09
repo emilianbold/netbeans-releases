@@ -160,7 +160,10 @@ public class RegisterPointbase implements DatabaseRuntime {
         if (installRoot==null){
             return;
         }
-        
+        File localInstall = new File(installRoot+"/pointbase");
+        if (!localInstall.exists()){
+            return ;  
+	}      
         
         DatabaseRuntimeManager.getDefault(). register(DRIVER,this);
         

@@ -61,6 +61,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentConfigurationInterface;
 
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -73,7 +74,7 @@ import org.openide.util.NbBundle;
  * @author Peter Williams
  */
 public class SunONEDeploymentConfiguration
-implements Constants, DeploymentConfiguration {
+implements Constants, SunDeploymentConfigurationInterface {
     
 	private static final ResourceBundle beanBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.Bundle");	// NOI18N

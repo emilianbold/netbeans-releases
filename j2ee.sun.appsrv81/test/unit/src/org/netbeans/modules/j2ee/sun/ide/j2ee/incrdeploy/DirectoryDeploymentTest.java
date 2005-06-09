@@ -23,7 +23,7 @@ import junit.framework.*;
 
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy.DirectoryDeployment;
+import org.netbeans.modules.j2ee.sun.bridge.DirectoryDeployment;
 
 /*import java.io.FileInputStream;
 import java.io.PrintWriter;

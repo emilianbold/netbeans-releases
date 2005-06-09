@@ -22,7 +22,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
-
+import java.lang.reflect.Method;
 import java.util.ResourceBundle;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.spi.Target;
@@ -148,8 +148,25 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             e.printStackTrace();
             throw new DeploymentManagerCreationException("DeploymentManagerCreationException" + e.getMessage());
         }
-        if (secure)
-            AppServerBridge.setServerConnectionEnvironment(innerDM);
+        if (secure) {
+          // different classloader!  AppServerBridge.setServerConnectionEnvironment(innerDM);
+            try{
+                Class[] argClass = new Class[1];
+                argClass[0] = DeploymentManager.class;
+                Object[] argObject = new Object[1];
+                argObject[0] = innerDM;
+                
+                 org.netbeans.modules.j2ee.sun.ide.ExtendedClassLoader loader =  org.netbeans.modules.j2ee.sun.ide.Installer.getClassLoader();
+                if(loader != null){
+                    Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.bridge.AppServerBridge");
+                    Method setServerConnectionEnvironment = cc.getMethod("setServerConnectionEnvironment", argClass);//NOI18N
+                    setServerConnectionEnvironment.invoke(null, argObject);
+                }
+            }catch(Exception ex){
+                //Suppressing exception while trying to obtain admin host port value
+                ex.printStackTrace();
+            }
+        }
 
     }
     public String getUserName() {
