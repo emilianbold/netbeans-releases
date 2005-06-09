@@ -361,6 +361,11 @@ public abstract class DataLoader extends SharedClassObject {
 	} catch (ThreadDeath td) {
 	    throw td;
 	} catch (RuntimeException e) {
+        if (e.getClass().getName().startsWith("org.openide.util.lookup")) { // NOI18N
+            // to propagate
+            // org.openide.util.lookup.AbstractLookup$ISE: You are trying to modify lookup from lookup query!
+            throw e;
+        }
 	    // Some strange error, perhaps an unexpected exception in
 	    // MultiFileLoader.findPrimaryFile. Such an error ought
 	    // not cause whole folder recognizer to die! Assume that
