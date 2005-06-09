@@ -40,18 +40,20 @@ public final class ManifestManager {
     private String codeNameBase;
     private String releaseVersion;
     private String specificationVersion;
+    private String implementationVersion;
     private String localizingBundle;
     private String layer;
     private String classPath;
     private PackageExport[] publicPackages;
     
-    private static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
-    private static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
-    private static final String OPENIDE_MODULE_LAYER = "OpenIDE-Module-Layer"; // NOI18N
-    private static final String OPENIDE_MODULE_LOCALIZING_BUNDLE = "OpenIDE-Module-Localizing-Bundle"; // NOI18N
-    private static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
-    private static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
-    private static final String CLASS_PATH = "Class-Path"; // NOI18N
+    public static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
+    public static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
+    public static final String OPENIDE_MODULE_IMPLEMENTATION_VERSION= "OpenIDE-Module-Implementation-Version"; // NOI18N
+    public static final String OPENIDE_MODULE_LAYER = "OpenIDE-Module-Layer"; // NOI18N
+    public static final String OPENIDE_MODULE_LOCALIZING_BUNDLE = "OpenIDE-Module-Localizing-Bundle"; // NOI18N
+    public static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
+    public static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
+    public static final String CLASS_PATH = "Class-Path"; // NOI18N
     
     static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
     
@@ -60,11 +62,12 @@ public final class ManifestManager {
     private ManifestManager() {}
     
     private ManifestManager(String cnb, String releaseVersion, String specVer,
-            String locBundle, String layer, String classPath,
+            String implVer, String locBundle, String layer, String classPath,
             PackageExport[] publicPackages) {
         this.codeNameBase = cnb;
         this.releaseVersion = releaseVersion;
         this.specificationVersion = specVer;
+        this.implementationVersion = implVer;
         this.localizingBundle = locBundle;
         this.layer = layer;
         this.classPath = classPath;
@@ -135,6 +138,7 @@ public final class ManifestManager {
         ManifestManager mm = new ManifestManager(
                 codenamebase, releaseVersion,
                 attr.getValue(OPENIDE_MODULE_SPECIFICATION_VERSION),
+                attr.getValue(OPENIDE_MODULE_IMPLEMENTATION_VERSION),
                 attr.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE),
                 attr.getValue(OPENIDE_MODULE_LAYER),
                 attr.getValue(CLASS_PATH),
@@ -215,6 +219,10 @@ public final class ManifestManager {
     
     public String getSpecificationVersion() {
         return specificationVersion;
+    }
+    
+    public String getImplementationVersion() {
+        return implementationVersion;
     }
     
     String getLocalizingBundle() {
