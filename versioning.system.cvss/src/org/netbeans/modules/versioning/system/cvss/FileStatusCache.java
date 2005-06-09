@@ -308,13 +308,9 @@ public class FileStatusCache {
      */ 
     void cleanUp() {
         Set toRefresh = new HashSet();
+        ArrayList folders = new ArrayList();
         synchronized(onFolderInfp()) {
-            for (Iterator i = scannedFolders.keySet().iterator(); i.hasNext();) {
-                File key = (File) i.next();
-                if (!key.isDirectory()) {
-                    toRefresh.add(key);
-                }
-            }
+            folders = new ArrayList(scannedFolders.keySet());
             for (Iterator i = scannedFolders.values().iterator(); i.hasNext();) {
                 Map map = (Map) i.next();
                 Set files = map.keySet();
@@ -325,6 +321,12 @@ public class FileStatusCache {
                         toRefresh.add(file);
                     }
                 }
+            }
+        }
+        for (Iterator i = folders.iterator(); i.hasNext();) {
+            File key = (File) i.next();
+            if (!key.isDirectory()) {
+                toRefresh.add(key);
             }
         }
         for (Iterator i = toRefresh.iterator(); i.hasNext();) {
@@ -397,7 +399,8 @@ public class FileStatusCache {
     }
 
     private boolean isNotManagedByDefault(File dir) {
-        return !dir.exists() && MetadataAttic.getMetadata(dir) == null || dir.getName().equals(CvsVersioningSystem.FILENAME_CVS);
+        if (dir.getName().equals(CvsVersioningSystem.FILENAME_CVS)) return true;
+        return !dir.exists() && MetadataAttic.getMetadata(dir) == null;
     }
 
     /**
