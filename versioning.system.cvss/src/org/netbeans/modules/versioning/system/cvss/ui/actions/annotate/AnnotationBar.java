@@ -503,6 +503,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         elementAnnotations = null;
         detachStripeAnnotations();
         annotationsPerfomanceLimit = Integer.MAX_VALUE;
+        clearRecentFeedback();
     }
 
     /**
