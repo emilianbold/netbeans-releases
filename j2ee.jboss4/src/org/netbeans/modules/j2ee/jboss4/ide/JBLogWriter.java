@@ -83,7 +83,7 @@ public class JBLogWriter implements Runnable {
                         String line = reader.readLine();
                         if(line.indexOf("INFO")<0)
                             continue;
-                        writer.write(line);
+                        writer.write(line + "\n"); //NOI18N
                     }
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -97,7 +97,7 @@ public class JBLogWriter implements Runnable {
                         if(line.indexOf("INFO")<0)
                             continue;
                     }
-                    writer.write(line);
+                    writer.write(line + "\n"); //NOI18N
                 }
                 try {
                     Thread.sleep(delay);

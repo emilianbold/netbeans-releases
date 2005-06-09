@@ -182,7 +182,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         
         // Show log if server started and log not shown
         // create an output tab for the server output
-        InputOutput io = IOProvider.getDefault().getIO( getIOTabName(serverName), false);
+        InputOutput io = IOProvider.getDefault().getIO( getIOTabName(), false);
         io.select();
         
         
@@ -205,15 +205,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
         return true;
     }
     
-    private String getIOTabName(String serverName){
-        String result;
-        result = NbBundle.getMessage(JBStartServer.class, "LBL_SERVER_IO_TAB_NAME");     //NOI18N
-        if(result.indexOf('?')<0){
-            result = result + " "+ serverName;
-        }else {
-            result = result.replaceAll("\\?", serverName);
-        }
-        return result;
+    private String getIOTabName(){
+        return (String)InstanceProperties.getInstanceProperties((dm).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_DISPLAY_NAME);
     }
     
     private class JBStartRunnable implements Runnable {
@@ -247,7 +240,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
                 
                 // create an output tab for the server output
-                InputOutput io = IOProvider.getDefault().getIO(getIOTabName(JBOSS_INSTANCE), false);
+                InputOutput io = IOProvider.getDefault().getIO(getIOTabName(), false);
                 io.select();
                 
                 // read the data from the server's output up
@@ -260,7 +253,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                         while (reader.ready()) {
                             String line = reader.readLine();
                             
-                            io.getOut().write(line);
+                            io.getOut().write(line + "\n"); //NOI18N
                             
                             if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] Starting JBoss \\(MX MicroKernel\\)\\.\\.\\.")) {
                                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
@@ -309,8 +302,6 @@ public class JBStartServer extends StartServer implements ProgressObject{
         
         public void run() {
             try {
-                
-                
                 String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
                 Process serverProcess = Runtime.getRuntime().exec(serverLocation + (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH));
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
