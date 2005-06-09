@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="stress-compiler">
         <buildTests srcDir="stress/src" compileExcludes="**/data/**">
             <classpath>
+                <pathelement location="${openide/windows.dir}/modules/org-openide-windows.jar"/>
                 <path refid="compiletest.classpath"/>
                 <path refid="jemmy.and.jelly.path"/>
                 <path refid="performance.testutilities.path"/>
