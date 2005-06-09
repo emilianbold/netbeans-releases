@@ -78,6 +78,7 @@ Microsystems, Inc. All Rights Reserved.
             <li><a href="apichanges.html">Changes since previous release</a></li>
             <li><a href="usecases.html">How to use certain NetBeans APIs</a></li>
             <li><a href="allclasses-frame.html">Index of all NetBeans API classes</a></li>
+            <li><a href="layers.html">Extracted List of Layer APIs</a></li>
         </ul>
 
         <hr/>

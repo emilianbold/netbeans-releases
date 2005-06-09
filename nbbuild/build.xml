@@ -2903,6 +2903,14 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       
       <style 
         in="${netbeans.javadoc.dir}/modules.xml" 
+        out="${netbeans.javadoc.dir}/layers.html" 
+        style="javadoctools/export2layer.xsl"
+      >
+        <param name="date" expression="${modules-javadoc-date}"/>
+      </style>
+      
+      <style 
+        in="${netbeans.javadoc.dir}/modules.xml" 
         out="${netbeans.javadoc.dir}/overview-summary.html" 
         style="javadoctools/export2html.xsl"
       >
@@ -2947,6 +2955,24 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
             <include name="*/architecture-summary.html"/>
             <include name="*/**/package-summary.html"/>
             <include name="*/**/doc-files/**/*.html"/>
+                
+                
+            <!-- if you find a general URL from netbeans.org site that make sence to reference, feel free
+              to add it here with accept='true' 
+              -->
+            <filter pattern="http://www.netbeans.org/source/browse/.*" accept='true' />
+            <filter pattern="http://openide.netbeans.org/versioning-policy.html.*" accept='true' />
+            <filter pattern="http://www.netbeans.org/issues/show_bug.cgi.*" accept='true' />
+            <filter pattern="http://openide.netbeans.org.*tutorial.*api-design.*" accept='true' />
+            <!-- is used in generated question from arch.xml -->
+            <filter pattern="http://www.netbeans.org/community/guidelines/q-evangelism.html" accept='true' />
+            <!-- direct link to main website is ok as well -->
+            <filter pattern="http://www.netbeans.org/" accept='true' />
+            <!-- dtd are fine they cannot change anyway -->
+            <filter pattern="http://www.netbeans.org/dtds/.*" accept='true' />
+            
+            <!-- forbid the rest of NetBeans sites -->
+            <filter pattern="http://.*netbeans.org/.*" accept='false' />
         </checklinks>
   </target>
 
