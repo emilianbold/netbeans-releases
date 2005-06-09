@@ -17,8 +17,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 
 /**
  * Tests {@link AddModuleFilter}.
@@ -38,7 +39,7 @@ public class AddModuleFilterTest extends TestBase {
         Set/*<ModuleDependency>*/ deps = new HashSet();
         Iterator it = ml.getAllEntries().iterator();
         while (it.hasNext()) {
-            ModuleList.Entry entry = (ModuleList.Entry) it.next();
+            ModuleEntry entry = (ModuleEntry) it.next();
             ModuleDependency dep = new ModuleDependency(entry);
             deps.add(dep);
         }
@@ -66,6 +67,7 @@ public class AddModuleFilterTest extends TestBase {
         assertMatches("magicaction", new String[0]);
         // Using class-path extensions:
         assertMatches("javax.help", new String[] {"org.netbeans.modules.javahelp"});
+        // XXX test that friend APIs only match if "I" am a friend (needs API change in ModuleDependency)
     }
     
     private void assertMatches(String text, String[] cnbs) {

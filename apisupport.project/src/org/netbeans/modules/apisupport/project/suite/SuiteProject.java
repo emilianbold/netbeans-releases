@@ -42,12 +42,14 @@ import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
+import org.netbeans.modules.apisupport.project.ui.SuiteActions;
+import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
 
 /**
  * Represents one module suite project.
  * @author Jesse Glick
  */
-final class SuiteProject implements Project {
+public final class SuiteProject implements Project {
     
     private final AntProjectHelper helper;
     private final Lookup lookup;

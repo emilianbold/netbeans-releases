@@ -21,9 +21,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.apisupport.project.NbPlatform;
-import org.netbeans.modules.apisupport.project.ui.ComponentFactory.NbPlatformListModel;
-import org.netbeans.modules.apisupport.project.ui.NbPlatformCustomizer;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -92,7 +91,7 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         dependencySP = new javax.swing.JScrollPane();
         dependencyList = new javax.swing.JList();
         platformPanel = new javax.swing.JPanel();
-        platformValue = org.netbeans.modules.apisupport.project.ui.ComponentFactory.getNbPlatformsComboxBox();
+        platformValue = org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.getNbPlatformsComboxBox();
         platform = new javax.swing.JLabel();
         managePlafsButton = new javax.swing.JButton();
 
@@ -200,7 +199,7 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
         NbPlatformCustomizer.showCustomizer();
-        platformValue.setModel(new NbPlatformListModel()); // refresh
+        platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
     }//GEN-LAST:event_managePlatforms
     
     private void editModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModuleDependency

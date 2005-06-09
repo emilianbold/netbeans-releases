@@ -28,6 +28,7 @@ import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 
 /**
  * Basic setup for all the tests.

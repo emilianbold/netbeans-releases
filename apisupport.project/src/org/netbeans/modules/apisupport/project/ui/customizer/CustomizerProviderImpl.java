@@ -33,8 +33,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -47,6 +46,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 
 /**
  * Adding ability for a NetBeans modules to provide a GUI customizer.
@@ -143,7 +143,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             SortedSet/*<String>*/ allCategories = new TreeSet();
             SortedSet/*<ModuleDependency>*/ allDependencies = new TreeSet();
             for (Iterator it = getModuleList().getAllEntries().iterator(); it.hasNext(); ) {
-                ModuleList.Entry me = (ModuleList.Entry) it.next();
+                ModuleEntry me = (ModuleEntry) it.next();
                 allDependencies.add(new ModuleDependency(me));
                 String cat = me.getCategory();
                 if (cat != null) {

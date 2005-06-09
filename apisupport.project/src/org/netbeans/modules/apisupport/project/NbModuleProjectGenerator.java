@@ -31,6 +31,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 
 /**
  * Servers for generating new NetBeans Modules templates.

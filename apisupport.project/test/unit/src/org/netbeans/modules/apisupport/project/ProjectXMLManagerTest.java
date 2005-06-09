@@ -18,10 +18,10 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -31,6 +31,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
 
 /**
  * Tests ProjectXMLManager class.
@@ -146,7 +147,7 @@ public class ProjectXMLManagerTest extends TestBase {
     
     public void testAddDependencies() throws Exception {
         final Set newDeps = new HashSet();
-        ModuleList.Entry me =
+        ModuleEntry me =
                 actionProject.getModuleList().getEntry("org.netbeans.modules.java.project");
         assertNotNull("java/project must be built", me);
         String javaProjectRV = me.getReleaseVersion();

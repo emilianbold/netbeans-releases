@@ -17,7 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;

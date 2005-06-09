@@ -65,12 +65,25 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
+import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.UnitTestForSourceQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.SourceLevelQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.AntArtifactProviderImpl;
+import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
+import org.netbeans.modules.apisupport.project.queries.JavadocForBinaryImpl;
+import org.netbeans.modules.apisupport.project.queries.SourceForBinaryImpl;
+import org.netbeans.modules.apisupport.project.queries.SubprojectProviderImpl;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.ui.ModuleActions;
+import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
 
 /**
  * A NetBeans module project.
  * @author Jesse Glick
  */
-final class NbModuleProject implements Project {
+public final class NbModuleProject implements Project {
     
     public static final int TYPE_NETBEANS_ORG = 0;
     public static final int TYPE_SUITE_COMPONENT = 1;
@@ -182,12 +195,12 @@ final class NbModuleProject implements Project {
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
             new OpenedHook(),
-            new Actions(this),
+            new ModuleActions(this),
             new ClassPathProviderImpl(this),
             new SourceForBinaryImpl(this),
             new JavadocForBinaryImpl(this),
             new UnitTestForSourceQueryImpl(this),
-            new LogicalView(this),
+            new ModuleLogicalView(this),
             new SubprojectProviderImpl(this),
             fileBuilt,
             new AccessibilityQueryImpl(this),
@@ -332,14 +345,14 @@ final class NbModuleProject implements Project {
         // Register *.dir for nb.org modules. There is no equivalent for external modules.
         Iterator it = ml.getAllEntries().iterator();
         while (it.hasNext()) {
-            ModuleList.Entry e = (ModuleList.Entry)it.next();
+            ModuleEntry e = (ModuleEntry) it.next();
             String nborgPath = e.getNetBeansOrgPath();
             if (nborgPath != null) {
                 // #48449: intern these; number is (size of modules.xml) * (# of loaded module projects)
                 stock.put((nborgPath + ".dir").intern(), e.getClusterDirectory().getAbsolutePath().intern()); // NOI18N
             }
         }
-        ModuleList.Entry thisEntry = ml.getEntry(getCodeNameBase());
+        ModuleEntry thisEntry = ml.getEntry(getCodeNameBase());
         assert thisEntry != null : "Cannot find myself";
         if (nbroot != null) {
             // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
@@ -516,7 +529,7 @@ final class NbModuleProject implements Project {
             Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
                 NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
-            ModuleList.Entry module = ml.getEntry(cnb);
+            ModuleEntry module = ml.getEntry(cnb);
             if (module == null) {
                 Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(getProjectDirectory()));
                 continue;
@@ -531,7 +544,7 @@ final class NbModuleProject implements Project {
             cp.append(moduleJar.getAbsolutePath());
             cp.append(module.getClassPathExtensions());
         }
-        ModuleList.Entry myself = ml.getEntry(getCodeNameBase());
+        ModuleEntry myself = ml.getEntry(getCodeNameBase());
         cp.append(myself.getClassPathExtensions());
         return cp.toString();
     }
@@ -641,7 +654,7 @@ final class NbModuleProject implements Project {
         }
     }
     
-    File getNbrootFile(String path) {
+    public File getNbrootFile(String path) {
         return getNbrootFile(path, null);
     }
     private File getNbrootFile(String path, PropertyEvaluator eval) {
@@ -653,7 +666,7 @@ final class NbModuleProject implements Project {
         }
     }
     
-    FileObject getNbrootFileObject(String path) {
+    public FileObject getNbrootFileObject(String path) {
         File f = path != null ? getNbrootFile(path) : getNbroot();
         if (f != null) {
             return FileUtil.toFileObject(f);

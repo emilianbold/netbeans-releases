@@ -24,6 +24,7 @@ import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -32,6 +33,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 
 /**
  * Convenience class for managing project's <em>project.xml</em> file.
@@ -88,7 +90,7 @@ public final class ProjectXMLManager {
                     ProjectXMLManager.CODE_NAME_BASE,
                     NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
-            ModuleList.Entry me = ml.getEntry(cnb);
+            ModuleEntry me = ml.getEntry(cnb);
             
             Element runDepEl = Util.findElement(depEl,
                     ProjectXMLManager.RUN_DEPENDENCY,
@@ -302,7 +304,7 @@ public final class ProjectXMLManager {
     }
     
     /** Utility method for finding public packages. */
-    static ManifestManager.PackageExport[] findPublicPackages(final Element confData) {
+    public static ManifestManager.PackageExport[] findPublicPackages(final Element confData) {
         Element ppEl = Util.findElement(confData, ProjectXMLManager.PUBLIC_PACKAGES,
                 NbModuleProjectType.NAMESPACE_SHARED);
         Set/*<ManifestManager.PackageExport>*/ pps = null;

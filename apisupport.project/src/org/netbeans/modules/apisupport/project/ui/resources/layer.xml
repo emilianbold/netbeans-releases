@@ -43,11 +43,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="Tools">
-            <attr name="JavaPlatformsCustomizerAction.instance/org-netbeans-modules-apisupport-project-ui-NbPlatformsCustomizerAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-apisupport-project-ui-NbPlatformsCustomizerAction.instance/LibrariesCustomizerAction.instance" boolvalue="true"/>            
-            <file name="org-netbeans-modules-apisupport-project-ui-NbPlatformsCustomizerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.apisupport.project.ui.NbPlatformCustomizerAction"/>
-            </file>
+            <attr name="JavaPlatformsCustomizerAction.instance/org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance"/>
+            <attr name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance/LibrariesCustomizerAction.instance" boolvalue="true"/>            
         </folder>
     </folder>
 

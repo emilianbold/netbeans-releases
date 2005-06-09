@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
@@ -36,7 +36,7 @@ public final class ModuleDependency implements Comparable {
     private boolean implDep;
     private boolean compileDep;
     
-    private ModuleList.Entry me;
+    private ModuleEntry me;
     
     private Set/*<String>*/ filterTokens;
     
@@ -59,11 +59,11 @@ public final class ModuleDependency implements Comparable {
      * Compile dependency is set to true by default, implementation version to
      * false.
      */
-    public ModuleDependency(ModuleList.Entry me) {
+    public ModuleDependency(ModuleEntry me) {
         this(me, me.getReleaseVersion(), me.getSpecificationVersion(), true, false);
     }
     
-    public ModuleDependency(ModuleList.Entry me, String releaseVersion,
+    public ModuleDependency(ModuleEntry me, String releaseVersion,
             String specVersion, boolean compileDep, boolean implDep) {
         this.me = me;
         
@@ -83,7 +83,7 @@ public final class ModuleDependency implements Comparable {
         return specVersion;
     }
     
-    public ModuleList.Entry getModuleEntry() {
+    public ModuleEntry getModuleEntry() {
         return me;
     }
     

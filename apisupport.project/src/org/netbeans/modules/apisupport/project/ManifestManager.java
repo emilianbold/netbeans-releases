@@ -18,7 +18,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -57,7 +56,7 @@ public final class ManifestManager {
     
     static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
     
-    static final ManifestManager NULL_INSTANCE = new ManifestManager();
+    public static final ManifestManager NULL_INSTANCE = new ManifestManager();
     
     private ManifestManager() {}
     
@@ -95,7 +94,7 @@ public final class ManifestManager {
         return mm;
     }
     
-    static ManifestManager getInstanceFromJAR(File jar) {
+    public static ManifestManager getInstanceFromJAR(File jar) {
         ManifestManager mm = null;
         JarFile jf = null;
         try {
@@ -225,7 +224,7 @@ public final class ManifestManager {
         return implementationVersion;
     }
     
-    String getLocalizingBundle() {
+    public String getLocalizingBundle() {
         return localizingBundle;
     }
     
@@ -233,11 +232,11 @@ public final class ManifestManager {
         return layer;
     }
     
-    String getClassPath() {
+    public String getClassPath() {
         return classPath;
     }
     
-    ManifestManager.PackageExport[] getPublicPackages() {
+    public PackageExport[] getPublicPackages() {
         return publicPackages;
     }
     
