@@ -14,22 +14,81 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * Represents <em>Versioning</em> panel in Netbeans Module customizer.
  *
  * @author Martin Krauskopf
  */
-final class CustomizerVersioning extends JPanel {
+final class CustomizerVersioning extends JPanel implements ComponentFactory.StoragePanel {
+    
+    private NbModuleProperties props;
+    private boolean lastAppImplChecked;
     
     /** Creates new form CustomizerVersioning */
     CustomizerVersioning(NbModuleProperties props) {
+        this.props = props;
         initComponents();
         cnbValue.setText(props.getCodeNameBase());
         majorRelVerValue.setText(props.getMajorReleaseVersion());
-        specificationVerValue.setText(props.getSpecificationVersion());
+        String specVersion = props.getSpecificationVersion();
+        if (null == specVersion || "".equals(specVersion)) { // NOI18N
+            appendImpl.setSelected(true);
+            specificationVerValue.setText(
+                    props.getProperty(NbModuleProperties.SPEC_VERSION_BASE));
+        } else {
+            specificationVerValue.setText(specVersion);
+        }
+        implVerValue.setText(props.getImplementationVersion());
+        regularMod.setSelected(true);
+        autoloadMod.setSelected(isTrue(props.getProperty(NbModuleProperties.IS_AUTOLOAD)));
+        eagerMod.setSelected(isTrue(props.getProperty(NbModuleProperties.IS_EAGER)));
+        implVerValue.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                updateAppendImpl();
+            }
+            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
+            public void changedUpdate(DocumentEvent e) {}
+        });
+        updateAppendImpl();
     }
     
+    // XXX this is not correct yet. Impl. deps. in Libraries panel have to be
+    // considered
+    private void updateAppendImpl() {
+        boolean isEmpty = "".equals(implVerValue.getText().trim()); // NOI18N
+        if (isEmpty && appendImpl.isEnabled()) {
+            appendImpl.setEnabled(false);
+            lastAppImplChecked = appendImpl.isSelected();
+            appendImpl.setSelected(false);
+        } else if (!isEmpty && !appendImpl.isEnabled()) {
+            appendImpl.setEnabled(true);
+            appendImpl.setSelected(lastAppImplChecked);
+        }
+    }
+    
+    public void store() {
+        props.setMajorReleaseVersion(majorRelVerValue.getText().trim());
+        String specVer = specificationVerValue.getText().trim();
+        if (appendImpl.isSelected()) {
+            props.setSpecificationVersion(""); // NOI18N
+            props.setProperty(NbModuleProperties.SPEC_VERSION_BASE, specVer);
+        } else {
+            props.setSpecificationVersion(specVer);
+            props.setProperty(NbModuleProperties.SPEC_VERSION_BASE, ""); // NOI18N
+        }
+        props.setImplementationVersion(implVerValue.getText().trim());
+        props.setProperty(NbModuleProperties.IS_AUTOLOAD,
+                Boolean.toString(autoloadMod.isSelected()));
+        props.setProperty(NbModuleProperties.IS_EAGER,
+                Boolean.toString(eagerMod.isSelected()));
+    }
+    
+    private boolean isTrue(String bString) {
+        return bString != null && bString.equalsIgnoreCase("true");
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -148,6 +207,7 @@ final class CustomizerVersioning extends JPanel {
 
         tokens.setLabelFor(implVerValue);
         org.openide.awt.Mnemonics.setLocalizedText(tokens, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_ProvidedTokens"));
+        tokens.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -155,6 +215,7 @@ final class CustomizerVersioning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 12);
         add(tokens, gridBagConstraints);
 
+        tokensValue.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
@@ -213,6 +274,7 @@ final class CustomizerVersioning extends JPanel {
 
         publicPkgs.setLabelFor(implVerValue);
         org.openide.awt.Mnemonics.setLocalizedText(publicPkgs, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_PublicPackages"));
+        publicPkgs.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -223,6 +285,7 @@ final class CustomizerVersioning extends JPanel {
 
         publicPkgsValue.setColumns(20);
         publicPkgsValue.setRows(5);
+        publicPkgsValue.setEnabled(false);
         publicPkgsSP.setViewportView(publicPkgsValue);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -236,6 +299,7 @@ final class CustomizerVersioning extends JPanel {
 
         friends.setLabelFor(implVerValue);
         org.openide.awt.Mnemonics.setLocalizedText(friends, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_Friends"));
+        friends.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
@@ -248,6 +312,7 @@ final class CustomizerVersioning extends JPanel {
 
         friendsValue.setColumns(20);
         friendsValue.setRows(5);
+        friendsValue.setEnabled(false);
         friendsSP.setViewportView(friendsValue);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -258,11 +323,13 @@ final class CustomizerVersioning extends JPanel {
         buttonPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(addFriendButton, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_AddButton"));
+        addFriendButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         buttonPanel.add(addFriendButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(removeFriendButton, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_RemoveButton"));
+        removeFriendButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;

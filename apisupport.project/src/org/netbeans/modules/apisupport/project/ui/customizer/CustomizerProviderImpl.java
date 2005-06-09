@@ -174,10 +174,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         } else {
-            ManifestManager manifestManager = ManifestManager.getInstance(helper.resolveFile(
-                    evaluator.getProperty("manifest.mf")), false); // NOI18N
-            this.moduleProps = new NbModuleProperties(helper, evaluator, 
-                    manifestManager, isStandalone);
+            this.moduleProps = new NbModuleProperties(helper, evaluator, isStandalone);
             // XXX may be temporary solution - there is not exact spec what should be done
             this.locBundleProps = locBundlePropsPath == null ?
                 new EditableProperties() :
@@ -235,7 +232,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 bundle.getString("LBL_ConfigVersioning")); // NOI18N
         
         categories = new ProjectCustomizer.Category[] {
-            sources, display, libraries //, versioning
+            sources, display, libraries, versioning
         };
         
         // sources customizer
