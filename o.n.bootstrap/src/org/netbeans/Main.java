@@ -203,12 +203,19 @@ public class Main extends Object {
             
             try {
                 java.util.jar.Manifest mf;
-                URL u = this.findResource ("META-INF/MANIFEST.MF"); // NOI18N
-                InputStream is = u.openStream();
-                mf = new java.util.jar.Manifest(is);
-                is.close();
-
-                String value = mf.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+                String value = null;
+                URL u = null;
+                Enumeration en = this.findResources("META-INF/MANIFEST.MF");
+                while(en.hasMoreElements()) {
+                    u = (URL)en.nextElement();
+                    InputStream is = u.openStream();
+                    mf = new java.util.jar.Manifest(is);
+                    is.close();
+                    value = mf.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+                    if (value != null) {
+                        break;
+                    }
+                }
                 if (value == null) {
                     System.err.println("Cannot set netbeans.buildnumber property no OpenIDE-Module-Implementation-Version found"); // NOI18N
                 } else {
