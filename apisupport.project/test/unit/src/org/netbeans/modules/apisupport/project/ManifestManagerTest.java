@@ -22,6 +22,8 @@ import java.io.File;
  */
 public class ManifestManagerTest extends TestBase {
     
+    // XXX test also implementation version
+    
     public ManifestManagerTest(String name) {
         super(name);
     }
