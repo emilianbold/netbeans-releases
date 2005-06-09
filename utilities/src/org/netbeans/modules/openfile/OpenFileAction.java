@@ -7,19 +7,23 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.openfile;
 
 import java.io.File;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.utilities.Manager;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /** 
@@ -31,13 +35,6 @@ import org.openide.windows.WindowManager;
  */
 public class OpenFileAction extends CallableSystemAction {
 
-    /** Generated serial version UID. */
-    static final long serialVersionUID = -3424129228987962529L;
-    
-    /** stores the last current directory of the file chooser */
-    private static File currDir;
-
-    
     public OpenFileAction() {
         putValue("noIconInMenu", Boolean.TRUE);
     }
@@ -61,7 +58,7 @@ public class OpenFileAction extends CallableSystemAction {
      */
     protected JFileChooser prepareFileChooser() {
         JFileChooser chooser = new FileChooser();
-        
+        File currDir = findStartingDirectory();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, currDir);
         HelpCtx.setHelpIDString(chooser, getHelpCtx().getHelpID());
         
@@ -110,16 +107,36 @@ public class OpenFileAction extends CallableSystemAction {
             for (int i = 0; i < files.length; i++) {
                 OpenFile.openFile(files[i], -1, null);
             }
-            currDir = chooser.getCurrentDirectory();
         } finally {
             Manager.actionFinished(this);
         }
     }
     
-    /**
-     */
     protected boolean asynchronous() {
         return false;
+    }
+
+    /**
+     * Try to find a directory to open the chooser open.
+     * If there is a file among selected nodes (e.g. open editor windows),
+     * use that directory; else just stick to the user's home directory.
+     */
+    private static File findStartingDirectory() {
+        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+        for (int i = 0; i < nodes.length; i++) {
+            DataObject d = (DataObject) nodes[i].getCookie(DataObject.class);
+            if (d != null) {
+                File f = FileUtil.toFile(d.getPrimaryFile());
+                if (f != null) {
+                    if (f.isFile()) {
+                        f = f.getParentFile();
+                    }
+                    return f;
+                }
+            }
+        }
+        // Backup:
+        return new File(System.getProperty("user.home"));
     }
 
 }
