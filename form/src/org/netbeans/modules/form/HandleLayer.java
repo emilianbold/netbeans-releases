@@ -1540,10 +1540,12 @@ static int ncount;
             }
             Insets insets = formDesigner.getComponentLayer().getDesignerOutsets();
             int thickness = insets.left;
+            Stroke oldStroke = g.getStroke();
             g.setStroke(new BasicStroke(thickness));
             g.setColor(formSettings.getFormDesignerBorderColor().darker());
             g.drawRect(r.x - thickness/2, r.y - thickness/2,
                        r.width + thickness, r.height + thickness);
+            g.setStroke(oldStroke);
         }
 
         public void drag(Point p) {
