@@ -24,12 +24,13 @@ import javax.swing.*;
  */
 public final class RootWizard {
 
-    private CheckoutWizard wizard;
+    private final CheckoutWizard wizard;
 
-    private CheckoutWizard.RepositoryStep repositoryStep;
+    private final CheckoutWizard.RepositoryStep repositoryStep;
 
-    public RootWizard(CheckoutWizard.RepositoryStep step) {
+    private RootWizard(CheckoutWizard.RepositoryStep step, CheckoutWizard wizard) {
         this.repositoryStep = step;
+        this.wizard = wizard;
     }
 
     /**
@@ -43,7 +44,7 @@ public final class RootWizard {
         CheckoutWizard wizard = new CheckoutWizard(root, null);
         CheckoutWizard.RepositoryStep step = wizard.new RepositoryStep();
 
-        return new RootWizard(step);
+        return new RootWizard(step, wizard);
     }
 
     /**
