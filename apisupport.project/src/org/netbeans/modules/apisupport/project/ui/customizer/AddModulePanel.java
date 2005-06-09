@@ -49,7 +49,7 @@ final class AddModulePanel extends JPanel {
         moduleList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(true));
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                showDescriptionFor(filterTask != null ? -1 : moduleList.getSelectedIndex());
+                showDescription();
             }
         });
         filterValue.getDocument().addDocumentListener(new DocumentListener() {
@@ -94,7 +94,7 @@ final class AddModulePanel extends JPanel {
         }
     }
     
-    private void showDescriptionFor(int index) {
+    private void showDescription() {
         ModuleDependency dep = getSelectedDependency();
         descValue.setText(dep == null ? "" : // NOI18N
             dep.getModuleEntry().getLongDescription());
