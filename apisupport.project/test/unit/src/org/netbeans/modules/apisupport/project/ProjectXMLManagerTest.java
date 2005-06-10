@@ -60,12 +60,12 @@ public class ProjectXMLManagerTest extends TestBase {
         FileObject miscFO = suite2FO.getFileObject("misc-project");
         this.actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(actionFO);
         this.miscProject = (NbModuleProject) ProjectManager.getDefault().findProject(miscFO);
-        this.actionPXM = new ProjectXMLManager(actionProject.getHelper(), actionProject);
+        this.actionPXM = new ProjectXMLManager(actionProject.getHelper());
         this.miscPXM = getNewMiscPXM();
     }
     
     private ProjectXMLManager getNewMiscPXM() {
-        return new ProjectXMLManager(miscProject.getHelper(), miscProject);
+        return new ProjectXMLManager(miscProject.getHelper());
     }
     
     public void testGetCodeNameBase() throws Exception {
@@ -145,7 +145,7 @@ public class ProjectXMLManagerTest extends TestBase {
         assertTrue("editing dependencies", result.booleanValue());
         ProjectManager.getDefault().saveProject(actionProject);
         // XXX this refresh shouldn't be needed
-        this.actionPXM = new ProjectXMLManager(actionProject.getHelper(), actionProject);
+        this.actionPXM = new ProjectXMLManager(actionProject.getHelper());
         
         final Set newDeps = actionPXM.getDirectDependencies();
         for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
@@ -251,21 +251,43 @@ public class ProjectXMLManagerTest extends TestBase {
     }
     
     public void testReplacePublicPackages() throws Exception {
-        // XXX make this test meaningful
-        final String[] publicPackages = miscPXM.getPublicPackages();
-        assertEquals("number of public packages", new Integer(publicPackages.length), new Integer(1));
+        String[] publicPackages = miscPXM.getPublicPackages();
+        assertEquals("number of public packages", new Integer(1), new Integer(publicPackages.length));
+        final String[] newPP = new String[] { publicPackages[0], "org.netbeans.examples.modules" };
         
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
-                actionPXM.replacePublicPackages(publicPackages);
+                miscPXM.replacePublicPackages(newPP);
                 return Boolean.TRUE;
             }
         });
         assertTrue("replace public packages", result.booleanValue());
         ProjectManager.getDefault().saveProject(miscProject);
         String[] newPublicPackages = getNewMiscPXM().getPublicPackages();
-        assertEquals("number of new public packages", new Integer(newPublicPackages.length), new Integer(1));
+        assertEquals("number of new public packages", new Integer(2), new Integer(newPublicPackages.length));
+        assertEquals("added package", "org.netbeans.examples.modules", newPublicPackages[0]);
+        assertEquals("added package", "org.netbeans.examples.modules.misc", newPublicPackages[1]);
+        assertNull("there must not be friend", getNewMiscPXM().getFriends());
+    }
+    
+    public void testReplaceFriendPackages() throws Exception {
+        assertNull("none friend packages", miscPXM.getFriends());
+        final String[] friends = new String[] { "org.exampleorg.somefriend" };
+        
+        // apply and save project
+        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws IOException {
+                miscPXM.replaceFriendPackages(friends, miscPXM.getPublicPackages());
+                return Boolean.TRUE;
+            }
+        });
+        assertTrue("replace friend packages", result.booleanValue());
+        ProjectManager.getDefault().saveProject(miscProject);
+        String[] newFriendPackages = getNewMiscPXM().getFriends();
+        assertEquals("number of new friend", new Integer(1), new Integer(newFriendPackages.length));
+        assertEquals("stored friend", "org.exampleorg.somefriend", newFriendPackages[0]);
+        assertEquals("public packages", new Integer(1), new Integer(getNewMiscPXM().getPublicPackages().length));
     }
     
     private FileObject prepareSuiteRepo(FileObject what) throws Exception {

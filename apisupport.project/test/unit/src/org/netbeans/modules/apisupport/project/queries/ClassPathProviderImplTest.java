@@ -60,7 +60,7 @@ public class ClassPathProviderImplTest extends TestBase {
         copyOfMiscDir = FileUtil.toFileObject(miscF);
         copyOfMiscProject = (NbModuleProject) ProjectManager.getDefault().findProject(copyOfMiscDir);
         assertNotNull(copyOfMiscProject);
-        copyOfMiscXMLManager = new ProjectXMLManager(copyOfMiscProject.getHelper(), copyOfMiscProject);
+        copyOfMiscXMLManager = new ProjectXMLManager(copyOfMiscProject.getHelper());
     }
     
     private String urlForJar(String path) {

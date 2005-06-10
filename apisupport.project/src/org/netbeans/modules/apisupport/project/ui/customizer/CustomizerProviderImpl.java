@@ -18,11 +18,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,7 +27,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -51,7 +47,6 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
  * Adding ability for a NetBeans modules to provide a GUI customizer.
@@ -74,9 +69,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private Set/*<ModuleDependency>*/ universeDependencies;
     private Set/*<ModuleDependency>*/ moduleDependencies;
     
-    /** package name / selected */
-    private Map/*<String, Boolean>*/ publicPackages;
-    
     private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
     
     private NbModuleProperties moduleProps;
@@ -91,7 +83,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     // models
     private ComponentFactory.DependencyListModel moduleDepsListModel;
     private ComponentFactory.DependencyListModel universeDepsListModel;
-    private ComponentFactory.PublicPackagesTableModel publicPackagesModel;
     
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
             PropertyEvaluator evaluator, boolean isStandalone, String locBundlePropsPath) {
@@ -180,8 +171,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         } else {
-            this.moduleProps = new NbModuleProperties(helper, evaluator,
-                    isStandalone, getProjectXMLManipulator().getCodeNameBase());
+            this.moduleProps = new NbModuleProperties(helper, evaluator, isStandalone);
             // XXX may be temporary solution - there is not exact spec what should be done
             this.locBundleProps = locBundlePropsPath == null ?
                 new EditableProperties() :
@@ -256,9 +246,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 moduleDepsListModel, universeDepsListModel));
         
         // versioning customizer
-        publicPackagesModel = new ComponentFactory.PublicPackagesTableModel(
-                getPublicPackages(Arrays.asList(getProjectXMLManipulator().getPublicPackages())));
-        panels.put(versioning, new CustomizerVersioning(moduleProps, publicPackagesModel));
+        panels.put(versioning, new CustomizerVersioning(moduleProps));
         
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
             public JComponent create(ProjectCustomizer.Category category) {
@@ -275,41 +263,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 progName, displayName, null, null);
     }
     
-    // XXX not done yet - also needs to consider <class-path-extension>
-    private Map/*<String, Boolean>*/ getPublicPackages(
-            Collection/*<String>*/ selectedPackages) {
-        if (publicPackages == null) {
-            Set/*<File>*/ pkgs = new TreeSet();
-            File srcDir = helper.resolveFile(evaluator.getProperty("src.dir")); // NOI18N
-            addNonEmptyPackages(pkgs, srcDir);
-            publicPackages = new TreeMap();
-            for (Iterator it = pkgs.iterator(); it.hasNext(); ) {
-                File pkgDir = (File) it.next();
-                String rel = PropertyUtils.relativizeFile(srcDir, pkgDir);
-                String pkgName = rel.replace(File.separatorChar, '.');
-                publicPackages.put(pkgName,
-                        Boolean.valueOf(selectedPackages.contains(pkgName)));
-            }
-        }
-        return publicPackages;
-    }
-    
-    private void addNonEmptyPackages(Set/*<File>*/ pkgs, File root) {
-        File[] kids = root.listFiles();
-        boolean alreadyAdded = false;
-        for (int i = 0; i < kids.length; i++) {
-            File kid = kids[i];
-            if (kid.isDirectory()) {
-                addNonEmptyPackages(pkgs, kid);
-            } else {
-                if (!alreadyAdded && kid.getName().endsWith(".java")) { // NOI18N
-                    pkgs.add(root);
-                    alreadyAdded = true;
-                }
-            }
-        }
-    }
-
     /** Listens to the actions on the Customizer's option buttons */
     private class OptionListener extends WindowAdapter implements ActionListener {
         
@@ -350,7 +303,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     
     private ProjectXMLManager getProjectXMLManipulator() {
         if (projectXMLManipulator == null) {
-            projectXMLManipulator = new ProjectXMLManager(helper, project);
+            projectXMLManipulator = new ProjectXMLManager(helper);
         }
         return projectXMLManipulator;
     }
@@ -387,10 +340,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                         }
                         getProjectXMLManipulator().replaceDependencies(depsToSave);
                     }
-                    // XXX store only after real change
-                    // store public packages
-                    getProjectXMLManipulator().replacePublicPackages(
-                            publicPackagesModel.getSelectedPackages());
                     return Boolean.TRUE;
                 }
             });
@@ -399,7 +348,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 ProjectManager.getDefault().saveProject(project);
             }
             // reset
-            this.publicPackages = null;
             this.moduleDependencies = null;
             this.projectXMLManipulator = null;
         } catch (MutexException e) {

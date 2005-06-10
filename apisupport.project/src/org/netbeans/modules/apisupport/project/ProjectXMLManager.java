@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -61,19 +60,23 @@ public final class ProjectXMLManager {
     private static final String BUILD_PREREQUISITE = "build-prerequisite"; // NOI18N
     private static final String IMPLEMENTATION_VERSION = "implementation-version"; // NOI18N
     private static final String PUBLIC_PACKAGES= "public-packages"; // NOI18N
+    private static final String FRIEND_PACKAGES= "friend-packages"; // NOI18N
+    private static final String FRIEND = "friend"; // NOI18N
     private static final String PACKAGE = "package"; // NOI18N
     
     private AntProjectHelper helper;
-    private Project project;
     
     private String cnb;
     private Set/*<ModuleDependency>*/ directDeps;
     private String[] publicPackages;
+    private String[] friends;
+    
+    // cached confData element for easy access with getConfData
+    private Element confData;
     
     /** Creates a new instance of ProjectXMLManager */
-    public ProjectXMLManager(AntProjectHelper helper, Project project) {
+    public ProjectXMLManager(AntProjectHelper helper) {
         this.helper = helper;
-        this.project = project;
     }
     
     /** Returns direct module dependencies. */
@@ -221,6 +224,9 @@ public final class ProjectXMLManager {
         helper.putPrimaryConfigurationData(confData, true);
     }
     
+    /**
+     * Replaces all original dependencies with the given <code>newDeps</code>.
+     */
     public void replaceDependencies(Set/*<ModuleDependency>*/ newDeps) {
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
@@ -236,12 +242,16 @@ public final class ProjectXMLManager {
         helper.putPrimaryConfigurationData(confData, true);
     }
     
+    /**
+     * Replaces all original public packages with the given
+     * <code>newPackages</code>. Also removes friend packages if there are any
+     * since those two mutually exclusive.
+     */
     public void replacePublicPackages(String[] newPackages) {
+        removePublicAndFriends();
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
-        Element publicPackages = findPublicPackagesElement(confData);
-        confData.removeChild(publicPackages);
-        publicPackages = createModuleElement(doc, ProjectXMLManager.PUBLIC_PACKAGES);
+        Element publicPackages = createModuleElement(doc, ProjectXMLManager.PUBLIC_PACKAGES);
         confData.appendChild(publicPackages);
         for (int i = 0; i < newPackages.length; i++) {
             publicPackages.appendChild(
@@ -249,20 +259,53 @@ public final class ProjectXMLManager {
         }
         helper.putPrimaryConfigurationData(confData, true);
     }
+
+    /**
+     * Replaces all original friends with the given <code>friends</code> with
+     * <code>packages</code> as exposed packages to those friends. Also removes
+     * public packages if there are any since those two are mutually exclusive.
+     */
+    public void replaceFriendPackages(String[] friends, String[] packages) {
+        removePublicAndFriends();
+        Element confData = getConfData();
+        Document doc = confData.getOwnerDocument();
+        Element friendPackages = createModuleElement(doc, ProjectXMLManager.FRIEND_PACKAGES);
+        confData.appendChild(friendPackages);
+        for (int i = 0; i < friends.length; i++) {
+            friendPackages.appendChild(
+                    createModuleElement(doc, ProjectXMLManager.FRIEND, friends[i]));
+        }
+        for (int i = 0; i < packages.length; i++) {
+            friendPackages.appendChild(
+                    createModuleElement(doc, ProjectXMLManager.PACKAGE, packages[i]));
+        }
+        helper.putPrimaryConfigurationData(confData, true);
+    }
     
+    /** Returns sorted array of all exposed public packages. */
     public String[] getPublicPackages() {
         if (publicPackages != null) {
             return publicPackages;
         }
         ManifestManager.PackageExport[] pp = 
                 ProjectXMLManager.findPublicPackages(getConfData());
-        publicPackages = new String[pp.length];
+        Set sortedPP = new TreeSet();
         for (int i = 0; i < pp.length; i++) {
-            publicPackages[i] = pp[i].getPackage();
+            sortedPP.add(pp[i].getPackage());
         }
-        return publicPackages;
+        publicPackages = new String[pp.length];
+        return (String[]) sortedPP.toArray(publicPackages);
     }
     
+    /** Returns all friends or <code>null</code> if there are none. */
+    public String[] getFriends() {
+        if (friends == null) {
+            friends = ProjectXMLManager.findFriends(getConfData());
+        }
+        return friends;
+    }
+    
+    /** Returns code-name-base. */
     public String getCodeNameBase() {
         if (cnb == null) {
             Element cnbEl = Util.findElement(getConfData(),
@@ -307,6 +350,18 @@ public final class ProjectXMLManager {
         }
     }
     
+    /** Removes public-packages and friend-packages elements. */
+    private void removePublicAndFriends() {
+        Element friendPackages = findFriendsElement(getConfData());
+        if (friendPackages != null) {
+            getConfData().removeChild(friendPackages);
+        }
+        Element publicPackages = findPublicPackagesElement(getConfData());
+        if (publicPackages != null) {
+            getConfData().removeChild(publicPackages);
+        }
+    }
+    
     private static Element findModuleDependencies(Element confData) {
         return Util.findElement(confData, ProjectXMLManager.MODULE_DEPENDENCIES,
                 NbModuleProjectType.NAMESPACE_SHARED);
@@ -314,6 +369,11 @@ public final class ProjectXMLManager {
     
     private static Element findPublicPackagesElement(Element confData) {
         return Util.findElement(confData, ProjectXMLManager.PUBLIC_PACKAGES,
+                NbModuleProjectType.NAMESPACE_SHARED);
+    }
+    
+    private static Element findFriendsElement(Element confData) {
+        return Util.findElement(confData, ProjectXMLManager.FRIEND_PACKAGES,
                 NbModuleProjectType.NAMESPACE_SHARED);
     }
     
@@ -342,23 +402,54 @@ public final class ProjectXMLManager {
      * instance manage.
      */
     private ModuleList getModuleList() throws IOException {
-        return ModuleList.getModuleList(FileUtil.toFile(project.getProjectDirectory()));
+        return ModuleList.getModuleList(FileUtil.toFile(helper.getProjectDirectory()));
+    }
+    
+    /** Find packages in public-packages or friend-packages section. */
+    private static Set/*<ManifestManager.PackageExport>*/ findAllPackages(Element parent) {
+        Set/*<ManifestManager.PackageExport>*/ packages = new HashSet();
+        List/*<Element>*/ pkgEls = Util.findSubElements(parent);
+        for (Iterator it = pkgEls.iterator(); it.hasNext(); ) {
+            Element pkgEl = (Element) it.next();
+            if (PACKAGE.equals(pkgEl.getTagName())) {
+                packages.add(new ManifestManager.PackageExport(Util.findText(pkgEl), false));
+            }
+        }
+        return packages;
     }
     
     /** Utility method for finding public packages. */
     public static ManifestManager.PackageExport[] findPublicPackages(final Element confData) {
         Element ppEl = findPublicPackagesElement(confData);
-        Set/*<ManifestManager.PackageExport>*/ pps = null;
+        Set/*<ManifestManager.PackageExport>*/ pps = new HashSet();
         if (ppEl != null) {
-            pps = new HashSet();
-            List/*<Element>*/ pkgEls = Util.findSubElements(ppEl);
-            for (Iterator it = pkgEls.iterator(); it.hasNext(); ) {
-                Element pkgEl = (Element) it.next();
-                pps.add(new ManifestManager.PackageExport(Util.findText(pkgEl), false));
-            }
+            pps.addAll(findAllPackages(ppEl));
         }
-        return pps == null ? ManifestManager.EMPTY_EXPORTED_PACKAGES :
+        ppEl = findFriendsElement(confData);
+        if (ppEl != null) {
+            pps.addAll(findAllPackages(ppEl));
+        }
+        return pps.isEmpty() ? ManifestManager.EMPTY_EXPORTED_PACKAGES :
             (ManifestManager.PackageExport[]) pps.toArray(new ManifestManager.PackageExport[pps.size()]);
+    }
+    
+    /** Utility method for finding friend. */
+    public static String[] findFriends(final Element confData) {
+        Element friendsEl = findFriendsElement(confData);
+        if (friendsEl != null) {
+            List/*<Element>*/ friendEls = Util.findSubElements(friendsEl);
+            Set/*<String>*/ friends = new TreeSet();
+            int i = 0;
+            for (Iterator it = friendEls.iterator(); it.hasNext(); ) {
+                Element friendEl = (Element) it.next();
+                if (FRIEND.equals(friendEl.getTagName())) {
+                    friends.add(Util.findText(friendEl));
+                }
+            }
+            String[] result = new String[friends.size()];
+            return (String[]) friends.toArray(result);
+        }
+        return null;
     }
     
     /**
@@ -444,6 +535,9 @@ public final class ProjectXMLManager {
     }
     
     private Element getConfData() {
-        return helper.getPrimaryConfigurationData(true);
+        if (confData == null) {
+            confData = helper.getPrimaryConfigurationData(true);
+        }
+        return confData;
     }
 }

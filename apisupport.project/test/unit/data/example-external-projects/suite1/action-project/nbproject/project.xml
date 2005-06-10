@@ -21,7 +21,10 @@
                     <run-dependency/>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.exampleorg.module.examplemodule</friend>
+                <package>org.netbeaans.examples.modules.action</package>
+            </friend-packages>
         </data>
     </configuration>
  </project>
