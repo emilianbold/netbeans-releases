@@ -17,10 +17,46 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core stress test config">
 
     <testbag testattribs="measure_stress1" prio="1"
-             executor="ide_stress" compiler="stress-compiler" name="Stress test measuring #1" >
+             executor="ide_stress" compiler="stress-compiler" name="Memory footprint stress tests 1" >
 	<testset dir="stress/src">
 	    <patternset>
 		<include name="stress/MeasureStress1.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_stress2" prio="2"
+             executor="ide_stress" compiler="stress-compiler" name="Memory footprint stress tests 2" >
+	<testset dir="stress/src">
+	    <patternset>
+		<include name="stress/MeasureStress2.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_stress3" prio="3"
+             executor="ide_stress" compiler="stress-compiler" name="Memory footprint stress tests 3" >
+	<testset dir="stress/src">
+	    <patternset>
+		<include name="stress/MeasureStress3.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_stress4" prio="4"
+             executor="ide_stress" compiler="stress-compiler" name="Memory footprint stress tests 4" >
+	<testset dir="stress/src">
+	    <patternset>
+		<include name="stress/MeasureStress4.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_stress5" prio="5"
+             executor="ide_stress" compiler="stress-compiler" name="Memory footprint stress tests 5" >
+	<testset dir="stress/src">
+	    <patternset>
+		<include name="stress/MeasureStress5.class"/>
 	    </patternset>
 	</testset>
     </testbag>
