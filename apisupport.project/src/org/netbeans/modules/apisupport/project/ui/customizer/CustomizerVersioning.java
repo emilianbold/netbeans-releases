@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -23,6 +24,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.FriendListModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -68,6 +70,14 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
             public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
             public void changedUpdate(DocumentEvent e) {}
         });
+        friendsList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    removeFriendButton.setEnabled(friendsList.getSelectedIndex() != -1);
+                }
+            }
+        });
+        removeFriendButton.setEnabled(false);
         updateAppendImpl();
     }
     
@@ -365,11 +375,6 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         bottomPanel.add(buttonPanel, gridBagConstraints);
 
-        friendsList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         friendsSP.setViewportView(friendsList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
