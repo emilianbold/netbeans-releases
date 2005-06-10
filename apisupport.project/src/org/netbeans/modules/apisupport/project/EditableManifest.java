@@ -393,27 +393,37 @@ public final class EditableManifest {
         }
         
         public void setAttribute(String name, String value) {
-            int i;
-            for (i = (this.name != null ? 1 : 0); i < lines.size(); i++) {
+            for (int i = (this.name != null ? 1 : 0); i < lines.size(); i++) {
                 Line line = (Line) lines.get(i);
-                int comp = line.name.compareToIgnoreCase(name);
-                if (comp > 0 && !line.name.equalsIgnoreCase(MANIFEST_VERSION)) {
-                    break;
-                } else if (comp == 0) {
-                    Line old = (Line) lines.remove(i);
-                    if (old.value.equals(value)) {
-                        // Oops, no change, leave along to preserve formatting.
-                        lines.add(i, old);
+                if (name.equalsIgnoreCase(line.name)) {
+                    if (line.value.equals(value)) {
+                        // No change, leave alone to preserve formatting.
                         return;
                     }
-                    break;
+                    // Edit this line.
+                    lines.remove(i);
+                    int insertionPoint = name.equalsIgnoreCase(MANIFEST_VERSION) ? 0 : i;
+                    lines.add(insertionPoint, new Line(name, value));
+                    return;
                 }
             }
-            lines.add(i, new Line(name, value));
+            // Didn't find an existing line. Look for the right place to insert this one.
+            int insertionPoint;
             if (name.equalsIgnoreCase(MANIFEST_VERSION)) {
-                Line moving = (Line) lines.remove(i);
-                lines.add(0, moving);
+                insertionPoint = 0;
+            } else {
+                insertionPoint = lines.size();
+                for (int i = (this.name != null ? 1 : 0); i < lines.size(); i++) {
+                    Line line = (Line) lines.get(i);
+                    int comp = line.name.compareToIgnoreCase(name);
+                    assert comp != 0;
+                    if (comp > 0 && !line.name.equalsIgnoreCase(MANIFEST_VERSION)) {
+                        insertionPoint = i;
+                        break;
+                    }
+                }
             }
+            lines.add(insertionPoint, new Line(name, value));
         }
         
         public void removeAttribute(String name) throws IllegalArgumentException {

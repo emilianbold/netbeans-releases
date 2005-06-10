@@ -196,6 +196,14 @@ public class EditableManifestTest extends NbTestCase {
             manifest2String(m));
     }
     
+    public void testModifyOutOfOrderAttr() throws Exception {
+        EditableManifest m = string2Manifest("A2: v2\nA1: v1\n\n");
+        m.setAttribute("A1", "v1a", null);
+        assertEquals("A2: v2\nA1: v1a\n\n", manifest2String(m));
+        m.setAttribute("A1", "v1a", null);
+        assertEquals("A2: v2\nA1: v1a\n\n", manifest2String(m));
+    }
+    
     public void testAlphabetization() throws Exception {
         EditableManifest m = string2Manifest("aa: x\nM: x\nz: x\n\nName: aa\n\nName: m\n\nName: z\n\n");
         m.setAttribute("a", "x", null);
