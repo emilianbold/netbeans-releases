@@ -772,60 +772,18 @@ class WebActionProvider implements ActionProvider {
             // ??? maybe better should be thrown IAE
             return false;
         }
-        Resource res = JavaModel.getResource (fo);
-        assert res != null : "Resource found for FileObject " + fo;
-        return hasMainMethod (res);
-    }
-    
-    // copied from JavaNode.hasMain
-    private static boolean hasMainMethod (Resource res) {
-        if (res != null && res.containsIdentifier ("main")) { //NOI18N
-            for (Iterator i = res.getClassifiers ().iterator (); i.hasNext (); ) {
-                JavaClass clazz = (JavaClass) i.next ();
-                // now it is only important top-level class with the same 
-                // name as file. Continue if the file name differs
-                // from top level class name.
-                if (!clazz.getSimpleName ().equals (JavaModel.getFileObject (res).getName ()))
-                    continue;
-
-                for (Iterator j = clazz.getFeatures ().iterator(); j.hasNext ();) {
-                    Object o = j.next ();
-                    // if it is not a method, continue with next feature
-                    if (!(o instanceof Method))
-                        continue;
-
-                    Method m = (Method) o;
-                    int correctMods = (Modifier.PUBLIC | Modifier.STATIC);
-                    // check that method is named 'main' and has set public 
-                    // and static modifiers! Method has to also return
-                    // void type.
-                    if (!"main".equals (m.getName()) || // NOI18N
-                       ((m.getModifiers () & correctMods) != correctMods) ||
-                       (!"void".equals (m.getType().getName ())))
-                       continue;
-
-                    // check parameters - it has to be one of type String[]
-                    // or String...
-                    if (m.getParameters ().size ()==1) {
-                        Parameter par = ((Parameter) m.getParameters ().get (0));
-                        String typeName = par.getType ().getName ();
-                        if (par.isVarArg () && ("java.lang.String".equals (typeName) || "String".equals (typeName))) { // NOI18N
-                            // Main methods written with variable arguments parameter:
-                            // public static main(String... args) {
-                            // }
-                            return true; 
-                        } else if (typeName.equals ("String[]") || typeName.equals ("java.lang.String[]")) { // NOI18N
-                            // Main method written with array parameter:
-                            // public static main(String[] args) {
-                            // }
-                            return true;
-                        }
-
-                    } // end if parameters
-                } // end features cycle
-            }
+        boolean has = false;
+        JavaModel.getJavaRepository ().beginTrans (false);
+        
+        try {
+            JavaModel.setClassPath(fo);
+            Resource res = JavaModel.getResource (fo);
+            assert res != null : "Resource found for FileObject " + fo;
+            has = !res.getMain().isEmpty();
+        } finally {
+            JavaModel.getJavaRepository ().endTrans ();
         }
-        return false;
+        return has;
     }
     
     public boolean isActionEnabled( String command, Lookup context ) {
