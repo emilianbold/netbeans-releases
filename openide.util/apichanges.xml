@@ -23,6 +23,35 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
     <change>
+      <api name="util"/>
+      <summary>Support for interruption of RequestProcessor tasks</summary>
+      <version major="6" minor="3"/>
+      <date day="10" month="6" year="2005"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+          When one calls <a href="@TOP@/org/openide/util/RequestProcessor.Task.html">RequestProcessor.Task</a>.cancel(), 
+          the running thread gets interrupted.
+          There always was a way how to cancel not yet running Task, 
+          but if the task was already running, one was out of luck. Since now
+          the thread running the task is interrupted and the Runnable can check 
+          for that and terminate its execution sooner. In the runnable one shall 
+          check for  thread interruption and 
+          if true, return immediatelly as in this example:
+          <pre>
+public void run () {
+  while (veryLongTimeLook) {
+    doAPieceOfIt ();
+
+    if (Thread.interrupted ()) return;
+  }
+}
+</pre>
+      </description>
+      <class package="org.openide.util" name="RequestProcessor"/>
+      <issue number="33467"/>
+    </change>
+    <change>
       <api name="actions"/>
       <summary>Can create textual icons for actions</summary>
       <date day="23" month="3" year="2000"/>

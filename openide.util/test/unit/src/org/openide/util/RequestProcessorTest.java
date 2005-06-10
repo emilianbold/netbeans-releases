@@ -682,6 +682,257 @@ public class RequestProcessorTest extends NbTestCase {
                      (error ? "error" : "exception"), 1);
     }
     
+    public void testCancelInterruptsTheRunningThread () throws Exception {
+        RequestProcessor rp = new RequestProcessor ("Cancellable");
+        
+        class R implements Runnable {
+            public boolean checkBefore;
+            public boolean checkAfter;
+            public boolean interrupted;
+            
+            public synchronized void run () {
+                checkBefore = Thread.interrupted();
+                
+                notifyAll ();
+                
+                try {
+                    wait ();
+                    interrupted = false;
+                } catch (InterruptedException ex) {
+                    interrupted = true;
+                }
+                
+                notifyAll ();
+                
+                try {
+                    wait ();
+                } catch (InterruptedException ex) {
+                }
+                
+                checkAfter = Thread.interrupted();
+                
+                notifyAll ();
+            }
+        }
+        
+        R r = new R ();
+        synchronized (r) {
+            RequestProcessor.Task t = rp.post (r);
+            r.wait ();
+            assertTrue ("The task is already running", !t.cancel ());
+            r.wait ();
+            r.notifyAll ();
+            r.wait ();
+            assertTrue ("The task has been interrupted", r.interrupted);
+            assertTrue ("Not before", !r.checkBefore);
+            assertTrue ("Not after - as the notification was thru InterruptedException", !r.checkAfter);
+        }
+        
+        // interrupt after the task has finished
+        r = new R ();
+        synchronized (r) {
+            RequestProcessor.Task t = rp.post (r);
+            r.wait ();
+            r.notifyAll ();
+            r.wait ();
+            assertTrue ("The task is already running", !t.cancel ());
+            r.notifyAll ();
+            r.wait ();
+            assertTrue ("The task has not been interrupted by exception", !r.interrupted);
+            assertTrue ("Not interupted before", !r.checkBefore);
+            assertTrue ("But interupted after", r.checkAfter);
+        }
+    }
+    
+    public void testInterruptedStatusIsClearedBetweenTwoTaskExecution () throws Exception {
+        RequestProcessor rp = new RequestProcessor ("testInterruptedStatusIsClearedBetweenTwoTaskExecution");
+        
+        final RequestProcessor.Task[] task = new RequestProcessor.Task[1];
+        // test interrupted status is cleared after task ends
+        class Fail implements Runnable {
+            public boolean checkBefore;
+            public Thread runIn;
+            public boolean goodThread;
+            
+            public synchronized void run () {
+                if (runIn == null) {
+                    runIn = Thread.currentThread();
+                    task[0].schedule (0);
+                } else {
+                    goodThread = Thread.currentThread () == runIn;
+                }
+                    
+                checkBefore = runIn.isInterrupted();
+                // set the flag for next execution
+                runIn.interrupt();
+                
+                notifyAll ();
+            }
+        }
+        
+        Fail f = new Fail ();
+        synchronized (f) {
+            task[0] = rp.post (f);
+            
+            // wait for the first execution
+            f.wait ();
+        }
+        // wait for the second
+        task[0].waitFinished ();
+        
+        assertTrue ("This shall be always true, but if not, than it does not mean too much"
+            + " just that the tasks were not executed in the same thread. In such case it "
+            + " this test does not do anything useful as it needs to execute the task twice "
+            + " in the same thread", f.goodThread);
+        
+        assertTrue ("Interrupted state has been cleared between two executions of the task", !f.checkBefore);
+            
+    }
+    
+    public void testInterruptedStatusWorksInInversedTasks() throws Exception {
+        RequestProcessor rp = new RequestProcessor ("testInterruptedStatusWorksInInversedTasks");
+        
+        class Fail implements Runnable {
+            public Fail (String n) {
+                name = n;
+            }
+            
+            private String name;
+            public RequestProcessor.Task wait;
+            public Object lock;
+            
+            public boolean checkBefore;
+            public boolean checkAfter;
+            
+            public void run () {
+                synchronized (this) {
+                    checkBefore = Thread.interrupted();
+                    notifyAll();
+                }
+                if (lock != null) {
+                    synchronized (lock) {
+                        lock.notify();
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException ex) {
+                            ex.printStackTrace();
+                            fail ("No InterruptedException");
+                        }
+                    }
+                }
+                
+                if (wait != null) {
+                    wait.schedule(100);
+                    wait.waitFinished();
+                }
+                
+                synchronized (this) {
+                    checkAfter = Thread.interrupted();
+                    notifyAll();
+                }
+            }
+            
+            public String toString () {
+                return name;
+            }
+        }
+        
+        Object initLock = new Object();
+        
+        Fail smaller = new Fail("smaller");
+        smaller.lock = initLock;
+        Fail bigger = new Fail("BIGGER");
+        RequestProcessor.Task smallerTask, biggerTask;
+        
+        
+        smallerTask = rp.create (smaller);
+        biggerTask = rp.create (bigger);
+        
+        bigger.wait = smallerTask;
+        
+        synchronized (initLock) {
+            biggerTask.schedule(0);
+            initLock.wait();
+            initLock.notifyAll();
+            assertFalse ("Already running", biggerTask.cancel());
+        }
+
+        biggerTask.waitFinished();
+        
+        assertFalse("bigger not interrupted at begining", bigger.checkBefore);
+        assertFalse("smaller not interrupted at all", smaller.checkBefore);
+        assertFalse("smaller not interrupted at all2", smaller.checkAfter);
+        assertTrue("bigger interrupted at end", bigger.checkAfter);
+        
+    }
+
+    public void testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon() throws Exception {
+        RequestProcessor rp = new RequestProcessor ("testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon");
+        
+        class Fail implements Runnable {
+            public RequestProcessor.Task wait;
+            public Object lock;
+            
+            public boolean checkBefore;
+            public boolean checkAfter;
+            
+            public void run () {
+                synchronized (this) {
+                    checkBefore = Thread.interrupted();
+                    notifyAll();
+                }
+                if (lock != null) {
+                    synchronized (lock) {
+                        lock.notify();
+                    }
+                }
+                
+                if (wait != null) {
+                    // we cannot call Thread.sleep, so lets slow things own 
+                    // in other way
+                    for (int i = 0; i < 10; i++) {
+                        System.gc ();
+                    }
+                    
+                    wait.waitFinished();
+                }
+                
+                synchronized (this) {
+                    checkAfter = Thread.interrupted();
+                    notifyAll();
+                }
+            }
+        }
+        
+        Object initLock = new Object();
+        
+        Fail smaller = new Fail();
+        Fail bigger = new Fail();
+        RequestProcessor.Task smallerTask, biggerTask;
+        
+        
+        smallerTask = rp.create (smaller);
+        biggerTask = rp.create (bigger);
+
+        
+        bigger.lock = initLock;
+        bigger.wait = smallerTask;
+        
+        synchronized (initLock) {
+            biggerTask.schedule(0);
+            initLock.wait();
+            assertFalse ("Already running", biggerTask.cancel());
+        }
+
+        biggerTask.waitFinished();
+        
+        assertFalse("bigger not interrupted at begining", bigger.checkBefore);
+        assertFalse("smaller not interrupted at all", smaller.checkBefore);
+        assertFalse("smaller not interrupted at all2", smaller.checkAfter);
+        assertTrue("bigger interrupted at end", bigger.checkAfter);
+        
+    }
+    
     private static void doGc (int count, Reference toClear) {
         java.util.ArrayList l = new java.util.ArrayList (count);
         while (count-- > 0) {
