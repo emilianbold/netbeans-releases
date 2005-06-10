@@ -91,19 +91,19 @@ public class LocalsTreeModel implements TreeModel {
                     to = abstractVariable.getFieldsCount ();
                     // We need to reset it for arrays, to get the full array
                 }
-                Object[] avs = abstractVariable.getFields (from, to);
-                if (isArray && avs.length > ARRAY_CHILDREN_NESTED_LENGTH) {
+                if (isArray && (to - from) > ARRAY_CHILDREN_NESTED_LENGTH) {
                     ArrayChildrenNode achn =
                             (ArrayChildrenNode) cachedArrayChildren.get(abstractVariable.getInnerValue ());
                     if (achn == null) {
-                        achn = new ArrayChildrenNode(avs);
+                        achn = new ArrayChildrenNode(abstractVariable);
                         cachedArrayChildren.put(abstractVariable.getInnerValue (), achn);
                     } else {
-                        achn.update(avs);
+                        achn.update(abstractVariable);
                     }
                     return achn.getChildren();
+                } else {
+                    return abstractVariable.getFields (from, to);
                 }
-                return avs;
             } else
             if (o instanceof ArrayChildrenNode) {
                 return ((ArrayChildrenNode) o).getChildren();
@@ -430,16 +430,16 @@ public class LocalsTreeModel implements TreeModel {
      */
     private static final class ArrayChildrenNode {
         
-        private Object[] allChildren;
+        private AbstractVariable var;
         private int from = 0;
         private int length;
         
-        public ArrayChildrenNode(Object[] allChildren) {
-            this(allChildren, 0, allChildren.length);
+        public ArrayChildrenNode(AbstractVariable var) {
+            this(var, 0, var.getFieldsCount());
         }
         
-        private ArrayChildrenNode(Object[] allChildren, int from, int length) {
-            this.allChildren = allChildren;
+        private ArrayChildrenNode(AbstractVariable var, int from, int length) {
+            this.var = var;
             this.from = from;
             this.length = length;
         }
@@ -467,35 +467,29 @@ public class LocalsTreeModel implements TreeModel {
                         chLength = length % n;
                         if (chLength == 0) chLength = n;
                     }
-                    ch[i] = new ArrayChildrenNode(allChildren, from + i*n, chLength);
+                    ch[i] = new ArrayChildrenNode(var, from + i*n, chLength);
                 }
                 return ch;
             } else {
-                Object[] ch = new Object[length];
-                System.arraycopy(allChildren, from, ch, 0, length);
-                return ch;
+                return var.getFields(from, from + length);
             }
         }
         
-        public void update(Object[] newChildren) {
-            if (newChildren.length == allChildren.length) {
-                System.arraycopy(newChildren, 0, allChildren, 0, allChildren.length);
-            } else {
-                allChildren = newChildren;
-            }
+        public void update(AbstractVariable var) {
+            this.var = var;
         }
         
         /** Overriden equals so that the nodes are not re-created when not necessary. */
         public boolean equals(Object obj) {
             if (!(obj instanceof ArrayChildrenNode)) return false;
             ArrayChildrenNode achn = (ArrayChildrenNode) obj;
-            return achn.allChildren == this.allChildren &&
+            return achn.var.equals(this.var) &&
                    achn.from == this.from &&
                    achn.length == this.length;
         }
         
         public int hashCode() {
-            return allChildren.hashCode() + from + length;
+            return var.hashCode() + from + length;
         }
         
         public String toString() {

@@ -241,9 +241,7 @@ public class TreeModelNode extends AbstractNode {
                     fireShortDescriptionChange(null, null);
                     
                     // 3) refresh children
-                    Children ch = getChildren ();
-                    if (ch instanceof TreeModelChildren)
-                        ((TreeModelChildren) ch).refreshChildren ();
+                    refreshTheChildren();
                 }
             });
         }
@@ -298,6 +296,24 @@ public class TreeModelNode extends AbstractNode {
     
     void refreshColumn(String column) {
         firePropertyChange(column, null, null);
+    }
+    
+    private void refreshTheChildren() {
+        Children ch = getChildren();
+        try {
+            if (ch instanceof TreeModelChildren) {
+                ((TreeModelChildren) ch).refreshChildren();
+            } else if (!model.isLeaf (object)) {
+                setChildren(new TreeModelChildren (model, treeModelRoot, object));
+            }
+        } catch (UnknownTypeException utex) {
+            // not known - do not change children
+            if (!(object instanceof String)) {
+                Throwable t = ErrorManager.getDefault().annotate(utex, "Model: "+model);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            }
+            setChildren(Children.LEAF);
+        }
     }
     
     private static String i (String text) {
@@ -602,24 +618,6 @@ public class TreeModelNode extends AbstractNode {
                     refreshTheChildren();
                 }
                 
-            }
-        }
-        
-        private void refreshTheChildren() {
-            Children ch = getChildren();
-            try {
-                if (ch instanceof TreeModelChildren) {
-                    ((TreeModelChildren) ch).refreshChildren();
-                } else if (!model.isLeaf (object)) {
-                    setChildren(new TreeModelChildren (model, treeModelRoot, object));
-                }
-            } catch (UnknownTypeException utex) {
-                // not known - do not change children
-                if (!(object instanceof String)) {
-                    Throwable t = ErrorManager.getDefault().annotate(utex, "Model: "+model);
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
-                }
-                setChildren(Children.LEAF);
             }
         }
         

@@ -126,12 +126,14 @@ public class AbstractVariable implements ObjectVariable {
     * @return string representation of type of this variable.
     */
     public int getFieldsCount () {
-        if (fields == null) initFields ();
         Value v = getInnerValue ();
         if (v == null) return 0;
-        if (v instanceof ArrayReference)
+        if (v instanceof ArrayReference) {
             return ((ArrayReference) v).length ();
-        return fields.length;
+        } else {
+            if (fields == null) initFields ();
+            return fields.length;
+        }
     }
 
     /**
@@ -158,14 +160,28 @@ public class AbstractVariable implements ObjectVariable {
      * &lt;<code>from</code>, <code>to</code>).
      */
     public Field[] getFields (int from, int to) {
-        //either the fields are cached or we have to init them
-        if (fields == null) initFields ();
-        if (to != 0) {
-            Field[] fv = new Field [to - from];
-            System.arraycopy (fields, from, fv, 0, to - from);
-            return fv;
+        Value v = getInnerValue ();
+        if (v == null) return new Field[] {};
+        if (v instanceof ArrayReference && (from > 0 || to < ((ArrayReference) v).length())) {
+            // compute only requested elements
+            Type type = v.type ();
+            ReferenceType rt = (ReferenceType) type;
+            Field[] elements = getFieldsOfArray (
+                    (ArrayReference) v, 
+                    ((ArrayType) rt).componentTypeName (),
+                    this.getID (),
+                    from, to);
+            return elements;
+        } else {
+            //either the fields are cached or we have to init them
+            if (fields == null) initFields ();
+            if (to != 0) {
+                Field[] fv = new Field [to - from];
+                System.arraycopy (fields, from, fv, 0, to - from);
+                return fv;
+            }
+            return fields;
         }
-        return fields;
     }
         
     /**
@@ -174,6 +190,10 @@ public class AbstractVariable implements ObjectVariable {
      * @return all static fields
      */
     public Field[] getAllStaticFields (int from, int to) {
+        Value v = getInnerValue ();
+        if (v == null || v instanceof ArrayReference) {
+            return new Field[] {};
+        }
         if (fields == null) initFields ();
         if (to != 0) {
             FieldVariable[] fv = new FieldVariable [to - from];
@@ -189,6 +209,10 @@ public class AbstractVariable implements ObjectVariable {
      * @return all inherited fields
      */
     public Field[] getInheritedFields (int from, int to) {
+        Value v = getInnerValue ();
+        if (v == null || v instanceof ArrayReference) {
+            return new Field[] {};
+        }
         if (fields == null) initFields ();
         if (to != 0) {
             FieldVariable[] fv = new FieldVariable [to - from];
@@ -452,23 +476,28 @@ public class AbstractVariable implements ObjectVariable {
             ObjectReference or = (ObjectReference) this.getInnerValue();
             ReferenceType rt = (ReferenceType) type;
             if (or instanceof ArrayReference) {
-                this.initFieldsOfArray (
+                this.fields = getFieldsOfArray (
                     (ArrayReference) or, 
                     ((ArrayType) rt).componentTypeName (),
-                    this.getID ());
+                    this.getID (),
+                    0, ((ArrayReference) or).length());
+                this.staticFields = new Field[0];
+                this.inheritedFields = new Field[0];
             }
             else {
-                this.initFieldsOfClass(or, rt, this.getID ());
+                initFieldsOfClass(or, rt, this.getID ());
             }
         }
     }
 
-    private void initFieldsOfArray (
+    private Field[] getFieldsOfArray (
             ArrayReference ar, 
             String componentType,
-            String parentID
+            String parentID,
+            int from,
+            int to
         ) {
-            List l = ar.getValues();
+            List l = ar.getValues(from, to - from);
             int i, k = l.size ();
             Field[] ch = new Field [k];
             for (i = 0; i < k; i++) {
@@ -479,7 +508,7 @@ public class AbstractVariable implements ObjectVariable {
                         (ObjectReference) v, 
                         componentType, 
                         ar, 
-                        i, 
+                        from + i, 
                         parentID
                     ) :
                     new ArrayFieldVariable (
@@ -487,13 +516,11 @@ public class AbstractVariable implements ObjectVariable {
                         v, 
                         componentType, 
                         ar, 
-                        i, 
+                        from + i, 
                         parentID
                     );
             }
-            this.fields = ch;
-            this.staticFields = new Field[0];
-            this.inheritedFields = new Field[0];
+            return ch;
         }
 
     private void initFieldsOfClass (

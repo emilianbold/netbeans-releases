@@ -43,7 +43,7 @@ org.netbeans.api.debugger.jpda.LocalVariable {
         super (
             model, 
             value, 
-            local.name () +
+            local.name () + local.hashCode() +
                 (value instanceof ObjectReference ? "^" : "")
         );
         this.local = local;
@@ -62,7 +62,8 @@ org.netbeans.api.debugger.jpda.LocalVariable {
             model, 
             value, 
             genericSignature, 
-            local.name () + (value instanceof ObjectReference ? "^" : "")
+            local.name () + local.hashCode() +
+                (value instanceof ObjectReference ? "^" : "")
         );
         this.local = local;
         this.className = className;
