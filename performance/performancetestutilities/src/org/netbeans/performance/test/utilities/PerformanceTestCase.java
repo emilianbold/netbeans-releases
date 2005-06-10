@@ -478,6 +478,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     
     /**
      * Test that measures detailed memory usage.
+     * (not reporting anything from here, the test has to call reportDetailMemoryUsage() in one of its methods!)
      * <br>
      * <br>If during measurement exception arise - test fails and no value is reported as Performance Data.
      * <p>Each test should reset the state in {@link close()} method.</p>
@@ -518,7 +519,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             }
         }
         
-        reportDetailMemoryUsage();
+        // not reporting anything from here, the test has to call reportDetailMemoryUsage() in one of its methods!
+        //reportDetailMemoryUsage();
         
         try {
             
@@ -538,8 +540,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
     }
     
-    public void reportDetailMemoryUsage() {
+    public void reportDetailMemoryUsage(int runOrder) {
 
+        log ("----------------------------------------------");
         // what platform are we running on?
         String platformString = (System.getProperty("os.name","")+","+System.getProperty("os.arch","")).replace(' ','_');
         boolean onunix = platformString.equalsIgnoreCase("Linux,i386") || platformString.equalsIgnoreCase("SunOS,sparc");
@@ -565,20 +568,20 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             String commandoutput;
             
             log (commandoutput = executeNativeCommand ("jstat -class " + pid));
-            reportPerformance ("Loaded",Long.valueOf(getOutputSubstring(commandoutput,1,0)).longValue(),"classes",0);
-            reportPerformance ("Unloaded",Long.valueOf(getOutputSubstring(commandoutput,1,2)).longValue(),"classes",0);
+            reportPerformance ("Loaded",Long.valueOf(getOutputSubstring(commandoutput,1,0)).longValue(),"classes",runOrder);
+            reportPerformance ("Unloaded",Long.valueOf(getOutputSubstring(commandoutput,1,2)).longValue(),"classes",runOrder);
             
             log (commandoutput = executeNativeCommand ("jstat -gc " + pid));
-            reportPerformance ("S0U+S1U+EU",Float.valueOf(getOutputSubstring(commandoutput,1,2)).longValue()+Float.valueOf(getOutputSubstring(commandoutput,1,3)).longValue()+Float.valueOf(getOutputSubstring(commandoutput,1,5)).longValue(),"kB",0);
-            reportPerformance ("0U",Float.valueOf(getOutputSubstring(commandoutput,1,7)).longValue(),"kB",0);
-            reportPerformance ("PU",Float.valueOf(getOutputSubstring(commandoutput,1,9)).longValue(),"kB",0);
-            reportPerformance ("YGC",Float.valueOf(getOutputSubstring(commandoutput,1,10)).longValue(),"occurences",0);
-            reportPerformance ("YGCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,11)).floatValue()*1000),"ms",0);
-            reportPerformance ("FGC",Float.valueOf(getOutputSubstring(commandoutput,1,12)).longValue(),"occurences",0);
-            reportPerformance ("FGCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,13)).floatValue()*1000),"ms",0);
-            reportPerformance ("GCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,14)).floatValue()*1000),"ms",0);
+            reportPerformance ("S0U+S1U+EU",Float.valueOf(getOutputSubstring(commandoutput,1,2)).longValue()+Float.valueOf(getOutputSubstring(commandoutput,1,3)).longValue()+Float.valueOf(getOutputSubstring(commandoutput,1,5)).longValue(),"kB",runOrder);
+            reportPerformance ("0U",Float.valueOf(getOutputSubstring(commandoutput,1,7)).longValue(),"kB",runOrder);
+            reportPerformance ("PU",Float.valueOf(getOutputSubstring(commandoutput,1,9)).longValue(),"kB",runOrder);
+            reportPerformance ("YGC",Float.valueOf(getOutputSubstring(commandoutput,1,10)).longValue(),"occurences",runOrder);
+            reportPerformance ("YGCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,11)).floatValue()*1000),"ms",runOrder);
+            reportPerformance ("FGC",Float.valueOf(getOutputSubstring(commandoutput,1,12)).longValue(),"occurences",runOrder);
+            reportPerformance ("FGCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,13)).floatValue()*1000),"ms",runOrder);
+            reportPerformance ("GCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,14)).floatValue()*1000),"ms",runOrder);
             
-            //log (commandoutput = executeNativeCommand ("footprint -s 1 -p " + pid + " 2>&1"));
+            //log (commandoutput = executeNativeCommand ("bash -c \"footprint -s 1 -p " + pid + " 2>&1\""));
         }
         
         runGC(5);
@@ -586,10 +589,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         Runtime runtime = Runtime.getRuntime();
         long totalHeap = runtime.totalMemory();
         long heapUsage = totalHeap - runtime.freeMemory();
-        reportPerformance ("Used Heap", heapUsage/1024, "kB", 0);
-        reportPerformance ("Heap Capacity", totalHeap/1024, "kB", 0);
-        log ("Heap = " + heapUsage + "/" + totalHeap);
-        log ("-----------------------");
+        reportPerformance ("Used Heap", heapUsage/1024, "kB", runOrder);
+        reportPerformance ("Heap Capacity", totalHeap/1024, "kB", runOrder);
+        log ("Heap = " + (long)(heapUsage/1024) + "/" + (long)(totalHeap/1024));
+        log ("----------------------------------------------");
     }
 
     private String getOutputSubstring (String source, int line, int item) {
