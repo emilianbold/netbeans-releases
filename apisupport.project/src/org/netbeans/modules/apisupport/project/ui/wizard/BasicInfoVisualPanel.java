@@ -201,12 +201,13 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
         infoPanel.setLayout(new java.awt.GridBagLayout());
 
         nameLbl.setLabelFor(nameValue);
         org.openide.awt.Mnemonics.setLocalizedText(nameLbl, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_ProjectName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         infoPanel.add(nameLbl, gridBagConstraints);
@@ -217,7 +218,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 12);
         infoPanel.add(locationLbl, gridBagConstraints);
 
         folderLbl.setLabelFor(folderValue);
@@ -231,6 +232,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
 
         nameValue.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -242,6 +245,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         infoPanel.add(locationValue, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_BrowseButton_o"));
@@ -254,7 +258,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 0);
         infoPanel.add(browseButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -276,7 +280,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(infoPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -284,7 +288,6 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         add(separator2, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_SetAsMainProject"));
@@ -313,6 +316,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         typeChooserPanel.add(standAloneModule, gridBagConstraints);
 
         platform.setLabelFor(platformValue);
@@ -321,7 +325,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 12);
         typeChooserPanel.add(platform, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -346,7 +350,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         typeChooserPanel.add(suiteModule, gridBagConstraints);
 
         moduleSuite.setLabelFor(moduleSuiteValue);
@@ -355,7 +359,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 18, 0, 12);
         typeChooserPanel.add(moduleSuite, gridBagConstraints);
 
         moduleSuiteValue.addActionListener(new java.awt.event.ActionListener() {
@@ -370,7 +374,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         typeChooserPanel.add(moduleSuiteValue, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseSuiteButton, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_BrowseButton_w"));
@@ -384,6 +388,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         typeChooserPanel.add(browseSuiteButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -396,6 +401,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(typeChooserPanel, gridBagConstraints);
 
     }

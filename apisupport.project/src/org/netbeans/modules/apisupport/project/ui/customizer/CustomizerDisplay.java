@@ -182,8 +182,9 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 6);
         add(longDesc, gridBagConstraints);
 
         hackPanel.setLayout(new java.awt.BorderLayout());

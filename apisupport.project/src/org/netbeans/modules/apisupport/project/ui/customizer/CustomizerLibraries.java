@@ -104,10 +104,10 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 2, 0);
         add(modDepLabel, gridBagConstraints);
 
-        depButtonPanel.setLayout(new java.awt.GridLayout(4, 1));
+        depButtonPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(addDepButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddButton"));
         addDepButton.addActionListener(new java.awt.event.ActionListener() {
@@ -116,7 +116,9 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
             }
         });
 
-        depButtonPanel.add(addDepButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        depButtonPanel.add(addDepButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(removeDepButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton"));
         removeDepButton.addActionListener(new java.awt.event.ActionListener() {
@@ -125,9 +127,18 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
             }
         });
 
-        depButtonPanel.add(removeDepButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        depButtonPanel.add(removeDepButton, gridBagConstraints);
 
-        depButtonPanel.add(space1);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.weighty = 1.0;
+        depButtonPanel.add(space1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(editDepButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_EditButton"));
         editDepButton.addActionListener(new java.awt.event.ActionListener() {
@@ -136,7 +147,12 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
             }
         });
 
-        depButtonPanel.add(editDepButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
+        depButtonPanel.add(editDepButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -166,6 +182,7 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         platformPanel.add(platformValue, gridBagConstraints);
 
+        platform.setLabelFor(platformValue);
         org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_NetBeansPlatform"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

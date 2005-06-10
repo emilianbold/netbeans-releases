@@ -144,14 +144,13 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
         confPanel.setLayout(new java.awt.GridBagLayout());
 
         codeNameBase.setLabelFor(codeNameBaseValue);
         org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_CodeNameBase"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 12);
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 12);
         confPanel.add(codeNameBase, gridBagConstraints);
 
         displayName.setLabelFor(displayNameValue);
@@ -160,7 +159,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         confPanel.add(displayName, gridBagConstraints);
 
         bundle.setLabelFor(bundleValue);
@@ -169,7 +168,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(24, 0, 1, 12);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 12);
         confPanel.add(bundle, gridBagConstraints);
 
         layer.setLabelFor(layerValue);
@@ -178,14 +177,14 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         confPanel.add(layer, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 0);
         confPanel.add(codeNameBaseValue, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -193,7 +192,6 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
         confPanel.add(displayNameValue, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -201,7 +199,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(24, 0, 1, 0);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         confPanel.add(bundleValue, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -209,7 +207,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         confPanel.add(layerValue, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

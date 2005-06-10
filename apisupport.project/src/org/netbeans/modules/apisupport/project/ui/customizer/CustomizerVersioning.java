@@ -186,7 +186,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(majorRelVer, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -195,7 +195,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(majorRelVerValue, gridBagConstraints);
 
         specificationVer.setLabelFor(specificationVerValue);
@@ -231,7 +231,6 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(implVerValue, gridBagConstraints);
 
         tokens.setLabelFor(implVerValue);
@@ -241,7 +240,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 12);
         add(tokens, gridBagConstraints);
 
         tokensValue.setEnabled(false);
@@ -251,7 +250,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         add(tokensValue, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(appendImpl, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_AppendImplementation"));
@@ -262,7 +261,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(appendImpl, gridBagConstraints);
 
         moduleTypeGroup.add(regularMod);
@@ -275,7 +274,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         add(regularMod, gridBagConstraints);
 
         moduleTypeGroup.add(autoloadMod);
@@ -287,7 +286,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(autoloadMod, gridBagConstraints);
 
         moduleTypeGroup.add(eagerMod);
@@ -308,7 +307,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 2, 12);
         add(publicPkgs, gridBagConstraints);
 
         friends.setLabelFor(implVerValue);
@@ -319,7 +318,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 12);
         add(friends, gridBagConstraints);
 
         bottomPanel.setLayout(new java.awt.GridBagLayout());
@@ -352,7 +351,7 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         buttonPanel.add(removeFriendButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
