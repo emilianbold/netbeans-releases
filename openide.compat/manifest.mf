@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.openide.compat
 OpenIDE-Module-Specification-Version: 6.2
-JST-PENDING_OpenIDE-Module-Localizing-Bundle: org/openide/compat/Bundle.properties
+OpenIDE-Module-Deprecated: true
+OpenIDE-Module-Localizing-Bundle: org/openide/compat/Bundle.properties
 
