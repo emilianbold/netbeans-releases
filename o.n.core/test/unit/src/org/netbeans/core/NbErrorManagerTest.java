@@ -260,4 +260,57 @@ public class NbErrorManagerTest extends NbTestCase {
         
     }
     
+    // Noticed as part of analysis of #59807 stack trace: Throwable.initCause tricky!
+    public void testCatchMarker() throws Exception {
+        try {
+            m1();
+            fail();
+        } catch (IOException e) {
+            err.notify(ErrorManager.INFORMATIONAL, e);
+            String s = w.toString();
+            assertTrue("added [catch] marker in simple cases", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
+        }
+        w.reset();
+        try {
+            m3();
+            fail();
+        } catch (IOException e) {
+            err.notify(ErrorManager.INFORMATIONAL, e);
+            String s = w.toString();
+            assertTrue("added [catch] marker in compound exception", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
+        }
+        w.reset();
+        try {
+            m5();
+            fail();
+        } catch (InterruptedException e) {
+            err.notify(ErrorManager.INFORMATIONAL, e);
+            String s = w.toString();
+            assertTrue("added [catch] marker in multiply compound exception", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
+        }
+    }
+    private static void m1() throws IOException {
+        m2();
+    }
+    private static void m2() throws IOException {
+        throw new IOException();
+    }
+    private static void m3() throws IOException {
+        try {
+            m4();
+        } catch (ClassNotFoundException e) {
+            throw (IOException) new IOException().initCause(e);
+        }
+    }
+    private static void m4() throws ClassNotFoundException {
+        throw new ClassNotFoundException();
+    }
+    private static void m5() throws InterruptedException {
+        try {
+            m3();
+        } catch (IOException e) {
+            throw (InterruptedException) new InterruptedException().initCause(e);
+        }
+    }
+    
 }

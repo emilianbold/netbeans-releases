@@ -724,16 +724,18 @@ public final class NbErrorManager extends ErrorManager {
                 // Play it safe.
                 t.printStackTrace(pw);
             } else {
-            // All other kinds of throwables we check for a stack trace.
-            String[] tLines = decompose (t);
-            String[] hereLines = decompose (new Throwable ());
-            int idx = -1;
-            for (int i = 1; i <= Math.min (tLines.length, hereLines.length); i++) {
-                if (! tLines[tLines.length - i].equals (hereLines[hereLines.length - i])) {
-                    idx = tLines.length - i;
-                    break;
+                // All other kinds of throwables we check for a stack trace.
+                // First try to find where the throwable was caught.
+                StackTraceElement[] tStack = t.getStackTrace();
+                StackTraceElement[] hereStack = new Throwable().getStackTrace();
+                int idx = -1;
+                for (int i = 1; i <= Math.min(tStack.length, hereStack.length); i++) {
+                    if (!tStack[tStack.length - i].equals(hereStack[hereStack.length - i])) {
+                        idx = tStack.length - i + 1;
+                        break;
+                    }
                 }
-            }
+            String[] tLines = decompose (t);
             for (int i = 0; i < tLines.length; i++) {
                 if (i == idx) {
                     pw.print ("[catch]"); // NOI18N
@@ -763,8 +765,6 @@ public final class NbErrorManager extends ErrorManager {
 
         /** Get a throwable's stack trace, decomposed into individual lines. */
         private  String[] decompose (Throwable t) {
-            // XXX using JDK 1.4's StackTraceElement[] Throwable.getStackTrace()
-            // might be much better...
             StringWriter sw = new StringWriter ();
             t.printStackTrace (new PrintWriter (sw));
             StringTokenizer tok = new StringTokenizer (sw.toString (), "\n\r"); // NOI18N
