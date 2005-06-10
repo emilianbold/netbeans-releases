@@ -29,10 +29,11 @@ final class BinaryEntry extends AbstractEntry {
     private final String releaseVersion;
     private final String specVersion;
     private LocalizedBundleInfo bundleInfo;
-    private ManifestManager.PackageExport[] publicPackages;
+    private final ManifestManager.PackageExport[] publicPackages;
+    private final boolean deprecated;
     
     public BinaryEntry(String cnb, File jar, File[] exts, File nbdestdir, File clusterDir,
-            String releaseVersion, String specVersion, ManifestManager.PackageExport[] publicPackages) {
+            String releaseVersion, String specVersion, ManifestManager.PackageExport[] publicPackages, boolean deprecated) {
         this.cnb = cnb;
         this.jar = jar;
         this.nbdestdir = nbdestdir;
@@ -46,6 +47,7 @@ final class BinaryEntry extends AbstractEntry {
         this.releaseVersion = releaseVersion;
         this.specVersion = specVersion;
         this.publicPackages = publicPackages;
+        this.deprecated = deprecated;
     }
     
     //private boolean recurring;
@@ -105,6 +107,10 @@ final class BinaryEntry extends AbstractEntry {
     
     public ManifestManager.PackageExport[] getPublicPackages() {
         return publicPackages;
+    }
+    
+    public boolean isDeprecated() {
+        return deprecated;
     }
     
     public String toString() {

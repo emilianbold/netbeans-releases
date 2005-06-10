@@ -26,11 +26,12 @@ final class ExternalEntry extends AbstractEntryWithSources {
     private final File nbdestdir;
     private final String releaseVersion;
     private final String specVersion;
-    private ManifestManager.PackageExport[] publicPackages;
+    private final ManifestManager.PackageExport[] publicPackages;
+    private final boolean deprecated;
     
     public ExternalEntry(File basedir, String cnb, File clusterDir, File jar,
             String cpext, File nbdestdir, String releaseVersion, String specVersion,
-            ManifestManager.PackageExport[] publicPackages) {
+            ManifestManager.PackageExport[] publicPackages, boolean deprecated) {
         this.basedir = basedir;
         this.cnb = cnb;
         this.clusterDir = clusterDir;
@@ -40,6 +41,7 @@ final class ExternalEntry extends AbstractEntryWithSources {
         this.releaseVersion = releaseVersion;
         this.specVersion = specVersion;
         this.publicPackages = publicPackages;
+        this.deprecated = deprecated;
     }
     
     public File getSourceLocation() {
@@ -80,6 +82,10 @@ final class ExternalEntry extends AbstractEntryWithSources {
     
     public ManifestManager.PackageExport[] getPublicPackages() {
         return publicPackages;
+    }
+    
+    public boolean isDeprecated() {
+        return deprecated;
     }
     
     public String toString() {

@@ -119,4 +119,10 @@ public interface ModuleEntry extends Comparable {
      * Get a set of class names defined in this module's public packages.
      */
     Set/*<String>*/ getPublicClassNames();
+    
+    /**
+     * Check whether this module is marked as deprecated.
+     */
+    boolean isDeprecated();
+    
 }

@@ -103,6 +103,7 @@ public class ModuleListTest extends TestBase {
         assertNotNull("release version", e.getReleaseVersion());
         assertNotNull("specification version", e.getSpecificationVersion());
         assertEquals("number of public packages for " + e, new Integer(5), new Integer(e.getPublicPackages().length));
+        assertFalse("not deprecated", e.isDeprecated());
         // Test something in a different cluster and dir:
         e = ml.getEntry("org.openide.filesystems");
         assertNotNull("have org.openide.filesystems", e);
@@ -131,6 +132,9 @@ public class ModuleListTest extends TestBase {
         assertEquals("correct CP extensions (using runtime-relative-path)",
             ":" + file("nbbuild/netbeans/ide5/modules/autoload/ext/tax.jar"),
             e.getClassPathExtensions());
+        e = ml.getEntry("org.openide.util.enumerations");
+        assertNotNull(e);
+        assertTrue("this one is deprecated", e.isDeprecated());
     }
     
     public void testExternalEntries() throws Exception {
@@ -182,6 +186,12 @@ public class ModuleListTest extends TestBase {
         assertEquals("and correct CP exts (using Class-Path only)",
             ":" + file("nbbuild/netbeans/ide5/modules/ext/xerces-2.6.2.jar") + ":" + file("nbbuild/netbeans/ide5/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
             e.getClassPathExtensions());
+        e = ml.getEntry("org.openide.util");
+        assertNotNull(e);
+        assertFalse("binary API not deprecated", e.isDeprecated());
+        e = ml.getEntry("org.openide.util.enumerations");
+        assertNotNull(e);
+        assertTrue("this one is deprecated", e.isDeprecated());
         // From suite3, can find itself and netbeans.org modules in binary form.
         ml = ModuleList.getModuleList(file(standaloneSuite3, "dummy-project"));
         e = ml.getEntry("org.netbeans.examples.modules.dummy");

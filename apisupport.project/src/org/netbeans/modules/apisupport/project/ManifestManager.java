@@ -44,6 +44,7 @@ public final class ManifestManager {
     private String layer;
     private String classPath;
     private PackageExport[] publicPackages;
+    private boolean deprecated;
     
     public static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
     public static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
@@ -57,12 +58,12 @@ public final class ManifestManager {
     static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
     
     public static final ManifestManager NULL_INSTANCE = new ManifestManager();
-    
+
     private ManifestManager() {}
     
     private ManifestManager(String cnb, String releaseVersion, String specVer,
             String implVer, String locBundle, String layer, String classPath,
-            PackageExport[] publicPackages) {
+            PackageExport[] publicPackages, boolean deprecated) {
         this.codeNameBase = cnb;
         this.releaseVersion = releaseVersion;
         this.specificationVersion = specVer;
@@ -71,6 +72,7 @@ public final class ManifestManager {
         this.layer = layer;
         this.classPath = classPath;
         this.publicPackages = publicPackages;
+        this.deprecated = deprecated;
     }
     
     public static ManifestManager getInstance(File manifest, boolean loadPublicPackages) {
@@ -134,6 +136,7 @@ public final class ManifestManager {
                 publicPackages = parseExportedPackages(pp);
             }
         }
+        boolean deprecated = "true".equals(attr.getValue("OpenIDE-Module-Deprecated"));
         ManifestManager mm = new ManifestManager(
                 codenamebase, releaseVersion,
                 attr.getValue(OPENIDE_MODULE_SPECIFICATION_VERSION),
@@ -141,7 +144,8 @@ public final class ManifestManager {
                 attr.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE),
                 attr.getValue(OPENIDE_MODULE_LAYER),
                 attr.getValue(CLASS_PATH),
-                publicPackages);
+                publicPackages,
+                deprecated);
         return mm;
     }
     
@@ -238,6 +242,10 @@ public final class ManifestManager {
     
     public PackageExport[] getPublicPackages() {
         return publicPackages;
+    }
+
+    public boolean isDeprecated() {
+        return deprecated;
     }
     
     /**
