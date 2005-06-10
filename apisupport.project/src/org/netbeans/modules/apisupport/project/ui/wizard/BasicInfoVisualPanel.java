@@ -49,10 +49,11 @@ import org.openide.windows.WindowManager;
 public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     private NewModuleProjectData data;
-
+    
     private boolean isNetBeansOrg;
-
+    
     private ButtonModel lastSelectedType;
+    private boolean wasLocationUpdate;
     
     /** Creates new form BasicInfoVisualPanel */
     public BasicInfoVisualPanel(WizardDescriptor setting, boolean showModuleTypeChooser) {
@@ -61,6 +62,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         this.data = (NewModuleProjectData) getSetting().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
         typeChooserPanel.setVisible(showModuleTypeChooser);
+        if (moduleSuiteValue.getItemCount() > 0) {
+            suiteModule.setSelected(true);
+            locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+        }
         nameValue.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { nameUpdated(); }
             public void removeUpdate(DocumentEvent e) { nameUpdated(); }
@@ -71,6 +76,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             public void removeUpdate(DocumentEvent e) { locationUpdated(); }
             public void changedUpdate(DocumentEvent e) {}
         });
+        updateEnabled();
     }
     
     private String getNameValue() {
@@ -79,6 +85,16 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     private String getLocationValue() {
         return locationValue.getText().trim();
+    }
+    
+    private void updateEnabled() {
+        boolean standalone = standAloneModule.isSelected();
+        boolean suiteModuleSelected = suiteModule.isSelected();
+        platform.setEnabled(standalone);
+        platformValue.setEnabled(standalone);
+        moduleSuite.setEnabled(suiteModuleSelected);
+        moduleSuiteValue.setEnabled(suiteModuleSelected);
+        browseSuiteButton.setEnabled(suiteModuleSelected);
     }
     
     private void nameUpdated() {
@@ -92,6 +108,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     }
     
     private void locationUpdated() {
+        wasLocationUpdate = true;
         // check module location
         File fLocation = new File(getLocationValue());
         if (!fLocation.exists()) {
@@ -408,6 +425,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     // </editor-fold>//GEN-END:initComponents
 
     private void moduleSuiteChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moduleSuiteChosen
+        if (!wasLocationUpdate) {
+            locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+            wasLocationUpdate = false;
+        }
         checkModuleSuite();
     }//GEN-LAST:event_moduleSuiteChosen
     
@@ -438,13 +459,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     }//GEN-LAST:event_browseModuleSuite
     
     private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
-        boolean standalone = standAloneModule.isSelected();
-        boolean suiteModuleSelected = suiteModule.isSelected();
-        platform.setEnabled(standalone);
-        platformValue.setEnabled(standalone);
-        moduleSuite.setEnabled(suiteModuleSelected);
-        moduleSuiteValue.setEnabled(suiteModuleSelected);
-        browseSuiteButton.setEnabled(suiteModuleSelected);
+        updateEnabled();
         checkModuleSuite();
     }//GEN-LAST:event_typeChanged
     
