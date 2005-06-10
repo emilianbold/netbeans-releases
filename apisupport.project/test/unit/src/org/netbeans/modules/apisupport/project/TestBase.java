@@ -127,6 +127,9 @@ public abstract class TestBase extends NbTestCase {
     
     private static void doCopy(File from, File to) throws IOException {
         if (from.isDirectory()) {
+            if (from.getName().equals("CVS")) {
+                return;
+            }
             to.mkdir();
             String[] kids = from.list();
             for (int i = 0; i < kids.length; i++) {
