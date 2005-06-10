@@ -537,6 +537,7 @@ public class LayoutDesigner implements LayoutConstants {
 
     private void paintAlignment(Graphics2D g, LayoutInterval interval, int dimension, int alignment) {
         LayoutInterval parent = interval.getParent();
+        boolean baseline = parent.isParallel() && (parent.getGroupAlignment() == BASELINE);
         LayoutRegion group = parent.getCurrentSpace();
         int opposite = (dimension == HORIZONTAL) ? VERTICAL : HORIZONTAL;
         int x1, x2, y;
@@ -545,22 +546,30 @@ public class LayoutDesigner implements LayoutConstants {
             int[] ya, yb;
             boolean x1group, x2group;
             if (index == 0) {
-                x1 = group.positions[dimension][LEADING];
+                x1 = group.positions[dimension][baseline ? BASELINE : LEADING];
                 ya = visualIntervalPosition(parent, opposite, LEADING);
                 x1group = LayoutInterval.getFirstParent(interval, PARALLEL).getParent() != null;
             } else {
                 LayoutInterval x1int = parent.getSubInterval(index-1);
-                x1 = x1int.getCurrentSpace().positions[dimension][TRAILING];
+                if (x1int.isParallel() && (x1int.getGroupAlignment() == BASELINE)) {
+                    x1 = x1int.getCurrentSpace().positions[dimension][BASELINE];
+                } else {
+                    x1 = x1int.getCurrentSpace().positions[dimension][TRAILING];
+                }
                 ya = visualIntervalPosition(x1int, opposite, TRAILING);
                 x1group = x1int.isGroup();
             }
             if (index + 1 == parent.getSubIntervalCount()) {
-                x2 = group.positions[dimension][TRAILING];
+                x2 = group.positions[dimension][baseline ? BASELINE : TRAILING];
                 yb = visualIntervalPosition(parent, opposite, TRAILING);
                 x2group = LayoutInterval.getFirstParent(interval, PARALLEL).getParent() != null;
             } else {
                 LayoutInterval x2int = parent.getSubInterval(index+1);
-                x2 = x2int.getCurrentSpace().positions[dimension][LEADING];
+                if (x2int.isParallel() && (x2int.getGroupAlignment() == BASELINE)) {
+                    x2 = x2int.getCurrentSpace().positions[dimension][BASELINE];
+                } else {
+                    x2 = x2int.getCurrentSpace().positions[dimension][LEADING];
+                }
                 yb = visualIntervalPosition(x2int, opposite, LEADING);
                 x2group = x2int.isGroup();
             }
@@ -591,17 +600,15 @@ public class LayoutDesigner implements LayoutConstants {
             }
         } else {
             LayoutRegion child = interval.getCurrentSpace();
-            switch (alignment) {
-                case LEADING:
-                    x1 = group.positions[dimension][LEADING];
-                    x2 = child.positions[dimension][LEADING];
-                    break;
-                case TRAILING:
-                    x1 = child.positions[dimension][TRAILING];
-                    x2 = group.positions[dimension][TRAILING];
-                    break;
-                default:
-                    return;
+            if ((alignment == LEADING) || (alignment == TRAILING)) {
+                x1 = group.positions[dimension][baseline ? BASELINE : alignment];
+                if (interval.isParallel() && (interval.getAlignment() == BASELINE)) {
+                    x2 = child.positions[dimension][BASELINE];
+                } else {
+                    x2 = child.positions[dimension][alignment];
+                }
+            } else {
+                return;
             }
             int[] pos = visualIntervalPosition(parent, opposite, alignment);
             y = (pos[0] + pos[1])/2;
@@ -646,7 +653,9 @@ public class LayoutDesigner implements LayoutConstants {
                 int temp = x; x = y; y = temp;
             }
             g.setStroke(oldStroke);
-            g.fillArc(x-diam, y-diam, 2*diam, 2*diam, angle, 180);
+            if ((alignment == LEADING) || (alignment == TRAILING)) {
+                g.fillArc(x-diam, y-diam, 2*diam, 2*diam, angle, 180);
+            }
         }
     }
     
