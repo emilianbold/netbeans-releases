@@ -43,7 +43,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
     private static final Action NEW_WATCH_ACTION = new AbstractAction
         (NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_AddNew")) {
             public void actionPerformed (ActionEvent e) {
-                new AddWatchAction ().actionPerformed (null);
+                ((AddWatchAction) AddWatchAction.findObject(AddWatchAction.class, true)).actionPerformed(null);
             }
     };
     private static final Action DELETE_ALL_ACTION = new AbstractAction 
