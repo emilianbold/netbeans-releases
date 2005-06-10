@@ -135,19 +135,20 @@ public class JBDeploymentManager implements DeploymentManager {
                     JBTargetModuleID child_module = new JBTargetModuleID( target[0] );
                     
                     if ( module_node.getTagName().equals("web")) {
-                        
-                        
-                        child_module.setJARName(module_node.getElementsByTagName("web-uri").item(0).getTextContent().trim());
-                        child_module.setContextURL("http://" + getHost()+":"+getPort() + module_node.getElementsByTagName("context-root").item(0).getTextContent().trim());
-                        
+                        //child_module.setJARName(module_node.getElementsByTagName("web-uri").item(0).getTextContent().trim()); // jdk 1.5
+                        child_module.setJARName(module_node.getElementsByTagName("web-uri").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
+                        //child_module.setContextURL("http://" + getHost()+":"+getPort() + module_node.getElementsByTagName("context-root").item(0).getTextContent().trim()); // jdk 1.5
+                        child_module.setContextURL("http://" + getHost()+":"+getPort() + module_node.getElementsByTagName("context-root").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
                     } else if(module_node.getTagName().equals("ejb")){
-                        child_module.setJARName(nlist.item(i).getTextContent().trim());
+//                        child_module.setJARName(nlist.item(i).getTextContent().trim()); // jdk 1.5
+                        child_module.setJARName(nlist.item(i).getFirstChild().getNodeValue().trim()); // jdk 1.4
                     }
                     module_id.addChild( child_module );
                 }
                 
             } else if (doctype.equals("jboss-web")){
-                module_id.setContextURL( server_url + dom.getElementsByTagName("context-root").item(0).getTextContent().trim());
+               // module_id.setContextURL( server_url + dom.getElementsByTagName("context-root").item(0).getTextContent().trim()); // jdk 1.5
+                module_id.setContextURL( server_url + dom.getElementsByTagName("context-root").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
             } else if (doctype.equals("ejb-jar")) {
                 
             }
