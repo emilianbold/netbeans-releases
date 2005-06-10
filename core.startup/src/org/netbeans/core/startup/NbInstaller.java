@@ -241,6 +241,8 @@ final class NbInstaller extends ModuleInstaller {
                 Util.err.notify(t);
             } catch (LinkageError le) {
                 Util.err.notify(le);
+            } catch (AssertionError e) {
+                Util.err.notify(e);
             }
 	    ev.log(Events.PERF_TICK, "ModuleInstall for " + m.getCodeName() + " called"); // NOI18N
         }
