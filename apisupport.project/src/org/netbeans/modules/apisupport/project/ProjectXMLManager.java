@@ -66,6 +66,7 @@ public final class ProjectXMLManager {
     private AntProjectHelper helper;
     private Project project;
     
+    private String cnb;
     private Set/*<ModuleDependency>*/ directDeps;
     private String[] publicPackages;
     
@@ -81,8 +82,7 @@ public final class ProjectXMLManager {
             return directDeps;
         }
         directDeps = new TreeSet();
-        Element confData = helper.getPrimaryConfigurationData(true);
-        Element moduleDependencies = findModuleDependencies(confData);
+        Element moduleDependencies = findModuleDependencies(getConfData());
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
         ModuleList ml = getModuleList();
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
@@ -134,7 +134,7 @@ public final class ProjectXMLManager {
     
     /** Remove given dependency from the configuration data. */
     public void removeDependency(String cnbToRemove) {
-        Element confData = helper.getPrimaryConfigurationData(true);
+        Element confData = getConfData();
         Element moduleDependencies = findModuleDependencies(confData);
         List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
@@ -167,7 +167,7 @@ public final class ProjectXMLManager {
      * iterating and using <code>removeDependency</code> for every entry.
      */
     public void removeDependenciesByCNB(Collection/*<String>*/ cnbsToDelete) {
-        Element confData = helper.getPrimaryConfigurationData(true);
+        Element confData = getConfData();
         Element moduleDependencies = findModuleDependencies(confData);
         List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
@@ -190,7 +190,7 @@ public final class ProjectXMLManager {
     }
     
     public void editDependency(ModuleDependency origDep, ModuleDependency newDep) {
-        Element confData = helper.getPrimaryConfigurationData(true);
+        Element confData = getConfData();
         Element moduleDependencies = findModuleDependencies(confData);
         List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
@@ -212,7 +212,7 @@ public final class ProjectXMLManager {
      * Adds given modules as module-dependencies for the project.
      */
     public void addDependencies(Set/*<ModuleDependency>*/ toAdd) {
-        Element confData = helper.getPrimaryConfigurationData(true);
+        Element confData = getConfData();
         Element moduleDependencies = findModuleDependencies(confData);
         for (Iterator it = toAdd.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
@@ -222,7 +222,7 @@ public final class ProjectXMLManager {
     }
     
     public void replaceDependencies(Set/*<ModuleDependency>*/ newDeps) {
-        Element confData = helper.getPrimaryConfigurationData(true);
+        Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         Element moduleDependencies = findModuleDependencies(confData);
         confData.removeChild(moduleDependencies);
@@ -237,7 +237,7 @@ public final class ProjectXMLManager {
     }
     
     public void replacePublicPackages(String[] newPackages) {
-        Element confData = helper.getPrimaryConfigurationData(true);
+        Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         Element publicPackages = findPublicPackagesElement(confData);
         confData.removeChild(publicPackages);
@@ -254,13 +254,23 @@ public final class ProjectXMLManager {
         if (publicPackages != null) {
             return publicPackages;
         }
-        Element confData = helper.getPrimaryConfigurationData(true);
-        ManifestManager.PackageExport[] pp = ProjectXMLManager.findPublicPackages(confData);
+        ManifestManager.PackageExport[] pp = 
+                ProjectXMLManager.findPublicPackages(getConfData());
         publicPackages = new String[pp.length];
         for (int i = 0; i < pp.length; i++) {
             publicPackages[i] = pp[i].getPackage();
         }
         return publicPackages;
+    }
+    
+    public String getCodeNameBase() {
+        if (cnb == null) {
+            Element cnbEl = Util.findElement(getConfData(),
+                    ProjectXMLManager.CODE_NAME_BASE,
+                    NbModuleProjectType.NAMESPACE_SHARED);
+            cnb = Util.findText(cnbEl);
+        }
+        return cnb;
     }
     
     private void createModuleDependencyElement(
@@ -431,5 +441,9 @@ public final class ProjectXMLManager {
         } finally {
             lock.releaseLock();
         }
+    }
+    
+    private Element getConfData() {
+        return helper.getPrimaryConfigurationData(true);
     }
 }

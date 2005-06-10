@@ -32,7 +32,6 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-
 /**
  * Tests ProjectXMLManager class.
  *
@@ -67,6 +66,11 @@ public class ProjectXMLManagerTest extends TestBase {
     
     private ProjectXMLManager getNewMiscPXM() {
         return new ProjectXMLManager(miscProject.getHelper(), miscProject);
+    }
+    
+    public void testGetCodeNameBase() throws Exception {
+        assertEquals("action-project cnb", "org.netbeans.examples.modules.action", actionPXM.getCodeNameBase());
+        assertEquals("misc-project cnb", "org.netbeans.examples.modules.misc", miscPXM.getCodeNameBase());
     }
     
     public void testGetDirectDependencies() throws Exception {
