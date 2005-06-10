@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.openide</code-name-base>
             <module-dependencies>
+                <!-- XXX these should all be deleted; there are no sources here anyway! -->
                 <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
