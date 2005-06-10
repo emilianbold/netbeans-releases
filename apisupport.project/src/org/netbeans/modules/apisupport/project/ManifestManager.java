@@ -91,7 +91,7 @@ public final class ManifestManager {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        return mm;
+        return mm == null ? new ManifestManager() : mm;
     }
     
     public static ManifestManager getInstanceFromJAR(File jar) {
@@ -109,7 +109,7 @@ public final class ManifestManager {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        return mm;
+        return mm == null ? new ManifestManager() : mm;
     }
     
     static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages) {

@@ -180,7 +180,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         } else {
-            this.moduleProps = new NbModuleProperties(helper, evaluator, isStandalone);
+            this.moduleProps = new NbModuleProperties(helper, evaluator,
+                    isStandalone, getProjectXMLManipulator().getCodeNameBase());
             // XXX may be temporary solution - there is not exact spec what should be done
             this.locBundleProps = locBundlePropsPath == null ?
                 new EditableProperties() :
