@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Property;
 import org.apache.tools.ant.types.Path;
@@ -124,6 +125,13 @@ final class ModuleListParser {
         String cnb = XMLUtil.findText(cnbEl);
         // Clumsy but the best way I know of to evaluate properties.
         Project fakeproj = new Project();
+        if (project != null) {
+            // Try to debug any problems in the following definitions (cf. #59849).
+            Iterator it = project.getBuildListeners().iterator();
+            while (it.hasNext()) {
+                fakeproj.addBuildListener((BuildListener) it.next());
+            }
+        }
         fakeproj.setBaseDir(dir); // in case ${basedir} is used somewhere
         Property faketask = new Property();
         faketask.setProject(fakeproj);
