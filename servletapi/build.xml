@@ -19,14 +19,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="release" depends="init">
         <ant dir="../external" target="unscramble"/>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <copy file="../external/servlet-2.2.jar" tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/servlet-2.2.jar"/>
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy file="../external/servlet-2.2.jar" tofile="${cluster}/modules/ext/servlet-2.2.jar"/>
     </target>
 
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
         <makenbm file="build/${nbm}"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 productdir="${cluster}"
                  module="${module.jar}"
                  homepage="${nbm.homepage}"
                  distribution="http://${dist.base}/${nbm}"

@@ -131,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>src-bridge</package-root>
                 <classpath>${module.classpath}:${src-bridge.cp.extra}</classpath>
                 <built-to>build/bridge-classes</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/ant/nblib/bridge.jar</built-to>
+                <built-to>${cluster}/ant/nblib/bridge.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

@@ -63,7 +63,7 @@ public final class AntArtifactProviderImpl implements AntArtifactProvider {
         }
 
         public URI[] getArtifactLocations() {
-            String jarloc = eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}"); // NOI18N
+            String jarloc = eval.evaluate("${cluster}/${module.jar}"); // NOI18N
             File jar = helper.resolveFile(jarloc); // probably absolute anyway, now
             return new URI[] {
                 // This is a relative URI:

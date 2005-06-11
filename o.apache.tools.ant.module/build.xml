@@ -35,24 +35,24 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jar-bridge" depends="compile-bridge">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/bridge.jar" compress="false">
+        <mkdir dir="${cluster}/ant/nblib"/>
+        <jar jarfile="${cluster}/ant/nblib/bridge.jar" compress="false">
             <fileset dir="build/bridge-classes"/>
         </jar>
     </target>
 
     <target name="release" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/lib"/>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/ant/lib">
+        <mkdir dir="${cluster}/ant/lib"/>
+        <copy todir="${cluster}/ant/lib">
             <fileset dir="external/lib"/>
         </copy>
-        <unzip dest="${netbeans.dest.dir}/${cluster.dir}/ant">
+        <unzip dest="${cluster}/ant">
             <fileset dir="external">
                 <include name="ant-misc-*.zip"/>
             </fileset>
         </unzip>
         <chmod perm="ugo+x">
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}/ant/bin">
+            <fileset dir="${cluster}/ant/bin">
                 <exclude name="*.cmd"/>
                 <exclude name="*.bat"/>
             </fileset>
@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
         <makenbm file="build/${nbm}"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 productdir="${cluster}"
                  module="${module.jar}"
                  homepage="${nbm.homepage}"
                  distribution="http://${dist.base}/${nbm}"

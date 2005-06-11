@@ -49,14 +49,15 @@ public class ClassPathProviderImplTest extends TestBase {
         super(name);
     }
     
+    private File copyOfSuite2;
     private FileObject copyOfMiscDir;
     private NbModuleProject copyOfMiscProject;
     private ProjectXMLManager copyOfMiscXMLManager;
     
     protected void setUp() throws Exception {
         super.setUp();
-        File suite2 = copyFolder(file(EEP + "/suite2"));
-        File miscF = new File(suite2, "misc-project");
+        copyOfSuite2 = copyFolder(file(EEP + "/suite2"));
+        File miscF = new File(copyOfSuite2, "misc-project");
         copyOfMiscDir = FileUtil.toFileObject(miscF);
         copyOfMiscProject = (NbModuleProject) ProjectManager.getDefault().findProject(copyOfMiscDir);
         assertNotNull(copyOfMiscProject);
@@ -266,18 +267,16 @@ public class ClassPathProviderImplTest extends TestBase {
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
         Set/*<String>*/ expectedRoots = new TreeSet();
-        expectedRoots.add(urlForJar("nbbuild/netbeans/devel/modules/org-netbeans-examples-modules-misc.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/devel/modules/org-netbeans-examples-modules-lib.jar"));
+        expectedRoots.add(urlForJar(EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-lib.jar"));
         expectedRoots.add(urlForJar("xtest/lib/junit.jar")); // see note in testUnitTestClasspaths
         expectedRoots.add(urlForJar("nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar"));
-        assertTrue("misc is built already", file("nbbuild/netbeans/devel/modules/org-netbeans-examples-modules-misc.jar").isFile());
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
         // Now test in suite3, where there is no source...
         src = extexamples.getFileObject("suite3/dummy-project/test/unit/src");
         cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
         expectedRoots = new TreeSet();
-        expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/devel/modules/org-netbeans-examples-modules-dummy.jar"));
+        expectedRoots.add(urlForJar(EEP + "/suite3/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"));
         expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/random/modules/random.jar"));
         expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/ide5/modules/ext/junit-3.8.1.jar"));
         expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/testtools/modules/org-netbeans-modules-nbjunit.jar"));
@@ -430,7 +429,7 @@ public class ClassPathProviderImplTest extends TestBase {
     public void testUnitTestCompileClasspathChanges() throws Exception {
         ClassPath cp = ClassPath.getClassPath(copyOfMiscDir.getFileObject("test/unit/src"), ClassPath.COMPILE);
         Set/*<String>*/ expectedRoots = new TreeSet();
-        expectedRoots.add(urlForJar("nbbuild/netbeans/devel/modules/org-netbeans-examples-modules-misc.jar"));
+        expectedRoots.add(Util.urlForJar(file(copyOfSuite2, "build/cluster/modules/org-netbeans-examples-modules-misc.jar")).toExternalForm());
         expectedRoots.add(urlForJar("xtest/lib/junit.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar"));
         assertEquals("right initial COMPILE classpath", expectedRoots, urlsOfCp(cp));

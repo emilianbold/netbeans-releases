@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="core/swing/plaf" default="netbeans" basedir=".">
@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
         <java fork="true" classname="org.netbeans.swing.plaf.gtk.GtkToolbarUI" args="${application.args}">
             <classpath>
                 <path refid="cp"/>
-                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+                <pathelement location="${cluster}/${module.jar}"/>
             </classpath>
         </java>
     </target>

@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
         <makenbm file="build/${nbm}"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 productdir="${cluster}"
                  module="${module.jar}"
                  homepage="${nbm.homepage}"
                  distribution="http://${dist.base}/${nbm}"
@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext">
+        <copy todir="${cluster}/modules/ext">
             <fileset dir="../external">
                 <include name="jh*.jar"/>
             </fileset>

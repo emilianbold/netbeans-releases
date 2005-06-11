@@ -15,19 +15,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
     
-    <target name="test" depends="ant/project-test,build-misc-project,projectized-common.test"/>
-    <target name="test-single" depends="ant/project-test,build-misc-project,projectized-common.test-single"/>
+    <target name="test" depends="ant/project-test,projectized-common.test"/>
+    <target name="test-single" depends="ant/project-test,projectized-common.test-single"/>
     <target name="ant/project-test" depends="check-ant/project-test" unless="ant/project.test.built">
         <ant dir="../../ant/project" target="test-build"/>
     </target>
     <target name="check-ant/project-test">
         <available property="ant/project.test.built" file="../../ant/project/build/test/unit/classes"/>
-    </target>
-    <target name="build-misc-project">
-        <ant dir="test/unit/data/example-external-projects/suite2/misc-project" inheritall="false">
-            <property name="netbeans.dest.dir" location="${netbeans.dest.dir}"/>
-            <property name="harness.dir" location="${netbeans.dest.dir}/harness"/>
-        </ant>
     </target>
 
 </project>

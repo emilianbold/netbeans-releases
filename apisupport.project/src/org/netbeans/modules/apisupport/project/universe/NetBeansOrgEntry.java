@@ -21,7 +21,7 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     private final File nball;
     private final String cnb;
     private final String path;
-    private final String cluster;
+    private final File cluster;
     private final String module;
     private final String cpext;
     private final String releaseVersion;
@@ -29,7 +29,7 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     private final ManifestManager.PackageExport[] publicPackages;
     private final boolean deprecated;
     
-    public NetBeansOrgEntry(File nball, String cnb, String path, String cluster,
+    public NetBeansOrgEntry(File nball, String cnb, String path, File cluster,
             String module, String cpext, String releaseVersion, String specVersion,
             ManifestManager.PackageExport[] publicPackages, boolean deprecated) {
         this.nball = nball;
@@ -65,7 +65,7 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     }
     
     public File getClusterDirectory() {
-        return new File(getDestDir(), cluster);
+        return cluster;
     }
     
     public String getClassPathExtensions() {

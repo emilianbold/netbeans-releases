@@ -64,8 +64,10 @@ Microsystems, Inc. All Rights Reserved.
     <property name="cluster.dir.fallback" value="extra" />
     <setcluster name="cluster.dir" module="${module.name}" list="${clusters.list}" defaultLocation="${cluster.dir.fallback}"/>
 
+    <property name="cluster" location="${netbeans.dest.dir}/${cluster.dir}"/> <!-- #59872 -->
+
     <!-- Creating the output directory -->
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}"/>
+    <mkdir dir="${cluster}"/>
 
     <!-- Writing the module's cluster to property file -->
     <propertyfile file="${moduleCluster.file}">

@@ -19,14 +19,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="release" depends="init">
         <ant dir="../external" target="unscramble"/>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <copy file="../external/jsr88javax.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy file="../external/jsr88javax.jar" todir="${cluster}/modules/ext"/>
     </target>
 
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
         <makenbm file="build/${nbm}"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 productdir="${cluster}"
                  module="${module.jar}"
                  homepage="${nbm.homepage}"
                  distribution="http://${dist.base}/${nbm}"

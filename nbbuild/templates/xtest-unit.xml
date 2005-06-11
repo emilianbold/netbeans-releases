@@ -63,7 +63,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init-cp">
         <path id="test.unit.compile.cp">
             <pathelement path="${module.classpath}"/>
-            <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+            <pathelement location="${cluster}/${module.jar}"/>
             <pathelement path="${cp.extra}"/>
             <pathelement path="${test.unit.cp.extra}"/>
         </path>

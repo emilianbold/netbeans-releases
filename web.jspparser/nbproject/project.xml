@@ -86,9 +86,9 @@ Microsystems, Inc. All Rights Reserved.
             </public-packages>
             <extra-compilation-unit>
                 <package-root>extsrc</package-root>
-                <classpath>${module.classpath}:${netbeans.dest.dir}/${cluster.dir}/${module.jar}:${extsrc.cp.extra}</classpath>
+                <classpath>${module.classpath}:${cluster}/${module.jar}:${extsrc.cp.extra}</classpath>
                 <built-to>build/extclasses</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsp-parser-ext.jar</built-to>
+                <built-to>${cluster}/modules/ext/jsp-parser-ext.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

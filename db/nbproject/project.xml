@@ -90,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>libsrc</package-root>
                 <classpath>${lib.cp}</classpath>
                 <built-to>build/lib-classes</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/ddl.jar</built-to>
+                <built-to>${cluster}/modules/ext/ddl.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

@@ -47,7 +47,8 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
     
     public void testOwnershipExternal() throws Exception {
         // Will not normally exist when test is run:
-        assertOwnership(EEP + "/suite1/action-project", "nbbuild/netbeans/devel/modules/org-netbeans-examples-modules-action.jar");
+        assertOwnership(EEP + "/suite1/action-project", EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar");
+        assertOwnership(EEP + "/suite1/action-project", EEP + "/suite1/build/cluster/update_tracking/org-netbeans-examples-modules-action.xml");
     }
     
     private void assertOwnership(String project, String file) throws Exception {

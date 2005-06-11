@@ -25,8 +25,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy todir="build/antclasses">
             <fileset dir="antsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </copy>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
+        <mkdir dir="${cluster}/ant/nblib"/>
+        <jar jarfile="${cluster}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
             <fileset dir="build/antclasses"/>
         </jar>
     </target>
@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
    </target>
 
    <target name="jar-cli" depends="init,compile-cli">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/core" />
+        <mkdir dir="${cluster}/core" />
         <jar jarfile="${cli.jar.absolute}" compress="${build.package.compress}">
             <fileset dir="build/cliclasses"/>
         </jar>

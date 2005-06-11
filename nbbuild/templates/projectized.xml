@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="reload" depends="netbeans">
         <ant dir="${nb_all}/nbbuild" target="tryme">
-            <property name="tryme.debug.args" value="--reload ${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+            <property name="tryme.debug.args" value="--reload ${cluster}/${module.jar}"/>
         </ant>
     </target>
     
@@ -121,8 +121,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy tofile="${build.javahelp.dir}/org/netbeans/modules/usersguide/ide.css"
               file="${nb_all}/usersguide/javahelp/org/netbeans/modules/usersguide/ide.css"
               failonerror="false"/>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${javahelp.jar.dir}"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${javahelp.jar}" compress="true">
+        <mkdir dir="${cluster}/${javahelp.jar.dir}"/>
+        <jar jarfile="${cluster}/${javahelp.jar}" compress="true">
             <fileset dir="${build.javahelp.dir}">
                 <!-- XXX this does not exclude the folder, unfortunately... -->
                 <exclude name="org/netbeans/modules/usersguide/ide.css"/>

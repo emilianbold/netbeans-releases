@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars" depends="compile,timestamp">
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/org-netbeans-modules-testtools.jar"
+    <jar jarfile="${cluster}/modules/org-netbeans-modules-testtools.jar"
          manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
@@ -84,13 +84,13 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars,javahelp">
-    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/config/Modules">
-      <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
+    <createmodulexml xmldir="${cluster}/config/Modules">
+      <enabled dir="${cluster}">
         <include name="modules/org-netbeans-modules-testtools.jar"/>
       </enabled>
     </createmodulexml>
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="modules/org-netbeans-modules-testtools.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+    <genlist outputfiledir="${cluster}" module="modules/org-netbeans-modules-testtools.jar">
+      <fileset dir="${cluster}">
         <patternset refID="testtools.files"/>
       </fileset>
     </genlist>
@@ -98,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="nbm" depends="netbeans">
     <makenbm file="testtools.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             productdir="${cluster}"
              module="modules/org-netbeans-modules-testtools.jar"
              homepage="http://testtools.${homepage.base}"
 	         distribution="http://${dist.base}/testtools.nbm">
@@ -118,7 +118,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="testtools-bundle.zip"/>
     <delete>
       <fileset dir="." includes="*.nbm"/>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+      <fileset dir="${cluster}">
           <patternset refID="testtools.files"/>
       </fileset>
     </delete>
@@ -169,8 +169,8 @@ Microsystems, Inc. All Rights Reserved.
     </jhindexer>
     <mkdir dir="javahelp/org/netbeans/modules/usersguide"/>
     <copy file="${nbroot}/usersguide/javahelp/org/netbeans/modules/usersguide/ide.css" tofile="javahelp/org/netbeans/modules/usersguide/ide.css"/>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/docs"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/docs/testtools.jar" compress="true">
+    <mkdir dir="${cluster}/modules/docs"/>
+    <jar jarfile="${cluster}/modules/docs/testtools.jar" compress="true">
         <fileset dir="javahelp" excludesfile="${nbext}/standard-jar-excludes.txt" excludes="org/netbeans/modules/usersguide/"/>
     </jar>
   </target>

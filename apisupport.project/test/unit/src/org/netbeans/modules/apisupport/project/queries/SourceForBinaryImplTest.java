@@ -58,10 +58,10 @@ public class SourceForBinaryImplTest extends TestBase {
     
     public void testExternalModules() throws Exception {
         ProjectManager.getDefault().findProject(FileUtil.toFileObject(file(EEP + "/suite1/action-project")));
-        check(EEP + "/suite1/action-project/src", "devel/modules/org-netbeans-examples-modules-action.jar");
+        check(EEP + "/suite1/action-project/src", file(EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar"));
         ProjectManager.getDefault().findProject(FileUtil.toFileObject(file(EEP + "/suite3/dummy-project")));
         check(EEP + "/suite3/dummy-project/src",
-              file(EEP + "/suite3/nbplatform/devel/modules/org-netbeans-examples-modules-dummy.jar"));
+              file(EEP + "/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"));
     }
     
     private void check(String srcS, File jarF) throws Exception {

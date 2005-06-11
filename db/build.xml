@@ -28,8 +28,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jar-lib" depends="compile-lib">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext" />
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/ddl.jar" compress="false">
+        <mkdir dir="${cluster}/modules/ext" />
+        <jar jarfile="${cluster}/modules/ext/ddl.jar" compress="false">
             <fileset dir="build/lib-classes" />
         </jar>
     </target>

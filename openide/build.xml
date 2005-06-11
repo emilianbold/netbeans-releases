@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="clean" description="Remove all build products." depends="init">
     <delete dir="build"/>
     <delete>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+      <fileset dir="${cluster}">
         <patternset refID="openide.files"/>
       </fileset>
     </delete>
@@ -62,9 +62,9 @@ Microsystems, Inc. All Rights Reserved.
             </batchtest>
             <classpath>
                 <!-- XXX what now?
-                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar"/>
+                <pathelement location="${cluster}/core/openide.jar"/>
                 -->
-                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide-loaders.jar" />
+                <pathelement location="${cluster}/core/openide-loaders.jar" />
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
                 <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
@@ -80,9 +80,9 @@ Microsystems, Inc. All Rights Reserved.
         <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
             <classpath> 
                 <!-- XXX what now?
-                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar"/>
+                <pathelement location="${cluster}/core/openide.jar"/>
                 -->
-                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide-loaders.jar" />
+                <pathelement location="${cluster}/core/openide-loaders.jar" />
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
                 <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
@@ -101,9 +101,9 @@ Microsystems, Inc. All Rights Reserved.
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
             <classpath>
                 <!-- XXX what now?
-                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide.jar"/>
+                <pathelement location="${cluster}/core/openide.jar"/>
                 -->
-                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/core/openide-loaders.jar" />
+                <pathelement location="${cluster}/core/openide-loaders.jar" />
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
                 <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>

@@ -111,7 +111,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>serversrc</package-root>
                 <classpath>${module.classpath}:${server.cp.extra}:build/classes</classpath>
                 <built-to>build/server-classes</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/org-netbeans-modules-web-httpmonitor.jar</built-to>
+                <built-to>${cluster}/modules/ext/org-netbeans-modules-web-httpmonitor.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

@@ -54,13 +54,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="jars" depends="compile">
         <for-each locations="lib"/>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/autoload"/>
+        <mkdir dir="${cluster}/modules/autoload"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf">
             <filterchain>
                 <expandproperties/>
             </filterchain>
         </copy>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/autoload/xml-tax.jar"
+        <jar jarfile="${cluster}/modules/autoload/xml-tax.jar"
              manifest="manifest-subst.mf"
              compress="false">
             <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
@@ -73,8 +73,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="netbeans" depends="jars,release">
        <for-each locations="lib"/>
-       <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="modules/autoload/xml-tax.jar">
-          <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+       <genlist outputfiledir="${cluster}" module="modules/autoload/xml-tax.jar">
+          <fileset dir="${cluster}">
              <patternset refID="xml/tax.files"/>
           </fileset>
        </genlist>
@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="nbm" depends="netbeans">
         <makenbm file="xml-tax.nbm"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 productdir="${cluster}"
                  needsrestart="false"
                  module="modules/autoload/xml-tax.jar"
                  homepage="http://xml.${homepage.base}/tax/"
@@ -116,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+            <fileset dir="${cluster}">
               <patternset refID="xml/tax.files"/>
             </fileset>
         </delete>

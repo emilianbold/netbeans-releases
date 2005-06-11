@@ -186,7 +186,6 @@ public final class ModuleList {
         assert path != null ^ (standalone || suiteComponent);
         String cnb = Util.findText(Util.findElement(data, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED)); // NOI18N
         PropertyEvaluator eval = parseProperties(basedir, root, suiteComponent, standalone, cnb);
-        String cluster = eval.getProperty("cluster.dir"); // NOI18N
         String module = eval.getProperty("module.jar"); // NOI18N
         // Cf. ParseProjectXml.computeClasspath:
         StringBuffer cpextra = new StringBuffer();
@@ -205,7 +204,7 @@ public final class ModuleList {
                 assert runtimeRelativePath != null : "Malformed <class-path-extension> in " + basedir;
                 String reltext = Util.findText(runtimeRelativePath);
                 // XXX assumes that module.jar is not overridden independently of module.jar.dir:
-                text = "${netbeans.dest.dir}/${cluster.dir}/${module.jar.dir}/" + reltext;
+                text = "${cluster}/${module.jar.dir}/" + reltext;
             }
             String evaluated = eval.evaluate(text);
             if (evaluated == null) {
@@ -218,13 +217,13 @@ public final class ModuleList {
         File manifest = new File(basedir, "manifest.mf"); // NOI18N
         ManifestManager mm = (manifest.isFile() ? 
             ManifestManager.getInstance(manifest, false) : ManifestManager.NULL_INSTANCE);
+        File clusterDir = PropertyUtils.resolveFile(basedir, eval.evaluate("${cluster}"));
         ModuleEntry entry;
         if (!suiteComponent && !standalone) {
-            entry = new NetBeansOrgEntry(root, cnb, path, cluster, module, cpextra.toString(), 
+            entry = new NetBeansOrgEntry(root, cnb, path, clusterDir, module, cpextra.toString(), 
                     mm.getReleaseVersion(), mm.getSpecificationVersion(),
                     ProjectXMLManager.findPublicPackages(data), mm.isDeprecated());
         } else {
-            File clusterDir = PropertyUtils.resolveFile(basedir, eval.evaluate("${netbeans.dest.dir}/${cluster.dir}"));
             entry = new ExternalEntry(basedir, cnb, clusterDir, PropertyUtils.resolveFile(clusterDir, module),
                     cpextra.toString(), nbdestdir, mm.getReleaseVersion(), mm.getSpecificationVersion(),
                     ProjectXMLManager.findPublicPackages(data), mm.isDeprecated());
@@ -292,9 +291,7 @@ public final class ModuleList {
     }
     private static void findSourceNBMFilesMaybeAdd(Set/*<File>*/ files, File cluster, String path) {
         File f = new File(cluster, path.replace('/', File.separatorChar));
-        if (f.isFile()) {
-            files.add(f);
-        }
+        files.add(f);
     }
     private static final Map/*<File,String[]>*/ DIR_SCAN_CACHE = new HashMap();
     private static String[] scanDirForFiles(File dir) {
@@ -563,7 +560,7 @@ public final class ModuleList {
      * netbeans.dest.dir (file-valued)
      * module.jar (plain string)
      * module.jar.dir (plain string)
-     * cluster.dir (plain string)
+     * cluster (file-valued)
      * suite.dir (file-valued)
      * @param basedir project basedir
      * @param root root of sources (netbeans.org only)
@@ -620,14 +617,18 @@ public final class ModuleList {
         defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
-        String cluster = null;
-        if (isNetBeansOrg) {
-            cluster = findClusterLocation(basedir, root);
+        if (suiteComponent) {
+            defaults.put("cluster", "${suite.dir}/build/cluster"); // NOI18N
+        } else if (standalone) {
+            defaults.put("cluster", "build/cluster"); // NOI18N
+        } else {
+            // netbeans.org
+            String cluster = findClusterLocation(basedir, root);
+            if (cluster == null) {
+                cluster = "extra"; // NOI18N
+            }
+            defaults.put("cluster", "${netbeans.dest.dir}/" + cluster); // NOI18N
         }
-        if (cluster == null) {
-            cluster = isNetBeansOrg ? "extra" : "devel"; // NOI18N
-        }
-        defaults.put("cluster.dir", cluster); // NOI18N
         return PropertyUtils.sequentialPropertyEvaluator(predefsProvider, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
     }
     

@@ -26,8 +26,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jar-cli" depends="init,compile-cli">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/core" />
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/core/org-netbeans-modules-utilities-cli.jar"
+        <mkdir dir="${cluster}/core" />
+        <jar jarfile="${cluster}/core/org-netbeans-modules-utilities-cli.jar"
              compress="false">
             <fileset dir="build/cliclasses"/>
         </jar>

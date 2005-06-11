@@ -362,8 +362,7 @@ public final class NbModuleProject implements Project {
             assert thisEntry.getNetBeansOrgPath() == null : thisEntry;
         }
         File clusterDir = thisEntry.getClusterDirectory();
-        assert clusterDir.getParentFile().equals(thisEntry.getDestDir()) : "Did not find " + clusterDir + " right under " + thisEntry.getDestDir();
-        stock.put("cluster.dir", clusterDir.getName()); // NOI18N
+        stock.put("cluster", clusterDir.getAbsolutePath()); // NOI18N
         Map/*<String,String>*/ defaults = new HashMap();
         defaults.put("code.name.base.dashes", getCodeNameBase().replace('.', '-')); // NOI18N
         defaults.put("module.jar.dir", "modules"); // NOI18N
@@ -420,7 +419,7 @@ public final class NbModuleProject implements Project {
         buildDefaults.put("junit.jar", findJunitJar(baseEval)); // NOI18N
         buildDefaults.put("nbjunit.jar", findNbJunitJar(baseEval)); // NOI18N
         buildDefaults.put("test.unit.cp.extra", ""); // NOI18N
-        buildDefaults.put("test.unit.cp", "${cp}:${netbeans.dest.dir}/${cluster.dir}/${module.jar}:${junit.jar}:${nbjunit.jar}:${test.unit.cp.extra}"); // NOI18N
+        buildDefaults.put("test.unit.cp", "${cp}:${cluster}/${module.jar}:${junit.jar}:${nbjunit.jar}:${test.unit.cp.extra}"); // NOI18N
         buildDefaults.put("test.unit.run.cp.extra", ""); // NOI18N
         buildDefaults.put("test.unit.run.cp", "${test.unit.cp}:${build.test.unit.classes.dir}:${test.unit.run.cp.extra}"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(buildDefaults));
@@ -604,7 +603,7 @@ public final class NbModuleProject implements Project {
     
     public File getModuleJarLocation() {
         // XXX could use ModuleList here instead
-        return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
+        return helper.resolveFile(eval.evaluate("${cluster}/${module.jar}")); // NOI18N
     }
     
     public String getCodeNameBase() {

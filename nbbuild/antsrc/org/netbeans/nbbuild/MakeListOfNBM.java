@@ -13,17 +13,18 @@
 
 package org.netbeans.nbbuild;
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.taskdefs.*;
-import org.apache.tools.ant.types.*;
-import java.io.*;
-import java.util.zip.CRC32;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.StringTokenizer;
-import java.lang.reflect.Method;
 import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import java.util.jar.JarFile;
-import java.util.ArrayList;
+import java.util.zip.CRC32;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.FileSet;
 
 /**
  * Create an update tracking file automatically.
@@ -174,23 +175,26 @@ public class MakeListOfNBM extends Task {
             }
         }
         track.write();
-        String absolutePath = outputFile.getAbsolutePath();
-        String clusterDir = this.getProject().getProperty("cluster.dir");  //NOI18N
         String moduleName = this.getProject().getProperty("module.name"); //NOI18N
-        String outputPath = absolutePath.substring(0,absolutePath.length() - clusterDir.length());
+        if (moduleName == null) {
+            // external module?
+            return;
+        }
         String[] inc = new String[include.length+2];
         for (int i=0; i < include.length; i++)
             inc[i] = include[i];
         inc[include.length] = "config" + File.separator + "Modules" + File.separator + track.getTrackingFileName(); // NOI18N
         inc[include.length+1] = UpdateTracking.TRACKING_DIRECTORY + File.separator + track.getTrackingFileName();
-        ModuleTracking moduleTracking = new ModuleTracking( outputPath );
+        // Hack. We assume outputFile is a direct subdir of the dest dir.
+        ModuleTracking moduleTracking = new ModuleTracking(outputFile.getParentFile().getAbsolutePath());
         String nbmfilename = this.getProject().getProperty("nbm"); // NOI18N
         String nbmhomepage = this.getProject().getProperty("nbm.homepage"); // NOI18N
         String nbmneedsrestart = this.getProject().getProperty("nbm.needs.restart"); // NOI18N
         String nbmreleasedate = this.getProject().getProperty("nbm.release.date"); // NOI18N
 	String nbmmoduleauthor = this.getProject().getProperty("nbm.module.author"); // NOI18N
 	String nbmisglobal = this.getProject().getProperty("nbm.is.global"); // NOI18N
-        moduleTracking.putModule(moduleName, codename, clusterDir, nbmfilename, nbmhomepage, nbmneedsrestart, nbmreleasedate, nbmmoduleauthor, nbmisglobal, inc);
+        // ...and again here.
+        moduleTracking.putModule(moduleName, codename, outputFile.getName(), nbmfilename, nbmhomepage, nbmneedsrestart, nbmreleasedate, nbmmoduleauthor, nbmisglobal, inc);
         moduleTracking.write();
     }
 }

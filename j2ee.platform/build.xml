@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="j2ee-api-14" depends="j2ee-api-14-init">
-        <copy file="${external}/j2eeri-1_4-doc-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
+        <copy file="${external}/j2eeri-1_4-doc-api.zip" todir="${cluster}/docs"/>
     </target>
     
     <target name="netbeans-extra" depends="j2ee-api-14"/>

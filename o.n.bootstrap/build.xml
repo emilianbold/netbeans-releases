@@ -18,16 +18,16 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <copy file="../launcher/unix/nbexec" todir="${netbeans.dest.dir}/${cluster.dir}/lib" />
-        <chmod file="${netbeans.dest.dir}/${cluster.dir}/lib/nbexec" perm="ugo+rx"/>
-        <copy file="../launcher/windows/nbexec.exe" todir="${netbeans.dest.dir}/${cluster.dir}/lib/" />
-        <copy file="../launcher/os2/nbexec.cmd" todir="${netbeans.dest.dir}/${cluster.dir}/lib/" />
+        <copy file="../launcher/unix/nbexec" todir="${cluster}/lib" />
+        <chmod file="${cluster}/lib/nbexec" perm="ugo+rx"/>
+        <copy file="../launcher/windows/nbexec.exe" todir="${cluster}/lib/" />
+        <copy file="../launcher/os2/nbexec.cmd" todir="${cluster}/lib/" />
 
-        <fixcrlf srcdir="${netbeans.dest.dir}/${cluster.dir}/lib" eol="crlf">
+        <fixcrlf srcdir="${cluster}/lib" eol="crlf">
             <include name="**/*.bat"/>
             <include name="**/*.cmd"/>
         </fixcrlf>
-        <fixcrlf srcdir="${netbeans.dest.dir}/${cluster.dir}/lib" eol="lf">
+        <fixcrlf srcdir="${cluster}/lib" eol="lf">
             <include name="**/*.sh"/>
             <include name="**/ide.cfg"/>
         </fixcrlf>

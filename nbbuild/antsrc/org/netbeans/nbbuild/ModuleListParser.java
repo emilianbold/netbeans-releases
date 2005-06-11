@@ -85,7 +85,7 @@ final class ModuleListParser {
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + kids[i].getName() : kids[i].getName();
             try {
-                scanPossibleProject(kids[i], entries, properties, newPathPrefix, true, project);
+                scanPossibleProject(kids[i], entries, properties, newPathPrefix, ParseProjectXml.TYPE_NB_ORG, project);
             } catch (SAXException e) {
                 throw (IOException) new IOException(e.toString()).initCause(e);
             }
@@ -96,7 +96,7 @@ final class ModuleListParser {
     /**
      * Check a single dir to see if it is an NBM project, and if so, register it.
      */
-    private static boolean scanPossibleProject(File dir, Map/*<String,Entry>*/ entries, Hashtable properties, String path, boolean isNetBeansOrg, Project project) throws IOException, SAXException {
+    private static boolean scanPossibleProject(File dir, Map/*<String,Entry>*/ entries, Hashtable properties, String path, int moduleType, Project project) throws IOException, SAXException {
         File nbproject = new File(dir, "nbproject");
         File projectxml = new File(nbproject, "project.xml");
         if (!projectxml.isFile()) {
@@ -150,7 +150,8 @@ final class ModuleListParser {
         faketask.setName("module.jar");
         faketask.setValue(fakeproj.replaceProperties("${module.jar.dir}/${module.jar.basename}"));
         faketask.execute();
-        if (isNetBeansOrg) {
+        switch (moduleType) {
+        case ParseProjectXml.TYPE_NB_ORG:
             assert path != null;
             // Find the associated cluster.
             Iterator it = properties.entrySet().iterator();
@@ -171,16 +172,33 @@ final class ModuleListParser {
             }
             faketask.setName("cluster.dir");
             faketask.setValue("extra"); // fallback
-        } else {
+            faketask.execute();
+            faketask.setName("netbeans.dest.dir");
+            faketask.setValue((String) properties.get("netbeans.dest.dir"));
+            faketask.execute();
+            faketask.setName("cluster");
+            faketask.setValue(fakeproj.replaceProperties("${netbeans.dest.dir}/${cluster.dir}"));
+            faketask.execute();
+            break;
+        case ParseProjectXml.TYPE_SUITE:
             assert path == null;
-            faketask.setName("cluster.dir");
-            faketask.setValue("devel"); // fallback
+            faketask.setName("suite.dir");
+            faketask.setValue((String) properties.get("suite.dir"));
+            faketask.execute();
+            faketask.setName("cluster");
+            faketask.setValue(fakeproj.replaceProperties("${suite.dir}/build/cluster"));
+            faketask.execute();
+            break;
+        case ParseProjectXml.TYPE_STANDALONE:
+            assert path == null;
+            faketask.setName("cluster");
+            faketask.setValue(fakeproj.replaceProperties("${basedir}/build/cluster"));
+            faketask.execute();
+            break;
+        default:
+            assert false : moduleType;
         }
-        faketask.execute();
-        faketask.setName("netbeans.dest.dir");
-        faketask.setValue((String) properties.get("netbeans.dest.dir"));
-        faketask.execute();
-        File jar = fakeproj.resolveFile(fakeproj.replaceProperties("${netbeans.dest.dir}/${cluster.dir}/${module.jar}"));
+        File jar = fakeproj.resolveFile(fakeproj.replaceProperties("${cluster}/${module.jar}"));
         List/*<File>*/ exts = new ArrayList();
         Iterator/*<Element>*/ extEls = XMLUtil.findSubElements(dataEl).iterator();
         while (extEls.hasNext()) {
@@ -366,7 +384,7 @@ final class ModuleListParser {
                 throw new IOException("No such module " + module + " referred to from " + suite);
             }
             try {
-                if (!scanPossibleProject(module, entries, properties, null, false, project)) {
+                if (!scanPossibleProject(module, entries, properties, null, ParseProjectXml.TYPE_SUITE, project)) {
                     throw new IOException("No valid module found in " + module + " referred to from " + suite);
                 }
             } catch (SAXException e) {
@@ -381,7 +399,7 @@ final class ModuleListParser {
         if (entry == null) {
             Map/*<String,Entries>*/ entries = new HashMap();
             try {
-                if (!scanPossibleProject(basedir, entries, properties, null, false, project)) {
+                if (!scanPossibleProject(basedir, entries, properties, null, ParseProjectXml.TYPE_STANDALONE, project)) {
                     throw new IOException("No valid module found in " + basedir);
                 }
             } catch (SAXException e) {

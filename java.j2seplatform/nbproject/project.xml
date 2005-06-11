@@ -125,7 +125,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>probesrc</package-root>
                 <classpath/>
                 <built-to>build/probe/classes</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/org-netbeans-modules-java-j2seplatform-probe.jar</built-to>
+                <built-to>${cluster}/modules/ext/org-netbeans-modules-java-j2seplatform-probe.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

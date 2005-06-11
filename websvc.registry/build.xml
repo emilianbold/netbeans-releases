@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="release" depends="build-init">
         <property name="runtimejars.file" value="websvc_runtimejars.xml"/>
-        <property name="runtimejars.path" value="${netbeans.dest.dir}/${cluster.dir}/config/WebServices"/>
+        <property name="runtimejars.path" value="${cluster}/config/WebServices"/>
         <copy file="${runtimejars.file}" tofile="${runtimejars.path}/${runtimejars.file}" filtering="on">
             <filterset>
                 <filter token="CLUSTER_DIR" value="${cluster.dir}"/>
@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="extsrc" destdir="build/extclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
             <classpath>
                 <path path="${module.classpath}"/>
-                <path location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+                <path location="${cluster}/${module.jar}"/>
                 <path path="${extsrc.cp.extra}"/>
             </classpath>
         </javac>
@@ -42,8 +42,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="ext-jar" depends="ext-compile">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/websvcregistry.jar" compress="false" >
+        <mkdir dir="${cluster}/modules/ext"/>
+        <jar jarfile="${cluster}/modules/ext/websvcregistry.jar" compress="false" >
             <fileset dir="build/extclasses"/>
         </jar>
     </target>

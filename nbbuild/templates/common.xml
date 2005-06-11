@@ -109,7 +109,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jar-prep" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${module.jar.dir}"/>
+        <mkdir dir="${cluster}/${module.jar.dir}"/>
         <tstamp>
             <format property="buildnumber" pattern="yyMMdd" timezone="UTC"/>
         </tstamp>
@@ -121,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- so might have to use e.g. <manifest> task (created in build/ somewhere)? -->
         <!-- Cf: http://issues.apache.org/bugzilla/show_bug.cgi?id=29085 -->
         <!-- This task adds some or all of: -Public-Packages, -Friends, Class-Path, -IDE-Dependencies, -Module-Dependencies, -Specification-Version, -Implementation-Version, -Build-Version -->
-        <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
+        <jarwithmoduleattributes jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <fileset dir="${build.classes.dir}"/>
         </jarwithmoduleattributes>
     </target>
@@ -130,40 +130,40 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra"/>
 
     <target name="module-xml-regular" if="is.regular">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/config/Modules"/>
-        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/config/Modules">
-            <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
+        <mkdir dir="${cluster}/config/Modules"/>
+        <createmodulexml xmldir="${cluster}/config/Modules">
+            <enabled dir="${cluster}">
                 <include name="${module.jar}"/>
             </enabled>
         </createmodulexml>
     </target>
 
     <target name="module-xml-autoload" if="is.autoload">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/config/Modules"/>
-        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/config/Modules">
-            <autoload dir="${netbeans.dest.dir}/${cluster.dir}">
+        <mkdir dir="${cluster}/config/Modules"/>
+        <createmodulexml xmldir="${cluster}/config/Modules">
+            <autoload dir="${cluster}">
                 <include name="${module.jar}"/>
             </autoload>
         </createmodulexml>
     </target>
 
     <target name="module-xml-eager" if="is.eager">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/config/Modules"/>
-        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/config/Modules">
-            <eager dir="${netbeans.dest.dir}/${cluster.dir}">
+        <mkdir dir="${cluster}/config/Modules"/>
+        <createmodulexml xmldir="${cluster}/config/Modules">
+            <eager dir="${cluster}">
                 <include name="${module.jar}"/>
             </eager>
         </createmodulexml>
     </target>
 
     <target name="module-auto-deps" depends="basic-init" if="has.module.auto.deps">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/config/ModuleAutoDeps"/>
-        <copy file="${module.auto.deps.xml}" tofile="${netbeans.dest.dir}/${cluster.dir}/config/ModuleAutoDeps/${code.name.base.dashes}.xml"/>
+        <mkdir dir="${cluster}/config/ModuleAutoDeps"/>
+        <copy file="${module.auto.deps.xml}" tofile="${cluster}/config/ModuleAutoDeps/${code.name.base.dashes}.xml"/>
     </target>
 
     <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp,module-auto-deps">
-        <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${module.jar}">
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <genlist outputfiledir="${cluster}" module="${module.jar}">
+            <fileset dir="${cluster}">
                 <patternset refid="module.files"/>
             </fileset>
         </genlist>
@@ -172,7 +172,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
         <makenbm file="build/${nbm}"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 productdir="${cluster}"
                  module="${module.jar}"
                  homepage="${nbm.homepage}"
                  distribution="${nbm.distribution}"
@@ -193,7 +193,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.filter.trace" value="true"/>
         <path id="test.unit.cp">
             <path refid="cp"/>
-            <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+            <pathelement location="${cluster}/${module.jar}"/>
             <path refid="test.unit.lib.cp"/>
             <pathelement path="${test.unit.cp.extra}"/>
         </path>
@@ -331,11 +331,11 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
         <delete file="${netbeans.javadoc.dir}/${code.name.base.dashes}.zip"/>
         <delete failonerror="false"> <!-- #59457: OK if cluster does not exist currently -->
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+            <fileset dir="${cluster}">
                 <patternset refid="module.files"/>
             </fileset>
         </delete>
-        <delete file="${netbeans.dest.dir}/${cluster.dir}/update_tracking/${code.name.base.dashes}.xml"/>
+        <delete file="${cluster}/update_tracking/${code.name.base.dashes}.xml"/>
     </target>
 
     <target name="fix-dependencies" depends="basic-init" >

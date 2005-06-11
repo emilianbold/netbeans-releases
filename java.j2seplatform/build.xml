@@ -18,8 +18,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="probe" depends="init">
         <mkdir dir="build/probe/classes"/>
         <javac srcdir="probesrc" destdir="build/probe/classes" source="1.3" debug="true" deprecation="true" target="1.1"/>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/org-netbeans-modules-java-j2seplatform-probe.jar">
+        <mkdir dir="${cluster}/modules/ext"/>
+        <jar jarfile="${cluster}/modules/ext/org-netbeans-modules-java-j2seplatform-probe.jar">
             <fileset dir="build/probe/classes"/>
         </jar>
     </target>

@@ -18,10 +18,10 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/modules">
+        <copy todir="${cluster}/modules">
             <fileset dir="release/modules"/>
         </copy>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/sources">
+        <copy todir="${cluster}/sources">
             <fileset dir="release/sources"/>
         </copy>
     </target>

@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext">
+        <copy todir="${cluster}/modules/ext">
             <fileset file="external/webserver.jar"/>
         </copy>
     </target>

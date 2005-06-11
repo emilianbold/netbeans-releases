@@ -90,7 +90,7 @@ TODO:
         <property name="module.jar.dir" value="modules"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
-        <property name="coverage.path" location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+        <property name="coverage.path" location="${cluster}/${module.jar}"/>
         <echo>coverage.path=${coverage.path}</echo>
         <path id="coverage.path" path="${coverage.path}"/>
     </target>

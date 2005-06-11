@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>antsrc</package-root>
                 <classpath>${antsrc.cp}</classpath>
                 <built-to>build/antclasses</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/ant/nblib/${code.name.base.dashes}.jar</built-to>
+                <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

@@ -55,9 +55,7 @@ public class SubprojectProviderImplTest extends TestBase {
             EEP + "/suite1/support/lib-project",
             "openide/dialogs",
         });
-        checkSubprojects(EEP + "/suite1/support/lib-project", new String[] {
-            EEP + "/suite2/misc-project",
-        });
+        checkSubprojects(EEP + "/suite1/support/lib-project", new String[0]);
         // No sources for beans available, so no subprojects reported:
         checkSubprojects(EEP + "/suite3/dummy-project", new String[0]);
     }

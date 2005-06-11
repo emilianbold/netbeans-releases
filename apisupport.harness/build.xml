@@ -16,15 +16,15 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="release" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}"/>
-        <copy file="harness-build.xml" tofile="${netbeans.dest.dir}/${cluster.dir}/build.xml"/>
-        <copy file="suite-build.xml" tofile="${netbeans.dest.dir}/${cluster.dir}/suite.xml"/>
-        <copy file="${nb_all}/nbbuild/templates/common.xml" tofile="${netbeans.dest.dir}/${cluster.dir}/common.xml"/>
-        <copy file="README" tofile="${netbeans.dest.dir}/${cluster.dir}/README"/>
+        <mkdir dir="${cluster}"/>
+        <copy file="harness-build.xml" tofile="${cluster}/build.xml"/>
+        <copy file="suite-build.xml" tofile="${cluster}/suite.xml"/>
+        <copy file="${nb_all}/nbbuild/templates/common.xml" tofile="${cluster}/common.xml"/>
+        <copy file="README" tofile="${cluster}/README"/>
     </target>
     
     <target name="nbantext" depends="init">
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/tasks.jar" compress="${build.package.compress}" index="${build.package.index}">
+        <jar jarfile="${cluster}/tasks.jar" compress="${build.package.compress}" index="${build.package.index}">
             <!-- XXX would be more maintainable to use depfind.sf.net / genjar.sf.net / sadun-util.sf.net/pack.html -->
             <zipfileset src="${nb_all}/nbbuild/nbantext.jar" includes="${bundled.tasks}"/>
             <zipfileset file="taskdefs.properties" fullpath="org/netbeans/nbbuild/taskdefs.properties"/>

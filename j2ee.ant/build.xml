@@ -30,8 +30,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy todir="build/antclasses">
             <fileset dir="antsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </copy>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/org-netbeans-modules-j2ee-ant.jar" compress="false">
+        <mkdir dir="${cluster}/ant/nblib"/>
+        <jar jarfile="${cluster}/ant/nblib/org-netbeans-modules-j2ee-ant.jar" compress="false">
             <fileset dir="build/antclasses">
                 <excludesfile name="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
             </fileset>

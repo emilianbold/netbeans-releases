@@ -18,17 +18,17 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra">
         <!-- build jemmy.jar -->
         <ant dir=".." target="jar" inheritAll="false"/>
-        <copy file="../dist/jemmy.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy file="../dist/jemmy.jar" todir="${cluster}/modules/ext"/>
         <!-- create javadoc -->
         <antcall target="javadoc"/>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
-        <copy file="../dist/javadoc/org-netbeans-jemmy.zip" todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
+        <mkdir dir="${cluster}/docs"/>
+        <copy file="../dist/javadoc/org-netbeans-jemmy.zip" todir="${cluster}/docs"/>
     </target>
 
      <!-- overridden because we need to read jemmy version from version_info -->
     <target name="jar" depends="init,compile,jar-prep">
         <property file="../src/org/netbeans/jemmy/version_info"/>
-        <jarwithmoduleattributes jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
+        <jarwithmoduleattributes jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <fileset dir="${build.classes.dir}"/>
             <manifest>
                 <attribute name="OpenIDE-Module-Specification-Version" value="${Jemmy-MajorVersion}.${Jemmy-MinorVersion}"/>

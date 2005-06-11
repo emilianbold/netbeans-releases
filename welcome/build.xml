@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="release" depends="init">
-      <copy todir="${netbeans.dest.dir}/${cluster.dir}/docs">
+      <copy todir="${cluster}/docs">
 	<fileset dir="release/docs"/> 
       </copy>
     </target>

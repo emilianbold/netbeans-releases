@@ -19,8 +19,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="release" depends="init">
         <ant dir="../external" target="unscramble"/>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext">
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy todir="${cluster}/modules/ext">
             <fileset dir="../external">
                 <include name="xerces-2.6.2.jar"/>
                 <include name="xml-commons-dom-ranges-1.0.b2.jar"/>
@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
         <makenbm file="build/${nbm}"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 productdir="${cluster}"
                  module="${module.jar}"
                  homepage="${nbm.homepage}"
                  distribution="http://${dist.base}/${nbm}"

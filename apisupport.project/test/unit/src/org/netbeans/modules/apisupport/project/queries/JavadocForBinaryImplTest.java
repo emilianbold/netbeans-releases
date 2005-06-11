@@ -59,7 +59,7 @@ public class JavadocForBinaryImplTest extends TestBase {
     
     public void testJavadocForExternalModules() throws Exception {
         ProjectManager.getDefault().findProject(FileUtil.toFileObject(file(EEP + "/suite2/misc-project")));
-        File miscJar = file("nbbuild/netbeans/devel/modules/org-netbeans-examples-modules-misc.jar");
+        File miscJar = file(EEP + "/suite2/build/cluster/modules/org-netbeans-examples-modules-misc.jar");
         URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(miscJar)).getRoots();
         URL[] expectedRoots = new URL[] {
             Util.urlForDir(file(suite2, "misc-project/build/javadoc/org-netbeans-examples-modules-misc")),
@@ -68,7 +68,7 @@ public class JavadocForBinaryImplTest extends TestBase {
         };
         assertEquals("correct Javadoc roots for misc", urlSet(expectedRoots), urlSet(roots));
         ProjectManager.getDefault().findProject(FileUtil.toFileObject(file(EEP + "/suite3/dummy-project")));
-        File dummyJar = file(suite3, "nbplatform/devel/modules/org-netbeans-examples-modules-dummy.jar");
+        File dummyJar = file(suite3, "dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar");
         roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(dummyJar)).getRoots();
         expectedRoots = new URL[] {
             Util.urlForDir(file(suite3, "dummy-project/build/javadoc/org-netbeans-examples-modules-dummy")),

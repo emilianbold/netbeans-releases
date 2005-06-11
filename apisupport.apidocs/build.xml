@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="docs"/>
     
     <target name="docs-check" depends="init">
-        <property name="docs.dir" location="${netbeans.dest.dir}/${cluster.dir}/docs"/>
+        <property name="docs.dir" location="${cluster}/docs"/>
         <property name="docs.zip" location="${docs.dir}/NetBeansAPIs.zip"/>
         <available property="have.docs" file="${docs.zip}"/>
     </target>

@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="demo-init" depends="build-init">
         <path id="demo.cp">
             <path refid="cp"/>
-            <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+            <pathelement location="${cluster}/${module.jar}"/>
         </path>
         <path id="demo.run.cp">
             <path refid="demo.cp"/>
