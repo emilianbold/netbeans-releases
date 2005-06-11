@@ -222,7 +222,9 @@ public final class NbPlatform {
     public String getLabel() {
         if (label == null) {
             try {
-                label = computeDisplayName(nbdestdir);
+                label = isValid() ? computeDisplayName(nbdestdir) :
+                    "Invalid Platform (" + getDestDir().getAbsolutePath() + ")"; // NOI18N
+                // XXX Invalid Platform should be l18n-ized (?)
             } catch (IOException e) {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
                 label = nbdestdir.getAbsolutePath();
@@ -373,6 +375,14 @@ public final class NbPlatform {
                 PLATFORM_PREFIX + getID() + PLATFORM_JAVADOC_SUFFIX,
                 urlsToAntPath(roots));
         javadocRoots = roots;
+    }
+    
+    /** 
+     * Test whether this platform is valid or not. See
+     * {@link #isPlatformDirectory}
+     */
+    public boolean isValid() {
+        return NbPlatform.isPlatformDirectory(getDestDir());
     }
 
     private String urlsToAntPath(URL[] urls) {

@@ -23,7 +23,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
-
 /**
  * Represents customizer for managing NetBeans platforms.
  *
@@ -79,9 +78,18 @@ public final class NbPlatformCustomizer extends JPanel {
         }
         plfNameValue.setText(plaf.getLabel());
         plfFolderValue.setText(plaf.getDestDir().getAbsolutePath());
-        modulesTab.setPlatform(plaf);
-        sourcesTab.setPlatform(plaf);
-        javadocTab.setPlatform(plaf);
+        boolean isValid = plaf.isValid();
+        if (isValid) {
+            modulesTab.setPlatform(plaf);
+            sourcesTab.setPlatform(plaf);
+            javadocTab.setPlatform(plaf);
+        } else {
+            modulesTab.reset();
+            detailPane.setSelectedIndex(0);
+        }
+        detailPane.setEnabledAt(0, isValid);
+        detailPane.setEnabledAt(1, isValid);
+        detailPane.setEnabledAt(2, isValid);
         removeButton.setEnabled(!plaf.isDefault());
     }
     

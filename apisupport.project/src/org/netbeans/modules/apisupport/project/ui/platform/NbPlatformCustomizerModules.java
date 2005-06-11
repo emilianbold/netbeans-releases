@@ -13,9 +13,10 @@
 
 package org.netbeans.modules.apisupport.project.ui.platform;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
+import javax.swing.ListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-
 
 /**
  * Represents <em>Modules</em> tab in the NetBeans platforms customizer.
@@ -23,6 +24,8 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
  * @author Martin Krauskopf
  */
 final class NbPlatformCustomizerModules extends JPanel {
+    
+    private static final ListModel EMPTY_MODEL = new DefaultListModel();
     
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerModules() {
@@ -32,6 +35,10 @@ final class NbPlatformCustomizerModules extends JPanel {
     void setPlatform(NbPlatform plaf) {
         moduleList.setModel(
                 new ComponentFactory.ModuleEntryListModel(plaf.getModules()));
+    }
+
+    void reset() {
+        moduleList.setModel(EMPTY_MODEL);
     }
     
     /** This method is called from within the constructor to
@@ -73,7 +80,6 @@ final class NbPlatformCustomizerModules extends JPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel moduleLabel;
