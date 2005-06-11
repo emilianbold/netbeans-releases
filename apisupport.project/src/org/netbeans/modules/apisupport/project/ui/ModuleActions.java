@@ -33,6 +33,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
@@ -54,9 +55,9 @@ public final class ModuleActions implements ActionProvider {
         List/*<Action>*/ actions = new ArrayList();
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
-        actions.add(createGlobalAction(project, new String[] {"netbeans"}, "Build"));
-        actions.add(createGlobalAction(project, new String[] {"clean", "netbeans"}, "Clean and Build"));
-        actions.add(createGlobalAction(project, new String[] {"clean"}, "Clean"));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, "Build", null));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, "Clean and Build", null));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, "Clean", null));
         actions.add(null);
         boolean isNetBeansOrg;
         try {
@@ -72,11 +73,11 @@ public final class ModuleActions implements ActionProvider {
         } else {
             actions.add(createGlobalAction(project, new String[] {"run"}, "Run"));
         }
-        actions.add(createGlobalAction(project, new String[] {"debug"}, "Debug"));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, "Debug", null));
         actions.add(null);
         boolean testactions = false;
         if (project.supportsUnitTests()) {
-            actions.add(createGlobalAction(project, new String[] {"test"}, "Run Unit Tests"));
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, "Run Unit Tests", null));
             if (findTestBuildXml(project) != null) { // hide for external modules w/o XTest infrastructure
                 Properties props = new Properties();
                 props.setProperty("xtest.testtype", "unit"); // NOI18N
@@ -107,7 +108,7 @@ public final class ModuleActions implements ActionProvider {
             actions.add(null);
         }
         if (project.supportsJavadoc()) {
-            actions.add(createGlobalAction(project, new String[] {"javadoc-nb"}, "Generate Javadoc"));
+            actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, "Generate Javadoc", null));
         }
         // Prefer to always show it, for discoverability: if (project.evaluator().getProperty("javadoc.arch") != null)
         actions.add(createGlobalAction(project, new String[] {"arch-nb"}, "Generate Architecture Description"));
@@ -116,7 +117,12 @@ public final class ModuleActions implements ActionProvider {
             actions.add(createCheckBundleAction(project, "Check for Unused Bundle Keys"));
             actions.add(null);
         }
-        actions.add(createGlobalAction(project, new String[] {"reload"}, "Install/Reload in Target Platform"));
+        if (isNetBeansOrg) {
+            // Currently no generic binding.
+            actions.add(createGlobalAction(project, new String[] {"reload"}, "Install/Reload in Target Platform"));
+        } else {
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, "Install/Reload in Target Platform", null));
+        }
         actions.add(createGlobalAction(project, new String[] {"nbm"}, "Create NBM"));
         actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
@@ -168,14 +174,23 @@ public final class ModuleActions implements ActionProvider {
     
     public ModuleActions(NbModuleProject project) {
         this.project = project;
+        boolean isNetBeansOrg;
+        try {
+            isNetBeansOrg = project.getModuleList().getEntry(project.getCodeNameBase()).getNetBeansOrgPath() != null;
+        } catch (IOException e) {
+            // What to do?
+            isNetBeansOrg = false;
+        }
         Set/*<String>*/ supportedActionsSet = new HashSet();
         globalCommands.put(ActionProvider.COMMAND_BUILD, new String[] {"netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_REBUILD, new String[] {"clean", "netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-        /* Too dangerous:
-        globalCommands.put(ActionProvider.COMMAND_RUN, new String[] {"reload"}); // NOI18N
-         */
+        if (isNetBeansOrg) {
+            // Too dangerous in this case?
+        } else {
+            globalCommands.put(ActionProvider.COMMAND_RUN, new String[] {"reload"}); // NOI18N
+        }
         if (project.supportsJavadoc()) {
             globalCommands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc-nb"}); // NOI18N
         }
