@@ -36,7 +36,6 @@ import org.openide.filesystems.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.zip.*;
 import java.util.regex.Pattern;
 
 /**
@@ -62,7 +61,6 @@ public class CvsVersioningSystem {
 
     private GlobalOptions defaultGlobalOptions;
     private FileStatusCache fileStatusCache;
-    private RefreshManager  refreshManager;
 
     private CvsLiteAdminHandler sah;
     private FilesystemHandler filesystemHandler;
@@ -88,9 +86,12 @@ public class CvsVersioningSystem {
         sah = new CvsLiteAdminHandler();
         loadCache();
         filesystemHandler  = new FilesystemHandler(this);
-        refreshManager = new RefreshManager(this);
         annotator = new Annotator(this);
         filesystemHandler.init();
+        // HACK: FileStatusProvider cannot do it itself
+        if (FileStatusProvider.getInstance() != null) {
+            fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
+        }
     }
 
     /**
@@ -125,70 +126,19 @@ public class CvsVersioningSystem {
      * Simple cache deserialization.
      */ 
     private void loadCache() {
-        HashMap kes = null;
-        ZipInputStream zis = null;
-        File cacheFile = null;
-        try {
-            cacheFile = computeCacheFile();
-            zis = new ZipInputStream(new FileInputStream(cacheFile));
-            zis.getNextEntry();
-            kes = (HashMap) new ObjectInputStream(zis).readObject();
-        } catch (FileNotFoundException e) {
-            // cache not present, ignore
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-            if (cacheFile != null) cacheFile.delete();
-        } finally {
-            if (zis != null) try { zis.close(); } catch (IOException e) {}
-        }
-        fileStatusCache = new FileStatusCache(this, kes);
+        fileStatusCache = new FileStatusCache(this);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 fileStatusCache.cleanUp();
             }
-        }, 5000);
-    }
-
-    /**
-     * Simple cache serialization.
-     * 
-     * @return true
-     */ 
-    boolean closing() {
-        ZipOutputStream zos = null;
-        try {
-            File cacheFile = computeCacheFile();
-            zos = new ZipOutputStream(new FileOutputStream(cacheFile));
-            ZipEntry ze = new ZipEntry("status-cache.bin");
-            zos.putNextEntry(ze);
-            fileStatusCache.writeCache(new ObjectOutputStream(zos));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (zos != null) try { zos.close(); } catch (IOException e) {}
-        }
-        return true;
-    }
-
-    private File computeCacheFile() {
-        File cacheFile;
-        String userDir = System.getProperty("netbeans.user");
-        if (userDir != null) {
-            File cachedir = new File(new File (userDir, "var"), "cache"); // NOI18N
-            cachedir.mkdirs();
-            cacheFile = new File(cachedir, "cvs-cache.zip"); // NOI18N
-        } else {
-            File cachedir = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
-            cacheFile = new File(cachedir, "cvs-cache.zip"); // NOI18N
-        }
-        return cacheFile;
+        }, 3000);
     }
 
     private CvsVersioningSystem() {
     }
 
     public CvsFileTableModel getFileTableModel(File [] roots, int displayStatuses) {
-        return CvsFileTableModel.getModel(roots, displayStatuses);
+        return new CvsFileTableModel(roots, displayStatuses);
     }
     
     /**
@@ -307,10 +257,6 @@ public class CvsVersioningSystem {
         listenerSupport.removeListener(listener);
     }
     
-    public RefreshManager getRefreshManager() {
-        return refreshManager;
-    }
-
     /**
      * Checks if the file is ignored by CVS module. This method assumes that the file is managed so
      * if you do not know this beforehand, you have to call isManaged() first.

@@ -15,7 +15,6 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.RequestProcessor;
 import org.netbeans.modules.versioning.spi.VersioningListener;
 import org.netbeans.modules.versioning.spi.VersioningEvent;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.CvsCommandsMenuItem;
@@ -39,37 +38,22 @@ import java.io.File;
  */
 public class FileStatusProvider extends AnnotationProvider implements VersioningListener {
 
-    private Annotator       annotator;
-    private FileStatusCache cache;
-
-    private final Set foldersToCompute = new HashSet(); 
-    private RequestProcessor.Task       computeIconsTask;
-
-    private static boolean alreadyCreated;
+    private static FileStatusProvider instance;
 
     public FileStatusProvider() {
-        synchronized(FileStatusProvider.class) {
-            assert alreadyCreated == false : "It must be singleton, otherwise two paralel computeIconsTasks, ..."; // NOI18N
-            alreadyCreated = true;
-        }
-        computeIconsTask = RequestProcessor.getDefault().create(new ComputeIconTask());
+        instance = this;
     }
 
-    private Annotator getAnnotator() {
-        if (annotator == null) {
-            annotator = CvsVersioningSystem.getInstance().getAnnotator();
-            cache = CvsVersioningSystem.getInstance().getStatusCache();
-            cache.addVersioningListener(this);
-        }
-        return annotator;
+    static FileStatusProvider getInstance() {
+        return instance;
     }
 
     public String annotateNameHtml(String name, Set files) {
-        return getAnnotator().annotateNameHtml(name, files, FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
+        return CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(name, files, FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
     }
     
     public String annotateName(String name, Set files) {
-        return getAnnotator().annotateName(name, files);
+        return CvsVersioningSystem.getInstance().getAnnotator().annotateName(name, files);
     }
 
     /**
@@ -106,18 +90,17 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
             return icon;
         }
 
-        roots = Collections.unmodifiableSet(roots);
-
-        try {
-            return getAnnotator().annotateFolderIcon(icon, iconType, roots);
-        } catch (FileStatusCache.InformationUnavailableException e) {
-            // we need to launch a task to scan these directories
-            synchronized(foldersToCompute) {
-                foldersToCompute.add(roots);
-                computeIconsTask.schedule(1000);
-                return icon;
+        boolean isVersioned = false;
+        for (Iterator i = roots.iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            if (new File(file, CvsVersioningSystem.FILENAME_CVS).isDirectory()) {
+                isVersioned = true;
+                break;
             }
         }
+        if (!isVersioned) return icon;
+
+        return CvsVersioningSystem.getInstance().getAnnotator().annotateFolderIcon(roots, icon);
     }
 
     public Action[] actions(Set files) {
@@ -150,46 +133,13 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
                 // ignore files in invalid filesystems
             }
         }
-        fo = FileUtil.toFileObject(file.getParentFile());
         try {
-            for (; fo != null; fo = fo.getParent()) {
-                fireFileStatusChanged(new FileStatusEvent(fo.getFileSystem(), fo, true, false));
+            for (file = file.getParentFile(); file != null; file = file.getParentFile()) {
+                fo = FileUtil.toFileObject(file);
+                if (fo != null) fireFileStatusChanged(new FileStatusEvent(fo.getFileSystem(), fo, true, false));
             }
         } catch (FileStateInvalidException e) {
             // ignore files in invalid filesystems
-        }
-    }
-
-    private class ComputeIconTask implements Runnable {
-        
-        public void run() {
-            Set toCompute = new HashSet();
-            for (;;) {
-                synchronized(foldersToCompute) {
-                    if (foldersToCompute.size() == 0) return;
-                    toCompute.clear();
-                    toCompute.addAll(foldersToCompute);
-                }
-                for (Iterator i = toCompute.iterator(); i.hasNext();) {
-                    Set roots = (Set) i.next();
-                    CvsVersioningSystem.getInstance().getFileTableModel((File[]) roots.toArray(new File[roots.size()]), FileInformation.STATUS_LOCAL_CHANGE).getNodes();
-                }
-                synchronized(foldersToCompute) {
-                    foldersToCompute.removeAll(toCompute);
-                }
-                for (Iterator i = toCompute.iterator(); i.hasNext();) {
-                    Set roots = (Set) i.next();
-                    for (Iterator j = roots.iterator(); j.hasNext();) {
-                        File file = (File) j.next();
-                        FileObject fo = FileUtil.toFileObject(file);
-                        try {
-                            fireFileStatusChanged(new FileStatusEvent(fo.getFileSystem(), fo, true, false));
-                        } catch (FileStateInvalidException e) {
-                            // ignore this state
-                        }
-                    }
-                }
-            }
         }
     }
 }

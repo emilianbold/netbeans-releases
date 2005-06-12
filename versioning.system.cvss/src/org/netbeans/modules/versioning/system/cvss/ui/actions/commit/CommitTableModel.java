@@ -28,6 +28,8 @@ import java.util.*;
 import java.io.File;
 
 /**
+ * Table model for the Commit dialog table.
+ *
  * @author Maros Sandor
  */
 class CommitTableModel extends AbstractTableModel {
@@ -99,7 +101,7 @@ class CommitTableModel extends AbstractTableModel {
         case 2:
             return commitOptions[rowIndex];
         case 3:
-            return Utils.getRelativePath(nodes[rowIndex].getFile().getParent());
+            return Utils.getRelativePath(nodes[rowIndex].getFile());
         default:
             throw new IllegalArgumentException("Column index out of range: " + columnIndex);
         }

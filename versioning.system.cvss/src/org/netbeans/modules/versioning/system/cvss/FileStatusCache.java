@@ -16,6 +16,8 @@ package org.netbeans.modules.versioning.system.cvss;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.spi.VersioningListener;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.lib.cvsclient.admin.Entry;
@@ -37,9 +39,9 @@ public class FileStatusCache {
     public static final Object EVENT_FILE_STATUS_CHANGED = new Object();
 
     /**
-     * A folder maps to this special Map IFF the folder itself is not managed and also does not contain any managed files/folders.
+     * A special map saying that no file inside the folder is managed.
      */ 
-    static final Map NOT_MANAGED_MAP = new NotManagedMap();
+    private static final Map NOT_MANAGED_MAP = new NotManagedMap();
         
     private static final int STATUS_MISSING =  
             FileInformation.STATUS_VERSIONED_NEWINREPOSITORY | 
@@ -67,9 +69,7 @@ public class FileStatusCache {
     private final CvsVersioningSystem   cvs;
     private final CvsLiteAdminHandler   sah;
 
-    private static final boolean TURBO_ENABLED = "turbo".equalsIgnoreCase(System.getProperty("netbeans.experimental.FileStatusCache"));  // NOI18N
-
-    /**
+    /*
      * Holds three kinds of information: what folders we have scanned, what files we have found
      * and what statuses of these files are.
      * If a directory is not found as a key in the map, we have not scanned it yet.
@@ -78,38 +78,32 @@ public class FileStatusCache {
      * to Collections.EMPTY_MAP. Entries in this map are created as directories are scanne, are never removed and
      * are updated by the refresh method.
      */
-    private final Map       scannedFolders;         // File => Map<File,FileInformation>
 
     private final Object    scanLock = new Object();
 
-    private Turbo           turbo;
+    private final Turbo     turbo;
     
-    private int             serialVersion = 0;
-
     /**
      * Identifies attribute that holds information about all non STATUS_VERSIONED_UPTODATE files.
      *
-     * <p>Key type: File identifying existing folder
-     * TODO allow non-existing folders to cover deep virtual structures
-     *
-     * <p>Value type: Map&lt;String (file name), FileInformation>
+     * <p>Key type: File identifying a folder
+     * <p>Value type: Map&lt;File, FileInformation>
      */
-    public static final String FILE_STATUS_MAP = "org.netbeans.modules.versioning.system.cvss-FILE_STATUS_MAP";  // NOI18N
+    private final String FILE_STATUS_MAP = DiskMapTurboProvider.ATTR_STATUS_MAP;
 
-    FileStatusCache(CvsVersioningSystem cvsVersioningSystem, HashMap cache) {
-        scannedFolders = cache == null ? new HashMap() : cache;
+    private DiskMapTurboProvider cacheProvider;
+
+    FileStatusCache(CvsVersioningSystem cvsVersioningSystem) {
         this.cvs = cvsVersioningSystem;
         sah = (CvsLiteAdminHandler) cvs.getAdminHandler();
 
-        if (TURBO_ENABLED) {
-            System.out.println("Turbo is active, netbeans.experimental.FileStatusCache property honored.");  // NOI18N
-            turbo = Turbo.createCustom(new CustomProviders() {
-                private final Set provider = Collections.singleton(new CacheTurboProvider());
-                public Iterator providers() {
-                    return provider.iterator();
-                }
-            }, 1, 100);
-        }
+        cacheProvider = new DiskMapTurboProvider();
+        turbo = Turbo.createCustom(new CustomProviders() {
+            private final Set providers = Collections.singleton(cacheProvider);
+            public Iterator providers() {
+                return providers.iterator();
+            }
+        }, 200, 5000);
     }
 
     // --- Public interface -------------------------------------------------
@@ -123,32 +117,45 @@ public class FileStatusCache {
      * @param dir folder to list
      * @return
      */ 
-    public File [] listFiles(File dir) {
+    private File [] listFiles(File dir) {
         Set files = getScannedFiles(dir).keySet();
         return (File[]) files.toArray(new File[files.size()]);
     }
 
     /**
-     * Behaves identically to listFiles method EXCEPT that it does not trigger file scanning. If this directory
-     * is not yet scanned, it throws an exception;
-     *  
-     * @param dir directory to list
-     * @return File [] files in this directory
-     * @throws InformationUnavailableException if this directory was not scanned yet
-     */ 
-    public File [] listFilesCached(File dir) throws InformationUnavailableException {
-        synchronized(onFolderInfp()) {
-            if (getFolderInfo(dir) == null) {
-                if (isNotManagedByDefault(dir)) {
-                    return new File[0];
+     * Lists <b>interesting files</b> that are known to be inside given folders.
+     * These are locally and remotely modified and ignored files. This method
+     * returns no folders.
+     *
+     * @param roots folders to examine
+     * @param includeStatus limit returned files to those having one of supplied statuses
+     * @return File [] array of interesting files
+     */
+    File [] listFiles(File [] roots, int includeStatus) {
+        Set set = new HashSet();
+        Map allFiles = cacheProvider.getAllModifiedValues();
+        for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            FileInformation info = (FileInformation) allFiles.get(file);
+            if (info.isDirectory() || (info.getStatus() & includeStatus) == 0) continue;
+            for (int j = 0; j < roots.length; j++) {
+                File root = roots[j];
+                if (root instanceof FlatFolder) {
+                    if (file.getParentFile().equals(root)) {
+                        set.add(file);
+                        break;
+                    }
                 } else {
-                    throw new InformationUnavailableException();
+                    if (Utils.isParentOrEqual(root, file)) {
+                        set.add(file);
+                        break;
+                    }
                 }
             }
         }
-        return listFiles(dir);
+        return (File[]) set.toArray(new File[set.size()]);
     }
-    
+
     /**
      * Determines the CVS status of a file. This method accesses disk and may block for a long period of time.
      * 
@@ -157,6 +164,7 @@ public class FileStatusCache {
      * @see FileInformation
      */ 
     public FileInformation getStatus(File file) {
+        if (file.getName().equals(CvsVersioningSystem.FILENAME_CVS)) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
         File dir = file.getParentFile();
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
@@ -170,21 +178,6 @@ public class FileStatusCache {
         return file.exists() ? FILE_INFORMATION_UPTODATE : FILE_INFORMATION_UNKNOWN;
     }
 
-    /**
-     * Determines the CVS status of a file. This method fails fast if the requested information is not readily available.
-     * 
-     * @param file file to get status for
-     * @return FileInformation structure containing the file status
-     * @throws InformationUnavailableException if status of the file is not readily available
-     * @see FileInformation
-     */ 
-    public FileInformation getStatusCached(File file) throws InformationUnavailableException {
-        synchronized(onFolderInfp()) {
-            if (getFolderInfo(file.getParentFile()) == null) throw new InformationUnavailableException();
-        }
-        return getStatus(file);
-    }
-    
     /**
      * Refreshes the status of the file given the repository status. Repository status is filled
      * in when this method is called while processing server output. 
@@ -203,16 +196,18 @@ public class FileStatusCache {
         if (current == null && !fi.isDirectory() && fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
             return fi;
         }
-        synchronized(onFolderInfp()) {
+        synchronized(turbo) {
+            Map newFiles = new HashMap(files);
             if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
-                files.remove(file);
-                removeFolderInfo(file); // remove mapping in case of directories
+                newFiles.remove(file);
+                turbo.writeEntry(file, FILE_STATUS_MAP, null);  // remove mapping in case of directories
             }
             else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
-                files.remove(file);
+                newFiles.remove(file);
             } else {
-                files.put(file, fi);
+                newFiles.put(file, fi);
             }
+            turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles);
         }
         if (file.isDirectory() && needRecursiveRefresh(fi, current)) {
             File [] content = listFiles(file);
@@ -227,9 +222,7 @@ public class FileStatusCache {
     private boolean needRecursiveRefresh(FileInformation fi, FileInformation current) {
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED || 
                 current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return true;
-        // we probably do not need this since file may become 'not managed' and vice versa only if configuration of 
-        // versioning roots changes and this is handled by refreshRoots()
-        if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED || 
+        if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED ||
                 current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) return true;
         return false;
     }
@@ -252,12 +245,13 @@ public class FileStatusCache {
      * @param dir directory to cleanup
      */ 
     public void clearVirtualDirectoryContents(File dir, boolean recursive) {
-        synchronized(onFolderInfp()) {
-            Map files = getFolderInfo(dir);
+        synchronized(turbo) {
+            Map files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
             if (files == null) {
                return;
             }
             Set set = new HashSet(files.keySet());
+            Map newMap = null;
             for (Iterator i = set.iterator(); i.hasNext();) {
                 File file = (File) i.next();
                 if (recursive && file.isDirectory()) {
@@ -265,25 +259,18 @@ public class FileStatusCache {
                 }
                 FileInformation fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
                 if ((fi.getStatus() & STATUS_MISSING) != 0) {
-                    files.keySet().remove(file);
+                    if (newMap == null) newMap = new HashMap(files);
+                    newMap.remove(file);
                 }
             }
+            if (newMap != null) turbo.writeEntry(dir, FILE_STATUS_MAP, newMap);
         }
     }
-    
+
     // --- Package private contract ------------------------------------------
     
-    /**
-     * Returns this cache's serial number. Serial number of the cache increases every time before 
-     * the {@link #EVENT_FILE_STATUS_CHANGED} is fired. If the number is the same across calls to this method, you can
-     * be sure that nothing changed in cache (or at least, nobody knows it yet). Serial versions exist to support
-     * consistent caching of results obtained from the cache.
-     * Later we can replace this mechanism by some direct notification of friend clients. 
-     * 
-     * @return int cache serial number
-     */ 
-    int getSerialVersion() {
-        return serialVersion;
+    Map getAllModifiedFiles() {
+        return cacheProvider.getAllModifiedValues();
     }
 
     void directoryContentChanged(File dir) {
@@ -292,114 +279,48 @@ public class FileStatusCache {
     }
     
     /**
-     * Used for simple serialization of cache.
-     * 
-     * @param oos stream to write to
-     */
-    void writeCache(ObjectOutputStream oos) throws IOException {
-        synchronized(scannedFolders) {
-            oos.writeObject(scannedFolders);
-        }
-    }
-
-    /**
      * Cleans up the cache by removing or correcting entries that are no longer valid or correct.
-     * TODO: implement full cleanup, may also speculatively delete some entries to limit cache size 
-     */ 
+     */
     void cleanUp() {
-        Set toRefresh = new HashSet();
-        ArrayList folders = new ArrayList();
-        synchronized(onFolderInfp()) {
-            folders = new ArrayList(scannedFolders.keySet());
-            for (Iterator i = scannedFolders.values().iterator(); i.hasNext();) {
-                Map map = (Map) i.next();
-                Set files = map.keySet();
-                for (Iterator j = files.iterator(); j.hasNext();) {
-                    File file = (File) j.next();
-                    FileInformation info = (FileInformation) map.get(file);
-                    if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                        toRefresh.add(file);
-                    }
-                }
-            }
-        }
-        for (Iterator i = folders.iterator(); i.hasNext();) {
-            File key = (File) i.next();
-            if (!key.isDirectory()) {
-                toRefresh.add(key);
-            }
-        }
-        for (Iterator i = toRefresh.iterator(); i.hasNext();) {
+        Map files = cacheProvider.getAllModifiedValues();
+        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            refresh(file, REPOSITORY_STATUS_UNKNOWN);
+            FileInformation info = (FileInformation) files.get(file);
+            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                refresh(file, REPOSITORY_STATUS_UNKNOWN);
+            }
         }
     }
         
     // --- Private methods ---------------------------------------------------
 
-    /** Access data structure, allows to swap impl. */
-    private void putFolderInfo(File dir, Map files) {
-        if (TURBO_ENABLED) {
-            turbo.writeEntry(dir, FILE_STATUS_MAP, files);
-        } else {
-            synchronized(onFolderInfp()) {
-                assert !dir.getName().equals(CvsVersioningSystem.FILENAME_CVS);
-                scannedFolders.put(dir, files);
-            }
-        }
-    }
-
-    private void removeFolderInfo(File dir) {
-        if (TURBO_ENABLED) {
-            turbo.writeEntry(dir, FILE_STATUS_MAP, null);
-        } else {
-            synchronized(onFolderInfp()) {
-                scannedFolders.remove(dir);
-            }
-        }
-    }
-    
-    /** Access data structure, allows to swap impl. */
-    private Map getFolderInfo(File dir) {
-        if (TURBO_ENABLED) {
-            return (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
-        } else {
-            assert Thread.holdsLock(scannedFolders);
-            return (Map) scannedFolders.get(dir);
-        }
-    }
-
-    /** Access data structure lock, allows to swap impl. */
-    private Object onFolderInfp() {
-        if (TURBO_ENABLED) {
-            return turbo;
-        } else {
-            return scannedFolders;
-        }
-    }
-
     private Map getScannedFiles(File dir) {
         Map files;
-        synchronized(onFolderInfp()) {
-            files = getFolderInfo(dir);
+        if (dir.getName().equals(CvsVersioningSystem.FILENAME_CVS)) return NOT_MANAGED_MAP;
+        synchronized(turbo) {
+            files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
             if (files != null) return files;
         }
         if (isNotManagedByDefault(dir)) {
             return NOT_MANAGED_MAP; 
         }
         synchronized(scanLock) {
-            synchronized(onFolderInfp()) {
-                files = getFolderInfo(dir);
+            synchronized(turbo) {
+                files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
                 if (files != null) return files;
             }
             files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
-            putFolderInfo(dir, files);
+            turbo.writeEntry(dir, FILE_STATUS_MAP, files);
+        }
+        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            FileInformation info = (FileInformation) files.get(file);
+            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) fireFileStatusChanged(file);
         }
         return files;
     }
 
     private boolean isNotManagedByDefault(File dir) {
-        if (dir.getName().equals(CvsVersioningSystem.FILENAME_CVS)) return true;
         return !dir.exists() && MetadataAttic.getMetadata(dir) == null;
     }
 
@@ -416,6 +337,7 @@ public class FileStatusCache {
         
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
+            if (file.getName().equals(CvsVersioningSystem.FILENAME_CVS)) continue;
             FileInformation fi = createFileInformation(file, REPOSITORY_STATUS_UNKNOWN);
             // directories are always in cache for listFiles() to work
             if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
@@ -566,7 +488,7 @@ public class FileStatusCache {
             return new FileInformation(FileInformation.STATUS_VERSIONED_NEWINREPOSITORY, isDirectory);
         } else if (repositoryStatus == REPOSITORY_STATUS_UPTODATE) {
             // server marks this file as uptodate and it does not have an entry, the file is probably listed in CVSROOT/cvsignore
-            if (getStatus(file.getParentFile()).getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            if (parentStatus == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
             } else {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, isDirectory);
@@ -602,21 +524,12 @@ public class FileStatusCache {
     }
     
     private void fireFileStatusChanged(File file) {
-        serialVersion++;
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, file);
     }
 
-    private static final class NotManagedMap extends AbstractMap implements Serializable {
+    private static final class NotManagedMap extends AbstractMap {
         public Set entrySet() {
             return Collections.EMPTY_SET;
         }
-        
-        private Object readResolve() {
-            return NOT_MANAGED_MAP;
-        }
-    }
-    
-    public static class InformationUnavailableException extends Exception {
-        
     }
 }

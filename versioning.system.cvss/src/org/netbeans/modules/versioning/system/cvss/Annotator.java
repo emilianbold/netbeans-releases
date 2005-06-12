@@ -33,13 +33,14 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitActio
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 
 import javax.swing.*;
 import java.util.*;
-import java.awt.Image;
 import java.text.MessageFormat;
 import java.io.File;
+import java.awt.*;
 
 /**
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
@@ -49,7 +50,9 @@ import java.io.File;
  */
 public class Annotator {
 
-    private static MessageFormat newLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");            
+    private static final ResourceBundle loc = NbBundle.getBundle(Annotator.class);
+
+    private static MessageFormat newLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
     private static MessageFormat addedLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");            
     private static MessageFormat modifiedLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
     private static MessageFormat removedLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
@@ -176,42 +179,66 @@ public class Annotator {
     }
 
     /**
-     * Adds a badge to folders that contain modified/conflicting files. 
-     * 
-     * @param icon original icon
-     * @param iconType size and type of the original icon 
-     * @param files set of files to annotate
-     * @return badged or original icon based on status of files in folders
-     */ 
-    Image annotateFolderIcon(Image icon, int iconType, Set files) throws FileStatusCache.InformationUnavailableException {
-        File [] rootFiles = (File[]) files.toArray(new File[files.size()]);
-
-        CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(rootFiles, FileInformation.STATUS_LOCAL_CHANGE).getNodesCached();
-        if (nodes.length == 0) {
-            return icon;
-        }
-
+     * Annotates icon of a node based on its versioning status.
+     *
+     * @param roots files that the node represents
+     * @param icon original node icon
+     * @return Image newly annotated icon or the original one
+     */
+    Image annotateFolderIcon(Set roots, Image icon) {
+        CvsModuleConfig config = CvsModuleConfig.getDefault();
         boolean allExcluded = true;
-        for (int i = 0; i < nodes.length; i++) {
-            CvsFileNode node = nodes[i];
-            int status = node.getInformation().getStatus();
-            if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png");
-                return Utilities.mergeImages(icon, badge, 16, 9);
-            }
-            CvsModuleConfig config = CvsModuleConfig.getDefault();
-            allExcluded &= config.isExcludedFromCommit(node.getFile().getAbsolutePath());
+        boolean modified = false;
+
+        Map modifiedFiles = cache.getAllModifiedFiles();
+        for (Iterator i = modifiedFiles.keySet().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            FileInformation info = (FileInformation) modifiedFiles.get(file);
+            if (info.isDirectory() || (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) == 0) i.remove();
         }
-        if (allExcluded) {
-            return icon;
-        } else {
+
+        for (Iterator i = roots.iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            if (file instanceof FlatFolder) {
+                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                    File mf = (File) j.next();
+                    if (mf.getParentFile().equals(file)) {
+                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                        if (info.isDirectory()) continue;
+                        int status = info.getStatus();
+                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png");
+                            return Utilities.mergeImages(icon, badge, 16, 9);
+                        }
+                        modified = true;
+                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
+                    }
+                }
+            } else {
+                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                    File mf = (File) j.next();
+                    if (Utils.isParentOrEqual(file, mf)) {
+                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                        int status = info.getStatus();
+                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png");
+                            return Utilities.mergeImages(icon, badge, 16, 9);
+                        }
+                        modified = true;
+                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
+                    }
+                }
+            }
+        }
+
+        if (modified && !allExcluded) {
             Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png");
             return Utilities.mergeImages(icon, badge, 16, 9);
+        } else {
+            return icon;
         }
     }
 
-    private static final ResourceBundle loc = NbBundle.getBundle(Annotator.class);
-    
     /**
      * Returns array of versioning actions that may be used to construct a popup menu. These actions
      * will act on currently activated nodes.

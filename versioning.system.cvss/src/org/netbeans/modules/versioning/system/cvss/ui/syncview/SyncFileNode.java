@@ -52,7 +52,6 @@ public class SyncFileNode extends AbstractNode {
     private SyncFileNode(Children children, CvsFileNode node) {
         super(children, Lookups.singleton(node));
         this.node = node;
-        CvsVersioningSystem.getInstance().getRefreshManager().registerNode(this, node.getFile());
         initProperties();
         refreshHtmlDisplayName();
     }
@@ -162,7 +161,7 @@ public class SyncFileNode extends AbstractNode {
 
         public PathProperty() {
             super(COLUMN_NAME_PATH, String.class, "Path", "Path");
-            shortPath = Utils.getRelativePath(node.getFile().getParent());
+            shortPath = Utils.getRelativePath(node.getFile());
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {

@@ -140,6 +140,7 @@ public class UpdateExecutor extends ExecutorSupport {
     private void refreshRecursively(File file) {
         if (cvs.isIgnoredFilename(file)) return;
         if (refreshedFiles.contains(file)) return;
+        if (cache.getStatus(file).getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return;
         if (file.isDirectory()) {
             File [] files = file.listFiles();
             for (int i = 0; i < files.length; i++) {
@@ -169,7 +170,7 @@ public class UpdateExecutor extends ExecutorSupport {
     }
 
     private void refreshFile(File file) {
-        if ((cache.getStatus(file.getParentFile()).getStatus() & FileInformation.STATUS_VERSIONED_UPTODATE) != 0) {
+        if (cache.getStatus(file.getParentFile()).getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
             cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
         } else {
             cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                

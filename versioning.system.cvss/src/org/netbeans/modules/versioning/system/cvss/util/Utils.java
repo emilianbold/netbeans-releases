@@ -214,43 +214,27 @@ public class Utils {
      * @return true if the second parameter represents the same file as the first parameter OR is its descendant (child)
      */ 
     public static boolean isParentOrEqual(File parent, File file) {
-        for (; file != null && !file.equals(parent); file = file.getParentFile());
-        return file != null;
+        return file.getAbsolutePath().startsWith(parent.getAbsolutePath());
     }
 
     /**
      * Computes relative path from the nearest versioned root.
-     * TODO: add second argument: File [] roots
      *
-     * @param path full path
+     * @param file a file
      * @return String relative path from the nearest versioned root. If this path does not describe a
      * versioned file, this method returns the full path itself. 
      */
-    public static String getRelativePath(String path) {
-        File file = FileUtil.normalizeFile(new File(path));
-        Project p = getProject(file);
-        if (p != null) {
-            String rootPath = FileUtil.toFile(p.getProjectDirectory()).getAbsolutePath();
-            int idx = rootPath.lastIndexOf(File.separatorChar);
-            return path.substring(idx == -1 ? 0 : idx + 1);
-        } else {
-            FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-            for (file = file.getParentFile(); file != null; file = file.getParentFile()) {
-                if (cache.getStatus(file).getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
-                    int idx = file.getAbsolutePath().lastIndexOf(File.separatorChar);
-                    return path.substring(idx == -1 ? 0 : idx + 1);
-                }
+    public static String getRelativePath(File file) {
+        String path = file.getAbsolutePath();
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        for (file = file.getParentFile(); file != null; file = file.getParentFile()) {
+            if (cache.getStatus(file).getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
+                return path.substring(file.getAbsolutePath().length() + 1);
             }
         }
         return path;
     }
     
-    private static Project getProject(File file) {
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) return null;
-        return FileOwnerQuery.getOwner(fo);
-    }
-
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 

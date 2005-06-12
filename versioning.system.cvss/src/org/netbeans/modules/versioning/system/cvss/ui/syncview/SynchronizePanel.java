@@ -70,6 +70,8 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private long lastEventTimestamp;
     private long flatModelTimestamp;
 
+    private static final RequestProcessor   rp = new RequestProcessor("CVS-VersioningView", 1);
+
     private final NoContentComponent noContentComponent = new NoContentComponent();
 
     /**
@@ -80,7 +82,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     public SynchronizePanel(CvsSynchronizeTopComponent parent) {
         this.parent = parent;
         this.cvs = CvsVersioningSystem.getInstance();
-        refreshTask = RequestProcessor.getDefault().create(new RefreshViewTask());            
+        refreshTask = rp.create(new RefreshViewTask());
         explorerManager = new ExplorerManager ();
         displayStatuses = FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE;
         noContentComponent.setLabel(loc.getString("MSG_No_Changes_All"));
@@ -89,8 +91,8 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         initComponents();
         setComponentsState();
         setVersioningComponent(syncTable.getComponent());
-        refreshTask.schedule(0);
-        
+        reScheduleRefresh(0);
+
         // XXX click it in form editor
         jPanel2.setFloatable(false);
         jPanel2.putClientProperty("JToolBar.isRollover", Boolean.TRUE);  // NOI18N
@@ -125,7 +127,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     void setRoots(File [] folders) {
         this.rootFiles = folders;
         lastEventTimestamp = System.currentTimeMillis();
-        refreshTask.schedule(0);
+        reScheduleRefresh(0);
     }
     
     public ExplorerManager getExplorerManager () {
@@ -201,10 +203,14 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
             });
             return;
         }
-        flatModelTimestamp = System.currentTimeMillis();
         final ProgressHandle ph = ProgressHandleFactory.createHandle(loc.getString("MSG_Refreshing_Versioning_View"));
         ph.start();
         final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(rootFiles, displayStatuses));  // takes long
+        if (nodes == null || Thread.interrupted()) {
+            ph.finish();
+            return;
+        }
+        flatModelTimestamp = System.currentTimeMillis();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (nodes.length > 0) {
@@ -222,6 +228,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         CvsFileNode [] fnodes = model.getNodes();
         SyncFileNode [] nodes = new SyncFileNode[fnodes.length];
         for (int i = 0; i < fnodes.length; i++) {
+            if (Thread.interrupted()) return null;
             CvsFileNode fnode = fnodes[i];
             nodes[i] = new SyncFileNode(fnode);
         }
@@ -261,7 +268,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private void refreshStatuses() {
         lastEventTimestamp = System.currentTimeMillis();
         executeUpdateCommand(true);
-        refreshTask.schedule(1000);
+        reScheduleRefresh(1000);
     }
 
     /**
@@ -318,29 +325,33 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private void setDisplayStatuses(int displayStatuses) {
         this.displayStatuses = displayStatuses;
         lastEventTimestamp = System.currentTimeMillis();
-        refreshTask.schedule(0);
+        reScheduleRefresh(0);
     }
 
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             lastEventTimestamp = System.currentTimeMillis();
             if (cvs.getParameter(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING) != null) {
-                refreshTask.schedule(1000);                          
+                reScheduleRefresh(1000);
             } else {
-                refreshTask.schedule(200);
+                reScheduleRefresh(200);
             }
         } else if (event.getId() == CvsVersioningSystem.EVENT_PARAM_CHANGED) {
             if (pendingRefresh && event.getParams()[0].equals(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING)) {
                 if (cvs.getParameter(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING) == null) {
                     pendingRefresh = false;
                     lastEventTimestamp = System.currentTimeMillis();
-                    refreshTask.schedule(0);
+                    reScheduleRefresh(0);
                 }
             }
         }
     }
-    
-    // TODO: HACK, replace by save/restore of column width/position 
+
+    private void reScheduleRefresh(int delayMillis) {
+        refreshTask.schedule(delayMillis);
+    }
+
+    // TODO: HACK, replace by save/restore of column width/position
     void deserialize() {
         if (syncTable != null) {
             SwingUtilities.invokeLater(new Runnable() {

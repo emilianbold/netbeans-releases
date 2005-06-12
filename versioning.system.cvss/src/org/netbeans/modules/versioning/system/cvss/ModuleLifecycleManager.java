@@ -58,10 +58,6 @@ public final class ModuleLifecycleManager extends ModuleInstall {
         // TODO: We cannot disable old modules here, because it somehow does not work ... we postpone this work to CvsVersioningSystem.init()
     }
 
-    public boolean closing() {
-        return CvsVersioningSystem.getInstance().closing();
-    }
-
     /**
      * Enables old VCS modules. 
      */ 
