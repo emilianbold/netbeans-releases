@@ -142,4 +142,64 @@ implements AbstractLookupBaseHid.Impl {
             p.setLookups (new Lookup[] { a1, a2, a3 });
         }
     }
+    
+    public void testProxyLookupTemplateCaching(){
+        Lookup lookups[] = new Lookup[1];
+        doProxyLookupTemplateCaching(lookups, false);
+    }
+    
+    public void testProxyLookupTemplateCachingOnSizeTwoArray() {
+        Lookup lookups[] = new Lookup[2];
+        lookups[1] = Lookup.EMPTY;
+        doProxyLookupTemplateCaching(lookups, false);
+    }
+    public void testProxyLookupShallNotAllowModificationOfGetLookups(){
+        Lookup lookups[] = new Lookup[1];
+        doProxyLookupTemplateCaching(lookups, true);
+    }
+    
+    public void testProxyLookupShallNotAllowModificationOfGetLookupsOnSizeTwoArray() {
+        Lookup lookups[] = new Lookup[2];
+        lookups[1] = Lookup.EMPTY;
+        doProxyLookupTemplateCaching(lookups, true);
+    }
+    
+    /** Index 0 of lookups will be modified, the rest is up to the 
+     * setup code.
+     */
+    private void doProxyLookupTemplateCaching(Lookup[] lookups, boolean reget) {
+        // Create MyProxyLookup with one lookup containing the String object
+        InstanceContent ic = new InstanceContent();
+        ic.add(new String("Hello World")); //NOI18N
+        lookups[0] = new AbstractLookup(ic);
+        ProxyLookup proxy = new ProxyLookup(lookups);
+        if (reget) {
+            lookups = proxy.getLookups();
+        }
+        
+        // Performing template lookup for String object
+        Lookup.Result result = proxy.lookup(new Lookup.Template(String.class, null, null));
+        int stringTemplateResultSize = result.allInstances().size();
+        assertEquals ("Ensure, there is only one instance of String.class in proxyLookup:", //NOI18N
+                1, stringTemplateResultSize);
+        
+        // Changing lookup in proxy lookup, now it will contain 
+        // StringBuffer Object instead of String
+        InstanceContent ic2 = new InstanceContent();
+        ic2.add(new Integer(1234567890));
+        lookups[0] = new AbstractLookup(ic2);
+        proxy.setLookups(lookups);
+        
+        assertEquals ("the old result is updated", 0, result.allInstances().size());
+
+        // Instance of String.class should not appear in proxyLookup
+        Lookup.Result r2 = proxy.lookup(new Lookup.Template(String.class, null, null));
+        assertEquals ("Instance of String.class should not appear in proxyLookup:", //NOI18N
+                0, r2.allInstances().size());
+
+        Lookup.Result r3 = proxy.lookup(new Lookup.Template(Integer.class, null, null));
+        assertEquals ("There is only one instance of Integer.class in proxyLookup:", //NOI18N
+                1, r3.allInstances().size());
+        
+    }
 }

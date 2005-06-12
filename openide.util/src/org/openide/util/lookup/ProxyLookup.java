@@ -29,8 +29,11 @@ import javax.swing.event.EventListenerList;
  * @since 1.9
  */
 public class ProxyLookup extends Lookup {
-    /** lookups to delegate to */
-    private Lookup[] lookups;
+    /** empty array of lookups for potential use */
+    private static final Lookup[] EMPTY_ARR = new Lookup[0];
+    
+    /** lookups to delegate to (either Lookup or array of Lookups) */
+    private Object lookups;
 
     /** map of templates to currently active results */
     private HashMap results;
@@ -39,7 +42,7 @@ public class ProxyLookup extends Lookup {
      * @param lookups the initial delegates
      */
     public ProxyLookup(Lookup[] lookups) {
-        this.lookups = lookups;
+        this.setLookupsNoFire(lookups);
     }
 
     /**
@@ -48,11 +51,11 @@ public class ProxyLookup extends Lookup {
      * @since 3.27
      */
     protected ProxyLookup() {
-        this(new Lookup[0]);
+        this(EMPTY_ARR);
     }
 
     public String toString() {
-        return "ProxyLookup(class=" + getClass() + ")->" + Arrays.asList(lookups); // NOI18N
+        return "ProxyLookup(class=" + getClass() + ")->" + Arrays.asList(getLookups(false)); // NOI18N
     }
 
     /** Getter for the delegates.
@@ -60,7 +63,39 @@ public class ProxyLookup extends Lookup {
     * @since 1.19
     */
     protected final Lookup[] getLookups() {
-        return lookups;
+        return getLookups(true);
+    }
+
+    /** getter for the delegates, that can but need not do a clone.
+     * @param clone true if clone of internal array is requested
+     */
+    private final Lookup[] getLookups(boolean clone) {
+        Object l = this.lookups;
+        if (l instanceof Lookup) {
+            return new Lookup[] { (Lookup)l };
+        } else {
+            Lookup[] arr = (Lookup[])l;
+            if (clone) {
+                arr = (Lookup[])arr.clone();
+            }
+            return arr;
+        }
+    }
+    
+    /** Called from setLookups and constructor. 
+     * @param lookups the lookups to setup
+     */
+    private void setLookupsNoFire(Lookup[] lookups) {
+        if (lookups.length == 1) {
+            this.lookups = lookups[0];
+            assert this.lookups != null : "Cannot assign null delegate";
+        } else {
+            if (lookups.length == 0) {
+                this.lookups = EMPTY_ARR;
+            } else {
+                this.lookups = lookups.clone();
+            }
+        }
     }
 
     /** Change the delegates. To forbid anybody else then the creator
@@ -76,12 +111,12 @@ public class ProxyLookup extends Lookup {
         Lookup[] old;
 
         synchronized (this) {
-            current = new HashSet(Arrays.asList(this.lookups));
+            old = getLookups(false);
+            current = new HashSet(Arrays.asList(old));
             newL = new HashSet(Arrays.asList(lookups));
 
-            old = this.lookups;
-            this.lookups = lookups;
-
+            setLookupsNoFire(lookups);
+            
             if ((results == null) || results.isEmpty()) {
                 // no affected results => exit
                 return;
@@ -139,7 +174,7 @@ public class ProxyLookup extends Lookup {
     public final Object lookup(Class clazz) {
         beforeLookup(new Template(clazz));
 
-        Lookup[] lookups = this.lookups;
+        Lookup[] lookups = this.getLookups(false);
 
         for (int i = 0; i < lookups.length; i++) {
             Object o = lookups[i].lookup(clazz);
@@ -159,7 +194,7 @@ public class ProxyLookup extends Lookup {
     public final Item lookupItem(Template template) {
         beforeLookup(template);
 
-        Lookup[] lookups = this.lookups;
+        Lookup[] lookups = this.getLookups(false);
 
         for (int i = 0; i < lookups.length; i++) {
             Item o = lookups[i].lookupItem(template);
@@ -250,10 +285,11 @@ public class ProxyLookup extends Lookup {
                 }
             }
 
-            Result[] arr = new Result[lookups.length];
+            Lookup[] myLkps = getLookups(false);
+            Result[] arr = new Result[myLkps.length];
 
             for (int i = 0; i < arr.length; i++) {
-                arr[i] = lookups[i].lookup(template);
+                arr[i] = myLkps[i].lookup(template);
             }
 
             synchronized (this) {
