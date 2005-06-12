@@ -53,8 +53,8 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
     }
     
     private void readFromProperties() {
-        nameValue.setText(bundleProps.getProperty("OpenIDE-Module-Name")); // NOI18N
-        shortDescValue.setText(bundleProps.getProperty("OpenIDE-Module-Short-Description")); // NOI18N
+        NbPropertyPanel.setText(nameValue, bundleProps.getProperty("OpenIDE-Module-Name")); // NOI18N
+        NbPropertyPanel.setText(shortDescValue, bundleProps.getProperty("OpenIDE-Module-Short-Description")); // NOI18N
         longDescValue.setText(bundleProps.getProperty("OpenIDE-Module-Long-Description")); // NOI18N
         categoryValue.setSelectedItem(getCategory()); // NOI18N)
     }

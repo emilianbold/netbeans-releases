@@ -19,7 +19,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBox;
-import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
@@ -36,33 +35,31 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-final class CustomizerVersioning extends JPanel implements ComponentFactory.StoragePanel {
+final class CustomizerVersioning extends NbPropertyPanel {
     
     private static final int CHECKBOX_WIDTH = new JCheckBox().getWidth();
     
-    private NbModuleProperties props;
     private boolean lastAppImplChecked;
     
     /** Creates new form CustomizerVersioning */
     CustomizerVersioning(NbModuleProperties props) {
-        this.props = props;
+        super(props);
         initComponents();
         initPublicPackageTable();
         friendsList.setModel(props.getFriendListModel());
-        cnbValue.setText(props.getCodeNameBase());
-        majorRelVerValue.setText(props.getMajorReleaseVersion());
+        NbPropertyPanel.setText(cnbValue, props.getCodeNameBase());
+        NbPropertyPanel.setText(majorRelVerValue, props.getMajorReleaseVersion());
         String specVersion = props.getSpecificationVersion();
         if (null == specVersion || "".equals(specVersion)) { // NOI18N
             appendImpl.setSelected(true);
-            specificationVerValue.setText(
-                    props.getProperty(NbModuleProperties.SPEC_VERSION_BASE));
+            NbPropertyPanel.setText(specificationVerValue, getProperty(NbModuleProperties.SPEC_VERSION_BASE));
         } else {
-            specificationVerValue.setText(specVersion);
+            NbPropertyPanel.setText(specificationVerValue, specVersion);
         }
-        implVerValue.setText(props.getImplementationVersion());
+        NbPropertyPanel.setText(implVerValue, props.getImplementationVersion());
         regularMod.setSelected(true);
-        autoloadMod.setSelected(isTrue(props.getProperty(NbModuleProperties.IS_AUTOLOAD)));
-        eagerMod.setSelected(isTrue(props.getProperty(NbModuleProperties.IS_EAGER)));
+        autoloadMod.setSelected(getBooleanProperty(NbModuleProperties.IS_AUTOLOAD));
+        eagerMod.setSelected(getBooleanProperty(NbModuleProperties.IS_EAGER));
         implVerValue.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 updateAppendImpl();
@@ -124,21 +121,16 @@ final class CustomizerVersioning extends JPanel implements ComponentFactory.Stor
         String specVer = specificationVerValue.getText().trim();
         if (appendImpl.isSelected()) {
             props.setSpecificationVersion(""); // NOI18N
-            props.setProperty(NbModuleProperties.SPEC_VERSION_BASE, specVer);
+            setProperty(NbModuleProperties.SPEC_VERSION_BASE, specVer);
         } else {
             props.setSpecificationVersion(specVer);
-            props.setProperty(NbModuleProperties.SPEC_VERSION_BASE, ""); // NOI18N
+            setProperty(NbModuleProperties.SPEC_VERSION_BASE, ""); // NOI18N
         }
         props.setImplementationVersion(implVerValue.getText().trim());
-        props.setProperty(NbModuleProperties.IS_AUTOLOAD,
-                Boolean.toString(autoloadMod.isSelected()));
-        props.setProperty(NbModuleProperties.IS_EAGER,
-                Boolean.toString(eagerMod.isSelected()));
+        setBooleanProperty(NbModuleProperties.IS_AUTOLOAD, autoloadMod.isSelected());
+        setBooleanProperty(NbModuleProperties.IS_EAGER, eagerMod.isSelected());
     }
     
-    private boolean isTrue(String bString) {
-        return bString != null && bString.equalsIgnoreCase("true");
-    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

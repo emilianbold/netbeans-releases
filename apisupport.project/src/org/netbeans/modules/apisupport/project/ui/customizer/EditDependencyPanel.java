@@ -35,10 +35,10 @@ final class EditDependencyPanel extends JPanel {
     }
     
     private void readFromEntry() {
-        codeNameBaseValue.setText(origDep.getModuleEntry().getCodeNameBase());
-        jarLocationValue.setText(origDep.getModuleEntry().getJarLocation().getAbsolutePath());
-        releaseVersionValue.setText(origDep.getReleaseVersion());
-        specVerValue.setText(origDep.getSpecificationVersion());
+        NbPropertyPanel.setText(codeNameBaseValue, origDep.getModuleEntry().getCodeNameBase());
+        NbPropertyPanel.setText(jarLocationValue, origDep.getModuleEntry().getJarLocation().getAbsolutePath());
+        NbPropertyPanel.setText(releaseVersionValue, origDep.getReleaseVersion());
+        NbPropertyPanel.setText(specVerValue, origDep.getSpecificationVersion());
         implVer.setSelected(origDep.hasImplementationDepedendency());
         ManifestManager.PackageExport[] pp = origDep.getModuleEntry().getPublicPackages();
         boolean anyAvailablePkg = pp != null && pp.length != 0;

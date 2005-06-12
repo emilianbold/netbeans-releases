@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.event.ActionListener;
-import javax.swing.JPanel;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 
 /**
@@ -22,32 +20,31 @@ import org.netbeans.modules.apisupport.project.SuiteProvider;
  *
  * @author mkrauskopf
  */
-final class CustomizerSources extends JPanel {
+final class CustomizerSources extends NbPropertyPanel {
     
     /** Creates new form CustomizerSources */
     CustomizerSources(final NbModuleProperties moduleProps, SuiteProvider sp,
             String prjFolder) {
+        super(moduleProps);
         initComponents();
         if (sp.getSuiteDirectory() == null) {
             moduleSuite.setVisible(false);
             moduleSuiteValue.setVisible(false);
         } else {
-            moduleSuiteValue.setText(sp.getSuiteDirectory().getPath());
+            NbPropertyPanel.setText(moduleSuiteValue, sp.getSuiteDirectory().getPath());
         }
         for (int i = 0; i < NbModuleProperties.SOURCE_LEVELS.length; i++) {
             srcLevelValue.addItem(NbModuleProperties.SOURCE_LEVELS[i]);
         }
-        srcLevelValue.setSelectedItem(
-                moduleProps.getProperty(NbModuleProperties.SOURCE_LEVEL));
-        srcLevelValue.addActionListener(new ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                moduleProps.setProperty(NbModuleProperties.SOURCE_LEVEL,
-                        (String) srcLevelValue.getSelectedItem());
-            }
-        });
-        prjFolderValue.setText(prjFolder);
+        srcLevelValue.setSelectedItem(getProperty(NbModuleProperties.JAVAC_SOURCES));
+        NbPropertyPanel.setText(prjFolderValue, prjFolder);
     }
     
+    public void store() {
+        setProperty(NbModuleProperties.JAVAC_SOURCES,
+                (String) srcLevelValue.getSelectedItem());
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -128,7 +125,6 @@ final class CustomizerSources extends JPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel filler;

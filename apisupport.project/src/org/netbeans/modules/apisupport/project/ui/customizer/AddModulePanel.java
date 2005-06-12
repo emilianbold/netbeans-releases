@@ -96,7 +96,7 @@ final class AddModulePanel extends JPanel {
     
     private void showDescription() {
         ModuleDependency dep = getSelectedDependency();
-        descValue.setText(dep == null ? "" : // NOI18N
+        NbPropertyPanel.setText(descValue, dep == null ? "" : // NOI18N
             dep.getModuleEntry().getLongDescription());
     }
     

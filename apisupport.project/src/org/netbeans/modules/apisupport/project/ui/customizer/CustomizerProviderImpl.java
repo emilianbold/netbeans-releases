@@ -211,6 +211,10 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private static final String DISPLAY = "Display"; // NOI18N
     private static final String LIBRARIES = "Libraries"; // NOI18N
     private static final String VERSIONING = "Versioning"; // NOI18N
+    private static final String BUILD = "Build"; // NOI18N
+    private static final String COMPILING = "Compiling"; // NOI18N
+    private static final String PACKAGING = "Packaging"; // NOI18N
+    private static final String DOCUMENTING = "Documenting"; // NOI18N
 
     private SuiteProvider getSuiteProvider() {
         return (SuiteProvider) project.getLookup().lookup(SuiteProvider.class);
@@ -227,9 +231,23 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 bundle.getString("LBL_ConfigLibraries")); // NOI18N
         ProjectCustomizer.Category versioning = createCategory(VERSIONING,
                 bundle.getString("LBL_ConfigVersioning")); // NOI18N
+
+        ProjectCustomizer.Category compiling = createCategory(COMPILING,
+                bundle.getString("LBL_ConfigCompiling")); // NOI18N
+        ProjectCustomizer.Category packaging = createCategory(PACKAGING,
+                bundle.getString("LBL_ConfigPackaging")); // NOI18N
+        ProjectCustomizer.Category documenting = createCategory(DOCUMENTING,
+                bundle.getString("LBL_ConfigDocumenting")); // NOI18N
+        ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
+                BUILD,
+                bundle.getString( "LBL_ConfigBuild" ), // NOI18N
+                null,
+                new ProjectCustomizer.Category[] {compiling, packaging, documenting}
+        );
+
         
         categories = new ProjectCustomizer.Category[] {
-            sources, display, libraries, versioning
+            sources, display, libraries, versioning, build
         };
         
         // sources customizer
@@ -247,6 +265,15 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         
         // versioning customizer
         panels.put(versioning, new CustomizerVersioning(moduleProps));
+        
+        // compiling customizer
+        panels.put(compiling, new CustomizerCompiling(moduleProps));
+        
+        // packaging customizer
+        panels.put(packaging, new CustomizerPackaging(moduleProps));
+        
+        // documenting customizer
+        panels.put(documenting, new CustomizerDocumenting(moduleProps));
         
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
             public JComponent create(ProjectCustomizer.Category category) {
