@@ -217,6 +217,7 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
         NbPlatformCustomizer.showCustomizer();
         platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
+        platformValue.setSelectedItem(modProps.getActivePlatform());
     }//GEN-LAST:event_managePlatforms
     
     private void editModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModuleDependency

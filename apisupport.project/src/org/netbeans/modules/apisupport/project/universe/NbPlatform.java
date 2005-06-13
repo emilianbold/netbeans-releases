@@ -39,6 +39,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.netbeans.modules.apisupport.project.*;
+import org.openide.util.NbBundle;
 
 /**
  * Represents one NetBeans platform, i.e. installation of the NB platform or IDE
@@ -223,8 +224,8 @@ public final class NbPlatform {
         if (label == null) {
             try {
                 label = isValid() ? computeDisplayName(nbdestdir) :
-                    "Invalid Platform (" + getDestDir().getAbsolutePath() + ")"; // NOI18N
-                // XXX Invalid Platform should be l18n-ized (?)
+                    NbBundle.getMessage(NbPlatform.class, "MSG_InvalidPlatform",  // NOI18N
+                        getDestDir().getAbsolutePath());
             } catch (IOException e) {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
                 label = nbdestdir.getAbsolutePath();

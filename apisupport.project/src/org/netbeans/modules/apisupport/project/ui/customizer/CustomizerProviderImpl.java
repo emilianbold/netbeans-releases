@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 
 /**
  * Adding ability for a NetBeans modules to provide a GUI customizer.
@@ -98,10 +100,15 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
      */
     private Set/*<ModuleDependency>*/ getModuleDependencies() {
         if (moduleDependencies == null) {
-            try {
-                moduleDependencies = getProjectXMLManipulator().getDirectDependencies();
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
+            if (!NbPlatform.getPlatformByID(
+                    evaluator.getProperty("nbplatform.active")).isValid()) {
+                moduleDependencies = new TreeSet(Collator.getInstance());
+            } else {
+                try {
+                    moduleDependencies = getProjectXMLManipulator().getDirectDependencies();
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
+                }
             }
         }
         return moduleDependencies;
