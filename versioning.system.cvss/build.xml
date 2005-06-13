@@ -33,13 +33,13 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="build/${nbm}"
                  productdir="${cluster}"
                  module="${module.jar}"
-                 homepage="http://javacvs.netbeans.org/nonav/cvslite/userguide/index.html"
+                 homepage="http://www.netbeans.org/kb/articles/cvs-preview.html"
                  distribution="http://${dist.base}/${nbm}"
                  needsrestart="${nbm.needs.restart}"
                  releasedate="${nbm.release.date}"
                  moduleauthor="${nbm.module.author}">
             <license name="cvslite-license.txt">
-                 <text>For CVSlite module itself:</text>
+                 <text>For CVS Versioning module itself:</text>
                  <file location="${license.file}"/>
                  <text>For JSch library:</text>
                  <file location="../external/jsch-license.txt"/>
