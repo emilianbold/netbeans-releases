@@ -139,6 +139,15 @@ final class ModuleListParser {
         faketask.execute();
         faketask.setFile(new File(nbproject, "project.properties"));
         faketask.execute();
+        faketask.setFile(new File(nbproject, "private/suite-private.properties"));
+        faketask.execute();
+        faketask.setFile(new File(nbproject, "suite.properties"));
+        faketask.execute();
+        faketask.setFile(null);
+        faketask.setFile( new File( fakeproj.replaceProperties("${suite.dir}/nbproject/private/platform-private.properties")));
+        faketask.execute();
+        faketask.setFile( new File( fakeproj.replaceProperties("${suite.dir}/nbproject/platform.properties")));
+        faketask.execute();
         faketask.setFile(null);
         faketask.setName("module.jar.dir");
         faketask.setValue("modules");
