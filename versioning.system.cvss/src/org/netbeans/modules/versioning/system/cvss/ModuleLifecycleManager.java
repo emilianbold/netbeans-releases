@@ -34,20 +34,24 @@ import java.util.*;
  */
 public final class ModuleLifecycleManager extends ModuleInstall {
 
+    static final String [] oldModules = {
+        "org.netbeans.modules.vcs.profiles.cvsprofiles",
+        "org.netbeans.modules.vcs.advanced",
+        "org.netbeans.modules.vcs.profiles.vss",
+        "org.netbeans.modules.vcs.profiles.pvcs",
+        "org.netbeans.modules.vcs.profiles.teamware"
+    };
+    
     public void validate() throws IllegalStateException {
         final Boolean [] oldEnabled = new Boolean[] { Boolean.FALSE };
         final ModuleManager mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         mgr.mutex().readAccess(new Runnable() {
             public void run() {
-                Module m;
-                m = mgr.get("org.netbeans.modules.vcs.profiles.cvsprofiles");
-                if (m != null && m.isEnabled()) oldEnabled[0] = Boolean.TRUE;
-                m = mgr.get("org.netbeans.modules.vcs.advanced");
-                if (m != null && m.isEnabled()) oldEnabled[0] = Boolean.TRUE;
-                m = mgr.get("org.netbeans.modules.vcs.profiles.vss");
-                if (m != null && m.isEnabled()) oldEnabled[0] = Boolean.TRUE;
-                m = mgr.get("org.netbeans.modules.vcs.profiles.pvcs");
-                if (m != null && m.isEnabled()) oldEnabled[0] = Boolean.TRUE;
+                for (int i = 0; i < oldModules.length; i++) {
+                    String oldmodule = oldModules[i];
+                    Module m = mgr.get(oldmodule);
+                    if (m != null && m.isEnabled()) oldEnabled[0] = Boolean.TRUE;
+                }
             }
         });
         if (!oldEnabled[0].booleanValue()) return;
@@ -65,16 +69,12 @@ public final class ModuleLifecycleManager extends ModuleInstall {
         final ModuleManager mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         mgr.mutex().writeAccess(new Runnable() {
             public void run() {
-                Module m;
                 Set modules = new HashSet();
-                m = mgr.get("org.netbeans.modules.vcs.profiles.cvsprofiles");
-                if (m != null && !m.isEnabled()) modules.add(m);
-                m = mgr.get("org.netbeans.modules.vcs.advanced");
-                if (m != null && !m.isEnabled()) modules.add(m);
-                m = mgr.get("org.netbeans.modules.vcs.profiles.vss");
-                if (m != null && !m.isEnabled()) modules.add(m);
-                m = mgr.get("org.netbeans.modules.vcs.profiles.pvcs");
-                if (m != null && !m.isEnabled()) modules.add(m);
+                for (int i = 0; i < oldModules.length; i++) {
+                    String oldmodule = oldModules[i];
+                    Module m = mgr.get(oldmodule);
+                    if (m != null && !m.isEnabled()) modules.add(m);
+                }
                 if (modules.size() > 0)
                     try {
                         mgr.enable(modules);

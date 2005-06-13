@@ -103,16 +103,12 @@ public class CvsVersioningSystem {
                 final ModuleManager mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
                 mgr.mutex().writeAccess(new Runnable() {
                     public void run() {
-                        Module m;
                         Set modules = new HashSet();
-                        m = mgr.get("org.netbeans.modules.vcs.profiles.cvsprofiles");
-                        if (m != null && m.isEnabled()) modules.add(m);
-                        m = mgr.get("org.netbeans.modules.vcs.advanced");
-                        if (m != null && m.isEnabled()) modules.add(m);
-                        m = mgr.get("org.netbeans.modules.vcs.profiles.vss");
-                        if (m != null && m.isEnabled()) modules.add(m);
-                        m = mgr.get("org.netbeans.modules.vcs.profiles.pvcs");
-                        if (m != null && m.isEnabled()) modules.add(m);
+                        for (int i = 0; i < ModuleLifecycleManager.oldModules.length; i++) {
+                            String oldmodule = ModuleLifecycleManager.oldModules[i];
+                            Module m = mgr.get(oldmodule);
+                            if (m != null && m.isEnabled()) modules.add(m);
+                        }                        
                         if (modules.size() > 0) {
                             mgr.disable(modules);
                         }
