@@ -205,9 +205,9 @@ public class ModuleDependenciesTest extends NbTestCase {
             "<target name=\"all\" >" +
             "  <deps>" +
             "    <input name=\"ahoj\" >" +
-            "      <jars dir=\"" + parent + "\" > " +
-            "        <include name=\"" + notAModule.getName () + "\" />" +
-            "        <include name=\"" + withoutPkgs.getName () + "\" />" +
+            "      <jars dir='" + parent + "' > " +
+            "        <include name='" + notAModule.getName () + "' />" +
+            "        <include name='" + withoutPkgs.getName () + "' />" +
             "      </jars>" +
             "    </input>" +
             "    <output type=\"public-packages\" file=\"" + output + "\" />" +
@@ -921,7 +921,7 @@ public class ModuleDependenciesTest extends NbTestCase {
     private final File createNewJarFile () throws IOException {
         int i = 0;
         for (;;) {
-            File f = new File (this.getWorkDir(), this.getName() + i++ + ".jar");
+            File f = new File (this.getWorkDir(), i++ + ".jar");
             if (!f.exists ()) return f;
         }
     }
