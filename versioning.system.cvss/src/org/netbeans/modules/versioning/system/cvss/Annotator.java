@@ -192,7 +192,7 @@ public class Annotator {
 
         Map map = cache.getAllModifiedFiles();
         Map modifiedFiles = new HashMap();
-        for (Iterator i = cache.getAllModifiedFiles().keySet().iterator(); i.hasNext();) {
+        for (Iterator i = map.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) map.get(file);
             if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);

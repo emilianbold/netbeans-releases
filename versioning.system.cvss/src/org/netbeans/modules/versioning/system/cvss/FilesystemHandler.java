@@ -81,9 +81,10 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         FileObject newFile = fe.getFile();
         String oldName = fe.getName();
         String oldExtension = fe.getExt();
+        if (oldExtension.length() > 0) oldExtension = "." + oldExtension;
         
         File parent = FileUtil.toFile(newFile.getParent());
-        File removed = new File(parent, oldName + "." + oldExtension);
+        File removed = new File(parent, oldName + oldExtension);
         
         fileDeletedImpl(removed);
         addNewFile(FileUtil.toFile(newFile));
@@ -107,7 +108,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         if (entry != null && !entry.isDirectory() && entry.isUserFileToBeRemoved()) {
             cvsUndoRemoveLocally(sah, file, entry);    
         }
-        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        cache.directoryContentChanged(file);
     }
 
     /**

@@ -82,7 +82,9 @@ public class AddExecutor extends ExecutorSupport {
         for (int i = 0; i < commands.length; i++) {
             AddCommand command = commands[i];
             int len = command.getFiles().length;
-            String param = len == 1 ? command.getFiles()[0].getName() : Integer.toString(len);
+            String param = len == 1 ? 
+                    command.getFiles()[0].getName() : 
+                    MessageFormat.format(loc.getString("MSG_AddExecutor_CmdDisplayXfiles"), new Object [] { Integer.toString(len)});
             command.setDisplayName(MessageFormat.format(loc.getString("MSG_AddExecutor_CmdDisplayName"), new Object [] { param }));
             executors[i] = new AddExecutor(cvs, command, options);
             executors[i].execute();

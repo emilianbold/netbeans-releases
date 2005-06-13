@@ -49,11 +49,11 @@ public class CvsVersioningSystem {
     private static CvsVersioningSystem instance;
     
     public static final String FILENAME_CVSIGNORE = ".cvsignore";
+    public static final String FILENAME_CVS = "CVS";
 
     public static final Object EVENT_PARAM_CHANGED = new Object();
     public static final Object PARAM_BATCH_REFRESH_RUNNING = new Object();
 
-    static final String FILENAME_CVS = "CVS";
     private static final String FILENAME_CVS_REPOSITORY = FILENAME_CVS + "/Repository";
     
     private final Map clientsCache = new HashMap();

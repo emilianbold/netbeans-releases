@@ -207,7 +207,7 @@ public class FileStatusCache {
             } else {
                 newFiles.put(file, fi);
             }
-            turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles);
+            turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
         }
         if (file.isDirectory() && needRecursiveRefresh(fi, current)) {
             File [] content = listFiles(file);
@@ -274,7 +274,28 @@ public class FileStatusCache {
     }
 
     void directoryContentChanged(File dir) {
-        // TODO: implement
+        Map originalFiles = null;
+        Map files;
+        originalFiles = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
+        synchronized(scanLock) {
+            files = scanFolder(dir);
+            turbo.writeEntry(dir, FILE_STATUS_MAP, files);
+        }
+        if (originalFiles != null) {
+            for (Iterator i = originalFiles.keySet().iterator(); i.hasNext();) {
+                File file = (File) i.next();
+                FileInformation oldInfo = (FileInformation) originalFiles.get(file);
+                FileInformation info = (FileInformation) files.get(file);
+                if (!oldInfo.equals(info)) {
+                    if (info == null || (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) == 0) fireFileStatusChanged(file);
+                }
+            }
+        }
+        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            FileInformation info = (FileInformation) files.get(file);
+            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) fireFileStatusChanged(file);
+        }
         fireFileStatusChanged(dir);                
     }
     
@@ -410,7 +431,11 @@ public class FileStatusCache {
      */ 
     private FileInformation createVersionedFileInformation(Entry entry, File file, int repositoryStatus) {
         if (entry.isDirectory()) {
-            return FILE_INFORMATION_UPTODATE_DIRECTORY;
+            if (new File(file, CvsVersioningSystem.FILENAME_CVS).isDirectory()) {
+                return FILE_INFORMATION_UPTODATE_DIRECTORY;
+            } else {
+                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, true);
+            }
         }
         if (entry.isNewUserFile()) {
             return new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, entry, false);
@@ -493,10 +518,10 @@ public class FileStatusCache {
         } else if (repositoryStatus == REPOSITORY_STATUS_UPDATED) {
             return new FileInformation(FileInformation.STATUS_VERSIONED_NEWINREPOSITORY, isDirectory);
         } else if (repositoryStatus == REPOSITORY_STATUS_UPTODATE) {
-            // server marks this file as uptodate and it does not have an entry, the file is probably listed in CVSROOT/cvsignore
             if (parentStatus == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
             } else {
+                // server marks this file as uptodate and it does not have an entry, the file is probably listed in CVSROOT/cvsignore
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, isDirectory);
             }
         } else if (repositoryStatus == REPOSITORY_STATUS_REMOVED_REMOTELY) {
