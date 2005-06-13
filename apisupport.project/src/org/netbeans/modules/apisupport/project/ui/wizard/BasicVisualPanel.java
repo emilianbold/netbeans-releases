@@ -22,26 +22,26 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-abstract class BasicVisualPanel extends JPanel {
+public abstract class BasicVisualPanel extends JPanel {
     
     private WizardDescriptor setting;
     private Boolean valid = Boolean.FALSE;
     
-    BasicVisualPanel(WizardDescriptor setting) {
+    protected BasicVisualPanel(WizardDescriptor setting) {
         this.setting = setting;
     }
     
-    WizardDescriptor getSetting() {
+    protected WizardDescriptor getSetting() {
         return setting;
     }
     
     /** Set error message and always update panel validity. */
-    void setErrorMessage(String errorMessage) {
+    protected void setErrorMessage(String errorMessage) {
         setErrorMessage(errorMessage, true);
     }
     
     /** Set error message and eventually update panel validity. */
-    void setErrorMessage(String errorMessage, boolean fireChange) {
+    protected void setErrorMessage(String errorMessage, boolean fireChange) {
         setting.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
         if (fireChange) {
             setValid(Boolean.valueOf(errorMessage == null));
@@ -52,7 +52,7 @@ abstract class BasicVisualPanel extends JPanel {
      * Sets this panel's validity and fires event to it's wrapper wizard panel.
      * See {@link BasicWizardPanel#propertyChange} for what happens further.
      */
-    void setValid(Boolean newValid) {
+    protected void setValid(Boolean newValid) {
         Boolean oldValid = valid;
         valid = newValid;
         firePropertyChange("valid", oldValid, newValid); // NOI18N
@@ -64,5 +64,4 @@ abstract class BasicVisualPanel extends JPanel {
     String getMessage(String key) {
         return NbBundle.getMessage(BasicVisualPanel.class, key);
     }
-    
 }

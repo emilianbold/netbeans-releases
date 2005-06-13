@@ -15,12 +15,15 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardPanel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -31,6 +34,12 @@ import org.openide.util.NbBundle;
 public final class NbPlatformCustomizer extends JPanel {
     
     private static final Dimension PREFERRED_SIZE = new Dimension(720,400);
+    
+    static final String CHOOSER_STEP = getMessage("MSG_ChoosePlatfrom"); // NOI18N
+    static final String INFO_STEP = getMessage("MSG_PlatformName"); // NOI18N
+    
+    static final String PLAF_DIR_PROPERTY = "selectedPlafDir"; // NOI18N
+    static final String PLAF_LABEL_PROPERTY = "selectedPlafLabel"; // NOI18N
     
     private NbPlatformCustomizerSources sourcesTab;
     private NbPlatformCustomizerModules modulesTab;
@@ -144,7 +153,6 @@ public final class NbPlatformCustomizer extends JPanel {
         add(platformsListSP, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(NbPlatformCustomizer.class, "CTL_AddPlatform"));
-        addButton.setEnabled(false);
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addPlatform(evt);
@@ -175,7 +183,7 @@ public final class NbPlatformCustomizer extends JPanel {
         infoPane.setLayout(new java.awt.GridBagLayout());
 
         plfName.setLabelFor(plfNameValue);
-        org.openide.awt.Mnemonics.setLocalizedText(plfName, org.openide.util.NbBundle.getMessage(NbPlatformCustomizer.class, "LBL_PlatformName"));
+        org.openide.awt.Mnemonics.setLocalizedText(plfName, org.openide.util.NbBundle.getMessage(NbPlatformCustomizer.class, "LBL_PlatformName_N"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         infoPane.add(plfName, gridBagConstraints);
@@ -229,19 +237,58 @@ public final class NbPlatformCustomizer extends JPanel {
     }
     // </editor-fold>//GEN-END:initComponents
     
+    private ComponentFactory.NbPlatformListModel getModel() {
+        return (ComponentFactory.NbPlatformListModel) platformsList.getModel();
+    }
+    
     private void removePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePlatform
         NbPlatform plaf = (NbPlatform) platformsList.getSelectedValue();
         if (plaf != null) {
-            ((ComponentFactory.NbPlatformListModel) platformsList.
-                    getModel()).removePlatform(plaf);
+            getModel().removePlatform(plaf);
             platformsList.setSelectedValue(NbPlatform.getDefaultPlatform(), true);
             refreshPlatform();
         }
     }//GEN-LAST:event_removePlatform
     
+    // XXX I hope there is a better way how to control Wizard Panel's headers
+    // then this terrible hack (when you want to use array of panels - not 
+    // iterator)
+    private static class PointlessIterator extends WizardDescriptor.ArrayIterator {
+        PointlessIterator(WizardDescriptor.Panel[] panels) { super(panels); }
+        public String name() { return this.current().getComponent().getName(); }
+    }
+    
     private void addPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPlatform
-        // TODO start wizard for adding platform - UI is in TBD state
+        PlatformChooserWizardPanel chooser = new PlatformChooserWizardPanel(null);
+        PlatformInfoWizardPanel info = new PlatformInfoWizardPanel(null);
+        final WizardDescriptor wd = new WizardDescriptor(
+                new PointlessIterator(new WizardDescriptor.Panel[] { chooser, info }));
+        initPanel(chooser, wd, 0);
+        initPanel(info, wd, 1);
+        wd.setTitleFormat(new java.text.MessageFormat("{1}")); // NOI18N
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(wd);
+        dialog.setVisible(true);
+        dialog.toFront();
+        if (wd.getValue() == WizardDescriptor.FINISH_OPTION) {
+            String plafDir = (String) wd.getProperty(PLAF_DIR_PROPERTY); // NOI18N
+            String plafLabel = (String) wd.getProperty(PLAF_LABEL_PROPERTY); // NOI18N
+            String id = plafLabel.replace(' ', '_');
+            getModel().addPlatform(id, plafDir, plafLabel);
+        }
     }//GEN-LAST:event_addPlatform
+    
+    private void initPanel(BasicWizardPanel panel, WizardDescriptor wd, int i) {
+        panel.setSettings(wd);
+        JComponent jc = (JComponent) panel.getComponent();
+        jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
+        jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
+        jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+        jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+        jc.putClientProperty("WizardPanel_contentData", new String[] { // NOI18N
+            CHOOSER_STEP, INFO_STEP
+        });
+        jc.setPreferredSize(new java.awt.Dimension(500, 380));
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;

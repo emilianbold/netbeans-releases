@@ -147,6 +147,24 @@ public final class NbPlatform {
         return new NbPlatform(null, null, destDir, sources, new URL[0]);
     }
     
+    public static void addPlatform(final String id, final File destdir, final String label) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
+                    EditableProperties props = PropertyUtils.getGlobalProperties();
+                    props.setProperty(PLATFORM_PREFIX + id + PLATFORM_DEST_DIR_SUFFIX, destdir.getAbsolutePath());
+                    props.setProperty(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX, label);
+                    PropertyUtils.putGlobalProperties(props);
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
+        getPlatforms().add(new NbPlatform(id, label, FileUtil.normalizeFile(destdir),
+                findURLs(null), findURLs(null)));
+    }
+    
     public static void removePlatform(final NbPlatform plaf) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
@@ -167,8 +185,6 @@ public final class NbPlatform {
         getPlatforms().remove(plaf);
     }
     
-    // XXX createPlatform
-
     private final String id;
     private String label;
     private File nbdestdir;

@@ -170,6 +170,21 @@ public class NbPlatformTest extends TestBase {
         assertEquals("custom platform was deleted platforms", 1, NbPlatform.getPlatforms().size());
         assertNull("custom platform was deleted", NbPlatform.getPlatformByID("custom"));
     }
-    // XXX testCreatePlatform
+
+    public void testAddPlatform() throws Exception {
+        assertEquals("have two platforms", 2, NbPlatform.getPlatforms().size());
+        NbPlatform custom = NbPlatform.getPlatformByID("custom");
+        assertNotNull("have custom platform", custom);
+        NbPlatform.removePlatform(custom);
+        assertEquals("custom platform was deleted platforms", 1, NbPlatform.getPlatforms().size());
+        assertNull("custom platform was deleted", NbPlatform.getPlatformByID("custom"));
+        NbPlatform.addPlatform(custom.getID(), custom.getDestDir(), "Some Label");
+        NbPlatform.addPlatform(custom.getID() + 1, custom.getDestDir(), "Some Label 1");
+        assertEquals("have two platforms", 3, NbPlatform.getPlatforms().size());
+        assertNotNull("custom platform was added", NbPlatform.getPlatformByID("custom"));
+        assertNotNull("custom platform was added", NbPlatform.getPlatformByID("custom1"));
+        NbPlatform.reset();
+        assertEquals("custom label", "Some Label 1", NbPlatform.getPlatformByID("custom1").getLabel());
+    }
     
 }

@@ -27,18 +27,22 @@ import org.openide.util.NbBundle;
  *
  * @author mkrauskopf
  */
-abstract class BasicWizardPanel implements WizardDescriptor.Panel, PropertyChangeListener {
+public abstract class BasicWizardPanel implements WizardDescriptor.Panel, PropertyChangeListener {
     
     private boolean valid;
     private WizardDescriptor settings;
     
     private EventListenerList listeners = new EventListenerList();
     
-    BasicWizardPanel(WizardDescriptor settings) {
+    protected BasicWizardPanel(WizardDescriptor settings) {
+        this.settings = settings;
+    }
+
+    public void setSettings(WizardDescriptor settings) {
         this.settings = settings;
     }
     
-    WizardDescriptor getSettings() {
+    protected WizardDescriptor getSettings() {
         return settings;
     }
     
@@ -74,7 +78,7 @@ abstract class BasicWizardPanel implements WizardDescriptor.Panel, PropertyChang
     
     public void readSettings(Object settings) {;}
     
-    void setValid(boolean valid) {
+    protected void setValid(boolean valid) {
         this.valid = valid;
         fireChange();
     }
