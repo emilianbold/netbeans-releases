@@ -717,14 +717,14 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         } else {
             // property not set (probably run from IDE) => try to find it
             String className = getClass().getName();
+            URL url = this.getClass().getResource(className.substring(className.lastIndexOf('.')+1)+".class"); // NOI18N
+            File dataDir = new File(url.getFile()).getParentFile();
             int index = 0;
-            StringBuffer dataPath = new StringBuffer();
             while((index = className.indexOf('.', index)+1) > 0) {
-                dataPath.append("../");
+                dataDir = dataDir.getParentFile();
             }
-            dataPath.append("../data");
-            URL url = this.getClass().getResource("");
-            return Manager.normalizeFile(new File(url.getFile()+dataPath));
+            dataDir = new File(dataDir.getParentFile(), "data"); //NOI18N
+            return Manager.normalizeFile(dataDir);
         }
     }
     
