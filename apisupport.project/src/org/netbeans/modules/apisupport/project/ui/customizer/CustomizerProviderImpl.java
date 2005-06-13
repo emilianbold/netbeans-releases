@@ -100,8 +100,10 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
      */
     private Set/*<ModuleDependency>*/ getModuleDependencies() {
         if (moduleDependencies == null) {
-            if (!NbPlatform.getPlatformByID(
-                    evaluator.getProperty("nbplatform.active")).isValid()) {
+            NbPlatform plaf = NbPlatform.getPlatformByID(
+                    evaluator.getProperty("nbplatform.active")); // NOI18N
+            // for NetBeans.org module case plaf == null, which is OK
+            if (plaf != null && !plaf.isValid()) {
                 moduleDependencies = new TreeSet(Collator.getInstance());
             } else {
                 try {
