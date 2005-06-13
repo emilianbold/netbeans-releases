@@ -190,11 +190,12 @@ public class Annotator {
         boolean allExcluded = true;
         boolean modified = false;
 
-        Map modifiedFiles = cache.getAllModifiedFiles();
-        for (Iterator i = modifiedFiles.keySet().iterator(); i.hasNext();) {
+        Map map = cache.getAllModifiedFiles();
+        Map modifiedFiles = new HashMap();
+        for (Iterator i = cache.getAllModifiedFiles().keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            FileInformation info = (FileInformation) modifiedFiles.get(file);
-            if (info.isDirectory() || (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) == 0) i.remove();
+            FileInformation info = (FileInformation) map.get(file);
+            if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
         }
 
         for (Iterator i = roots.iterator(); i.hasNext();) {

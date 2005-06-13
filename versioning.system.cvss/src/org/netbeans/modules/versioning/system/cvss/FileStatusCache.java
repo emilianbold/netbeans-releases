@@ -288,6 +288,12 @@ public class FileStatusCache {
             FileInformation info = (FileInformation) files.get(file);
             if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
                 refresh(file, REPOSITORY_STATUS_UNKNOWN);
+            } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+                // remove entries that were excluded but no longer exist
+                // cannot simply call refresh on excluded files because of 'excluded on server' status
+                if (!file.exists()) {
+                    refresh(file, REPOSITORY_STATUS_UNKNOWN);
+                }
             }
         }
     }

@@ -18,10 +18,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
 import java.io.*;
-import java.util.Map;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Storage of file attributes with shortcut to retrieve all stored values.
@@ -36,7 +33,7 @@ class DiskMapTurboProvider implements TurboProvider {
     private int     storeSerial;
 
     private int     cachedStoreSerial = -1;
-    private HashMap cachedValues;
+    private Map     cachedValues;
     
     private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_VERSIONED_UPTODATE;
 
@@ -75,8 +72,9 @@ class DiskMapTurboProvider implements TurboProvider {
                 }
             }
             cachedStoreSerial = storeSerial;
+            cachedValues = Collections.unmodifiableMap(cachedValues);
         }
-        return (Map) cachedValues.clone();
+        return cachedValues;
     }
 
     public boolean recognizesAttribute(String name) {
