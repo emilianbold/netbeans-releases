@@ -7,12 +7,33 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.windows.view.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.swing.Action;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -21,7 +42,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -30,31 +50,19 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Panel to display list of TopComponents in editor area.
  *
  * @author  Marek Slama
  */
-public class DocumentsDlg extends javax.swing.JPanel
-implements PropertyChangeListener {
+public class DocumentsDlg extends JPanel implements PropertyChangeListener, ExplorerManager.Provider {
     
     private static DocumentsDlg defaultInstance;
     
-    private ExplorerPanel explorer;
+    private final ExplorerManager explorer = new ExplorerManager();
     
     /** Creates new form DocumentsDlg */
     private DocumentsDlg () {
@@ -226,7 +234,7 @@ implements PropertyChangeListener {
 
     private void saveDocuments(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveDocuments
         // Add your handling code here:
-        Node [] selNodes = explorer.getExplorerManager().getSelectedNodes();
+        Node[] selNodes = explorer.getSelectedNodes();
         if (selNodes.length == 0) {
             return;
         }
@@ -256,7 +264,7 @@ implements PropertyChangeListener {
 
     private void closeDocuments(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeDocuments
         // Add your handling code here:
-        Node [] selNodes = explorer.getExplorerManager().getSelectedNodes();
+        Node[] selNodes = explorer.getSelectedNodes();
         if (selNodes.length == 0) {
             return;
         }
@@ -281,10 +289,10 @@ implements PropertyChangeListener {
             Children.Array nodeArray = new Children.Array();
             nodeArray.add((TopComponentNode[])tcNodes.toArray(new TopComponentNode[0]));
             Node root = new AbstractNode(nodeArray);
-            explorer.getExplorerManager().setRootContext(root);
+            explorer.setRootContext(root);
             //#54656 begin
             try {
-                explorer.getExplorerManager().setSelectedNodes(new Node[] {root.getChildren().getNodes()[0]});
+                explorer.setSelectedNodes(new Node[] {root.getChildren().getNodes()[0]});
             } catch (PropertyVetoException exc) {
                 //mkleint - well, what can we do, I've never seen the selection being vetoed anyway.
             }
@@ -295,7 +303,7 @@ implements PropertyChangeListener {
 
     private void activate(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_activate
         // Add your handling code here:
-        Node [] selNodes = explorer.getExplorerManager().getSelectedNodes();
+        Node[] selNodes = explorer.getSelectedNodes();
         if (selNodes.length == 0) {
             return;
         }
@@ -325,7 +333,7 @@ implements PropertyChangeListener {
     }
     
     public void addNotify () {
-        explorer.getExplorerManager().addPropertyChangeListener(this);
+        explorer.addPropertyChangeListener(this);
         jButtonActivate.setEnabled(false);
         jButtonClose.setEnabled(false);
         jButtonSave.setEnabled(false);
@@ -334,7 +342,7 @@ implements PropertyChangeListener {
     
     public void removeNotify () {
         super.removeNotify();
-        explorer.getExplorerManager().removePropertyChangeListener(this);
+        explorer.removePropertyChangeListener(this);
     }
 
 
@@ -371,10 +379,7 @@ implements PropertyChangeListener {
         listView.setPopupAllowed(false);
         listView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_ListView"));
         //view.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        explorer = new ExplorerPanel();
-        explorer.add(listView);
-        panel.add(explorer, BorderLayout.CENTER);
-        
+        panel.add(listView, BorderLayout.CENTER);
         return panel;
     }
     
@@ -383,23 +388,21 @@ implements PropertyChangeListener {
         Children.Array nodeArray = new Children.Array();
         
         List tcList = getOpenedDocuments();
-        List tcNodes = new ArrayList(tcList.size());
+        SortedSet/*<Node>*/ tcNodes = new TreeSet();
         for (int i = 0; i < tcList.size(); i++) {
             TopComponent tc = (TopComponent) tcList.get(i);
             tcNodes.add(new TopComponentNode(tc));
         }
-        // #36851 Sorting the nodes.
-        java.util.Collections.sort(tcNodes);
-        nodeArray.add((TopComponentNode[])tcNodes.toArray(new TopComponentNode[0]));
+        nodeArray.add((Node[]) tcNodes.toArray(new Node[tcNodes.size()]));
         
         Node root = new AbstractNode(nodeArray);
-        explorer.getExplorerManager().setRootContext(root);
+        explorer.setRootContext(root);
         // set focus to documents list
         listView.requestFocus();
         // select first item if possible
-        if (tcNodes.size() > 0) {
+        if (!tcNodes.isEmpty()) {
             try {
-                explorer.getExplorerManager().setSelectedNodes(new Node[] { (Node)tcNodes.get(0) });
+                explorer.setSelectedNodes(new Node[] {(Node) tcNodes.iterator().next()});
             } catch (PropertyVetoException exc) {
                 // do nothing, what should I do?
             }
@@ -407,7 +410,7 @@ implements PropertyChangeListener {
     }
     
     private void clearNodes() {
-        explorer.getExplorerManager().setRootContext(Node.EMPTY);
+        explorer.setRootContext(Node.EMPTY);
     }
     
     private static List getOpenedDocuments() {
@@ -473,18 +476,25 @@ implements PropertyChangeListener {
     // End of variables declaration//GEN-END:variables
     private ListView listView;
     
+    public ExplorerManager getExplorerManager() {
+        return explorer;
+    }
+    
+    private static final Collator COLLATOR = Collator.getInstance();
+
     /** Used to display list of TopComponent in ListView. */
     private class TopComponentNode extends AbstractNode
-                                   implements Comparable, Action {
+                                   implements Comparable, Action, PropertyChangeListener {
         
         private TopComponent tc;
         
         public TopComponentNode (TopComponent tc) {
             super(Children.LEAF);
             this.tc = tc;
+            tc.addPropertyChangeListener(WeakListeners.propertyChange(this, tc));
         }
         
-        public String getName () {
+        public String getHtmlDisplayName() {
             return WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
         }
         
@@ -515,11 +525,12 @@ implements PropertyChangeListener {
 
             String displayName1 = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
             String displayName2 = WindowManagerImpl.getInstance().getTopComponentDisplayName(tcn.tc);
+            // XXX should also strip any HTML tags, so comparisons work properly
             
             if(displayName1 == null) {
                 return displayName2 == null ? 0 : -1;
             } else {
-                return displayName2 == null ? 1 : displayName1.compareTo(displayName2);
+                return displayName2 == null ? 1 : COLLATOR.compare(displayName1, displayName2);
             }
         }
         
@@ -547,6 +558,10 @@ implements PropertyChangeListener {
         
         public void setEnabled(boolean b) {
             // no operation
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            fireDisplayNameChange(null, null);
         }
         
     }

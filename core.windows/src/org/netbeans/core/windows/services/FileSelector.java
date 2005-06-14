@@ -7,48 +7,50 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.core.windows.services;
 
-
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerPanel;
-import org.openide.explorer.view.BeanTreeView;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
-import org.openide.util.NbBundle;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ResourceBundle;
-
-
-// XXX Before as org.netbeans.core.FileSelector.
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeAcceptor;
+import org.openide.util.NbBundle;
 
 /** File Selector
  *
  * @author Ales Novak, Jaroslav Tulach, Ian Formanek, Petr Hamernik, Jan Jancura
- * @version 0.13, Jun 07, 1998
  */
-final class FileSelector extends JPanel implements PropertyChangeListener {
+final class FileSelector extends JPanel implements PropertyChangeListener, ExplorerManager.Provider {
     //XXX AFAIK nothing in NetBeans uses NodeOperation.select().  Probably this class can be deleted and NodeOperation.select deprecated. - Tim
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = 6524404012203099065L;
     /** manages tree */
-    private ExplorerManager manager;
+    private final ExplorerManager manager = new ExplorerManager();
     /** tree */
     private BeanTreeView tree;
 
@@ -79,13 +81,6 @@ final class FileSelector extends JPanel implements PropertyChangeListener {
         
         ResourceBundle bundle = NbBundle.getBundle(FileSelector.class);
 
-        ExplorerPanel ep = new ExplorerPanel ();
-        setLayout (new BorderLayout());
-        add(ep, BorderLayout.CENTER);
-        ep.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_FileSelectorExplorerPanel"));
-        ep.getAccessibleContext ().setAccessibleName (bundle.getString ("ACSN_FileSelectorExplorerPanel"));
-        manager = ep.getExplorerManager ();
-
 
         okButton = new JButton(bundle.getString("CTL_FileSelectorOkButton"));
         cancelButton = new JButton(bundle.getString("CTL_FileSelectorCancelButton"));
@@ -95,9 +90,6 @@ final class FileSelector extends JPanel implements PropertyChangeListener {
         
 
         manager.setRootContext (root);//s[0]);
-        // CustomPane
-        ep.setLayout(new BorderLayout(0, 5));
-        ep.setBorder(new EmptyBorder(12, 12, 0, 11));
         
         // Center
         tree = new BeanTreeView ();
@@ -108,7 +100,8 @@ final class FileSelector extends JPanel implements PropertyChangeListener {
         tree.getAccessibleContext().setAccessibleName(NbBundle.getBundle(FileSelector.class).getString("ACSN_FileSelectorTreeView"));
         tree.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(FileSelector.class).getString("ACSD_FileSelectorTreeView"));
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(FileSelector.class).getString("ACSD_FileSelectorDialog"));
-        ep.add(tree, BorderLayout.CENTER);
+        setLayout(new BorderLayout());
+        add(tree, BorderLayout.CENTER);
 
         // component to place at the top
         try {
@@ -139,12 +132,12 @@ final class FileSelector extends JPanel implements PropertyChangeListener {
                 label.setLabelFor(combo);
                 comboPanel.add(label, BorderLayout.WEST);
                 comboPanel.add(combo, BorderLayout.CENTER);
-                ep.add (comboPanel, BorderLayout.NORTH);
+                add(comboPanel, BorderLayout.NORTH);
             } else {
                 manager.setSelectedNodes (new Node[] { root });
                 JLabel label = new JLabel(rootLabel.replace('&', ' '));
                 label.setLabelFor(tree);
-                ep.add(label, BorderLayout.NORTH);
+                add(label, BorderLayout.NORTH);
             }
         } catch(PropertyVetoException pve) {
             throw new IllegalStateException(pve.getMessage());
@@ -154,7 +147,7 @@ final class FileSelector extends JPanel implements PropertyChangeListener {
 
         // South
         if (top != null) {
-            ep.add(top, BorderLayout.SOUTH);
+            add(top, BorderLayout.SOUTH);
         }
 
         manager.addPropertyChangeListener (this);
@@ -216,6 +209,10 @@ final class FileSelector extends JPanel implements PropertyChangeListener {
         okButton.setEnabled(false);
     }
 
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+    
 
     /** Renderer used in list box of exit dialog */
     private static class FileSelectRenderer extends JLabel implements ListCellRenderer {
