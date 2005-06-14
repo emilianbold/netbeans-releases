@@ -13,9 +13,21 @@
 
 package org.netbeans.modules.xml.multiview;
 
+import org.xml.sax.SAXException;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
+import org.xml.sax.XMLReader;
+import org.xml.sax.InputSource;
+import org.xml.sax.helpers.DefaultHandler;
+import org.openide.ErrorManager;
+
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import java.awt.*;
+import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * Utils.java
@@ -24,9 +36,9 @@ import java.awt.*;
  * @author mkuchtiak
  */
 public class Utils {
-    
     /** This method update document in editor after change in beans hierarchy.
      * It takes old document and new document in String.
+     * To preserve changes outside of root element only root element is replaced.
      * To avoid regeneration of whole document in text editor following steps are done:
      *  1) compare the begin of both documents (old one and new one)
      *     - find the first position where both documents differ
@@ -35,25 +47,10 @@ public class Utils {
      * 
      * @param doc original document
      * @param newDoc new value of whole document
-     * @param prefixMark - beginning part of the document before this mark should be preserved
      */
-    public static void replaceDocument(javax.swing.text.Document doc, String newDoc, String prefixMark)
-            throws javax.swing.text.BadLocationException {
-        String origDoc = doc.getText(0, doc.getLength());
-        int prefixIndex = 0;
-        if (prefixMark!=null) {
-            prefixIndex = origDoc.indexOf(prefixMark);
-            if (prefixIndex < 0) {
-                prefixIndex = 0;
-            } else {
-                origDoc = origDoc.substring(prefixIndex);
-            }
-            int prefixIndNewDoc = newDoc.indexOf(prefixMark);
-            if (prefixIndNewDoc > 0) {
-                newDoc = newDoc.substring(prefixIndNewDoc);
-            }
-        }
-        newDoc = filterEndLines(newDoc);
+    public static void replaceDocument(javax.swing.text.Document doc, String newDoc) throws javax.swing.text.BadLocationException {
+        String origDoc = filterEndLines(doc.getText(0, doc.getLength()));
+        newDoc = replaceRootElement(origDoc, filterEndLines(newDoc));
 
         if (origDoc.equals(newDoc)) {
             // no change in document
@@ -83,7 +80,6 @@ public class Utils {
 
         String s = newDoc.substring(offset, tailIndex + delta);
         int length = tailIndex - offset;
-        offset += prefixIndex;
         if (doc instanceof AbstractDocument) {
             ((AbstractDocument) doc).replace(offset, length, s, null);
         } else {
@@ -96,23 +92,22 @@ public class Utils {
         }
     }
 
-    public static void replaceDocument(javax.swing.text.Document doc, String newDoc) throws javax.swing.text.BadLocationException {
-        replaceDocument(doc,newDoc,null);
-    }
-    
     /** Filter characters #13 (CR) from the specified String
      * @param str original string
      * @return the string without #13 characters
      */
     public static String filterEndLines(String str) {
         char[] text = str.toCharArray();
-        if (text.length==0) return "";
+        if (text.length == 0) {
+            return "";
+        }
         int pos = 0;
         for (int i = 0; i < text.length; i++) {
             char c = text[i];
             if (c != 13) {
-                if (pos != i)
+                if (pos != i) {
                     text[pos] = c;
+                }
                 pos++;
             }
         }
@@ -162,15 +157,80 @@ public class Utils {
         }
 
     }
-    
+
     /**
      * Utility that sets border and traversal keys for JTextArea in JTextField style
      */
     public static void makeTextAreaLikeTextField(javax.swing.JTextArea ta, javax.swing.JTextField tf) {
         ta.setBorder(tf.getBorder());
-        ta.setFocusTraversalKeys(java.awt.KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, 
+        ta.setFocusTraversalKeys(java.awt.KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
                                  tf.getFocusTraversalKeys(java.awt.KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
-        ta.setFocusTraversalKeys(java.awt.KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, 
+        ta.setFocusTraversalKeys(java.awt.KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
                                  tf.getFocusTraversalKeys(java.awt.KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
+    }
+
+    /**
+     * Replaces root element in the original document by root element of the new document
+     * @param origDoc original document
+     * @param newDoc new document
+     * @return resulting document
+     */
+    private static String replaceRootElement(String origDoc, String newDoc) {
+        String result = origDoc;
+        try {
+            RootElementParser parser = new RootElementParser(newDoc);
+            String newContent = newDoc.substring(parser.startPosition, parser.endPosition);
+            result = newDoc;
+            parser = new RootElementParser(origDoc);
+            result = new StringBuffer(origDoc).replace(parser.startPosition, parser.endPosition, newContent).toString();
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        return result;
+    }
+
+    private static class RootElementParser extends DefaultHandler {
+        private int level = 0;
+        private Locator locator;
+        private int startPosition = 0;
+        private int endPosition = 0;
+        private final String xmlString;
+
+        public RootElementParser(String xmlString) throws IOException, ParserConfigurationException, SAXException {
+            this.xmlString = xmlString;
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setValidating(false);
+            XMLReader reader = factory.newSAXParser().getXMLReader();
+            reader.setContentHandler(this);
+            reader.parse(new InputSource(new StringReader(xmlString)));
+        }
+
+        public void setDocumentLocator(Locator locator) {
+            this.locator = locator;
+        }
+
+        public void startElement(String uri, String localName, String qName, Attributes attributes)
+                throws SAXException {
+            if (level == 0) {
+                startPosition = getPosition();
+            }
+            level++;
+        }
+
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            level--;
+            if (level == 0) {
+                endPosition = xmlString.lastIndexOf('<', getPosition());
+            }
+        }
+
+        private int getPosition() {
+            int position = 0;
+            for (int i = 0, n = locator.getLineNumber() - 1; i < n; i++) {
+                position = xmlString.indexOf("\n", position) + 1;
+            }
+            position += locator.getColumnNumber() - 1;
+            return position;
+        }
     }
 }
