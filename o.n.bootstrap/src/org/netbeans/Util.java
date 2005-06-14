@@ -665,7 +665,7 @@ public abstract class Util {
         }
     }
     
-    // OK to not release this memory; module deletion is rare:
+    // OK to not release this memory; module deletion is rare: holds 45kB for 173 modules (June 2005)
     private static final Map codeNameParseCache = new HashMap(200); // Map<String,[String,int]>
     /** Find the code name base and major release version from a code name.
      * Caches these parses. Thread-safe (i.e. OK from read mutex).
