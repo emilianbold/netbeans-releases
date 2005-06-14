@@ -26,13 +26,23 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.sysclasspath" value="ignore"/>
     </target>
 
-    <target name="build-jellytools" if="jellytools.available">
+    <target name="build-jellytools" if="need.to.build.jellytools">
         <ant dir="${nb_all}/jellytools" target="jar-library" inheritAll="false"/>
     </target>
     
     <target name="init-cp">
-        <!-- If jellytools repository available, build jelly2-nb.jar -->
-        <available file="${nb_all}/jellytools/src" type="dir" property="jellytools.available"/>
+        <!-- If jellytools repository available and jar not up to date, build jelly2-nb.jar -->
+        <condition property="need.to.build.jellytools">
+            <and>
+                <available file="${nb_all}/jellytools/src" type="dir"/>
+                <not>
+                    <uptodate targetfile="${nb_all}/jellytools/jelly2-nb.jar" >
+                        <srcfiles dir= "${nb_all}/jellytools/src"/>
+                    </uptodate>
+                </not>
+            </and>
+        </condition>
+        <!-- <available file="${nb_all}/jellytools/src" type="dir" property="jellytools.available"/> -->
         <antcall target="build-jellytools"/>
         <!-- Used built jar preferably. If not available use the latest from CVS. -->
         <available file="${nb_all}/jellytools/jelly2-nb.jar" property="jelly.jar" value="${nb_all}/jellytools/jelly2-nb.jar"/>
