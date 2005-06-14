@@ -17,6 +17,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.actions.SaveAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.ProxyLookup;
 
 import javax.swing.*;
 import javax.swing.text.Document;
@@ -31,14 +32,14 @@ import java.awt.event.InputEvent;
  */
 public class XmlMultiViewElement extends AbstractMultiViewElement implements java.io.Serializable {
     static final long serialVersionUID = -326467724916080580L;
-    
+
     private transient CloneableEditor xmlEditor;
     private transient javax.swing.JComponent toolbar;
 
     /** Creates a new instance of XmlMultiviewElement */
     public XmlMultiViewElement() {
     }
-    
+
     /** Creates a new instance of XmlMultiviewElement */
     public XmlMultiViewElement(XmlMultiViewDataObject dObj) {
         super(dObj);
@@ -67,8 +68,9 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
     }
 
     public org.openide.util.Lookup getLookup() {
-        final CloneableEditor xmlEditor = getXmlEditor();
-        return xmlEditor != null ? xmlEditor.getLookup() : null;
+        return new ProxyLookup(new org.openide.util.Lookup[] {
+            dObj.getNodeDelegate().getLookup()
+        });
     }
 
     public javax.swing.JComponent getToolbarRepresentation() {
