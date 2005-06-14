@@ -16,7 +16,6 @@ package org.netbeans.modules.project.ui;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -41,7 +40,6 @@ import org.openide.cookies.OpenCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -239,16 +237,8 @@ public class ProjectUtilities {
      * @return localized error message or null if all right
      */    
     public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
-        if (extension != null && extension.length () > 0) {
-            StringBuffer sb = new StringBuffer ();
-            sb.append (newObjectName);
-            sb.append ('.'); // NOI18N
-            sb.append (extension);
-            newObjectName = sb.toString ();
-        }
+        assert newObjectName != null; // SimpleTargetChooserPanel.isValid returns false if it is... XXX should it use an error label instead?
         
-        String relFileName = folderName == null ? newObjectName : folderName + "/" + newObjectName; // NOI18N
-
         // test whether the selected folder on selected filesystem already exists
         if (targetFolder == null) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
@@ -257,26 +247,26 @@ public class ProjectUtilities {
         // target filesystem should be writable
         if (!targetFolder.canWrite ()) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
-        }        
-        if (existFileName(targetFolder, relFileName)) {
+        }
+
+        // file should not already exist
+        StringBuffer relFileName = new StringBuffer();
+        if (folderName != null) {
+            relFileName.append(folderName);
+            relFileName.append('/');
+        }
+        relFileName.append(newObjectName);
+        if (extension != null) {
+            relFileName.append('.');
+            relFileName.append(extension);
+        }
+        if (targetFolder.getFileObject(relFileName.toString()) != null) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName); // NOI18N
         }
         
         // all ok
         return null;
     }
-    
-    private static boolean existFileName(FileObject targetFolder, String relFileName) {
-        boolean result = false;
-        File fileForTargetFolder = FileUtil.toFile(targetFolder);
-        if (fileForTargetFolder.exists()) {
-            result = new File (fileForTargetFolder, relFileName).exists();
-        } else {
-            result = targetFolder.getFileObject (relFileName) != null;
-        }
-        
-        return result;
-    }        
     
     
     public static class WaitCursor implements Runnable {

@@ -27,6 +27,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
@@ -158,6 +159,32 @@ public class ProjectUtilitiesTest extends NbTestCase {
         assertNull ("OPEN_FILES_ELEMENT not found in the private configuration.", openFilesEl);
         
         assertFalse ("Project1 must be closed.", OpenProjectList.getDefault ().isOpen (project1));
+    }
+    
+    public void testCanUseFileName() throws Exception {
+        FileObject d = FileUtil.toFileObject(getWorkDir());
+        FileObject p1 = d.getFileObject("project1");
+        assertNotNull(p1);
+        assertNull("normal file addition", ProjectUtilities.canUseFileName(p1, null, "foo", "java"));
+        assertNull("normal file addition with no extension is OK", ProjectUtilities.canUseFileName(p1, null, "foo", null));
+        assertNull("normal file addition in an existing subdir", ProjectUtilities.canUseFileName(d, "project1", "foo", "java"));
+        assertNull("normal file addition in a new subdir", ProjectUtilities.canUseFileName(d, "dir", "foo", "java"));
+        //assertNotNull("no target name", ProjectUtilities.canUseFileName(d, "dir", null, "java"));
+        assertNotNull("no target folder", ProjectUtilities.canUseFileName(null, "dir", "foo", "java"));
+        assertNotNull("file already exists", ProjectUtilities.canUseFileName(p1, null, "f1_1", "java"));
+        assertNotNull("file already exists in subdir", ProjectUtilities.canUseFileName(d, "project1", "f1_1", "java"));
+        assertNull("similar file already exists in subdir", ProjectUtilities.canUseFileName(d, "project1", "f1_1", "properties"));
+        assertNull("similar file already exists in subdir", ProjectUtilities.canUseFileName(d, "project1", "f1_1", null));
+        d = new XMLFileSystem().getRoot();
+        assertNotNull("FS is r/o", ProjectUtilities.canUseFileName(d, null, "foo", "java"));
+        // #59876: deal with non-disk-based filesystems sensibly
+        d = FileUtil.createMemoryFileSystem().getRoot();
+        d.createData("bar.java");
+        FileUtil.createData(d, "sub/dir/foo.java");
+        assertNull("can create file in non-disk FS", ProjectUtilities.canUseFileName(d, null, "foo", "java"));
+        assertNotNull("file already exists", ProjectUtilities.canUseFileName(d, null, "bar", "java"));
+        assertNotNull("file already exists in subsubdir", ProjectUtilities.canUseFileName(d, "sub/dir", "foo", "java"));
+        assertNull("can otherwise create file in subsubdir", ProjectUtilities.canUseFileName(d, "sub/dir", "bar", "java"));
     }
 
     private static class SimpleTopComponent extends TopComponent {
