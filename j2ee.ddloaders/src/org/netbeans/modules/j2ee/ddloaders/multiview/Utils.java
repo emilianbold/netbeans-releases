@@ -264,7 +264,7 @@ public class Utils {
             JMIUtils.replaceParameters(method, prototype.getParameters());
             method.setModifiers(modifiers);
             if (remote) {
-                method.getExceptions().add(JMIUtils.resolveType(RemoteException.class.getName()));
+                JMIUtils.addException(method, RemoteException.class.getName());
             }
             getContents(interfaceClass).add(method);
             rollback = false;
