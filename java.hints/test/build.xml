@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- options for logging gj trees to files - set the correct dump directory if you use want to use this option -->
     <!-- <property name="xtest.ide.commandline.suffix" value="-J-Dgjast.dump.trees=true -J-Dtest.dump.dir=/tmp/javacore/test/test_dumps"/> -->
-    <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.modules.java.hints.experimental=true"/>
+    <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.modules.java.hints.experimental=true -J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005"/>
     
     <import file="../../../nbbuild/templates/xtest.xml"/>
     
