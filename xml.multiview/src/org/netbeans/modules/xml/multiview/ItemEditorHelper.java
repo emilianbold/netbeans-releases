@@ -161,6 +161,8 @@ public class ItemEditorHelper implements Refreshable {
 
     private class ItemDocument extends PlainDocument {
 
+        boolean refreshing = false;
+
         public void remove(int offs, int len) throws BadLocationException {
             super.remove(offs, len);
             updateModel();
@@ -172,30 +174,37 @@ public class ItemEditorHelper implements Refreshable {
         }
 
         private void updateModel() {
-            model.documentUpdated();
-            refresh();
+            if (!refreshing) {
+                model.documentUpdated();
+                refresh();
+            }
         }
 
         public void refresh() {
-            String itemValue = model.getItemValue();
-            String text;
+            refreshing = true;
             try {
-                text = getText(0, getLength());
-            } catch (BadLocationException e) {
-                text = "";
-                e.printStackTrace();
-            }
-            if (!text.equals(itemValue)) {
+                String itemValue = model.getItemValue();
+                String text;
                 try {
-                    super.remove(0, getLength());
+                    text = getText(0, getLength());
                 } catch (BadLocationException e) {
+                    text = "";
                     e.printStackTrace();
                 }
-                try {
-                    insertString(0, itemValue, null);
-                } catch (BadLocationException e) {
-                    e.printStackTrace();
+                if (!text.equals(itemValue)) {
+                    try {
+                        super.remove(0, getLength());
+                    } catch (BadLocationException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        insertString(0, itemValue, null);
+                    } catch (BadLocationException e) {
+                        e.printStackTrace();
+                    }
                 }
+            } finally {
+                refreshing = false;
             }
         }
     }
