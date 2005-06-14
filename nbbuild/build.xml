@@ -3562,6 +3562,17 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="localtest-nb" depends="localtest">
     <nbbrowse file="test/results/index.html"/>
   </target>
+  <target name="localtest-single-nb" depends="bootstrap">
+    <property name="unit.test.base" location="test/unit/src"/>
+    <pathconvert property="xtest.includes" pathsep=",">
+        <path path="${includes}"/>
+        <mapper type="glob" from="${unit.test.base}${file.separator}*.java" to="*.class"/>
+    </pathconvert>
+    <property name="xtest.attribs" value="empty"/>
+    <ant dir="test" target="cleanresults"/>
+    <ant dir="test" target="runtests"/>
+    <nbbrowse file="test/results/index.html"/>
+  </target>
 
   <target name="cleanall" depends="init">
     <cleanall topdir=".." 
