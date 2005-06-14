@@ -85,6 +85,12 @@ public interface ModuleEntry extends Comparable {
     String getSpecificationVersion();
     
     /**
+     * Returns either provided tokens by the module or <code>null</code> if
+     * there isn't any.
+     */
+    String getProvidedTokens();
+    
+    /**
      * Get localized name of this module. Implementations should use
      * lazy-loading from localizing bundle to keep performance up. If the
      * localized name is not found <code>getCodeNameBase()</code> is

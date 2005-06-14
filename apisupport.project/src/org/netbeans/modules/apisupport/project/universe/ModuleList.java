@@ -218,12 +218,12 @@ public final class ModuleList {
         ModuleEntry entry;
         if (!suiteComponent && !standalone) {
             entry = new NetBeansOrgEntry(root, cnb, path, clusterDir, module, cpextra.toString(), 
-                    mm.getReleaseVersion(), mm.getSpecificationVersion(),
+                    mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(),
                     ProjectXMLManager.findPublicPackages(data), mm.isDeprecated());
         } else {
             entry = new ExternalEntry(basedir, cnb, clusterDir, PropertyUtils.resolveFile(clusterDir, module),
                     cpextra.toString(), nbdestdir, mm.getReleaseVersion(), mm.getSpecificationVersion(),
-                    ProjectXMLManager.findPublicPackages(data), mm.isDeprecated());
+                     mm.getProvidedTokens(), ProjectXMLManager.findPublicPackages(data), mm.isDeprecated());
         }
         if (entries.containsKey(cnb)) {
             Util.err.log(ErrorManager.WARNING, "Warning: two modules found with the same code name base (" + cnb + "): " + entries.get(cnb) + " and " + entry);
@@ -473,7 +473,7 @@ public final class ModuleList {
                         }
                     }
                     ModuleEntry entry = new BinaryEntry(codenamebase, m, exts, root, clusters[i], 
-                            mm.getReleaseVersion(), mm.getSpecificationVersion(),
+                            mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(),
                             mm.getPublicPackages(), mm.isDeprecated());
                     if (entries.containsKey(codenamebase)) {
                         Util.err.log(ErrorManager.WARNING, "Warning: two modules found with the same code name base (" + codenamebase + "): " + entries.get(codenamebase) + " and " + entry);

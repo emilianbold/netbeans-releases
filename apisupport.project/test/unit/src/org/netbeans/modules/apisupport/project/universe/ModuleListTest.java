@@ -135,6 +135,10 @@ public class ModuleListTest extends TestBase {
         e = ml.getEntry("org.openide.util.enumerations");
         assertNotNull(e);
         assertTrue("this one is deprecated", e.isDeprecated());
+        e = ml.getEntry("org.netbeans.modules.projectui");
+        assertNotNull(e);
+        assertNotNull(e.getProvidedTokens());
+        assertTrue("There are some provided tokens", e.getProvidedTokens().length() > 0);
     }
     
     public void testExternalEntries() throws Exception {
@@ -158,6 +162,7 @@ public class ModuleListTest extends TestBase {
         assertNotNull("long description", e.getLongDescription());
         assertNotNull("release version", e.getReleaseVersion());
         assertNotNull("specification version", e.getSpecificationVersion());
+        assertNull("there are no provided tokens", e.getProvidedTokens());
         /*
         e = ml.getEntry("org.netbeans.examples.modules.misc");
         assertNotNull("can find sources from another suite (misc must have been built first)", e);
@@ -180,6 +185,7 @@ public class ModuleListTest extends TestBase {
         assertEquals("right codeNameBase", "org.netbeans.examples.modules.misc", e.getCodeNameBase());
         assertNotNull("release version", e.getReleaseVersion());
         assertNotNull("specification version", e.getSpecificationVersion());
+        assertNull("there are no provided tokens", e.getProvidedTokens());
         assertEquals("number of public packages for " + e, new Integer(1), new Integer(e.getPublicPackages().length));
         e = ml.getEntry("org.netbeans.libs.xerces");
         assertNotNull("can find nb.org binary module too", e);
