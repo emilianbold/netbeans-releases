@@ -135,18 +135,32 @@ final class ModuleListParser {
         fakeproj.setBaseDir(dir); // in case ${basedir} is used somewhere
         Property faketask = new Property();
         faketask.setProject(fakeproj);
+        switch (moduleType) {
+        case ParseProjectXml.TYPE_NB_ORG:
+            // do nothing here
+            break;
+        case ParseProjectXml.TYPE_SUITE:
+            faketask.setFile(new File(nbproject, "private/suite-private.properties"));
+            faketask.execute();
+            faketask.setFile(new File(nbproject, "suite.properties"));
+            faketask.execute();
+            faketask.setFile(new File(fakeproj.replaceProperties("${suite.dir}/nbproject/private/platform-private.properties")));
+            faketask.execute();
+            faketask.setFile(new File(fakeproj.replaceProperties("${suite.dir}/nbproject/platform.properties")));
+            faketask.execute();
+            break;
+        case ParseProjectXml.TYPE_STANDALONE:
+            faketask.setFile(new File(nbproject, "private/platform-private.properties"));
+            faketask.execute();
+            faketask.setFile(new File(nbproject, "platform.properties"));
+            faketask.execute();
+            break;
+        default:
+            assert false : moduleType;
+        }
         faketask.setFile(new File(nbproject, "private/private.properties".replace('/', File.separatorChar)));
         faketask.execute();
         faketask.setFile(new File(nbproject, "project.properties"));
-        faketask.execute();
-        faketask.setFile(new File(nbproject, "private/suite-private.properties"));
-        faketask.execute();
-        faketask.setFile(new File(nbproject, "suite.properties"));
-        faketask.execute();
-        faketask.setFile(null);
-        faketask.setFile( new File( fakeproj.replaceProperties("${suite.dir}/nbproject/private/platform-private.properties")));
-        faketask.execute();
-        faketask.setFile( new File( fakeproj.replaceProperties("${suite.dir}/nbproject/platform.properties")));
         faketask.execute();
         faketask.setFile(null);
         faketask.setName("module.jar.dir");
