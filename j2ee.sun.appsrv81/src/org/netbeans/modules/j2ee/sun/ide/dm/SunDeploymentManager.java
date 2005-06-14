@@ -522,7 +522,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader());
         try{
-            return redeploy(targetModuleID, a, p);
+            return  innerDM.redeploy(targetModuleID, archive, null);
+            //return redeploy(targetModuleID, a, p);
         }
         finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
