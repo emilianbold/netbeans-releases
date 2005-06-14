@@ -84,7 +84,9 @@ public class ModuleListTest extends TestBase {
     }
 
     public void testNetBeansOrgEntries() throws Exception {
+        long start = System.currentTimeMillis();
         ModuleList ml = ModuleList.getModuleList(file("ant/browsetask")); // should be arbitrary
+        System.err.println("Time to scan netbeans.org sources: " + (System.currentTimeMillis() - start) + "msec");
         ModuleEntry e = ml.getEntry("org.netbeans.modules.java.project");
         assertNotNull("have org.netbeans.modules.java.project", e);
         assertEquals("right jarLocation", file("nbbuild/netbeans/ide5/modules/org-netbeans-modules-java-project.jar"), e.getJarLocation());
@@ -142,8 +144,10 @@ public class ModuleListTest extends TestBase {
     }
     
     public void testExternalEntries() throws Exception {
-        // Start with suite1 - should find also nb_all and suite2.
+        // Start with suite1 - should find also nb_all.
+        long start = System.currentTimeMillis();
         ModuleList ml = ModuleList.getModuleList(file(suite1, "support/lib-project"));
+        System.err.println("Time to scan suite + NB binaries: " + (System.currentTimeMillis() - start) + "msec");
         ModuleEntry e = ml.getEntry("org.netbeans.examples.modules.action");
         assertNotNull("action-project found", e);
         File jar = file(EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar");

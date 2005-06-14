@@ -247,6 +247,16 @@ public final class XMLUtil extends Object {
     }
 
     /**
+     * Cache of DocumentBuilder instances per thread.
+     * They are relatively expensive to create, so don't do it more than necessary.
+     */
+    private static final ThreadLocal/*<DocumentBuilder>*/[] builderTL = new ThreadLocal[4];
+    static {
+        for (int i = 0; i < 4; i++) {
+            builderTL[i] = new ThreadLocal();
+        }
+    }
+    /**
      * Create from factory a DocumentBuilder and let it create a org.w3c.dom.Document.
      * This method takes InputSource. After successful finish the document tree is returned.
      *
@@ -266,26 +276,30 @@ public final class XMLUtil extends Object {
         InputSource input, boolean validate, boolean namespaceAware, ErrorHandler errorHandler,
         EntityResolver entityResolver
     ) throws IOException, SAXException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(validate);
-        factory.setNamespaceAware(namespaceAware);
+        
+        int index = (validate ? 0 : 1) + (namespaceAware ? 0 : 2);
+        DocumentBuilder builder = (DocumentBuilder) builderTL[index].get();
+        if (builder == null) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setValidating(validate);
+            factory.setNamespaceAware(namespaceAware);
 
-        DocumentBuilder builder = null;
-
-        try {
-            builder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException ex) {
-            throw new SAXException("Cannot create parser satisfying configuration parameters", ex); //NOI18N
+            try {
+                builder = factory.newDocumentBuilder();
+            } catch (ParserConfigurationException ex) {
+                throw new SAXException("Cannot create parser satisfying configuration parameters", ex); //NOI18N
+            }
+            builderTL[index].set(builder);
         }
-
+        
         if (errorHandler != null) {
             builder.setErrorHandler(errorHandler);
         }
-
+        
         if (entityResolver != null) {
             builder.setEntityResolver(entityResolver);
         }
-
+        
         return builder.parse(input);
     }
 

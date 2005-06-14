@@ -58,7 +58,9 @@ public class ModuleListParserTest extends TestCase {
         properties.put("nb.cluster.foo.dir", "foodir");
         properties.put("nb.cluster.bar", "core/startup");
         properties.put("nb.cluster.bar.dir", "bardir");
+        long start = System.currentTimeMillis();
         ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_NB_ORG, null);
+        System.err.println("Scanned " + nball + " sources in " + (System.currentTimeMillis() - start) + "msec");
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.modules.beans");
         assertNotNull(e);
         assertEquals("org.netbeans.modules.beans", e.getCnb());
@@ -118,7 +120,9 @@ public class ModuleListParserTest extends TestCase {
         properties.put("netbeans.dest.dir", filePath(nball, "nbbuild/netbeans"));
         properties.put("basedir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite1/action-project"));
         properties.put("suite.dir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite1"));
+        long start = System.currentTimeMillis();
         ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_SUITE, fakeproj);
+        System.err.println("Scanned " + nball + " binaries in " + (System.currentTimeMillis() - start) + "msec");
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.examples.modules.action");
         assertNotNull("found myself", e);
         assertEquals("org.netbeans.examples.modules.action", e.getCnb());

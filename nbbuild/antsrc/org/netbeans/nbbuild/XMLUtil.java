@@ -49,6 +49,12 @@ import org.xml.sax.SAXException;
  */
 final class XMLUtil extends Object {
 
+    private static final ThreadLocal/*<DocumentBuilder>*/[] builderTL = new ThreadLocal[4];
+    static {
+        for (int i = 0; i < 4; i++) {
+            builderTL[i] = new ThreadLocal();
+        }
+    }
     public static Document parse (
             InputSource input, 
             boolean validate, 
@@ -56,17 +62,22 @@ final class XMLUtil extends Object {
             ErrorHandler errorHandler,             
             EntityResolver entityResolver
         ) throws IOException, SAXException {
+        
+        int index = (validate ? 0 : 1) + (namespaceAware ? 0 : 2);
+        DocumentBuilder builder = (DocumentBuilder) builderTL[index].get();
+        if (builder == null) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setValidating(validate);
+            factory.setNamespaceAware(namespaceAware);
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-        factory.setValidating(validate);
-        factory.setNamespaceAware(namespaceAware);            
-        DocumentBuilder builder = null;
-        try {
-             builder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException ex) {
-            throw new SAXException(ex);
+            try {
+                builder = factory.newDocumentBuilder();
+            } catch (ParserConfigurationException ex) {
+                throw new SAXException(ex);
+            }
+            builderTL[index].set(builder);
         }
-            
+        
         if (errorHandler != null) {
             builder.setErrorHandler(errorHandler);
         }
@@ -74,8 +85,8 @@ final class XMLUtil extends Object {
         if (entityResolver != null) {
             builder.setEntityResolver(entityResolver);
         }
-
-        return builder.parse(input);            
+        
+        return builder.parse(input);
     }
     
     public static Document createDocument(String rootQName) throws DOMException {
