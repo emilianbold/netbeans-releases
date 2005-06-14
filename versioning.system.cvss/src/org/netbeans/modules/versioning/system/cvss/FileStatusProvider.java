@@ -38,6 +38,8 @@ import java.io.File;
  */
 public class FileStatusProvider extends AnnotationProvider implements VersioningListener {
 
+    private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    
     private static FileStatusProvider instance;
 
     public FileStatusProvider() {
@@ -90,10 +92,11 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
             return icon;
         }
 
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         boolean isVersioned = false;
         for (Iterator i = roots.iterator(); i.hasNext();) {
             File file = (File) i.next();
-            if (new File(file, CvsVersioningSystem.FILENAME_CVS).isDirectory()) {
+            if ((cache.getStatus(file).getStatus() & STATUS_BADGEABLE) != 0) {  
                 isVersioned = true;
                 break;
             }
