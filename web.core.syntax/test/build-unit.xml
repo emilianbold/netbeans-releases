@@ -59,7 +59,6 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>                
                 <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-project-libraries.jar"/>
                 
-                
             </classpath>
         </buildTests>
     </target>

@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="validation" executor="code" name="jsp syntax parser tests">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/test/web/core/syntax/*Test.class"/>
+                <!--<include name="org/netbeans/test/web/core/syntax/*Test.class"/>-->
             </patternset>
         </testset>
     </testbag>
@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
      <testbag testattribs="validation" executor="ide" name="jsp folding tests">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/test/web/folding/*Test.class"/>
+                <include name="org/netbeans/test/web/core/syntax/completion/*Test.class"/>
             </patternset>
         </testset>
     </testbag>

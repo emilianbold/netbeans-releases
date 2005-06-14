@@ -84,7 +84,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
     }
     
     public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
-        return new HTMLCompletionJavaDoc (extEditorUI);
+        return null;
     }
     
     protected void initDocument(BaseDocument doc) {
@@ -106,7 +106,13 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
         return new HTMLSyntaxSupport(doc);
     }
 
+    /** old code completion is disabled. */
     public Completion createCompletion(ExtEditorUI extEditorUI) {
+        return null;
+    }
+    
+    /** used to create completion instance from completion provider */
+    public Completion createCompletionForProvider(ExtEditorUI extEditorUI) {
         return new HTMLCompletion(extEditorUI);
     }
     

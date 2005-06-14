@@ -26,7 +26,7 @@ public final class DocumentListenerPriority {
      * Fold update gets notified first (prior view updates etc.).
      */
     public static final DocumentListenerPriority FOLD_UPDATE
-            = new DocumentListenerPriority(2, "fold-update"); // NOI18N
+            = new DocumentListenerPriority(3, "fold-update"); // NOI18N
 
     /**
      * Default level is used for all listeners added
@@ -34,13 +34,19 @@ public final class DocumentListenerPriority {
      * javax.swing.event.DocumentListener)} method.
      */
     public static final DocumentListenerPriority DEFAULT
-            = new DocumentListenerPriority(1, "default"); // NOI18N
+            = new DocumentListenerPriority(2, "default"); // NOI18N
 
     /**
      * Caret udpate gets notified as last.
      */
     public static final DocumentListenerPriority CARET_UPDATE
-            = new DocumentListenerPriority(0, "caret-update"); // NOI18N
+            = new DocumentListenerPriority(1, "caret-update"); // NOI18N
+
+    /**
+     * Udpate that follows caret update.
+     */
+    public static final DocumentListenerPriority AFTER_CARET_UPDATE
+            = new DocumentListenerPriority(0, "after-caret-update"); // NOI18N
 
     
     private int priority;

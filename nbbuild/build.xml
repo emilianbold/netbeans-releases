@@ -924,6 +924,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../editor/bookmarks" target="netbeans"/>
   </target>
+  <target name="all-editor/completion" depends="init,all-editor/lib,all-editor">
+    <echo message="Building module editor/completion..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../editor/completion" target="netbeans"/>
+  </target>
   <target name="all-editor/errorstripe" depends="init,all-editor/lib,all-editor">
     <echo message="Building module editor/errorstripe..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>

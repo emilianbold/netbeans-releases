@@ -205,58 +205,18 @@ public class JSPKit extends NbEditorKit {
         
     }
     
-    /** Returns completion for given language (MIME type).
-     * Note that JspJavaCompletion competion is returned instead of
-     * NbJavaCompletion to add specific stuff related to Java class generated
-     * from JSP.
+    /** This method now returns null since the code completion is got from 
+     * code completion providers declared in the module layer.
      */
-    private static Completion getCompletionForLanguage(
-            ExtEditorUI extEditorUI, String language) {
-        Completion compl = null;
-        if (JavaKit.JAVA_MIME_TYPE.equals(language)) {
-            compl = new JspJavaCompletion(extEditorUI);
-        } else {
-            EditorKit kit = JEditorPane.createEditorKitForContentType(language);
-            if (kit instanceof ExtKit)
-                compl = ((ExtKit)kit).createCompletion(extEditorUI);
-        }
-        return compl;
-    }
-    
     public Completion createCompletion(ExtEditorUI extEditorUI) {
-        BaseDocument doc = extEditorUI.getDocument();
-        FileObject fobj = null;
-        if (doc != null){
-            DataObject dobj = NbEditorUtilities.getDataObject(doc);
-            fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
-        }
-        
-        String mimeType = NbEditorUtilities.getMimeType(doc);
-        Completion contentCompletion = (!(mimeType.equals(JSP_MIME_TYPE) || mimeType.equals(TAG_MIME_TYPE))) ?
-            null :
-            getCompletionForLanguage(extEditorUI, JspUtils.getContentLanguage());
-        Completion scriptingCompletion = (!(mimeType.equals(JSP_MIME_TYPE) || mimeType.equals(TAG_MIME_TYPE))) ?
-            null :
-            getCompletionForLanguage(extEditorUI, JspUtils.getScriptingLanguage());
-        final JspCompletion completion =
-                new JspCompletion(extEditorUI, contentCompletion, scriptingCompletion);
-        return completion;
-        /*final JspDataObject jspdo = (dobj instanceof JspDataObject) ? (JspDataObject)dobj : null;
-        Completion contentCompletion = (jspdo == null) ?
-            null :
-            getCompletionForLanguage(extEditorUI, jspdo.getContentLanguage());
-        Completion scriptingCompletion = (jspdo == null) ?
-            null :
-            getCompletionForLanguage(extEditorUI, jspdo.getScriptingLanguage());
-         
-        final JspCompletion completion =
-            new JspCompletion(extEditorUI, contentCompletion, scriptingCompletion);
-        return completion;*/
-        
+        return null;
     }
     
+    /** This method now returns null since the code completion is got from 
+     * code completion providers declared in the module layer.
+     */
     public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
-        return new JspCompletionJavaDoc(extEditorUI);
+        return null;
     }
     
     protected void initDocument(BaseDocument doc) {

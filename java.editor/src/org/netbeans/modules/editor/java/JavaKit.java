@@ -170,9 +170,10 @@ public class JavaKit extends NbEditorKit {
     }
 
     public Completion createCompletion(ExtEditorUI extEditorUI) {
-        return compatibleCompletion
-            ? new NbJavaCompletion(extEditorUI)
-            : new NbJavaJMICompletion(extEditorUI, getSourceLevel(extEditorUI.getDocument()));
+        return null;
+//        return compatibleCompletion
+//            ? new NbJavaCompletion(extEditorUI)
+//            : new NbJavaJMICompletion(extEditorUI, getSourceLevel(extEditorUI.getDocument()));
     }
 
     public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {

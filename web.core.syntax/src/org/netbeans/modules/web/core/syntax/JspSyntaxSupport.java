@@ -40,6 +40,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import java.util.*;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
 
 /**
  *
@@ -396,14 +397,14 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     }
     
     /** Gets all 'jsp prefixes' whose 'string prefix' matches complPrefix as a list of Strings. */
-    protected final List getTagPrefixes(String complPrefix) {
+    public final List getTagPrefixes(String complPrefix) {
         return filterList(getAllTagPrefixes(), complPrefix);
     }
     
     /** Gets all tags whose 'string prefix' matches complPrefix as a list of Strings. 
     * Assumes that complPrefix also includes the 'jsp prefix'.
     */
-    protected final List getTags(String complPrefix) {
+    public final List getTags(String complPrefix) {
         int colonIndex = complPrefix.indexOf(":");  // NOI18N
         if (colonIndex == -1)
             throw new IllegalArgumentException();
@@ -415,7 +416,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     * is tagPrefix as a list of Strings. 
     * Assumes that complPrefix does not include the 'jsp prefix'.
     */
-    protected final List getTags(String tagPrefix, String complPrefix) {
+    public final List getTags(String tagPrefix, String complPrefix) {
         return filterList(getAllTags(tagPrefix), complPrefix);
     }
     
@@ -423,7 +424,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     * is tagPrefixName as a list of Strings. 
     * The attribute's 'string prefix' must match complPrefix.
     */
-    protected final List getTagAttributes(String tagPrefixName, String complPrefix) {
+    public final List getTagAttributes(String tagPrefixName, String complPrefix) {
         int colonIndex = tagPrefixName.indexOf(":");    // NOI18N
         if (colonIndex == -1)
             throw new IllegalArgumentException();
@@ -440,13 +441,13 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     }
     
     /** Gets all directives whose 'string prefix' matches complPrefix as a list of Strings. */
-    protected final List getDirectives(String complPrefix) {
+    public final List getDirectives(String complPrefix) {
         return filterList(getAllDirectives(), complPrefix);
     }
     
     /** Gets attributes for directive <code>directive</code> as a list of Strings.
     * The attribute's 'string prefix' must match complPrefix.  */
-    protected final List getDirectiveAttributes(String directive, String complPrefix) {
+    public final List getDirectiveAttributes(String directive, String complPrefix) {
         return filterList(getAllDirectiveAttributes(directive), complPrefix);
     }
     
@@ -1552,7 +1553,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         if (ti.getBodyContent ().equalsIgnoreCase (TagInfo.BODY_CONTENT_EMPTY))
                             continue;
 
-                        result.add( new CompletionItem.Tag( "/"+image ) );  // NOI18N
+                        result.add( new JspCompletionItem.Tag( "/"+image ) );  // NOI18N
                         
                         if(firstOnly) break; //return only the first found not-finished start token
                     }

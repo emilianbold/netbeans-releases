@@ -13,20 +13,38 @@
 
 package org.netbeans.editor.ext.html;
 
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.net.URL;
 import java.util.*;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 
 import org.netbeans.editor.*;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.*;
+import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.editor.ext.html.dtd.*;
+import org.netbeans.editor.ext.html.javadoc.HelpManager;
+import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
+import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
  * HTML completion results finder
@@ -51,18 +69,18 @@ public class HTMLCompletionQuery implements CompletionQuery {
         Class kitClass = Utilities.getKitClass(component);
         if (kitClass != null) {
             lowerCase = SettingsUtil.getBoolean(kitClass,
-            HTMLSettingsNames.COMPLETION_LOWER_CASE,
-            HTMLSettingsDefaults.defaultCompletionLowerCase);
+                    HTMLSettingsNames.COMPLETION_LOWER_CASE,
+                    HTMLSettingsDefaults.defaultCompletionLowerCase);
         }
         BaseDocument doc = (BaseDocument)component.getDocument();
         if( doc.getLength() == 0 ) return null; // nothing to examine
         HTMLSyntaxSupport sup = (HTMLSyntaxSupport)support.get(HTMLSyntaxSupport.class);
         if( sup == null ) return null;// No SyntaxSupport for us, no hint for user
-
+        
         DTD dtd = sup.getDTD();
         if( dtd == null ) return null; // We have no knowledge about the structure!
         
-
+        
         try {
             TokenItem item = null;
             TokenItem prev = null;
@@ -79,19 +97,18 @@ public class HTMLCompletionQuery implements CompletionQuery {
                     String prevvImage = prevv.getImage();
                     int index = prevvImage.length() - 1;
                     // is in the previous tag a letter?
-                    if (prevv != null && sup.isTag(prevv) && 
-                        prevv.getTokenID().getNumericID() == HTMLTokenContext.ARGUMENT_ID){
+                    if (prevv != null && sup.isTag(prevv) &&
+                            prevv.getTokenID().getNumericID() == HTMLTokenContext.ARGUMENT_ID){
                         while (index > -1 && !Character.isLetter(prevvImage.charAt(index)))
                             index--;
-                    }
-                    else
+                    } else
                         index = -1;
                     // if not find first tag with a letter
                     while (index == -1 && prevv != null){
                         while (prevv != null
-                        && ((!sup.isTag(prevv)
-                        && prevv.getTokenID().getNumericID() != HTMLTokenContext.ARGUMENT_ID)
-                        || prevv.getImage().trim().equals(">"))){ // NOI18N
+                                && ((!sup.isTag(prevv)
+                                && prevv.getTokenID().getNumericID() != HTMLTokenContext.ARGUMENT_ID)
+                                || prevv.getImage().trim().equals(">"))){ // NOI18N
                             prevv = prevv.getPrevious();
                         }
                         if (prevv != null){
@@ -108,11 +125,10 @@ public class HTMLCompletionQuery implements CompletionQuery {
                     // is there a previous tag with a letter?
                     if (prevv != null && index != -1){
                         lowerCase = !Character.isUpperCase(prevvImage.charAt(index));
-                    }
-                    else{
+                    } else{
                         lowerCase = true;
                     }
-
+                    
                 }
                 // end of smartcase deciding
                 inside = item.getOffset() < offset;
@@ -181,8 +197,8 @@ else System.err.println( "Inside token " + item.getTokenID() );
                         if(aheadChainToken != null && aheadChainToken.getTokenID().getNumericID() == HTMLTokenContext.WS_ID) {
                             aheadChainToken = aheadChainToken.getNext();
                             if(aheadChainToken != null &&
-                            (aheadChainToken.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_ID ||
-                            aheadChainToken.getTokenID().getNumericID() == HTMLTokenContext.ARGUMENT_ID )) {
+                                    (aheadChainToken.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_ID ||
+                                    aheadChainToken.getTokenID().getNumericID() == HTMLTokenContext.ARGUMENT_ID )) {
                                 //do not put the item into CC - otherwise it will break the completed tag
                                 l = null;
                             }
@@ -220,7 +236,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
                     // automatically null but that does not mean that the
                     // completion should return null. Only if element is null
                     // also for offset-1...
-                    // + bugfix of #52909 - the > is recognized as SyntaxElement.TAG so we need to 
+                    // + bugfix of #52909 - the > is recognized as SyntaxElement.TAG so we need to
                     // get a syntax element before, when cc is called before > in a tag e.g. <table w|>
                     if (elem == null || (elem.getType() == SyntaxElement.TYPE_TAG && ">".equals(elem.getText())) ) { // NOI18N
                         elem = sup.getElementChain( offset - 1 );
@@ -275,8 +291,8 @@ else System.err.println( "Inside token " + item.getTokenID() );
              * to propertysheet
              */
             } else if( id == HTMLTokenContext.VALUE || id == HTMLTokenContext.OPERATOR ||
-            id == HTMLTokenContext.WS && (inside ? prev : prev.getPrevious()).getTokenID() == HTMLTokenContext.OPERATOR
-            ) {
+                    id == HTMLTokenContext.WS && (inside ? prev : prev.getPrevious()).getTokenID() == HTMLTokenContext.OPERATOR
+                    ) {
                 SyntaxElement elem = null;
                 try {
                     elem = sup.getElementChain( offset );
@@ -374,7 +390,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
         }
         return result;
     }
-
+    
     List translateValues( int offset, int length, List values ) {
         return translateValues(offset, length, values, null);
     }
@@ -395,13 +411,8 @@ else System.err.println( "Inside token " + item.getTokenID() );
      * of anything and every data creates lazily on request to avoid
      * creation of lot of string instances per completion result.
      */
-    public static abstract class HTMLResultItem implements CompletionQuery.ResultItem {
-        /** The Component used as a rubberStamp for painting items */
-        static javax.swing.JLabel rubberStamp = new javax.swing.JLabel();
-        
-        static {
-            rubberStamp.setOpaque( true );
-        }
+    public static abstract class HTMLResultItem implements CompletionQuery.ResultItem,
+    CompletionItem {
         
         /** The String on which is this ResultItem defined */
         String baseText;
@@ -412,6 +423,10 @@ else System.err.println( "Inside token " + item.getTokenID() );
         
         String helpID;
         
+        private HTMLCompletionResultItemPaintComponent component;
+        
+        private static final int HTML_ITEMS_SORT_PRIORITY = 20;
+        
         public HTMLResultItem( String baseText, int offset, int length ) {
             this.baseText = lowerCase ? baseText.toLowerCase() : baseText.toUpperCase();
             this.offset = offset;
@@ -420,8 +435,81 @@ else System.err.println( "Inside token " + item.getTokenID() );
         }
         
         public HTMLResultItem( String baseText, int offset, int length, String helpID ) {
-            this (baseText, offset, length);
+            this(baseText, offset, length);
             this.helpID = helpID;
+        }
+        
+        //-------------
+        protected int selectionStartOffset = -1;
+        protected int selectionEndOffset = -1;
+        
+        public int getSortPriority() {
+            return HTML_ITEMS_SORT_PRIORITY;
+        }
+        public CharSequence getSortText() {
+            return HTMLResultItem.this.getItemText();
+        }
+        
+        public Component getPaintComponent(boolean isSelected) {
+            //TODO: the paint component should be caches somehow
+            HTMLCompletionResultItemPaintComponent component = new HTMLCompletionResultItemPaintComponent.StringPaintComponent(getPaintColor());
+            component.setSelected(isSelected);
+            component.setString(getItemText());
+            return component;
+        }
+        
+        public int getPreferredWidth(Graphics g, Font defaultFont) {
+            Component renderComponent = getPaintComponent(false);
+            return renderComponent.getPreferredSize().width;
+        }
+        
+        public void render(Graphics g, Font defaultFont, Color defaultColor,
+        Color backgroundColor, int width, int height, boolean selected) {
+            Component renderComponent = getPaintComponent(selected);
+            renderComponent.setForeground(defaultColor);
+            renderComponent.setBackground(backgroundColor);
+            ((HTMLCompletionResultItemPaintComponent)renderComponent).paintComponent(g);
+        }
+        
+        protected Object getAssociatedObject() {
+            return getItemText();
+        }
+        
+        public static final String COMPLETION_SUBSTITUTE_TEXT= "completion-substitute-text"; //NOI18N
+        
+        static int substituteOffset = -1;
+        
+        public int getSubstituteOffset() {
+            return substituteOffset;
+        }
+        
+        public boolean instantSubstitution(JTextComponent c) {
+            defaultAction(c);
+            return true;
+        }
+        
+        public CompletionTask createDocumentationTask() {
+            return new AsyncCompletionTask(new DocQuery(this));
+        }
+        
+        public CompletionTask createToolTipTask() {
+            return null;
+        }
+        
+        public int getImportance() {
+            return 0;
+        }
+        
+        public void processKeyEvent(KeyEvent evt) {
+        }
+        
+        public void defaultAction(JTextComponent component) {
+            int substOffset = getSubstituteOffset();
+            if (substOffset == -1)
+                substOffset = component.getCaretPosition();
+            //ResultItem.toAdd = e.getActionCommand();
+            Completion.get().hideAll();
+            substituteText(component, substOffset, component.getCaretPosition() - substOffset, false);
         }
         
         boolean replaceText( JTextComponent component, String text ) {
@@ -447,17 +535,19 @@ else System.err.println( "Inside token " + item.getTokenID() );
         }
         
         /** @return Properly colored JLabel with text gotten from <CODE>getPaintText()</CODE>. */
-        public java.awt.Component getPaintComponent( javax.swing.JList list, boolean isSelected, boolean cellHasFocus ) {
-            // The space is prepended to avoid interpretation as HTML Label
-            rubberStamp.setText( " " + getPaintText() );  // NOI18N
+        public Component getPaintComponent(javax.swing.JList list, boolean isSelected, boolean cellHasFocus) {
+            Component ret = getPaintComponent(isSelected);
+            if (ret==null) return null;
             if (isSelected) {
-                rubberStamp.setBackground(list.getSelectionBackground());
-                rubberStamp.setForeground(list.getSelectionForeground());
+                ret.setBackground(list.getSelectionBackground());
+                ret.setForeground(list.getSelectionForeground());
             } else {
-                rubberStamp.setBackground(list.getBackground());
-                rubberStamp.setForeground( getPaintColor() );
+                ret.setBackground(list.getBackground());
+                ret.setForeground(list.getForeground());
             }
-            return rubberStamp;
+            ret.getAccessibleContext().setAccessibleName(getItemText());
+            ret.getAccessibleContext().setAccessibleDescription(getItemText());
+            return ret;
         }
         
         /** The string used in painting by <CODE>getPaintComponent()</CODE>.
@@ -626,4 +716,49 @@ else System.err.println( "Inside token " + item.getTokenID() );
             return !shift;
         }
     }
+    
+    static class DocQuery extends AsyncCompletionQuery {
+        
+        private HTMLResultItem item;
+        
+        DocQuery(HTMLResultItem item) {
+            this.item = item;
+        }
+        
+        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            if (item != null) {
+                resultSet.setDocumentation(new DocItem(item));
+            }
+            resultSet.finish();
+        }
+        
+    }
+    
+    static class DocItem implements CompletionDocumentation {
+        private HTMLResultItem ri;
+        
+        public DocItem(HTMLResultItem ri) {
+            this.ri = ri;
+        }
+        
+        public String getText() {
+            String help = HelpManager.getDefault().getHelp(ri.getHelpID());
+            return help;
+        }
+        
+        public URL getURL() {
+            return HelpManager.getDefault().getHelpURL(ri.getHelpID());
+        }
+        
+        public CompletionDocumentation resolveLink(String link) {
+            //????
+            return null;
+        }
+        
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    }
+    
 }
+

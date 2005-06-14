@@ -75,6 +75,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="html">
+            
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
+                </folder>
+            
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-html-editor-folding-HTMLFoldManagerFactory.instance"/>
                 </folder>
