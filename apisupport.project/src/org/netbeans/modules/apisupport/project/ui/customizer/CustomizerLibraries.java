@@ -13,14 +13,20 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.RequiredTokenListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.openide.DialogDescriptor;
@@ -51,6 +57,7 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         this.moduleDeps = subModules;
         this.universeModulesModel = universeModules;
         updateEnabled();
+        reqTokenList.setModel(modProps.getRequiredTokenListModel());
         dependencyList.setModel(subModules);
         dependencyList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(false));
         dependencyList.addListSelectionListener(new ListSelectionListener() {
@@ -94,6 +101,12 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         platformValue = org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.getNbPlatformsComboxBox();
         platform = new javax.swing.JLabel();
         managePlafsButton = new javax.swing.JButton();
+        reqTokens = new javax.swing.JLabel();
+        reqTokenSP = new javax.swing.JScrollPane();
+        reqTokenList = new javax.swing.JList();
+        tokenButtonPanel = new javax.swing.JPanel();
+        addTokenButton = new javax.swing.JButton();
+        removeTokenButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -211,8 +224,97 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(platformPanel, gridBagConstraints);
 
+        reqTokens.setLabelFor(reqTokenList);
+        org.openide.awt.Mnemonics.setLocalizedText(reqTokens, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_RequiredTokens"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 12);
+        add(reqTokens, gridBagConstraints);
+
+        reqTokenSP.setViewportView(reqTokenList);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(reqTokenSP, gridBagConstraints);
+
+        tokenButtonPanel.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(addTokenButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddButton_NoMnem"));
+        addTokenButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addToken(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        tokenButtonPanel.add(addTokenButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(removeTokenButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton_NoMnem"));
+        removeTokenButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeToken(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        tokenButtonPanel.add(removeTokenButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(tokenButtonPanel, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void removeToken(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeToken
+        RequiredTokenListModel model = (RequiredTokenListModel) reqTokenList.getModel();
+        Object[] selected = reqTokenList.getSelectedValues();
+        for (int i = 0; i < selected.length; i++) {
+            model.removeToken((String) selected[i]);
+        }
+    }//GEN-LAST:event_removeToken
+
+    private void addToken(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToken
+        // create add panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+        panel.setLayout(new BorderLayout(0, 2));
+        panel.add(new JLabel(NbBundle.getMessage(CustomizerLibraries.class, "LBL_ProvidedTokens_NoMnem")), 
+                BorderLayout.NORTH);
+        JList tokenList = new JList(modProps.getAllTokens());
+        JScrollPane tokenListSP = new JScrollPane(tokenList);
+        panel.add(tokenListSP, BorderLayout.CENTER);
+
+        DialogDescriptor descriptor = new DialogDescriptor(panel,
+                NbBundle.getMessage(CustomizerLibraries.class,
+                "LBL_ProvidedTokens_NoMnem")); // NOI18N
+        Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
+        d.setVisible(true);
+        d.dispose();
+        if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
+            Object[] selected = tokenList.getSelectedValues();
+            RequiredTokenListModel model = (RequiredTokenListModel) reqTokenList.getModel();
+            for (int i = 0; i < selected.length; i++) {
+                model.addToken((String) selected[i]);
+            }
+        }
+    }//GEN-LAST:event_addToken
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
         NbPlatformCustomizer.showCustomizer();
@@ -275,17 +377,39 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDepButton;
+    private javax.swing.JButton addDepButton2;
+    private javax.swing.JButton addFriendButton;
+    private javax.swing.JButton addFriendButton1;
+    private javax.swing.JButton addTokenButton;
+    private javax.swing.JPanel bottomPanel;
+    private javax.swing.JPanel bottomPanel1;
+    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JPanel buttonPanel1;
     private javax.swing.JPanel depButtonPanel;
+    private javax.swing.JPanel depButtonPanel1;
     private javax.swing.JList dependencyList;
     private javax.swing.JScrollPane dependencySP;
     private javax.swing.JButton editDepButton;
+    private javax.swing.JButton editDepButton1;
+    private javax.swing.JLabel filler1;
+    private javax.swing.JLabel filler2;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton managePlafsButton;
     private javax.swing.JLabel modDepLabel;
     private javax.swing.JLabel platform;
     private javax.swing.JPanel platformPanel;
     private javax.swing.JComboBox platformValue;
     private javax.swing.JButton removeDepButton;
+    private javax.swing.JButton removeDepButton2;
+    private javax.swing.JButton removeFriendButton;
+    private javax.swing.JButton removeFriendButton1;
+    private javax.swing.JButton removeTokenButton;
+    private javax.swing.JList reqTokenList;
+    private javax.swing.JScrollPane reqTokenSP;
+    private javax.swing.JLabel reqTokens;
     private javax.swing.JLabel space1;
+    private javax.swing.JLabel space2;
+    private javax.swing.JPanel tokenButtonPanel;
     // End of variables declaration//GEN-END:variables
     
 }

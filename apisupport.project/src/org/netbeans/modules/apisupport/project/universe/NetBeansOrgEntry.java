@@ -26,13 +26,13 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     private final String cpext;
     private final String releaseVersion;
     private final String specVersion;
-    private final String providedTokens;
+    private final String[] providedTokens;
     private final ManifestManager.PackageExport[] publicPackages;
     private final boolean deprecated;
     
     public NetBeansOrgEntry(File nball, String cnb, String path, File cluster,
             String module, String cpext, String releaseVersion, String specVersion,
-            String providedTokens, ManifestManager.PackageExport[] publicPackages,
+            String[] providedTokens, ManifestManager.PackageExport[] publicPackages,
             boolean deprecated) {
         this.nball = nball;
         this.cnb = cnb;
@@ -79,7 +79,7 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
         return releaseVersion;
     }
     
-    public String getProvidedTokens() {
+    public String[] getProvidedTokens() {
         return providedTokens;
     }
     

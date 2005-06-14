@@ -85,10 +85,9 @@ public interface ModuleEntry extends Comparable {
     String getSpecificationVersion();
     
     /**
-     * Returns either provided tokens by the module or <code>null</code> if
-     * there isn't any.
+     * Returns array of provided tokens by the module. Can be empty.
      */
-    String getProvidedTokens();
+    String[] getProvidedTokens();
     
     /**
      * Get localized name of this module. Implementations should use
