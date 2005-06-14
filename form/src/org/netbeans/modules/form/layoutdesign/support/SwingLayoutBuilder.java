@@ -46,12 +46,17 @@ public class SwingLayoutBuilder {
      */
     private Map/*<String,Component>*/ componentIDMap;
 
+    private boolean designMode;
+
     public SwingLayoutBuilder(LayoutModel layoutModel,
-                              Container container, String containerId) {
+                              Container container, String containerId,
+                              boolean designMode)
+    {
         componentIDMap = new HashMap/*<String,Component>*/();
         this.layoutModel = layoutModel;
         this.container = container;
         this.containerLC = layoutModel.getLayoutComponent(containerId);
+        this.designMode = designMode;
     }
 
     /**
@@ -129,7 +134,7 @@ public class SwingLayoutBuilder {
         if (interval.isGroup()) {            
             if (interval.isParallel()) {
                 int groupAlignment = convertAlignment(interval.getGroupAlignment());
-                boolean notResizable = interval.getMaximumSize() == LayoutConstants.USE_PREFERRED_SIZE;
+                boolean notResizable = interval.getMaximumSize(designMode) == LayoutConstants.USE_PREFERRED_SIZE;
                 group = layout.createParallelGroup(groupAlignment, !notResizable);
             } else if (interval.isSequential()) {
                 group = layout.createSequentialGroup();
@@ -163,9 +168,9 @@ public class SwingLayoutBuilder {
                 ((GroupLayout.ParallelGroup)group).add(alignment, composeGroup(layout, interval, first, last));
             }
         } else {
-            int min = convertSize(interval.getMinimumSize(), interval);
-            int pref = convertSize(interval.getPreferredSize(), interval);
-            int max = convertSize(interval.getMaximumSize(), interval);
+            int min = convertSize(interval.getMinimumSize(designMode), interval);
+            int pref = convertSize(interval.getPreferredSize(designMode), interval);
+            int max = convertSize(interval.getMaximumSize(designMode), interval);
             if (interval.isComponent()) {
                 int alignment = interval.getAlignment();
                 LayoutComponent layoutComp = interval.getComponent();
@@ -184,7 +189,7 @@ public class SwingLayoutBuilder {
                 }
             } else {
                 assert interval.isEmptySpace();
-                if (interval.isDefaultPadding()) {
+//                if (interval.isDefaultPadding()) {
                     // PENDING
                     int padding = (first || last) ? 12 : 6;
                     min = (min == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : min;
@@ -192,7 +197,7 @@ public class SwingLayoutBuilder {
                     max = (max == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : max;
                     min = Math.min(pref, min);
                     max = Math.max(pref, max);
-                }
+//                }
                 if (group instanceof GroupLayout.SequentialGroup) {
                     ((GroupLayout.SequentialGroup)group).add(min, pref, max);
                 } else {
@@ -215,13 +220,13 @@ public class SwingLayoutBuilder {
         return groupAlignment;
     }
     
-    private static int convertSize(int size, LayoutInterval interval) {
+    private int convertSize(int size, LayoutInterval interval) {
         int convertedSize;
         switch (size) {
             case LayoutConstants.NOT_EXPLICITLY_DEFINED: convertedSize = GroupLayout.DEFAULT_SIZE; break;
             case LayoutConstants.USE_PREFERRED_SIZE:
                 convertedSize = interval.isEmptySpace() ?
-                                convertSize(interval.getPreferredSize(), interval) :
+                                convertSize(interval.getPreferredSize(designMode), interval) :
                                 GroupLayout.PREFERRED_SIZE;
                 break;
             default: assert (size >= 0); convertedSize = size; break;

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.form.layoutdesign;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 
 public interface VisualMapper {
@@ -33,15 +34,6 @@ public interface VisualMapper {
     Rectangle getComponentBounds(String componentId);
     
     /**
-     * Provides preferred size of a component in the specified dimension.
-     *
-     * @param componentId ID of the component
-     * @param dimension dimension (HORIZONTAL or VERTICAL)
-     * @return preferred size of a component in the specified dimension.
-     */
-    int getComponentPreferredSize(String componentId, int dimension);
-
-    /**
      * Provides actual position and size of the interior of a component
      * container - as it appears in the visual design area. (The interior
      * differs from the outer bounds in that it should reflect the borders
@@ -52,6 +44,9 @@ public interface VisualMapper {
      *         currently visualized in the design area
      */
     Rectangle getContainerInterior(String componentId);
+
+    Dimension getComponentMinimumSize(String componentId);
+    Dimension getComponentPreferredSize(String componentId);
 
     /**
      * Provides preferred padding (optimal amount of space) between two components.

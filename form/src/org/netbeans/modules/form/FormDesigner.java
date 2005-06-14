@@ -254,9 +254,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return id != null ? formModel.getMetaComponent(id) : null;
     }
 
-    public RADComponent getMetaComponent(String componentId) {
-        return formModel.getMetaComponent(componentId);
-    }
+//    public RADComponent getMetaComponent(String componentId) {
+//        return formModel.getMetaComponent(componentId);
+//    }
 
     public RADVisualComponent getTopDesignComponent() {
         return topDesignComponent;
@@ -394,7 +394,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             Component comp = component.getParent();
             while (comp != top) {
                 if (comp == null) {
-                    return null;
+                    break;//return null;
                 }
                 dx += comp.getX();
                 dy += comp.getY();
@@ -456,10 +456,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     Dimension getStoredDesignerSize() {
         RADComponent metacomp = formModel.getTopRADComponent();
-        if (metacomp == null)
-            return null;
-
-        return (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
+        if (metacomp instanceof RADVisualFormContainer) {
+            return ((RADVisualFormContainer)metacomp).getDesignerSize();
+        }
+        else if (metacomp != null) {
+            return (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
+        }
+        else return null;
     }
 
     void setStoredDesignerSize(Dimension size) {
@@ -1187,22 +1190,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 //        }
 
         public Rectangle getComponentBounds(String componentId) {
-            Component visual = (Component) getComponent(componentId);
+            Component visual = getVisualComponent(componentId, true, false);
             return visual != null ? componentBoundsToTop(visual) : null;
         }
 
-        public int getComponentPreferredSize(String componentId, int dimension) {
-            assert dimension == HORIZONTAL || dimension == VERTICAL;
-            Component visual = (Component) getComponent(componentId);
-            if (visual == null) {
-                visual = (Component) getMetaComponent(componentId).getBeanInstance();
-            }
-            Dimension prefSize = visual.getPreferredSize();
-            return (int)((dimension == HORIZONTAL) ? prefSize.getWidth() : prefSize.getHeight());
-        }
-
         public Rectangle getContainerInterior(String componentId) {
-            Object visual = getComponent(componentId);
+            Component visual = getVisualComponent(componentId, true, false);
             if (visual == null)
                 return null;
 
@@ -1220,8 +1213,18 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return rect;
         }
 
+        public Dimension getComponentMinimumSize(String componentId) {
+            Component visual = getVisualComponent(componentId, false, false);
+            return visual != null ? visual.getMinimumSize() : null;
+        }
+
+        public Dimension getComponentPreferredSize(String componentId) {
+            Component visual = getVisualComponent(componentId, false, false);
+            return visual != null ? visual.getPreferredSize() : null;
+        }
+
         public int getBaselinePosition(String componentId) {
-            JComponent comp = getJComponent(componentId, true);
+            JComponent comp = (JComponent) getVisualComponent(componentId, true, true);
             // [hack - vertically resizable components cannot be baseline aligned]
             // [this should be either solved or filtered in LayoutDragger according to vertical resizability of the component]
             if (comp instanceof JScrollPane || comp instanceof JPanel || comp instanceof JTabbedPane) {
@@ -1239,8 +1242,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                        int comp2Alignment,
                                        int paddingType)
         {
-            JComponent comp1 = getJComponent(comp1Id, true);
-            JComponent comp2 = getJComponent(comp2Id, true);
+            JComponent comp1 = (JComponent) getVisualComponent(comp1Id, true, true);
+            JComponent comp2 = (JComponent) getVisualComponent(comp2Id, true, true);
             if (comp1 == null || comp2 == null) // not JComponents...
                 return 6; // default distance between components
 
@@ -1268,8 +1271,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                                int dimension,
                                                int compAlignment)
         {
-            JComponent parent = getJComponent(parentId, false);
-            JComponent comp = getJComponent(compId, true);
+            JComponent comp = null;
+            Component parent = getVisualComponent(parentId, true, false);
+            if (parent != null) {
+                RADVisualContainer metacont = (RADVisualContainer)
+                                              getMetaComponent(parentId);
+                parent = metacont.getContainerDelegate(parent);
+                if (parent instanceof JComponent) {
+                    comp = (JComponent) getVisualComponent(compId, true, true);
+                }
+                else {
+                    parent = null;
+                }
+            }
             if (parent == null || comp == null)
                 return 12; // default distance from parent border
 
@@ -1294,7 +1308,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     alignment = SwingConstants.SOUTH;
                 }
             }
-            return getPadding().getPaddingRelativeToParent(parent, parent,
+            return getPadding().getPaddingRelativeToParent((JComponent)parent, comp,
                                                            alignment);
         }
 
@@ -1305,28 +1319,42 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
 
         public void rebuildLayout(String contId) {
-            replicator.updateContainerLayout((RADVisualContainer)
-                                             formModel.getMetaComponent(contId));
+            replicator.updateContainerLayout((RADVisualContainer)getMetaComponent(contId));
             replicator.getLayoutBuilder(contId).doLayout();
         }
 
         // -------
 
-        private JComponent getJComponent(String compId, boolean inclPrecreated) {
-            Object comp = getComponent(compId);
-            if (comp == null && inclPrecreated) {
-                RADVisualComponent precreated =
+        private RADComponent getMetaComponent(String compId) {
+            RADComponent metacomp = formModel.getMetaComponent(compId);
+            if (metacomp == null) {
+                RADComponent precreated =
                     formModel.getComponentCreator().getPrecreatedMetaComponent();
-                if (precreated != null && precreated.getId().equals(compId))
-                    comp = precreated.getBeanInstance();
-            }
-            else if (comp != null && !inclPrecreated) {
-                RADComponent metacomp = formModel.getMetaComponent(compId);
-                if (metacomp instanceof RADVisualContainer) {
-                    comp = ((RADVisualContainer)metacomp).getContainerDelegate(comp);
+                if (precreated != null && precreated.getId().equals(compId)) {
+                    metacomp = precreated;
                 }
             }
-            return comp instanceof JComponent ? (JComponent) comp : null;
+            return metacomp;
+        }
+
+        private Component getVisualComponent(String compId, boolean needVisible, boolean needJComponent) {
+            Object comp = getComponent(compId);
+            if (comp == null) {
+                RADVisualComponent precreated =
+                    formModel.getComponentCreator().getPrecreatedMetaComponent();
+                if (precreated != null && precreated.getId().equals(compId)) {
+                    comp = precreated.getBeanInstance();
+                }
+                if (comp == null && !needVisible) {
+                    RADComponent metacomp = getMetaComponent(compId);
+                    if (metacomp != null) {
+                        comp = metacomp.getBeanInstance();
+                    }
+                }
+            }
+            Class type = needJComponent ? JComponent.class : Component.class;
+            return comp != null && type.isAssignableFrom(comp.getClass()) ?
+                   (Component) comp : null;
         }
 
         private Padding getPadding() {

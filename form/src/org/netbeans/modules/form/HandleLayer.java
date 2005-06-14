@@ -71,8 +71,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     private SelectionDragger selectionDragger;
     private Image resizeHandle;
 
-    private DesignerResizer designerResizer;
-
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
 
@@ -131,7 +129,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
     // ---------
 
-static int ncount;
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
 
@@ -166,8 +163,6 @@ static int ncount;
 
             if (selectionDragger != null)
                 selectionDragger.paintDragFeedback(g2);
-            else if (designerResizer != null)
-                designerResizer.paintDragFeedback(g2);
         }
     }
 
@@ -728,9 +723,7 @@ static int ncount;
     // --------
 
     private boolean anyDragger() {
-        return draggedComponent != null
-               || selectionDragger != null
-               || designerResizer != null;
+        return draggedComponent != null || selectionDragger != null;
     }
 
     private RADVisualComponent[] getComponentsToDrag() {
@@ -794,12 +787,13 @@ static int ncount;
                 setToolTipText(null);
         }
 
+        boolean done = true;
+
         if (draggedComponent != null) {
             if (draggedComponent.end(e))
                 draggedComponent = null;
             else
-                return false;
-//            repaint();
+                done = false;
         }
         else if (selectionDragger != null) {
             if (e != null)
@@ -807,15 +801,13 @@ static int ncount;
             selectionDragger = null;
 //                repaint();
         }
-        else if (designerResizer != null) {
-            designerResizer.drop(e != null ? e.getPoint() : null);
-            designerResizer = null;
-        }
 
-        draggingEnded = true;
-        return true;
+        if (done)
+            draggingEnded = true;
+
+        return done;
     }
-    
+
     // Highlighted panel
     private JPanel darkerPanel = null;
     // Original color of the highlighted panel
@@ -1321,7 +1313,7 @@ static int ncount;
     }
 
     public void mouseExited(MouseEvent e) {
-        if (draggedComponent != null) {
+        if (draggedComponent != null && formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
             draggedComponent.move(null);
             repaint();
             StatusDisplayer.getDefault().setStatusText(""); // NOI18N
@@ -1373,11 +1365,15 @@ static int ncount;
                     // mouse not pressed with Shift only (which is reserved for
                     // interval or area selection - applied on mouse release or
                     // mouse dragged)
-                    if (designerResizer == null && !modifier
+                    if (draggedComponent == null && !modifier
                         && (resizeType & DESIGNER_RESIZING) != 0)
                     {   // start designer resizing
-                        if (e.getClickCount() != 2)
-                            designerResizer = new DesignerResizer();
+                        if (e.getClickCount() != 2) {
+                            draggedComponent = new ResizeComponentDrag(
+                                new RADVisualComponent[] { formDesigner.getTopDesignComponent() },
+                                lastLeftMousePoint,
+                                resizeType&~DESIGNER_RESIZING);
+                        }
                     }
                     else if (!mouseOnVisual(lastLeftMousePoint)) {
                         if ((resizeType == 0) && (selectedComponentAt(lastLeftMousePoint, 0) == null))
@@ -1453,10 +1449,6 @@ static int ncount;
             highlightPanel(e);
             repaint();
         }
-        else if (designerResizer != null) { // created in mousePressed, not here
-            designerResizer.drag(e.getPoint());
-            repaint();
-        }
         else if (selectionDragger != null) {
             selectionDragger.drag(p);
             repaint();
@@ -1524,57 +1516,6 @@ static int ncount;
                 e.isPopupTrigger()));
         } else {
             return super.getToolTipText(e);
-        }
-    }
-
-    // ----------
-
-    private class DesignerResizer {
-        Dimension size;
-
-        public void paintDragFeedback(Graphics2D g) {
-            Rectangle r = formDesigner.getComponentLayer().getDesignerInnerBounds();
-            if (size != null) {
-                r.width = size.width;
-                r.height = size.height;
-            }
-            Insets insets = formDesigner.getComponentLayer().getDesignerOutsets();
-            int thickness = insets.left;
-            Stroke oldStroke = g.getStroke();
-            g.setStroke(new BasicStroke(thickness));
-            g.setColor(formSettings.getFormDesignerBorderColor().darker());
-            g.drawRect(r.x - thickness/2, r.y - thickness/2,
-                       r.width + thickness, r.height + thickness);
-            g.setStroke(oldStroke);
-        }
-
-        public void drag(Point p) {
-            size = computeDesignerSize(p);
-        }
-
-        public void drop(Point p) {
-            if (size != null)
-                formDesigner.setStoredDesignerSize(size);
-        }
-
-        private Dimension computeDesignerSize(Point p) {
-            Rectangle r =
-                formDesigner.getComponentLayer().getDesignerInnerBounds();
-            int w = r.width;
-            int h = r.height;
-
-            if ((resizeType & LayoutSupportManager.RESIZE_DOWN) != 0) {
-                h = p.y - r.y;
-                if (h < 0)
-                    h = 0;
-            }
-            if ((resizeType & LayoutSupportManager.RESIZE_RIGHT) != 0) {
-                w = p.x - r.x;
-                if (w < 0)
-                    w = 0;
-            }
-
-            return new Dimension(w, h);
         }
     }
 
@@ -1723,6 +1664,15 @@ static int ncount;
             return (movingComponents == null) ? null : movingComponents[0].getParentContainer();
         }
 
+        final boolean isOldLayoutSource() {
+            RADVisualContainer metacont = getSourceContainer();
+            return metacont != null && metacont.getLayoutSupport() != null;
+        }
+
+        final boolean isTopComponent() {
+            return formDesigner.getTopDesignComponent() == movingComponents[0];
+        }
+                
         final RADVisualContainer getTargetContainer(Point p, int mode) {
             if (fixedTarget != null) {
                 return fixedTarget;
@@ -1742,7 +1692,7 @@ static int ncount;
             }
         }
         
-        final void move(Point p, int modifiers) {
+        void move(Point p, int modifiers) {
             if (p == null) {
                 movingBounds[0].x = Integer.MIN_VALUE;
                 return;
@@ -1751,26 +1701,24 @@ static int ncount;
             targetContainer = getTargetContainer(
                     p, ((modifiers & InputEvent.ALT_MASK) != 0) ? COMP_SELECTED : COMP_DEEPEST);
 
-            if (targetContainer != null && (newDrag || oldDrag)) {
-                if (targetContainer.getLayoutSupport() == null) { // new layout support
-                    p.x -= convertPoint.x;
-                    p.y -= convertPoint.y;
-                    formDesigner.getLayoutDesigner().move(p,
-                                                          targetContainer.getId(),
-                                                          ((modifiers & InputEvent.ALT_MASK) == 0),
-                                                          ((modifiers & InputEvent.CTRL_MASK) != 0),
-                                                          movingBounds);
-                    showingComponents[0].setSize(movingBounds[0].width, movingBounds[0].height);
-                    showingComponents[0].doLayout();
-                }
-                else { // old layout support
-                    oldMove(p);
-
-                    movingBounds[0].x = p.x - convertPoint.x - hotSpot.x + originalBounds[0].x - convertPoint.x;
-                    movingBounds[0].y = p.y - convertPoint.y - hotSpot.y + originalBounds[0].y - convertPoint.y;
-                }
+            if (newDrag && targetContainer != null && targetContainer.getLayoutSupport() == null) {
+                p.x -= convertPoint.x;
+                p.y -= convertPoint.y;
+                formDesigner.getLayoutDesigner().move(p,
+                                                      targetContainer.getId(),
+                                                      ((modifiers & InputEvent.ALT_MASK) == 0),
+                                                      ((modifiers & InputEvent.CTRL_MASK) != 0),
+                                                      movingBounds);
+                showingComponents[0].setSize(movingBounds[0].width, movingBounds[0].height);
+                doLayout(showingComponents[0]);
             }
-            else if (showingComponents != null) {
+            else if (oldDrag && targetContainer != null && targetContainer.getLayoutSupport() != null) {
+                oldMove(p);
+
+                movingBounds[0].x = p.x - convertPoint.x - hotSpot.x + originalBounds[0].x - convertPoint.x;
+                movingBounds[0].y = p.y - convertPoint.y - hotSpot.y + originalBounds[0].y - convertPoint.y;
+            }
+            else {
                 movingBounds[0].x = p.x - convertPoint.x - hotSpot.x + originalBounds[0].x - convertPoint.x;
                 movingBounds[0].y = p.y - convertPoint.y - hotSpot.y + originalBounds[0].y - convertPoint.y;
             }
@@ -1785,16 +1733,18 @@ static int ncount;
                                    movingBounds[0].width + 1,
                                    movingBounds[0].height + 1);
 
-            if (targetContainer != null
-                && targetContainer.getLayoutSupport() == null
-                && newDrag)
+            if (newDrag
+                && ((targetContainer != null && targetContainer.getLayoutSupport() == null)
+                    || (targetContainer == null && isTopComponent())))
             {   // new layout support
                 // paint the component being moved
-                if (showingComponents[0] instanceof JComponent) {
-                    showingComponents[0].paint(gg);
-                } else {
-                    showingComponents[0].getPeer().paint(gg);
-                }
+                if (!isTopComponent()) {
+                    if (showingComponents[0] instanceof JComponent) {
+                        showingComponents[0].paint(gg);
+                    } else {
+                        showingComponents[0].getPeer().paint(gg);
+                    }
+                } // resized top design component is painted automatically
 
                 // paint the selection rectangle
                 gg.setColor(formSettings.getSelectionBorderColor());
@@ -1806,12 +1756,12 @@ static int ncount;
                 formDesigner.getLayoutDesigner().paintMoveFeedback(g);
                 g.translate(-convertPoint.x, -convertPoint.y);
             }
-            else if (targetContainer != null && oldDrag) { // old layout support
+            else if (oldDrag && targetContainer != null && targetContainer.getLayoutSupport() != null) {
                 oldPaintFeedback(g, gg);
             }
             else if (showingComponents != null) { // non-visual area
                 Component comp = showingComponents[0];
-                if (comp.getParent() == dragPanel) { // don't paint if component dragged from old layout
+                if (!isOldLayoutSource()) { // don't paint if component dragged from old layout
                     if (comp instanceof JComponent)
                         comp.paint(gg);
                     else
@@ -1820,29 +1770,47 @@ static int ncount;
             }
         }
 
+        final boolean end(MouseEvent e) {
+            dragPanel.removeAll();
+
+            boolean retVal;
+            if (e == null) {
+                retVal = end(null, 0);
+            }
+            else {
+                retVal = end(e.getPoint(), e.getModifiers());
+            }
+            if (retVal) {
+                movingComponents = null;
+                targetContainer = null;
+                fixedTarget = null;
+                showingComponents = null;
+            }
+            else {
+                init();
+            }
+            return retVal;
+        }
+
         // methods to extend/override ---
 
         void init() {
             if (showingComponents != null) {
-                // showing components need to be added to a container to paint
-                // correctly - except components moved from old layout support
-                // which stay in their containers
+                // showing components need to be in a container to paint correctly,
+                // components in new layout need to be hidden on their original location
                 dragPanel.removeAll();
-                boolean needDragPanel = getSourceContainer() == null
-                        || getSourceContainer().getLayoutSupport() == null;
+                boolean needPainting = !isTopComponent()
+                        && (getSourceContainer() == null // being newly added
+                            || getSourceContainer().getLayoutSupport() == null); // or in new layout
                 for (int i=0; i < showingComponents.length; i++) {
                     Component comp = showingComponents[i];
-                    if (needDragPanel) {
-                        if (!(comp instanceof JComponent)) {
-                            if (comp.getParent() != null) {
-                                comp.getParent().remove(comp);
-                            }
-                            FakePeerSupport.attachFakePeer(comp);
-                            if (comp instanceof Container) {
-                                FakePeerSupport.attachFakePeerRecursively((Container)comp);
-                            }
+                    if (needPainting) {
+                        if (comp.getParent() == null) {
+                            dragPanel.add(comp);
                         }
-                        dragPanel.add(comp);
+                        else {
+                            comp.setVisible(false);
+                        }
                     }
                     avoidDoubleBuffering(comp);
                 }
@@ -1861,12 +1829,7 @@ static int ncount;
             }
         }
 
-        boolean end(MouseEvent e) {
-            dragPanel.removeAll();
-            movingComponents = null;
-            targetContainer = null;
-            fixedTarget = null;
-            showingComponents = null;
+        boolean end(Point p, int modifiers) {
             return true;
         }
 
@@ -1889,6 +1852,16 @@ static int ncount;
             }
             layoutUndoMark = null;
             layoutUndoEdit = null;
+        }
+    }
+
+    private static void doLayout(Component component) {
+        if (component instanceof Container) {
+            Container cont = (Container) component;
+            cont.doLayout();
+            for (int i=0, n=cont.getComponentCount(); i < n; i++) {
+                doLayout(cont.getComponent(i));
+            }
         }
     }
 
@@ -1953,14 +1926,14 @@ static int ncount;
             super.init();
         }
 
-        boolean end(MouseEvent e) {
+        boolean end(Point p, int modifiers) {    
             RADVisualContainer originalCont = getSourceContainer();
-            if (e != null) {
+            if (p != null) {
                 if (targetContainer == null || targetContainer.getLayoutSupport() != null) {
                     // dropped in old layout support, or on non-visual area
                     createLayoutUndoableEdit();
                     formDesigner.getLayoutDesigner().removeDraggedComponents();
-                    oldDragger.dropComponents(e.getPoint());
+                    oldDragger.dropComponents(p);
                     placeLayoutUndoableEdit();
                 }
                 else { // dropped in new layout support
@@ -1981,7 +1954,7 @@ static int ncount;
                 formDesigner.updateContainerLayout(originalCont, false);
             }
 
-            return super.end(e);
+            return true;
         }
 
         void oldMove(Point p) {
@@ -1993,7 +1966,7 @@ static int ncount;
 
             // don't paint if component dragged from old layout (may have strange size)
             Component comp = showingComponents[0];
-            if (comp.getParent() == dragPanel) {
+            if (!isOldLayoutSource()) {
                 if (comp instanceof JComponent)
                     comp.paint(gg);
                 else
@@ -2019,8 +1992,21 @@ static int ncount;
 
         void init() {
             RADVisualContainer metacont = getSourceContainer();
-            fixedTarget = metacont;
-            if (metacont.getLayoutSupport() == null) { // new layout support
+            if (isTopComponent()) {
+                newDrag = getLayoutModel().getLayoutComponent(movingComponents[0].getId()) != null;
+                fixedTarget = null;
+            }
+            else if (metacont != null) {
+                if (metacont.getLayoutSupport() == null) {
+                    newDrag = true;
+                }
+                else {
+                    oldDrag = true;
+                }
+                fixedTarget = metacont;
+            }
+
+            if (newDrag) { // new layout support
                 String[] compIds = new String[showingComponents.length];
                 for (int i=0; i < showingComponents.length; i++) {
                     compIds[i] = movingComponents[i].getId();
@@ -2060,10 +2046,8 @@ static int ncount;
                     originalBounds[i].x += convertPoint.x;
                     originalBounds[i].y += convertPoint.y;
                 }
-
-                newDrag = true;
             }
-            else { // old layout support
+            else if (oldDrag) { // old layout support
                 oldDragger = new ComponentDragger(
                     formDesigner,
                     HandleLayer.this,
@@ -2071,26 +2055,101 @@ static int ncount;
                     originalBounds,
                     new Point(hotSpot.x + convertPoint.x, hotSpot.y + convertPoint.y),
                     resizeType);
-
-                oldDrag = true;
             }
 
             super.init();
         }
 
-        boolean end(MouseEvent e) {
-            if (oldDragger == null) { // new layout support
-                createLayoutUndoableEdit();
-                formDesigner.getLayoutDesigner().endMoving(e != null);
-                getFormModel().fireContainerLayoutChanged(targetContainer, null, null, null);
-                placeLayoutUndoableEdit();
-//                formDesigner.updateContainerLayout(targetContainer, true);
+        boolean end(Point p, int modifiers) {
+            if (p != null) {
+                if (newDrag) { // new layout support
+                    // make sure the visual component has the current size set 
+                    // (as still being in its container the layout manager tries to
+                    // restore the original size)
+                    showingComponents[0].setSize(movingBounds[0].width, movingBounds[0].height);
+                    doLayout(showingComponents[0]);
+
+                    createLayoutUndoableEdit();
+                    formDesigner.getLayoutDesigner().endMoving(true);
+                    for (int i=0; i < movingComponents.length; i++) {
+                        RADVisualComponent metacomp = movingComponents[i];
+                        if (metacomp instanceof RADVisualContainer) {
+                            LayoutComponent layoutComp =
+                                    getLayoutModel().getLayoutComponent(metacomp.getId());
+                            if (layoutComp.isLayoutContainer()) {
+                                getFormModel().fireContainerLayoutChanged(
+                                    (RADVisualContainer)metacomp, null, null, null);
+                            }
+                        }
+                    }
+                    if (targetContainer != null) {
+                        getFormModel().fireContainerLayoutChanged(targetContainer, null, null, null);
+                    }
+                    placeLayoutUndoableEdit();
+                }
+                else { // old layout support
+                    if (targetContainer != null) {
+                        oldDragger.dropComponents(p);
+                    }
+                }
+                if (isTopComponent()) {
+                    Dimension size = new Dimension(movingBounds[0].width, movingBounds[0].height);
+                    formDesigner.setStoredDesignerSize(size);
+                }
             }
-            else { // old layout support
-                if (e != null)
-                    oldDragger.dropComponents(e.getPoint());
+            else { // resizing canceled
+                formDesigner.getLayoutDesigner().endMoving(false);
+                if (isTopComponent()) {
+                    Dimension prevSize = formDesigner.getStoredDesignerSize();
+                    if (!formDesigner.getComponentLayer().getDesignerSize().equals(prevSize)) {
+                        // restore the previous designer size 	 
+                        formDesigner.getComponentLayer().setDesignerSize(prevSize);
+                    }
+                    formDesigner.updateContainerLayout((RADVisualContainer)formDesigner.getTopDesignComponent(), false);
+                }
+                else {
+                    formDesigner.updateContainerLayout(getSourceContainer(), false);
+                }
             }
-            return super.end(e);
+            return true;
+        }
+
+        void move(Point p, int modifiers) {
+            if (isTopComponent()) {
+                if (newDrag) {
+                    p.x -= convertPoint.x;
+                    p.y -= convertPoint.y;
+                    formDesigner.getLayoutDesigner().move(p,
+                                                          null,
+                                                          ((modifiers & InputEvent.ALT_MASK) == 0),
+                                                          ((modifiers & InputEvent.CTRL_MASK) != 0),
+                                                          movingBounds);
+                    showingComponents[0].setSize(movingBounds[0].width, movingBounds[0].height);
+                }
+                else {
+                    Rectangle r = formDesigner.getComponentLayer().getDesignerInnerBounds();
+                    int w = r.width;
+                    int h = r.height;
+                    if ((resizeType & LayoutSupportManager.RESIZE_DOWN) != 0) {
+                        h = p.y - r.y;
+                        if (h < 0)
+                            h = 0;
+                    }
+                    if ((resizeType & LayoutSupportManager.RESIZE_RIGHT) != 0) {
+                        w = p.x - r.x;
+                        if (w < 0)
+                            w = 0;
+                    }
+                    movingBounds[0].width = w;
+                    movingBounds[0].height = h;
+                }
+                Dimension size = new Dimension(movingBounds[0].width, movingBounds[0].height);
+                formDesigner.getComponentLayer().setDesignerSize(size);
+                doLayout(formDesigner.getComponentLayer());
+            }
+            else {
+                super.move(p, modifiers);
+            }
         }
 
         void oldMove(Point p) {
@@ -2175,16 +2234,6 @@ static int ncount;
             super.init();
         }
 
-        boolean end(MouseEvent e) {
-            boolean retVal;
-            if (e == null) {
-                retVal = end(null, 0);
-            } else {
-                retVal = end(e.getPoint(), e.getModifiers());
-            }
-            return retVal ? super.end(e) : retVal;
-        }
-
         boolean end(Point p, int modifiers) {
             if (p != null) {
                 targetContainer = getTargetContainer(
@@ -2215,9 +2264,6 @@ static int ncount;
                     if (layoutComponent.isLayoutContainer()) {
                         if (!newLayout) { // always add layout container to the model 
                             getLayoutModel().addRootComponent(layoutComponent);
-                        }
-                        else {
-                            formDesigner.getLayoutDesigner().stretchContainer(layoutComponent.getId());
                         }
                     }
                     placeLayoutUndoableEdit();
@@ -2250,7 +2296,7 @@ static int ncount;
                     });
                 }
                 else if ((modifiers & InputEvent.SHIFT_MASK) != 0) {
-                    init();
+//                    init();
                     return false;
                 }
             }

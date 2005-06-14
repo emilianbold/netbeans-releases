@@ -102,7 +102,8 @@ public class VisualReplicator { //implements VisualMapper
             Container contDelegate = metacont.getContainerDelegate(cont);
 
             builder = new SwingLayoutBuilder(getFormModel().getLayoutModel(),
-                                             contDelegate, containerId);
+                                             contDelegate, containerId,
+                                             getDesignRestrictions() != 0);
             layoutBuilders.put(containerId, builder);
         }
         return builder;

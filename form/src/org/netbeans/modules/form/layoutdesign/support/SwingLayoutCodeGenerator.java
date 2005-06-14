@@ -118,7 +118,7 @@ public class SwingLayoutCodeGenerator {
         if (interval.isGroup()) {
             int groupAlignment = interval.getGroupAlignment();
             if (interval.isParallel()) {
-                boolean notResizable = interval.getMaximumSize() == LayoutConstants.USE_PREFERRED_SIZE;
+                boolean notResizable = interval.getMaximumSize(false) == LayoutConstants.USE_PREFERRED_SIZE;
                 if ((interval.getGroupAlignment() == LayoutConstants.DEFAULT) && !notResizable) {
                     layout.append(layoutVarName).append(".createParallelGroup("); // NOI18N
                 } else {
@@ -175,9 +175,9 @@ public class SwingLayoutCodeGenerator {
             }
             composeGroup(layout, interval, first, last);
         } else {
-            int min = interval.getMinimumSize();
-            int pref = interval.getPreferredSize();
-            int max = interval.getMaximumSize();
+            int min = interval.getMinimumSize(false);
+            int pref = interval.getPreferredSize(false);
+            int max = interval.getMaximumSize(false);
             if (interval.isComponent()) {
                 int alignment = interval.getAlignment();
                 LayoutComponent layoutComp = interval.getComponent();
@@ -203,14 +203,14 @@ public class SwingLayoutCodeGenerator {
                     max = pref;
                 }
                 // PENDING
-                if (interval.isDefaultPadding()) {
+//                if (interval.isDefaultPadding()) {
                     int padding = first || last ? 12 : 6;
                     min = (min == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : min;
                     pref = (pref == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : pref;
                     max = (max == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : max;
                     min = Math.min(pref, min);
                     max = Math.max(pref, max);
-                }
+//                }
                 generateSizeParams(layout, min, pref, max);
             } else {
                 assert false;
