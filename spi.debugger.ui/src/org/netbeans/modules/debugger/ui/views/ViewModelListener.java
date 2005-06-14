@@ -14,17 +14,11 @@
 package org.netbeans.modules.debugger.ui.views;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.Vector;
-import javax.swing.Action;
 import javax.swing.JComponent;
 
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -49,6 +43,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 /**
  * This delegating CompoundModelImpl loads all models from DebuggerManager.
  * getDefault ().getCurrentEngine ().lookup (viewType, ..) lookup.
+ *
+ * <p>
+ * This class is identical to org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener.
  *
  * @author   Jan Jancura
  */
@@ -89,48 +86,68 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         updateModel ();
     }
     
+    private List joinLookups(DebuggerEngine e, DebuggerManager dm, Class service) {
+        List es = e.lookup (viewType, service);
+        List ms = dm.lookup(viewType, service);
+        ms.removeAll(es);
+        es.addAll(ms);
+        return es;
+    }
+    
     private void updateModel () {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
-        List l = new ArrayList ();
-        if (e != null) {
-            l.addAll (e.lookup (viewType, TreeModel.class));
-            l.addAll (e.lookup (viewType, TreeModelFilter.class));
-            l.addAll (e.lookup (viewType, TreeExpansionModel.class));
-            l.addAll (e.lookup (viewType, NodeModel.class));
-            l.addAll (e.lookup (viewType, NodeModelFilter.class));
-            l.addAll (e.lookup (viewType, TableModel.class));
-            l.addAll (e.lookup (viewType, TableModelFilter.class));
-            l.addAll (e.lookup (viewType, NodeActionsProvider.class));
-            l.addAll (e.lookup (viewType, NodeActionsProviderFilter.class));
-            l.addAll (e.lookup (viewType, ColumnModel.class));
-            l.addAll (e.lookup (viewType, Model.class));
-        }
-        l.addAll (dm.lookup (viewType, TreeModel.class));
-        l.addAll (dm.lookup (viewType, TreeModelFilter.class));
-        l.addAll (dm.lookup (viewType, TreeExpansionModel.class));
-        l.addAll (dm.lookup (viewType, NodeModel.class));
-        l.addAll (dm.lookup (viewType, NodeModelFilter.class));
-        l.addAll (dm.lookup (viewType, TableModel.class));
-        l.addAll (dm.lookup (viewType, TableModelFilter.class));
-        l.addAll (dm.lookup (viewType, NodeActionsProvider.class));
-        l.addAll (dm.lookup (viewType, NodeActionsProviderFilter.class));
-        l.addAll (dm.lookup (viewType, ColumnModel.class));
-        l.addAll (dm.lookup (viewType, Model.class));
         
-        Set s = new HashSet ();
-        Iterator it = l.iterator ();
-        while (it.hasNext ()) {
-            Object o = it.next ();
-            if (s.contains (o))
-                it.remove ();
-            else
-                s.add (o);
+        List treeModels;
+        List treeModelFilters;
+        List treeExpansionModels;
+        List nodeModels;
+        List nodeModelFilters;
+        List tableModels;
+        List tableModelFilters;
+        List nodeActionsProviders;
+        List nodeActionsProviderFilters;
+        List columnModels;
+        List mm;
+        if (e != null) {
+            treeModels =            joinLookups(e, dm, TreeModel.class);
+            treeModelFilters =      joinLookups(e, dm, TreeModelFilter.class);
+            treeExpansionModels =   joinLookups(e, dm, TreeExpansionModel.class);
+            nodeModels =            joinLookups(e, dm, NodeModel.class);
+            nodeModelFilters =      joinLookups(e, dm, NodeModelFilter.class);
+            tableModels =           joinLookups(e, dm, TableModel.class);
+            tableModelFilters =     joinLookups(e, dm, TableModelFilter.class);
+            nodeActionsProviders =  joinLookups(e, dm, NodeActionsProvider.class);
+            nodeActionsProviderFilters = joinLookups(e, dm, NodeActionsProviderFilter.class);
+            columnModels =          joinLookups(e, dm, ColumnModel.class);
+        } else {
+            treeModels =            dm.lookup (viewType, TreeModel.class);
+            treeModelFilters =      dm.lookup (viewType, TreeModelFilter.class);
+            treeExpansionModels =   dm.lookup (viewType, TreeExpansionModel.class);
+            nodeModels =            dm.lookup (viewType, NodeModel.class);
+            nodeModelFilters =      dm.lookup (viewType, NodeModelFilter.class);
+            tableModels =           dm.lookup (viewType, TableModel.class);
+            tableModelFilters =     dm.lookup (viewType, TableModelFilter.class);
+            nodeActionsProviders =  dm.lookup (viewType, NodeActionsProvider.class);
+            nodeActionsProviderFilters = dm.lookup (viewType, NodeActionsProviderFilter.class);
+            columnModels =          dm.lookup (viewType, ColumnModel.class);
         }
+        
+        List models = new ArrayList(10);
+        models.add(treeModels);
+        models.add(treeModelFilters);
+        models.add(treeExpansionModels);
+        models.add(nodeModels);
+        models.add(nodeModelFilters);
+        models.add(tableModels);
+        models.add(tableModelFilters);
+        models.add(nodeActionsProviders);
+        models.add(nodeActionsProviderFilters);
+        models.add(columnModels);
         
         Models.setModelsToView (
             view, 
-            Models.createCompoundModel (new ArrayList (l))
+            Models.createCompoundModel (models)
         );
     }
 
@@ -141,7 +158,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         
         public String getDisplayName (Object node) throws UnknownTypeException {
             if (node == TreeModel.ROOT) {
-                return "Name";
+                return "Name"; // TODO: Localized ???
             }
             throw new UnknownTypeException (node);
         }

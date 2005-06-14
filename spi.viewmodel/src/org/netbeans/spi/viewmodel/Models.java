@@ -130,56 +130,105 @@ public final class Models {
      * @return {@link CompoundModel} encapsulating given list of models
      */
     public static CompoundModel createCompoundModel (List models) {
-        LinkedList treeModels =           new LinkedList ();
-        LinkedList treeModelFilters =     new LinkedList ();
-        LinkedList treeExpansionModels =  new LinkedList ();
-        LinkedList nodeModels =           new LinkedList ();
-        LinkedList nodeModelFilters =     new LinkedList ();
-        LinkedList tableModels =          new LinkedList ();
-        LinkedList tableModelFilters =    new LinkedList ();
-        LinkedList nodeActionsProviders = new LinkedList ();
-        LinkedList nodeActionsProviderFilters = new LinkedList ();
-        LinkedList columnModels =         new LinkedList ();
+        List treeModels;
+        List treeModelFilters;
+        List treeExpansionModels;
+        List nodeModels;
+        List nodeModelFilters;
+        List tableModels;
+        List tableModelFilters;
+        List nodeActionsProviders;
+        List nodeActionsProviderFilters;
+        List columnModels;
         
-        // 1) sort models
-        Iterator it = models.iterator ();
-        while (it.hasNext ()) {
-            Object model = it.next ();
-            boolean first = model.getClass ().getName ().endsWith ("First");
-            if (model instanceof TreeModel)
-                treeModels.addLast (model);
-            if (model instanceof TreeModelFilter)
-                if (first)
-                    treeModelFilters.addLast (model);
-                else
-                    treeModelFilters.addFirst (model);
-            if (model instanceof TreeExpansionModel)
-                treeExpansionModels.addLast (model);
-            if (model instanceof NodeModel)
-                nodeModels.addLast (model);
-            if (model instanceof NodeModelFilter)
-                if (first)
-                    nodeModelFilters.addLast (model);
-                else
-                    nodeModelFilters.addFirst (model);
-            if (model instanceof TableModel)
-                tableModels.addLast (model);
-            if (model instanceof TableModelFilter)
-                if (first)
-                    tableModelFilters.addLast (model);
-                else
-                    tableModelFilters.addFirst (model);
-            if (model instanceof NodeActionsProvider)
-                nodeActionsProviders.addLast (model);
-            if (model instanceof NodeActionsProviderFilter)
-                if (first)
-                    nodeActionsProviderFilters.addLast (model);
-                else
-                    nodeActionsProviderFilters.addFirst (model);
-            if (model instanceof ColumnModel)
-                columnModels.addLast (model);
+        // Either the list contains 10 lists of individual models, or the models directly
+        boolean hasLists = false;
+        if (models.size() == 10) {
+            Iterator it = models.iterator ();
+            while (it.hasNext ()) {
+                if (!(it.next() instanceof List)) break;
+            }
+            if (!it.hasNext()) { // All elements are lists
+                hasLists = true;
+            }
         }
-        
+        if (hasLists) { // We have 10 lists of individual models
+            treeModels =            (List) models.get(0);
+            treeModelFilters =      (List) models.get(1);
+            revertOrder(treeModelFilters);
+            treeExpansionModels =   (List) models.get(2);
+            nodeModels =            (List) models.get(3);
+            nodeModelFilters =      (List) models.get(4);
+            revertOrder(nodeModelFilters);
+            tableModels =           (List) models.get(5);
+            tableModelFilters =     (List) models.get(6);
+            revertOrder(tableModelFilters);
+            nodeActionsProviders =  (List) models.get(7);
+            nodeActionsProviderFilters = (List) models.get(8);
+            revertOrder(nodeActionsProviderFilters);
+            columnModels =          (List) models.get(9);
+        } else { // We have the models, need to find out what they implement
+            treeModels =           new LinkedList ();
+            treeModelFilters =     new LinkedList ();
+            treeExpansionModels =  new LinkedList ();
+            nodeModels =           new LinkedList ();
+            nodeModelFilters =     new LinkedList ();
+            tableModels =          new LinkedList ();
+            tableModelFilters =    new LinkedList ();
+            nodeActionsProviders = new LinkedList ();
+            nodeActionsProviderFilters = new LinkedList ();
+            columnModels =         new LinkedList ();
+            
+            Iterator it = models.iterator ();
+            while (it.hasNext ()) {
+                Object model = it.next ();
+                boolean first = model.getClass ().getName ().endsWith ("First");
+                if (model instanceof TreeModel)
+                    treeModels.add(model);
+                if (model instanceof TreeModelFilter)
+                    if (first)
+                        treeModelFilters.add(model);
+                    else
+                        treeModelFilters.add(0, model);
+                if (model instanceof TreeExpansionModel)
+                    treeExpansionModels.add(model);
+                if (model instanceof NodeModel)
+                    nodeModels.add(model);
+                if (model instanceof NodeModelFilter)
+                    if (first)
+                        nodeModelFilters.add(model);
+                    else
+                        nodeModelFilters.add(0, model);
+                if (model instanceof TableModel)
+                    tableModels.add(model);
+                if (model instanceof TableModelFilter)
+                    if (first)
+                        tableModelFilters.add(model);
+                    else
+                        tableModelFilters.add(0, model);
+                if (model instanceof NodeActionsProvider)
+                    nodeActionsProviders.add(model);
+                if (model instanceof NodeActionsProviderFilter)
+                    if (first)
+                        nodeActionsProviderFilters.add(model);
+                    else
+                        nodeActionsProviderFilters.add(0, model);
+                if (model instanceof ColumnModel)
+                    columnModels.add(model);
+            }
+        }
+        /*
+        System.out.println("Tree Models = "+treeModels);
+        System.out.println("Tree Model Filters = "+treeModelFilters);
+        System.out.println("Tree Expans Models = "+treeExpansionModels);
+        System.out.println("Node Models = "+nodeModels);
+        System.out.println("Node Model Filters = "+nodeModelFilters);
+        System.out.println("Table Models = "+tableModels);
+        System.out.println("Table Model Filters = "+tableModelFilters);
+        System.out.println("Node Action Providers = "+nodeActionsProviders);
+        System.out.println("Node Action Provider Filters = "+nodeActionsProviderFilters);
+        System.out.println("Column Models = "+columnModels);
+         */
         if (treeModels.isEmpty ()) {
             treeModels.add (new EmptyTreeModel ());
         }
@@ -205,6 +254,22 @@ public final class Models {
             )
         );
     }
+    
+    private static void revertOrder(List filters) {
+        int n = filters.size();
+        for (int i = 0; i < n; ) {
+            Object filter = filters.remove(i);
+            boolean first = filter.getClass ().getName ().endsWith ("First");
+            if (first) { // The "First" should be the last one in this list
+                filters.add(filter);
+                n--;
+            } else {
+                filters.add(0, filter);
+                i++;
+            }
+        }
+    }
+    
     
     /**
      * Returns {@link javax.swing.Action} for given parameters.
