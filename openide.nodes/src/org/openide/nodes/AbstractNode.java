@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.nodes;
@@ -50,28 +50,28 @@ public class AbstractNode extends Node {
     private static final String[] icons = {
         
         // color 16x16
-        ".gif", // NOI18N
+        "", // NOI18N
 
         // color 32x32
-        "32.gif", // NOI18N
+        "32", // NOI18N
 
         // mono 16x16
-        ".gif", // NOI18N
+        "", // NOI18N
 
         // mono 32x32
-        "32.gif", // NOI18N
+        "32", // NOI18N
 
         // opened color 16x16
-        "Open.gif", // NOI18N
+        "Open", // NOI18N
 
         // opened color 32x32
-        "Open32.gif", // NOI18N
+        "Open32", // NOI18N
 
         // opened mono 16x16
-        "Open.gif", // NOI18N
+        "Open", // NOI18N
 
         // opened mono 32x32
-        "Open32.gif" // NOI18N
+        "Open32" // NOI18N
     };
 
     /** To index normal icon from previous array use
@@ -90,7 +90,9 @@ public class AbstractNode extends Node {
 
     /** default icon base for all nodes */
     private static final String DEFAULT_ICON_BASE = "org/openide/resources/defaultNode"; // NOI18N
-    private static final String DEFAULT_ICON = DEFAULT_ICON_BASE + ".gif"; // NOI18N
+    private static final String DEFAULT_ICON_EXTENSION = ".gif"; // NOI18N
+    private static final String DEFAULT_ICON = DEFAULT_ICON_BASE + DEFAULT_ICON_EXTENSION; // NOI18N
+    
     private static final WeakHashMap overridesGetDefaultAction = new WeakHashMap(27);
 
     /** Message format to use for creation of the display name.
@@ -111,6 +113,9 @@ public class AbstractNode extends Node {
     /** Resource base for icons (without suffix denoting right icon)  */
     private String iconBase = DEFAULT_ICON_BASE;
 
+    /** Resource extension for icons  */
+    private String iconExtension = DEFAULT_ICON_EXTENSION;
+    
     /** array of cookies for this node */
     private Object lookup;
 
@@ -194,33 +199,71 @@ public class AbstractNode extends Node {
     }
 
     /** Change the icon.
-    * One need only specify the base resource name;
+    * One need only specify the base resource name without extension;
     * the real name of the icon is obtained by the applying icon message
     * formats.
     *
-    * <p>For example, for the base <code>resource/MyIcon</code>, the
-    * following images may be used according to the icon state and
-    * {@link java.beans.BeanInfo#getIcon presentation type}:
+    * The method effectively behaves as if it was just delegating
+    * to {$link #setIconBaseWithExtension(java.lang.String)}
+    * using <code>base + ".gif"</code> as parameter.
     *
-    * <ul><li><code>resource/MyIcon.gif</code><li><code>resource/MyIconOpen.gif</code>
-    * <li><code>resource/MyIcon32.gif</code><li><code>resource/MyIconOpen32.gif</code></ul>
+    * @param base base resouce name (no initial slash)
+    * @deprecated Use {@link #setIconBaseWithExtension(java.lang.String)}
+    */
+    public void setIconBase(String base) {
+        setIconBaseWithExtension(base, DEFAULT_ICON_EXTENSION);
+    }
+
+    /** Change the icon.
+    * One need only specify the base name of the icon resource,
+    * including the resource extension; the real name of the icon is obtained
+    * by inserting proper infixes into the resource name.
+    *
+    * <p>For example, for the base <code>org/foo/resource/MyIcon.png</code>
+    * the following images may be used according to the icon
+    * state and {@link java.beans.BeanInfo#getIcon presentation type}:
+    *
+    * <ul>
+    * <li><code>org/foo/resource/MyIcon.png</code>
+    * <li><code>org/foo/resource/MyIconOpen.png</code>
+    * <li><code>org/foo/resource/MyIcon32.png</code>
+    * <li><code>org/foo/resource/MyIconOpen32.png</code></ul>
     *
     * <P>
     * This method may be used to dynamically switch between different sets
     * of icons for different configurations. If the set is changed,
     * an icon property change event is fired.
     *
-    * @param base base resouce name (no initial slash)
+    * @param baseExt base resouce name with extension (no initial slash)
+    * @since OpenIDE 6.5
     */
-    public void setIconBase(String base) {
-        if ((base != null) && base.equals(iconBase)) {
+    public final void setIconBaseWithExtension(String baseExt) {
+        int lastDot = baseExt.lastIndexOf('.');
+        int lastSlash = baseExt.lastIndexOf('/');
+        
+        if ((lastSlash > lastDot) || (lastDot == -1)) { // no .extension
+            setIconBaseWithExtension(baseExt, "");
+        } else {
+            String base = baseExt.substring(0, lastDot);
+            String ext = baseExt.substring(lastDot);
+            setIconBaseWithExtension(base, ext);
+        }
+
+    }
+
+    /** Change the icon. */
+    private final void setIconBaseWithExtension(String base, String extension) {
+        if (base.equals(iconBase) && extension.equals(iconExtension)) {
             return;
         }
 
         this.iconBase = base;
+        this.iconExtension = extension;
         fireIconChange();
         fireOpenedIconChange();
     }
+
+    
 
     /** Find an icon for this node. Uses an {@link #setIconBase icon set}.
     *
@@ -251,7 +294,7 @@ public class AbstractNode extends Node {
     * @param ib base where to scan in the array
     */
     private Image findIcon(int type, int ib) {
-        String res = iconBase + icons[type + ib];
+        String res = iconBase + icons[type + ib] + iconExtension;
         Image im = Utilities.loadImage(res, true);
 
         if (im != null) {
@@ -259,7 +302,7 @@ public class AbstractNode extends Node {
         }
 
         // try the first icon
-        res = iconBase + icons[java.beans.BeanInfo.ICON_COLOR_16x16 + ib];
+        res = iconBase + icons[java.beans.BeanInfo.ICON_COLOR_16x16 + ib] + iconExtension;
 
         im = Utilities.loadImage(res, true);
 

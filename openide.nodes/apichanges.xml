@@ -19,6 +19,27 @@ Microsystems, Inc. All Rights Reserved.
 <changes>
 <change>
      <api name="nodes"/>
+     <summary>AbstractNode allows using different icon extensions</summary>
+     <version major="6" minor="5"/>
+     <date day="14" month="7" year="2005"/>
+     <author login="pnejedly"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="yes" deletion="no" modification="no"/>
+     <description>
+        Adding possibility for <code>AbstractNode</code> to use PNG files
+        as icons. Adding new final method
+        <code>setIconBaseWithExtension(String baseExt)</code>
+        which replaces the original method for manipulating icon base,
+        <code>setIconBase(String)</code>.
+        The original (now deprecated) method stil works the same way,
+        using <code>".gif"</code> as extension
+        The original method <code>setIconBase(String)</code> delegates
+        to the new one, using the default extension.
+     </description>
+     <class package="org.openide.nodes" name="AbstractNode"/>
+     <issue number="53461"/>
+    </change>
+<change>
+     <api name="nodes"/>
      <summary>FilterNode allows controlling delegation of getValue/setValue calls</summary>
      <version major="4" minor="25"/>
      <date day="13" month="2" year="2004"/>
