@@ -40,6 +40,7 @@ public final class ManifestManager {
     private String releaseVersion;
     private String specificationVersion;
     private String implementationVersion;
+    private String provTokens;
     private String localizingBundle;
     private String layer;
     private String classPath;
@@ -48,7 +49,8 @@ public final class ManifestManager {
     
     public static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
     public static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
-    public static final String OPENIDE_MODULE_IMPLEMENTATION_VERSION= "OpenIDE-Module-Implementation-Version"; // NOI18N
+    public static final String OPENIDE_MODULE_IMPLEMENTATION_VERSION = "OpenIDE-Module-Implementation-Version"; // NOI18N
+    public static final String OPENIDE_MODULE_PROVIDES = "OpenIDE-Module-Provides"; // NOI18N
     public static final String OPENIDE_MODULE_LAYER = "OpenIDE-Module-Layer"; // NOI18N
     public static final String OPENIDE_MODULE_LOCALIZING_BUNDLE = "OpenIDE-Module-Localizing-Bundle"; // NOI18N
     public static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
@@ -62,12 +64,13 @@ public final class ManifestManager {
     private ManifestManager() {}
     
     private ManifestManager(String cnb, String releaseVersion, String specVer,
-            String implVer, String locBundle, String layer, String classPath,
-            PackageExport[] publicPackages, boolean deprecated) {
+            String implVer, String provTokens, String locBundle, String layer,
+            String classPath, PackageExport[] publicPackages, boolean deprecated) {
         this.codeNameBase = cnb;
         this.releaseVersion = releaseVersion;
         this.specificationVersion = specVer;
         this.implementationVersion = implVer;
+        this.provTokens = provTokens;
         this.localizingBundle = locBundle;
         this.layer = layer;
         this.classPath = classPath;
@@ -141,6 +144,7 @@ public final class ManifestManager {
                 codenamebase, releaseVersion,
                 attr.getValue(OPENIDE_MODULE_SPECIFICATION_VERSION),
                 attr.getValue(OPENIDE_MODULE_IMPLEMENTATION_VERSION),
+                attr.getValue(OPENIDE_MODULE_PROVIDES),
                 attr.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE),
                 attr.getValue(OPENIDE_MODULE_LAYER),
                 attr.getValue(CLASS_PATH),
@@ -226,6 +230,10 @@ public final class ManifestManager {
     
     public String getImplementationVersion() {
         return implementationVersion;
+    }
+    
+    public String getProvidedTokens() {
+        return provTokens;
     }
     
     public String getLocalizingBundle() {

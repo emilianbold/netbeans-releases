@@ -49,6 +49,7 @@ final class CustomizerVersioning extends NbPropertyPanel {
         friendsList.setModel(props.getFriendListModel());
         NbPropertyPanel.setText(cnbValue, props.getCodeNameBase());
         NbPropertyPanel.setText(majorRelVerValue, props.getMajorReleaseVersion());
+        NbPropertyPanel.setText(tokensValue, props.getProvidedTokens());
         String specVersion = props.getSpecificationVersion();
         if (null == specVersion || "".equals(specVersion)) { // NOI18N
             appendImpl.setSelected(true);
@@ -127,6 +128,7 @@ final class CustomizerVersioning extends NbPropertyPanel {
             setProperty(NbModuleProperties.SPEC_VERSION_BASE, ""); // NOI18N
         }
         props.setImplementationVersion(implVerValue.getText().trim());
+        props.setProvidedTokens(tokensValue.getText().trim());
         setBooleanProperty(NbModuleProperties.IS_AUTOLOAD, autoloadMod.isSelected());
         setBooleanProperty(NbModuleProperties.IS_EAGER, eagerMod.isSelected());
     }
@@ -242,7 +244,6 @@ final class CustomizerVersioning extends NbPropertyPanel {
 
         tokens.setLabelFor(tokensValue);
         org.openide.awt.Mnemonics.setLocalizedText(tokens, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_ProvidedTokens"));
-        tokens.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -250,7 +251,6 @@ final class CustomizerVersioning extends NbPropertyPanel {
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 12);
         add(tokens, gridBagConstraints);
 
-        tokensValue.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
