@@ -187,6 +187,7 @@ final class CustomizerVersioning extends NbPropertyPanel {
         gridBagConstraints.weightx = 1.0;
         add(cnbValue, gridBagConstraints);
 
+        majorRelVer.setLabelFor(majorRelVerValue);
         org.openide.awt.Mnemonics.setLocalizedText(majorRelVer, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_MajorReleaseVersion"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -239,7 +240,7 @@ final class CustomizerVersioning extends NbPropertyPanel {
         gridBagConstraints.weightx = 1.0;
         add(implVerValue, gridBagConstraints);
 
-        tokens.setLabelFor(implVerValue);
+        tokens.setLabelFor(tokensValue);
         org.openide.awt.Mnemonics.setLocalizedText(tokens, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_ProvidedTokens"));
         tokens.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -306,7 +307,7 @@ final class CustomizerVersioning extends NbPropertyPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(eagerMod, gridBagConstraints);
 
-        publicPkgs.setLabelFor(implVerValue);
+        publicPkgs.setLabelFor(publicPkgsTable);
         org.openide.awt.Mnemonics.setLocalizedText(publicPkgs, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_PublicPackages"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -316,7 +317,7 @@ final class CustomizerVersioning extends NbPropertyPanel {
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 2, 12);
         add(publicPkgs, gridBagConstraints);
 
-        friends.setLabelFor(implVerValue);
+        friends.setLabelFor(friendsList);
         org.openide.awt.Mnemonics.setLocalizedText(friends, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_Friends"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
