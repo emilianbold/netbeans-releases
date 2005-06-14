@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.util;
@@ -905,7 +905,7 @@ public final class RequestProcessor {
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(
                 ex, ErrorManager.EXCEPTION, null,
-                NbBundle.getMessage(RequestProcessor.class, "EXC_IN_REQUEST_PROCESSOR"), SLOW ? todo.item : null, null
+                null, SLOW ? todo.item : null, null
             );
             err.notify(ex);
         }
