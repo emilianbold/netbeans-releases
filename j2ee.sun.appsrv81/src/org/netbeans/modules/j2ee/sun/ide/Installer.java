@@ -62,9 +62,9 @@ public class Installer extends org.openide.modules.ModuleInstall {
             loader.addURL(f);
             f = new File(installRoot+"/lib/appserv-rt.jar");
             loader.addURL(f);
-        /*    f = new File(installRoot+"/lib/appserv-cmp.jar");
+            f = new File(installRoot+"/lib/appserv-cmp.jar");
             loader.addURL(f);
-            f = new File(installRoot+"/lib/appserv-assemblytool.jar");
+            /*f = new File(installRoot+"/lib/appserv-assemblytool.jar");
             loader.addURL(f);*/
             f = new File(installRoot+"/lib/commons-logging.jar");
             loader.addURL(f);
@@ -84,7 +84,15 @@ public class Installer extends org.openide.modules.ModuleInstall {
             f = new File(installRoot+"/lib/dom.jar");
             loader.addURL(f);
             f = new File(installRoot+"/lib/xalan.jar");
-            loader.addURL(f);        }
+            loader.addURL(f);
+            //for AS 9:
+            f = new File(installRoot+"/lib/jaxrpc-api.jar");
+            loader.addURL(f);
+            f = new File(installRoot+"/lib/jaxrpc-impl.jar");
+            loader.addURL(f);
+
+        
+        }
         catch (Exception ex2) {
             throw new Exception(ex2.getLocalizedMessage());
         }
