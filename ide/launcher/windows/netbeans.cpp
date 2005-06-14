@@ -36,7 +36,7 @@ static char* defaultDirs[] = { "nb4.1",
                                "ide5",
                                "enterprise1",
                                "profiler1",
-                               "mobility7.1",
+                               "mobility7.2",
                                "extra",
                                NULL };
 
