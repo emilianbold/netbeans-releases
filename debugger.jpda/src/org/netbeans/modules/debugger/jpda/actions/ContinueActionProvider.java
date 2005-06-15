@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
@@ -91,12 +92,16 @@ implements Runnable {
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
                 ThreadReference tr = (ThreadReference) l.get (i);
-                if (tr.isSuspended ()) {
-                    setEnabled (
-                        ActionsManager.ACTION_CONTINUE,
-                        true
-                    );
-                    return;
+                try {
+                    if (tr.isSuspended ()) {
+                        setEnabled (
+                            ActionsManager.ACTION_CONTINUE,
+                            true
+                        );
+                        return;
+                    }
+                } catch (ObjectCollectedException ocex) {
+                    // The thread just died - ignore
                 }
             }
         } catch (VMDisconnectedException ex) {
