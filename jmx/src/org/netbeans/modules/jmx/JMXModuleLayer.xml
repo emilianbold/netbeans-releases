@@ -1,0 +1,254 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN"
+                            "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">    
+       <folder name="Project">
+            <folder name="Samples">
+                <folder name="Management">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jmx/examples/resources/descriptions/jmxSamplesCategory.html"/>
+                    <file name="jmx_anagrams.zip" url="examples/resources/jmx_anagrams.zip">
+                      <attr name="template" boolvalue="true"/>
+                      <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jmx/examples/resources/descriptions/jmx_anagrams.html"/>
+                      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.examples.Bundle"/>
+                      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/jmx/examples/resources/j2seProject.gif"/>
+                      <attr name="instantiatingIterator" newvalue="org.netbeans.modules.jmx.examples.JMXSampleProjectIterator"/>
+                      <attr name="prjType" stringvalue="j2se"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+        
+        <folder name="ManagementFile">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.Bundle"/>
+            
+            <file name="JMXClass.java" url="">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                      
+                <attr name="SystemFileSystem.icon" 
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
+                      
+                <attr name="instantiatingIterator" 
+                      methodvalue="org.netbeans.modules.jmx.mbeanwizard.JMXMBeanIterator.createMBeanIterator"/>
+                      
+                <attr name="templateWizardURL" 
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.html"/>
+                                      
+                <attr name="templateCategory" stringvalue="java-classes"/>
+            </file>
+
+            <file name="Agent.java" url="resources/templates/Agent.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                      
+                <attr name="SystemFileSystem.icon" 
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Agent.gif" />
+                      
+                <attr name="instantiatingIterator" 
+                      methodvalue="org.netbeans.modules.jmx.agentwizard.JMXAgentIterator.createAgentIterator"/>
+                      
+                <attr name="templateWizardURL" 
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Agent.html"/>
+                                          
+                <attr name="templateCategory" stringvalue="java-classes"/>
+             </file>
+             
+             
+            <file name="ManagementProperties.shadow">
+                <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableManagementProperties"/> 
+                <attr name="hidden"
+                 boolvalue="true"/>
+             </file>      
+       </folder>      
+    </folder> <!-- Templates -->
+    
+    <folder name="Management">
+        <folder name="Templates">
+           <file name="management.properties" url="resources/templates/management.properties.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                      
+                <attr name="SystemFileSystem.icon" 
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Config.gif" />
+                      
+                <attr name="instantiatingIterator" 
+                      methodvalue="org.netbeans.modules.jmx.configwizard.JMXConfigWizardIterator.singleton"/>
+                      
+                <attr name="templateWizardURL" 
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Config.html"/>
+                
+                <attr name="accessTemplate" 
+                      urlvalue="nbres:/org/netbeans/modules/jmx/resources/templates/jmxremote.access.template"/> 
+                
+                <attr name="passwordTemplate" 
+                      urlvalue="nbres:/org/netbeans/modules/jmx/resources/templates/jmxremote.password.template"/>
+                      
+                <attr name="aclTemplate" 
+                      urlvalue="nbres:/org/netbeans/modules/jmx/resources/templates/snmp.acl.template"/>
+                      
+                <attr name="templateCategory" stringvalue="java-classes"/>
+             </file>            
+        </folder>  
+    </folder>
+    
+    
+    <folder name="Actions">
+        <folder name="Management">
+            <file name="org-netbeans-modules-jmx-runtime-EnableLocalManagementAction.instance">
+                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.jmx.runtime.AntActions.enableLocalManagement"/>
+            </file>
+            <file name="org-netbeans-modules-jmx-runtime-DebugLocalManagementAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.jmx.runtime.AntActions.debugLocalManagement"/>
+            </file>
+            <file name="org-netbeans-modules-jmx-runtime-EnableRemoteManagementAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.jmx.runtime.AntActions.enableRemoteManagement"/>
+            </file>
+            <file name="org-netbeans-modules-jmx-runtime-DebugRemoteManagementAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.jmx.runtime.AntActions.debugRemoteManagement"/>
+            </file>
+            <file name="org-netbeans-modules-jmx-jconsole-LaunchAction.instance"/>
+        </folder> <!-- Actions -->
+    </folder> <!-- Management -->
+    
+    <folder name="Toolbars">
+        <folder name="Management">
+            <file name="EnableLocalManagementAction.shadow">
+                <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableLocal"/> 
+                <attr name="hidden"
+                 boolvalue="true"/>
+             </file>      
+             <attr name="EnableLocalManagementAction.shadow/DebugLocalManagementAction.shadow" boolvalue="true" />
+             <file name="DebugLocalManagementAction.shadow">
+                <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.debugLocal"/> 
+                <attr name="hidden"
+                 boolvalue="true"/>
+             </file>   
+             <!--   
+             <attr name="DebugLocalManagementAction.shadow/EnableRemoteManagementAction.shadow" boolvalue="true" />
+             <file name="EnableRemoteManagementAction.shadow">
+                <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableRemote"/> 
+                <attr name="hidden"
+                 boolvalue="true"/>
+             </file>      
+             <attr name="EnableRemoteManagementAction.shadow/DebugRemoteManagementAction.shadow" boolvalue="true" />
+             <file name="DebugRemoteManagementAction.shadow">
+                <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.debugRemote"/> 
+                <attr name="hidden"
+                 boolvalue="true"/>
+             </file>      
+             <attr name="DebugRemoteManagementAction.shadow/LaunchAction.shadow" boolvalue="true" />
+             -->
+             
+             <file name="LaunchAction.shadow">
+                <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.launchJConsole"/> 
+                <attr name="hidden"
+                 boolvalue="true"/>
+             </file>      
+         </folder>
+     </folder>
+     
+    <folder name="Menu"> <!-- Menu actions -->
+        <folder name="RunProject">       
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/jmx/resources/empty.gif"/>          
+            <attr name="SeparatorRun.instance/jmxSeparator1.instance" boolvalue="true" />           
+            <file name="jmxSeparator1.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>       
+            <attr name="jmxSeparator1.instance/EnableLocalManagementAction.shadow" boolvalue="true" />  
+             <file name="EnableLocalManagementAction.shadow">
+                <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableLocal"/> 
+                <attr name="hidden"
+                 boolvalue="true"/>
+             </file>
+            <attr name="EnableLocalManagementAction.shadow/DebugLocalManagementAction.shadow" boolvalue="true" />
+            <file name="DebugLocalManagementAction.shadow">
+                  <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.runtime.Bundle" />
+                  <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.debugLocal"/> 
+                  <attr name="hidden"
+                  boolvalue="true"/>
+            </file>
+            <attr name="DebugLocalManagementAction.shadow/jmxSeparator2.instance" boolvalue="true"/>    
+            <file name="jmxSeparator2.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="jmxSeparator2.instance/LaunchAction.shadow" boolvalue="true"/>
+            <file name="LaunchAction.shadow">            
+             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.jconsole.Bundle" />
+             <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.launchJConsole"/> 
+                  <attr name="hidden"
+                  boolvalue="true"/>
+            </file>
+            <attr name="LaunchAction.shadow/Remote Management" boolvalue="true"/>
+            <folder name="Remote Management">
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/jmx/resources/Folder.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.runtime.Bundle" />
+                <file name="EnableRemoteManagementAction.shadow">
+                  <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableRemote"/> 
+                  <attr name="hidden"
+                  boolvalue="true"/>
+                </file>
+                <attr name="EnableRemoteManagementAction.shadow/DebugRemoteManagementAction.shadow" boolvalue="true" />
+                <file name="DebugRemoteManagementAction.shadow">
+                   <attr name="originalFile" 
+                    methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.debugRemote"/> 
+                   <attr name="hidden"
+                    boolvalue="true"/>
+                </file>
+             </folder>  <!-- Management -->   
+         </folder>  <!-- RunProject -->   
+     </folder> <!-- Menu -->
+     
+     <folder name="Services"> <!-- Services -->
+        <folder name="JavaHelp"> <!-- Java Help -->
+            <!-- Merge after Core IDE Help: -->
+            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-jmx-helpset.xml" boolvalue="true"/>
+            <file name="org-netbeans-modules-jmx-helpset.xml" url="helpset-decl.xml"/>
+            <!-- Merge before 3rd party help: -->
+            <attr name="org-netbeans-modules-jmx-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+        </folder> <!-- Java Help -->
+        <file name="org-netbeans-modules-jmx-jconsole-JConsoleSettings.settings" url="JConsoleSettings.settings">
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.jconsole.Bundle"/>
+        </file>
+    </folder> <!-- Services -->
+  
+      <folder name="UI">
+    <folder name="Services">
+      <folder name="IDEConfiguration">
+        <folder name="ServerAndExternalToolSettings">
+          <file name="org-netbeans-modules-jmx-jconsole-JConsoleSettings.shadow"
+>
+            <attr name="originalFile" stringvalue="Services/org-netbeans-modules-jmx-jconsole-JConsoleSettings.settings"/>
+          </file>
+        </folder> <!-- ServerAndExternalToolSettings -->
+       </folder> <!-- Services -->
+      </folder> <!-- IDEConfiguration -->
+  </folder> <!-- UI -->
+  
+</filesystem>
