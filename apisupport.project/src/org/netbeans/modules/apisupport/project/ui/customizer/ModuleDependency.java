@@ -136,8 +136,17 @@ public final class ModuleDependency implements Comparable {
         }
         return filterTokens;
     }
+    
     private void addToken(String token) {
         filterTokens.add(token.toLowerCase(Locale.US));
     }
     
+    public String toString() {
+        return "ModuleDependency[me: " + getModuleEntry() + // NOI18N
+                ", relVer: " + getReleaseVersion() + // NOI18N
+                ", specVer: " + getSpecificationVersion() + // NOI18N
+                ", implDep: " + hasImplementationDepedendency() + // NOI18N
+                ", compDep: " + hasCompileDependency() + // NOI18N
+                "]"; // NOI18N
+    }
 }

@@ -68,6 +68,10 @@ public class ProjectXMLManagerTest extends TestBase {
         return new ProjectXMLManager(miscProject.getHelper());
     }
     
+    private ProjectXMLManager getNewActionPXM() {
+        return new ProjectXMLManager(actionProject.getHelper());
+    }
+    
     public void testGetCodeNameBase() throws Exception {
         assertEquals("action-project cnb", "org.netbeans.examples.modules.action", actionPXM.getCodeNameBase());
         assertEquals("misc-project cnb", "org.netbeans.examples.modules.misc", miscPXM.getCodeNameBase());
@@ -235,9 +239,26 @@ public class ProjectXMLManagerTest extends TestBase {
     }
     
     public void testReplaceDependencies() throws Exception {
-        // XXX make this test meaningful
         final Set deps = actionPXM.getDirectDependencies();
         assertEquals("number of dependencies", new Integer(deps.size()), new Integer(2));
+        ModuleDependency newOO = null;
+        ModuleDependency oldOO = null;
+        String specVer = null;
+        for (Iterator it = deps.iterator(); it.hasNext(); ) {
+            ModuleDependency md = (ModuleDependency) it.next();
+            if ("org.openide.dialogs".equals(md.getModuleEntry().getCodeNameBase())) {
+                oldOO = md;
+                ModuleEntry me = md.getModuleEntry();
+                newOO = new ModuleDependency(me,
+                        "", // will be check if it is not written
+                        me.getSpecificationVersion(),
+                        md.hasCompileDependency(),
+                        md.hasImplementationDepedendency());
+                it.remove();
+                break;
+            }
+        }
+        deps.add(newOO);
         
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
@@ -246,6 +267,19 @@ public class ProjectXMLManagerTest extends TestBase {
                 return Boolean.TRUE;
             }
         });
+        
+        final Set newDeps = getNewActionPXM().getDirectDependencies();
+        for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
+            ModuleDependency md = (ModuleDependency) it.next();
+            if ("org.openide.dialogs".equals(md.getModuleEntry().getCodeNameBase())) {
+                assertNull("empty(null) release version", md.getReleaseVersion());
+                assertEquals("unedited specification version",
+                        oldOO.getSpecificationVersion(),
+                        md.getSpecificationVersion());
+                break;
+            }
+        }
+        
         assertTrue("replace dependencies", result.booleanValue());
         ProjectManager.getDefault().saveProject(actionProject);
     }

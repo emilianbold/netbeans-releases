@@ -334,7 +334,7 @@ public final class ProjectXMLManager {
         modDepEl.appendChild(runDepEl);
         
         String rv = md.getReleaseVersion();
-        if (rv != null) {
+        if (rv != null && !rv.trim().equals("")) {
             runDepEl.appendChild(createModuleElement(
                     doc, ProjectXMLManager.RELEASE_VERSION, rv));
         }
