@@ -297,53 +297,55 @@ public class XMLFormatter extends ExtFormatter {
                 
                 //check #1
                 int endOfPrevLineOffset = Utilities.getRowStart(doc, dotPos) -1 ;
-                TokenItem token = sup.getTokenChain(endOfPrevLineOffset -1 , endOfPrevLineOffset );
-                if(token != null &&
-                        token.getTokenID() == XMLTokenIDs.TAG &&
-                        token.getImage().equals(">")) {
-                    //found an end of a tag -> we needs to decide whether it is an open tag
-                    //find tag beninning (skip whitespaces inside the tag (</table >)
-                    do {
-                        token = token.getPrevious();
-                    } while (token != null && token.getTokenID() != XMLTokenIDs.TAG);
-                    
+                if(endOfPrevLineOffset > 0) { //do not reformat when enter pressed on the first line
+                    TokenItem token = sup.getTokenChain(endOfPrevLineOffset -1 , endOfPrevLineOffset );
                     if(token != null &&
                             token.getTokenID() == XMLTokenIDs.TAG &&
-                            token.getImage().startsWith("<") &&
-                            !token.getImage().startsWith("</")) {
-                        //an open tag
-                        String openTagName = token.getImage().substring(1);
-                        //check #2
-                        token = sup.getTokenChain(dotPos, dotPos + 1);
+                            token.getImage().equals(">")) {
+                        //found an end of a tag -> we needs to decide whether it is an open tag
+                        //find tag beninning (skip whitespaces inside the tag (</table >)
+                        do {
+                            token = token.getPrevious();
+                        } while (token != null && token.getTokenID() != XMLTokenIDs.TAG);
+                        
                         if(token != null &&
                                 token.getTokenID() == XMLTokenIDs.TAG &&
-                                token.getImage().startsWith("</" + openTagName)) {
-                            //found pair end tag => we can do the reformat!!!
-                            int currentLineIndex = Utilities.getLineOffset(doc, token.getOffset());
-                            //a. insert a new line on the current line
-                            doc.atomicLock();
-                            try {
-                                doc.insertString( dotPos, "\n" , null);
-                            } catch( BadLocationException exc ) {
-                                //do nothing
-                            } finally {
-                                doc.atomicUnlock();
+                                token.getImage().startsWith("<") &&
+                                !token.getImage().startsWith("</")) {
+                            //an open tag
+                            String openTagName = token.getImage().substring(1);
+                            //check #2
+                            token = sup.getTokenChain(dotPos, dotPos + 1);
+                            if(token != null &&
+                                    token.getTokenID() == XMLTokenIDs.TAG &&
+                                    token.getImage().startsWith("</" + openTagName)) {
+                                //found pair end tag => we can do the reformat!!!
+                                int currentLineIndex = Utilities.getLineOffset(doc, token.getOffset());
+                                //a. insert a new line on the current line
+                                doc.atomicLock();
+                                try {
+                                    doc.insertString( dotPos, "\n" , null);
+                                } catch( BadLocationException exc ) {
+                                    //do nothing
+                                } finally {
+                                    doc.atomicUnlock();
+                                }
+                                
+                                //b. indent the new line
+                                int newLineOffset = Utilities.getRowStartFromLineOffset(doc, currentLineIndex);
+                                int previousLineIndentation = Utilities.getRowIndent(doc, Utilities.getRowStartFromLineOffset(doc, currentLineIndex - 1));
+                                int newLineIndent = previousLineIndentation + getShiftWidth();
+                                changeRowIndent(doc, newLineOffset, newLineIndent);
+                                
+                                //c. set cursor to the end of the new line
+                                target.setCaretPosition(Utilities.getRowEnd(doc, newLineOffset));
+                                
+                                //return end tag line start and end offset to reformat the end tag correctly
+                                //get first non white offset from the line after the newly inserted line
+                                int start = Utilities.getRowStartFromLineOffset(doc, currentLineIndex+1);
+                                int end = Utilities.getRowEnd(doc, start);
+                                return new int[]{start, end};
                             }
-                            
-                            //b. indent the new line
-                            int newLineOffset = Utilities.getRowStartFromLineOffset(doc, currentLineIndex);
-                            int previousLineIndentation = Utilities.getRowIndent(doc, Utilities.getRowStartFromLineOffset(doc, currentLineIndex - 1));
-                            int newLineIndent = previousLineIndentation + getShiftWidth();
-                            changeRowIndent(doc, newLineOffset, newLineIndent);
-                            
-                            //c. set cursor to the end of the new line
-                            target.setCaretPosition(Utilities.getRowEnd(doc, newLineOffset));
-                            
-                            //return end tag line start and end offset to reformat the end tag correctly
-                            //get first non white offset from the line after the newly inserted line
-                            int start = Utilities.getRowStartFromLineOffset(doc, currentLineIndex+1);
-                            int end = Utilities.getRowEnd(doc, start);
-                            return new int[]{start, end};
                         }
                     }
                 }
