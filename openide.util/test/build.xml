@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="openide/util/test" basedir="." default="all" >
@@ -21,14 +21,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
-    
-    <target name="build-data" >
-        <ant dir="unit/src/org/openide/util/data"/>
-    </target>
-    
-    <target name="buildtests" depends="build-data,xtest.buildtests" >
-    </target>
-    
+
+    <!-- Should not be here - some day change to not build to src. -->
     <target name="cleantests" depends="xtest.cleantests" >
         <ant dir="unit/src/org/openide/util/data" target="clean"/>
     </target>

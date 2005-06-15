@@ -9,10 +9,19 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="openide/util/test-unit" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="default-compiler" depends="xtest-unit.default-compiler">
+        <ant dir="unit/src/org/openide/util/data"/>
+    </target>
+
 </project>
