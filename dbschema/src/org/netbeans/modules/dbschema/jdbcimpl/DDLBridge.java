@@ -33,7 +33,7 @@ public class DDLBridge extends Object {
             drvSpec.setSchema(schema);
             
             //workaround for issue #4825200 - it seems there is a timing/thread problem with PointBase driver on Windows
-            if (Utilities.isWindows() && dmd.getDatabaseProductName().trim().equals("PointBase")) //NOI18N
+            if (/*Utilities.isWindows() && */dmd.getDatabaseProductName().trim().equals("PointBase")) //NOI18N
                 Thread.sleep(60);
 
             drvSpec.setCatalog(con.getCatalog());
