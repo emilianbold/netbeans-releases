@@ -66,6 +66,7 @@ public final class ManifestManager {
 
     private ManifestManager() {
         this.provTokens = new String[0];
+        this.requiredTokens = new String[0];
     }
     
     private ManifestManager(String cnb, String releaseVersion, String specVer,
