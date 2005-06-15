@@ -1670,7 +1670,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         final boolean isTopComponent() {
-            return formDesigner.getTopDesignComponent() == movingComponents[0];
+            return movingComponents != null && formDesigner.getTopDesignComponent() == movingComponents[0];
         }
                 
         final RADVisualContainer getTargetContainer(Point p, int mode) {
