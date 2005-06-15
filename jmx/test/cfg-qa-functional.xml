@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="QA functional config">
+
+    <!-- Validation suite for my module -->
+    <testbag testattribs="validation" executor="ide" name="JMX module validation">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/modules/jmx/test/agentwizard/CreateAgentProject.class"/>
+                <include name="org/netbeans/modules/jmx/test/agentwizard/ConstructAgent.class"/>
+                <include name="org/netbeans/modules/jmx/test/agentwizard/CompileAgentProject.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/CreateMBeanProject.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/EmptyMBean.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/OneFeatureMBean.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/TwoFeatureMBean.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/UITests.class"/>
+                <include name="org/netbeans/modules/jmx/test/configwizard/ConfigWizardValidation.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/RunUnitMBeanTests.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
+</mconfig>

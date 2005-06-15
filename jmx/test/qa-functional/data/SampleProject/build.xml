@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="SimpleModuleAction" default="netbeans" basedir=".">
+  <target name="init" depends="">
+    <path id="cp">
+      <pathelement location="/jmgt/pub/netbeans/latest/platform4//core/openide.jar"/>
+      <pathelement location="/jmgt/pub/netbeans/latest/platform4//core/openide-loaders.jar"/>
+      <pathelement location="/jmgt/pub/netbeans/latest/ide4/modules/org-netbeans-api-xml.jar"/>
+      <pathelement location="/jmgt/pub/netbeans/latest/platform4/modules/org-openide-io.jar"/>
+      <pathelement location="."/>
+    </path>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac srcdir="src" destdir="src" deprecation="true">
+      <classpath refid="cp"/>
+    </javac>
+  </target>
+
+  <target name="jars" depends="compile">
+    <jar jarfile="simpleaction.jar"
+         manifest="manifest.mf"
+         basedir="src"
+	 excludes="**/*.java"
+	 compress="false"/>
+  </target>
+
+  <target name="clean" depends="init">
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+    <delete file="simpleaction.jar"/>
+  </target>
+
+  <!-- This target will only work *inside* the IDE! -->
+  <target name= "test" depends="jars" description="Test the module inside the running IDE." >
+    <nbinstaller action="reinstall" module="simpleaction.jar"/>
+  </target>
+
+</project>

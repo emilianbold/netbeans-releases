@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="jmx/test-qa-functional" basedir="." default="all">
+
+    <!-- Imports default qa-functional-compiler and runidetest executor.
+        jemmy and jellytools jars are on classpath for both. -->
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
+    
+    <!-- Adds property to IDE command line: suppress scanning of classpath -->
+    <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true"/>
+    
+    <!-- Creates an empty Java project in IDE -->
+    <!-- <property name="xtest.ide.create.project" value="true"/> -->
+    <!-- Opens project at specified location -->
+    <property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/>
+
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+
+    <!-- You can override default qa-functional-compiler if you need something special -->
+         <!--
+    <target name="qa-functional-compiler">
+        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+            </classpath>
+        </buildTests>
+    </target>
+    -->
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
+         If you need to customize it, you can uncomment the following and override it.
+    <target name="runidetest">        
+        <executeTests  pluginName="ide">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>  
+            </classpath>
+        </executeTests>
+    </target>
+    -->
+    
+</project>
+
