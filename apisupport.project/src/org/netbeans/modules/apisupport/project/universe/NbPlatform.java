@@ -152,9 +152,10 @@ public final class NbPlatform implements Comparable {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
-                    props.setProperty(PLATFORM_PREFIX + id + PLATFORM_DEST_DIR_SUFFIX, destdir.getAbsolutePath());
+                    String plafDestDir = PLATFORM_PREFIX + id + PLATFORM_DEST_DIR_SUFFIX;
+                    props.setProperty(plafDestDir, destdir.getAbsolutePath());
                     props.setProperty(PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX,
-                            "${nbplatform." + id + ".netbeans.dest.dir}/harness"); // NOI18N
+                            "${" + plafDestDir + "}/harness"); // NOI18N
                     props.setProperty(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX, label);
                     PropertyUtils.putGlobalProperties(props);
                     return null;
