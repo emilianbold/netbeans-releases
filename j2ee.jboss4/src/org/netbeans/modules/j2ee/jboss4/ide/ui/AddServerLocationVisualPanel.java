@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.jboss4.ide.ui;
@@ -121,7 +121,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel2 = new javax.swing.JPanel();
-        jTextArea1 = new javax.swing.JTextArea();
+//        jTextArea1 = new javax.swing.JTextArea();
         jLabel1 = new javax.swing.JLabel();
         locationTextField = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
@@ -129,26 +129,27 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jTextArea1.setBackground(java.awt.Color.lightGray);
-        jTextArea1.setEditable(false);
-        jTextArea1.setLineWrap(true);
-        //jTextArea1.setText(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocationInfo"));
-        jTextArea1.setText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocationInfo"));
-        jTextArea1.setWrapStyleWord(true);
-        jTextArea1.setFocusable(false);
-        jTextArea1.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(jTextArea1, gridBagConstraints);
+//        jTextArea1.setBackground(java.awt.Color.lightGray);
+//        jTextArea1.setEditable(false);
+//        jTextArea1.setLineWrap(true);
+//        //jTextArea1.setText(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocationInfo"));
+//        jTextArea1.setText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocationInfo"));
+//        jTextArea1.setWrapStyleWord(true);
+//        jTextArea1.setFocusable(false);
+//        jTextArea1.setOpaque(false);
+//        gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridwidth = 3;
+//        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+//        add(jTextArea1, gridBagConstraints);
 
         jLabel1.setDisplayedMnemonic("LBL_InstallLocation_Mnemonic".charAt(0));
         jLabel1.setLabelFor(locationTextField);
         jLabel1.setText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocation"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         add(jLabel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
