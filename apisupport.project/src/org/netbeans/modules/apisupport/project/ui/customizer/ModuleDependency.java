@@ -118,27 +118,23 @@ public final class ModuleDependency implements Comparable {
     Set/*<String>*/ getFilterTokens() {
         if (filterTokens == null) {
             filterTokens = new HashSet();
-            addToken(me.getCodeNameBase());
-            addToken(me.getLocalizedName());
-            addToken(me.getJarLocation().getAbsolutePath());
+            filterTokens.add(me.getCodeNameBase());
+            filterTokens.add(me.getLocalizedName());
+            filterTokens.add(me.getJarLocation().getAbsolutePath());
             String[] cpext = PropertyUtils.tokenizePath(me.getClassPathExtensions());
             for (int i = 0; i < cpext.length; i++) {
-                addToken(cpext[i]);
+                filterTokens.add(cpext[i]);
             }
             boolean friend = true; // XXX ModuleDependency has to include a ref to the depending module!
             if (friend) {
                 Iterator it = me.getPublicClassNames().iterator();
                 while (it.hasNext()) {
                     String clazz = (String) it.next();
-                    addToken(clazz.replace('$', '.'));
+                    filterTokens.add(clazz.replace('$', '.'));
                 }
             }
         }
         return filterTokens;
-    }
-    
-    private void addToken(String token) {
-        filterTokens.add(token.toLowerCase(Locale.US));
     }
     
     public String toString() {

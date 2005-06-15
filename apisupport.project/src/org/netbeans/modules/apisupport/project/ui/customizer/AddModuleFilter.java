@@ -12,7 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
-
+import java.text.Collator;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
@@ -31,14 +31,20 @@ final class AddModuleFilter {
      */
     public AddModuleFilter(Set/*<ModuleDependency>*/ universe) {
         this.universe = universe;
+        // Prime the cache:
+        Iterator it = universe.iterator();
+        while (it.hasNext()) {
+            ModuleDependency dep = (ModuleDependency) it.next();
+            dep.getFilterTokens();
+        }
+        // To test "Please wait" use:
+        //try{Thread.sleep(2000);}catch(InterruptedException e){}
     }
     
     /**
      * Find matches for a search string.
      */
     public Set/*<ModuleDependency>*/ getMatches(String text) {
-        // To test "Please wait" use:
-        //try{Thread.sleep(2000);}catch(InterruptedException e){}
         String textLC = text.toLowerCase(Locale.US);
         Set/*<ModuleDependency>*/ matches = new TreeSet();
         Iterator it = universe.iterator();
@@ -48,13 +54,29 @@ final class AddModuleFilter {
             Iterator it2 = tokens.iterator();
             while (it2.hasNext()) {
                 String token = (String) it2.next();
-                if (token.indexOf(textLC) != -1) {
+                if (token.toLowerCase(Locale.US).indexOf(textLC) != -1) {
                     matches.add(dep);
                     break;
                 }
             }
         }
         return matches;
+    }
+    
+    /**
+     * Find which tokens actually matched a given dependency.
+     */
+    public Set/*<String>*/ getMatchesFor(String text, ModuleDependency dep) {
+        String textLC = text.toLowerCase(Locale.US);
+        Set/*<String>*/ tokens = new TreeSet(Collator.getInstance());
+        Iterator it = dep.getFilterTokens().iterator();
+        while (it.hasNext()) {
+            String token = (String) it.next();
+            if (token.toLowerCase(Locale.US).indexOf(textLC) != -1) {
+                tokens.add(token);
+            }
+        }
+        return tokens;
     }
     
 }

@@ -12,9 +12,10 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
-
-import java.awt.EventQueue;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -27,7 +28,16 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import org.netbeans.modules.apisupport.project.Util;
+import org.openide.ErrorManager;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+
 
 /**
  * Represents panel for adding new dependency for a module. Shown after
@@ -92,12 +102,54 @@ final class AddModulePanel extends JPanel {
                 }
             }
         }
+        // XXX would be nice to also bind S-PageDown etc. to scroll the Description area
     }
     
     private void showDescription() {
-        ModuleDependency dep = getSelectedDependency();
-        NbPropertyPanel.setText(descValue, dep == null ? "" : // NOI18N
-            dep.getModuleEntry().getLongDescription());
+        StyledDocument doc = descValue.getStyledDocument();
+        try {
+            doc.remove(0, doc.getLength());
+            ModuleDependency dep = getSelectedDependency();
+            if (dep == null) {
+                return;
+            }
+            String longDesc = dep.getModuleEntry().getLongDescription();
+            if (longDesc != null) {
+                doc.insertString(0, longDesc, null);
+            }
+            doc.insertString(doc.getLength(), "\n\n", null); // NOI18N
+            Style bold = doc.addStyle(null, null);
+            bold.addAttribute(StyleConstants.Bold, Boolean.TRUE);
+            doc.insertString(doc.getLength(), NbBundle.getMessage(AddModulePanel.class, "TEXT_matching_filter_contents"), bold);
+            doc.insertString(doc.getLength(), "\n", null); // NOI18N
+            String filterText = filterValue.getText();
+            if (filterText.length() > 0) {
+                String filterTextLC = filterText.toLowerCase(Locale.US);
+                Style match = doc.addStyle(null, null);
+                match.addAttribute(StyleConstants.Background, new Color(246, 248, 139));
+                Set/*<String>*/ matches = filterer.getMatchesFor(filterText, dep);
+                Iterator it = matches.iterator();
+                while (it.hasNext()) {
+                    String hit = (String) it.next();
+                    int loc = doc.getLength();
+                    doc.insertString(loc, hit, null);
+                    int start = hit.toLowerCase(Locale.US).indexOf(filterTextLC);
+                    if (start != -1) {
+                        doc.setCharacterAttributes(loc + start, filterTextLC.length(), match, true);
+                    }
+                    if (it.hasNext()) {
+                        doc.insertString(doc.getLength(), "; ", null); // NOI18N
+                    }
+                }
+            } else {
+                Style italics = doc.addStyle(null, null);
+                italics.addAttribute(StyleConstants.Italic, Boolean.TRUE);
+                doc.insertString(doc.getLength(), NbBundle.getMessage(AddModulePanel.class, "TEXT_no_filter_specified"), italics);
+            }
+            descValue.setCaretPosition(0);
+        } catch (BadLocationException e) {
+            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+        }
     }
     
     ModuleDependency getSelectedDependency() {
@@ -120,16 +172,11 @@ final class AddModulePanel extends JPanel {
             moduleList.setSelectedIndex(0);
             moduleList.ensureIndexIsVisible(0);
         } else {
-            DefaultListModel dummy = new DefaultListModel();
-            dummy.addElement(ComponentFactory.PLEASE_WAIT);
-            moduleList.setModel(dummy);
-            filterTask = RequestProcessor.getDefault().post(new Runnable() {
+            final Runnable compute = new Runnable() {
                 public void run() {
-                    if (filterer == null) {
-                        filterer = new AddModuleFilter(universeModules.getDependencies());
-                    }
                     final Set/*<ModuleDependency>*/ matches = filterer.getMatches(text);
-                    EventQueue.invokeLater(new Runnable() {
+                    filterTask = null;
+                    Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {
                             moduleList.setModel(ComponentFactory.createDependencyListModel(matches));
                             int index = matches.isEmpty() ? -1 : 0;
@@ -137,9 +184,25 @@ final class AddModulePanel extends JPanel {
                             moduleList.ensureIndexIsVisible(index);
                         }
                     });
-                    filterTask = null;
                 }
-            });
+            };
+            if (filterer == null) {
+                // Slow to create it, so show Please wait...
+                DefaultListModel dummy = new DefaultListModel();
+                dummy.addElement(ComponentFactory.PLEASE_WAIT);
+                moduleList.setModel(dummy);
+                filterTask = RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        if (filterer == null) {
+                            filterer = new AddModuleFilter(universeModules.getDependencies());
+                            compute.run();
+                        }
+                    }
+                });
+            } else {
+                // Pretty fast once we have it, so do right now and avoid flickering.
+                compute.run();
+            }
         }
     }
     
@@ -156,11 +219,10 @@ final class AddModulePanel extends JPanel {
         moduleSP = new javax.swing.JScrollPane();
         moduleList = new javax.swing.JList();
         descLabel = new javax.swing.JLabel();
-        hackPanel = new javax.swing.JPanel();
-        descValueSP = new javax.swing.JScrollPane();
-        descValue = new javax.swing.JTextArea();
         filter = new javax.swing.JLabel();
         filterValue = new javax.swing.JTextField();
+        descValueSP = new javax.swing.JScrollPane();
+        descValue = new javax.swing.JTextPane();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -197,24 +259,6 @@ final class AddModulePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(descLabel, gridBagConstraints);
 
-        hackPanel.setLayout(new java.awt.BorderLayout());
-
-        descValue.setEditable(false);
-        descValue.setLineWrap(true);
-        descValue.setRows(4);
-        descValue.setWrapStyleWord(true);
-        descValue.setDisabledTextColor(java.awt.Color.black);
-        descValueSP.setViewportView(descValue);
-
-        hackPanel.add(descValueSP, java.awt.BorderLayout.NORTH);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        add(hackPanel, gridBagConstraints);
-
         filter.setLabelFor(filterValue);
         org.openide.awt.Mnemonics.setLocalizedText(filter, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "LBL_Filter"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -232,17 +276,28 @@ final class AddModulePanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         add(filterValue, gridBagConstraints);
 
+        descValue.setEditable(false);
+        descValue.setPreferredSize(new java.awt.Dimension(6, 100));
+        descValueSP.setViewportView(descValue);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        add(descValueSP, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel descLabel;
-    private javax.swing.JTextArea descValue;
+    private javax.swing.JTextPane descValue;
     private javax.swing.JScrollPane descValueSP;
     private javax.swing.JLabel filter;
     private javax.swing.JTextField filterValue;
-    private javax.swing.JPanel hackPanel;
     private javax.swing.JLabel moduleLabel;
     private javax.swing.JList moduleList;
     private javax.swing.JScrollPane moduleSP;

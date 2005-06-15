@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -94,7 +95,7 @@ abstract class AbstractEntry implements ModuleEntry {
         JarFile jf = new JarFile(jar);
         try {
             Enumeration entries = jf.entries();
-            while (entries.hasMoreElements()) {
+            ENTRY: while (entries.hasMoreElements()) {
                 JarEntry entry = (JarEntry) entries.nextElement();
                 String path = entry.getName();
                 if (!path.endsWith(".class")) { // NOI18N
@@ -116,6 +117,15 @@ abstract class AbstractEntry implements ModuleEntry {
                     }
                     if (!pub) {
                         continue;
+                    }
+                }
+                StringTokenizer tok = new StringTokenizer(path, "$"); // NOI18N
+                while (tok.hasMoreTokens()) {
+                    String component = tok.nextToken();
+                    char c = component.charAt(0);
+                    if (c >= '0' && c <= '9') {
+                        // Generated anon inner class name, skip.
+                        continue ENTRY;
                     }
                 }
                 result.add(path.substring(0, path.length() - 6).replace('/', '.'));

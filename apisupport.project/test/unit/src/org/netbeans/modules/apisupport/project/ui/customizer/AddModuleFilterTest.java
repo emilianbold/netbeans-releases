@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -68,6 +69,11 @@ public class AddModuleFilterTest extends TestBase {
         // Using class-path extensions:
         assertMatches("javax.help", new String[] {"org.netbeans.modules.javahelp"});
         // XXX test that friend APIs only match if "I" am a friend (needs API change in ModuleDependency)
+    }
+    
+    public void testMatchStrings() throws Exception {
+        ModuleDependency dep = (ModuleDependency) filter.getMatches("callablesys").iterator().next();
+        assertEquals(Collections.singleton("org.openide.util.actions.CallableSystemAction"), filter.getMatchesFor("callablesys", dep));
     }
     
     private void assertMatches(String text, String[] cnbs) {
