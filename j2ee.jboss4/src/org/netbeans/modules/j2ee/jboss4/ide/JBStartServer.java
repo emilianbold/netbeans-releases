@@ -48,7 +48,6 @@ import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import org.openide.util.NbBundle;
 import javax.naming.*;
-import javax.management.*;
 import java.net.URLClassLoader;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 
@@ -144,11 +143,11 @@ public class JBStartServer extends StartServer implements ProgressObject{
         
         try{
             InitialContext ctx = new InitialContext(env);
-            ctx.lookup("/jmx/invoker/RMIAdaptor");
-            
-            MBeanServerConnection srv = (MBeanServerConnection)ctx.lookup("/jmx/invoker/RMIAdaptor");
-            ObjectName target = new ObjectName("jboss.system:type=ServerConfig");
-            String configName = (String)srv.getAttribute(target, "ServerName");
+            Object srv = ctx.lookup("/jmx/invoker/RMIAdaptor");
+            java.lang.reflect.Method  method = loader.loadClass("javax.management.ObjectName").getMethod("getInstance", new Class[] {String.class} );
+            Object target = method.invoke(null, new Object[]{"jboss.system:type=ServerConfig"});
+            Object serverName = srv.getClass().getMethod("getAttribute", new Class[]{loader.loadClass("javax.management.ObjectName"),String.class}).invoke(srv, new Object[]{target, "ServerName"});
+            String configName = (String)serverName;
             
             if (checkingConfigName.equals(configName)){
                 return true;
@@ -156,7 +155,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 return false;
             }
         }catch(NameNotFoundException e){
-            if (checkingConfigName.equals("minimal")) 
+            if (checkingConfigName.equals("minimal"))
                 return true;
             else
                 return false;
@@ -165,7 +164,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         } finally{
             Thread.currentThread().setContextClassLoader(oldLoader);
         }
-       // return true;
+        // return true;
     }
     
     public boolean isRunning() {
@@ -221,21 +220,22 @@ public class JBStartServer extends StartServer implements ProgressObject{
         
         public void run() {
             try {
+                Process serverProcess = null;
                 String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
                 
-                ProcessBuilder processBuilder = new ProcessBuilder(new String[] {serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), "-c", JBOSS_INSTANCE});
+                String str = serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH); 
+                
+                org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(str, "{-c}{"+JBOSS_INSTANCE+"}");
+                
+                String envp[];
                 
                 if (debug) {
-                    processBuilder.environment().put("JAVA_OPTS", "-classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="+dm.getDebuggingPort()+ ",server=y,suspend=n");//NOI18N
+                    envp = new String[]{"JAVA_OPTS=-classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="+dm.getDebuggingPort()+ ",server=y,suspend=n"};
                 } else {
-                    processBuilder.environment().put("JAVA_OPTS", "");
+                    envp = new String[0];
                 }
                 
-                Process serverProcess = null;
-                
-                serverProcess = processBuilder.start();
-                
-//                Process serverProcess = Runtime.getRuntime().exec(JBOSS_HOME + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH));
+                serverProcess = pd.exec(null, envp, true, null );
                 
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
                 
