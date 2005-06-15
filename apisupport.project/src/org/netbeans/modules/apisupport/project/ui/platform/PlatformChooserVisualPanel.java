@@ -41,8 +41,11 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
     
     /** Stores collected data into model. */
     void storeData() {
-        getSetting().putProperty(NbPlatformCustomizer.PLAF_DIR_PROPERTY,
-                platformChooser.getSelectedFile().getAbsolutePath());
+        File file = platformChooser.getSelectedFile();
+        if (file != null) {
+            getSetting().putProperty(NbPlatformCustomizer.PLAF_DIR_PROPERTY,
+                    file.getAbsolutePath());
+        } // when wizard is cancelled file is null
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
