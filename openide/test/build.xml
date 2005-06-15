@@ -23,14 +23,6 @@ Microsystems, Inc. All Rights Reserved.
      <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable,all,code,ide"/>
-    
-    <target name="buildtests">
-        <antcall target="xtest.buildtests" inheritRefs="true"/>
-    </target>
-    
-    <target name="cleantests">
-        <antcall target="xtest.cleantests" inheritRefs="true"/>
-    </target>
 
 </project>
 
