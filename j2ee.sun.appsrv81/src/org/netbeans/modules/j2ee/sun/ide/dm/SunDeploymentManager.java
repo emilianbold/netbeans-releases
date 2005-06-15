@@ -57,7 +57,6 @@ import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunServerStateInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
-import org.netbeans.modules.j2ee.sun.bridge.AppServerBridge;
 import org.netbeans.modules.j2ee.sun.appsrvapi.PortDetector;
 
 

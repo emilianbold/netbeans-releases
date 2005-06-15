@@ -488,7 +488,7 @@ public class Utils {
             String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
             try{
                 ObjectName objName = new ObjectName(WizardConstants.MAP_RESOURCES);
-              ( (org.netbeans.modules.j2ee.sun.share.management.ServerMEJB) mejb).invoke(objName, operName, params, signature);
+                mejb.invoke(objName, operName, params, signature);
             }catch(Exception ex){
                 throw new Exception(ex.getLocalizedMessage());
             }
@@ -503,9 +503,9 @@ public class Utils {
             if(operName.equals(WizardConstants.__GetPMFResource) || operName.equals(WizardConstants.__GetJmsResource)){
                 String[] signature = new String[]{"java.lang.String"};  //NOI18N
                 Object[] params = new Object[]{null};
-                resourceObjects = (ObjectName[])( (org.netbeans.modules.j2ee.sun.share.management.ServerMEJB) mejb).invoke(objName, operName, params, signature);
+                resourceObjects = (ObjectName[])  mejb.invoke(objName, operName, params, signature);
             }else{
-                resourceObjects = (ObjectName[])( (org.netbeans.modules.j2ee.sun.share.management.ServerMEJB) mejb).invoke(objName, operName, null, null);
+                resourceObjects = (ObjectName[])  mejb.invoke(objName, operName, null, null);
             }
             if(resourceObjects != null){
                 ObjectName resOnServer = null;
