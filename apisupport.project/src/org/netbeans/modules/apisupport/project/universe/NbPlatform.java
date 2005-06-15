@@ -153,6 +153,8 @@ public final class NbPlatform implements Comparable {
                 public Object run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     props.setProperty(PLATFORM_PREFIX + id + PLATFORM_DEST_DIR_SUFFIX, destdir.getAbsolutePath());
+                    props.setProperty(PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX,
+                            "${nbplatform." + id + ".netbeans.dest.dir}/harness"); // NOI18N
                     props.setProperty(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX, label);
                     PropertyUtils.putGlobalProperties(props);
                     return null;
