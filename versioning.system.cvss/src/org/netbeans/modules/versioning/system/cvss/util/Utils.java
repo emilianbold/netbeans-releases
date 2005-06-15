@@ -24,7 +24,6 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.*;
 
@@ -216,6 +215,8 @@ public class Utils {
     public static boolean isParentOrEqual(File parent, File file) {
         String parentPath = parent.getAbsolutePath();
         String filePath = file.getAbsolutePath();
+        assert parentPath.equals(FileUtil.normalizeFile(parent).getAbsolutePath());
+        assert filePath.equals(FileUtil.normalizeFile(file).getAbsolutePath());
         return filePath.startsWith(parentPath) && (
                 filePath.length() == parentPath.length() || 
                 filePath.charAt(parentPath.length()) == File.separatorChar || 
@@ -223,21 +224,18 @@ public class Utils {
     }
 
     /**
-     * Computes relative path from the nearest versioned root.
+     * Computes path of this file to repository root.
      *
      * @param file a file
-     * @return String relative path from the nearest versioned root. If this path does not describe a
-     * versioned file, this method returns the full path itself. 
+     * @return String path of this file in repsitory. If this path does not describe a
+     * versioned file, this method returns an empty string 
      */
     public static String getRelativePath(File file) {
-        String path = file.getAbsolutePath();
-        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        for (file = file.getParentFile(); file != null; file = file.getParentFile()) {
-            if (cache.getStatus(file).getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
-                return path.substring(file.getAbsolutePath().length() + 1);
-            }
+        try {
+            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParent(), "").substring(1);
+        } catch (IOException e) {
+            return "";
         }
-        return path;
     }
     
     /**

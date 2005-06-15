@@ -17,8 +17,6 @@ import junit.framework.TestCase;
 
 import java.io.File;
 
-import org.openide.filesystems.FileUtil;
-
 /**
  * Tests for the Util class.
  * 
@@ -26,6 +24,9 @@ import org.openide.filesystems.FileUtil;
  */
 public class UtilTest extends TestCase {
 
+    public static void testGetRelativePath() {
+    }
+    
     public static void testIsParentOrEqual() {
 
         assertTrue(Utils.isParentOrEqual(new File("/"), new File("/")));
