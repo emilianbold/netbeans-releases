@@ -16,13 +16,15 @@ import java.io.ByteArrayInputStream;
 import java.util.Properties;
 
 /**
- *
+ * Class used for authenticate table
  * @author jfdenise
  */
 public class RMIAuthenticatedUser {
+    
     private String name;
     private String password;
     private String access = "readonly";
+    
     /** Creates a new instance of RMIAuthenticatedUser */
     public RMIAuthenticatedUser() {
     }
@@ -81,10 +83,23 @@ public class RMIAuthenticatedUser {
        return password;
     }
     
+    /**
+     * Returns if the authenticate user model is valid : there is no empty password 
+     * and no empty role name.
+     * @return <CODE>boolean</CODE> true if the authenticate user model is valid
+     */
     public boolean isValid() {
         return (isValidKey(name)) && (cleanPassword() != null);
     }
     
+    /**
+     * Returns the :
+     *  - role name of this autenticate user if col = 0
+     *  - password of this autenticate user if col = 1
+     *  - access of this autenticate user if col = 2
+     * @param col <CODE>int</CODE> index of column of the authenticate table
+     * @return <CODE>String</CODE>
+     */
     public Object getValueAt(int col) {
         switch(col) {
             case 0: return name;
@@ -94,6 +109,14 @@ public class RMIAuthenticatedUser {
         return null;
     }
     
+    /**
+     * Sets the :
+     *  - role name of this autenticate user if col = 0
+     *  - password of this autenticate user if col = 1
+     *  - access of this autenticate user if col = 2
+     * @param value <CODE>Object</CODE> value to set (must be String)
+     * @param col <CODE>int</CODE> index of authenticate table column
+     */
     public void setValueAt(Object value, int col) {
         switch(col) {
             case 0:  name = (String) value;
@@ -105,12 +128,24 @@ public class RMIAuthenticatedUser {
         }
     }
     
+    /**
+     * Returns the authenticate user name.
+     * @return <CODE>String</CODE> user name
+     */
     public String getName() {
         return name;
     }
+    /**
+     * Returns the authenticate user password.
+     * @return <CODE>String</CODE> user password
+     */
     public String getPassword() {
         return password;
     }
+    /**
+     * Returns the authenticate user access.
+     * @return <CODE>String</CODE> user access
+     */
     public String getAccess() {
         return access;
     }

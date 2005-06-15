@@ -17,19 +17,39 @@ import java.awt.Component;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
 
-/**<Notification Description>
- *
- * @author alex
+/**
+ * Class managing the rendering for the combo boxes
+ * 
  */
 public class ComboBoxRenderer extends  DefaultTableCellRenderer {
 	
-        JComboBox comp;
-        Object obj;
+    /*******************************************************************/
+    // here, the model is not typed because more than one table uses it
+    // i.e we have to call explicitely the model's internal structure
+    // via getValueAt and setValueAt
+    /********************************************************************/
+    
+        private JComboBox comp;
+        private Object obj;
 	
+        /**
+         * Constructor
+         * @param comp the combo box to affect the renderer to
+         */
         public ComboBoxRenderer(JComboBox comp) {
 	    this.comp = comp;
 	}
 
+        /**
+         * Method returning the modified component (component + rendering)
+         * @param table the table in which the component is contained
+         * @param value the value of the component
+         * @param isSelected true if the component is selected
+         * @param hasFocus true if the component has the focus
+         * @param row the row of the component in the table
+         * @param column the column of the component in the table
+         * @return Component the modified component
+         */
 	public Component getTableCellRendererComponent(JTable table,
 						       Object value,
 						       boolean isSelected,
@@ -41,6 +61,10 @@ public class ComboBoxRenderer extends  DefaultTableCellRenderer {
 	    return comp;
 	}
 
+        /**
+         * Returns simply the component
+         * @return Component the component
+         */
 	public Component getComponent() {
 	    return comp;
 	}

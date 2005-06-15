@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.jmx.mbeanwizard.table;
-
-import org.netbeans.modules.jmx.WizardHelpers;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.JTextField;
@@ -21,22 +19,39 @@ import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import javax.swing.ListSelectionModel;
 
 /**
- *
- * @author an156382
+ * Class responsible for the exception table in the operation exception popup  
+ * 
  */
 public class OperationExceptionPopupTable extends JTable {
     
-    /** Creates a new instance of AttributeTable */
+    /*******************************************************************/
+    // here we use raw model calls (i.e getValueAt and setValueAt) to
+    // access the model data because the inheritance pattern
+    // makes it hard to type these calls and to use the object model
+    /********************************************************************/
+    
+    /**
+     * Constructor
+     * @param model the table model of this table
+     */
     public OperationExceptionPopupTable(AbstractTableModel model) {
         super(model);
         this.setRowHeight(25);
         this.setPreferredScrollableViewportSize(new Dimension(250, 70));
         this.setRowSelectionAllowed(true); 
         this.setColumnSelectionAllowed(false);
+        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
     
+    /**
+     * Returns the cell editor for the table according to the column
+     * @param row the row to be considered
+     * @param column the column to be considered
+     * @return TableCellEditor the cell editor
+     */
     public TableCellEditor getCellEditor(int row, int column) {
         
         if(row >= getRowCount())

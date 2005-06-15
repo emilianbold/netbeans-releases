@@ -15,11 +15,15 @@ package org.netbeans.modules.jmx.mbeanwizard.listener;
 import javax.swing.event.TableModelEvent;
 
 /**
+ * Interface for a listener which handels table removal
  *
- * @author an156382
  */
 public interface TableRemoveListener {
     
+    /**
+     * Action to make if an event is caught
+     * @param e a TableModelEvent
+     */
     public void tableStateChanged(TableModelEvent e);
     
 }

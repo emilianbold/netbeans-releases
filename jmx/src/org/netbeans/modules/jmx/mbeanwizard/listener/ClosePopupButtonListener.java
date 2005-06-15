@@ -18,21 +18,30 @@ import java.awt.event.ActionListener;
 import javax.swing.JTextField;
 
 /**
- *
- * @author an156382
+ * Class handling the event when the OK button is pressed on a popup window
+ * 
  */
 public class ClosePopupButtonListener implements ActionListener{
     
     private AbstractPopup popup = null;
     private JTextField text = null;
     
-    /** Creates a new instance of ClosePopupButtonListener */
+    /**
+     * Constructor
+     * @param popup the popup concerned
+     * @param text the textfield to fill with the popup contents
+     */
     public ClosePopupButtonListener(AbstractPopup popup, JTextField text) {
         
         this.popup = popup;
         this.text = text;
     }
     
+    /**
+     * Method handling what to do if the listener has been invoked
+     * Here: close the popup and fill the text field
+     * @param evt an ActionEvent
+     */
     public void actionPerformed(ActionEvent evt) {
         
         text.setText(popup.storeSettings());

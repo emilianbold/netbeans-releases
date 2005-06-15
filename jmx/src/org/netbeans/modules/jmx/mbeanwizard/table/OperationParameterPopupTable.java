@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.jmx.mbeanwizard.table;
-
-import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
@@ -24,14 +22,26 @@ import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.jmx.WizardHelpers;
+
 /**
- *
- * @author an156382
+ * Class responsible for the parameter table in the operation parameter popup  
+ * 
  */
 public class OperationParameterPopupTable extends JTable {
     
-    /** Creates a new instance of AttributeTable */
+    /*******************************************************************/
+    // here we use raw model calls (i.e getValueAt and setValueAt) to
+    // access the model data because the inheritance pattern
+    // makes it hard to type these calls and to use the object model
+    /********************************************************************/
+    
+    /**
+     * Constructor
+     * @param model the table model of this table
+     */
     public OperationParameterPopupTable(AbstractTableModel model) {
         super(model);
         
@@ -39,8 +49,15 @@ public class OperationParameterPopupTable extends JTable {
         this.setPreferredScrollableViewportSize(new Dimension(250, 70));
         this.setRowSelectionAllowed(true);
         this.setColumnSelectionAllowed(false);
+        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
     
+    /**
+     * Returns the cell editor for the table according to the column
+     * @param row the row to be considered
+     * @param column the column to be considered
+     * @return TableCellEditor the cell editor
+     */
     public TableCellEditor getCellEditor(int row, int column) {
         
         if(row >= getRowCount())
@@ -99,7 +116,7 @@ public class OperationParameterPopupTable extends JTable {
             return new JTextFieldCellEditor(nameField, this);
         } else {
             if (column == 1) { //parameter type
-                JComboBox typeBox = instanciateTypeJComboBox();
+                JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
                 Object o = getModel().getValueAt(row,column);
                 typeBox.setSelectedItem(o);
                 return new JComboBoxCellEditor(typeBox, this);
@@ -115,42 +132,24 @@ public class OperationParameterPopupTable extends JTable {
         }
     }
     
+    /**
+     * Returns the cell renderer for the table according to the column
+     * @param row the row to be considered
+     * @param column the column to be considered
+     * @return TableCellRenderer the cell renderer
+     */
     public TableCellRenderer getCellRenderer(int row, int column) {
         
         if(row >= getRowCount())
                 return null;
         
             if (column == 1) {
-                JComboBox typeBox = instanciateTypeJComboBox();
+                JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
                 Object o = getModel().getValueAt(row,column);
                 typeBox.setSelectedItem(o);
                 return new ComboBoxRenderer(typeBox);
             } 
         
         return super.getCellRenderer(row,column);
-    }
-    
-    
-    /**************************************************/
-    /**************** Helper methods ******************/
-    /**************************************************/
-    
-    private JComboBox instanciateTypeJComboBox() {
-        
-        JComboBox typeCombo = new JComboBox();
-        
-        // the attribute's type combo box
-        typeCombo.addItem(WizardConstants.BOOLEAN_NAME);
-        typeCombo.addItem(WizardConstants.BYTE_NAME);
-        typeCombo.addItem(WizardConstants.CHAR_NAME);
-        typeCombo.addItem(WizardConstants.DATE_OBJ_NAME);
-        typeCombo.addItem(WizardConstants.INT_NAME);
-        typeCombo.addItem(WizardConstants.LONG_NAME);
-        typeCombo.addItem(WizardConstants.OBJECTNAME_NAME);
-        typeCombo.addItem(WizardConstants.STRING_OBJ_NAME);
-        typeCombo.setSelectedItem(WizardConstants.STRING_OBJ_NAME);
-        typeCombo.setEditable(true);
-        
-        return typeCombo;
     }
 }

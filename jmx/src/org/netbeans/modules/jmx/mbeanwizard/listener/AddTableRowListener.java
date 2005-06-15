@@ -20,8 +20,9 @@ import javax.swing.JButton;
 import javax.swing.JTable;
 
 /**
- *
- * @author an156382
+ * Generic class handling the listeners which add rows to the different JTables
+ * contained in the wizard
+ * 
  */
 public class AddTableRowListener implements ActionListener{ 
     
@@ -29,7 +30,12 @@ public class AddTableRowListener implements ActionListener{
     private JButton b = null;
     private JTable table = null;
     
-    /** Creates a new instance of AddAttributeListener */
+    /**
+     * Constructor
+     * @param table the Jtable in which a row is to add
+     * @param model the corresponding table model
+     * @param remButton a reference to the remove line button
+     */
     public AddTableRowListener(JTable table, AbstractJMXTableModel model, 
             JButton remButton) {
     
@@ -38,6 +44,11 @@ public class AddTableRowListener implements ActionListener{
         this.b = remButton;
     }
     
+    /**
+     * Method handling what to do if the listener has been invoked
+     * Here: adds a row
+     * @param e an ActionEvent
+     */
     public void actionPerformed(ActionEvent e) {
         
         m.addRow();

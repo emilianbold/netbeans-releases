@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.jmx
 OpenIDE-Module-Public-Packages: org.netbeans.modules.jmx.mbeanwizard.*
-OpenIDE-Module-Specification-Version: 0
-OpenIDE-Module-Implementation-Version: 0
+OpenIDE-Module-Specification-Version: 0.0.1
+OpenIDE-Module-Implementation-Version: 0.0.1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jmx/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/jmx/JMXModuleLayer.xml
-OpenIDE-Module-Java-Dependencies: Java > 1.4
+OpenIDE-Module-Java-Dependencies: Java > 1.5
 Class-Path: docs/org-netbeans-modules-jmx.jar

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.jmx.mbeanwizard.popup;
 import org.netbeans.modules.jmx.mbeanwizard.MBeanAttrAndMethodPanel.AttributesWizardPanel;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.OperationParameterTableModel;
 import org.netbeans.modules.jmx.mbeanwizard.listener.AddTableRowListener;
 import org.netbeans.modules.jmx.mbeanwizard.listener.RemTableRowListener;
@@ -25,34 +26,46 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.jmx.mbeanwizard.table.OperationParameterPopupTable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanOperationParameter;
 
 
 
 /**
+ * Class implementing the parameter popup window
  *
- * @author an156382
  */
 public class OperationParameterPopup extends AbstractPopup{
     
-    private ParamResultStructure result;
-    private AttributesWizardPanel wiz = null;
     
-    public OperationParameterPopup(JPanel ancestorPanel, JTextField textField, 
-            ParamResultStructure result, AttributesWizardPanel wiz) {
+    private AttributesWizardPanel wiz = null;
+    private MBeanMethodTableModel methodModel = null;
+    private int editedRow = 0;
+    
+    /**
+     * Constructor
+     * @param ancestorPanel the parent panel of the popup; here the wizard
+     * @param textField the text field to fill with the popup information
+     * @param result the intermediate structure which storespopup information
+     * @param wiz the parent-window's wizard panel
+     */
+    public OperationParameterPopup(JPanel ancestorPanel, 
+            MBeanMethodTableModel model,
+            JTextField textField, int editedRow, AttributesWizardPanel wiz) {
         
         super((java.awt.Dialog)ancestorPanel.getTopLevelAncestor());
         
+        this.methodModel = model;
         this.textFieldToFill = textField;
-        this.result = result;
+        this.editedRow = editedRow;
         this.wiz = wiz;
         
         setLayout(new BorderLayout());
         initComponents();
         
-        if (this.result.size() != 0)
-            readSettings();
+        readSettings();
         
         setDimensions(NbBundle.getMessage(OperationParameterPopup.class,
                 "LBL_OperationParameter_Popup"));
@@ -82,11 +95,15 @@ public class OperationParameterPopup extends AbstractPopup{
         //remove button should first be disabled
         removeJButton.setEnabled(false);
         
-        addJButton.addActionListener(new AddTableRowListener(popupTable,popupTableModel,removeJButton));
-        removeJButton.addActionListener(new RemTableRowListener(popupTable,popupTableModel,removeJButton));
+        addJButton.addActionListener(new AddTableRowListener(popupTable,
+                popupTableModel,removeJButton));
+        removeJButton.addActionListener(new RemTableRowListener(popupTable,
+                popupTableModel,removeJButton));
         
-        //TODO factorise the listeners; this is a copy paste of ClosePopupButtonListener a little modified
-        //closeJButton.addActionListener(new ClosePopupButtonListener(this,textFieldToFill));
+        //TODO factorise the listeners; this is a copy paste of 
+        //ClosePopupButtonListener a little modified
+        //closeJButton.addActionListener(
+        //new ClosePopupButtonListener(this,textFieldToFill));
         final OperationParameterPopup opParamPopup = this;
         closeJButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -99,66 +116,74 @@ public class OperationParameterPopup extends AbstractPopup{
         });
         
         definePanels(new JButton[] {addJButton,
-                                    removeJButton,
-                                    closeJButton
+                removeJButton,
+                closeJButton
         },
                 popupTable);
     }
     
     protected void readSettings() {
-        
-        for (int i = 0 ; i < result.size() ; i++) {
+        if(methodModel.size() != 0) {
+            //gets the current parameter list from the current operation
+            ArrayList<MBeanOperationParameter> opParam = 
+                    (ArrayList<MBeanOperationParameter>)
+                        methodModel.getOperation(editedRow).
+                                        getOperationParameterList();
             
-            popupTableModel.addRow();
-            
-            String tmp = (String)result.getResultValue(i, OperationParameterTableModel.IDX_OP_PARAM_NAME);
-            popupTableModel.setValueAt(tmp,i,OperationParameterTableModel.IDX_OP_PARAM_NAME);
-            
-            tmp = (String)result.getResultValue(i, OperationParameterTableModel.IDX_OP_PARAM_TYPE);
-            popupTableModel.setValueAt(tmp,i,OperationParameterTableModel.IDX_OP_PARAM_TYPE);
-            
-            tmp = (String)result.getResultValue(i, OperationParameterTableModel.IDX_OP_PARAM_DESCRIPTION);
-            popupTableModel.setValueAt(tmp,i,OperationParameterTableModel.IDX_OP_PARAM_DESCRIPTION);
+            for (int i = 0; i < opParam.size(); i++) {
+                popupTableModel.addRow();
+                //copy the current parameter from the panel model to the popup
+                //model
+                ((OperationParameterTableModel)
+                                popupTableModel).setParameter(i, opParam.get(i));
+            }
+            removeJButton.setEnabled(popupTableModel.getRowCount() > 0);
         }
-        // if readsettings is called, then the table has at least one row
-        // i.e the remButton must be enabled
-        removeJButton.setEnabled(true);
     }
     
+    /**
+     * Method which stores the information from the popup window in the 
+     * intermediate structure
+     * and returns a String containing all couples parameter types and names 
+     * seperated by a ','
+     * @return String contains the couples parameter types and names of the 
+     * popup window
+     */
     public String storeSettings() {
         
-        //stores all values from the table in the model even with keyboard navigation
+        //stores all values from the table in the model even with 
+        //keyboard navigation
         popupTable.editingStopped(new ChangeEvent(this));
-        
-        int nbParam = popupTableModel.size();
         
         String paramString = "";
         String paramName = "";
         String paramType = "";
-        String paramDescription = "";
-        String[] stringToAdd;
-        result.empty();
+        String paramDescr = "";
+        ArrayList<MBeanOperationParameter> mbop = 
+                new ArrayList<MBeanOperationParameter>();
         
-        
-        for (int i = 0 ; i < nbParam ; i++) {
-            paramName = (String)popupTableModel.getValueAt(
-                    i, OperationParameterTableModel.IDX_OP_PARAM_NAME);
-            paramType = (String)popupTableModel.getValueAt(
-                    i, OperationParameterTableModel.IDX_OP_PARAM_TYPE);
-            paramDescription = (String)popupTableModel.getValueAt(
-                    i, OperationParameterTableModel.IDX_OP_PARAM_DESCRIPTION);
+        for (int i = 0 ; i < popupTableModel.size(); i++) {
+            //get the current parameter in the popup
+            MBeanOperationParameter popupParam = ((OperationParameterTableModel)
+                popupTableModel).getParameter(i);
+            paramName = popupParam.getParamName();
+            paramType = popupParam.getParamType();
+            paramDescr = popupParam.getParamDescription();
             
-            if (paramName != "") {
+            
+            if ((paramName != "") && (paramType != ""))
                 paramString += paramType + " " + paramName;
-                if (i < nbParam -1)
-                    paramString += ", ";
-                stringToAdd = new String[3];
-                stringToAdd[0] = paramName;
-                stringToAdd[1] = paramType;
-                stringToAdd[2] = paramDescription;
-                result.addLine(stringToAdd);
-            }
+            
+            if (i < popupTableModel.size() -1)
+                paramString += ",";
+            
+            // fills the arraylist with the exceptions to store
+            mbop.add(popupParam);
         }
+        
+        //copy back the parameters from the popup to the panel model
+        methodModel.getOperation(editedRow).setOperationParameterList(mbop);
+        
         return paramString;
     }
 }

@@ -364,9 +364,14 @@ public class ConfigGenerator
         return formMgtProp.format(optionsArgs);
     }
     
-    //======================================================
-    // Entry point to generate Management config files 
-    //======================================================
+    /**
+     * Generate the management configuration files.
+     * It is the entry point to generate Management config files.
+     * @param wiz <CODE>WizardDescriptor</CODE> a wizard
+     * @throws java.io.IOException <CODE>IOException</CODE>
+     * @throws java.lang.Exception <CODE>Exception</CODE>
+     * @return <CODE>FileObject</CODE> the generated management properties file
+     */
     public FileObject generateConfig(TemplateWizard wiz)
            throws java.io.IOException, Exception {
         findInfo(wiz);
@@ -380,9 +385,15 @@ public class ConfigGenerator
                               passwordContent);
     }
     
-    //==============================================
-    // create the Management Configuration files
-    //==============================================
+    /**
+     * Create the Management Configuration files.
+     * @return <CODE>FileObject</CODE> the generated management properties file
+     * @param mgtContent <CODE>String</CODE> expected management properties file content
+     * @param accessContent <CODE>String</CODE> expected access file content
+     * @param passwordContent <CODE>String</CODE> expected password file content
+     * @param wiz <CODE>WizardDescriptor</CODE> a wizard
+     * @throws java.io.IOException <CODE>IOException</CODE>
+     */
     protected FileObject createGeneratedFiles(WizardDescriptor wiz,
                                              String mgtContent,
                                              String accessContent,

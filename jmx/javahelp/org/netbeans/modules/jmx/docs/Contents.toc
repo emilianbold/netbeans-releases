@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
      <tocitem target="jmx_instrumenting_app">Instrumenting your Resources with MBean</tocitem>
      <tocitem target="jmx_agent_app">Writing a JMX Agent</tocitem>
     </tocitem>
-    <tocitem>Running, Debugging and Visualizing JMX Management
+    <tocitem>Running, Debugging and Visualizing JMX Management [Sun JDK 1.5 only]
      <tocitem target="jconsole_standalone">JConsole Management Console</tocitem>
      <tocitem target="jmx_project_conf">Configuring your Java Application Project</tocitem>
      <tocitem target="jmx_running_app">Running and Debugging with JConsole</tocitem>

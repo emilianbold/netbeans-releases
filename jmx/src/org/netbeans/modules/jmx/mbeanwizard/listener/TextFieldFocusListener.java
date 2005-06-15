@@ -17,10 +17,15 @@ import java.awt.event.*;
 import javax.swing.*;
 
 /**
+ * Class handling the focus listeners on text fields
  *
- * @author an156382
  */
-public class TextFieldFocusListener implements FocusListener {     
+public class TextFieldFocusListener implements FocusListener {
+    
+        /**
+         * Method handling what to do when the text field gets the focus
+         * @param e FocusEvent
+         */
         public void focusGained(FocusEvent e) {
             
             Object source = e.getSource();
@@ -34,6 +39,10 @@ public class TextFieldFocusListener implements FocusListener {
             }
         }
         
+        /**
+         * Method handling what to do when the text field looses the focus
+         * @param e FocusEvent
+         */
         public void focusLost(FocusEvent e) {
             
         }

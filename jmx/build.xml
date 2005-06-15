@@ -15,9 +15,9 @@
 <!-- You may freely edit this file. -->
 <project basedir="." default="netbeans" name="jmx">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <target name="jar" depends="init,compile,jar-prep,zip-examples,jar-no-module-deps,jar-with-module-deps"/>
+    <target name="jar" depends="zip-examples,projectized-common.jar"/>
     
-    <target name="zip-examples">
+    <target name="zip-examples" depends="init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/jmx/examples/resources"/>
         <mkdir dir="${examples}"/>
         <zip basedir="jmx_anagrams" destfile="${examples}/jmx_anagrams.zip">
@@ -25,5 +25,9 @@
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>
         </zip>
+    </target>
+    <target name="reloadInCurrentIDE" depends="init,jar">
+        <fail unless="netbeans.home">Reloading modules works only inside the NetBeans IDE</fail>
+        <nbinstaller module="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" action="reinstall"/>
     </target>
 </project>

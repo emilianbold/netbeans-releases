@@ -330,6 +330,8 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
     }
 
     /**
+     * Returns a singleton of this class.
+     * @return <CODE>JMXConfigWizardIterator</CODE>
      */
     public static JMXConfigWizardIterator singleton() {
         instance = new JMXConfigWizardIterator();

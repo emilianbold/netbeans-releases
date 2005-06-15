@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.jmx.mbeanwizard.table;
-
-import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.MBeanAttrAndMethodPanel.AttributesWizardPanel;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
@@ -25,19 +23,30 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 
 /**
- *
- * @author an156382
+ * Class responsible for the attribute table in the Method and Attribute Panel
+ * 
  */
 public class AttributeTable extends JTable {
     
+    /*******************************************************************/
+    // here we use raw model calls (i.e getValueAt and setValueAt) to
+    // access the model data because the inheritance pattern
+    // makes it hard to type these calls and to use the object model
+    /********************************************************************/
+    
     private AttributesWizardPanel wiz;
     
-    /** Creates a new instance of AttributeTable */
+    /**
+     * Constructor
+     * @param model the table model of this table
+     * @param wiz the wizard panel
+     */
     public AttributeTable(AbstractTableModel model, AttributesWizardPanel wiz) {
         super(model);
         this.wiz = wiz;
@@ -45,12 +54,18 @@ public class AttributeTable extends JTable {
         this.setCellSelectionEnabled(true);
         this.setRowHeight(25);
         this.setPreferredScrollableViewportSize(new Dimension(500, 70));
+        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.setRowSelectionAllowed(true);
         this.setColumnSelectionAllowed(false);
     }
     
-    public TableCellEditor getCellEditor(int row, int column) {
-        
+    /**
+     * Returns the cell editor for the table according to the column
+     * @param row the row to be considered
+     * @param column the column to be considered
+     * @return TableCellEditor the cell editor
+     */
+     public TableCellEditor getCellEditor(int row, int column) {   
         if(row >= getRowCount())
             return null;
         
@@ -109,13 +124,14 @@ public class AttributeTable extends JTable {
             return new JTextFieldCellEditor(nameField, this);
         } else {
             if (column == 1) { //attribute type
-                JComboBox typeBox = instanciateTypeJComboBox();
+                JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
                 Object o = getModel().getValueAt(row,column);
                 typeBox.setSelectedItem(o);
                 return new JComboBoxCellEditor(typeBox, this);
             } else {
                 if (column == 2) { //access mode
-                    JComboBox accessBox = instanciateAccessJComboBox();
+                    JComboBox accessBox = 
+                            WizardHelpers.instanciateAccessJComboBox();
                     accessBox.setName("attrAccessBox");
                     Object o = getModel().getValueAt(row,column);
                     accessBox.setSelectedItem(o);
@@ -133,17 +149,24 @@ public class AttributeTable extends JTable {
         }
     }
     
+     /**
+     * Returns the cell renderer for the table according to the column
+     * @param row the row to be considered
+     * @param column the column to be considered
+     * @return TableCellRenderer the cell renderer
+     */
     public TableCellRenderer getCellRenderer(int row, int column) {
         
         if(row >= getRowCount())
             return null;
         
             if (column == 1) {
-                JComboBox typeBox = instanciateTypeJComboBox();
+                JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
                 return new ComboBoxRenderer(typeBox);
             } else {
                 if (column == 2) {
-                    JComboBox accessBox = instanciateAccessJComboBox();
+                    JComboBox accessBox = 
+                            WizardHelpers.instanciateAccessJComboBox();
                     return new ComboBoxRenderer(accessBox);
                 }
             }
@@ -151,42 +174,12 @@ public class AttributeTable extends JTable {
     }
     
     
-    /*************************************************/
-    /* Helper methods ********************************/
-    /*************************************************/
+    /**
+     * Returns the wizard panel
+     * @return AttributesWizardPanel the wizard panel
+     */
     public AttributesWizardPanel getWiz() {
     
         return this.wiz;
     }   
-    
-    private JComboBox instanciateTypeJComboBox() {
-        
-        JComboBox typeCombo = new JComboBox();
-        
-        // the attribute's type combo box     
-        typeCombo.addItem(WizardConstants.BOOLEAN_NAME);
-        typeCombo.addItem(WizardConstants.BYTE_NAME);
-        typeCombo.addItem(WizardConstants.CHAR_NAME);
-        typeCombo.addItem(WizardConstants.DATE_OBJ_NAME);
-        typeCombo.addItem(WizardConstants.INT_NAME);
-        typeCombo.addItem(WizardConstants.LONG_NAME);
-        typeCombo.addItem(WizardConstants.OBJECTNAME_NAME);        
-        typeCombo.addItem(WizardConstants.STRING_OBJ_NAME);
-        typeCombo.setSelectedItem(WizardConstants.STRING_OBJ_NAME);
-        typeCombo.setEditable(true);
-        
-        return typeCombo;
-    }
-    
-    private JComboBox instanciateAccessJComboBox() {
-        
-        JComboBox accessCombo = new JComboBox();
-        
-        // the attribute's acces mode combo box
-        accessCombo.addItem(WizardConstants.ATTR_ACCESS_READ_WRITE);
-        accessCombo.addItem(WizardConstants.ATTR_ACCESS_READ_ONLY);
-        accessCombo.setSelectedItem(WizardConstants.ATTR_ACCESS_READ_WRITE);
-        
-        return accessCombo;
-    }
 }

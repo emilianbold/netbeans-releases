@@ -28,7 +28,7 @@ import org.openide.awt.Mnemonics;
 
 /**
  *
- * @author an156382
+ * Abstract class which implements the generic behaviour of any popup window
  */
 public abstract class AbstractPopup extends JDialog implements ActionListener {
     
@@ -43,10 +43,19 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
     private JButton cancelJButton;
     private int winWidth;
     
+    /**
+     * Constructor
+     * @param d the parent dialog window; gives a relationship parent child
+     */
     public AbstractPopup(Dialog d) {
         super(d);
     }
     
+    /**
+     * Sets all the dimensions for the popup (since all popups have the same 
+     * size)
+     * @param str the title of the popup to set
+     */
     protected void setDimensions(String str) {
         setTitle(str);
         setModal(true);
@@ -56,15 +65,10 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
         setVisible(true);
     }
     
-    protected JTextField instanciateJTextField() {
-        
-        JTextField text = new JTextField();
-        text.setDragEnabled(true);
-        text.setEditable(true);
-        
-        return text;
-    }
-    
+    /**
+     * Action to make if an action event is caught
+     * @param e an Action event
+     */
     public void actionPerformed(ActionEvent e) {
         setVisible(false);
     }
@@ -101,17 +105,22 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 1, 5, 0));
 
-        cancelJButton = new JButton(NbBundle.getMessage(AbstractPopup.class, "LBL_Generic_Cancel"));
-        cancelJButton.setMargin(new Insets(cancelJButton.getMargin().top, 12, cancelJButton.getMargin().bottom, 12));
+        cancelJButton = new JButton(NbBundle.getMessage(AbstractPopup.class,
+                "LBL_Generic_Cancel"));
+        cancelJButton.setMargin(new Insets(cancelJButton.getMargin().top, 12,
+                cancelJButton.getMargin().bottom, 12));
         winWidth = 
                 winWidth + (int) cancelJButton.getPreferredSize().getWidth();
         
-        
+        cancelJButton.setName("cancelJButton");
         cancelJButton.addActionListener(this);
         for (int i = 0; i < popupButtons.length; i++) {
-            ((JButton)popupButtons[i]).setMargin(new Insets(((JButton)popupButtons[i]).getMargin().top, 12, ((JButton)popupButtons[i]).getMargin().bottom, 12));
+            ((JButton)popupButtons[i]).setMargin(
+                    new Insets(((JButton)popupButtons[i]).getMargin().top, 12, 
+                    ((JButton)popupButtons[i]).getMargin().bottom, 12));
             winWidth = 
-                winWidth + (int) ((JButton)popupButtons[i]).getPreferredSize().getWidth();
+                winWidth + (int) ((JButton)popupButtons[i]).getPreferredSize().
+                    getWidth();
             if(popupButtons[i] != closeJButton) {
                 buttonPanel.add((JButton)popupButtons[i]);
             }
@@ -159,6 +168,11 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
     protected abstract void initJTable();
     protected abstract void initComponents();
     protected abstract void readSettings();
+    
+    /**
+     * Method which stores the information contained in the popup
+     * @return String containing the infomation formatted
+     */
     public abstract String storeSettings();
     
 }

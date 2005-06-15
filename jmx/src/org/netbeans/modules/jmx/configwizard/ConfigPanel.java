@@ -42,9 +42,10 @@ public class ConfigPanel extends javax.swing.JPanel
     private ConfigWizardPanel wiz;
     private ResourceBundle bundle;
     
-    //=====================================================================
-    // Create the wizard panel component and set up some basic properties.
-    //=====================================================================
+    /**
+     * Create the wizard panel component and set up some basic properties.
+     * @param wiz <CODE>WizardDescriptor</CODE> the wizard
+     */
     public ConfigPanel (ConfigWizardPanel wiz) 
     {
         this.wiz = wiz;
@@ -156,6 +157,10 @@ public class ConfigPanel extends javax.swing.JPanel
         
         public Component getComponent () { return getPanel(); }
         
+        /**
+         * Returns the project location path.
+         * @return <CODE>String</CODE> project location path
+         */
         public String getProjectLocation() { return projectLocation; }
         
         private ConfigPanel getPanel() 
@@ -191,6 +196,9 @@ public class ConfigPanel extends javax.swing.JPanel
             return true;
         }
         
+        /**
+         * Fire a change event (designed to be used from out of this class).
+         */
         public void fireEvent() {
             fireChangeEvent();
         }
@@ -235,6 +243,13 @@ public class ConfigPanel extends javax.swing.JPanel
             }
         }
         
+        /**
+         * Add a changeListener on the targetWiz which each time that a change 
+         * event happens, store and reload the optionsWiz.
+         * @param targetWiz <CODE>Panel</CODE> 
+         * @param optionsWiz <CODE>Panel</CODE> 
+         * @param wizard <CODE>WizardDescriptor</CODE> a wizard
+         */
         public void setListenerEnabled(
                 final WizardDescriptor.Panel targetWiz,
                 final WizardDescriptor.Panel optionsWiz,

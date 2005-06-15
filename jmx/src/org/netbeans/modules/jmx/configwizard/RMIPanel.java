@@ -55,8 +55,8 @@ import javax.swing.JTextField;
  * Class handling the graphical part of the standard Options wizard panel
  *
  */
-public class RMIPanel extends javax.swing.JPanel implements DocumentListener
-{
+public class RMIPanel extends javax.swing.JPanel {
+    
     private RMIWizardPanel wiz;
     private ResourceBundle bundle;
     private AuthTable authTable;
@@ -66,8 +66,15 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
     private boolean sslSelected = false;
     private boolean authSelected = false;
     
+    /**
+     * Access renderer for authenticate table.
+     */
     class AccessRenderer extends  DefaultTableCellRenderer {
-        JComboBox comp;
+        private JComboBox comp;
+        /**
+         * Constructor of access renderer for authenticate table.
+         * @param comp <CODE>JComboBox</CODE>
+         */
         AccessRenderer(JComboBox comp) {
             this.comp = comp;
         }
@@ -90,8 +97,16 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
 	    return comp;
 	}
     }
+    
+    /**
+     * Name renderer for authenticate table.
+     */
     class NameRenderer extends  DefaultTableCellRenderer {
-        JTextField comp;
+        private JTextField comp;
+        /**
+         * Constructor of name cell renderer in authenticate table.
+         * @param comp <CODE>JTextField</CODE>
+         */
         NameRenderer(JTextField comp) {
             this.comp = comp;
         }
@@ -113,11 +128,13 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
             return comp;
         }
     }
+    
     private class ValidatorListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
             wiz.event();
         }
     }
+    
     private class AuthTable extends JTable {
         /** Creates a new instance of AttributeTable */
         public AuthTable(AbstractTableModel model) {
@@ -267,6 +284,10 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         }
     }
     
+    /**
+     * Create the wizard panel component and set up some basic properties.
+     * @param wiz <CODE>WizardDescriptor</CODE> the wizard
+     */
     public RMIPanel(RMIWizardPanel wiz) {
         this.wiz = wiz;
         bundle = NbBundle.getBundle(ConfigPanel.class);
@@ -370,11 +391,16 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
     
     
     
+    /**
+     * Checks if all the user inputs are valid.
+     * @return <CODE>boolean</CODE> true if user inputs are valid
+     */
     public boolean isValid() {
         if(authSelected)
             return tableModel.isValid();
         return true;
     }
+    
     /*
      * update all the selected flags
      */
@@ -730,7 +756,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
     
     /**
      *
-     * Class handling the standard Agent wizard panel
+     * Class handling the standard RMI wizard panel
      *
      */
     public static class RMIWizardPanel extends GenericWizardPanel 
@@ -739,6 +765,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
         private RMIPanel panel = null;
         private String projectLocation   = null;
         private WizardDescriptor wiz;
+        
         public boolean isValid () {
             boolean val = true;
             if(getPanel().authSelected)
@@ -752,7 +779,7 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
             return val;
         }
         
-          /**
+        /**
          * Displays the given message in the wizard's message area.
          *
          * @param  message  message to be displayed, or <code>null</code>
@@ -764,13 +791,15 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
                         message);    //NOI18N
             }
         }
+        
+        /**
+         * Fire a change event (designed to be call from out of this class).
+         */
         public void event() {
             fireChangeEvent();
         }
         
         public Component getComponent () { return getPanel(); }
-        
-        public String getProjectLocation() { return projectLocation; }
         
         private RMIPanel getPanel()  
         {
@@ -824,22 +853,5 @@ public class RMIPanel extends javax.swing.JPanel implements DocumentListener
             wiz.putProperty(WizardConstants.RMI_SSL_CLIENT_AUTHENTICATE, 
                     new Boolean(sslClientAuth));
         }
-    } // END of 
-    
-    // Implementation of DocumentListener --------------------------------------
-
-    public void changedUpdate( DocumentEvent e ) 
-    {
-        
-    }
-    
-    public void insertUpdate( DocumentEvent e ) 
-    {
-        
-    }
-    
-    public void removeUpdate( DocumentEvent e ) 
-    {
-        
     }
 }

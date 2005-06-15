@@ -73,26 +73,28 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
     private transient TemplateWizard.Panel agentPanel;
     private transient WizardDescriptor.Panel currentPanel;
 
-    //****************************************************************
-    // Called with the menu new->file->JMX Agent
-    //****************************************************************
+    /**
+     * Returns an agent wizard. Called with the menu new->file->JMX Agent
+     * @return <CODE>JMXAgentIterator</CODE>
+     */
     public static JMXAgentIterator createAgentIterator()
     {
         return new JMXAgentIterator();
     }
 
-    //****************************************************************
-    // default constructor : 
-    //****************************************************************
+    /**
+     * Contruct an agent wizard.
+     */
     public JMXAgentIterator()
     {
         bundle = NbBundle.getBundle(JMXAgentIterator.class);
     }
     
-    //*********************************************************************
-    // Called to really start the wizard in 
-    // case of a direct call from the menu 
-    //*********************************************************************
+    /**
+     * Called to really start the wizard in 
+     * case of a direct call from the menu
+     * @param wiz <CODE>WizardDescriptor</CODE> a wizard
+     */
     public void initialize (TemplateWizard wiz)
     {
         this.wizard = wiz;
@@ -131,29 +133,24 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
         return steps;
     }
 
-    //*********************************************************************
-    // WizardIntegration method :
-    // 
-    // Called when integrating this wizard within a higher level wizard.
-    //
-    //*********************************************************************
+    /**
+     * WizardIntegration method :
+     * Called when integrating this wizard within a higher level wizard.
+     * @param wiz <CODE>WizardDescriptor</CODE> a wizard
+     * @return <CODE>String[]</CODE> step names
+     */
     public String[] initializeSteps(WizardDescriptor wiz)
     {
         this.wizard = (TemplateWizard) wiz;
         return initSteps(true);
     }
 
-    //*********************************************************************
-    // WizardIntegration method :
-    // 
-    // Called when integrating this wizard within a higher level wizard.
-    //
-    // Parameters :
-    // 
-    // Steps       : Panels list to use
-    // panelOffset : number of the first panel of this wizard
-    //
-    //*********************************************************************
+    /**
+     * WizardIntegration method :
+     * Called when integrating this wizard within a higher level wizard.
+     * @param steps Panels list to use
+     * @param panelOffset number of the first panel of this wizard
+     */
     public void initializeComponents(String[] steps, int panelOffset)
     {
         JComponent jc = null;
@@ -181,16 +178,11 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
         jc.putClientProperty("WizardPanel_contentSelectedIndex", panelOffset);
     }
     
-    //*********************************************************************
-    //*********************************************************************
     public void uninitialize(TemplateWizard wiz)
     {
         this.wizard = null;
     }
 
-    //*********************************************************************
-    // real code / file generation
-    //*********************************************************************
     public java.util.Set/*<FileObject>*/ instantiate (TemplateWizard wiz)
           throws java.io.IOException
     {
@@ -212,7 +204,7 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
                         ((mainProjectClassSelected != null) && (mainProjectClassSelected)) ) {
                     Project project = Templates.getProject(wizard);
                     Resource agentRc = JavaModel.getResource(agentFile);
-                    JavaClass agentClass = WizardHelpers.getAgentJavaClass(agentRc,
+                    JavaClass agentClass = WizardHelpers.getJavaClass(agentRc,
                             agentFile.getName());
                     J2SEProjectType.overwriteProperty(project, "main.class", agentClass.getName());
                 }
@@ -229,9 +221,6 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
         
     }
 
-    //*********************************************************************
-    //
-    //*********************************************************************
     public String name ()
     {
         Component c = currentPanel.getComponent();
@@ -242,42 +231,27 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
         return null;
     }
 
-    //*********************************************************************
-    //
-    //*********************************************************************
     public org.openide.WizardDescriptor.Panel current()
     {
        return currentPanel;
     }
 
-    //*********************************************************************
-    //
-    //*********************************************************************
     public boolean hasNext()
     {
         return false; 
     }
 
-    //*********************************************************************
-    //
-    //*********************************************************************
     public boolean hasPrevious()
     {
         return false;
     }
 
-    //*********************************************************************
-    //
-    //*********************************************************************
     public void nextPanel ()
     {   if (!hasNext()) {
             throw new NoSuchElementException();
         } 
     }
 
-    //*********************************************************************
-    //
-    //*********************************************************************
     public void previousPanel ()
     {
         if (!hasPrevious()) {
@@ -285,9 +259,6 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
         } 
     }
 
-    //*********************************************************************
-    //
-    //*********************************************************************
     private transient Set listeners = new HashSet (1); // Set<ChangeListener>
 
     public final void addChangeListener (ChangeListener l)
@@ -304,6 +275,9 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
         }
     }
 
+    /**
+     * Fire a ChangeEvent.
+     */
     protected final void fireChangeEvent ()
     {
         Iterator it;

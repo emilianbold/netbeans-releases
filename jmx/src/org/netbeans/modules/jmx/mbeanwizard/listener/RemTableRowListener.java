@@ -20,8 +20,9 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
 /**
- *
- * @author an156382
+ * Generic class handling the listeners which removes rows to the different 
+ * JTables contained in the wizard
+ * 
  */
 public class RemTableRowListener implements ActionListener{ 
     
@@ -29,21 +30,31 @@ public class RemTableRowListener implements ActionListener{
     private AbstractJMXTableModel m = null;
     private JButton b = null;
     
-    /** Creates a new instance of AddAttributeListener */
-    public RemTableRowListener(JTable table, AbstractJMXTableModel model, JButton remButton) {
+    /**
+     * Constructor
+     * @param table the Jtable in which a row is to remove
+     * @param model the corresponding table model
+     * @param remButton a reference to the remove line button
+     */
+    public RemTableRowListener(JTable table, AbstractJMXTableModel model, 
+            JButton remButton) {
     
         this.t = table;
         m = model;
         b = remButton;
     }
     
+    /**
+     * Method handling what to do if the listener has been invoked
+     * Here: removes a row
+     * @param e an ActionEvent
+     */
     public void actionPerformed(ActionEvent e) {
         final int selectedRow = t.getSelectedRow();
         
         //No row selected
         if (selectedRow == -1) return;
         
-        WizardHelpers.printModel(m, 0);
         try {            
             m.remRow(selectedRow, t);
             m.selectNextRow(selectedRow, t);
@@ -54,7 +65,5 @@ public class RemTableRowListener implements ActionListener{
         // if the model has no rows, disable the remove button
         if (m.size() == 0)
             b.setEnabled(false);
-
-        WizardHelpers.printModel(m, 0);
     }
 }

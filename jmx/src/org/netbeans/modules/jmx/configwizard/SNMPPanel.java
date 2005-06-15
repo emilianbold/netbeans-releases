@@ -37,17 +37,19 @@ import java.awt.event.KeyListener;
  * Class handling the graphical part of the standard Options wizard panel
  *
  */
-public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
-{
+public class SNMPPanel extends javax.swing.JPanel {
+    
     private SNMPWizardPanel wiz;
     private ResourceBundle bundle;
     
     private boolean aclSelected = false;
     private boolean sNMPSelected = false;
     private JFileChooser chooser;
-    //=====================================================================
-    // Create the wizard panel component and set up some basic properties.
-    //=====================================================================
+    
+    /**
+     * Create the wizard panel component and set up some basic properties.
+     * @param wiz <CODE>WizardDescriptor</CODE> a wizard
+     */
     public SNMPPanel (SNMPWizardPanel wiz) 
     {
         this.wiz = wiz;
@@ -130,7 +132,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         
     }
     
-    /*
+    /**
      * update all the selected flags 
      */
     private void updateSelected() {
@@ -138,7 +140,7 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         sNMPSelected = sNMPJCheckBox.isSelected();
     }
     
-    /*
+    /**
      * calls setEnabled(enable) method of all components included in SNMPPanel
      */
     private void setSNMPPanelEnabled(boolean enable) {
@@ -407,8 +409,6 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         
         public Component getComponent () { return getPanel(); }
         
-        public String getProjectLocation() { return projectLocation; }
-        
         private SNMPPanel getPanel() 
         {
             if (panel == null) {
@@ -426,10 +426,6 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
         public void readSettings (Object settings) 
         {
             WizardDescriptor wiz = (WizardDescriptor) settings;
-
-            // store project location to detect existing mbeans 
-            String location = (String)wiz.getProperty(WizardConstants.PROP_PROJECT_LOCATION);
-            projectLocation = location + File.separatorChar + WizardConstants.SRC_DIR; 
             
             getPanel().sNMPPortJTextField.setText(
                     wiz.getProperty(WizardConstants.SNMP_PORT).toString());
@@ -460,23 +456,6 @@ public class SNMPPanel extends javax.swing.JPanel implements DocumentListener
             wiz.putProperty(WizardConstants.SNMP_ACL_FILE, 
                     getPanel().aclFileJTextField.getText());
         }
-    } // END of 
-    
-    // Implementation of DocumentListener --------------------------------------
-
-    public void changedUpdate( DocumentEvent e ) 
-    {
-        
-    }
-    
-    public void insertUpdate( DocumentEvent e ) 
-    {
-        
-    }
-    
-    public void removeUpdate( DocumentEvent e ) 
-    {
-        
     }
 
 }

@@ -27,7 +27,10 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataFolder;
 import org.openide.cookies.SaveCookie;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.*;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Resource;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.javacore.api.JavaModel;
@@ -44,9 +47,13 @@ public class AgentGenerator
 {
 
        
-    //======================================================
-    // Entry point to generate agent code
-    //======================================================
+    /**
+     * Entry point to generate agent code.
+     * @param wiz <CODE>WizardDescriptor</CODE> a wizard
+     * @throws java.io.IOException <CODE>IOException</CODE>
+     * @throws java.lang.Exception <CODE>Exception</CODE>
+     * @return <CODE>CreationResults</CODE> results of agent creation
+     */
     public CreationResults generateAgent(WizardDescriptor wiz)
            throws java.io.IOException, Exception
     {
@@ -69,7 +76,7 @@ public class AgentGenerator
                     agentFolderDataObj, agentName );
             FileObject agentFile = agentDObj.getPrimaryFile();
             Resource agentRc = JavaModel.getResource(agentFile);
-            JavaClass agentClass = WizardHelpers.getAgentJavaClass(agentRc,
+            JavaClass agentClass = WizardHelpers.getJavaClass(agentRc,
                                                                    agentName);
             Boolean mainMethodSelected = (Boolean) wiz.getProperty(
                 WizardConstants.PROP_AGENT_MAIN_METHOD_SELECTED);
@@ -89,7 +96,7 @@ public class AgentGenerator
         return result;
     }
 
-    /*
+    /**
      * remove the init method body of the JavaClass
      */
     private void removeSampleCode(JavaClass clazz) {
@@ -106,7 +113,7 @@ public class AgentGenerator
         }
     }
     
-    /*
+    /**
      * remove the main method of the JavaClass
      */
     private void removeMainMethod(JavaClass clazz) {
@@ -126,84 +133,100 @@ public class AgentGenerator
         }
 
      /**
-         * Utility class representing the results of a file creation
-         * process. It gatheres all files (as FileObject) created and all
-         * classes (as JavaClasses) .
+      * Utility class representing the results of a file creation
+      * process. It gatheres all files (as FileObject) created and all
+      * classes (as JavaClasses) .
+      */
+    public static class CreationResults {
+        /**
+         * empty results
          */
-        public static class CreationResults {
-            public static final CreationResults EMPTY = new CreationResults();
-            
-            Set created; // Set< createdTest : FileObject >
-            Set skipped; // Set< sourceClass : JavaClass >
-            boolean abborted = false;
-            
-            public CreationResults() { this(1);}
-            
-            public CreationResults(int expectedSize) {
-                created = new HashSet(expectedSize * 2 , 0.5f);
-                skipped = new HashSet(expectedSize * 2 , 0.5f);
-            }
-            
-            public void setAbborted() {
-                abborted = true;
-            }
-            
-            /**
-             * Returns true if the process of creation was abborted. The
-             * result contains the results gathered so far.
-             */
-            public boolean isAbborted() {
-                return abborted;
-            }
-            
-            
-            /**
-             * Adds a new entry to the set of created tests.
-             * @return true if it was added, false if it was present before
-             */
-            public boolean addCreated(FileObject test) {
-                return created.add(test);
-            }
-            
-            /**
-             * Adds a new <code>JavaClass</code> to the collection of
-             * skipped classes.
-             * @return true if it was added, false if it was present before
-             */
-            public boolean addSkipped(JavaClass c) {
-                return skipped.add(c);
-            }
-            
-            /**
-             * Returns a set of classes that were skipped in the process.
-             * @return Set<JavaClass>
-             */
-            public Set getSkipped() {
-                return skipped;
-            }
-            
-            /**
-             * Returns a set of test data objects created.
-             * @return Set<FileObject>
-             */
-            public Set getCreated() {
-                return created;
-            }
-            
-            /**
-             * Combines two results into one. If any of the results is an
-             * abborted result, the combination is also abborted. The
-             * collections of created and skipped classes are unified.
-             * @param rhs the other CreationResult to combine into this
-             */
-            public void combine(CreationResults rhs) {
-                if (rhs.abborted) {
-                    this.abborted = true;
-                }
-                
-                this.created.addAll(rhs.created);
-                this.skipped.addAll(rhs.skipped);
-            }
-            
+        public static final CreationResults EMPTY = new CreationResults();
+        
+        private Set created; // Set< createdTest : FileObject >
+        private Set skipped; // Set< sourceClass : JavaClass >
+        private boolean abborted = false;
+        
+        /**
+         * Construct a result group.
+         */
+        public CreationResults() { this(1);}
+        
+        /**
+         * Construct a result group.
+         * @param expectedSize <CODE>int</CODE> initial size
+         */
+        public CreationResults(int expectedSize) {
+            created = new HashSet(expectedSize * 2 , 0.5f);
+            skipped = new HashSet(expectedSize * 2 , 0.5f);
         }
+        
+        /**
+         * Aborts the process of creation.
+         */
+        public void setAbborted() {
+            abborted = true;
+        }
+        
+        /**
+         * Returns true if the process of creation was abborted. The
+         * result contains the results gathered so far.
+         * @return <CODE>boolean</CODE> true if creation process was abborted
+         */
+        public boolean isAbborted() {
+            return abborted;
+        }
+        
+        
+        /**
+         * Adds a new entry to the set of created tests.
+         * @return true if it was added, false if it was present before
+         * @param test <CODE>FileObject</CODE> file to add
+         */
+        public boolean addCreated(FileObject test) {
+            return created.add(test);
+        }
+        
+        /**
+         * Adds a new <code>JavaClass</code> to the collection of
+         * skipped classes.
+         * @return true if it was added, false if it was present before
+         * @param c <CODE>JavaClass</CODE> class to add
+         */
+        public boolean addSkipped(JavaClass c) {
+            return skipped.add(c);
+        }
+        
+        /**
+         * Returns a set of classes that were skipped in the process.
+         * @return Set<JavaClass>
+         */
+        public Set getSkipped() {
+            return skipped;
+        }
+        
+        /**
+         * Returns a set of test data objects created.
+         * @return Set<FileObject>
+         */
+        public Set getCreated() {
+            return created;
+        }
+        
+        /**
+         * Combines two results into one. If any of the results is an
+         * abborted result, the combination is also abborted. The
+         * collections of created and skipped classes are unified.
+         * @param rhs the other CreationResult to combine into this
+         */
+        public void combine(CreationResults rhs) {
+            if (rhs.abborted) {
+                this.abborted = true;
+            }
+            
+            this.created.addAll(rhs.created);
+            this.skipped.addAll(rhs.skipped);
+        }
+        
+    }
 }

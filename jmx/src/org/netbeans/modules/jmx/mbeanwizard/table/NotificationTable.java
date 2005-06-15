@@ -20,46 +20,68 @@ import javax.swing.JTextField;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanNotificationTableModel;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
-import org.netbeans.modules.jmx.mbeanwizard.listener.DisplayPopupListener;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.editor.NotificationPanelEditor;
+import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanNotificationType;
+import org.netbeans.modules.jmx.mbeanwizard.popup.NotificationTypePopup;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.NotificationPanelRenderer;
 
 
 /**
+ * Class responsible for the notification table in the Notification Panel
  *
- * @author an156382
  */
 public class NotificationTable extends JTable {
     
+    /*******************************************************************/
+    // here we use raw model calls (i.e getValueAt and setValueAt) to
+    // access the model data because the inheritance pattern
+    // makes it hard to type these calls and to use the object model
+    /********************************************************************/
+    
     private JPanel ancestorPanel = null;
-     
-    /** Creates a new instance of AttributeTable */
+    
+    /**
+     * Constructor
+     * @param ancestorPanel the parent panel
+     * @param model the table model of this table
+     */
     public NotificationTable(JPanel ancestorPanel, AbstractTableModel model) {
         super(model);
         this.setRowHeight(25);
         this.setPreferredScrollableViewportSize(new Dimension(500, 70));
         this.setRowSelectionAllowed(true);
         this.setColumnSelectionAllowed(false);
-        
+        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.ancestorPanel = ancestorPanel;
     }
     
+    /**
+     * Returns the cell editor for the table according to the column
+     * @param row the row to be considered
+     * @param column the column to be considered
+     * @return TableCellEditor the cell editor
+     */
     public TableCellEditor getCellEditor(final int row, int column) {
         
         if(row >= getRowCount())
             return null;
         
         final JTable table = this;
-        final MBeanNotificationTableModel model = (MBeanNotificationTableModel)this.getModel();
+        final MBeanNotificationTableModel model = 
+                (MBeanNotificationTableModel)this.getModel();
         
         if (column == 0) {
             JComboBox nameField = new JComboBox();
@@ -74,15 +96,14 @@ public class NotificationTable extends JTable {
             nameField.addItemListener(new ItemListener() {
                 
                 public void itemStateChanged(ItemEvent evt) {
-                    
-                    if (evt.getItem().toString().equals(WizardConstants.ATTRIBUTECHANGE_NOTIFICATION)) {
-                        model.setValueAt(WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE,
-                                    row, model.IDX_NOTIF_TYPE);
-                    } else {
-                        model.setValueAt(WizardConstants.NOTIF_TYPE_DEFVALUE,
-                                        row, model.IDX_NOTIF_TYPE);
+                    ArrayList<MBeanNotificationType> array  = 
+                            new ArrayList<MBeanNotificationType>();
+                    if (evt.getItem().toString().equals(
+                            WizardConstants.ATTRIBUTECHANGE_NOTIFICATION)) {
+                        array.add(new MBeanNotificationType(
+                                WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE));
                     }
-                    
+                    model.setValueAt(array, row, model.IDX_NOTIF_TYPE);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             model.fireTableDataChanged();
@@ -90,7 +111,7 @@ public class NotificationTable extends JTable {
                     });
                 }
             });
-          
+            
             return new JComboBoxCellEditor(nameField, this);
         } else {
             if (column == 1) {
@@ -100,17 +121,34 @@ public class NotificationTable extends JTable {
                 return new JTextFieldCellEditor(descrField, this);
             } else {
                 if (column == 2) {
-                    JTextField typeField = new JTextField();
+                    final JTextField typeField = new JTextField();
                     typeField.setEditable(false);
-                    JButton typeButton = new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
+                    typeField.setName("typeTextField");
+                    JButton typeButton = new JButton(
+                            WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
                     typeButton.setName("notifTypePopupJButton");
                     typeButton.setMargin(new java.awt.Insets(2,2,2,2));
-                    typeButton.addActionListener(
-                            new DisplayPopupListener(ancestorPanel, this, model,
-                                                     typeField));
+                    typeButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent evt) {
+                            NotificationTypePopup notifPopup = 
+                                    new NotificationTypePopup(
+                                    ancestorPanel, model, typeField, row);
+                        }
+                    });
                     
-                    String o = ((String)getModel().getValueAt(row,column));
-                    if (o.equals(WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE)) {
+                    //gets all the notification types of the current 
+                    //notification
+                    ArrayList<MBeanNotificationType> notifType = 
+                            (ArrayList<MBeanNotificationType>)
+                                    getModel().getValueAt(row,column);
+                    
+                    // if the notif type list size contains only one element 
+                    // and this
+                    // element is Attribute Change the button and the textfield
+                    // are disabled
+                    if ((notifType.size() == 1) &&
+                            (notifType.get(0).getNotificationType().equals(
+                            WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE))) {
                         typeButton.setEnabled(false);
                         typeField.setEditable(false);
                     }
@@ -118,43 +156,63 @@ public class NotificationTable extends JTable {
                     JPanel panel = new JPanel(new BorderLayout());
                     panel.add(typeField, BorderLayout.CENTER);
                     panel.add(typeButton, BorderLayout.EAST);
-                    return new NotificationPanelEditor(panel, typeField, typeButton);
+                    return new NotificationPanelEditor(model, panel, 
+                            typeField, typeButton, row);
                 }
             }
             return super.getCellEditor(row,column);
         }
     }
     
+    /**
+     * Returns the cell renderer for the table according to the column
+     * @param row the row to be considered
+     * @param column the column to be considered
+     * @return TableCellRenderer the cell renderer
+     */
     public TableCellRenderer getCellRenderer(int row, int column) {
         
         if(row >= getRowCount())
-                return null;
+            return null;
         
-            if (column == 0) {
-                JComboBox nameField = new JComboBox();
-                nameField.setEnabled(true);
-                nameField.setEditable(true);
-                nameField.addItem(WizardConstants.NOTIFICATION);
-                nameField.addItem(WizardConstants.ATTRIBUTECHANGE_NOTIFICATION);
-                return new ComboBoxRenderer(nameField);
-            } else {
-                if (column == 2) {
-                   JTextField typeField = new JTextField();
-                   typeField.setEditable(false);
-                   JButton typeButton = new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
-                   typeButton.setMargin(new java.awt.Insets(2,2,2,2));
-                   String o = ((String)getModel().getValueAt(row,column));
-                    if (o.equals(WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE)) {
-                        typeButton.setEnabled(false);
-                        typeField.setEditable(false);
-                    }
-                   
-                   JPanel panel = new JPanel(new BorderLayout());
-                   panel.add(typeField, BorderLayout.CENTER);
-                   panel.add(typeButton, BorderLayout.EAST);
-                   return new NotificationPanelRenderer(panel, typeField);
+        if (column == 0) {
+            JComboBox nameField = new JComboBox();
+            nameField.setEnabled(true);
+            nameField.setEditable(true);
+            nameField.addItem(WizardConstants.NOTIFICATION);
+            nameField.addItem(WizardConstants.ATTRIBUTECHANGE_NOTIFICATION);
+            return new ComboBoxRenderer(nameField);
+        } else {
+            if (column == 2) {
+                JTextField typeField = new JTextField();
+                typeField.setEditable(false);
+                typeField.setName("typeTextField");
+                JButton typeButton = 
+                        new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
+                typeButton.setMargin(new java.awt.Insets(2,2,2,2));
+                
+                //gets all the notification types of the current notification
+                ArrayList<MBeanNotificationType> notifType = 
+                        (ArrayList<MBeanNotificationType>)
+                getModel().getValueAt(row,column);
+                
+                // if the notif type list size contains only one element 
+                // and this
+                // element is Attribute Change the button and the textfield 
+                // are disabled
+                if ((notifType.size() == 1) &&
+                        (notifType.get(0).getNotificationType().equals(
+                        WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE))) {
+                    typeButton.setEnabled(false);
+                    typeField.setEditable(false);
                 }
+                
+                JPanel panel = new JPanel(new BorderLayout());
+                panel.add(typeField, BorderLayout.CENTER);
+                panel.add(typeButton, BorderLayout.EAST);
+                return new NotificationPanelRenderer(panel, typeField);
             }
+        }
         return super.getCellRenderer(row,column);
     }
 }

@@ -47,8 +47,8 @@ import org.netbeans.modules.jmx.runtime.J2SEProjectType;
  * Class handling the graphical part of the standard Agent wizard panel
  *
  */
-public class AgentPanel extends javax.swing.JPanel implements DocumentListener
-{
+public class AgentPanel extends javax.swing.JPanel {
+    
     private AgentWizardPanel wiz;
     private ResourceBundle bundle;
     private static WizardDescriptor wizDesc;
@@ -57,9 +57,10 @@ public class AgentPanel extends javax.swing.JPanel implements DocumentListener
     private boolean mainSelected = false;
     private boolean codeExampleSelected = false;
     
-    //=====================================================================
-    // Create the wizard panel component and set up some basic properties.
-    //=====================================================================
+    /**
+     * Create the wizard panel component and set up some basic properties.
+     * @param wiz <CODE>WizardDescriptor</CODE> a wizard
+     */
     public AgentPanel (AgentWizardPanel wiz) 
     {
         this.wiz = wiz;
@@ -104,6 +105,7 @@ public class AgentPanel extends javax.swing.JPanel implements DocumentListener
         agentOptionsPanel.setLayout(new javax.swing.BoxLayout(agentOptionsPanel, javax.swing.BoxLayout.Y_AXIS));
 
         mainJCheckBox.setSelected(true);
+        mainJCheckBox.setName("agentMainMethodCheckBox");
         mainJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mainJCheckBoxActionPerformed(evt);
@@ -117,6 +119,7 @@ public class AgentPanel extends javax.swing.JPanel implements DocumentListener
         agentOptionsPanel.add(mainClassJCheckBox);
 
         codeExampleJCheckBox.setSelected(true);
+        codeExampleJCheckBox.setName("agentSampleCodeCheckBox");
         codeExampleJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 codeExampleJCheckBoxActionPerformed(evt);
@@ -156,6 +159,10 @@ public class AgentPanel extends javax.swing.JPanel implements DocumentListener
     {    
         private AgentPanel panel = null;
         
+        /**
+         * Returns the agent panel.
+         * @return <CODE>Component</CODE> the agent panel
+         */
         public Component getComponent () { return getPanel(); }
         
         private AgentPanel getPanel() 
@@ -166,34 +173,47 @@ public class AgentPanel extends javax.swing.JPanel implements DocumentListener
             return panel;
         }
 
+        /**
+         * Returns if the main method generation is selected.
+         * @return <CODE>boolean</CODE> true if main method generation is selected
+         */
         public boolean isMainSelected() 
         { 
             return getPanel().mainSelected;
         }
         
+        /**
+         * Returns if the set as main class is selected.
+         * @return <CODE>boolean</CODE> true if set as main class is selected
+         */
         public boolean isMainClassSelected() 
         { 
             return getPanel().mainClassJCheckBox.isSelected();
         }
         
+        /**
+         * Returns if source code hints is selected.
+         * @return <CODE>boolean</CODE> true if source code hints is selected.
+         */
         public boolean isCodeExampleSelected() 
         {
             return getPanel().codeExampleSelected;
         }
 
-        //=====================================================================
-        // Called to read information from the wizard map in order to populate
-        // the GUI correctly.
-        //=====================================================================
+        /**
+         * This method is called when a step is loaded.
+         * @param settings <CODE>Object</CODE> an object containing the wizard informations.
+         */
         public void readSettings (Object settings) 
         {
             wizDesc = (WizardDescriptor) settings;
             getPanel().mainClassJCheckBox.setEnabled(shouldEnableMainProjectClass());
         }
         
-        //=====================================================================
-        // Called to store information from the GUI into the wizard map.
-        //=====================================================================
+        /**
+         * This method is called when the user quit a step.
+         * @param settings <CODE>Object</CODE> an object containing the wizard informations.
+         */
         public void storeSettings (Object settings) 
         {            
             WizardDescriptor wiz = (WizardDescriptor) settings;
@@ -206,27 +226,14 @@ public class AgentPanel extends javax.swing.JPanel implements DocumentListener
                     new Boolean(isCodeExampleSelected()));
         }
         
+        /**
+         * Returns the corresponding help context.
+         * @return <CODE>HelpCtx</CODE> the corresponding help context.
+         */
         public HelpCtx getHelp() {
            return new HelpCtx("jmx_agent_app");  
         }
       
-    } // END of 
-    
-    // Implementation of DocumentListener --------------------------------------
-
-    public void changedUpdate( DocumentEvent e ) 
-    {
-        
-    }
-    
-    public void insertUpdate( DocumentEvent e ) 
-    {
-        
-    }
-    
-    public void removeUpdate( DocumentEvent e ) 
-    {
-        
-    }
+    } 
 
 }

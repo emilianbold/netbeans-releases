@@ -25,6 +25,7 @@
         <Component class="javax.swing.JCheckBox" name="mainJCheckBox">
           <Properties>
             <Property name="selected" type="boolean" value="true"/>
+            <Property name="name" type="java.lang.String" value="agentMainMethodCheckBox"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mainJCheckBoxActionPerformed"/>
@@ -39,6 +40,7 @@
         <Component class="javax.swing.JCheckBox" name="codeExampleJCheckBox">
           <Properties>
             <Property name="selected" type="boolean" value="true"/>
+            <Property name="name" type="java.lang.String" value="agentSampleCodeCheckBox"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="codeExampleJCheckBoxActionPerformed"/>
