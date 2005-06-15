@@ -78,6 +78,12 @@ public final class LayoutComponent implements LayoutConstants {
         }
     }
 
+    public LayoutComponent(String id, boolean isContainer, int initialWidth, int initialHeight) {
+        this(id, isContainer);
+        layoutIntervals[HORIZONTAL].setPreferredSize(initialWidth);
+        layoutIntervals[VERTICAL].setPreferredSize(initialHeight);
+    }
+
     void setLayoutInterval(LayoutInterval interval, int dimension) {
         layoutIntervals[dimension] = interval;
     }

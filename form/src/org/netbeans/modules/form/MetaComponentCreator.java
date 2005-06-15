@@ -190,12 +190,13 @@ public class MetaComponentCreator {
         if (preMetaComp != null) {
             if (preLayoutComp == null) {
                 boolean isContainer = shouldBeLayoutContainer(preMetaComp);
-                Object comp = preMetaComp.getBeanInstance();
-                if (isContainer && (comp instanceof JComponent)) {
-                    ((JComponent)comp).setPreferredSize(new Dimension(100, 100));
-                }
+                Dimension initialSize = prepareDefaultLayoutSize(
+                        (Component)preMetaComp.getBeanInstance(), isContainer);
 
-                preLayoutComp = new LayoutComponent(preMetaComp.getId(), isContainer);
+                preLayoutComp = initialSize == null || isContainer ?
+                    new LayoutComponent(preMetaComp.getId(), isContainer) :
+                    new LayoutComponent(preMetaComp.getId(), isContainer,
+                                        initialSize.width, initialSize.height);
             }
             return preLayoutComp;
         }
@@ -1364,6 +1365,28 @@ public class MetaComponentCreator {
                 catch (Exception e) {} // never mind, ignore
             }
         }
+    }
+
+    private Dimension prepareDefaultLayoutSize(Component comp, boolean isContainer) {
+        int width;
+        int height;
+        if (isContainer) {
+            width = 100;
+            height = 100;
+        }
+        else if (comp instanceof JSeparator) {
+            width = 50;
+            height = 10;
+        }
+        else {
+            return null;
+        }
+
+        Dimension size = new Dimension(width, height);
+        if (comp instanceof JComponent) {
+            ((JComponent)comp).setPreferredSize(size);
+        }
+        return size;
     }
 
     //---------

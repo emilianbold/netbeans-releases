@@ -419,6 +419,9 @@ public class LayoutDesigner implements LayoutConstants {
                         checkResizing(adding, pos1, pos2, dim);
                     }
                     adding.setCurrentSpace(space);
+                    if (newComponent && comp.isLayoutContainer()) {
+                        propEmptyContainer(comp.getLayoutRoot(dim), dim);
+                    }
 
                     addInterval(adding, pos1, pos2, dim, dim == overlapDim);
 
@@ -434,7 +437,7 @@ public class LayoutDesigner implements LayoutConstants {
 
                 layoutModel.addComponent(comp, targetContainer, -1);
 
-                if (dragger.isResizing() || newComponent) {
+                if (dragger.isResizing()) {
                     imposeCurrentSize(comp, dragger.getSizes());
                 }
 
@@ -452,7 +455,7 @@ public class LayoutDesigner implements LayoutConstants {
 
         dragger = null;
     }
-    
+
     public void removeDraggedComponents() {
         if (dragger != null) {
             LayoutComponent[] components = dragger.getMovingComponents();
@@ -706,7 +709,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
         return new int[] {min, max};
     }
-    
+
     // -----
     // LayoutModel.Listener implementation & related
 
