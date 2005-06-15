@@ -146,8 +146,10 @@ public abstract class ResultItem implements CompletionQuery.ResultItem, Completi
     public void render(Graphics g, Font defaultFont, Color defaultColor,
     Color backgroundColor, int width, int height, boolean selected) {
         Component renderComponent = getPaintComponent(selected);
+        renderComponent.setFont(defaultFont);
         renderComponent.setForeground(defaultColor);
         renderComponent.setBackground(backgroundColor);
+        renderComponent.setBounds(0, 0, width, height);
         ((ResultItemPaintComponent)renderComponent).paintComponent(g);
     }
     
