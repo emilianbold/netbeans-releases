@@ -338,11 +338,11 @@ public final class PatchedHtmlRenderer {
         boolean lastWasWhitespace = false; //flag to skip additional whitespace if one whitespace char already painted
         double lastHeight = 0; //the last line height, for calculating total required height
 
-        double dotWidth = 0;
+        double dotsWidth = 0;
 
         //Calculate the width of a . character if we may need to truncate
         if (style == STYLE_TRUNCATE) {
-            dotWidth = g.getFontMetrics().charWidth('.'); //NOI18N
+            dotsWidth = g.getFontMetrics().stringWidth("..."); //NOI18N
         }
 
         /* How this all works, for anyone maintaining this code (hopefully it will
@@ -734,114 +734,89 @@ public final class PatchedHtmlRenderer {
                 //Work out the per-character avg width of the string, for estimating
                 //when we'll be out of space and should start the ... in truncate
                 //mode
-                double chWidth;
+                double chWidth = r.getWidth() / length;;
 
-                if (truncated) {
-                    //if we're truncating, use the width of one dot from an
-                    //ellipsis to get an accurate result for truncation
-                    chWidth = dotWidth;
-                } else {
-                    //calculate an average character width
-                    chWidth = r.getWidth() / (nextTag - pos);
-
-                    //can return this sometimes, so handle it
-                    if ((chWidth == Double.POSITIVE_INFINITY) || (chWidth == Double.NEGATIVE_INFINITY)) {
-                        chWidth = fm.getMaxAdvance();
+                if (style == STYLE_TRUNCATE) {
+                    double newWidth = widthPainted + r.getWidth();
+                    if (newWidth > (w - dotsWidth)) {
+                        if (newWidth > w || _renderHTML(s, nextTag + 1, g, new Double(x + widthPainted + r.getWidth()).intValue(), y, w, h, f, defaultColor, style, false, background, disableColorChange) > w - newWidth) {
+                            double pixelsOff = widthPainted + r.getWidth() - w - dotsWidth;
+                            
+                            double estCharsOver = pixelsOff / chWidth;
+                            
+                            length = new Double((w - dotsWidth - widthPainted) / chWidth).intValue();
+                            
+                            if (length < 0) {
+                                length = 0;
+                            }
+                            
+                            r = fm.getStringBounds(chars, pos, pos + length, g);
+                            
+                            truncated = true;
+                        }
                     }
-                }
-
-                if (
-                    ((style != STYLE_CLIP) &&
-                        ((style == STYLE_TRUNCATE) && ((widthPainted + r.getWidth()) > (w - (chWidth * 3))))) ||
-                        ((style == STYLE_WORDWRAP) && ((widthPainted + r.getWidth()) > w))
-                ) {
-                    if (chWidth > 3) {
+                } else if (style == STYLE_WORDWRAP) {
+                    if ((widthPainted + r.getWidth()) > w && chWidth > 3) {
                         double pixelsOff = (widthPainted + (r.getWidth() + 5)) - w;
 
                         double estCharsOver = pixelsOff / chWidth;
 
-                        if (style == STYLE_TRUNCATE) {
-                            int charsToPaint = Math.round(Math.round(Math.ceil((w - widthPainted) / chWidth)));
-
-                            /*                            System.err.println("estCharsOver = " + estCharsOver);
-                                                        System.err.println("Chars to paint " + charsToPaint + " chwidth = " + chWidth + " widthPainted " + widthPainted);
-                                                        System.err.println("Width painted + width of tag: " + (widthPainted + r.getWidth()) + " available: " + w);
-                             */
-                            int startPeriodsPos = (pos + charsToPaint) - 3;
-
-                            if (startPeriodsPos >= chars.length) {
-                                startPeriodsPos = chars.length - 4;
+                        goToNextRow = true;
+                        
+                        int lastChar = new Double(nextTag - estCharsOver).intValue();
+                        
+                        //Unlike Swing's word wrap, which does not wrap on tag boundaries correctly, if we're out of space,
+                        //we're out of space
+                        brutalWrap = x == 0;
+                        
+                        for (int i = lastChar; i > pos; i--) {
+                            lastChar--;
+                            
+                            if (Character.isWhitespace(chars[i])) {
+                                length = (lastChar - pos) + 1;
+                                brutalWrap = false;
+                                
+                                break;
                             }
-
-                            length = (startPeriodsPos - pos);
-
-                            if (length < 0) {
-                                length = 0;
+                        }
+                        
+                        if ((lastChar <= pos) && (length > estCharsOver) && !brutalWrap) {
+                            x = origX;
+                            y += r.getHeight();
+                            heightPainted += r.getHeight();
+                            
+                            boolean boundsChanged = false;
+                            
+                            while (!done && Character.isWhitespace(chars[pos]) && (pos < nextTag)) {
+                                pos++;
+                                boundsChanged = true;
+                                done = pos == (chars.length - 1);
                             }
-
-                            r = fm.getStringBounds(chars, pos, pos + length, g);
-
-                            //                            System.err.println("Truncated set to true at " + pos + " (" + chars[pos] + ")");
-                            truncated = true;
-                        } else {
-                            //Word wrap mode
+                            
+                            if (pos == nextTag) {
+                                lastWasWhitespace = true;
+                            }
+                            
+                            if (boundsChanged) {
+                                //recalculate the width we will add
+                                r = fm.getStringBounds(chars, pos, nextTag + 1, g);
+                            }
+                            
+                            goToNextRow = false;
+                            widthPainted = 0;
+                            
+                            if (chars[pos - 1 + length] == '<') {
+                                length--;
+                            }
+                        } else if (brutalWrap) {
+                            //wrap without checking word boundaries
+                            length = (new Double((w - widthPainted) / chWidth)).intValue();
+                            
+                            if ((pos + length) > nextTag) {
+                                length = (nextTag - pos);
+                            }
+                            
                             goToNextRow = true;
-
-                            int lastChar = new Double(nextTag - estCharsOver).intValue();
-
-                            //Unlike Swing's word wrap, which does not wrap on tag boundaries correctly, if we're out of space,
-                            //we're out of space
-                            brutalWrap = x == 0;
-
-                            for (int i = lastChar; i > pos; i--) {
-                                lastChar--;
-
-                                if (Character.isWhitespace(chars[i])) {
-                                    length = (lastChar - pos) + 1;
-                                    brutalWrap = false;
-
-                                    break;
-                                }
-                            }
-
-                            if ((lastChar <= pos) && (length > estCharsOver) && !brutalWrap) {
-                                x = origX;
-                                y += r.getHeight();
-                                heightPainted += r.getHeight();
-
-                                boolean boundsChanged = false;
-
-                                while (!done && Character.isWhitespace(chars[pos]) && (pos < nextTag)) {
-                                    pos++;
-                                    boundsChanged = true;
-                                    done = pos == (chars.length - 1);
-                                }
-
-                                if (pos == nextTag) {
-                                    lastWasWhitespace = true;
-                                }
-
-                                if (boundsChanged) {
-                                    //recalculate the width we will add
-                                    r = fm.getStringBounds(chars, pos, nextTag + 1, g);
-                                }
-
-                                goToNextRow = false;
-                                widthPainted = 0;
-
-                                if (chars[pos - 1 + length] == '<') {
-                                    length--;
-                                }
-                            } else if (brutalWrap) {
-                                //wrap without checking word boundaries
-                                length = (new Double((w - widthPainted) / chWidth)).intValue();
-
-                                if ((pos + length) > nextTag) {
-                                    length = (nextTag - pos);
-                                }
-
-                                goToNextRow = true;
-                            }
                         }
                     }
                 }
