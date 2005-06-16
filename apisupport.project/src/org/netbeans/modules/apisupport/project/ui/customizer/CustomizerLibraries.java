@@ -295,6 +295,10 @@ public class CustomizerLibraries extends JPanel {
         for (int i = 0; i < selected.length; i++) {
             model.removeToken((String) selected[i]);
         }
+        if (model.getSize() > 0) {
+            reqTokenList.setSelectedIndex(0);
+        }
+        reqTokenList.requestFocus();
     }//GEN-LAST:event_removeToken
     
     private void addToken(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToken
@@ -321,12 +325,14 @@ public class CustomizerLibraries extends JPanel {
                 model.addToken((String) selected[i]);
             }
         }
+        reqTokenList.requestFocus();
     }//GEN-LAST:event_addToken
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
         NbPlatformCustomizer.showCustomizer();
         platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
         platformValue.setSelectedItem(modProps.getActivePlatform());
+        platformValue.requestFocus();
     }//GEN-LAST:event_managePlatforms
     
     private void editModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModuleDependency
@@ -344,11 +350,15 @@ public class CustomizerLibraries extends JPanel {
             getDepListModel().editDependency(origDep, editPanel.getEditedDependency());
         }
         d.dispose();
+        dependencyList.requestFocus();
     }//GEN-LAST:event_editModuleDependency
     
     private void removeModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModuleDependency
         getDepListModel().removeDependencies(Arrays.asList(dependencyList.getSelectedValues()));
-        dependencyList.clearSelection();
+        if (dependencyList.getModel().getSize() > 0) {
+            dependencyList.setSelectedIndex(0);
+        }
+        dependencyList.requestFocus();
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
@@ -378,6 +388,7 @@ public class CustomizerLibraries extends JPanel {
             dependencyList.setSelectedValue(newDep, true);
         }
         d.dispose();
+        dependencyList.requestFocus();
     }//GEN-LAST:event_addModuleDependency
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

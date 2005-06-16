@@ -409,6 +409,10 @@ final class CustomizerVersioning extends NbPropertyPanel {
     private void removeFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFriend
         ((FriendListModel) friendsList.getModel()).removeFriend(
                 (String) friendsList.getSelectedValue());
+        if (friendsList.getModel().getSize() > 0) {
+            friendsList.setSelectedIndex(0);
+        }
+        friendsList.requestFocus();
     }//GEN-LAST:event_removeFriend
     
     private void addFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFriend
@@ -420,8 +424,10 @@ final class CustomizerVersioning extends NbPropertyPanel {
             String pkgToAdd = desc.getInputText().trim();
             if (!"".equals(pkgToAdd)) { // NOI18N
                 ((FriendListModel) friendsList.getModel()).addFriend(pkgToAdd);
+                friendsList.setSelectedValue(pkgToAdd, true);
             }
         }
+        friendsList.requestFocus();
     }//GEN-LAST:event_addFriend
     
     private String getMessaage(String key) {
