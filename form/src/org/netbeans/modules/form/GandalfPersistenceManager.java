@@ -3096,8 +3096,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                  String indent)
     {
         Object value;
+        Object realValue;
         try {
             value = property.getValue();
+            realValue = property.getRealValue();
         }
         catch (Exception ex) {
             ErrorManager.getDefault().annotate(
@@ -3118,15 +3120,32 @@ public class GandalfPersistenceManager extends PersistenceManager {
             prEd.setValue(value);
             valueNode = ((XMLPropertyEditor)prEd).storeToXML(topDocument);
             if (valueNode == null) { // property editor refused to save the value
-                PersistenceException ex = new PersistenceException(
-                                   "Cannot save the property value"); // NOI18N
-                String msg = FormUtils.getFormattedBundleString(
-                                 "FMT_ERR_CannotSaveProperty", // NOI18N
-                                 new Object[] { property.getName() });
-                ErrorManager.getDefault().annotate(
-                    ex, ErrorManager.ERROR, null, msg, null, null);
-                nonfatalErrors.add(ex);
-                return false;
+                // XXX quick hack for JDNC to serialize custom borders XXX
+                encodedValue = encodePrimitiveValue(realValue);
+                if (encodedValue == null) {
+                    try {
+                        encodedSerializeValue = encodeValue(realValue);
+                    }
+                    catch (Exception ex) {
+                        ErrorManager.getDefault().annotate(
+                            ex,
+                            FormUtils.getFormattedBundleString(
+                                "FMT_ERR_CannotSaveProperty", // NOI18N
+                                new Object[] { property.getName() }));
+                        nonfatalErrors.add(ex);
+                        return false;
+                    }
+                }
+//                PersistenceException ex = new PersistenceException(
+//                                   "Cannot save the property value"); // NOI18N
+//                String msg = FormUtils.getFormattedBundleString(
+//                                 "FMT_ERR_CannotSaveProperty", // NOI18N
+//                                 new Object[] { property.getName() });
+//                ErrorManager.getDefault().annotate(
+//                    ex, ErrorManager.ERROR, null, msg, null, null);
+//                nonfatalErrors.add(ex);
+//                return false;
+                // XXX quick hack for JDNC to serialize custom borders XXX
             }
         }
         else {
