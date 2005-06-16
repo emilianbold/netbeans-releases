@@ -15,6 +15,7 @@ package org.netbeans.modules.junit;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.regex.Pattern;
 import org.netbeans.modules.javacore.jmiimpl.javamodel.DiffElement;
 import org.netbeans.modules.javacore.jmiimpl.javamodel.ResourceImpl;
 import org.openide.ErrorManager;
@@ -152,6 +153,9 @@ public final class TestCreator {
      */
     private String initialMainMethodBody;
     
+    /** pattern of a multipart Java ID */
+    private final Pattern javaIdFullPattern;
+    
     
     /* public methods */
     
@@ -166,6 +170,7 @@ public final class TestCreator {
         if (loadDefaults) {
             loadDefaults();
         }
+        javaIdFullPattern = Pattern.compile(RegexpPatterns.JAVA_ID_REGEX_FULL);
     }
 
     
@@ -422,7 +427,12 @@ public final class TestCreator {
      
         private final Resource srcRc, tstRc;
         private final JavaModelPackage tgtPkg;
-        private final Imports tstImports;
+        private final String tstPkgName;
+        private final String tstPkgNameDot;
+        private final List/*<Import>*/ tstImports;
+        /** */
+        private Map/*<String, String>*/ clsNames;
+
         
         /**
          */
@@ -431,7 +441,10 @@ public final class TestCreator {
             this.tstRc = tstRc;
             
             tgtPkg = (JavaModelPackage) tstRc.refImmediatePackage();
-            tstImports = tgtPkg.getImports();
+            tstPkgNameDot = tstRc.getPackageName() + '.';
+            tstPkgName = tstPkgNameDot.substring(0, tstPkgNameDot.length() - 1);
+            tstImports = tstRc.getImports();
+            clsNames = new HashMap/*<String>*/(20);
         }
         
         /**
@@ -1012,7 +1025,7 @@ public final class TestCreator {
         private String generateMethodBody(JavaClass srcClass, Method srcMethod){
             final boolean isStatic
                     = (srcMethod.getModifiers() & Modifier.STATIC) != 0;
-            final String shortClsName = getShortClsName(srcClass);
+            final String shortClsName = getTypeNameString(srcClass);
             
             StringBuffer newBody = new StringBuffer(512);
             
@@ -1036,14 +1049,9 @@ public final class TestCreator {
 
             Iterator i = params.iterator();
             for (int j = 0; j < varNames.length; j++) {
-                final Parameter param = ((Parameter) i.next());
-                final Type paramType = param.getType();
-                String paramTypeName = paramType.getName();
-                if (paramTypeName.startsWith("java.lang.")) {           //NOI18N
-                    paramTypeName = paramTypeName.substring(10);
-                }
-                final String paramName = param.getName();
-
+                Parameter param = ((Parameter) i.next());
+                Type paramType = param.getType();
+                String paramTypeName = getTypeNameString(paramType);
                 newBody.append(paramTypeName).append(' ')
                        .append(varNames[j]).append(" = ")               //NOI18N
                        .append(getDefaultValue(paramType))
@@ -1096,10 +1104,7 @@ public final class TestCreator {
             }
 
             final Type returnType = srcMethod.getType();
-            String returnTypeName = returnType.getName();
-            if (returnTypeName.startsWith("java.lang.")) {              //NOI18N
-                returnTypeName = returnTypeName.substring(10);
-            }
+            String returnTypeName = getTypeNameString(returnType);
             final String defaultRetValue = getDefaultValue(returnType);
             final boolean isVoid = (defaultRetValue == null);
 
@@ -1190,6 +1195,208 @@ public final class TestCreator {
             //body.append("//" + GENERATED_SUITE_BLOCK_END + "\n");
             
             return body.toString();
+        }
+
+        /**
+         * Returns the shortest usable name of the given type.
+         * Name of the type is shortened if at least one of the following
+         * conditions is met:
+         * <ul>
+         *     <li>the type's full name starts with <code>java.lang.</code>
+         *     <li>the type is from the same package as the generated
+         *         test class</li>
+         *     <li>the type is imported in the source code of the test
+         *         class</li>
+         *     <li>the type represents an inner class and name of one of its
+         *         containing classes may be shortened</li>
+         * </ul>
+         * <p>
+         * <em>Examples:</em>
+         * </p><p>
+         * If the type is <code>foo.bar.Baz</code> and the source code contains
+         * import statement <code>import foo.bar.*</code>, the returned name
+         * will be <code>Baz</code>.
+         * </p><p>
+         * If the type is <code>foo.bar.Baz.Boo</code> and the source code
+         * contains import statement <code>import foo.bar.Baz</code>, the
+         * returned name will be <code>Baz.Boo</code>.
+         *
+         * @param  type  type whose name needs to be returned
+         * @return  shortened name of the given type, or a full name
+         *          if the full name is necessary
+         */
+        private String getTypeNameString(Type type) {
+            if (!(type instanceof ClassDefinition)) {     //e.g. primitive types
+                return type.getName();
+            }
+            if (type instanceof Array) {
+                return getTypeNameString(((Array) type).getType())
+                       + "[]";                                          //NOI18N
+            }
+            if (type instanceof ParameterizedType) {
+                ParameterizedType paramzedType = (ParameterizedType) type;
+                String defTypeName
+                        = getTypeNameString(paramzedType.getDefinition());
+                
+                List/*<Type>*/ typeParams = paramzedType.getParameters();
+                if (typeParams.isEmpty()) {
+                    return defTypeName;
+                }
+
+                StringBuffer buf = new StringBuffer(60);
+                buf.append(defTypeName).append('<');
+
+                String paramName;
+                buf.append(getTypeNameString((Type) typeParams.get(0)));
+                if (typeParams.size() > 1) {
+                    Iterator/*<Type>*/ i = typeParams.iterator();
+                    i.next();                           //skip the first element
+                    do {
+                        buf.append(", ");                               //NOI18N
+                        buf.append(getTypeNameString((Type) i.next()));
+                    } while (i.hasNext());
+                }
+
+                buf.append('>');
+                return buf.toString();
+            }
+            if (type instanceof AnnotationType) {
+                //PENDING:
+                return type.getName();
+            }
+            if (!(type instanceof JavaClass)) {
+                return type.getName();       //handle unknown Type subinterfaces
+            }
+
+            String fullClsName = type.getName();
+            
+            if (!javaIdFullPattern.matcher(fullClsName).matches()) {
+                return type.getName();       //handle unknown Type subinterfaces
+            }
+
+            JavaClass clsType = (JavaClass) type;
+            String clsName = (String) clsNames.get(fullClsName);
+            if (clsName == null) {
+                clsName = clsType.getSimpleName();
+                final boolean maybeFromThisPkg
+                        = fullClsName.startsWith(tstPkgNameDot);
+                final boolean maybeFromJavaLang
+                        = fullClsName.startsWith("java.lang.");         //NOI18N
+                boolean canShorten
+                        = (maybeFromThisPkg
+                                   && checkIsFromThisPkg(clsName, fullClsName))
+                          || (maybeFromJavaLang
+                                   && checkIsFromJavaLang(clsName, fullClsName))
+                          || checkIsImported(clsType);
+
+                List/*<String>*/ chain = null;
+                ClassDefinition declaringClass;
+                while (!canShorten
+                       && clsType.isInner()
+                       && ((declaringClass = clsType.getDeclaringClass())
+                           instanceof JavaClass)) {
+                    if (chain == null) {
+                        chain = new ArrayList/*<String>*/(4);
+                    }
+                    chain.add(clsName);
+
+                    clsType = (JavaClass) declaringClass;
+                    clsName = clsType.getSimpleName();
+                    canShorten = (maybeFromThisPkg && checkIsFromThisPkg(
+                                                             clsName,
+                                                             clsType.getName()))
+                                || (maybeFromJavaLang && checkIsFromJavaLang(
+                                                             clsName,
+                                                             clsType.getName()))
+                                || checkIsImported(clsType);
+                }
+                
+                if (canShorten) {
+                    if (chain != null) {
+                        StringBuffer buf = new StringBuffer(
+                                                        fullClsName.length());
+                        buf.append(clsName);
+                        ListIterator/*<String>*/ i
+                                           = chain.listIterator(chain.size());
+                        do {
+                            buf.append('.').append(i.previous());
+                        } while (i.hasPrevious());
+
+                        clsName = buf.toString();
+                    }
+                } else {
+                    clsName = fullClsName;
+                }
+                assert clsName != null;
+                clsNames.put(fullClsName, clsName);
+            }
+            return clsName;
+        }
+        
+        /**
+         */
+        private boolean checkIsFromThisPkg(String shortName, String fullName) {
+            return fullName.length()
+                                == tstPkgNameDot.length() + shortName.length();
+        }
+        
+        /**
+         */
+        private boolean checkIsFromJavaLang(String shortName, String fullName) {
+            return fullName.length() == 10 + shortName.length();
+        }
+        
+        /**
+         */
+        private boolean checkIsImported(JavaClass clsType) {
+            if (simpleImports == null) {
+                prepareImports();
+            }
+            return simpleImports.contains(clsType)
+                   || importedClsTypes.contains(clsType);
+        }
+        
+        private Collection/*<NamedElement>*/ simpleImports;
+        private Collection/*<JavaClass>*/ importedClsTypes;
+        
+        /**
+         */
+        private void prepareImports() {
+            simpleImports = new ArrayList/*<Import>*/(tstImports.size());
+            importedClsTypes = new ArrayList/*<JavaClass>*/(20);
+            for (Iterator/*<Import>*/ i = tstImports.iterator(); i.hasNext();) {
+                Import imp = (Import) i.next();
+                if (imp.isStatic()) {
+                    continue;
+                }
+                if (!imp.isOnDemand()) {
+                    simpleImports.add(imp.getImportedNamespace());
+                } else {
+                    Collection/*<NamedElement>*/ importedElems
+                            = imp.getImportedElements();
+                    Iterator/*<NamedElement>*/ j = importedElems.iterator();
+                    while (j.hasNext()) {
+                        Object o = j.next();
+                        if (o instanceof JavaClass) {
+                            importedClsTypes.add(/*(JavaClass)*/o);
+                        }
+                    }
+                }
+            }
+            
+            assert simpleImports instanceof ArrayList;
+            if (simpleImports.isEmpty()) {
+                simpleImports = Collections.EMPTY_LIST;
+            } else {
+                ((ArrayList) simpleImports).trimToSize();
+            }
+            
+            assert importedClsTypes instanceof ArrayList;
+            if (importedClsTypes.isEmpty()) {
+                importedClsTypes = Collections.EMPTY_LIST;
+            } else {
+                ((ArrayList) importedClsTypes).trimToSize();
+            }
         }
 
     }
@@ -1316,43 +1523,6 @@ public final class TestCreator {
      */
     private static String createTestMethodName(String smName) {
         return "test" + smName.substring(0,1).toUpperCase() + smName.substring(1);
-    }
-    
-    /**
-     * Returns a short name of the given class.
-     * For plain (not nested or inner) classes, it simply delegates to
-     * <code>JavaClass.getSimpleName()</code>. For inner/nested classes,
-     * it prepends simple names of the outer classes.
-     * For example, if the passed class's fully qualified name
-     * is <code>foo.bar.baz.MyClass.Inner</code>, this method
-     * returns <code>MyClass.Inner</code>
-     * (unlike <code>JavaClass.getSimpleName()</code> which simply returns
-     * <code>Inner</code>).
-     *
-     * @param  cls  class whose short name is requested
-     * @return  short name of the given class
-     */
-    private static String getShortClsName(JavaClass cls) {
-        if (!cls.isInner()) {
-            return cls.getSimpleName();
-        }
-        
-        List/*<String>*/ chain = new ArrayList/*<String>*/(4);
-        chain.add(cls.getSimpleName());
-        ClassDefinition def = cls.getDeclaringClass();
-        while (def instanceof JavaClass) {
-            cls = (JavaClass) def;
-            chain.add(cls.getSimpleName());
-            def = cls.isInner() ? cls.getDeclaringClass() : null;
-        }
-        
-        StringBuffer buf = new StringBuffer(40);
-        int i = chain.size() - 1;
-        buf.append(chain.get(i--));
-        while (i >= 0) {
-            buf.append('.').append(chain.get(i--));
-        }
-        return buf.toString();
     }
     
     /**
@@ -1694,6 +1864,5 @@ public final class TestCreator {
             }
         }
     }
-
     
 }
