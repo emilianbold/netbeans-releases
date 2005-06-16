@@ -419,9 +419,6 @@ public class LayoutDesigner implements LayoutConstants {
                         checkResizing(adding, pos1, pos2, dim);
                     }
                     adding.setCurrentSpace(space);
-                    if (newComponent && comp.isLayoutContainer()) {
-                        propEmptyContainer(comp.getLayoutRoot(dim), dim);
-                    }
 
                     addInterval(adding, pos1, pos2, dim, dim == overlapDim);
 
@@ -437,7 +434,7 @@ public class LayoutDesigner implements LayoutConstants {
 
                 layoutModel.addComponent(comp, targetContainer, -1);
 
-                if (dragger.isResizing()) {
+                if (dragger.isResizing() || (newComponent && comp.isLayoutContainer())) {
                     imposeCurrentSize(comp, dragger.getSizes());
                 }
 
