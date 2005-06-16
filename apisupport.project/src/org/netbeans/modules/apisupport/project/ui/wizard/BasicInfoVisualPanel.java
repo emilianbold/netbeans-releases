@@ -51,20 +51,26 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     private NewModuleProjectData data;
     
     private boolean isNetBeansOrg;
+    private boolean isSuiteWizard;
     
     private ButtonModel lastSelectedType;
     private boolean wasLocationUpdate;
     
     /** Creates new form BasicInfoVisualPanel */
-    public BasicInfoVisualPanel(WizardDescriptor setting, boolean showModuleTypeChooser) {
+    public BasicInfoVisualPanel(WizardDescriptor setting, boolean isSuiteWizard) {
         super(setting);
+        this.isSuiteWizard = isSuiteWizard;
         initComponents();
         this.data = (NewModuleProjectData) getSetting().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
-        typeChooserPanel.setVisible(showModuleTypeChooser);
-        if (moduleSuiteValue.getItemCount() > 0) {
-            suiteModule.setSelected(true);
-            locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+        if (isSuiteWizard) {
+            detachModuleTypeGroup();
+            typeChooserPanel.setVisible(false);
+        } else {
+            if (moduleSuiteValue.getItemCount() > 0) {
+                suiteModule.setSelected(true);
+                locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+            }
         }
         nameValue.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { nameUpdated(); }
@@ -124,6 +130,13 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         }
     }
     
+    private void detachModuleTypeGroup() {
+        moduleTypeGroup.remove(standAloneModule);
+        moduleTypeGroup.remove(suiteModule);
+        standAloneModule.setSelected(false);
+        suiteModule.setSelected(false);
+    }
+    
     /**
      * @param alsoCheckFolderExistence - if function should also check if the
      *        target location doesn't already exist
@@ -142,10 +155,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             isNetBeansOrg = isNBOrg;
             if (isNetBeansOrg) {
                 lastSelectedType = moduleTypeGroup.getSelection();
-                moduleTypeGroup.remove(standAloneModule);
-                moduleTypeGroup.remove(suiteModule);
-                standAloneModule.setSelected(false);
-                suiteModule.setSelected(false);
+                detachModuleTypeGroup();
             } else {
                 moduleTypeGroup.add(standAloneModule);
                 moduleTypeGroup.add(suiteModule);
@@ -186,7 +196,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     private boolean checkNbPlatform() {
         // always at least the default platform is selected
         NbPlatform plaf = (NbPlatform) platformValue.getSelectedItem();
-        if (!plaf.isValid()) {
+        if (standAloneModule.isSelected() && !plaf.isValid()) {
             setErrorMessage(getMessage("MSG_ChosenPlatformIsInvalid")); // NOI18N
             return false;
         } else {

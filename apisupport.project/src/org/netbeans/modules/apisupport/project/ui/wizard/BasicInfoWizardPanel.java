@@ -50,7 +50,7 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
     
     public Component getComponent() {
         if (visualPanel == null) {
-            visualPanel = new BasicInfoVisualPanel(getSettings(), !isSuiteWizard);
+            visualPanel = new BasicInfoVisualPanel(getSettings(), isSuiteWizard);
             visualPanel.addPropertyChangeListener(this);
             visualPanel.setName(getMessage("LBL_BasicInfoPanel_Title")); // NOI18N
         }
