@@ -52,6 +52,11 @@ public final class CompletionUtilities {
      * The gap between left and right text.
      */
     private static final int BEFORE_RIGHT_TEXT_GAP = 5;
+
+    /**
+     * The gap between right text and right edge.
+     */
+    private static final int AFTER_RIGHT_TEXT_GAP = 3;
     
     private CompletionUtilities() {
         // no instances
@@ -59,10 +64,10 @@ public final class CompletionUtilities {
     
     public static int getPreferredWidth(String leftHtmlText, String rightHtmlText,
     Graphics g, Font defaultFont) {
-        int width = BEFORE_ICON_GAP + ICON_WIDTH + AFTER_ICON_GAP;
+        int width = BEFORE_ICON_GAP + ICON_WIDTH + AFTER_ICON_GAP + AFTER_RIGHT_TEXT_GAP;
         if (leftHtmlText != null) {
-            width += (int)PatchedHtmlRenderer.renderHTML(leftHtmlText, g, 0, 0, 0, 0,
-                    defaultFont, Color.black, PatchedHtmlRenderer.STYLE_TRUNCATE, false, true);
+            width += (int)PatchedHtmlRenderer.renderHTML(leftHtmlText, g, 0, 0, Integer.MAX_VALUE, 0,
+                    defaultFont, Color.black, PatchedHtmlRenderer.STYLE_CLIP, false, true);
         }
         if (rightHtmlText != null) {
             if (leftHtmlText != null) {
@@ -84,19 +89,22 @@ public final class CompletionUtilities {
             assert (done);
         }
         int iconWidth = BEFORE_ICON_GAP + ICON_WIDTH + AFTER_ICON_GAP;
-        int rightTextX = width;
+        int rightTextX = width - AFTER_RIGHT_TEXT_GAP;
+        FontMetrics fm = g.getFontMetrics(defaultFont);
+        int textY = (height - fm.getHeight())/2 + fm.getHeight() - fm.getDescent();
         if (rightHtmlText != null) {
-            int rightTextWidth = (int)PatchedHtmlRenderer.renderHTML(rightHtmlText, g, 0, 0, 0, 0,
-                    defaultFont, defaultColor, PatchedHtmlRenderer.STYLE_TRUNCATE, false, true);
-            rightTextX = Math.max(iconWidth, width - rightTextWidth);
+            int rightTextWidth = (int)PatchedHtmlRenderer.renderHTML(rightHtmlText, g, 0, 0, Integer.MAX_VALUE, 0,
+                    defaultFont, defaultColor, PatchedHtmlRenderer.STYLE_CLIP, false, true);
+            rightTextX = Math.max(iconWidth, rightTextX - rightTextWidth);
             // Render right text
-            PatchedHtmlRenderer.renderHTML(rightHtmlText, g, rightTextX, 0, width, height,
-                defaultFont, defaultColor, PatchedHtmlRenderer.STYLE_TRUNCATE, true, selected);
+            PatchedHtmlRenderer.renderHTML(rightHtmlText, g, rightTextX, textY, rightTextWidth, textY,
+                defaultFont, defaultColor, PatchedHtmlRenderer.STYLE_CLIP, true, selected);
+            rightTextX = Math.max(iconWidth, rightTextX - BEFORE_RIGHT_TEXT_GAP);
         }
 
         // Render left text
         if (leftHtmlText != null && rightTextX > iconWidth) { // any space for left text?
-            PatchedHtmlRenderer.renderHTML(leftHtmlText, g, iconWidth, 0, rightTextX - iconWidth, height,
+            PatchedHtmlRenderer.renderHTML(leftHtmlText, g, iconWidth, textY, rightTextX - iconWidth, textY,
                 defaultFont, defaultColor, PatchedHtmlRenderer.STYLE_TRUNCATE, true, selected);
         }
     }
