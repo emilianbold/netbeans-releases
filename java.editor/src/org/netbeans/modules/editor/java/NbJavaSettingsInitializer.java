@@ -141,11 +141,11 @@ public class NbJavaSettingsInitializer extends Settings.AbstractInitializer {
                            ALT_MASK | InputEvent.SHIFT_MASK),
                        JavaKit.fixImportsAction
                    ),
-//                   new MultiKeyBinding(
-//                       KeyStroke.getKeyStroke(KeyEvent.VK_S,
-//                           ALT_MASK | mask),
-//                       JavaKit.tryCatchAction
-//                       ),
+                   new MultiKeyBinding(
+                       KeyStroke.getKeyStroke(KeyEvent.VK_S,
+                           ALT_MASK | mask),
+                       JavaKit.tryCatchAction
+                       ),
                    new MultiKeyBinding(
                        KeyStroke.getKeyStroke(KeyEvent.VK_G, ALT_MASK | (isMac ? InputEvent.SHIFT_MASK : 0)),
                        org.netbeans.editor.ext.ExtKit.gotoDeclarationAction

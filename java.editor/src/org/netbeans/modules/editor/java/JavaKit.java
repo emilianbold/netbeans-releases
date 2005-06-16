@@ -29,15 +29,17 @@ import org.netbeans.editor.ext.java.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.jmi.javamodel.Catch;
 import org.netbeans.jmi.javamodel.ClassDefinition;
 import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.JavaPackage;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Parameter;
+import org.netbeans.jmi.javamodel.StatementBlock;
+import org.netbeans.jmi.javamodel.TryStatement;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.javacore.TryWrapper;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.DialogDisplayer;
@@ -46,6 +48,7 @@ import org.openide.loaders.DataObject;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.*;
+import org.netbeans.modules.javacore.TryWrapper;
 
 /**
 * Java editor kit with appropriate document
@@ -238,7 +241,7 @@ public class JavaKit extends NbEditorKit {
                                    new UncommentAction("//"), // NOI18N
                                    new FastImportAction(),
                                    //new GotoClassAction(),
-                                   //new TryCatchAction(),
+                                   
                                    new JavaGenerateGoToPopupAction(),
                                    new JavaGotoSuperImplementation(),
 				   new JavaInsertBreakAction(),
@@ -257,7 +260,8 @@ public class JavaKit extends NbEditorKit {
                                    new JavaJMIGotoSourceAction(),
                                    new JavaJMIGotoDeclarationAction(),
                                    new JavaDocJMIShowAction(),
-                                   new JavaFixAllImports()
+                                   new JavaFixAllImports(),
+                                   new TryCatchAction(),
                                 };
         
         Action[] jcAction = new Action[] {
@@ -852,64 +856,47 @@ public class JavaKit extends NbEditorKit {
         protected boolean asynchonous() {
             return true;
         }
-
+        
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 BaseDocument doc = (BaseDocument)target.getDocument();
-                Position caretPosition = null;
+                int caretPosition = -1;
                 TryWrapper wrapper;
+                TryStatement t;
                 JavaModel.getJavaRepository().beginTrans(true);
                 try {
-                    doc.atomicLock();
+                    //create a wrapper and wrap selected text
                     wrapper = new TryWrapper(NbEditorUtilities.getDataObject(doc).getPrimaryFile(), target.getSelectionStart(), target.getSelectionEnd());
+                    t = wrapper.wrap(); 
                 } catch (JmiException e) {
+                    //if error - write it on status line
                     Utilities.setStatusText(target, e.getLocalizedMessage());
                     return ;
-                }
-                finally {
-                    doc.atomicUnlock();
+                } finally {
                     JavaModel.getJavaRepository().endTrans();
-                    target.requestFocus();
                 }
-                
-                JavaModel.getJavaRepository().beginTrans(true);
-                boolean fail = true;
+                    
+                JavaModel.getJavaRepository().beginTrans(false);
                 try {
-                    doc.atomicLock();
-                    caretPosition = wrapper.wrap(); 
-                    fail=false;
-                } catch (JmiException e) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(e.getLocalizedMessage());
-                    DialogDisplayer.getDefault().notify(nd);
-                }
-                finally {
-                    doc.atomicUnlock();
-                    JavaModel.getJavaRepository().endTrans(fail);
-                    if (caretPosition != null) { 
-                        try {
-                            if (fail==false) {
-                                int caret = caretPosition.getOffset(); 
-                                for (int i=0; i< wrapper.getCatchesCount(); i++) {
-                                    caret = Utilities.getPositionAbove(target, caret, 0);
-                                }
-                                caret = Utilities.getRowEnd(target, caret);
-                                if(!"{".equals(doc.getText(caret-1,1))) { // NOI18N
-                                   caret = Utilities.getPositionAbove(target, caret, 0);
-                                   caret = Utilities.getRowEnd(target, caret);
-                                }
-                                doc.insertString(caret, "\n", null); // NOI18N
-                                caret = Utilities.getPositionBelow(target, caret, 0);
-                                Utilities.reformatLine(doc, caret);
-                                caret = Utilities.getRowEnd(target, caret);
-                                target.setCaretPosition(caret); 
-                            }
-                        } catch (BadLocationException e) {
-                        }
+                    StatementBlock finalizer = t.getFinalizer();
+                    if (finalizer != null) {
+                        caretPosition = finalizer.getEndOffset() - 1;
+                    } else {
+                        Catch cat = (Catch) t.getCatches().get(0);
+                        caretPosition = cat.getEndOffset() - 1;
                     }
                 }
+                finally {
+                    JavaModel.getJavaRepository().endTrans();
+                }
+                if (caretPosition != -1) {
+                    target.setCaretPosition(caretPosition);
+                    target.setSelectionStart(caretPosition);
+                    target.setSelectionEnd(caretPosition);
+                }
+
             }
         }
-
     }
 
     public static class JavaInsertBreakAction extends InsertBreakAction {

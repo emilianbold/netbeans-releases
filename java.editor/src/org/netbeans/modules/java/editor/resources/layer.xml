@@ -108,6 +108,10 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="format/fix-imports" boolvalue="true"/>
                     <attr name="fix-imports/SeparatorAfterFormat.instance" boolvalue="true"/>
                     
+                    <file name="try-catch"/>
+                    <attr name="fix-imports/try-catch" boolvalue="true"/>
+                    <attr name="try-catch/SeparatorAfterFormat.instance" boolvalue="true"/>
+
                     <file name="SeparatorBeforeCut.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>

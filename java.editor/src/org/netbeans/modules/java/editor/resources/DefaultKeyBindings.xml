@@ -9,6 +9,7 @@
     <bind actionName="goto-source" key="O-O"/>
     <bind actionName="fast-import" key="OS-I"/>
     <bind actionName="fix-imports" key="OS-F"/>
+    <bind actionName="try-catch" key="DO-S"/>
 
     <bind actionName="goto-super-implementation" key="D-B"/>
     <bind actionName="goto-declaration" key="O-G"/>    
