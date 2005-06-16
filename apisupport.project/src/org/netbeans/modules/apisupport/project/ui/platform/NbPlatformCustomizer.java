@@ -237,14 +237,14 @@ public final class NbPlatformCustomizer extends JPanel {
     }
     // </editor-fold>//GEN-END:initComponents
     
-    private ComponentFactory.NbPlatformListModel getModel() {
+    private ComponentFactory.NbPlatformListModel getPlafListModel() {
         return (ComponentFactory.NbPlatformListModel) platformsList.getModel();
     }
     
     private void removePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePlatform
         NbPlatform plaf = (NbPlatform) platformsList.getSelectedValue();
         if (plaf != null) {
-            getModel().removePlatform(plaf);
+            getPlafListModel().removePlatform(plaf);
             platformsList.setSelectedValue(NbPlatform.getDefaultPlatform(), true);
             refreshPlatform();
         }
@@ -273,7 +273,11 @@ public final class NbPlatformCustomizer extends JPanel {
             String plafDir = (String) wd.getProperty(PLAF_DIR_PROPERTY); // NOI18N
             String plafLabel = (String) wd.getProperty(PLAF_LABEL_PROPERTY); // NOI18N
             String id = plafLabel.replace(' ', '_');
-            getModel().addPlatform(id, plafDir, plafLabel);
+            NbPlatform plaf = getPlafListModel().addPlatform(id, plafDir, plafLabel);
+            if (plaf != null) {
+                platformsList.setSelectedValue(plaf, true);
+                refreshPlatform();
+            }
         }
     }//GEN-LAST:event_addPlatform
     

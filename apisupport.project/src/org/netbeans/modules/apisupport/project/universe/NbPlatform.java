@@ -147,7 +147,7 @@ public final class NbPlatform implements Comparable {
         return new NbPlatform(null, null, destDir, sources, new URL[0]);
     }
     
-    public static void addPlatform(final String id, final File destdir, final String label) throws IOException {
+    public static NbPlatform addPlatform(final String id, final File destdir, final String label) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
@@ -164,8 +164,10 @@ public final class NbPlatform implements Comparable {
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
-        getPlatforms().add(new NbPlatform(id, label, FileUtil.normalizeFile(destdir),
-                findURLs(null), findURLs(null)));
+        NbPlatform plaf = new NbPlatform(id, label, FileUtil.normalizeFile(destdir),
+                findURLs(null), findURLs(null));
+        getPlatforms().add(plaf);
+        return plaf;
     }
     
     public static void removePlatform(final NbPlatform plaf) throws IOException {
