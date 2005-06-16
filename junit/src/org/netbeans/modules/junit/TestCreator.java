@@ -1274,63 +1274,55 @@ public final class TestCreator {
                 return type.getName();       //handle unknown Type subinterfaces
             }
 
-            JavaClass clsType = (JavaClass) type;
-            String clsName = (String) clsNames.get(fullClsName);
-            if (clsName == null) {
-                clsName = clsType.getSimpleName();
-                final boolean maybeFromThisPkg
-                        = fullClsName.startsWith(tstPkgNameDot);
-                final boolean maybeFromJavaLang
-                        = fullClsName.startsWith("java.lang.");         //NOI18N
-                boolean canShorten
-                        = (maybeFromThisPkg
-                                   && checkIsFromThisPkg(clsName, fullClsName))
-                          || (maybeFromJavaLang
-                                   && checkIsFromJavaLang(clsName, fullClsName))
-                          || checkIsImported(clsType);
+            return getJavaClassTypeNameString(
+                        (JavaClass) type,
+                        fullClsName,
+                        fullClsName.startsWith("java.lang."),           //NOI18N
+                        fullClsName.startsWith(tstPkgNameDot));
+        }
 
-                List/*<String>*/ chain = null;
-                ClassDefinition declaringClass;
-                while (!canShorten
-                       && clsType.isInner()
-                       && ((declaringClass = clsType.getDeclaringClass())
-                           instanceof JavaClass)) {
-                    if (chain == null) {
-                        chain = new ArrayList/*<String>*/(4);
-                    }
-                    chain.add(clsName);
-
-                    clsType = (JavaClass) declaringClass;
-                    clsName = clsType.getSimpleName();
-                    canShorten = (maybeFromThisPkg && checkIsFromThisPkg(
-                                                             clsName,
-                                                             clsType.getName()))
-                                || (maybeFromJavaLang && checkIsFromJavaLang(
-                                                             clsName,
-                                                             clsType.getName()))
-                                || checkIsImported(clsType);
-                }
-                
-                if (canShorten) {
-                    if (chain != null) {
-                        StringBuffer buf = new StringBuffer(
-                                                        fullClsName.length());
-                        buf.append(clsName);
-                        ListIterator/*<String>*/ i
-                                           = chain.listIterator(chain.size());
-                        do {
-                            buf.append('.').append(i.previous());
-                        } while (i.hasPrevious());
-
-                        clsName = buf.toString();
-                    }
-                } else {
-                    clsName = fullClsName;
-                }
-                assert clsName != null;
-                clsNames.put(fullClsName, clsName);
+        /**
+         */
+        private String getJavaClassTypeNameString(JavaClass clsType,
+                                                  String fullClsName,
+                                                  boolean maybeFromJavaLang,
+                                                  boolean maybeFromThisPkg) {
+            if (fullClsName == null) {
+                fullClsName = clsType.getName();
             }
-            return clsName;
+
+            String result;
+
+            result = (String) clsNames.get(fullClsName);
+            if (result != null) {
+                return result;
+            }
+
+            String simpleName = clsType.getSimpleName();
+            if ((maybeFromThisPkg
+                            && checkIsFromThisPkg(simpleName, fullClsName))
+                    || (maybeFromJavaLang
+                            && checkIsFromJavaLang(simpleName, fullClsName))
+                    || checkIsImported(clsType)) {
+                result = simpleName;
+            } else if (clsType.isInner()) {
+                ClassDefinition declaringCls = clsType.getDeclaringClass();
+                if (declaringCls instanceof JavaClass) {
+                    result = getJavaClassTypeNameString(
+                                         (JavaClass) declaringCls,
+                                         (String) null,         //full cls. name
+                                         maybeFromJavaLang,
+                                         maybeFromThisPkg)
+                             + '.' + simpleName;
+                } else {
+                    result = fullClsName;
+                }
+            } else {
+                result = fullClsName;
+            }
+
+            clsNames.put(fullClsName, result);
+            return result;
         }
         
         /**
