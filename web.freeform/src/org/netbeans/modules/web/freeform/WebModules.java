@@ -250,9 +250,12 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         public ClassPath findClassPath (FileObject file, String type) {
            int fileType = getType(file);
             
-           if (fileType == 0)
-                return javaSourcesClassPath;
-            else 
+           if (fileType == 0) {
+               if (type != ClassPath.SOURCE)
+                   return null;
+               else
+                   return javaSourcesClassPath;
+            } else 
                 if (fileType == 1){
                     if (composedClassPath == null) {
                         FileObject [] all = new FileObject [sourcesFOs.length+webClassPath.getRoots().length+1];
