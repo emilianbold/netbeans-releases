@@ -186,6 +186,9 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JComboBox" name="platformValue">
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="platformChosen"/>
+          </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="ComponentFactory.getNbPlatformsComboxBox();"/>
           </AuxValues>

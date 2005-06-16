@@ -104,7 +104,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             setErrorMessage(getMessage("MSG_NameCannotBeEmpty")); // NOI18N
             return;
         }
-        updateFolder(true);
+        updateAndCheck(true);
     }
     
     private void locationUpdated() {
@@ -116,15 +116,19 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             return;
         }
         if (!fLocation.canWrite()) {
-            updateFolder(false);
+            updateAndCheck(false); // also update folder but doesn't check for existing folder
             setErrorMessage(getMessage("MSG_LocationNotWritable")); // NOI18N
             return;
         } else {
-            updateFolder(true);
+            updateAndCheck(true);
         }
     }
     
-    private void updateFolder(boolean alsoCheck) {
+    /**
+     * @param alsoCheckFolderExistence - if function should also check if the
+     *        target location doesn't already exist
+     */
+    private void updateAndCheck(boolean checkFolderExistence) {
         if ("".equals(getLocationValue()) || "".equals(getNameValue())) { // NOI18N
             folderValue.setText(""); // NOI18N
             setErrorMessage(null, false);
@@ -151,21 +155,39 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             suiteModule.setEnabled(!isNetBeansOrg);
             typeChanged(null);
         }
-        if (!checkModuleSuite()) {
+        // check for regular module suite in case of module component
+        if (suiteModule.isSelected() && !checkModuleSuite()) {
             return;
         }
-        if (alsoCheck) {
+        // check for regular netbeans platform in case of standalone module
+        if (standAloneModule.isSelected() && !checkNbPlatform()) {
+            return;
+        }
+        if (checkFolderExistence) {
             if (fFolder.exists()) {
                 setErrorMessage(getMessage("MSG_ProjectFolderExists")); // NOI18N
                 return;
             }
             setErrorMessage(null);
         }
+        setErrorMessage(null);
     }
     
     private boolean checkModuleSuite() {
-        if (suiteModule.isSelected() && moduleSuiteValue.getSelectedItem() == null) {
+        if (moduleSuiteValue.getSelectedItem() == null) {
             setErrorMessage(getMessage("MSG_ChooseRegularSuite")); // NOI18N
+            return false;
+        } else {
+            setErrorMessage(null);
+            return true;
+        }
+    }
+    
+    private boolean checkNbPlatform() {
+        // always at least the default platform is selected
+        NbPlatform plaf = (NbPlatform) platformValue.getSelectedItem();
+        if (!plaf.isValid()) {
+            setErrorMessage(getMessage("MSG_ChosenPlatformIsInvalid")); // NOI18N
             return false;
         } else {
             setErrorMessage(null);
@@ -345,6 +367,12 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 12);
         typeChooserPanel.add(platform, gridBagConstraints);
 
+        platformValue.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                platformChosen(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -423,7 +451,11 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
+    private void platformChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformChosen
+        updateAndCheck(true);
+    }//GEN-LAST:event_platformChosen
+    
     private void moduleSuiteChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moduleSuiteChosen
         if (!wasLocationUpdate) {
             locationValue.setText((String) moduleSuiteValue.getSelectedItem());
@@ -460,7 +492,11 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
         updateEnabled();
-        checkModuleSuite();
+        if (suiteModule.isSelected()) {
+            checkModuleSuite();
+        } else { // standalone module
+            checkNbPlatform();
+        }
     }//GEN-LAST:event_typeChanged
     
     private void browseLocation(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocation
