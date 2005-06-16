@@ -17,25 +17,19 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.netbeans.modules.versioning.system.cvss.FileInformation;
-import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
 import java.awt.BorderLayout;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * Top component of the Versioning view.
  * 
  * @author Maros Sandor
  */
-public class CvsSynchronizeTopComponent extends TopComponent implements Externalizable, PropertyChangeListener {
+public class CvsSynchronizeTopComponent extends TopComponent implements Externalizable {
    
     private SynchronizePanel        syncPanel;
     private File []                 roots;
@@ -91,13 +85,11 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
 
     protected void componentOpened() {
         super.componentOpened();
-        CvsModuleConfig.getDefault().addPropertyChangeListener(this);
         refreshContent();
     }
 
     protected void componentClosed() {
         super.componentClosed();
-        CvsModuleConfig.getDefault().removePropertyChangeListener(this);
     }
 
     public void refreshContent() {
@@ -216,21 +208,5 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
 
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
-    }
-
-    private void removeNotVersionedRoots() {
-        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        List newRoots = new ArrayList(roots.length);
-        for (int i = 0; i < roots.length; i++) {
-            File rootFile = roots[i];
-            if ((cache.getStatus(rootFile).getStatus() & FileInformation.STATUS_MANAGED) != 0) newRoots.add(rootFile);
-        }
-        setRoots((File[]) newRoots.toArray(new File[newRoots.size()]));
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CvsModuleConfig.PROP_MANAGED_ROOTS.equals(evt.getPropertyName())) {
-            removeNotVersionedRoots();
-        }
     }
 }

@@ -17,7 +17,6 @@ import org.openide.ErrorManager;
 import org.netbeans.lib.cvsclient.Client;
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
-import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.netbeans.lib.cvsclient.connection.Connection;
 import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
 
@@ -49,10 +48,10 @@ final class Kit implements Client.Factory {
             File tmp = File.createTempFile("checkout", "", tmpFolder);  // NOI18N
             if (tmp.delete() == false) {
                 return checkoutFolder;
-            };
+            }
             if (tmp.mkdirs() == false) {
                 return checkoutFolder;
-            };
+            }
             tmp.deleteOnExit();
             checkoutFolder = tmp;
         } catch (IOException e) {

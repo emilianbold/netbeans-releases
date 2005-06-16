@@ -111,7 +111,7 @@ public final class CheckoutWizard {
         boolean finished = NotifyDescriptor.OK_OPTION.equals(result);
         if (finished) {
             onFinished();
-        };
+        }
         return finished;
     }
 
@@ -878,7 +878,7 @@ public final class CheckoutWizard {
     private abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
 
         private List listeners = new LinkedList();
-        private boolean valid = false;
+        private boolean valid;
         private JComponent panel;
         private volatile boolean underConstruction;
 
@@ -923,7 +923,7 @@ public final class CheckoutWizard {
             setValid(false, message);
         }
 
-        private void setValid(final boolean valid, final String errorMessage) {
+        private void setValid(boolean valid, String errorMessage) {
             boolean fire = AbstractStep.this.valid != valid;
             AbstractStep.this.valid = valid;
             if (valid) {

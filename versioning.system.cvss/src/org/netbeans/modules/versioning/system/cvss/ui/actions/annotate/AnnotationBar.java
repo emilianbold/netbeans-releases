@@ -25,10 +25,8 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor;
 import org.netbeans.lib.cvsclient.command.annotate.AnnotateLine;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
@@ -92,7 +90,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
     /**
      * Controls annotation bar visibility.
      */
-    private boolean annotated = false;
+    private boolean annotated;
 
     /**
      * Maps document {@link Element}s (representing lines) to
@@ -201,7 +199,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                     }
 
                     for (int c = editorStart + firstShift -1; c<lineCount; c++) {
-                        ann2editorPermutation[c] = ann2editorPermutation[c] - firstShift;
+                        ann2editorPermutation[c] -= firstShift;
                     }
                 }
 
@@ -222,7 +220,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                     }
 
                     for (int k = firstStart-1; k<lineCount; k++) {
-                        ann2editorPermutation[k] = ann2editorPermutation[k] + firstShift;
+                        ann2editorPermutation[k] += firstShift;
                     }
                 }
 

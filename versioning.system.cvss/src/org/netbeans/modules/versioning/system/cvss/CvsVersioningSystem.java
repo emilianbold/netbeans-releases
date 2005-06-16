@@ -307,7 +307,7 @@ public class CvsVersioningSystem {
         } catch (IOException e) {
             // user has invalid ignore list, ignore it
         } finally {
-            if (r != null) try { r.close(); } catch (IOException e) {};
+            if (r != null) try { r.close(); } catch (IOException e) {}
         }
     }
 

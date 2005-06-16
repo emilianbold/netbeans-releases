@@ -58,7 +58,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private static final ResourceBundle loc = NbBundle.getBundle(SynchronizePanel.class);
     
     private ExplorerManager             explorerManager;
-    private final CvsSynchronizeTopComponent parent;
+    private final CvsSynchronizeTopComponent parentTopComponent;
     private final CvsVersioningSystem   cvs;
     private File []                     rootFiles;
     private int                         displayStatuses;
@@ -80,7 +80,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * @param parent enclosing top component
      */ 
     public SynchronizePanel(CvsSynchronizeTopComponent parent) {
-        this.parent = parent;
+        this.parentTopComponent = parent;
         this.cvs = CvsVersioningSystem.getInstance();
         refreshTask = rp.create(new RefreshViewTask());
         explorerManager = new ExplorerManager ();
@@ -239,7 +239,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * Performs the "cvs commit" command on all diplayed roots plus "cvs add" for files that are not yet added.
      */ 
     private void onCommitAction() {
-        CommitAction.invokeCommit(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { parent.getContentTitle() }),
+        CommitAction.invokeCommit(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { parentTopComponent.getContentTitle() }),
                                   rootFiles);
     }
     
@@ -276,7 +276,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences. 
      */ 
     private void onDiffAction() {
-        String title = MessageFormat.format(loc.getString("CTL_DiffDialog_Title"), new Object [] { parent.getContentTitle() });
+        String title = MessageFormat.format(loc.getString("CTL_DiffDialog_Title"), new Object [] { parentTopComponent.getContentTitle() });
         DiffExecutor exec = new DiffExecutor(rootFiles, title);
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
             exec.showLocalDiff();
@@ -304,7 +304,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
 //        options.setModeratelyQuiet(true);
         UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, cvs, options);
         ExecutorSupport.notifyError(executors);
-        parent.contentRefreshed();
+        parentTopComponent.contentRefreshed();
     }
 
     private void onDisplayedStatusChanged() {
