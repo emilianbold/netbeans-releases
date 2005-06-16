@@ -695,7 +695,7 @@ public final class TestCreator {
                                 Collections.EMPTY_LIST, // annotations
                                 false,                  // not final
                                 TestUtil.getTypeReference(   // type
-                                        tgtPkg, "java.lang.String"),    //NOI18N
+                                        tgtPkg, "String"),              //NOI18N
                                 0,                      // dimCount
                                 false);                 // is not var.arg.
             return Collections.singletonList(param);
