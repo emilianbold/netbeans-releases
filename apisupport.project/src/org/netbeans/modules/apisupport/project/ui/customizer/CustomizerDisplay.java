@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.beans.PropertyChangeListener;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,23 +28,17 @@ import org.openide.util.Utilities;
  *
  * @author mkrauskopf
  */
-final class CustomizerDisplay extends JPanel implements ComponentFactory.StoragePanel {
+final class CustomizerDisplay extends JPanel implements 
+        ComponentFactory.StoragePanel, PropertyChangeListener {
     
     private NbModuleProperties modProps;
     
     /** Creates new form CustomizerDisplay */
     CustomizerDisplay(final NbModuleProperties modProps) {
-        initComponents();
         this.modProps = modProps;
-        for (Iterator it = modProps.getModuleCategories().iterator(); it.hasNext(); ) {
-            Object next = it.next();
-            this.categoryValue.addItem(next);
-        }
-        if (!modProps.getModuleCategories().contains(getCategory())) {
-            // put module's own category at the beginning
-            categoryValue.insertItemAt(getCategory(), 0);
-        }
+        initComponents();
         readFromProperties();
+        modProps.addPropertyChangeListener(this);
     }
     
     public void store() {
@@ -59,6 +54,19 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         NbPropertyPanel.setText(shortDescValue, getBundle().getProperty("OpenIDE-Module-Short-Description")); // NOI18N
         longDescValue.setText(getBundle().getProperty("OpenIDE-Module-Long-Description")); // NOI18N
         categoryValue.setSelectedItem(getCategory()); // NOI18N)
+        fillUpCategoryValue();
+    }
+    
+    private void fillUpCategoryValue() {
+        categoryValue.removeAllItems();
+        for (Iterator it = modProps.getModuleCategories().iterator(); it.hasNext(); ) {
+            Object next = it.next();
+            this.categoryValue.addItem(next);
+        }
+        if (!modProps.getModuleCategories().contains(getCategory())) {
+            // put module's own category at the beginning
+            categoryValue.insertItemAt(getCategory(), 0);
+        }
     }
     
     private String getCategory() {
@@ -103,6 +111,12 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
             start = end;
         }
         return (String[]) sentences.toArray(new String[sentences.size()]);
+    }
+    
+    public void propertyChange(java.beans.PropertyChangeEvent evt) {
+        if (NbModuleProperties.NB_PLATFORM_PROPERTY == evt.getPropertyName()) {
+            fillUpCategoryValue();
+        }
     }
     
     /** This method is called from within the constructor to
