@@ -27,8 +27,6 @@ import org.openide.WizardDescriptor;
  */
 public class PlatformInfoVisualPanel extends BasicVisualPanel {
     
-    private NbPlatform plaf;
-    
     /** Creates new form BasicInfoVisualPanel */
     public PlatformInfoVisualPanel(WizardDescriptor setting) {
         super(setting);

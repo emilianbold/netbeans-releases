@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 
 /**

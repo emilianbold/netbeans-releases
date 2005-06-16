@@ -23,8 +23,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
  */
 final class CustomizerPackaging extends NbPropertyPanel {
     
-    private EditableProperties bundleProps;
-    
     /** Creates new form CustomizerPackaging */
     CustomizerPackaging(final NbModuleProperties moduleProps) {
         super(moduleProps);

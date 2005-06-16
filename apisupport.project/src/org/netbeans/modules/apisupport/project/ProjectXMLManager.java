@@ -439,7 +439,6 @@ public final class ProjectXMLManager {
         if (friendsEl != null) {
             List/*<Element>*/ friendEls = Util.findSubElements(friendsEl);
             Set/*<String>*/ friends = new TreeSet();
-            int i = 0;
             for (Iterator it = friendEls.iterator(); it.hasNext(); ) {
                 Element friendEl = (Element) it.next();
                 if (FRIEND.equals(friendEl.getTagName())) {

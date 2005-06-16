@@ -281,7 +281,7 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void removeToken(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeToken
         RequiredTokenListModel model = (RequiredTokenListModel) reqTokenList.getModel();
         Object[] selected = reqTokenList.getSelectedValues();
@@ -289,18 +289,18 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
             model.removeToken((String) selected[i]);
         }
     }//GEN-LAST:event_removeToken
-
+    
     private void addToken(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToken
         // create add panel
         JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
         panel.setLayout(new BorderLayout(0, 2));
-        panel.add(new JLabel(NbBundle.getMessage(CustomizerLibraries.class, "LBL_ProvidedTokens_NoMnem")), 
+        panel.add(new JLabel(NbBundle.getMessage(CustomizerLibraries.class, "LBL_ProvidedTokens_NoMnem")),
                 BorderLayout.NORTH);
         JList tokenList = new JList(modProps.getAllTokens());
         JScrollPane tokenListSP = new JScrollPane(tokenList);
         panel.add(tokenListSP, BorderLayout.CENTER);
-
+        
         DialogDescriptor descriptor = new DialogDescriptor(panel,
                 NbBundle.getMessage(CustomizerLibraries.class,
                 "LBL_ProvidedTokens_NoMnem")); // NOI18N
@@ -377,38 +377,22 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDepButton;
-    private javax.swing.JButton addDepButton2;
-    private javax.swing.JButton addFriendButton;
-    private javax.swing.JButton addFriendButton1;
     private javax.swing.JButton addTokenButton;
-    private javax.swing.JPanel bottomPanel;
-    private javax.swing.JPanel bottomPanel1;
-    private javax.swing.JPanel buttonPanel;
-    private javax.swing.JPanel buttonPanel1;
     private javax.swing.JPanel depButtonPanel;
-    private javax.swing.JPanel depButtonPanel1;
     private javax.swing.JList dependencyList;
     private javax.swing.JScrollPane dependencySP;
     private javax.swing.JButton editDepButton;
-    private javax.swing.JButton editDepButton1;
-    private javax.swing.JLabel filler1;
-    private javax.swing.JLabel filler2;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton managePlafsButton;
     private javax.swing.JLabel modDepLabel;
     private javax.swing.JLabel platform;
     private javax.swing.JPanel platformPanel;
     private javax.swing.JComboBox platformValue;
     private javax.swing.JButton removeDepButton;
-    private javax.swing.JButton removeDepButton2;
-    private javax.swing.JButton removeFriendButton;
-    private javax.swing.JButton removeFriendButton1;
     private javax.swing.JButton removeTokenButton;
     private javax.swing.JList reqTokenList;
     private javax.swing.JScrollPane reqTokenSP;
     private javax.swing.JLabel reqTokens;
     private javax.swing.JLabel space1;
-    private javax.swing.JLabel space2;
     private javax.swing.JPanel tokenButtonPanel;
     // End of variables declaration//GEN-END:variables
     

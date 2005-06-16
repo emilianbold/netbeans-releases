@@ -243,7 +243,6 @@ public class ProjectXMLManagerTest extends TestBase {
         assertEquals("number of dependencies", new Integer(deps.size()), new Integer(2));
         ModuleDependency newOO = null;
         ModuleDependency oldOO = null;
-        String specVer = null;
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             if ("org.openide.dialogs".equals(md.getModuleEntry().getCodeNameBase())) {
