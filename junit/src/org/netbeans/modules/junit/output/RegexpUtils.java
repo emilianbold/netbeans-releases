@@ -16,6 +16,7 @@ package org.netbeans.modules.junit.output;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.regex.Pattern;
+import org.netbeans.modules.junit.RegexpPatterns;
 
 /**
  * Utility class providing various parsing routines for parsing JUnit output.
@@ -24,22 +25,6 @@ import java.util.regex.Pattern;
  */
 final class RegexpUtils {
     
-    /** */
-    static final String JAVA_ID_START_REGEX
-            = "\\p{Lu}|\\p{Ll}|\\p{Lt}|\\p{Lm}" +                       //NOI18N
-              "|\\p{Lo}|\\p{Nl}|\\p{Sc}|\\p{Pc}";                       //NOI18N
-    /** */
-    static final String JAVA_ID_PART_REGEX
-            = JAVA_ID_START_REGEX +
-              "|\\p{Mn}|\\p{Mc}|\\p{Nd}|\\p{Cf}" +                      //NOI18N
-              "|[\\x00-\\x08\\x0e-\\x1b\\x7f-\\x9f]";                   //NOI18N
-    /** */
-    static final String JAVA_ID_REGEX
-            = "(?:" + JAVA_ID_START_REGEX + ')' +
-              "(?:" + JAVA_ID_PART_REGEX + ")*";  //NOI18N
-    /** */
-    static final String JAVA_ID_REGEX_FULL
-            = JAVA_ID_REGEX + "(?:\\." + JAVA_ID_REGEX + ")*";          //NOI18N
     /** */
     static final String TESTSUITE_PREFIX = "Testsuite: ";               //NOI18N
     /** */
@@ -73,24 +58,26 @@ final class RegexpUtils {
             = "\\p{Blank}*(?:(FAILED) *|(?i:.*\\berror\\b.*))";         //NOI18N
     /** */
     static final String TESTCASE_HEADER_PLAIN_REGEX
-            = "\\p{Blank}*(" + JAVA_ID_REGEX                            //NOI18N
+            = "\\p{Blank}*(" + RegexpPatterns.JAVA_ID_REGEX             //NOI18N
               + ")\\p{Blank}+took\\p{Blank}+" + TIME_SECS_REGEX;        //NOI18N
     /** */
     static final String TESTCASE_HEADER_BRIEF_REGEX
-            = "\\p{Blank}*(" + JAVA_ID_REGEX + ") *\\( *("              //NOI18N
-              + JAVA_ID_REGEX_FULL + ") *\\) *:" + TESTCASE_ISSUE_REGEX;//NOI18N
+            = "\\p{Blank}*(" + RegexpPatterns.JAVA_ID_REGEX             //NOI18N
+              + ") *\\( *(" + RegexpPatterns.JAVA_ID_REGEX_FULL         //NOI18N
+              + ") *\\) *:" + TESTCASE_ISSUE_REGEX;                     //NOI18N
     /** */
     static final String TESTCASE_EXCEPTION_REGEX
-            = "((?:" + JAVA_ID_REGEX_FULL + "\\.?(?:Exception|Error))"  //NOI18N
-                      + "|java\\.lang\\.Throwable)"                     //NOI18N
+            = "((?:" + RegexpPatterns.JAVA_ID_REGEX_FULL
+              + "\\.?(?:Exception|Error))|java\\.lang\\.Throwable)"     //NOI18N
               + "(?: *: *(.*))?";                                       //NOI18N
     /** */
     static final String CALLSTACK_LINE_PREFIX = "at ";                  //NOI18N
     /** */
     static final String CALLSTACK_LINE_REGEX
-            = "(?:\\t\\t?|  +)" + CALLSTACK_LINE_PREFIX                //NOI18N
-              + JAVA_ID_REGEX + "(?:\\." + JAVA_ID_REGEX + ")+"        //NOI18N
-              + "(?: ?\\([^()]+\\))?";                                 //NOI18N
+            = "(?:\\t\\t?|  +)" + CALLSTACK_LINE_PREFIX                 //NOI18N
+              + RegexpPatterns.JAVA_ID_REGEX + "(?:\\."                 //NOI18N
+              + RegexpPatterns.JAVA_ID_REGEX + ")+"                     //NOI18N
+              + "(?: ?\\([^()]+\\))?";                                  //NOI18N
     /** */
     static final String XML_DECL_PREFIX = "<?xml";                      //NOI18N
     /** */
@@ -161,7 +148,8 @@ final class RegexpUtils {
     /** */
     Pattern getFullJavaIdPattern() {
         if (fullJavaIdPattern == null) {
-            fullJavaIdPattern = Pattern.compile(JAVA_ID_REGEX_FULL);
+            fullJavaIdPattern
+                    = Pattern.compile(RegexpPatterns.JAVA_ID_REGEX_FULL);
         }
         return fullJavaIdPattern;
     }
