@@ -87,10 +87,15 @@ final class CustomizerVersioning extends NbPropertyPanel {
         publicPkgsSP.getViewport().setBackground(publicPkgsTable.getBackground());
         final Action switchAction = new AbstractAction() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
+                int row = publicPkgsTable.getSelectedRow();
+                if (row == -1) {
+                    // Nothing selected; e.g. user has tabbed into the table but not pressed Down key.
+                    return;
+                }
                 Boolean b = (Boolean) publicPkgsTable.
-                        getValueAt(publicPkgsTable.getSelectedRow(), 0);
+                        getValueAt(row, 0);
                 publicPkgsTable.setValueAt(Boolean.valueOf(!b.booleanValue()),
-                        publicPkgsTable.getSelectedRow(), 0);
+                        row, 0);
             }
         };
         publicPkgsTable.addMouseListener(new MouseAdapter() {
