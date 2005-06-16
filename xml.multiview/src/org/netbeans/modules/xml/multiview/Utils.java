@@ -202,6 +202,7 @@ public class Utils {
             factory.setValidating(false);
             XMLReader reader = factory.newSAXParser().getXMLReader();
             reader.setContentHandler(this);
+            reader.setEntityResolver(this);
             reader.parse(new InputSource(new StringReader(xmlString)));
         }
 
@@ -231,6 +232,10 @@ public class Utils {
             }
             position += locator.getColumnNumber() - 1;
             return position;
+        }
+
+        public InputSource resolveEntity(String publicId, String systemId) throws IOException, SAXException {
+            return new InputSource(new StringReader(""));
         }
     }
 }
