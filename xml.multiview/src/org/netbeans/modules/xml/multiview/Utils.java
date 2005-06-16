@@ -234,7 +234,7 @@ public class Utils {
             return position;
         }
 
-        public InputSource resolveEntity(String publicId, String systemId) throws IOException, SAXException {
+        public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
             return new InputSource(new StringReader(""));
         }
     }
