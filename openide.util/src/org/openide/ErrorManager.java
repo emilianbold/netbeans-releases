@@ -10,18 +10,17 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide;
 
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.WeakSet;
+package org.openide;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakSet;
 
 /**
  * A system of managing, annotating, and classifying errors and log messages.
@@ -591,7 +590,25 @@ public abstract class ErrorManager extends Object {
             }
 
             if (delegates.isEmpty() && (severity > INFORMATIONAL)) {
-                System.err.println("Log: " + severity + " msg: " + s); // NOI18N
+                String sev;
+                switch (severity) {
+                case WARNING:
+                    sev = "WARNING"; // NOI18N
+                    break;
+                case USER:
+                    sev = "USER"; // NOI18N
+                    break;
+                case EXCEPTION:
+                    sev = "EXCEPTION"; // NOI18N
+                    break;
+                case ERROR:
+                    sev = "ERROR"; // NOI18N
+                    break;
+                default:
+                    sev = String.valueOf(severity);
+                    break;
+                }
+                System.err.println("[" + sev + "] " + s); // NOI18N
             }
 
             for (Iterator i = delegates.iterator(); i.hasNext();) {
