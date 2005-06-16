@@ -261,6 +261,16 @@ public final class Startup {
             //and do not want fonts or other things customized
             defaults.putDefaults (customs.getLookAndFeelCustomizationKeysAndValues());
         }
+        
+        defaults.put("ClassLoader", new CLValue()); // NOI18N
+    }
+
+    /** Gets the value of system class loader and returns it.
+     */
+    private static final class CLValue implements UIDefaults.ActiveValue {
+        public Object createValue (UIDefaults defs) {
+            return Thread.currentThread().getContextClassLoader();
+        }
     }
 
     /** Finds and returns instance of LF customizer which is suitable for
