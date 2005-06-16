@@ -50,8 +50,6 @@ Microsystems, Inc. All Rights Reserved.
             <include name="modules/ext/jmxri.jar"/>
             <include name="ant/nblib/org-netbeans-modules-j2ee-sun-ide.jar"/>
             <include name="modules/ext/persistence-tool-support.jar"/>
-            <include name="modules/ext/appservbridge.jar"/>
-            
         </patternset>
     </target>    
 

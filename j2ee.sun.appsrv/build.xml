@@ -14,4 +14,11 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="appsrvapi" default="netbeans" basedir=".">
   <import file="../../../nbbuild/templates/projectized.xml"/>
+
+    <target depends="init" name="netbeans-extra">
+        <ant dir="../appsrvbridge" target="jar" inheritAll="false"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy file="../appsrvbridge/dist/appsrvbridge.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+    </target>
+    
 </project>

@@ -25,16 +25,6 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-                 <dependency>
-                 <code-name-base>org.openide</code-name-base>
-                     <build-prerequisite/>
-                     <compile-dependency/>
-                     <run-dependency>
-                         <release-version>1</release-version>
-                         <specification-version>4.20</specification-version>
-                     </run-dependency>
-                 </dependency>
-
                 <dependency>
                     <code-name-base>org.netbeans.libs.xerces</code-name-base>
                     <build-prerequisite/>
@@ -43,17 +33,12 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
+                
             </module-dependencies>
+            
             <public-packages>
-                <package>org.netbeans.modules.j2ee.sun.dd.api</package>
-                <package>org.netbeans.modules.j2ee.sun.dd.api.app</package>
-                <package>org.netbeans.modules.j2ee.sun.dd.api.serverresources</package>
-                <package>org.netbeans.modules.j2ee.sun.dd.api.web</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.api.ejb</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.api.common</package>
-                <package>org.netbeans.modules.j2ee.sun.dd.api.ejb</package>
-                <package>org.netbeans.modules.j2ee.sun.dd.api.common</package>
-                <!--package>org.netbeans.modules.j2ee.sun.dd.impl.verifier</package-->
             </public-packages>
         </data>
     </configuration>

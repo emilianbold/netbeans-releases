@@ -3,28 +3,22 @@ OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/sun/appsrvapi/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/appsrvapi/Bundle.properties
 OpenIDE-Module-Module-Dependencies: 
- org.netbeans.modules.javahelp/1 > 1.0,
- org.openide.io, org.openide.execution > 1.3,
+ org.openide.actions > 6.2,
+ org.openide.awt > 6.2,
+ org.openide.dialogs > 6.2,
+ org.openide.explorer > 6.2,
+ org.openide.filesystems > 6.2,
+ org.openide.loaders > 5.3,
+ org.openide.nodes > 6.2,
+ org.openide.options > 6.2,
+ org.openide.util > 6.2,
  org.netbeans.modules.j2eeserver/3 > 1.5,
- org.netbeans.modules.schema2beans/1,
  org.netbeans.modules.j2eeapis/1, 
+ org.netbeans.modules.schema2beans/1,
  org.netbeans.modules.db/1 = 2, 
- org.netbeans.modules.xml.catalog/2 > 0.9 , 
- org.netbeans.modules.xml.core/2 = 4, 
- org.netbeans.api.xml/1 , 
- org.netbeans.api.debugger/1, 
- org.netbeans.api.debugger.jpda/1, 
- org.netbeans.modules.projectapi/1, 
  org.netbeans.modules.projectuiapi/1, 
- org.netbeans.modules.j2ee.dd/1 > 1.3, 
- org.openide.src > 1.5, 
- org.netbeans.api.java/1, 
- org.netbeans.modules.dbschema/1 = 2,
- org.netbeans.modules.project.libraries/1,
- org.netbeans.libs.xerces/1,
- org.netbeans.modules.j2ee.sun.dd/1 = 1
+ org.netbeans.modules.projectapi/1
 OpenIDE-Module: org.netbeans.modules.j2ee.sun.appsrv/1
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.30
 OpenIDE-Module-Implementation-Version: 1
 Class-Path:   ext/jmxri.jar
 
