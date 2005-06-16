@@ -208,8 +208,14 @@ public class NbModuleProjectGenerator {
             storeProperties(suitePrivPropFO, privProps);
         }
         String modulesProp = globalProps.getProperty("modules"); // NOI18N
-        modulesProp = modulesProp == null ? "" : modulesProp + ":"; // NOI18N
-        globalProps.setProperty("modules", (modulesProp + "${" + projectPropKey + "}").split("(?<=:)", -1)); // NOI18N
+        if (modulesProp == null) {
+            modulesProp = "";
+        }
+        if (modulesProp.length() > 0) {
+            modulesProp += ":"; // NOI18N
+        }
+        modulesProp += "${" + projectPropKey + "}"; // NOI18N
+        globalProps.setProperty("modules", modulesProp.split("(?<=:)", -1)); // NOI18N
         storeProperties(suiteGlobalPropFO, globalProps);
     }
     

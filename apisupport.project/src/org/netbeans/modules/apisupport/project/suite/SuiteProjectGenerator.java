@@ -36,6 +36,7 @@ public class SuiteProjectGenerator {
     
     private static final String PLATFORM_PROPERTIES_PATH =
             "nbproject/platform.properties"; // NOI18N
+    private static final String PROJECT_PROPERTIES_PATH = "nbproject/project.properties"; // NOI18N
     
     /** Use static factory methods instead. */
     private SuiteProjectGenerator() {/* empty constructor*/}
@@ -48,6 +49,7 @@ public class SuiteProjectGenerator {
         }
         createSuiteProjectXML(dirFO);
         createPlatformProperties(dirFO, platformID);
+        createProjectProperties(dirFO);
         ModuleList.refresh();
         ProjectManager.getDefault().clearNonProjectCache();
     }
@@ -65,10 +67,18 @@ public class SuiteProjectGenerator {
     
     private static void createPlatformProperties(FileObject projectDir, String platformID) throws IOException {
         FileObject plafPropsFO = createFileObject(
-                projectDir, SuiteProjectGenerator.PLATFORM_PROPERTIES_PATH);
+                projectDir, PLATFORM_PROPERTIES_PATH);
         EditableProperties props = new EditableProperties(true);
-        props.put("nbplatform.active", platformID); // NOI18N
+        props.setProperty("nbplatform.active", platformID); // NOI18N
         storeProperties(plafPropsFO, props);
+    }
+    
+    private static void createProjectProperties(FileObject projectDir) throws IOException {
+        // #60026: ${modules} has to be defined right away.
+        FileObject propsFO = createFileObject(projectDir, PROJECT_PROPERTIES_PATH);
+        EditableProperties props = new EditableProperties(true);
+        props.setProperty("modules", ""); // NOI18N
+        storeProperties(propsFO, props);
     }
     
     /**

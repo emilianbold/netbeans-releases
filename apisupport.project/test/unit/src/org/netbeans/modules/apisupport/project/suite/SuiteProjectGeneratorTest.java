@@ -37,6 +37,7 @@ public class SuiteProjectGeneratorTest extends TestBase {
         "nbproject/project.xml",
         "nbproject/build-impl.xml",
         "nbproject/platform.properties",
+        "nbproject/project.properties",
     };
     
     public void testCreateSuiteModule() throws Exception {
