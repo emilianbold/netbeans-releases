@@ -20,14 +20,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.DependencyListModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.RequiredTokenListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
@@ -42,19 +41,16 @@ import org.openide.util.NbBundle;
  */
 public class CustomizerLibraries extends JPanel {
     
-    private ComponentFactory.DependencyListModel universeModulesModel;
     private NbModuleProperties modProps;    
     
     /** Creates new form CustomizerLibraries */
-    public CustomizerLibraries(final NbModuleProperties modProps,
-            final ComponentFactory.DependencyListModel universeModules) {
+    public CustomizerLibraries(final NbModuleProperties modProps) {
         initComponents();
         platformValue.setSelectedItem(modProps.getActivePlatform());
         if (!modProps.isStandalone()) {
             platformValue.setEnabled(false);
         }
         this.modProps = modProps;
-        this.universeModulesModel = universeModules;
         updateEnabled();
         reqTokenList.setModel(modProps.getRequiredTokenListModel());
         dependencyList.setModel(modProps.getDependenciesListModel());
@@ -356,10 +352,8 @@ public class CustomizerLibraries extends JPanel {
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        SortedSet depsToAdd = new TreeSet(universeModulesModel.getDependencies());
-        depsToAdd.removeAll(getDepListModel().getDependencies());
-        ComponentFactory.DependencyListModel model =
-                ComponentFactory.createDependencyListModel(depsToAdd);
+        DependencyListModel model = modProps.getUniverseDependenciesListModel(
+                getDepListModel().getDependencies());
         final AddModulePanel addPanel = new AddModulePanel(model);
         final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,

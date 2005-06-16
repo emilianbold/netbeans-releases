@@ -20,14 +20,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
@@ -36,7 +32,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -46,7 +41,6 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
-import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 
 /**
  * Adding ability for a NetBeans modules to provide a GUI customizer.
@@ -65,22 +59,15 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private final boolean isStandalone;
     private ProjectXMLManager projectXMLManipulator;
     
-    private Set/*<String>*/ modCategories;
-    private SortedSet/*<ModuleDependency>*/ universeDependencies;
-    
     private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
     
     private NbModuleProperties moduleProps;
-    private EditableProperties locBundleProps;
     
     private ProjectCustomizer.Category categories[];
     private ProjectCustomizer.CategoryComponentProvider panelProvider;
     
     // Keeps already displayed dialogs
     private static Map/*<Project,Dialog>*/ displayedDialogs = new HashMap();
-    
-    // models
-    private ComponentFactory.DependencyListModel universeDepsListModel;
     
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
             PropertyEvaluator evaluator, boolean isStandalone, String locBundlePropsPath) {
@@ -89,53 +76,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         this.evaluator = evaluator;
         this.isStandalone = isStandalone;
         this.locBundlePropsPath = locBundlePropsPath;
-    }
-    
-    /**
-     * Returns all the set of all available dependencies in the module's
-     * universe.
-     */
-    private SortedSet/*<ModuleDependency>*/ getUniverseDependencies() {
-        // XXX may need to invalidate this cache in case a module has been added to a suite...
-        if (universeDependencies == null) {
-            loadModuleListInfo();
-        }
-        return universeDependencies;
-    }
-    
-    /** Returns all known categories in the project's universe. */
-    private Set/*<String>*/ getModuleCategories() {
-        if (modCategories == null) {
-            loadModuleListInfo();
-        }
-        return modCategories;
-    }
-    
-    private ModuleList getModuleList() throws IOException {
-        return ModuleList.getModuleList(FileUtil.toFile(project.getProjectDirectory()));
-    }
-    
-    /**
-     * Prepare all ModuleList.Entries from this module's universe. Also prepare
-     * all categories.
-     */
-    private void loadModuleListInfo() {
-        try {
-            SortedSet/*<String>*/ allCategories = new TreeSet();
-            SortedSet/*<ModuleDependency>*/ allDependencies = new TreeSet();
-            for (Iterator it = getModuleList().getAllEntries().iterator(); it.hasNext(); ) {
-                ModuleEntry me = (ModuleEntry) it.next();
-                allDependencies.add(new ModuleDependency(me));
-                String cat = me.getCategory();
-                if (cat != null) {
-                    allCategories.add(cat);
-                }
-            }
-            modCategories = Collections.unmodifiableSortedSet(allCategories);
-            universeDependencies = Collections.unmodifiableSortedSet(new TreeSet(allDependencies));
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
     }
     
     /** Show customizer with the first category selected. */
@@ -155,11 +95,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         } else {
-            this.moduleProps = new NbModuleProperties(helper, evaluator, isStandalone);
             // XXX may be temporary solution - there is not exact spec what should be done
-            this.locBundleProps = locBundlePropsPath == null ?
-                new EditableProperties() :
-                helper.getProperties(locBundlePropsPath);
+            this.moduleProps = new NbModuleProperties(helper, evaluator, isStandalone, locBundlePropsPath);
             init();
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {
@@ -234,16 +171,15 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             sources, display, libraries, versioning, build
         };
         
-        // sources customizer
+        // sources customizer XXX also should be provider by NbModuleProperties
         panels.put(sources, new CustomizerSources(moduleProps, getSuiteProvider(),
                 FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath()));
         
         // display customizer
-        panels.put(display, new CustomizerDisplay(locBundleProps, getModuleCategories()));
+        panels.put(display, new CustomizerDisplay(moduleProps));
         
         // libraries customizer
-        universeDepsListModel = ComponentFactory.createDependencyListModel(getUniverseDependencies());
-        panels.put(libraries, new CustomizerLibraries(moduleProps, universeDepsListModel));
+        panels.put(libraries, new CustomizerLibraries(moduleProps));
         
         // versioning customizer
         panels.put(versioning, new CustomizerVersioning(moduleProps));
@@ -323,10 +259,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
                     moduleProps.storeProperties();
-                    // store localized info
-                    if (locBundlePropsPath != null) {
-                        helper.putProperties(locBundlePropsPath,  locBundleProps);
-                    }
                     return Boolean.TRUE;
                 }
             });

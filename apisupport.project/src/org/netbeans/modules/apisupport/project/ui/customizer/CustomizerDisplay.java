@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import javax.swing.JPanel;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.util.Utilities;
@@ -30,18 +29,17 @@ import org.openide.util.Utilities;
  */
 final class CustomizerDisplay extends JPanel implements ComponentFactory.StoragePanel {
     
-    private EditableProperties bundleProps;
+    private NbModuleProperties modProps;
     
     /** Creates new form CustomizerDisplay */
-    CustomizerDisplay(final EditableProperties bundleProps,
-            final Set categories) {
+    CustomizerDisplay(final NbModuleProperties modProps) {
         initComponents();
-        this.bundleProps = bundleProps;
-        for (Iterator it = categories.iterator(); it.hasNext(); ) {
+        this.modProps = modProps;
+        for (Iterator it = modProps.getModuleCategories().iterator(); it.hasNext(); ) {
             Object next = it.next();
             this.categoryValue.addItem(next);
         }
-        if (!categories.contains(getCategory())) {
+        if (!modProps.getModuleCategories().contains(getCategory())) {
             // put module's own category at the beginning
             categoryValue.insertItemAt(getCategory(), 0);
         }
@@ -52,15 +50,19 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         storeToProperties();
     }
     
+    private EditableProperties getBundle() {
+        return modProps.getBundleProperties();
+    }
+    
     private void readFromProperties() {
-        NbPropertyPanel.setText(nameValue, bundleProps.getProperty("OpenIDE-Module-Name")); // NOI18N
-        NbPropertyPanel.setText(shortDescValue, bundleProps.getProperty("OpenIDE-Module-Short-Description")); // NOI18N
-        longDescValue.setText(bundleProps.getProperty("OpenIDE-Module-Long-Description")); // NOI18N
+        NbPropertyPanel.setText(nameValue, getBundle().getProperty("OpenIDE-Module-Name")); // NOI18N
+        NbPropertyPanel.setText(shortDescValue, getBundle().getProperty("OpenIDE-Module-Short-Description")); // NOI18N
+        longDescValue.setText(getBundle().getProperty("OpenIDE-Module-Long-Description")); // NOI18N
         categoryValue.setSelectedItem(getCategory()); // NOI18N)
     }
     
     private String getCategory() {
-        String category = bundleProps.getProperty("OpenIDE-Module-Display-Category"); // NOI18N
+        String category = getBundle().getProperty("OpenIDE-Module-Display-Category"); // NOI18N
         return category != null ? category : ""; // NOI18N
     }
     
@@ -72,7 +74,7 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
     }
     
     private void storeOneProperty(String name, String value, boolean split) {
-        if (Utilities.compareObjects(value, bundleProps.getProperty(name))) {
+        if (Utilities.compareObjects(value, getBundle().getProperty(name))) {
             return;
         }
         if (value != null) {
@@ -80,12 +82,12 @@ final class CustomizerDisplay extends JPanel implements ComponentFactory.Storage
         }
         if (value != null && value.length() > 0) {
             if (split) {
-                bundleProps.setProperty(name, splitBySentence(value));
+                getBundle().setProperty(name, splitBySentence(value));
             } else {
-                bundleProps.setProperty(name, value);
+                getBundle().setProperty(name, value);
             }
         } else {
-            bundleProps.remove(name);
+            getBundle().remove(name);
         }
     }
     
