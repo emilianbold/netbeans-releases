@@ -29,7 +29,6 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -40,7 +39,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 
 /**
  * Adding ability for a NetBeans modules to provide a GUI customizer.
@@ -57,7 +55,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private final PropertyEvaluator evaluator;
     private final String locBundlePropsPath;
     private final boolean isStandalone;
-    private ProjectXMLManager projectXMLManipulator;
     
     private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
     
@@ -246,13 +243,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         }
     }
     
-    private ProjectXMLManager getProjectXMLManipulator() {
-        if (projectXMLManipulator == null) {
-            projectXMLManipulator = new ProjectXMLManager(helper);
-        }
-        return projectXMLManipulator;
-    }
-    
     public void save() {
         try {
             // Store properties
@@ -266,8 +256,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             if (result == Boolean.TRUE) {
                 ProjectManager.getDefault().saveProject(project);
             }
-            // reset
-            this.projectXMLManipulator = null;
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
         } catch (IOException ex) {
