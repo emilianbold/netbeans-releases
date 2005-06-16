@@ -223,9 +223,16 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 Process serverProcess = null;
                 String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
                 
-                String str = serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH); 
+                String serverRunFileName = serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH); 
                 
-                org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(str, "{-c}{"+JBOSS_INSTANCE+"}");
+                File serverRunFile = new File(serverRunFileName);
+                
+                if (!serverRunFile.exists()){
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_FNF")));//NOI18N
+                    return;
+                }
+                
+                org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(serverRunFileName, "{-c}{"+JBOSS_INSTANCE+"}");
                 
                 String envp[];
                 
