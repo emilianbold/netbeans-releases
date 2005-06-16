@@ -43,27 +43,12 @@ public class SetSystemPropertiesAction extends WizardAction {
         //String msg = resolveString("$L(com.sun.installer.InstallerResources,INIT_PROPS_MSG)");
         //state.setStatusDescription(msg);
         resolveProductBeanProperties();
-        checkStorageBuilder();
         setDesktopIconName();
         setAdminProperties();
         
         //It is used to create file 'nb4.1/config/productid'
         Util.setStringPropertyValue("ProductID","NBAS");
         Util.setStringPropertyValue(Names.INSTALLER_TYPE,Names.INSTALLER_AS_BUNDLE);
-    }
-    
-    private void checkStorageBuilder () {
-        if (Util.isWindows95() || Util.isWindows98() || Util.isWindowsME()) {
-            try {
-                logEvent(this, Log.DBG,"Disable Storage Builder for Win95, Win98, WinME.");
-                ProductService service = (ProductService) getService(ProductService.NAME);
-                service.setRetainedProductBeanProperty(ProductService.DEFAULT_PRODUCT_SOURCE,
-                Names.STORAGE_BUILDER_ID, "active", Boolean.FALSE);
-            } catch(ServiceException ex) {
-                ex.printStackTrace();
-                Util.logStackTrace(this,ex);
-            }
-        }
     }
     
     private void setDesktopIconName () {

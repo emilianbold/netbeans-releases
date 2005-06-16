@@ -123,8 +123,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-linux" depends="init, compile">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="../lib/scripts/run-storage-builder-unix.template"
-          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="linux.xml"/>
@@ -136,8 +134,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-linux-ml" depends="init-ml, compile, xsl-linux-ml">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="../lib/scripts/run-storage-builder-unix.template"
-          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="linux.xml-ml"/>
@@ -150,8 +146,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-solaris-sparc" depends="init, compile">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="../lib/scripts/run-storage-builder-unix.template"
-          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="solaris-sparc.xml"/>
@@ -163,8 +157,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-solaris-sparc-ml" depends="init-ml, compile, xsl-solaris-sparc-ml">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="../lib/scripts/run-storage-builder-unix.template"
-          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="solaris-sparc.xml-ml"/>
@@ -177,8 +169,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-solaris-x86" depends="init, compile">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="../lib/scripts/run-storage-builder-unix.template"
-          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="solaris-x86.xml"/>
@@ -190,8 +180,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-solaris-x86-ml" depends="init-ml, compile, xsl-solaris-x86-ml">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="../lib/scripts/run-storage-builder-unix.template"
-          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="solaris-x86.xml-ml"/>
@@ -204,8 +192,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-windows" depends="init, compile">
     <copy file="scripts/custom-install-jdk.template" tofile="build/scripts/_uninst/custom-install-jdk.template"/>
     <copy file="scripts/custom-install-jre.template" tofile="build/scripts/_uninst/custom-install-jre.template"/>
-    <copy file="../lib/scripts/run-storage-builder-windows.template"
-          tofile="build/storagebuilder/run-storage-builder-windows.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="windows.xml"/>
@@ -217,8 +203,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-windows-ml" depends="init-ml, compile, xsl-windows-ml">
     <copy file="scripts/custom-install-jdk.template" tofile="build/scripts/_uninst/custom-install-jdk.template"/>
     <copy file="scripts/custom-install-jre.template" tofile="build/scripts/_uninst/custom-install-jre.template"/>
-    <copy file="../lib/scripts/run-storage-builder-windows.template"
-          tofile="build/storagebuilder/run-storage-builder-windows.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="windows.xml-ml"/>

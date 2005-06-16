@@ -26,9 +26,13 @@ import com.installshield.wizard.service.file.FileService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 
 public class StorageBuilderAction extends ProductAction {
@@ -51,8 +55,6 @@ public class StorageBuilderAction extends ProductAction {
     private File mdrTempDir;
 
     private boolean success = false;
-    
-    private RunCommand runCommand = new RunCommand();
     
     private ProgressThread progressThread;
     private MutableOperationState mutableOperationState;
@@ -129,7 +131,7 @@ public class StorageBuilderAction extends ProductAction {
                     ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
                     ecservice.setExitCode(STORAGE_BUILDER_UNHANDLED_ERROR);
                 } catch (Exception ex) {
-                    logEvent(this, Log.ERROR, "Couldn't set exit code. ");
+                    logEvent(this, Log.ERROR, "Could not set exit code. ");
                 }
                 return;
             }
@@ -140,67 +142,141 @@ public class StorageBuilderAction extends ProductAction {
                     ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
                     ecservice.setExitCode(STORAGE_BUILDER_UNHANDLED_ERROR);
                 } catch (Exception ex) {
-                    logEvent(this, Log.ERROR, "Couldn't set exit code. ");
+                    logEvent(this, Log.ERROR, "Could not set exit code. ");
                 }
                 return;
             }
             logEvent(this, Log.DBG,"Created destination dir for SB: " + mdrDestDir.getAbsolutePath());
-            boolean canRunScript = true;
-	    if (Util.isWindowsOS()) {
-		String runScript = uninstDir + File.separator + "storagebuilder" + File.separator
-                + "run-storage-builder-windows.template";
-		createRunScriptWindows(runScript, "run-storage-builder-windows.bat",
-                mdrTempDir.getAbsolutePath() + File.separator + STORAGE_BUILDER_TEMP_FILE);
-	    } else {
-		String runScript = uninstDir + File.separator + "storagebuilder" + File.separator
-                + "run-storage-builder-unix.template";
-		canRunScript = createRunScript(runScript,"run-storage-builder-unix.sh",
-                mdrTempDir.getAbsolutePath() + File.separator + STORAGE_BUILDER_TEMP_FILE);
+            
+            long startTime = System.currentTimeMillis();
+            
+            //Set system proeprties for sb
+            System.getProperties().put("gjast.location",nbInstallDir + File.separator + "ide5"
+            + File.separator + "modules" + File.separator + "ext" + File.separator + "gjast.jar");
+            
+            System.getProperties().put("mdr.filename",mdrTempDir.getAbsolutePath()
+            + File.separator + STORAGE_BUILDER_TEMP_FILE);
+            
+            System.getProperties().put("preparse.files",nbInstallDir + File.separator + "_uninst"
+            + File.separator + "storagebuilder" + File.separator + "preparse-files.txt");
+                    
+            ClassLoader parent = this.getClass().getClassLoader().getParent();
+            URL [] classPath = getClassPath();
+            URLClassLoader urlClassLoader = new URLClassLoader(classPath,parent);
+            Class clazz = Class.forName("org.netbeans.lib.java.storagebuilder.Main",true,urlClassLoader);
+            
+            //Must be called so that Lookup finds org.netbeans.modules.masterfs.MasterURLMapper
+            Thread.currentThread().setContextClassLoader(urlClassLoader);
+            
+            Method method = null;
+            Class[] params = new Class[] {String[].class, String.class};
+            
+            try {
+                method = clazz.getMethod("prebuildJDKStorages", params);
+            } catch (NoSuchMethodException exc) {
+                logEvent(this, Log.ERROR, "Could not find SB method.");
+                logEvent(this, Log.ERROR, exc);
+                return;
+            }
+         
+            startProgress();
+            
+            Object oResult = null;
+            String destDir = nbInstallDir + File.separator + "ide5" + File.separator + "mdrstorage";
+            Object [] args = new Object [] {new String [] {Util.getJdkHome()}, destDir};
+            try {
+                oResult = method.invoke(null, args);
+            } catch (IllegalAccessException exc) {
+                logEvent(this, Log.ERROR, exc);
+                return;
+            } catch (IllegalArgumentException exc) {
+                logEvent(this, Log.ERROR, exc);
+                return;
+            } catch (InvocationTargetException exc) {
+                logEvent(this, Log.ERROR, exc);
+                return;
             }
             
-            String execName;
-            String driveName;
-            int paramCount;
-
-            if (Util.isWindowsOS()) {
-                execName = "run-storage-builder-windows.bat";
-                paramCount = 1;
-            }
-            else {
-                execName = "run-storage-builder-unix.sh";
-                paramCount = 1;
-            }
+            logEvent(this, Log.DBG,"Storage Builder returned: " + oResult);
             
-            String cmdArray[] = new String[paramCount];
-            String execPath   = uninstDir + File.separator + "storagebuilder" + File.separator + execName;
-            
-	    // Put the command and arguments together for windows
-            if (Util.isWindowsOS()) {
-                //cmdArray[0] = "cmd /C \"" + execPath + "\"";
-                cmdArray[0] = execPath;
-            } else {
-                cmdArray[0] = execPath;
-            }
-            
-            if (canRunScript) {
-                // Invoke the correct command
-                logEvent(this, Log.DBG,"# # # # # # # #");
-                logEvent(this, Log.DBG,"Start Invoking Storage Builder: cmdArray -> " + Arrays.asList(cmdArray).toString());
-                runCommand(cmdArray, null, support);
-            } else {
-                logEvent(this, Log.DBG,"# # # # # # # #");
-                logEvent(this, Log.DBG,"Cannot run Storage Builder");
-            }
+            long endTime = System.currentTimeMillis();
+            logEvent(this, Log.DBG,"Storage builder took: " + (endTime - startTime) + "ms");
+        } catch (Exception ex) {
+            logEvent(this, Log.ERROR, ex);
+        } finally {
+            stopProgress();
             
             //Delete temporary dir
             Util.deleteCompletely(mdrTempDir,support);
             logEvent(this, Log.DBG,"Deleted temporary dir for SB: " + mdrTempDir.getAbsolutePath());
-            
-        } catch (Exception ex) {
-            logEvent(this, Log.ERROR, ex);
-            logEvent(this, Log.DBG, ex);
         }
         logEvent(this, Log.DBG,"Running Storage Builder took: (ms) " + (System.currentTimeMillis() - currtime));
+    }
+    
+    /** Create array of URLs filed with classpath elements for running
+     * storage builder.
+     */
+    private URL [] getClassPath () throws MalformedURLException {
+        URL [] classPath;
+        String s;
+        //For Windows replace "\" in path by "/" to get correct URL.
+        if (Util.isWindowsOS()) {
+            s = nbInstallDir.replace('\\','/');
+        } else {
+            s = nbInstallDir;
+        }
+        logEvent(this, Log.DBG,"getClassPath Path prefix1: " + s);
+        //Replace spaces in URL
+        if (Util.isWindowsOS()) {
+            //On Windows path starts with disk like C: so we must add additional slash
+            s = "file:///" + s.replaceAll(" ","%20") + "/";
+        } else {
+            s = "file://" + s.replaceAll(" ","%20") + "/";
+        }
+        logEvent(this, Log.DBG,"getClassPath Path prefix2: " + s);
+        try {
+            classPath = new URL [] 
+            {
+            new URL(s + "ide5/modules/org-netbeans-jmi-javamodel.jar"),
+            new URL(s + "ide5/modules/org-netbeans-modules-javacore.jar"),
+            new URL(s + "platform5/modules/org-netbeans-modules-masterfs.jar"),
+            
+            new URL(s + "_uninst/storagebuilder/storagebuilder.jar"),
+            
+            new URL(s + "platform5/core/org-openide-filesystems.jar"),
+            new URL(s + "platform5/lib/org-openide-util.jar"),
+            new URL(s + "platform5/lib/org-openide-modules.jar"),
+            
+            new URL(s + "platform5/modules/org-openide-actions.jar"),
+            new URL(s + "platform5/modules/org-openide-awt.jar"),
+            new URL(s + "platform5/modules/org-openide-dialogs.jar"),
+            new URL(s + "platform5/modules/org-openide-execution.jar"),
+            new URL(s + "platform5/modules/org-openide-explorer.jar"),
+            new URL(s + "platform5/modules/org-openide-io.jar"),
+            new URL(s + "platform5/modules/org-openide-loaders.jar"),
+            new URL(s + "platform5/modules/org-openide-nodes.jar"),
+            new URL(s + "platform5/modules/org-openide-options.jar"),
+            new URL(s + "platform5/modules/org-openide-text.jar"),
+            new URL(s + "platform5/modules/org-openide-windows.jar"),
+            
+            new URL(s + "ide5/modules/org-netbeans-api-java.jar"),
+            new URL(s + "ide5/modules/javax-jmi-model.jar"),
+            new URL(s + "ide5/modules/javax-jmi-reflect.jar"),
+            new URL(s + "ide5/modules/org-netbeans-api-mdr.jar"),
+            new URL(s + "ide5/modules/org-netbeans-modules-mdr.jar"),
+            new URL(s + "ide5/modules/org-netbeans-modules-jmiutils.jar"),
+            new URL(s + "ide5/modules/org-netbeans-modules-projectapi.jar"),
+            new URL(s + "ide5/modules/org-netbeans-modules-classfile.jar"),
+            new URL(s + "ide5/modules/ext/java-parser.jar")
+            };
+        } catch (MalformedURLException exc) {
+            throw exc;
+        }
+        //Dump class path
+        for (int i = 0; i < classPath.length; i++) {
+            logEvent(this, Log.DBG,"cl[" + i + "]: " + classPath[i].toString());
+        }
+        return classPath;
     }
     
     /** Does cleaning. */
@@ -209,75 +285,14 @@ public class StorageBuilderAction extends ProductAction {
         installMode = UNINSTALL;
         
         String fileName;
-        fileName = nbInstallDir + File.separator + StorageBuilderAction.STORAGE_BUILDER_DEST_DIR;
+        //Delete directory created by storage builder during install
+        fileName = nbInstallDir + File.separator + STORAGE_BUILDER_DEST_DIR;
         logEvent(this, Log.DBG,"Deleting: " + fileName);
         Util.deleteCompletely(new File(fileName),support);
         
         fileName = uninstDir + File.separator + "storagebuilder" + File.separator + "storagebuilder.log";
         logEvent(this, Log.DBG,"Deleting: " + fileName);
         Util.deleteCompletely(new File(fileName),support);
-        
-        if (Util.isWindowsOS()) {
-            fileName = uninstDir + File.separator + "storagebuilder" + File.separator + "run-storage-builder-windows.bat";
-            logEvent(this, Log.DBG,"Deleting: " + fileName);
-            Util.deleteCompletely(new File(fileName),support);
-        } else {
-            fileName = uninstDir + File.separator + "storagebuilder" + File.separator + "run-storage-builder-unix.sh";
-            logEvent(this, Log.DBG,"Deleting: " + fileName);
-            Util.deleteCompletely(new File(fileName),support);
-        }
-    }
-    
-    //threads should only run in install mode until ISMP supports them
-    private void runCommand(String[] cmdArray, String [] envP, ProductActionSupport support)
-    throws Exception {
-        boolean doProgress = !(Boolean.getBoolean("no.progress"));
-        logEvent(this, Log.DBG,"doProgress -> " + doProgress);
-        
-        //mutableOperationState = support.getOperationState();
-        logEvent(this, Log.DBG,"cmdArray -> " + Arrays.asList(cmdArray).toString());
-        try {
-            runCommand.execute(cmdArray, envP, null);
-            
-            if ((installMode == INSTALL) && doProgress) {
-                startProgress();
-            }
-            
-            runCommand.waitFor();
-            logEvent(this, Log.DBG,runCommand.print());
-            
-            int status = runCommand.getReturnStatus();
-            logEvent(this, Log.DBG,"Return status: " + status);
-            if (status != 0) {
-                //Log error
-            }
-            
-            if((installMode == INSTALL) && doProgress) {
-                stopProgress();
-            }
-            
-            if (!isCompletedSuccessfully()) {
-                String mode = (installMode == INSTALL) ? "install" : "uninstall";
-                String commandStr = Util.arrayToString(cmdArray, " ");
-                logEvent(this, Log.DBG, "Error occured while " + mode + "ing [" + status + "] -> " + commandStr);
-                logEvent(this, Log.ERROR, "Error occured while " + mode + "ing [" + status +  "] -> " + commandStr);
-                try {
-                    ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
-                    ecservice.setExitCode(STORAGE_BUILDER_UNHANDLED_ERROR);
-                } catch (Exception ex) {
-                    logEvent(this, Log.ERROR, "Couldn't set exit code. ");
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw ex;
-        }
-    }
-    
-    /** check whether or not the un/installation was successful */
-    private boolean isCompletedSuccessfully() {
-        // For now return success
-        return true;
     }
     
     /** Returns checksum for Storage directory in bytes. */
@@ -339,6 +354,10 @@ public class StorageBuilderAction extends ProductAction {
     }
     
     public void stopProgress() {
+        //Method startProgress() must be called first
+        if (progressThread == null) {
+            return;
+        }
         logEvent(this, Log.DBG,"in progress stop");
         progressThread.interrupt();
         logEvent(this, Log.DBG,"interrupting ProgressThread ");
@@ -351,7 +370,7 @@ public class StorageBuilderAction extends ProductAction {
         }
         logEvent(this, Log.DBG,"ProgressThread interrupted");
         progressThread.finish();
-        //progressThread = null;
+        progressThread = null;
         
         Thread.currentThread().yield();
         logEvent(this, Log.DBG,"active Threads -> " + Thread.currentThread().activeCount());
@@ -370,87 +389,6 @@ public class StorageBuilderAction extends ProductAction {
 		     + "\nException: " + ex);
 	    return false;
 	}
-	return true;
-    }
-    
-    /** Create run script for storage builder from the provided template.
-     * @template - the script to use as a template
-     * @scriptName - the name of the generated script
-     */
-    private boolean createRunScript (String template, String scriptName, String mdrTempPath)
-    throws Exception {
-	File templateFile = new File(template);
-	String parent = templateFile.getParent();
-	if (parent == null) {
-	    return false; // should always have j2se as parent
-	}
-        File scriptFile = new File(parent + File.separator + scriptName);
-
-        BufferedReader reader = new BufferedReader(new FileReader(templateFile));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(scriptFile));
-        
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith("NB_PATH=")) {
-                line = "NB_PATH=" + "\"" + nbInstallDir + "\"";
-            } else if (line.startsWith("JAVA_HOME=")) {
-                line = "JAVA_HOME=" + "\"" + Util.getJdkHome() + "\"";
-            } else if (line.startsWith("MDR_TMP_FILE=")) {
-                line = "MDR_TMP_FILE=" + "\"" + mdrTempPath + "\"";
-            } else if (line.startsWith("LOGFILE=")) {
-                line = "LOGFILE=" + "\"" + uninstDir + File.separator 
-                + "storagebuilder" + File.separator + "storagebuilder.log" + "\"";
-            }
-            writer.write(line + System.getProperty("line.separator"));
-        }
-        reader.close();
-        
-	if (!templateFile.delete()) {
-	    logEvent(this, Log.ERROR, "Could not delete file: " + templateFile);
-	}              
-        writer.close();
-        if (setExecutable(scriptFile.getAbsolutePath())) {
-	    logEvent(this, Log.DBG, scriptFile.getAbsolutePath()
-            + " is set as executable file.");
-	    return true;
-	} else {
-            return false;
-        }
-    }
-    
-    /** Create run script for storage builder from the provided template.
-     * @template - the script to use as a template
-     * @scriptName - the name of the generated script
-     */
-    private boolean createRunScriptWindows (String template, String scriptName, String mdrTempPath)
-    throws Exception {
-	File templateFile = new File(template);
-	String parent = templateFile.getParent();
-	if (parent == null) {
-	    return false; // should always have j2se as parent
-	}
-        File scriptFile = new File(parent + File.separator + scriptName);
-        
-        BufferedReader reader = new BufferedReader(new FileReader(templateFile));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(scriptFile));
-        
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith("SET NB_PATH=")) {
-                line = "SET NB_PATH=" + nbInstallDir;
-            } else if (line.startsWith("SET JAVA_HOME=")) {
-                line = "SET JAVA_HOME=" + Util.getJdkHome();
-            } else if (line.startsWith("SET MDR_TMP_FILE=")) {
-                line = "SET MDR_TMP_FILE=" + mdrTempPath;
-            } else if (line.startsWith("SET LOGFILE=")) {
-                line = "SET LOGFILE=" + uninstDir + File.separator 
-                + "storagebuilder" + File.separator + "storagebuilder.log";
-            }
-            writer.write(line + System.getProperty("line.separator"));
-        }
-        reader.close();
-        
-        writer.close();
 	return true;
     }
     
@@ -517,15 +455,14 @@ public class StorageBuilderAction extends ProductAction {
             Thread.currentThread().yield();
             mos.setStatusDetail("");
             logEvent(this, Log.DBG,"Finishing");;
-            if(!mos.isCanceled()) {
+            if (!mos.isCanceled()) {
                 mos.setStatusDescription("");
                 percentageCompleted = mos.getProgress().getPercentComplete();
                 for (; percentageCompleted <= 100; percentageCompleted++) {
                     logEvent(this, Log.DBG,"percentageCompleted = " + percentageCompleted + " updateCounter " + mos.getUpdateCounter());
                     mos.updatePercentComplete(ESTIMATED_TIME, 1L, 100L);
                 }
-            }
-            else {
+            } else {
                 String statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.installationCancelled)");
                 mos.setStatusDescription(statusDesc);
                 mos.getProgress().setPercentComplete(0);
@@ -535,12 +472,10 @@ public class StorageBuilderAction extends ProductAction {
         
         /** Check if the operation is canceled. If not yield to other threads. */
         private boolean isCanceled() {
-            if(mos.isCanceled() && loop) {
+            if (mos.isCanceled() && loop) {
                 logEvent(this, Log.DBG,"MOS is cancelled");
                 loop = false;
-                runCommand.interrupt();
-            }
-            else {
+            } else {
                 Thread.currentThread().yield();
             }
             

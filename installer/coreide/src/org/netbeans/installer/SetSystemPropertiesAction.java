@@ -38,23 +38,8 @@ public class SetSystemPropertiesAction extends WizardAction {
     
     public void execute(WizardBeanEvent evt) {
         resolveProductBeanProperties();
-        checkStorageBuilder();
         setDesktopIconName();
         Util.setStringPropertyValue(Names.INSTALLER_TYPE,Names.INSTALLER_NB);
-    }
-    
-    private void checkStorageBuilder () {
-        if (Util.isWindows95() || Util.isWindows98() || Util.isWindowsME()) {
-            try {
-                logEvent(this, Log.DBG,"Disable Storage Builder for Win95, Win98, WinME.");
-                ProductService service = (ProductService) getService(ProductService.NAME);
-                service.setRetainedProductBeanProperty(ProductService.DEFAULT_PRODUCT_SOURCE,
-                Names.STORAGE_BUILDER_ID, "active", Boolean.FALSE);
-            } catch(ServiceException ex) {
-                ex.printStackTrace();
-                Util.logStackTrace(this,ex);
-            }
-        }
     }
     
     private void setDesktopIconName () {

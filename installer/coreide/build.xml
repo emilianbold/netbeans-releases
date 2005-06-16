@@ -140,8 +140,6 @@ Microsystems, Inc. All Rights Reserved.
   </macrodef>
 
   <target name="build-win32" depends="init, compile, xsl-win32">
-    <copy file="../lib/scripts/run-storage-builder-windows.template"
-          tofile="build/storagebuilder/run-storage-builder-windows.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="build/${ismp.project}-win32"/>
@@ -150,8 +148,6 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="build-win32-ml" depends="init-ml, compile, xsl-win32, xsl-win32-ml">
-    <copy file="../lib/scripts/run-storage-builder-windows.template"
-          tofile="build/storagebuilder/run-storage-builder-windows.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="build/${ismp.project}-win32-ml"/>
@@ -160,8 +156,6 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="build-unix" depends="init, compile, xsl-unix">
-    <copy file="../lib/scripts/run-storage-builder-unix.template"
-          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="build/${ismp.project}-unix"/>
@@ -172,8 +166,6 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="build-unix-ml" depends="init-ml, compile, xsl-unix, xsl-unix-ml">
-    <copy file="../lib/scripts/run-storage-builder-unix.template"
-          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="build/${ismp.project}-unix-ml"/>
