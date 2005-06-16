@@ -14,5 +14,5 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="jmx/test-unit" basedir="." default="all">
-    <import file="../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
 </project>
