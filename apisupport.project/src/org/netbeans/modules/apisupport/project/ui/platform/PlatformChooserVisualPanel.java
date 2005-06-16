@@ -52,7 +52,7 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
         String propName = evt.getPropertyName();
         if (propName.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
             File plafDir = platformChooser.getSelectedFile();
-            if (NbPlatform.isPlatformDirectory(plafDir)) {
+            if (/* #60133 */ plafDir != null && NbPlatform.isPlatformDirectory(plafDir)) {
                 try {
                     plafLabelValue.setText(NbPlatform.computeDisplayName(plafDir));
                 } catch (IOException e) {
