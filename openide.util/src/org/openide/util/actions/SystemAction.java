@@ -292,6 +292,8 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     * Please check <a href="@org-openide-awt@/org/openide/awt/Actions.html#connect(AbstractButton,%20Action)>Actions.connect</a> for
     * additional info how this is achieved (using special "iconBase" key for getValue).
     * As of APIs version 3.24, this path will be used for a localized search automatically.
+    * If you do not want an icon, do <em>not</em> override this to return a blank icon. Leave it null,
+    * but call <code>putValue("noIconInMenu", Boolean.TRUE)</code> to make sure that no extra space is allotted for an icon in the menu item.
     * @return the resource name for the icon, e.g. <code>com/mycom/mymodule/myIcon.gif</code>; or <code>null</code> to have no icon (make a text label)
     */
     protected String iconResource() {
