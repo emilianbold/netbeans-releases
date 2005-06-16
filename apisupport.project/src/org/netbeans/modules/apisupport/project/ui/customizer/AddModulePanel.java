@@ -12,11 +12,14 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -37,7 +40,6 @@ import org.openide.ErrorManager;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-
 
 /**
  * Represents panel for adding new dependency for a module. Shown after
@@ -174,7 +176,8 @@ final class AddModulePanel extends JPanel {
         } else {
             final Runnable compute = new Runnable() {
                 public void run() {
-                    final Set/*<ModuleDependency>*/ matches = filterer.getMatches(text);
+                    final SortedSet/*<ModuleDependency>*/ matches
+                            = new TreeSet(filterer.getMatches(text));
                     filterTask = null;
                     Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {

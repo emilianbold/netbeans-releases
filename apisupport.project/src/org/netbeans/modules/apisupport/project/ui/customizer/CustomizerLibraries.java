@@ -17,8 +17,10 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Arrays;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -38,15 +40,13 @@ import org.openide.util.NbBundle;
  *
  * @author mkrauskopf
  */
-public class CustomizerLibraries extends JPanel implements ComponentFactory.StoragePanel {
+public class CustomizerLibraries extends JPanel {
     
-    private ComponentFactory.DependencyListModel moduleDeps;
     private ComponentFactory.DependencyListModel universeModulesModel;
-    private NbModuleProperties modProps;
+    private NbModuleProperties modProps;    
     
     /** Creates new form CustomizerLibraries */
     public CustomizerLibraries(final NbModuleProperties modProps,
-            final ComponentFactory.DependencyListModel subModules,
             final ComponentFactory.DependencyListModel universeModules) {
         initComponents();
         platformValue.setSelectedItem(modProps.getActivePlatform());
@@ -54,11 +54,10 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
             platformValue.setEnabled(false);
         }
         this.modProps = modProps;
-        this.moduleDeps = subModules;
         this.universeModulesModel = universeModules;
         updateEnabled();
         reqTokenList.setModel(modProps.getRequiredTokenListModel());
-        dependencyList.setModel(subModules);
+        dependencyList.setModel(modProps.getDependenciesListModel());
         dependencyList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(false));
         dependencyList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
@@ -67,17 +66,29 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
                 }
             }
         });
-    }
-    
-    public void store() {
-        modProps.setActivePlatform((NbPlatform) platformValue.getSelectedItem());
+        platformValue.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    // set new platform
+                    modProps.setActivePlatform((NbPlatform) platformValue.getSelectedItem());
+                    // refresh dependencies list
+                    dependencyList.setModel(modProps.getDependenciesListModel());
+                    updateEnabled();
+                }
+            }
+        });
     }
     
     private void updateEnabled() {
         // if there is no selection disable edit/remove buttons
-        boolean enabled = dependencyList.getSelectedIndex() != -1;
+        boolean enabled = modProps.isActivePlatformValid() && dependencyList.getSelectedIndex() != -1;
         editDepButton.setEnabled(enabled);
         removeDepButton.setEnabled(enabled);
+        addDepButton.setEnabled(modProps.isActivePlatformValid());
+    }
+
+    ComponentFactory.DependencyListModel getDepListModel() {
+        return (ComponentFactory.DependencyListModel) dependencyList.getModel();
     }
     
     /** This method is called from within the constructor to
@@ -323,9 +334,9 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
     }//GEN-LAST:event_managePlatforms
     
     private void editModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModuleDependency
-        ModuleDependency origDep = moduleDeps.getDependency(
+        ModuleDependency origDep = getDepListModel().getDependency(
                 dependencyList.getSelectedIndex());
-        ModuleDependency editedDep = moduleDeps.findEdited(origDep);
+        ModuleDependency editedDep = getDepListModel().findEdited(origDep);
         EditDependencyPanel editPanel = new EditDependencyPanel(
                 editedDep == null ? origDep : editedDep);
         DialogDescriptor descriptor = new DialogDescriptor(editPanel,
@@ -334,19 +345,19 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-            moduleDeps.editDependency(origDep, editPanel.getEditedDependency());
+            getDepListModel().editDependency(origDep, editPanel.getEditedDependency());
         }
         d.dispose();
     }//GEN-LAST:event_editModuleDependency
     
     private void removeModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModuleDependency
-        moduleDeps.removeDependencies(Arrays.asList(dependencyList.getSelectedValues()));
+        getDepListModel().removeDependencies(Arrays.asList(dependencyList.getSelectedValues()));
         dependencyList.clearSelection();
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        Set depsToAdd = new TreeSet(universeModulesModel.getDependencies());
-        depsToAdd.removeAll(moduleDeps.getDependencies());
+        SortedSet depsToAdd = new TreeSet(universeModulesModel.getDependencies());
+        depsToAdd.removeAll(getDepListModel().getDependencies());
         ComponentFactory.DependencyListModel model =
                 ComponentFactory.createDependencyListModel(depsToAdd);
         final AddModulePanel addPanel = new AddModulePanel(model);
@@ -368,7 +379,7 @@ public class CustomizerLibraries extends JPanel implements ComponentFactory.Stor
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
             ModuleDependency newDep = addPanel.getSelectedDependency();
-            moduleDeps.addDependency(newDep);
+            getDepListModel().addDependency(newDep);
             dependencyList.requestFocus();
             dependencyList.setSelectedValue(newDep, true);
         }

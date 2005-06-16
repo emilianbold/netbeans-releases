@@ -19,7 +19,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,7 +47,6 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 
 /**
  * Adding ability for a NetBeans modules to provide a GUI customizer.
@@ -68,8 +66,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private ProjectXMLManager projectXMLManipulator;
     
     private Set/*<String>*/ modCategories;
-    private Set/*<ModuleDependency>*/ universeDependencies;
-    private Set/*<ModuleDependency>*/ moduleDependencies;
+    private SortedSet/*<ModuleDependency>*/ universeDependencies;
     
     private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
     
@@ -83,7 +80,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private static Map/*<Project,Dialog>*/ displayedDialogs = new HashMap();
     
     // models
-    private ComponentFactory.DependencyListModel moduleDepsListModel;
     private ComponentFactory.DependencyListModel universeDepsListModel;
     
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
@@ -96,31 +92,10 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     /**
-     * Returns all known moduleDependencies in the project's universe.
-     */
-    private Set/*<ModuleDependency>*/ getModuleDependencies() {
-        if (moduleDependencies == null) {
-            NbPlatform plaf = NbPlatform.getPlatformByID(
-                    evaluator.getProperty("nbplatform.active")); // NOI18N
-            // for NetBeans.org module case plaf == null, which is OK
-            if (plaf != null && !plaf.isValid()) {
-                moduleDependencies = new TreeSet(Collator.getInstance());
-            } else {
-                try {
-                    moduleDependencies = getProjectXMLManipulator().getDirectDependencies();
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
-                }
-            }
-        }
-        return moduleDependencies;
-    }
-    
-    /**
      * Returns all the set of all available dependencies in the module's
      * universe.
      */
-    private Set/*<ModuleDependency>*/ getUniverseDependencies() {
+    private SortedSet/*<ModuleDependency>*/ getUniverseDependencies() {
         // XXX may need to invalidate this cache in case a module has been added to a suite...
         if (universeDependencies == null) {
             loadModuleListInfo();
@@ -267,10 +242,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         panels.put(display, new CustomizerDisplay(locBundleProps, getModuleCategories()));
         
         // libraries customizer
-        moduleDepsListModel = ComponentFactory.createDependencyListModel(new TreeSet(getModuleDependencies()));
         universeDepsListModel = ComponentFactory.createDependencyListModel(getUniverseDependencies());
-        panels.put(libraries, new CustomizerLibraries(moduleProps,
-                moduleDepsListModel, universeDepsListModel));
+        panels.put(libraries, new CustomizerLibraries(moduleProps, universeDepsListModel));
         
         // versioning customizer
         panels.put(versioning, new CustomizerVersioning(moduleProps));
@@ -291,7 +264,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             }
         };
     }
-    
+
     /** Creates a category without subcategories. */
     private ProjectCustomizer.Category createCategory(
             String progName, String displayName) {
@@ -354,28 +327,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                     if (locBundlePropsPath != null) {
                         helper.putProperties(locBundlePropsPath,  locBundleProps);
                     }
-                    // store module dependencies
-                    if (moduleDepsListModel.isChanged()) {
-                        Set/*<ModuleDependency>*/ depsToSave =
-                                new TreeSet(ModuleDependency.CODE_NAME_BASE_COMPARATOR);
-                        depsToSave.addAll(moduleDepsListModel.getDependencies());
-                        
-                        // process removed modules
-                        depsToSave.removeAll(moduleDepsListModel.getRemovedDependencies());
-                        
-                        // process added modules
-                        depsToSave.addAll(moduleDepsListModel.getAddedDependencies());
-                        
-                        // process edited modules
-                        Map/*<ModuleDependency, ModuleDependency>*/ toEdit
-                                = moduleDepsListModel.getEditedDependencies();
-                        for (Iterator it = toEdit.entrySet().iterator(); it.hasNext(); ) {
-                            Map.Entry entry = (Map.Entry) it.next();
-                            depsToSave.remove(entry.getKey());
-                            depsToSave.add(entry.getValue());
-                        }
-                        getProjectXMLManipulator().replaceDependencies(depsToSave);
-                    }
                     return Boolean.TRUE;
                 }
             });
@@ -384,7 +335,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                 ProjectManager.getDefault().saveProject(project);
             }
             // reset
-            this.moduleDependencies = null;
             this.projectXMLManipulator = null;
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());

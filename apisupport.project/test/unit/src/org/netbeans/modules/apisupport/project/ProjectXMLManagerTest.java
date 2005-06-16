@@ -78,7 +78,7 @@ public class ProjectXMLManagerTest extends TestBase {
     }
     
     public void testGetDirectDependencies() throws Exception {
-        Set deps = actionPXM.getDirectDependencies();
+        Set deps = actionPXM.getDirectDependencies(null);
         assertEquals("number of dependencies", new Integer(deps.size()), new Integer(2));
         
         Set assumed = new HashSet();
@@ -110,7 +110,7 @@ public class ProjectXMLManagerTest extends TestBase {
         assertTrue("removing dependency", result.booleanValue());
         ProjectManager.getDefault().saveProject(actionProject);
         
-        final Set newDeps = actionPXM.getDirectDependencies();
+        final Set newDeps = actionPXM.getDirectDependencies(null);
         assertEquals("number of dependencies", new Integer(1), new Integer(newDeps.size()));
         Set assumed = new HashSet();
         assumed.add("org.netbeans.examples.modules.lib");
@@ -126,7 +126,7 @@ public class ProjectXMLManagerTest extends TestBase {
 //    }
     
     public void testEditDependency() throws Exception {
-        final Set deps = actionPXM.getDirectDependencies();
+        final Set deps = actionPXM.getDirectDependencies(null);
         
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
@@ -151,7 +151,7 @@ public class ProjectXMLManagerTest extends TestBase {
         // XXX this refresh shouldn't be needed
         this.actionPXM = new ProjectXMLManager(actionProject.getHelper());
         
-        final Set newDeps = actionPXM.getDirectDependencies();
+        final Set newDeps = actionPXM.getDirectDependencies(null);
         for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             if ("org.openide".equals(md.getModuleEntry().getCodeNameBase())) {
@@ -184,7 +184,7 @@ public class ProjectXMLManagerTest extends TestBase {
         assertTrue("adding dependencies", result.booleanValue());
         ProjectManager.getDefault().saveProject(actionProject);
         
-        Set deps = actionPXM.getDirectDependencies();
+        Set deps = actionPXM.getDirectDependencies(null);
         
         Set assumed = new HashSet();
         assumed.add("org.netbeans.examples.modules.lib");
@@ -239,7 +239,7 @@ public class ProjectXMLManagerTest extends TestBase {
     }
     
     public void testReplaceDependencies() throws Exception {
-        final Set deps = actionPXM.getDirectDependencies();
+        final Set deps = actionPXM.getDirectDependencies(null);
         assertEquals("number of dependencies", new Integer(deps.size()), new Integer(2));
         ModuleDependency newOO = null;
         ModuleDependency oldOO = null;
@@ -267,7 +267,7 @@ public class ProjectXMLManagerTest extends TestBase {
             }
         });
         
-        final Set newDeps = getNewActionPXM().getDirectDependencies();
+        final Set newDeps = getNewActionPXM().getDirectDependencies(null);
         for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             if ("org.openide.dialogs".equals(md.getModuleEntry().getCodeNameBase())) {

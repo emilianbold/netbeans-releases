@@ -72,12 +72,32 @@ public final class ModuleList {
     private static final Map/*<File,Set<Entry>>*/ knownEntries = new HashMap();
 
     /**
-     * Find the list of modules associated with a project (itself, others in its suite, others in its platform, or others in netbeans.org).
-     * <p>Do not cache the result; always call this method fresh, in case {@link #refresh} has been called.
+     * Find the list of modules associated with a project (itself, others in
+     * its suite, others in its platform, or others in netbeans.org). <p>Do not
+     * cache the result; always call this method fresh, in case {@link
+     * #refresh} has been called. This method actually call {@link
+     * #getModuleList(File, File)} with the <code>null</code> for the
+     * <code>customNbDestDir</code> parameter.
+     *
      * @param basedir the project directory to start in
      * @return a module list
      */
     public static synchronized ModuleList getModuleList(File basedir) throws IOException {
+        return getModuleList(basedir, null);
+    }
+    
+    /**
+     * The same as {@link #getModuleList(File)}, but giving chance to specify a
+     * custom NetBeans platform.
+     *
+     * @param basedir the project directory to start in
+     * @param customNbDestDir custom NetBeans platform directory to be used for
+     *        searching NB module instead of using the currently set one in a
+     *        module's properties. If <code>null</code> is passed the
+     *        default(active) platform from module's properties will be used
+     * @return a module list
+     */
+    public static synchronized ModuleList getModuleList(File basedir, File customNbDestDir) throws IOException {
         Element data = parseData(basedir);
         if (data == null) {
             throw new IOException("Not an NBM project in " + basedir); // NOI18N
@@ -92,9 +112,9 @@ public final class ModuleList {
                 throw new IOException("No suite.dir defined from " + basedir); // NOI18N
             }
             File suite = PropertyUtils.resolveFile(basedir, suiteS);
-            return findOrCreateModuleListFromSuite(suite);
+            return findOrCreateModuleListFromSuite(suite, customNbDestDir);
         } else if (standalone) {
-            return findOrCreateModuleListFromStandaloneModule(basedir);
+            return findOrCreateModuleListFromStandaloneModule(basedir, customNbDestDir);
         } else {
             // netbeans.org module.
             File nbroot = findNetBeansOrg(basedir);
@@ -314,13 +334,19 @@ public final class ModuleList {
         }
     }
     
-    public static ModuleList findOrCreateModuleListFromSuite(File root) throws IOException {
+    public static ModuleList findOrCreateModuleListFromSuite(
+            File root, File customNbDestDir) throws IOException {
         PropertyEvaluator eval = parseSuiteProperties(root);
-        String nbdestdirS = eval.getProperty("netbeans.dest.dir"); // NOI18N
-        if (nbdestdirS == null) {
-            throw new IOException("No netbeans.dest.dir defined in " + root); // NOI18N
+        File nbdestdir;
+        if (customNbDestDir == null) {
+            String nbdestdirS = eval.getProperty("netbeans.dest.dir"); // NOI18N
+            if (nbdestdirS == null) {
+                throw new IOException("No netbeans.dest.dir defined in " + root); // NOI18N
+            }
+            nbdestdir = PropertyUtils.resolveFile(root, nbdestdirS);
+        } else {
+            nbdestdir = customNbDestDir;
         }
-        File nbdestdir = PropertyUtils.resolveFile(root, nbdestdirS);
         return merge(new ModuleList[] {
             findOrCreateModuleListFromSuiteWithoutBinaries(root, nbdestdir, eval),
             findOrCreateModuleListFromBinaries(nbdestdir),
@@ -393,16 +419,22 @@ public final class ModuleList {
         return modules;
     }
     
-    private static ModuleList findOrCreateModuleListFromStandaloneModule(File basedir) throws IOException {
+    private static ModuleList findOrCreateModuleListFromStandaloneModule(
+            File basedir, File customNbDestDir) throws IOException {
         PropertyEvaluator eval = parseProperties(basedir, null, false, true, "irrelevant"); // NOI18N
-        String nbdestdirS = eval.getProperty("netbeans.dest.dir"); // NOI18N
-        if (nbdestdirS == null) {
-            throw new IOException("No netbeans.dest.dir defined in " + basedir); // NOI18N
+        File nbdestdir;
+        if (customNbDestDir == null) {
+            String nbdestdirS = eval.getProperty("netbeans.dest.dir"); // NOI18N
+            if (nbdestdirS == null) {
+                throw new IOException("No netbeans.dest.dir defined in " + basedir); // NOI18N
+            }
+            if (nbdestdirS.indexOf("${") != -1) { // NOI18N
+                throw new IOException("Unevaluated properties in " + nbdestdirS + " from " + basedir + "; probably means platform definitions not loaded correctly"); // NOI18N
+            }
+            nbdestdir = PropertyUtils.resolveFile(basedir, nbdestdirS);
+        } else {
+            nbdestdir = customNbDestDir;
         }
-        if (nbdestdirS.indexOf("${") != -1) { // NOI18N
-            throw new IOException("Unevaluated properties in " + nbdestdirS + " from " + basedir + "; probably means platform definitions not loaded correctly"); // NOI18N
-        }
-        File nbdestdir = PropertyUtils.resolveFile(basedir, nbdestdirS);
         ModuleList binaries = findOrCreateModuleListFromBinaries(nbdestdir);
         ModuleList sources = (ModuleList) sourceLists.get(basedir);
         if (sources == null) {

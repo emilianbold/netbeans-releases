@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
@@ -33,6 +34,7 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 
 /**
  * Convenience class for managing project's <em>project.xml</em> file.
@@ -65,9 +67,10 @@ public final class ProjectXMLManager {
     private static final String PACKAGE = "package"; // NOI18N
     
     private AntProjectHelper helper;
+    private NbPlatform plaf;
     
     private String cnb;
-    private Set/*<ModuleDependency>*/ directDeps;
+    private SortedSet/*<ModuleDependency>*/ directDeps;
     private String[] publicPackages;
     private String[] friends;
     
@@ -79,15 +82,15 @@ public final class ProjectXMLManager {
         this.helper = helper;
     }
     
-    /** Returns direct module dependencies. */
-    public Set/*<ModuleDependency>*/ getDirectDependencies() throws IOException {
-        if (directDeps != null) {
+    /** Returns sorted direct module dependencies. */
+    public SortedSet/*<ModuleDependency>*/ getDirectDependencies(NbPlatform plaf) throws IOException {
+        if (this.plaf == plaf && directDeps != null) {
             return directDeps;
         }
         directDeps = new TreeSet();
         Element moduleDependencies = findModuleDependencies(getConfData());
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
-        ModuleList ml = getModuleList();
+        ModuleList ml = getModuleList(plaf);
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             Element depEl = (Element)it.next();
             
@@ -259,7 +262,7 @@ public final class ProjectXMLManager {
         }
         helper.putPrimaryConfigurationData(confData, true);
     }
-
+    
     /**
      * Replaces all original friends with the given <code>friends</code> with
      * <code>packages</code> as exposed packages to those friends. Also removes
@@ -287,7 +290,7 @@ public final class ProjectXMLManager {
         if (publicPackages != null) {
             return publicPackages;
         }
-        ManifestManager.PackageExport[] pp = 
+        ManifestManager.PackageExport[] pp =
                 ProjectXMLManager.findPublicPackages(getConfData());
         Set sortedPP = new TreeSet();
         for (int i = 0; i < pp.length; i++) {
@@ -401,8 +404,12 @@ public final class ProjectXMLManager {
      * Helper method to get the <code>ModuleList</code> for the project this
      * instance manage.
      */
-    private ModuleList getModuleList() throws IOException {
-        return ModuleList.getModuleList(FileUtil.toFile(helper.getProjectDirectory()));
+    private ModuleList getModuleList(NbPlatform plaf) throws IOException {
+        if (plaf != null) {
+            return ModuleList.getModuleList(FileUtil.toFile(helper.getProjectDirectory()), plaf.getDestDir());
+        } else {
+            return ModuleList.getModuleList(FileUtil.toFile(helper.getProjectDirectory()));
+        }
     }
     
     /** Find packages in public-packages or friend-packages section. */
