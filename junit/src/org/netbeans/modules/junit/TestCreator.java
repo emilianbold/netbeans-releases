@@ -680,7 +680,7 @@ public final class TestCreator {
                                null,                    // Javadoc text
                                null,                    // Javadoc - object
                                null,                    // body - object
-                               "\nsuper(testName);\n",  // body - text  //NOI18N
+                               "super(testName);\n",    // body - text  //NOI18N
                                Collections.EMPTY_LIST,  // type parameters
                                createTestConstructorParams(),  // parameters
                                null);                   // exception names
