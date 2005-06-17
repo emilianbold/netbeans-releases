@@ -92,7 +92,10 @@ Microsystems, Inc. All Rights Reserved.
             &lt;/project>
         </echo>
         <property name="nb_all" location="../.."/>
-        <zip destfile="${xtest.testsdist.zip}" excludes="**/CVS/**">
+        <delete file="${xtest.testsdist.zip}"/>
+        <!-- build tests and add them to zip file (need to be first to build XTest) -->
+        <ant dir="." antfile="${xtest.harness.antfile}" target="buildtestsdist"/>
+        <zip destfile="${xtest.testsdist.zip}" excludes="**/CVS/**" update="true">
             <!-- add build file -->
             <zipfileset dir="." includes="build-testsdist.xml" fullpath="build.xml"/>
             <!-- add xtest -->
@@ -107,8 +110,6 @@ Microsystems, Inc. All Rights Reserved.
             <zipfileset dir="${nb_all}/jellytools/builds" prefix="jellytools/builds"/>
          </zip>
          <delete file="build-testsdist.xml"/>
-         <!-- build tests and add them to zip file -->
-         <ant dir="." antfile="${xtest.harness.antfile}" target="buildtestsdist"/>
     </target>
 
     <target name="cleantestsdist">
