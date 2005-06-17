@@ -264,14 +264,14 @@ public class CvsVersioningSystem {
         String name = file.getName();
         Set patterns = new HashSet(Arrays.asList(CvsModuleConfig.getDefault().getIgnoredFilePatterns()));
         addUserPatterns(patterns);
+        addCvsIgnorePatterns(patterns, file.getParentFile());
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
             if (pattern.matcher(name).matches()) return true;
         }
 
-        if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) return true;
-        return isInCvsIgnore(file);
+        return SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE;
     }
     
     private void addUserPatterns(Set patterns) {
@@ -298,10 +298,7 @@ public class CvsVersioningSystem {
                     userIgnorePatternsReset = true;
                     userIgnorePatterns.clear();
                 } else {
-                    // TODO: implement SH->REGEX convertor
-                    s = s.replaceAll("\\.", "\\\\.");
-                    s = s.replaceAll("\\*", ".*");
-                    userIgnorePatterns.add(Pattern.compile(s));
+                    userIgnorePatterns.add(sh2regex(s));
                 }
             }
         } catch (IOException e) {
@@ -309,6 +306,19 @@ public class CvsVersioningSystem {
         } finally {
             if (r != null) try { r.close(); } catch (IOException e) {}
         }
+    }
+
+    /**
+     * Converts shell file patern to regex pattern.
+     * 
+     * @param s unix shell pattern
+     * @return regex patterm
+     */ 
+    private static Pattern sh2regex(String s) {
+        // TODO: implement full SH->REGEX convertor
+        s = s.replaceAll("\\.", "\\\\.");
+        s = s.replaceAll("\\*", ".*");
+        return Pattern.compile(s);
     }
 
     /**
@@ -328,7 +338,23 @@ public class CvsVersioningSystem {
         return false;
     }
 
-    public boolean isInCvsIgnore(File file) {
+    private void addCvsIgnorePatterns(Set patterns, File file) {
+        try {
+            Set shPatterns = readCvsIgnoreEntries(file);
+            for (Iterator i = shPatterns.iterator(); i.hasNext();) {
+                String shPattern = (String) i.next();
+                if ("!".equals(shPattern)) {
+                    patterns.clear();
+                } else {
+                    patterns.add(sh2regex(shPattern));
+                }
+            }
+        } catch (IOException e) {
+            // ignore
+        }
+    }
+    
+     public boolean isInCvsIgnore(File file) {
         try {
             return readCvsIgnoreEntries(file.getParentFile()).contains(file.getName());
         } catch (IOException e) {
@@ -336,7 +362,7 @@ public class CvsVersioningSystem {
             return false;
         }
     }
-
+    
     public boolean isIgnoredFilename(File file) {
         if (FILENAME_CVS.equals(file.getName())) return true;
         return false;
@@ -422,7 +448,6 @@ public class CvsVersioningSystem {
         Set entries = readCvsIgnoreEntries(file.getParentFile());
         if (entries.add(file.getName())) {
             writeCvsIgnoreEntries(file.getParentFile(), entries);
-            fileStatusCache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         }
     }
     
@@ -430,7 +455,6 @@ public class CvsVersioningSystem {
         Set entries = readCvsIgnoreEntries(file.getParentFile());
         if (entries.remove(file.getName())) {
             writeCvsIgnoreEntries(file.getParentFile(), entries);
-            fileStatusCache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         }
     }
     

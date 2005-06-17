@@ -19,6 +19,7 @@ import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.openide.filesystems.*;
+import org.openide.util.RequestProcessor;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,14 +32,65 @@ import java.util.*;
  */
 class FilesystemHandler implements FileChangeListener, InterceptionListener {
         
-    private static final String FILENAME_CVS = "CVS";
+    private static final RequestProcessor  eventProcessor = new RequestProcessor("CVS-Event", 1);
 
-    private final FileStatusCache       cache;
+    private final FileStatusCache   cache;
     
     public FilesystemHandler(CvsVersioningSystem cvs) {
         cache = cvs.getStatusCache();
     }
     
+    // FileChangeListener implementation ---------------------------
+    
+    public void fileFolderCreated(FileEvent fe) {
+        eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+        eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
+    }
+    
+    public void fileChanged(FileEvent fe) {
+        eventProcessor.post(new FileChangedTask(FileUtil.toFile(fe.getFile())));
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        eventProcessor.post(new FileDeletedTask(FileUtil.toFile(fe.getFile())));
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+        eventProcessor.post(new FileRenamedTask(fe));
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        // not interested
+    }
+    
+    // InterceptionListener implementation ---------------------------
+    
+    /**
+     * We save all CVS metadata to be able to commit files that were
+     * in that directory.
+     * 
+     * @param fo FileObject, we are only interested in files inside CVS directory
+     */ 
+    public void beforeDelete(FileObject fo) {
+        if (fo.isFolder()) return;
+        if (!(fo = fo.getParent()).getName().equals(CvsVersioningSystem.FILENAME_CVS)) return;
+        File file = FileUtil.toFile(fo.getParent());
+        saveMetadata(file);
+    }
+
+    public void deleteSuccess(FileObject fo) {
+        // not interested
+    }
+
+    public void deleteFailure(FileObject fo) {
+        // not interested
+    }
+
+    // package private contract ---------------------------
+
     /**
      * Registers listeners to all disk filesystems.
      */ 
@@ -61,54 +113,26 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         }
     }
 
-    public void fileFolderCreated(FileEvent fe) {
-        addNewFile(FileUtil.toFile(fe.getFile()));
-    }
-
-    public void fileDataCreated(FileEvent fe) {
-        addNewFile(FileUtil.toFile(fe.getFile()));
-    }
+    // private methods ---------------------------
     
-    public void fileChanged(FileEvent fe) {
-        cache.refreshCached(FileUtil.toFile(fe.getFile()), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-    }
-
-    public void fileDeleted(FileEvent fe) {
-        fileDeletedImpl(FileUtil.toFile(fe.getFile()));
-    }
-
-    public void fileRenamed(FileRenameEvent fe) {
-        FileObject newFile = fe.getFile();
-        String oldName = fe.getName();
-        String oldExtension = fe.getExt();
-        if (oldExtension.length() > 0) oldExtension = "." + oldExtension;
-        
-        File parent = FileUtil.toFile(newFile.getParent());
-        File removed = new File(parent, oldName + oldExtension);
-        
-        fileDeletedImpl(removed);
-        addNewFile(FileUtil.toFile(newFile));
-    }
-
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-        // not interested
-    }
-    
-    private void addNewFile(File file) {
-        int status = cache.getStatus(file).getStatus();
+    private void fileCreatedImpl(File file) {
+        if (file == null) return;
+        int status = cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
         if ((status & FileInformation.STATUS_MANAGED) == 0) return;
-        // TODO: if .cvignore is added, refresh statuses of whole directory
 
-        StandardAdminHandler sah = new StandardAdminHandler();
-        Entry entry = null;
-        try {
-            entry = sah.getEntry(file);
-        } catch (IOException e) {
+        if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+            StandardAdminHandler sah = new StandardAdminHandler();
+            Entry entry = null;
+            try {
+                entry = sah.getEntry(file);
+            } catch (IOException e) {
+            }
+            if (entry != null && !entry.isDirectory() && entry.isUserFileToBeRemoved()) {
+                cvsUndoRemoveLocally(sah, file, entry);    
+            }
         }
-        if (entry != null && !entry.isDirectory() && entry.isUserFileToBeRemoved()) {
-            cvsUndoRemoveLocally(sah, file, entry);    
-        }
-        cache.directoryContentChanged(file);
+        if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
+        if (file.isDirectory()) cache.directoryContentChanged(file);
     }
 
     /**
@@ -128,7 +152,9 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         if (entry != null && !entry.isDirectory() && !entry.isUserFileToBeRemoved()) {
             cvsRemoveLocally(sah, file, entry);    
         }
+
         cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
     }
     
     /**
@@ -177,26 +203,77 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     }
 
     /**
-     * We save all CVS metadata to be able to commit files that were
-     * in that directory.
-     * 
-     * @param fo
+     * Handles the File Created event.
      */ 
-    public void beforeDelete(FileObject fo) {
-        File file = FileUtil.toFile(fo);
-        if (file.isFile()) {
-            file = file.getParentFile();
+    private final class FileCreatedTask implements Runnable {
+        
+        private final File file;
+
+        FileCreatedTask(File file) {
+            this.file = file;
         }
-        if (!file.getName().equals(FILENAME_CVS)) return;
-        if ((cache.getStatus(file.getParentFile()).getStatus() & FileInformation.STATUS_MANAGED) == 0) return;
-        file = file.getParentFile();
-        saveMetadata(file);
+        
+        public void run() {
+            fileCreatedImpl(file);
+        }
     }
 
-    public void deleteSuccess(FileObject fo) {
+    /**
+     * Handles the File Changed event.
+     */ 
+    private final class FileChangedTask implements Runnable {
+        
+        private final File file;
+
+        FileChangedTask(File file) {
+            this.file = file;
+        }
+        
+        public void run() {
+            cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
+        }
     }
 
-    public void deleteFailure(FileObject fo) {
-    
+    /**
+     * Handles the File Deleted event.
+     */ 
+    private final class FileDeletedTask implements Runnable {
+        
+        private final File file;
+
+        FileDeletedTask(File file) {
+            this.file = file;
+        }
+        
+        public void run() {
+            fileDeletedImpl(file);
+        }
+    }
+
+    /**
+     * Handles the File Rename event.
+     */ 
+    private final class FileRenamedTask implements Runnable {
+        
+        private final FileRenameEvent event;
+
+        public FileRenamedTask(FileRenameEvent event) {
+            this.event = event;
+        }
+
+        public void run() {
+            FileObject newFile = event.getFile();
+            String oldName = event.getName();
+            String oldExtension = event.getExt();
+            if (oldExtension.length() > 0) oldExtension = "." + oldExtension;
+        
+            File parent = FileUtil.toFile(newFile.getParent());
+            File removed = new File(parent, oldName + oldExtension);
+        
+            fileDeletedImpl(removed);
+            fileCreatedImpl(FileUtil.toFile(newFile));
+        }
+
     }
 }

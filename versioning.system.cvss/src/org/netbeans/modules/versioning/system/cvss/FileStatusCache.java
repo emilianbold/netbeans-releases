@@ -296,7 +296,6 @@ public class FileStatusCache {
             FileInformation info = (FileInformation) files.get(file);
             if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) fireFileStatusChanged(file);
         }
-        fireFileStatusChanged(dir);                
     }
     
     /**
