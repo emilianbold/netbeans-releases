@@ -249,6 +249,10 @@ public final class Startup {
 
     private void installLFCustoms (LFCustoms customs) {
         UIDefaults defaults = UIManager.getDefaults();
+
+        // to make sure we always use system classloader
+        defaults.put("ClassLoader", new CLValue()); // NOI18N
+        
         //Install values that some look and feels may leave out, which should
         //be included
         defaults.putDefaults (customs.getGuaranteedKeysAndValues());
@@ -262,7 +266,6 @@ public final class Startup {
             defaults.putDefaults (customs.getLookAndFeelCustomizationKeysAndValues());
         }
         
-        defaults.put("ClassLoader", new CLValue()); // NOI18N
     }
 
     /** Gets the value of system class loader and returns it.
