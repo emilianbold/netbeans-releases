@@ -121,12 +121,16 @@ public class JspCompletionQuery implements CompletionQuery {
     }
     
     /** a new CC api hack - the result item needs to know its offset, formerly got from result - now cannot be used. */
-    private void setResultItemsOffset(CompletionData cd, int ccoffset) {
-        Iterator i = cd.completionItems.iterator();
+    private void setResultItemsOffset(List/*<CompletionItem>*/ items, int removeLength, int ccoffset) {
+        Iterator i = items.iterator();
         while(i.hasNext()) {
             org.netbeans.modules.web.core.syntax.completion.ResultItem ri = (org.netbeans.modules.web.core.syntax.completion.ResultItem)i.next();
-            ri.setSubstituteOffset(ccoffset - cd.removeLength);
+            ri.setSubstituteOffset(ccoffset - removeLength);
         }
+    }
+    
+    private void setResultItemsOffset(CompletionData cd, int ccoffset) {
+        setResultItemsOffset(cd.completionItems, cd.removeLength, ccoffset);
     }
     
     /** Gets a list of completion items for JSP tags.
@@ -232,7 +236,9 @@ public class JspCompletionQuery implements CompletionQuery {
                 AttributeValueSupport attSup = 
                     AttributeValueSupport.getSupport(true, elem.getName(), attrName);
                 if (attSup != null) {
-                    return attSup.getResult (component, offset, sup, elem, valuePart);
+                    CompletionQuery.Result result = attSup.getResult (component, offset, sup, elem, valuePart);
+                    setResultItemsOffset(result.getData(), valuePart.length(), offset);
+                    return result;
                 }
             }
             
@@ -387,7 +393,9 @@ public class JspCompletionQuery implements CompletionQuery {
                 AttributeValueSupport attSup = 
                     AttributeValueSupport.getSupport(false, elem.getName(), attrName);
                 if (attSup != null) {
-                    return attSup.getResult (component, offset, sup, elem, valuePart); // NOI18N
+                    CompletionQuery.Result result = attSup.getResult (component, offset, sup, elem, valuePart); // NOI18N
+                    setResultItemsOffset(result.getData(), valuePart.length(), offset);
+                    return result;
                 }
             }
             
