@@ -82,6 +82,7 @@ final class CustomizerSources extends NbPropertyPanel {
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 12);
         add(srcLevel, gridBagConstraints);
 
+        srcLevelValue.setPrototypeDisplayValue("mmm");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
