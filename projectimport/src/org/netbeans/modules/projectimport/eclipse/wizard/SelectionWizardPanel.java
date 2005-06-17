@@ -20,7 +20,6 @@ import java.io.File;
 import org.netbeans.modules.projectimport.eclipse.EclipseUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Selection wizard panel for Eclipse Wizard importer.
@@ -82,9 +81,9 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
     public void validate() throws WizardValidationException {
         if (!panel.isWorkspaceChosen()) {
             String dest = panel.getProjectDestinationDir();
-            File destFile = new File(dest);
+
             String message = null;
-            if ((!destFile.isAbsolute()) || FileUtil.toFileObject(destFile) == null|| !EclipseUtils.isWritable(dest)) {
+            if ((!new File(dest).isAbsolute()) || !EclipseUtils.isWritable(dest)) {
                 message = ProjectImporterWizard.getMessage(
                         "MSG_CannotCreateProjectInFolder", dest); // NOI18N
             } else if (!EclipseUtils.isRegularJavaProject(panel.getProjectDir())) {
