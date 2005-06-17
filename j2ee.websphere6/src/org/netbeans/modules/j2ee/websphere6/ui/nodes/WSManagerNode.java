@@ -13,6 +13,7 @@
 package org.netbeans.modules.j2ee.websphere6.ui.nodes;
 
 import java.awt.*;
+import java.beans.*;
 
 import javax.enterprise.deploy.spi.*;
 
@@ -21,6 +22,7 @@ import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 import org.netbeans.modules.j2ee.websphere6.*;
+import org.netbeans.modules.j2ee.websphere6.ui.nodes.editors.*;
 
 /**
  * Node that will appear in the Server Registry and represent a concrete server 
@@ -201,7 +203,8 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
                            String password = deploymentManager.
                                    getInstanceProperties().getProperty(
                                    InstanceProperties.PASSWORD_ATTR);
-                           return password.replaceAll(".", "\\*");     // NOI18N
+//                           return password.replaceAll(".", "\\*");     // NOI18N
+                           return password;
                        }
 
                        public void setValue(Object value) {
@@ -209,7 +212,12 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
                                    setProperty(InstanceProperties.PASSWORD_ATTR,
                                    (String) value);
                        }
+                       
+                       public PropertyEditor getPropertyEditor() {
+                           return new WSPasswordEditor();
+                       }
                    };
+        
         properties.put(property);
         
         // SERVER ROOT
