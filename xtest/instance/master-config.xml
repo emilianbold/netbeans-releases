@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="j2eeserver" testtypes="unit" attributes="stable"/>
         <module name="web/webapi" testtypes="unit" attributes="stable"/>
         <module name="j2ee/refactoring" testtypes="unit" attributes="stable"/>
-        <module name="extbrowser" testtypes="unit" attributes="stable"/>
+        <!--<module name="extbrowser" testtypes="unit" attributes="stable"/>-->
         <module name="html" testtypes="unit" attributes="stable"/>
         <module name="xml/multiview" testtypes="unit" attributes="stable"/>
         <module name="debuggerjpda" testtypes="unit" attributes="stable"/>
