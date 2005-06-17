@@ -13,15 +13,17 @@
 
 package org.netbeans.modules.apisupport.project.ui.platform;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.ErrorManager;
-
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Sources</em> tab in the NetBeans platforms customizer.
@@ -195,6 +197,14 @@ final class NbPlatformCustomizerSources extends JPanel {
     private void addFolder(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFolder
         JFileChooser chooser = new JFileChooser();
         chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileFilter(new FileFilter() {
+            public boolean accept(File f)  {
+                return f.isDirectory();
+            }
+            public String getDescription() {
+                return NbBundle.getMessage(NbPlatformCustomizer.class, "CTL_SourcesTab"); // NOI18N
+            }
+        });
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {

@@ -207,7 +207,7 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
                         f.getName().toLowerCase(Locale.US).endsWith(".zip"); // NOI18N
             }
             public String getDescription() {
-                return NbBundle.getMessage(NbPlatformCustomizer.class, "CTL_JavadocTab"); // NOI18N
+                return NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, "CTL_JavadocTab"); // NOI18N
             }
         });
         int ret = chooser.showOpenDialog(this);

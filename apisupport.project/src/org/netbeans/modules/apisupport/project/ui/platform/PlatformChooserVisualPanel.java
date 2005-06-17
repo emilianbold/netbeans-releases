@@ -18,9 +18,11 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicVisualPanel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * First panel from <em>Adding New Platform</em> wizard panels. Allows user to
@@ -35,6 +37,15 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
     public PlatformChooserVisualPanel(WizardDescriptor setting) {
         super(setting);
         initComponents();
+        platformChooser.setAcceptAllFileFilterUsed(false);
+        platformChooser.setFileFilter(new FileFilter() {
+            public boolean accept(File f)  {
+                return f.isDirectory();
+            }
+            public String getDescription() {
+                return NbBundle.getMessage(PlatformChooserVisualPanel.class, "CTL_PlatformFolder"); // NOI18N
+            }
+        });
         platformChooser.addPropertyChangeListener(this);
         setName(NbPlatformCustomizer.CHOOSER_STEP);
     }
