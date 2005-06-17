@@ -1,5 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Friends: org.netbeans.modules.j2ee.sun.appsrv81, 
+ org.netbeans.modules.j2ee.sun.ddui
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/sun/appsrvapi/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/appsrvapi/Bundle.properties
 OpenIDE-Module-Module-Dependencies: 

@@ -3,3 +3,5 @@ OpenIDE-Module: org.netbeans.modules.j2ee.sun.dd/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/dd/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Implementation-Version: 1
+OpenIDE-Module-Friends: org.netbeans.modules.j2ee.sun.appsrv81, 
+ org.netbeans.modules.j2ee.sun.ddui
