@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.websphere6.ui.wizard;
@@ -92,35 +92,13 @@ public class WSInstantiatingIterator
         // initialize the resulting set
         Set result = new HashSet();
         
-        // build the default display name
-        String displayName = NbBundle.getMessage(ServerPropertiesPanel.class, 
-                "INSTANCE_DISPLAY_NAME_PREFIX") + " [" + this.host +   // NOI18N
-                ":" + this.port +"]";                                  // NOI18N
-        
         // build the URL
         String url = "deployer:WebSphere:" + this.host + ":" +         // NOI18N
                 this.port; 
         
-        // set the username and password
-        String username = this.username;
-        String password = this.password;
-        
-        // if a user entered a custom display name, we should use it, otherwise
-        // use the default one
-        if (getDisplayName() != null && !getDisplayName().equals(
-                NbBundle.getMessage(WSDeploymentFactory.class, 
-                "TXT_displayName"))) {                                 // NOI18N
-            displayName = getDisplayName();
-        }
-        
-        // set the additional properties of the instance: server installation 
-        // directory, profile root directory, whether the server is local or
-        // remote, the instance name and the server's config xml path
-        String serverRoot = this.serverRoot;
-        String domainRoot = this.domainRoot;
-        String isLocal = this.isLocal;
-        String serverName = this.serverName;
-        String configXmlPath = this.configXmlPath;
+        // build the display name
+        String displayName = getDisplayName() + " [" + this.host +     // NOI18N
+                ":" + this.port +"]";                                  // NOI18N
         
         // if all the data is normally validated - create the instance and 
         // attach the additional properties

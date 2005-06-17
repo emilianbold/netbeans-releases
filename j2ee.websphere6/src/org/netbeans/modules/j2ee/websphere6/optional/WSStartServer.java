@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.websphere6.optional;
@@ -373,56 +373,6 @@ public class WSStartServer extends StartServer {
     }
     
     /**
-     * Reads an entire file into a string
-     * 
-     * @param file the file to be read
-     *
-     * @return the file contents
-     */
-    private String readFile(File file) {
-        // init the resulting string
-        String contents = "";
-        
-        // init the buffer and the amount of bytes read
-        char[] chars = new char[1024];
-        int read;
-        
-        // get the reader for the file and read the contents
-        try {
-            // init the reader
-            FileReader reader = new FileReader(file);
-
-            // read the file
-            do {
-                read = reader.read(chars);
-                contents += new String(chars, 0, read);
-            } while (read == 1024);
-        } catch (FileNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-        }
-        
-        return contents;
-    }
-    
-    /**
-     * Writes the supplied string to the given file.
-     * 
-     * @param string the string to write to the file
-     * @param file the file to write to
-     */
-    private void writeFile(String string, File file) {
-        try {
-            new FileOutputStream(file).write(string.getBytes());
-        } catch (FileNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-        }
-    }
-    
-    /**
      * Turns on/off the debugging mode of the server.
      * 
      * @param degubEnabled whether the server should be started in debug mode
@@ -434,21 +384,21 @@ public class WSStartServer extends StartServer {
                 WSDeploymentFactory.CONFIG_XML_PATH));
         
         // get the current file's contents
-        String contents = readFile(configXmlFile);
+        String contents = WSUtil.readFile(configXmlFile);
         
         // replace the attributes that relate to debugging mode of the server
         if (debugEnabled) {
-            contents = contents.replace("debugMode=\"false\"", "debugMode=\"true\"");
+            contents = contents.replaceAll("debugMode=\"false\"", "debugMode=\"true\"");
             contents = contents.replaceFirst("suspend=n,address=[0-9]+\" genericJvmArguments", "suspend=n,address=" + debuggerPort + "\" genericJvmArguments");
             if (WSDebug.isEnabled()) {
                 WSDebug.notify("setting the address string to: " + "suspend=n,address=" + debuggerPort);
             }
         } else {
-            contents = contents.replace("debugMode=\"true\"", "debugMode=\"false\"");
+            contents = contents.replaceAll("debugMode=\"true\"", "debugMode=\"false\"");
         }
         
         // write the replaced contents back to the file
-        writeFile(contents, configXmlFile);
+        WSUtil.writeFile(configXmlFile, contents);
     }
     
     /**
