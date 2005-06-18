@@ -18,6 +18,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
+import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
@@ -87,8 +89,20 @@ public abstract class AbstractSystemAction extends SystemAction {
                     // ignore use files alternative bellow
                 }
             }
+            String name;
+            FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
+            if (fo != null) {
+                name = fo.getNameExt();
+            } else {
+                DataObject dao = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+                if (dao != null) {
+                    name = dao.getPrimaryFile().getNameExt();
+                } else {
+                    name = activatedNodes[0].getDisplayName();
+                }
+            }
             return MessageFormat.format(NbBundle.getBundle(this.getClass()).getString(baseName + "_Context"),  // NOI18N
-                                            new Object [] { activatedNodes[0].getDisplayName() });
+                                            new Object [] { name });
         } else {
             if (projectsOnly) {
                 try {
