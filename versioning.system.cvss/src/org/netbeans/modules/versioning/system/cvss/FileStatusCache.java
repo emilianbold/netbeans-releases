@@ -191,7 +191,13 @@ public class FileStatusCache {
         Map files = getScannedFiles(dir);
         if (files == NOT_MANAGED_MAP) return FILE_INFORMATION_NOTMANAGED;
         FileInformation current = (FileInformation) files.get(file);
-        FileInformation fi = createFileInformation(file, repositoryStatus);
+        Entry entry = null;
+        try {
+            entry = cvs.getAdminHandler().getEntry(file);
+        } catch (IOException e) {
+            // no entry for this file
+        }
+        FileInformation fi = createFileInformation(file, entry, repositoryStatus);
         if (fi.equals(current)) return fi;
         // do not include uptodate files into cache, missing directories must be included
         if (current == null && !fi.isDirectory() && fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
@@ -361,19 +367,27 @@ public class FileStatusCache {
         File [] files = dir.listFiles();
         if (files == null) files = new File[0];
         Map folderFiles = new HashMap(files.length);
-        
+
+        Entry [] entries = null;
+        try {
+            entries = sah.getEntriesAsArray(dir);
+        } catch (IOException e) {
+            // no or damaged entries
+        }
+
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
-            if (file.getName().equals(CvsVersioningSystem.FILENAME_CVS)) continue;
-            FileInformation fi = createFileInformation(file, REPOSITORY_STATUS_UNKNOWN);
+            String filename = file.getName();
+            if (filename.equals(CvsVersioningSystem.FILENAME_CVS)) continue;
+            Entry entry = getEntry(entries, filename);
+            FileInformation fi = createFileInformation(file, entry, REPOSITORY_STATUS_UNKNOWN);
             // directories are always in cache for listFiles() to work
             if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
                 folderFiles.put(file, fi);
             }
         }
 
-        try {
-            Entry [] entries = sah.getEntriesAsArray(dir);
+        if (entries != null) {
             outter : for (int i = 0; i < entries.length; i++) {
                 Entry entry = entries[i];
                 for (int j = 0; j < files.length; j++) {
@@ -383,13 +397,28 @@ public class FileStatusCache {
                     }
                 }
                 File file = new File(dir, entries[i].getName());
-                FileInformation fi = createFileInformation(file, REPOSITORY_STATUS_UNKNOWN);
+                FileInformation fi = createFileInformation(file, entry, REPOSITORY_STATUS_UNKNOWN);
                 folderFiles.put(file, fi);
             }
-        } catch (IOException e) {
-            // bad entries, ignore them
         }
         return folderFiles;
+    }
+
+    /**
+     * Searches array of Entries for the given filename.
+     *
+     * @param entries array of Entries, may be null
+     * @param filename name of the file to search for
+     * @return corresponding entry or null
+     */
+    private Entry getEntry(Entry[] entries, String filename) {
+        if (entries != null) {
+            for (int i = 0; i < entries.length; i++) {
+                Entry entry = entries[i];
+                if (filename.equals(entry.getName())) return entry;
+            }
+        }
+        return null;
     }
 
     /**
@@ -399,19 +428,13 @@ public class FileStatusCache {
      * @param repositoryStatus status of the file/folder as reported by the CVS server 
      * @return FileInformation file/folder status bean
      */ 
-    private FileInformation createFileInformation(File file, int repositoryStatus) {
+    private FileInformation createFileInformation(File file, Entry entry, int repositoryStatus) {
         FileInformation fi = null;
-        Entry entry = null;
         if (!cvs.isManaged(file)) {
             return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
         }
         if (cvs.isIgnored(file)) {
             return file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
-        }
-        try {
-            entry = sah.getEntry(file);
-        } catch (IOException e) {
-            // no Entry available for this file, it is not versioned
         }
         if (entry != null) {
             fi = createVersionedFileInformation(entry, file, repositoryStatus);            
