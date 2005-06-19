@@ -146,7 +146,7 @@ public class FileInformation implements Serializable {
     
     /**
      * Entry from the CVS directory, if it exists and has been read.
-     */ 
+     */
     private transient Entry       cvsEntry;
 
     private static final String STATUS_UNKNOWN_EXT = "W";  // NOI18N
@@ -172,13 +172,13 @@ public class FileInformation implements Serializable {
         isDirectory = false;
     }
 
-    public FileInformation(int status, Entry cvsEntry, boolean isDirectory) {
+    FileInformation(int status, Entry cvsEntry, boolean isDirectory) {
         this.status = status;
         this.cvsEntry = cvsEntry;
         this.isDirectory = isDirectory;
     }
 
-    public FileInformation(int status, boolean isDirectory) {
+    FileInformation(int status, boolean isDirectory) {
         this(status, null, isDirectory);
     }
 
@@ -272,15 +272,16 @@ public class FileInformation implements Serializable {
     }
 
     /**
-     * Retrieves file's revision number. This entry is then cached. 
-     * 
+     * Retrieves file's revision number. This entry is then cached.
+     *
      * @param file file this information belongs to
      * @return revision number or special value for newly added or removed files. May be null if the file does not exist,
      * is not versioned or its Entry has not been parsed.
-     */ 
+     */
     public String getRevision(File file) {
+        if (isDirectory) throw new IllegalStateException("Directories have no revision number");
         if (cvsEntry == null) readEntry(file);
-        return (cvsEntry != null) ? cvsEntry.getRevision() : null; 
+        return (cvsEntry != null) ? cvsEntry.getRevision() : null;
     }
 
     private void readEntry(File file) {

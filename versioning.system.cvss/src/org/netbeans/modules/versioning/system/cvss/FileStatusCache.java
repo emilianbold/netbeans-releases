@@ -58,10 +58,11 @@ public class FileStatusCache {
     public static final int REPOSITORY_STATUS_REMOVED_REMOTELY   = 'Y';
     public static final int REPOSITORY_STATUS_UPTODATE  = 65536;
 
+    // Constant FileInformation objects that can be safely reused
+    // Files that have a revision number cannot share FileInformation objects 
     private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, false);
-    private static final FileInformation FILE_INFORMATION_EXCLUDED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true); 
-    private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
-    private static final FileInformation FILE_INFORMATION_UPTODATE_DIRECTORY = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, true); 
+    private static final FileInformation FILE_INFORMATION_EXCLUDED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true);
+    private static final FileInformation FILE_INFORMATION_UPTODATE_DIRECTORY = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, true);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
@@ -175,7 +176,7 @@ public class FileStatusCache {
         if (fi != null) {
             return fi;            
         }
-        return file.exists() ? FILE_INFORMATION_UPTODATE : FILE_INFORMATION_UNKNOWN;
+        return file.exists() ? new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false) : FILE_INFORMATION_UNKNOWN;
     }
 
     /**
