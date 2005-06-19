@@ -99,6 +99,14 @@ public final class ProjectXMLManager {
                     NbModuleProjectType.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             ModuleEntry me = ml.getEntry(cnb);
+            if (me == null) {
+                // XXX might be e.g. shown in nb.errorForreground and "disabled"
+                Util.err.log(ErrorManager.WARNING,
+                    "Detected dependency on module which cannot be found in " + // NOI18N
+                        "the current module's universe (platform, suite): " +  // NOI18N
+                        cnb + " (skipping)"); // NOI18N
+                continue;
+            }
             
             Element runDepEl = Util.findElement(depEl,
                     ProjectXMLManager.RUN_DEPENDENCY,

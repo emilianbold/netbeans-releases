@@ -87,10 +87,12 @@ public class ProjectXMLManagerTest extends TestBase {
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             if (md.getModuleEntry().getCodeNameBase().equals("org.openide.dialogs")) {
+                assertNotNull("module entry", md.getModuleEntry());
                 assertEquals("release version", null, md.getReleaseVersion());
                 assertEquals("specification version", "6.2", md.getSpecificationVersion());
             }
             if (md.getModuleEntry().getCodeNameBase().equals("org.netbeans.examples.modules.lib")) {
+                assertNotNull("module entry", md.getModuleEntry());
                 assertNull("release version", md.getReleaseVersion());
                 assertNull("specification version", md.getSpecificationVersion());
             }
@@ -131,9 +133,11 @@ public class ProjectXMLManagerTest extends TestBase {
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
+                boolean tested = false;
                 for (Iterator it = deps.iterator(); it.hasNext(); ) {
                     ModuleDependency origDep = (ModuleDependency) it.next();
-                    if ("org.openide".equals(origDep.getModuleEntry().getCodeNameBase())) {
+                    if ("org.openide.dialogs".equals(origDep.getModuleEntry().getCodeNameBase())) {
+                        tested = true;
                         ModuleDependency newDep = new ModuleDependency(
                                 origDep.getModuleEntry(),
                                 "2",
@@ -143,6 +147,7 @@ public class ProjectXMLManagerTest extends TestBase {
                         actionPXM.editDependency(origDep, newDep);
                     }
                 }
+                assertTrue("org.openide.dialogs dependency tested", tested);
                 return Boolean.TRUE;
             }
         });
@@ -152,20 +157,23 @@ public class ProjectXMLManagerTest extends TestBase {
         this.actionPXM = new ProjectXMLManager(actionProject.getHelper());
         
         final Set newDeps = actionPXM.getDirectDependencies(null);
+        boolean tested = false;
         for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
-            if ("org.openide".equals(md.getModuleEntry().getCodeNameBase())) {
+            if ("org.openide.dialogs".equals(md.getModuleEntry().getCodeNameBase())) {
+                tested = true;
                 assertEquals("edited release version", "2", md.getReleaseVersion());
-                assertEquals("unedited specification version", "5.9", md.getSpecificationVersion());
+                assertEquals("unedited specification version", "6.2", md.getSpecificationVersion());
                 break;
             }
         }
+        assertTrue("org.openide.dialogs dependency tested", tested);
     }
     
     public void testAddDependencies() throws Exception {
         final Set newDeps = new HashSet();
-        ModuleEntry me =
-                actionProject.getModuleList().getEntry("org.netbeans.modules.java.project");
+        ModuleEntry me = actionProject.getModuleList().getEntry(
+                "org.netbeans.modules.java.project");
         assertNotNull("java/project must be built", me);
         String javaProjectRV = me.getReleaseVersion();
         String javaProjectSV = me.getSpecificationVersion();
