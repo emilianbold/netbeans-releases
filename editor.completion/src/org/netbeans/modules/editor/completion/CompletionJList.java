@@ -45,7 +45,7 @@ public class CompletionJList extends JList {
         addMouseListener(mouseListener);
         setLayoutOrientation(JList.VERTICAL);
         setFixedCellHeight(CompletionLayout.COMPLETION_ITEM_HEIGHT);
-        setModel(new Model(Collections.emptyList()));
+        setModel(new Model(Collections.EMPTY_LIST));
 
         renderComponent = new RenderComponent();
         setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
