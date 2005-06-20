@@ -33,13 +33,8 @@ import org.openide.loaders.InstanceDataObject;
  * @author Jesse Glick
  * @see "#30455" */
 public class NbKeymapTest extends NbTestCase {
-    
     public NbKeymapTest(String name) {
         super(name);
-    }
-    
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(NbKeymapTest.class));
     }
     
     protected boolean runInEQ () {
@@ -245,11 +240,11 @@ public class NbKeymapTest extends NbTestCase {
         //
         
         org.openide.loaders.DataShadow shadow = obj.createShadow (shortcuts);
-        shadow.rename ("C-F2");
+        shadow.rename ("C-F3");
         ShortcutsFolder.waitShortcutsFinished ();
         
-        Action action = globalMap.getAction (org.openide.util.Utilities.stringToKey ("C-F2"));
-        assertNotNull ("Action is registered for C-F2", action);
+        Action action = globalMap.getAction (org.openide.util.Utilities.stringToKey ("C-F3"));
+        assertNotNull ("Action is registered for C-F3", action);
         assertEquals ("Is dummy", DummyAction.class, action.getClass ());
         assertTrue ("Has the right name", action.toString ().indexOf ("testShortcutsFolder") > 0);
         
@@ -261,7 +256,7 @@ public class NbKeymapTest extends NbTestCase {
         
         ShortcutsFolder.waitShortcutsFinished ();
         
-        action = globalMap.getAction (org.openide.util.Utilities.stringToKey ("C-F2"));
+        action = globalMap.getAction (org.openide.util.Utilities.stringToKey ("C-F3"));
         assertEquals ("No action registered", null, action);
     }
     
