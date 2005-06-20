@@ -129,10 +129,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private JTextComponent activeComponent = null;
     private ActionMap actionMap;
     private InputMap inputMap;
-    private CompletionPopup popup = new CompletionPopup();
-    private ScrollCompletionPane completionPane = null;
-    private ScrollDocPane docPane = null;
-
+    private CompletionLayout layout = new CompletionLayout();
+    
     private CompletionProvider[] activeProviders = null;
     private HashMap /*<Class, CompletionProvider[]>*/ providersCache = new HashMap();
     
@@ -151,23 +149,27 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
     private CompletionImpl() {
         Registry.addChangeListener(this);
-        completionAutoPopupTimer = new Timer(200, new ActionListener() {
+        completionAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                completionQuery();
+//                completionQuery();
+                showCompletion();
             }
         });
         completionAutoPopupTimer.setRepeats(false);
-        docAutoPopupTimer = new Timer(200, new ActionListener() {
+        
+        docAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 docCancel();
-                docPane.clearHistory();
+                layout.clearDocumentationHistory();
                 docQuery();
             }
         });
         docAutoPopupTimer.setRepeats(false);
+
         waitTimer = new Timer(800, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                popup.setCompletion(new ScrollCompletionPane(activeComponent, Collections.singletonList(PLEASE_WAIT), null, null, null), -1);
+                layout.showCompletion(Collections.singletonList(PLEASE_WAIT),
+                        null, -1, CompletionImpl.this);
             }
         });
         waitTimer.setRepeats(false);
@@ -191,7 +193,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 for (int i = 0; i < activeProviders.length; i++) {
                     int type = activeProviders[i].getAutoQueryTypes(activeComponent, typedText);
                     if (completionResults == null && (type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0) {
-                        completionAutoPopupTimer.restart();
+                        restartCompletionAutoPopupTimer();
                     }
                     if (toolTipResults == null && (type & CompletionProvider.TOOLTIP_QUERY_TYPE) != 0) {
                         toolTipQuery();
@@ -199,7 +201,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 }
             } catch (BadLocationException ex) {}
             if (completionAutoPopupTimer.isRunning())
-                completionAutoPopupTimer.restart();
+                restartCompletionAutoPopupTimer();
         }
     }
     
@@ -248,8 +250,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     }
 
     public synchronized void valueChanged(javax.swing.event.ListSelectionEvent e) {
-        if (docPane != null && popup.isDocShowing()) {
-            docAutoPopupTimer.restart();
+        if (layout.isDocumentationVisible()) {
+            restartDocumentationAutoPopupTimer();
         }
     }
 
@@ -284,7 +286,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 component.addMouseListener(this);
             }
             activeComponent = component;
-            popup.setComponent(activeComponent);
+            CompletionSettings.INSTANCE.notifyEditorComponentChange(activeComponent);
+            layout.setEditorComponent(activeComponent);
             installKeybindings();
             cancel = true;
         }
@@ -301,6 +304,16 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
         if (cancel)
             completionCancel();
+    }
+    
+    private void restartCompletionAutoPopupTimer() {
+        completionAutoPopupTimer.setDelay(CompletionSettings.INSTANCE.completionAutoPopupDelay());
+        completionAutoPopupTimer.restart();
+    }
+    
+    private void restartDocumentationAutoPopupTimer() {
+        docAutoPopupTimer.setDelay(CompletionSettings.INSTANCE.documentationAutoPopupDelay());
+        docAutoPopupTimer.restart();
     }
     
     private CompletionProvider[] getCompletionProvidersForKitClass(Class kitClass) {
@@ -358,8 +371,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 return;
             }
         }
-        if (completionPane != null && popup.isCompletionShowing()) {
-            CompletionItem item = completionPane.getSelectedCompletionItem();
+        if (layout.isCompletionVisible()) {
+            CompletionItem item = layout.getSelectedCompletionItem();
             if (item != null) {
                 item.processKeyEvent(e);
                 if (e.isConsumed()) {
@@ -376,24 +389,12 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 hideCompletion();
                 return;
             }
-            obj = completionPane.getInputMap().get(ks);
-            if (obj != null) {
-                Action action = completionPane.getActionMap().get(obj);
-                if (action != null) {
-                    action.actionPerformed(new ActionEvent(completionPane, 0, null));
-                    e.consume();
-                    return;
-                }
-            }
-        }
-        if (docPane != null && popup.isDocShowing()) {
-            ActionListener action = docPane.getActionForKeyStroke(KeyStroke.getKeyStrokeForEvent(e));
-            if (action != null) {
-                action.actionPerformed(new ActionEvent(docPane, 0, null));
-                e.consume();
+            layout.completionProcessKeyEvent(e);
+            if (e.isConsumed()) {
                 return;
             }
         }
+        layout.documentationProcessKeyEvent(e);
     }
     
     private void refreshResults(List results) {
@@ -457,7 +458,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     
     public void showCompletion() {
         if (activeProviders != null) {
-            completionCancel();
+            completionCancel(); // cancel possibly pending query
             completionQuery();
         }
     }
@@ -466,14 +467,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         waitTimer.stop();
         
         // Collect and sort the results
-        final TreeSet sortedResults = new TreeSet(BY_IMPORTANCE_COMPLETION_ITEM_COMPARATOR);
+        final TreeSet sortedResultItems = new TreeSet(BY_IMPORTANCE_COMPLETION_ITEM_COMPARATOR);
         String title = null;
         int anchorOffset = -1;
         for (int i = 0; i < completionResults.size(); i++) {
             CompletionResultSetImpl result = (CompletionResultSetImpl)completionResults.get(i);
             List resultItems = result.getItems();
             if (resultItems != null) {
-                sortedResults.addAll(resultItems);
+                sortedResultItems.addAll(resultItems);
                 if (title == null)
                     title = result.getTitle();
                 if (anchorOffset == -1)
@@ -489,11 +490,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 synchronized (CompletionImpl.this) {
                     int caretOffset = activeComponent.getCaretPosition();
                     // completionResults = null;
-                    if (sortedResults.size() == 1 && instantSubstitution && isOriginalQuery) {
+                    if (sortedResultItems.size() == 1 && instantSubstitution && isOriginalQuery) {
                         try {
                             int[] block = Utilities.getIdentifierBlock(activeComponent, caretOffset);
                             if (block == null || block[1] == caretOffset) { // NOI18N
-                                CompletionItem item = (CompletionItem) sortedResults.first();
+                                CompletionItem item = (CompletionItem) sortedResultItems.first();
                                 if (item.instantSubstitution(activeComponent)) {
                                     return;
                                 }
@@ -502,51 +503,29 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                         }
                     }
 
-                    List res = new ArrayList(sortedResults);
+                    List res = new ArrayList(sortedResultItems);
                     if (res.size() == 0) {
                         res.add(NO_SUGGESTIONS);
                     }
-                    int anchorOffset = (displayAnchorOffset != -1)
-                            ? displayAnchorOffset : caretOffset;
-                    if (completionPane != null && popup.isCompletionShowing()) {
-                        Dimension size = completionPane.getPreferredSize();
-                        completionPane.reset(res, displayTitle);
-                        if (!size.equals(completionPane.getPreferredSize())) {
-                            popup.setCompletion(completionPane, anchorOffset);
-                        }
-                    } else {
-                        completionPane = new ScrollCompletionPane(activeComponent,
-                            res, displayTitle, CompletionImpl.this, new MouseAdapter() {
-                                public void mouseClicked(MouseEvent evt) {
-                                    if (SwingUtilities.isLeftMouseButton(evt)) {
-                                        if (activeComponent != null && evt.getClickCount() == 2 ) {
-                                            CompletionItem item = completionPane.getSelectedCompletionItem();
-                                            if (item != null) {
-                                                item.defaultAction(activeComponent);
-                                            }
-                                        }
-                                    }
-                                }
-                        });
-                        popup.setCompletion(completionPane, anchorOffset);
+                    layout.showCompletion(res, displayTitle, displayAnchorOffset, CompletionImpl.this);
+                    
+                    // Show documentation as well if set by default
+                    if (CompletionSettings.INSTANCE.documentationAutoPopup()) {
+                        restartDocumentationAutoPopupTimer();
                     }
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            requestShowRunnable.run();
-        } else {
-            SwingUtilities.invokeLater(requestShowRunnable);
-        }
+        runInAWT(requestShowRunnable);
     }
 
     public boolean hideCompletion() {
         completionCancel();
-        if (!popup.isCompletionShowing())
-            return false;
-        completionPane = null;
-        popup.setCompletion(null, -1);
-        return true;
+        boolean hidePerformed = layout.hideCompletion();
+        if (hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
+            hideDoc();
+        }
+        return hidePerformed;
     }
     
     public void showDoc() {
@@ -557,18 +536,16 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     }
 
     private void docQuery() {
-        if (completionPane != null && popup.isCompletionShowing()) {
-            CompletionItem item = completionPane.getSelectedCompletionItem();
-            if (item != null) {
-                CompletionTask docTask = item.createDocumentationTask();
-                if (docTask != null) {
-                    CompletionResultSetImpl result = new CompletionResultSetImpl(
-                            this, docTask, CompletionProvider.DOCUMENTATION_QUERY_TYPE);
-                    assert (docResults == null);
-                    docResults = Collections.singletonList(result);
-                    docTask.query(result.getResultSet());
-                    return;
-                }
+        CompletionItem selectedItem = layout.getSelectedCompletionItem();
+        if (selectedItem != null) {
+            CompletionTask docTask = selectedItem.createDocumentationTask();
+            if (docTask != null) {
+                CompletionResultSetImpl result = new CompletionResultSetImpl(
+                        this, docTask, CompletionProvider.DOCUMENTATION_QUERY_TYPE);
+                assert (docResults == null);
+                docResults = Collections.singletonList(result);
+                docTask.query(result.getResultSet());
+                return;
             }
         }
         docResults = new ArrayList(activeProviders.length);
@@ -595,28 +572,17 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
     }
     
-    private void requestShowDocPane(final CompletionDocumentation item, final int offset) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                synchronized (CompletionImpl.this) {
-                    if (docPane != null && popup.isDocShowing()) {
-                        docPane.reset(item);
-                    } else {
-                        docPane = new ScrollDocPane(activeComponent, item);
-                        popup.setDoc(docPane, offset);
-                    }
-                }
-            }
-        });
+    private void runInAWT(Runnable r) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }
-    
+
     public boolean hideDoc() {
         docCancel();
-        if (!popup.isDocShowing())
-            return false;
-        docPane = null;
-        popup.setDoc(null, -1);
-        return true;
+        return layout.hideDocumentation();
     }
 
     public void showToolTip() {
@@ -627,10 +593,10 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     }
 
     private void toolTipQuery() {
-        if (completionPane != null && popup.isCompletionShowing()) {
-            CompletionItem item = completionPane.getSelectedCompletionItem();
-            if (item != null) {
-                CompletionTask toolTipTask = item.createToolTipTask();
+        if (layout.isCompletionVisible()) {
+            CompletionItem selectedItem = layout.getSelectedCompletionItem();
+            if (selectedItem != null) {
+                CompletionTask toolTipTask = selectedItem.createToolTipTask();
                 if (toolTipTask != null) {
                     CompletionResultSetImpl result = new CompletionResultSetImpl(
                             this, toolTipTask, CompletionProvider.TOOLTIP_QUERY_TYPE);
@@ -666,10 +632,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
     public boolean hideToolTip() {
         toolTipCancel();
-        if (!popup.isTipShowing())
-            return false;
-        popup.setTip(null, -1);
-        return true;
+        return layout.hideToolTip();
     }
     
     /** Attempt to find the editor keystroke for the given editor action. */
@@ -711,7 +674,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         actionMap.put(COMPLETION_SHOW, new CompletionShowAction());
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)), DOC_SHOW);
         actionMap.put(DOC_SHOW, new DocShowAction());
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.ALT_MASK), TOOLTIP_SHOW);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_MASK), TOOLTIP_SHOW);
         actionMap.put(TOOLTIP_SHOW, new ToolTipShowAction());
     }
     
@@ -730,9 +693,16 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 if (docResults != null) {
                     // Check whether there are any unfinished documentation tasks
                     if (isAllResultsFinished(docResults)) {
-                        CompletionResultSetImpl result = findFirstValidResult(docResults);
+                        final CompletionResultSetImpl result = findFirstValidResult(docResults);
                         if (result != null) {
-                            requestShowDocPane(result.getDocumentation(), result.getAnchorOffset());
+                            runInAWT(new Runnable() {
+                                public void run() {
+                                    synchronized (CompletionImpl.this) {
+                                        layout.showDocumentation(
+                                            result.getDocumentation(), result.getAnchorOffset());
+                                    }
+                                }
+                            });
                         }
                     }
                 }
@@ -743,13 +713,13 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     // Check whether there are any unfinished toolTip tasks
                     if (isAllResultsFinished(toolTipResults)) {
                         final CompletionResultSetImpl result = findFirstValidResult(toolTipResults);
-                        SwingUtilities.invokeLater(new Runnable() {
+                        runInAWT(new Runnable() {
                             public void run() {
                                 if (result != null) {
-                                    // Display the tooltip
-                                    popup.setTip(result.getToolTip(), result.getAnchorOffset());
-                                } else { // no valid tooltip
-                                    hideToolTip();
+                                    layout.showToolTip(
+                                        result.getToolTip(), result.getAnchorOffset());
+                                } else {
+                                    layout.hideToolTip();
                                 }
                             }
                         });
@@ -828,9 +798,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
     private class PopupHideAction extends AbstractAction {
         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
-            if (hideDoc())
-                return;
             if (hideCompletion())
+                return;
+            if (hideDoc())
                 return;
             hideToolTip();
         }
