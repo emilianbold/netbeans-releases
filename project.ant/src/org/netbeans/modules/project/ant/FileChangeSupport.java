@@ -110,6 +110,7 @@ public final class FileChangeSupport {
                     return;
                 }
             }
+            // XXX what happens with UNC paths?
             assert current != null;
             if (current != oldCurrent) {
                 if (oldCurrent != null) {
