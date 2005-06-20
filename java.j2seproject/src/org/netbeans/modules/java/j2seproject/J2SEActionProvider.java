@@ -21,10 +21,12 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
@@ -39,6 +41,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
+import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -92,6 +95,9 @@ class J2SEActionProvider implements ActionProvider {
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
+    /**Set of commands which are affected by background scanning*/
+    final Set bkgScanSensitiveActions;
+    
     public J2SEActionProvider( J2SEProject project, UpdateHelper updateHelper ) {
         
         commands = new HashMap();
@@ -111,6 +117,14 @@ class J2SEActionProvider implements ActionProvider {
             commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
             commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
         
+        this.bkgScanSensitiveActions = new HashSet (Arrays.asList(new String[] {
+            COMMAND_RUN, 
+            COMMAND_RUN_SINGLE, 
+            COMMAND_DEBUG, 
+            COMMAND_DEBUG_SINGLE,
+            COMMAND_DEBUG_STEP_INTO
+        }));
+            
         this.updateHelper = updateHelper;
         this.project = project;
     }
@@ -123,25 +137,37 @@ class J2SEActionProvider implements ActionProvider {
         return supportedActions;
     }
     
-    public void invokeAction( String command, Lookup context ) throws IllegalArgumentException {
-        Properties p = new Properties();
-        String[] targetNames;
+    public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
         
-        targetNames = getTargetNames(command, context, p);
-        if (targetNames == null) {
-            return;
+        Runnable action = new Runnable () {
+            public void run () {
+                Properties p = new Properties();
+                String[] targetNames;
+        
+                targetNames = getTargetNames(command, context, p);
+                if (targetNames == null) {
+                    return;
+                }
+                if (targetNames.length == 0) {
+                    targetNames = null;
+                }
+                if (p.keySet().size() == 0) {
+                    p = null;
+                }
+                try {
+                    ActionUtils.runTarget(findBuildXml(), targetNames, p);
+                } 
+                catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            }            
+        };
+        
+        if (this.bkgScanSensitiveActions.contains(command)) {        
+            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage (J2SEActionProvider.class,"ACTION_"+command)); //NOI18N
         }
-        if (targetNames.length == 0) {
-            targetNames = null;
-        }
-        if (p.keySet().size() == 0) {
-            p = null;
-        }
-        try {
-            ActionUtils.runTarget(findBuildXml(), targetNames, p);
-        } 
-        catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+        else {
+            action.run();
         }
     }
 
