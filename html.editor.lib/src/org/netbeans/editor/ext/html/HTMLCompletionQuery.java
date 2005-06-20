@@ -643,7 +643,11 @@ else System.err.println( "Inside token " + item.getTokenID() );
         public String getItemText() { return baseText; } //NOI18N
         
         public boolean substituteText( JTextComponent c, int a, int b, boolean shift ) {
-            super.substituteText( c, 0, 0, shift );
+            replaceText( c, baseText + "=\"\"" ); //NOI18N
+            if( shift ) {
+                Caret caret = c.getCaret();
+                caret.setDot( caret.getDot() - 1 );
+            }
             return false; // always refresh
         }
     }
