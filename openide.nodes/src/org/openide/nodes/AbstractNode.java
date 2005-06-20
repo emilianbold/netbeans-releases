@@ -235,7 +235,7 @@ public class AbstractNode extends Node {
     * an icon property change event is fired.
     *
     * @param baseExt base resouce name with extension (no initial slash)
-    * @since OpenIDE 6.5
+    * @since org.openide.nodes 6.5
     */
     public final void setIconBaseWithExtension(String baseExt) {
         int lastDot = baseExt.lastIndexOf('.');
