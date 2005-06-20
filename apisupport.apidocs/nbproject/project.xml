@@ -16,15 +16,7 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.apisupport.apidocs</code-name-base>
-            <module-dependencies>
-                <dependency>
-                    <code-name-base>org.openide</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>3.17</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
+            <module-dependencies/>
             <public-packages/>
         </data>
     </configuration>
