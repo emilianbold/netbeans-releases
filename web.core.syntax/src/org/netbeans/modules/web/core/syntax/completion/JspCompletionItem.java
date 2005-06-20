@@ -289,7 +289,6 @@ public class JspCompletionItem {
     /** Item representing a JSP tag (without prefix). */
     public static class Tag extends JspResultItem {
         
-        private String str;
         protected static ResultItemPaintComponent.JspTagPaintComponent component = null;
         
         public Tag( String text ) {
@@ -301,25 +300,25 @@ public class JspCompletionItem {
                 component = new ResultItemPaintComponent.JspTagPaintComponent(false);
             }
             component.setSelected(isSelected);
-            component.setString(str);
+            component.setString(text);
             return component;
         }
         
-//        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-//            if (!getItemText ().startsWith ("/"))   // NOI18N
-//                return substituteText(c, offset, len, getItemText() + " ", 0);  // NOI18N
-//            else
-//                return substituteText(c, offset, len, getItemText().substring (1) + ">", 0);    // NOI18N
-//        }
-//
-//        public boolean substituteCommonText( JTextComponent c, int offset, int len, int subLen ) {
-//            if (!getItemText ().startsWith ("/")) {  // NOI18N
-//                return substituteText(c, offset, len, getItemText().substring (subLen), 0);  // NOI18N
-//            }
-//            else {
-//                return substituteText(c, offset, len, getItemText().substring (1, subLen), 0);  // NOI18N
-//            }
-//        }
+        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
+            if (!getItemText ().startsWith ("/"))   // NOI18N
+                return substituteText(c, offset, len, getItemText() + " ", 0);  // NOI18N
+            else
+                return substituteText(c, offset, len, getItemText().substring (1) + ">", 0);    // NOI18N
+        }
+
+        public boolean substituteCommonText( JTextComponent c, int offset, int len, int subLen ) {
+            if (!getItemText ().startsWith ("/")) {  // NOI18N
+                return substituteText(c, offset, len, getItemText().substring (subLen), 0);  // NOI18N
+            }
+            else {
+                return substituteText(c, offset, len, getItemText().substring (1, subLen), 0);  // NOI18N
+            }
+        }
     }
     
     /** Item representing a JSP tag (without prefix). */
