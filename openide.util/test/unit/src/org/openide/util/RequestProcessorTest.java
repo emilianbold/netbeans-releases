@@ -21,19 +21,26 @@ import org.netbeans.junit.*;
 import org.openide.util.Task;
 
 public class RequestProcessorTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.util.Lookup", "org.openide.util.RequestProcessorTest$Lkp");
+    }
     
     public RequestProcessorTest(java.lang.String testName) {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite(RequestProcessorTest.class);
+
+    protected void runTest() throws Throwable {
+        assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
+        ErrManager.messages.setLength(0);
         
-        return suite;
+        try {
+            super.runTest();
+        } catch (Throwable ex) {
+            throw new junit.framework.AssertionFailedError (
+                ErrManager.messages.toString()
+            ).initCause(ex);
+        }
     }
     
     
@@ -946,7 +953,7 @@ public class RequestProcessorTest extends NbTestCase {
 	    } catch (InterruptedException e) {}
         }
     }
-    
+
     private static class Counter extends Object implements Runnable {
         private int count = 0;
 
@@ -988,4 +995,108 @@ public class RequestProcessorTest extends NbTestCase {
             notifyAll();
         }
     }
+    
+    //
+    // Our fake lookup
+    //
+    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
+        private ErrManager err = new ErrManager ();
+        private org.openide.util.lookup.InstanceContent ic;
+        
+        public Lkp () {
+            this (new org.openide.util.lookup.InstanceContent ());
+        }
+        
+        private Lkp (org.openide.util.lookup.InstanceContent ic) {
+            super (ic);
+            ic.add (err);
+            this.ic = ic;
+        }
+        
+        public static void turn (boolean on) {
+            Lkp lkp = (Lkp)org.openide.util.Lookup.getDefault ();
+            if (on) {
+                lkp.ic.add (lkp.err);
+            } else {
+                lkp.ic.remove (lkp.err);
+            }
+        }
+    }
+    
+    //
+    // Manager to delegate to
+    //
+    public static final class ErrManager extends org.openide.ErrorManager {
+        public static final StringBuffer messages = new StringBuffer ();
+        
+        private String prefix;
+        
+        public ErrManager () {
+            this (null);
+        }
+        public ErrManager (String prefix) {
+            this.prefix = prefix;
+        }
+        
+        public static ErrManager get () {
+            return (ErrManager)org.openide.util.Lookup.getDefault ().lookup (ErrManager.class);
+        }
+        
+        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, java.util.Date date) {
+            return t;
+        }
+        
+        public Throwable attachAnnotations (Throwable t, org.openide.ErrorManager.Annotation[] arr) {
+            return t;
+        }
+        
+        public org.openide.ErrorManager.Annotation[] findAnnotations (Throwable t) {
+            return null;
+        }
+        
+        public org.openide.ErrorManager getInstance (String name) {
+            if (
+                name.startsWith ("org.openide.util.RequestProcessor")
+            ) {
+                return new ErrManager ('[' + name + ']');
+            } else {
+                // either new non-logging or myself if I am non-logging
+                return new ErrManager ();
+            }
+        }
+        
+        public void log (int severity, String s) {
+            lastSeverity = severity;
+            lastText = s;
+            if (this != get()) {
+                messages.append(prefix);
+                messages.append(s);
+                messages.append('\n');
+            }
+        }
+        
+        public void notify (int severity, Throwable t) {
+            lastThrowable = t;
+            lastSeverity = severity;
+        }
+        private static int lastSeverity;
+        private static Throwable lastThrowable;
+        private static String lastText;
+
+        public static void assertNotify (int sev, Throwable t) {
+            assertEquals ("Severity is same", sev, lastSeverity);
+            assertSame ("Throwable is the same", t, lastThrowable);
+            lastThrowable = null;
+            lastSeverity = -1;
+        }
+        
+        public static void assertLog (int sev, String t) {
+            assertEquals ("Severity is same", sev, lastSeverity);
+            assertEquals ("Text is the same", t, lastText);
+            lastText = null;
+            lastSeverity = -1;
+        }
+        
+    } 
+    
 }
