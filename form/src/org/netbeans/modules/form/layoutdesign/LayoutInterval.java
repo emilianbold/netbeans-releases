@@ -768,7 +768,6 @@ public final class LayoutInterval implements LayoutConstants {
     }
 
     static boolean contentWantResize(LayoutInterval group) {
-        assert group.getSubIntervalCount() > 0;
         boolean subres = false;
         Iterator it = group.getSubIntervals();
         while (it.hasNext()) {

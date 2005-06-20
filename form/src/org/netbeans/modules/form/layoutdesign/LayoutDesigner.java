@@ -58,13 +58,14 @@ public class LayoutDesigner implements LayoutConstants {
             // [need to make sure code generator acts afterwards,
             //  and some optimization is needed not to scan everything...]
             dirty = false;
-
             modelListener.deactivate();
             Iterator it = updatedContainers.iterator();
             while (it.hasNext()) {
                 LayoutComponent cont = (LayoutComponent) it.next();
                 for (int i=0; i < DIM_COUNT; i++) {
-                    optimizeGaps(cont.getLayoutRoot(i), i, true);
+                    LayoutInterval root = cont.getLayoutRoot(i);
+                    optimizeGaps(root, i, true);
+                    findContainerResizingGap(root, i);
                 }
             }
             modelListener.activate();
@@ -77,6 +78,7 @@ public class LayoutDesigner implements LayoutConstants {
             }
 
             updatePositions(updatedContainers);
+
             return true;
         }
         return false;
@@ -118,9 +120,6 @@ public class LayoutDesigner implements LayoutConstants {
                 }
                 else {
                     updateLayoutStructure(root, i);
-                    if (!dirty) {
-                        findContainerResizingGap(root, i);
-                    }
                 }
             }
         }
@@ -146,36 +145,36 @@ public class LayoutDesigner implements LayoutConstants {
         int leadingSpace = 0;
         while (it.hasNext()) {
             LayoutInterval sub = (LayoutInterval) it.next();
-            sub.unsetAttribute(LayoutInterval.DESIGN_ATTRS);
+            if (dirty) {
+                sub.unsetAttribute(LayoutInterval.DESIGN_ATTRS);
+            }
             if (sub.isEmptySpace()) {
                 if (interval.isSequential() && (first || !it.hasNext())) {
-                    if ((sub.getMinimumSize() == sub.getPreferredSize() || sub.getMinimumSize() == USE_PREFERRED_SIZE)
-                        && (sub.getPreferredSize() == sub.getMaximumSize() || sub.getMaximumSize() == USE_PREFERRED_SIZE)) {
+                    int min = sub.getMinimumSize(true);
+                    int pref = sub.getPreferredSize(true);
+                    int max = sub.getMaximumSize(true);
+                    if ((min == pref || min == USE_PREFERRED_SIZE)
+                        && (pref == max || max == USE_PREFERRED_SIZE)) {
                         // Fixed size padding
-                        int prefSize = sub.getPreferredSize();
-                        if (prefSize == NOT_EXPLICITLY_DEFINED) {
-                            // Determine size of the default padding
-                            LayoutInterval sibling = LayoutInterval.getNeighbor(sub, SEQUENTIAL, first ? LEADING : TRAILING);
-                            prefSize = (sibling == null) ? 12 : 6;
+                        if (pref == NOT_EXPLICITLY_DEFINED) {
+                            pref = LayoutDragger.getPreferredPadding(sub, dimension);
                         }
                         if (first) {
-                            leadingSpace = prefSize;
+                            leadingSpace = pref;
                         } else {
-                            space.reshape(dimension, TRAILING, prefSize);
+                            space.reshape(dimension, TRAILING, pref);
                         }
                     } else {
+                        int currentPref = LayoutRegion.UNKNOWN;
                         LayoutInterval sibling = LayoutInterval.getNeighbor(sub, SEQUENTIAL, first ? LEADING : TRAILING);
                         if (sibling == null) {
-                            LayoutInterval root = interval;
-                            while (root.getParent() != null) {
-                                root = root.getParent();
-                            }
-                            LayoutRegion rootSpace = root.getCurrentSpace();
+                            LayoutRegion rootSpace = LayoutInterval.getRoot(interval).getCurrentSpace();
                             if (first) {
                                 firstResizingSpace = true;
                                 leadingSpace = - rootSpace.positions[dimension][LEADING];
-                            } else {
-                                space.reshape(dimension, TRAILING, rootSpace.positions[dimension][TRAILING] - space.positions[dimension][TRAILING]);
+                            } else { // last
+                                currentPref = rootSpace.positions[dimension][TRAILING] - space.positions[dimension][TRAILING];
+                                space.reshape(dimension, TRAILING, currentPref);
                             }
                         } else if (sibling.isEmptySpace()) {
                             LayoutInterval parent = interval.getParent();
@@ -194,7 +193,8 @@ public class LayoutDesigner implements LayoutConstants {
                                 leadingSpace = - parSpace.positions[dimension][LEADING];
                             }
                             else {
-                                space.reshape(dimension, TRAILING, parSpace.positions[dimension][TRAILING] - space.positions[dimension][TRAILING]);
+                                currentPref = parSpace.positions[dimension][TRAILING] - space.positions[dimension][TRAILING];
+                                space.reshape(dimension, TRAILING, currentPref);
                             }
                         } else {
                             if (first) {
@@ -207,8 +207,13 @@ public class LayoutDesigner implements LayoutConstants {
                                     updateLayoutStructure(sibling, dimension);
                                 }
                                 LayoutRegion sibSpace = sibling.getCurrentSpace();
-                                space.reshape(dimension, TRAILING, sibSpace.positions[dimension][LEADING] - space.positions[dimension][TRAILING]);
+                                currentPref = sibSpace.positions[dimension][LEADING] - space.positions[dimension][TRAILING];
+                                space.reshape(dimension, TRAILING, currentPref);
                             }
+                        }
+
+                        if (currentPref != LayoutRegion.UNKNOWN) { // not first resizing gap
+                            imposeCurrentGapSize(sub, currentPref, dimension);
                         }
                     }
                 }
@@ -244,6 +249,7 @@ public class LayoutDesigner implements LayoutConstants {
             if (firstResizingSpace) {
                 leadingSpace += space.positions[dimension][LEADING];
                 firstResizingSpace = false;
+                imposeCurrentGapSize(interval.getSubInterval(0), leadingSpace, dimension);
             }
             first = false;
         }
@@ -443,6 +449,9 @@ public class LayoutDesigner implements LayoutConstants {
             else { // resizing root container
                 assert dragger.isResizing();
                 modelListener.deactivate(); // do not react on model changes
+                for (int dim=0; dim < DIM_COUNT; dim++) {
+                    comp.getLayoutInterval(dim).setCurrentSpace(space);
+                }
                 imposeCurrentSize(comp, dragger.getSizes());
                 // not changing structure, need not set "dirty"
             }
@@ -1461,6 +1470,7 @@ public class LayoutDesigner implements LayoutConstants {
                 }
                 else { // adding inside a parallel group (not aligned to border)
                     index = -1;
+                    iDesc.group.setAlignment(alignment1);
                 }
             }
             layoutModel.addInterval(iDesc.group, iDesc.parent, index);
@@ -1545,24 +1555,27 @@ public class LayoutDesigner implements LayoutConstants {
                 int pad = determineExpectingPadding(adding, neighbors[i], sequence, dimension, i);
 
                 gaps[i] = new LayoutInterval(SINGLE);
-                if (distance >= 0 && distance != pad) {
-                    if (alignment1 == i) { //align
-                        gaps[i].setSize(distance);
-                    }
-                    else if (distance > pad
-                             && (originalGap == null ||originalGap.getPreferredSize() > 0))
-                    {
-                        gaps[i].setPreferredSize(distance);
-                    }
-                }
-
-                if (alignment1 != i //align
-                    && ((originalGap != null && originalGap.getMaximumSize() == Short.MAX_VALUE)
-                        || (originalGap == null && distance > 0))
-                    && !LayoutInterval.wantResize(adding, false))
+                if (distance >= 0 && distance != pad
+                    && (alignment1 == i
+                        || (distance > pad
+                            && (originalGap == null || originalGap.getPreferredSize() > 0))))
                 {
+                    gaps[i].setPreferredSize(distance);
+                }
+                if (alignment1 != i
+                    && !LayoutInterval.wantResize(adding, false)
+                    && ((originalGap != null && originalGap.getMaximumSize() == Short.MAX_VALUE)
+                        || (originalGap == null && distance > 0 && !LayoutInterval.wantResize(sequence, false)
+                            && (neighbors[i] != null
+                                || sequence.getParent().getSubIntervalCount() == 1
+                                || LayoutInterval.wantResize(sequence.getParent(), false)))))
+                {   // should be resizing gap
                     gaps[i].setMaximumSize(Short.MAX_VALUE);
                     // [need to detect "fill" in a non-resizable group]
+                }
+                else if (gaps[i].getPreferredSize() != NOT_EXPLICITLY_DEFINED) {
+                    gaps[i].setMinimumSize(USE_PREFERRED_SIZE);
+                    gaps[i].setMaximumSize(USE_PREFERRED_SIZE);
                 }
             }
         }
@@ -1728,6 +1741,10 @@ public class LayoutDesigner implements LayoutConstants {
                 else sizeIncrement = 0;
 
                 resizeInterval(li, size);
+                if (LayoutInterval.wantResize(li, false) && LayoutInterval.wantResize(interval, false)) {
+                    // cancel gap resizing if the neighbor is also resizing
+                    layoutModel.setIntervalSize(li, li.getMinimumSize(), li.getPreferredSize(), USE_PREFERRED_SIZE);
+                }
                 break;
             }
             else {
@@ -1982,6 +1999,9 @@ public class LayoutDesigner implements LayoutConstants {
             }
             layoutModel.setIntervalAlignment(interval, alignment);
             addContent(interval, group, -1);
+        }
+        else {
+            layoutModel.setIntervalAlignment(interval, alignment);
         }
         if (resizing2 && !resizing1) {
             suppressGroupResizing(group);
@@ -3642,11 +3662,11 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         LayoutInterval group = new LayoutInterval(PARALLEL);
-        int effAlign1 = getEffectiveAlignment(seq.getSubInterval(startIndex));
-        int effAlign2 = getEffectiveAlignment(seq.getSubInterval(endIndex));
-        int groupAlign = (effAlign1 == effAlign2 || effAlign2 < 0) ? effAlign1 : effAlign2;
-        group.setGroupAlignment(groupAlign == LEADING || groupAlign == TRAILING ?
-                                groupAlign : alignment1);
+//        int effAlign1 = getEffectiveAlignment(seq.getSubInterval(startIndex));
+//        int effAlign2 = getEffectiveAlignment(seq.getSubInterval(endIndex));
+//        int groupAlign = (effAlign1 == effAlign2 || effAlign2 < 0) ? effAlign1 : effAlign2;
+        group.setGroupAlignment(/*groupAlign == LEADING || groupAlign == TRAILING ?
+                                groupAlign :*/ alignment1);
         if (startIndex == endIndex) {
             LayoutInterval li = layoutModel.removeInterval(seq, startIndex);
             layoutModel.addInterval(li, group, 0);
@@ -4165,7 +4185,7 @@ public class LayoutDesigner implements LayoutConstants {
                     layoutModel.removeInterval(group, i); // removes li from group
                     LayoutInterval sub = layoutModel.removeInterval(li, 0); // removes last interval from li
                     layoutModel.setIntervalAlignment(sub, align);
-                    addContent(sub, group, i);
+                    layoutModel.addInterval(sub, group, i);
                     i--;
                     continue;
                 }
@@ -4185,7 +4205,15 @@ public class LayoutDesigner implements LayoutConstants {
                 }
                 else offsetGap = null;
             }
-            else { // not sequence nor gap - just check whether it spans the group width
+            else { // not sequence nor gap
+                if (li.isParallel()) {
+                    layoutModel.removeInterval(group, i);
+                    if (addContent(li, group, i)) { // content of sub-group merged
+                        i--;
+                        continue;
+                    }
+                }
+                // check whether it spans the group width
                 int currentSize = li.getCurrentSpace().size(dimension);
                 assert currentSize > Short.MIN_VALUE && currentSize < Short.MAX_VALUE;
                 if (currentSize >= trailingPos - leadingPos) {
@@ -4217,8 +4245,10 @@ public class LayoutDesigner implements LayoutConstants {
 //            // [this should happen only if a group containing just gaps was passed in]
 //        }
 
-        if (!selfSized && !resizingContent) { // need to set up an offset gap (strut)
-            assert leadingAlign && trailingAlign;
+        if (!resizingContent // nothing resizing inside the group
+            && (!selfSized // no sub-interval has the size of the group
+                || (leadingAlign && trailingAlign && (leadingGapResizing || trailingGapResizing)))) // there was a resizing gap affecting the group
+        {   // need to set up an offset gap (strut)
             if (offsetGap == null) {
                 offsetGap = new LayoutInterval(SINGLE);
             }
@@ -4601,6 +4631,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
+    // requires current positions up-to-date
     private void imposeGapsSize(LayoutInterval group, int dimension) {
         for (Iterator it=group.getSubIntervals(); it.hasNext(); ) {
             LayoutInterval li = (LayoutInterval) it.next();
@@ -4634,6 +4665,31 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
+    private void imposeCurrentGapSize(LayoutInterval gap, int currentSize, int dimension) {
+        int pad = -1;
+        int min = gap.getPreferredSize();
+        int pref = gap.getPreferredSize();
+        if (pref == NOT_EXPLICITLY_DEFINED) {
+            pad = LayoutDragger.getPreferredPadding(gap, dimension);
+            pref = pad;
+        }
+        if (currentSize != pref) {
+            if (min == NOT_EXPLICITLY_DEFINED) {
+                if (pad < 0) {
+                    pad = LayoutDragger.getPreferredPadding(gap, dimension);
+                }
+                min = pad;
+            }
+            else if (min == USE_PREFERRED_SIZE) {
+                min = pref;
+            }
+            if (currentSize < min) {
+                currentSize = min;
+            }
+            resizeInterval(gap, currentSize == pad ? NOT_EXPLICITLY_DEFINED : currentSize);
+        }
+    }
+
     private void propEmptyContainer(LayoutInterval root, int dimension) {
         assert root.getParent() == null && root.getSubIntervalCount() == 0;
         LayoutInterval gap = new LayoutInterval(SINGLE);
@@ -4643,7 +4699,7 @@ public class LayoutDesigner implements LayoutConstants {
 
     // -----
 
-    private void addContent(LayoutInterval interval, LayoutInterval target, int index) {
+    private boolean addContent(LayoutInterval interval, LayoutInterval target, int index) {
         if (interval.isSequential() && target.isSequential()) {
             if (index < 0) {
                 index = target.getSubIntervalCount();
@@ -4652,6 +4708,7 @@ public class LayoutDesigner implements LayoutConstants {
                 LayoutInterval li = layoutModel.removeInterval(interval, 0);
                 layoutModel.addInterval(li, target, index++);
             }
+            return true;
         }
         else if (interval.isParallel() && target.isParallel()) {
             int align = interval.getAlignment();
@@ -4671,7 +4728,9 @@ public class LayoutDesigner implements LayoutConstants {
                 }
             }
 
-            if (sameAlign) { // can dismantle the group
+            if (sameAlign
+                && (LayoutInterval.canResize(interval) || !LayoutInterval.canResize(target) || !LayoutInterval.wantResize(target, false)))
+            {   // can dismantle the group
                 assert interval.getParent() == null;
                 while (interval.getSubIntervalCount() > 0) {
                     LayoutInterval li = interval.getSubInterval(0);
@@ -4685,6 +4744,10 @@ public class LayoutDesigner implements LayoutConstants {
                     if (index >= 0)
                         index++;
                 }
+                if (!LayoutInterval.canResize(interval) && LayoutInterval.canResize(target)) {
+                    suppressGroupResizing(target);
+                }
+                return true;
             }
             else { // need to add the group as a whole
                 layoutModel.addInterval(interval, target, index);
@@ -4693,6 +4756,7 @@ public class LayoutDesigner implements LayoutConstants {
         else {
             layoutModel.addInterval(interval, target, index);
         }
+        return false;
     }
 
     /**
@@ -4943,6 +5007,10 @@ public class LayoutDesigner implements LayoutConstants {
                     layoutModel.addInterval(gap, parent, index);
                 }
                 else { // this is an "open" end - compensate the size in the parent
+                    if (parent.getSubIntervalCount() == 1) {
+                        LayoutInterval last = layoutModel.removeInterval(parent, 0);
+                        layoutModel.addInterval(last, superParent, layoutModel.removeInterval(parent));
+                    }
                     maintainSize(superParent, wasResizing || restResizing, dimension,
                                  parent, parent.getCurrentSpace().size(dimension) - cutSize);
                 }
