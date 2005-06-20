@@ -1371,8 +1371,9 @@ public class MetaComponentCreator {
         int width;
         int height;
         if (isContainer) {
-            width = 100;
-            height = 100;
+            Dimension pref = comp.getPreferredSize();
+            width = pref.width < 16 ? 100 : pref.width;
+            height = pref.height < 12 ? 100 : pref.height;
         }
         else if (comp instanceof JSeparator) {
             width = 50;

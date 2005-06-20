@@ -1803,7 +1803,7 @@ public class LayoutDesigner implements LayoutConstants {
                         || (originalGap == null && distance > 0 && !LayoutInterval.wantResize(sequence, false)
                             && (neighbors[i] != null
                                 || sequence.getParent().getSubIntervalCount() == 1
-                                || LayoutInterval.wantResize(sequence.getParent(), false)))))
+                                || LayoutInterval.contentWantResize(sequence.getParent())))))
                 {   // should be resizing gap
                     gaps[i].setMaximumSize(Short.MAX_VALUE);
                     // [need to detect "fill" in a non-resizable group]
@@ -4894,8 +4894,9 @@ public class LayoutDesigner implements LayoutConstants {
                         minimum = visualMapper.getComponentMinimumSize(component.getId());
                     }
                     int min = i == HORIZONTAL ? minimum.width : minimum.height;
-                    boolean externalSize = currentSize < min
-                            || (currentSize > min && !LayoutInterval.wantResize(root, false));
+                    boolean externalSize = visualMapper.hasExplicitPreferredSize(component.getId())
+                                           || currentSize < min
+                                           || (currentSize > min && !LayoutInterval.wantResize(root, false));
                     resizeInterval(outer, externalSize ? currentSize : NOT_EXPLICITLY_DEFINED);
                 }
             }

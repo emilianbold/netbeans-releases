@@ -1223,6 +1223,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return visual != null ? visual.getPreferredSize() : null;
         }
 
+        public boolean hasExplicitPreferredSize(String componentId) {
+            JComponent visual = (JComponent) getVisualComponent(componentId, false, true);
+            return visual != null ? visual.isPreferredSizeSet() : false;
+        }
+
         public int getBaselinePosition(String componentId) {
             JComponent comp = (JComponent) getVisualComponent(componentId, true, true);
             // [hack - vertically resizable components cannot be baseline aligned]

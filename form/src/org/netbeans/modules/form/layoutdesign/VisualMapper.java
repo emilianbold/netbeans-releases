@@ -48,6 +48,8 @@ public interface VisualMapper {
     Dimension getComponentMinimumSize(String componentId);
     Dimension getComponentPreferredSize(String componentId);
 
+    boolean hasExplicitPreferredSize(String componentId);
+
     /**
      * Provides preferred padding (optimal amount of space) between two components.
      * @param component1Id first component Id
