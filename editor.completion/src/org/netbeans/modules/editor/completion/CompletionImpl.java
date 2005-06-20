@@ -307,12 +307,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     }
     
     private void restartCompletionAutoPopupTimer() {
-        completionAutoPopupTimer.setDelay(CompletionSettings.INSTANCE.completionAutoPopupDelay());
+        int completionDelay = CompletionSettings.INSTANCE.completionAutoPopupDelay();
+        completionAutoPopupTimer.setInitialDelay(completionDelay);
         completionAutoPopupTimer.restart();
     }
     
     private void restartDocumentationAutoPopupTimer() {
-        docAutoPopupTimer.setDelay(CompletionSettings.INSTANCE.documentationAutoPopupDelay());
+        int docDelay = CompletionSettings.INSTANCE.documentationAutoPopupDelay();
+        docAutoPopupTimer.setInitialDelay(docDelay);
         docAutoPopupTimer.restart();
     }
     
