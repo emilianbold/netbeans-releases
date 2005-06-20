@@ -742,13 +742,41 @@ public final class TestCreator {
                                  ? generateJavadoc(srcClass, srcMethod)
                                  : null;
             String methodBody = generateMethodBody(srcClass, srcMethod);
+            
+            boolean throwsExceptions = false;
+            List/*<JavaClass>*/ exceptions = srcMethod.getExceptions();
+            if (!exceptions.isEmpty()) {
+                Iterator/*<JavaClass>*/ i = exceptions.iterator();
+                while (i.hasNext()) {
+                    JavaClass exception = (JavaClass) i.next();
+                    if (!exception.isSubTypeOf(getRuntimeException())) {
+                        throwsExceptions = true;
+                        break;
+                    }
+                }
+            }
 
-            Method method = createPublicNoargMethod(
-                                javadocText,        // Javadoc text
-                                false,              // not static
-                                "void",             // return type      //NOI18N
-                                methodName,         // method name
-                                methodBody);        // method body
+            List/*<MultipartId>*/ exceptNames = throwsExceptions
+                               ? Collections.singletonList(
+                                      tgtPkg.getMultipartId().createMultipartId(
+                                              "Exception",              //NOI18N
+                                              null,
+                                              Collections.EMPTY_LIST))
+                               : Collections.EMPTY_LIST;
+            Method method = tgtPkg.getMethod().createMethod(
+                            methodName,                 // name         //NOI18N
+                            Collections.EMPTY_LIST,     // annotations
+                            Modifier.PUBLIC,            // modifiers
+                            javadocText,                // javadoc - text
+                            null,                       // javadoc - object
+                            null,                       // body - object
+                            methodBody,                 // body - text
+                            Collections.EMPTY_LIST,     // TypeParameters
+                            Collections.EMPTY_LIST,     // Parameters
+                            exceptNames,                // exception names
+                            TestUtil.getTypeReference(  // return type
+                                    tgtPkg, "void"),                    //NOI18N
+                            0);                         // dimensions count
             return method;
         }
         
@@ -1389,6 +1417,22 @@ public final class TestCreator {
             } else {
                 ((ArrayList) importedClsTypes).trimToSize();
             }
+        }
+        
+        
+        /** */
+        private ClassDefinition runtimeException;
+        
+        /**
+         */
+        private ClassDefinition getRuntimeException() {
+            if (runtimeException == null) {
+                Type runtimeExcType = tgtPkg.getType().resolve(
+                                          "java.lang.RuntimeException");//NOI18N
+                runtimeException = (ClassDefinition) runtimeExcType;
+            }
+            assert runtimeException != null;
+            return runtimeException;
         }
 
     }
