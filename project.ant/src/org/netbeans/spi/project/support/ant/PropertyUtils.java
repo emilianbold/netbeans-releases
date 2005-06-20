@@ -134,7 +134,7 @@ public class PropertyUtils {
                             bp = FileUtil.toFileObject(ubp);
                             if (bp == null) {
                                 // XXX ugly (and will not correctly notify changes) but better than nothing:
-                                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - cannot properly write to " + ubp + "; might be because your user directory is on a Windows UNC path (issue #46813)? If so, try using mapped drive latters.");
+                                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - cannot properly write to " + ubp + "; might be because your user directory is on a Windows UNC path (issue #46813)? If so, try using mapped drive letters.");
                                 OutputStream os = new FileOutputStream(ubp);
                                 try {
                                     properties.store(os);
