@@ -343,7 +343,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             return new SyntaxElement( this, item.getOffset(), getTokenEnd( item ), SyntaxElement.TYPE_ERROR );
 
         if( id == HTMLTokenContext.BLOCK_COMMENT ) {
-            while( id == HTMLTokenContext.BLOCK_COMMENT && !item.getImage().startsWith( "<!--" ) ) { // NOI18N
+            while( /*id == HTMLTokenContext.BLOCK_COMMENT &&*/ !item.getImage().startsWith( "<!--" ) ) { // NOI18N
                 item = item.getPrevious();
                 id = item.getTokenID();
             }
