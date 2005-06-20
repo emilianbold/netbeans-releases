@@ -20,8 +20,9 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="default-compiler" depends="xtest-unit.default-compiler">
+    <target name="default-compiler">
         <ant dir="unit/src/org/openide/util/data"/>
+        <antcall target="xtest-unit.default-compiler" />
     </target>
 
 </project>
