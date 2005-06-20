@@ -213,8 +213,15 @@ public class CompletionJList extends JList {
         }
         
         public void paintComponent(Graphics g) {
+            // Although the JScrollPane without horizontal scrollbar
+            // is explicitly set with a preferred size
+            // it does not force its items with the only width into which
+            // they can render (and still leaves them with the preferred width
+            // of the widest item).
+            // Therefore the item's render width is taken from the viewport's width.
+            int itemRenderWidth = ((JViewport)CompletionJList.this.getParent()).getWidth();
             item.render(g, getFont(), getForeground(), getBackground(),
-                    getWidth(), getHeight(), selected);
+                    itemRenderWidth, getHeight(), selected);
         }
         
         public Dimension getPreferredSize() {
