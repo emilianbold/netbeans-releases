@@ -640,7 +640,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
         
         String getPaintText() { return baseText; }
         
-        public String getItemText() { return baseText + "="; } //NOI18N
+        public String getItemText() { return baseText; } //NOI18N
         
         public boolean substituteText( JTextComponent c, int a, int b, boolean shift ) {
             super.substituteText( c, 0, 0, shift );
