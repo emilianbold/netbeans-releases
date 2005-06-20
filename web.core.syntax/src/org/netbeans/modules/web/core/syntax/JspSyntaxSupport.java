@@ -1759,15 +1759,15 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 				if (token.getImage().length() == 1){
 				    if (poss == 0){
 					start = token.getOffset();
-					end = token.getOffset()+token.getImage().length()+1;
 					token = token.getNext();
-
-					while (token != null && !(token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID
-						&& (token.getImage().charAt(0)== '>' || token.getImage().charAt(0)== '<'))){
-					    token = token.getNext();
-					}
-					if (token != null)
-					    end = token.getOffset()+1;
+                                        end = token.getOffset()+token.getImage().length();
+//
+//					while (token != null && !(token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID
+//						&& (token.getImage().charAt(0)== '>' || token.getImage().charAt(0)== '<'))){
+//					    token = token.getNext();
+//					}
+//					if (token != null)
+//					    end = token.getOffset()+1;
 					return new int[] {start, end};
 				    }
 				    else {

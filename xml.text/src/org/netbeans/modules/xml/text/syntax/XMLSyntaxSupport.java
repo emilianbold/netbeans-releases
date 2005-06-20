@@ -684,14 +684,13 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                             if (poss == 0){
                                 //get offset of previous token: < or </
                                 start = token.getOffset();
-                                end = token.getOffset()+token.getImage().length()+1;
-                                token = token.getNext();
+                                end = token.getOffset()+token.getImage().length();
                                 
-                                while (token != null && token.getTokenID() != XMLTokenIDs.TAG){
-                                    token = token.getNext();
-                                }
-                                if (token != null)
-                                    end = token.getOffset()+token.getImage().length();
+//                                while (token != null && token.getTokenID() != XMLTokenIDs.TAG){
+//                                    token = token.getNext();
+//                                }
+//                                if (token != null)
+//                                    end = token.getOffset()+token.getImage().length();
                                 return new int[] {start, end};
                             } else{
                                 poss--;
