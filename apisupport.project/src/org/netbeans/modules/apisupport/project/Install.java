@@ -46,20 +46,13 @@ public final class Install extends ModuleInstall {
                         p.setProperty("nbplatform.default.sources", installS.substring(0, installS.length() - suffix.length())); // NOI18N
                     }
                     p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
+                    // XXX do every time platform mgr opened?
                     final File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
                     if (apidocsZip != null) {
                         // XXX OK to overwrite any existing config? not sure...
                         p.setProperty("nbplatform.default.javadoc", FileUtil.normalizeFile(apidocsZip).getAbsolutePath()); // NOI18N
                     } else {
                         // XXX remove any existing binding?
-                    }
-                    {// XXX temporary, to clean up userdirs from old revs
-                        p.remove("netbeans.dest.dir"); // NOI18N
-                        p.remove("harness.dir"); // NOI18N
-                        p.remove("netbeans.sources"); // NOI18N
-                        p.remove("netbeans.javadoc"); // NOI18N
-                        p.remove("nbplatform.default.netbeans.sources"); // NOI18N
-                        p.remove("nbplatform.default.netbeans.javadoc"); // NOI18N
                     }
                     try {
                         PropertyUtils.putGlobalProperties(p);
