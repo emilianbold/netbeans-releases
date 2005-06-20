@@ -31,6 +31,7 @@ import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.javacore.ClassIndex;
+import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -111,6 +112,7 @@ public class J2SEProjectUtil {
      * @param addInto list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
     private static void getMainClasses (FileObject root, List/*<String>*/ addInto) {
+        JMManager.getManager().waitScanFinished();
         JavaModel.getJavaRepository ().beginTrans (false);
         try {
             JavaModelPackage mofPackage = JavaModel.getJavaExtent(root);
