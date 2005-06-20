@@ -14,6 +14,7 @@ package org.netbeans.modules.xml.text.indent;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.regex.Pattern;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -43,7 +44,10 @@ import org.netbeans.modules.xml.text.syntax.javacc.lib.JJEditorSyntax;
  * @author  Marek Fukala
  */
 public class XMLFormatter extends ExtFormatter {
-    
+
+    //at least one character
+    private static final Pattern VALID_TAG_NAME = Pattern.compile("\\w+"); // NOI18N
+
     public XMLFormatter(Class kitClass) {
         super(kitClass);
     }
@@ -252,7 +256,7 @@ public class XMLFormatter extends ExtFormatter {
                             if((match != null && match[0] < dotPos) || match == null) {
                                 //there isn't a _real_ matching tag => autocomplete
                                 //note: the test for match index is necessary since the '<'  in <tag> matches the '>' character on the end of the tag.
-                                if(tagname.trim().length() > 0) {
+                                if(VALID_TAG_NAME.matcher(tagname).matches()) { //check the tag name 
                                     doc.atomicLock();
                                     try {
                                         doc.insertString( dotPos, "</"+tagname+">" , null);
