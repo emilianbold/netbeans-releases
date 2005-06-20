@@ -188,7 +188,8 @@ public class HTMLFormatter extends ExtFormatter {
                 
                 TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
                 int start = token.getOffset();
-                if (token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_SYMBOL_ID){
+                if (token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_SYMBOL_ID &&
+                        !token.getImage().endsWith("/>")){
                     do {
                         token = token.getPrevious();
                     } while (token != null && !sup.isTag(token));
