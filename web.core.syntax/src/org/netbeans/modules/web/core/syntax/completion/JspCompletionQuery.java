@@ -104,7 +104,7 @@ public class JspCompletionQuery implements CompletionQuery {
                     ArrayList all = new ArrayList();
                     all.addAll(jspDirec.getData());
                     all.addAll(jspRes.getData());
-                    all.addAll(contentLResult.getData());
+                    if(contentLResult != null) all.addAll(contentLResult.getData());
                     
                     //note: offset and removelength passed into the DefaultResult are not used anywhere
                     CompletionQuery.Result result = new CompletionQuery.DefaultResult(component, 
