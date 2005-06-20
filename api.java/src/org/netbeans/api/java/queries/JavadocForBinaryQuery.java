@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,8 +61,11 @@ public class JavadocForBinaryQuery {
             if (r != null) {
                 if (log) ERR.log("  got result " + Arrays.asList(r.getRoots()) + " from " + impl);
                 return r;
+            } else {
+                if (log) ERR.log("  got no result from " + impl);
             }
         }
+        if (log) ERR.log("  got no results from any impl");
         return EMPTY_RESULT;        
     }
 
