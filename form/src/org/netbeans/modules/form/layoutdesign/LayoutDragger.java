@@ -95,6 +95,9 @@ class LayoutDragger implements LayoutConstants {
 
     // last found positions for the moving/resizing component
     private PositionDef[] bestPositions = new PositionDef[DIM_COUNT];
+    
+    // determines whether the dragged component can snap to baseline
+    private boolean canSnapToBaseline; // used only for multiselection
 
     // the following fields hold various parameters used during the procedure
     // of finding a suitable position for the moving/resizing components 
@@ -156,6 +159,16 @@ class LayoutDragger implements LayoutConstants {
         for (int i=0; i < compBounds.length; i++) {
             movingBounds[i] = new LayoutRegion();
         }
+        
+        // set canSnapToBaseline field - check that we are moving baseline group
+        LayoutInterval parent = comps[0].getLayoutInterval(VERTICAL).getParent();
+        for (int i=0; i < comps.length; i++) {
+            if (comps[i].getLayoutInterval(VERTICAL).getParent() != parent) {
+                parent = null;
+                break;
+            }
+        }
+        canSnapToBaseline = (comps.length == 1) || ((parent != null) && (parent.getGroupAlignment() == BASELINE));
 
         findingsNextTo = new PositionDef[DIM_COUNT][];
         findingsAligned = new PositionDef[DIM_COUNT][];
@@ -252,6 +265,10 @@ class LayoutDragger implements LayoutConstants {
     LayoutRegion[] getMovingBounds() {
         return movingBounds;
     }
+    
+    LayoutRegion getMovingSpace() {
+        return movingSpace;
+    }
 
     PositionDef[] getPositions() {
         for (dimension=0; dimension < DIM_COUNT; dimension++) {
@@ -321,7 +338,13 @@ class LayoutDragger implements LayoutConstants {
                 // for locked dimension the space is already set and not changing
             }
         }
-        movingSpace = movingBounds[0]; // [limitation: only one component can be moved]
+        movingSpace = new LayoutRegion();
+        for (int i=0; i<movingBounds.length; i++) {
+            movingSpace.expand(movingBounds[i]);
+        }
+        if (canSnapToBaseline) { // awfull, but working
+            movingSpace.positions[VERTICAL][BASELINE] = movingBounds[0].positions[VERTICAL][BASELINE];
+        }
 
         // reset finding results
         for (int i=0; i < DIM_COUNT; i++) {
@@ -346,6 +369,11 @@ class LayoutDragger implements LayoutConstants {
                     // snap effect
                     if (snapDistance != LayoutRegion.UNKNOWN) {
                         cursorPos[dimension] -= snapDistance;
+                        for (int i=0; i<movingBounds.length; i++) {
+                            movingBounds[i].reshape(dimension,
+                                            movingEdges[dimension],
+                                            -snapDistance);
+                        }
                         movingSpace.reshape(dimension,
                                             movingEdges[dimension],
                                             -snapDistance);
@@ -388,22 +416,22 @@ class LayoutDragger implements LayoutConstants {
                     }
                 }
                 LayoutRegion contRegion = targetContainer.getLayoutRoot(0).getCurrentSpace();
-                int conty1 = contRegion.positions[dir][LayoutConstants.LEADING];
-                int conty2 = contRegion.positions[dir][LayoutConstants.TRAILING];
+                int conty1 = contRegion.positions[dir][LEADING];
+                int conty2 = contRegion.positions[dir][TRAILING];
                 int posx = posRegion.positions[i][(inRoot || !position.nextTo) ? align : 1-align];
-                int posy1 = posRegion.positions[dir][LayoutConstants.LEADING]-OVERLAP;
+                int posy1 = posRegion.positions[dir][LEADING]-OVERLAP;
                 posy1 = Math.max(posy1, conty1);
-                int posy2 = posRegion.positions[dir][LayoutConstants.TRAILING]+OVERLAP;
+                int posy2 = posRegion.positions[dir][TRAILING]+OVERLAP;
                 posy2 = Math.min(posy2, conty2);
-                int x = movingBounds[0].positions[i][align];
-                int y1 = movingBounds[0].positions[dir][LayoutConstants.LEADING]-OVERLAP;
+                int x = movingSpace.positions[i][align];
+                int y1 = movingSpace.positions[dir][LEADING]-OVERLAP;
                 y1 = Math.max(y1, conty1);
-                int y2 = movingBounds[0].positions[dir][LayoutConstants.TRAILING]+OVERLAP;
+                int y2 = movingSpace.positions[dir][TRAILING]+OVERLAP;
                 y2 = Math.min(y2, conty2);
                 Stroke oldStroke = g.getStroke();
                 g.setStroke(dashedStroke);
                 if (position.nextTo) { // adding next to
-                    if (i == LayoutConstants.HORIZONTAL) {
+                    if (i == HORIZONTAL) {
                         g.drawLine(x, Math.min(y1, posy1), x, Math.max(y2, posy2));
                     } else {
                         g.drawLine(Math.min(y1, posy1), x, Math.max(y2, posy2), x);
@@ -412,14 +440,14 @@ class LayoutDragger implements LayoutConstants {
                     int ay1 = Math.min(y1, posy1);
                     int ay2 = Math.max(y2, posy2);
                     if (x == posx) {
-                        if (i == LayoutConstants.HORIZONTAL) {
+                        if (i == HORIZONTAL) {
                             g.drawLine(posx, Math.min(y1, posy1), posx, Math.max(y2, posy2));
                         } else {
                             g.drawLine(Math.min(y1, posy1), posx, Math.max(y2, posy2), posx);
                         }
                     }
                     else { // indented position
-                        if (i == LayoutConstants.HORIZONTAL) {
+                        if (i == HORIZONTAL) {
                             g.drawLine(posx, posy1, posx, posy2);
                             g.drawLine(x, y1, x, y2);
                         }
@@ -530,6 +558,7 @@ class LayoutDragger implements LayoutConstants {
                                                      dimension, i, i);
                 assert distance != LayoutRegion.UNKNOWN;
                 if (snapping) {
+                    // PENDING consider the resulting interval when moving more components
                     int pad = findPadding(null, movingComponents[0], dimension, i); // [limitation: only one component can be moved]
                     distance += (i == LEADING ? -pad : pad);
                 }
@@ -674,6 +703,7 @@ class LayoutDragger implements LayoutConstants {
             int distance = LayoutRegion.distance(subSpace, movingSpace,
                                                  dimension, i^1, i);
             if (snapping) {
+                // PENDING consider the resulting interval when moving more components
                 int pad = findPadding(sub, movingComponents[0], dimension, i);// [limitation: only one component can be moved]
                 distance += (i == LEADING ? -pad : pad);
                 validDistance = Math.abs(distance) < SNAP_DISTANCE;
@@ -837,6 +867,7 @@ class LayoutDragger implements LayoutConstants {
             int verticalDst = LayoutRegion.distance(examinedSpace, movingSpace,
                                                     VERTICAL, TRAILING, LEADING);
             if (verticalDst >= 0 && verticalDst < 2 * SNAP_DISTANCE) {
+                // PENDING does it have a sense to generalize this for multiselection?
                 int indent = findIndent(interval.getComponent(), movingComponents[0],
                                         dimension, alignment);
                 if (indent > 0) {
