@@ -63,47 +63,47 @@ public class AbstractNodeTest extends TestCase {
         Image def32 = getImage("org/openide/resources/defaultNode32.gif");
         
         // PNGs, Open32 is missing
-        Image aPng = getImage("org/openide/nodes/resources/a.png");
-        Image aPngOpen = getImage("org/openide/nodes/resources/aOpen.png");
-        Image a32Png = getImage("org/openide/nodes/resources/a32.png");
+        Image aPng = getImage("org/openide/nodes/data/a.png");
+        Image aPngOpen = getImage("org/openide/nodes/data/aOpen.png");
+        Image a32Png = getImage("org/openide/nodes/data/a32.png");
         
         // GIFs, 32 is missing
-        Image aGif = getImage("org/openide/nodes/resources/a.gif");
-        Image a32Gif = getImage("org/openide/nodes/resources/a32.gif");
-        Image a32GifOpen = getImage("org/openide/nodes/resources/aOpen32.gif");
+        Image aGif = getImage("org/openide/nodes/data/a.gif");
+        Image a32Gif = getImage("org/openide/nodes/data/a32.gif");
+        Image a32GifOpen = getImage("org/openide/nodes/data/aOpen32.gif");
         
         // extension-less icons
-        Image b = getImage("org/openide/nodes/resources/b");
-        Image b32 = getImage("org/openide/nodes/resources/b32");
+        Image b = getImage("org/openide/nodes/data/b");
+        Image b32 = getImage("org/openide/nodes/data/b32");
 
         // ugly one, no extension, dot in path
-        Image b2 = getImage("org/openide/nodes/res.t2/b");
+        Image b2 = getImage("org/openide/nodes/data/res.t2/b");
 
         // check the default icon first
         checkIcons(an, def, def32, def, def32);
         
         // verify the original method behaviour
-        an.setIconBase("org/openide/nodes/resources/a");
+        an.setIconBase("org/openide/nodes/data/a");
         lst.assertEvents(2); // icon and opened icon
         checkIcons(an, aGif, a32Gif, aGif, a32GifOpen);
         
         // Check the preferred method
-        an.setIconBaseWithExtension("org/openide/nodes/resources/a.png");
+        an.setIconBaseWithExtension("org/openide/nodes/data/a.png");
         lst.assertEvents(2); // icon and opened icon
         checkIcons(an, aPng, a32Png, aPngOpen, aPngOpen);
         
         // also for gifs
-        an.setIconBaseWithExtension("org/openide/nodes/resources/a.gif");
+        an.setIconBaseWithExtension("org/openide/nodes/data/a.gif");
         lst.assertEvents(2); // icon and opened icon
         checkIcons(an, aGif, a32Gif, aGif, a32GifOpen);
         
         // What if there is no extension?
-        an.setIconBaseWithExtension("org/openide/nodes/resources/b");
+        an.setIconBaseWithExtension("org/openide/nodes/data/b");
         lst.assertEvents(2); // icon and opened icon
         checkIcons(an, b, b32, b, b32);
 
         // Do we support such insane resources too?
-        an.setIconBaseWithExtension("org/openide/nodes/res.t2/b");
+        an.setIconBaseWithExtension("org/openide/nodes/data/res.t2/b");
         lst.assertEvents(2); // icon and opened icon
         checkIcons(an, b2, b2, b2, b2);
 
