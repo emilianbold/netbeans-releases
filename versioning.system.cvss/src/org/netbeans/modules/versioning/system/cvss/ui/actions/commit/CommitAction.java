@@ -99,6 +99,12 @@ public class CommitAction extends AbstractSystemAction {
     }
 
     public static void invokeCommit(String title, File [] roots) {
+        if (CvsVersioningSystem.getInstance().getFileTableModel(roots, FileInformation.STATUS_LOCAL_CHANGE).getNodes().length == 0) {
+            JOptionPane.showMessageDialog(null, loc.getString("MSG_NoFilesToCommit_Prompt"), 
+                                          loc.getString("MSG_NoFilesToCommit_Title"), JOptionPane.INFORMATION_MESSAGE);
+            return;   
+        }
+        
         CommitCommand cmd = new CommitCommand();
         cmd.setDisplayName(NbBundle.getMessage(CommitAction.class, "BK0001"));
         copy (cmd, commandTemplate);
