@@ -95,7 +95,11 @@ public class AddComponents_AWT extends JellyTestCase {
         // store all component names from the category in the Vector
         Vector componentNames = new Vector();
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
-        JListOperator list = palette.selectPage(categoryName);
+        palette.collapseBeans();
+        palette.collapseLayouts();
+        palette.collapseSwing();
+        palette.expandAWT();
+        JListOperator list = palette.lstComponents(); // selectPage(categoryName);
         for (int i=0;i<list.getModel().getSize();i++) {
             org.openide.nodes.FilterNode comp = (org.openide.nodes.FilterNode)(list.getModel().getElementAt(i));
             String component = comp.getDisplayName();

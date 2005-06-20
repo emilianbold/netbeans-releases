@@ -109,7 +109,11 @@ public class AddComponents_SWING extends JellyTestCase {
         // store all component names from the category in the Vector
         Vector componentNames = new Vector();
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
-        JListOperator list = palette.selectPage(categoryName);
+        palette.collapseBeans();
+        palette.collapseLayouts();
+        palette.collapseAWT();
+        palette.expandSwing();
+        JListOperator list = palette.lstComponents(); //selectPage(categoryName);
         for (int i=0;i<list.getModel().getSize();i++) {
             org.openide.nodes.FilterNode comp = (org.openide.nodes.FilterNode)(list.getModel().getElementAt(i));
             String component = comp.getDisplayName();
@@ -184,10 +188,10 @@ public class AddComponents_SWING extends JellyTestCase {
     public void openDataProject(){
         //if running internally then ide must be ran with the switch -J-Dxtest.data=${SampleProject location}
         ProjectSupport.openProject(getDataDir().getAbsolutePath() + "\\" + DATA_PROJECT_NAME);
-        NbDialogOperator scanningDialogOper = new NbDialogOperator("Scanning");
-        log(scanningDialogOper.getTitle() + " opened.");
-        scanningDialogOper.waitClosed();
-        log(scanningDialogOper.getTitle() + " closed.");
+//        NbDialogOperator scanningDialogOper = new NbDialogOperator("Scanning");
+//        log(scanningDialogOper.getTitle() + " opened.");
+//        scanningDialogOper.waitClosed();
+//        log(scanningDialogOper.getTitle() + " closed.");
         pto = new ProjectsTabOperator();
     }
     
