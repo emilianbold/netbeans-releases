@@ -10,14 +10,14 @@ http://www.sun.com/
 The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
---><!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
-
+-->
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
 <apichanges>
 <apidefs>
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
-<change>
+<change id="AbstractNode.setIconBaseWithExtension">
      <api name="nodes"/>
      <summary>AbstractNode allows using different icon extensions</summary>
      <version major="6" minor="5"/>
