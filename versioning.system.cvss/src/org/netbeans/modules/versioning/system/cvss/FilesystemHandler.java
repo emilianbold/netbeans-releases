@@ -130,6 +130,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             if (entry != null && !entry.isDirectory() && entry.isUserFileToBeRemoved()) {
                 cvsUndoRemoveLocally(sah, file, entry);    
             }
+            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         }
         if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
         if (file.isDirectory()) cache.directoryContentChanged(file);
