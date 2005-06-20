@@ -21,16 +21,16 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 final class CustomizerCompiling extends NbPropertyPanel {
     
     /** Creates new form CustomizerCompiling */
-    CustomizerCompiling(final NbModuleProperties props) {
+    CustomizerCompiling(final SingleModuleProperties props) {
         super(props);
         initComponents();
-        debug.setSelected(getBooleanProperty(NbModuleProperties.BUILD_COMPILER_DEBUG));
-        deprecation.setSelected(getBooleanProperty(NbModuleProperties.BUILD_COMPILER_DEPRECATION));
+        debug.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG));
+        deprecation.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION));
     }
     
     public void store() {
-        setBooleanProperty(NbModuleProperties.BUILD_COMPILER_DEBUG, debug.isSelected());
-        setBooleanProperty(NbModuleProperties.BUILD_COMPILER_DEPRECATION, deprecation.isSelected());
+        setBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG, debug.isSelected());
+        setBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION, deprecation.isSelected());
     }
     
     /** This method is called from within the constructor to

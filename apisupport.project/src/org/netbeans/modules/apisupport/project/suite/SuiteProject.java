@@ -26,6 +26,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.ui.SuiteActions;
+import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -42,8 +45,6 @@ import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
-import org.netbeans.modules.apisupport.project.ui.SuiteActions;
-import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
 
 /**
  * Represents one module suite project.
@@ -72,7 +73,7 @@ public final class SuiteProject implements Project {
             new SuiteProviderImpl(),
             new SuiteActions(this),
             new SuiteLogicalView(this),
-            //new SuiteCustomizer(this, helper, eval),
+            new SuiteCustomizer(this, helper, eval),
         });
     }
     

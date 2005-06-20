@@ -24,10 +24,10 @@ import javax.swing.text.JTextComponent;
  */
 abstract class NbPropertyPanel extends JPanel implements ComponentFactory.StoragePanel {
     
-    protected NbModuleProperties props;
+    protected SingleModuleProperties props;
     
     /** Creates new NbPropertyPanel */
-    NbPropertyPanel(final NbModuleProperties props) {
+    NbPropertyPanel(final SingleModuleProperties props) {
         this.props = props;
         initComponents();
     }

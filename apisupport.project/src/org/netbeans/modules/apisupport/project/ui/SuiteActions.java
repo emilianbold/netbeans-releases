@@ -63,10 +63,6 @@ public final class SuiteActions implements ActionProvider {
         actions.add(null);
         actions.add(CommonProjectActions.deleteProjectAction());
          */
-        /*
-        actions.add(null);
-        actions.add(CommonProjectActions.customizeProjectAction());
-         */
         try {
             FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
             FileObject fo = sfs.findResource("Projects/Actions"); // NOI18N
@@ -93,6 +89,8 @@ public final class SuiteActions implements ActionProvider {
         }
         actions.add(null);
         actions.add(SystemAction.get(ToolsAction.class));
+        actions.add(null);
+        actions.add(CommonProjectActions.customizeProjectAction());
         return (Action[]) actions.toArray(new Action[actions.size()]);
     }
     

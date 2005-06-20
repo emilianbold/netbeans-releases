@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import org.netbeans.modules.apisupport.project.SuiteProvider;
-
 /**
  * Represents <em>Sources</em> panel in Netbeans Module customizer.
  *
@@ -23,28 +21,27 @@ import org.netbeans.modules.apisupport.project.SuiteProvider;
 final class CustomizerSources extends NbPropertyPanel {
     
     /** Creates new form CustomizerSources */
-    CustomizerSources(final NbModuleProperties moduleProps, SuiteProvider sp,
-            String prjFolder) {
-        super(moduleProps);
+    CustomizerSources(final SingleModuleProperties modProps) {
+        super(modProps);
         initComponents();
-        if (sp.getSuiteDirectory() == null) {
+        if (modProps.getSuiteDirectory() == null) {
             moduleSuite.setVisible(false);
             moduleSuiteValue.setVisible(false);
         } else {
-            NbPropertyPanel.setText(moduleSuiteValue, sp.getSuiteDirectory().getPath());
+            NbPropertyPanel.setText(moduleSuiteValue, modProps.getSuiteDirectory());
         }
-        for (int i = 0; i < NbModuleProperties.SOURCE_LEVELS.length; i++) {
-            srcLevelValue.addItem(NbModuleProperties.SOURCE_LEVELS[i]);
+        for (int i = 0; i < SingleModuleProperties.SOURCE_LEVELS.length; i++) {
+            srcLevelValue.addItem(SingleModuleProperties.SOURCE_LEVELS[i]);
         }
-        srcLevelValue.setSelectedItem(getProperty(NbModuleProperties.JAVAC_SOURCES));
-        NbPropertyPanel.setText(prjFolderValue, prjFolder);
+        srcLevelValue.setSelectedItem(getProperty(SingleModuleProperties.JAVAC_SOURCES));
+        NbPropertyPanel.setText(prjFolderValue, modProps.getProjectDirectory());
     }
     
     public void store() {
-        setProperty(NbModuleProperties.JAVAC_SOURCES,
+        setProperty(SingleModuleProperties.JAVAC_SOURCES,
                 (String) srcLevelValue.getSelectedItem());
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

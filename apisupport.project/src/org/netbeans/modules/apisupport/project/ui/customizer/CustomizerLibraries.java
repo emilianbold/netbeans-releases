@@ -41,10 +41,10 @@ import org.openide.util.NbBundle;
  */
 public class CustomizerLibraries extends JPanel {
     
-    private NbModuleProperties modProps;    
+    private SingleModuleProperties modProps;    
     
     /** Creates new form CustomizerLibraries */
-    public CustomizerLibraries(final NbModuleProperties modProps) {
+    public CustomizerLibraries(final SingleModuleProperties modProps) {
         initComponents();
         platformValue.setSelectedItem(modProps.getActivePlatform());
         if (!modProps.isStandalone()) {

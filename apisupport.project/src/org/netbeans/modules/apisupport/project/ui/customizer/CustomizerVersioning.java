@@ -42,7 +42,7 @@ final class CustomizerVersioning extends NbPropertyPanel {
     private boolean lastAppImplChecked;
     
     /** Creates new form CustomizerVersioning */
-    CustomizerVersioning(NbModuleProperties props) {
+    CustomizerVersioning(SingleModuleProperties props) {
         super(props);
         initComponents();
         initPublicPackageTable();
@@ -53,14 +53,14 @@ final class CustomizerVersioning extends NbPropertyPanel {
         String specVersion = props.getSpecificationVersion();
         if (null == specVersion || "".equals(specVersion)) { // NOI18N
             appendImpl.setSelected(true);
-            NbPropertyPanel.setText(specificationVerValue, getProperty(NbModuleProperties.SPEC_VERSION_BASE));
+            NbPropertyPanel.setText(specificationVerValue, getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
         } else {
             NbPropertyPanel.setText(specificationVerValue, specVersion);
         }
         NbPropertyPanel.setText(implVerValue, props.getImplementationVersion());
         regularMod.setSelected(true);
-        autoloadMod.setSelected(getBooleanProperty(NbModuleProperties.IS_AUTOLOAD));
-        eagerMod.setSelected(getBooleanProperty(NbModuleProperties.IS_EAGER));
+        autoloadMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_AUTOLOAD));
+        eagerMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_EAGER));
         implVerValue.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 updateAppendImpl();
@@ -127,15 +127,15 @@ final class CustomizerVersioning extends NbPropertyPanel {
         String specVer = specificationVerValue.getText().trim();
         if (appendImpl.isSelected()) {
             props.setSpecificationVersion(""); // NOI18N
-            setProperty(NbModuleProperties.SPEC_VERSION_BASE, specVer);
+            setProperty(SingleModuleProperties.SPEC_VERSION_BASE, specVer);
         } else {
             props.setSpecificationVersion(specVer);
-            setProperty(NbModuleProperties.SPEC_VERSION_BASE, ""); // NOI18N
+            setProperty(SingleModuleProperties.SPEC_VERSION_BASE, ""); // NOI18N
         }
         props.setImplementationVersion(implVerValue.getText().trim());
         props.setProvidedTokens(tokensValue.getText().trim());
-        setBooleanProperty(NbModuleProperties.IS_AUTOLOAD, autoloadMod.isSelected());
-        setBooleanProperty(NbModuleProperties.IS_EAGER, eagerMod.isSelected());
+        setBooleanProperty(SingleModuleProperties.IS_AUTOLOAD, autoloadMod.isSelected());
+        setBooleanProperty(SingleModuleProperties.IS_EAGER, eagerMod.isSelected());
     }
     
     /** This method is called from within the constructor to

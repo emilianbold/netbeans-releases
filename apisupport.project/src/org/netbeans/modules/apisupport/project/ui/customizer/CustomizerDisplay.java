@@ -31,10 +31,10 @@ import org.openide.util.Utilities;
 final class CustomizerDisplay extends JPanel implements 
         ComponentFactory.StoragePanel, PropertyChangeListener {
     
-    private NbModuleProperties modProps;
+    private SingleModuleProperties modProps;
     
     /** Creates new form CustomizerDisplay */
-    CustomizerDisplay(final NbModuleProperties modProps) {
+    CustomizerDisplay(final SingleModuleProperties modProps) {
         this.modProps = modProps;
         initComponents();
         readFromProperties();
@@ -114,7 +114,7 @@ final class CustomizerDisplay extends JPanel implements
     }
     
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        if (NbModuleProperties.NB_PLATFORM_PROPERTY == evt.getPropertyName()) {
+        if (SingleModuleProperties.NB_PLATFORM_PROPERTY == evt.getPropertyName()) {
             fillUpCategoryValue();
         }
     }

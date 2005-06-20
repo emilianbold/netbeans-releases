@@ -24,12 +24,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -40,38 +41,33 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 /**
- * Adding ability for a NetBeans modules to provide a GUI customizer.
+ * Adding ability for a NetBeans Suite modules to provide a GUI customizer.
  *
- * @author mkrauskopf
+ * @author Martin Krauskopf
  */
-public final class CustomizerProviderImpl implements CustomizerProvider {
+public final class SuiteCustomizer implements CustomizerProvider {
     
     public static final ErrorManager err = ErrorManager.getDefault().getInstance(
-            "org.netbeans.modules.apisupport.project.ui.customizer"); // NOI18N
+            "org.netbeans.modules.apisupport.project.ui.suite.customizer"); // NOI18N
     
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
-    private final String locBundlePropsPath;
-    private final boolean isStandalone;
     
     private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
     
-    private SingleModuleProperties moduleProps;
-    
+    private SuiteProperties suiteProps;
     private ProjectCustomizer.Category categories[];
     private ProjectCustomizer.CategoryComponentProvider panelProvider;
     
     // Keeps already displayed dialogs to prevent double creation
     private static Map/*<Project,Dialog>*/ displayedDialogs = new HashMap();
     
-    public CustomizerProviderImpl(Project project, AntProjectHelper helper,
-            PropertyEvaluator evaluator, boolean isStandalone, String locBundlePropsPath) {
+    public SuiteCustomizer(Project project, AntProjectHelper helper,
+            PropertyEvaluator evaluator) {
         this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
-        this.isStandalone = isStandalone;
-        this.locBundlePropsPath = locBundlePropsPath;
     }
     
     /** Show customizer with the first category selected. */
@@ -91,8 +87,9 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         } else {
-            this.moduleProps = new SingleModuleProperties(helper, evaluator,
-                    getSuiteProvider(), isStandalone, locBundlePropsPath);
+            SubprojectProvider spp = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
+            Set/*<Project>*/ subModules = spp.getSubprojects();
+            this.suiteProps = new SuiteProperties(helper, evaluator, subModules);
             init();
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {
@@ -111,7 +108,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                     panelProvider, preselectedCategory, listener, null);
             dialog.addWindowListener(listener);
             dialog.setTitle(MessageFormat.format(
-                    NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizerTitle"), // NOI18N
+                    NbBundle.getMessage(SuiteCustomizer.class, "LBL_SuiteCustomizerTitle"), // NOI18N
                     new Object[] { ProjectUtils.getInformation(project).getDisplayName() }));
                     
             displayedDialogs.put(project, dialog);
@@ -125,68 +122,24 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     
     // Programmatic names of categories
     private static final String SOURCES = "Sources"; // NOI18N
-    private static final String DISPLAY = "Display"; // NOI18N
     private static final String LIBRARIES = "Libraries"; // NOI18N
-    private static final String VERSIONING = "Versioning"; // NOI18N
-    private static final String BUILD = "Build"; // NOI18N
-    private static final String COMPILING = "Compiling"; // NOI18N
-    private static final String PACKAGING = "Packaging"; // NOI18N
-    private static final String DOCUMENTING = "Documenting"; // NOI18N
 
-    private SuiteProvider getSuiteProvider() {
-        return (SuiteProvider) project.getLookup().lookup(SuiteProvider.class);
-    }
-    
     private void init() {
-        ResourceBundle bundle = NbBundle.getBundle(CustomizerProviderImpl.class);
+        ResourceBundle bundle = NbBundle.getBundle(SuiteCustomizer.class);
         
         ProjectCustomizer.Category sources = createCategory(SOURCES,
                 bundle.getString("LBL_ConfigSources")); // NOI18N
-        ProjectCustomizer.Category display = createCategory(DISPLAY,
-                bundle.getString("LBL_ConfigDisplay")); // NOI18N
         ProjectCustomizer.Category libraries = createCategory(LIBRARIES,
                 bundle.getString("LBL_ConfigLibraries")); // NOI18N
-        ProjectCustomizer.Category versioning = createCategory(VERSIONING,
-                bundle.getString("LBL_ConfigVersioning")); // NOI18N
-
-        ProjectCustomizer.Category compiling = createCategory(COMPILING,
-                bundle.getString("LBL_ConfigCompiling")); // NOI18N
-        ProjectCustomizer.Category packaging = createCategory(PACKAGING,
-                bundle.getString("LBL_ConfigPackaging")); // NOI18N
-        ProjectCustomizer.Category documenting = createCategory(DOCUMENTING,
-                bundle.getString("LBL_ConfigDocumenting")); // NOI18N
-        ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
-                BUILD,
-                bundle.getString( "LBL_ConfigBuild" ), // NOI18N
-                null,
-                new ProjectCustomizer.Category[] {compiling, packaging, documenting}
-        );
-
         
         categories = new ProjectCustomizer.Category[] {
-            sources, display, libraries, versioning, build
+            sources, libraries
         };
         
-        // sources customizer
-        panels.put(sources, new CustomizerSources(moduleProps));
-        
-        // display customizer
-        panels.put(display, new CustomizerDisplay(moduleProps));
+        panels.put(sources, new SuiteCustomizerSources(suiteProps));
         
         // libraries customizer
-        panels.put(libraries, new CustomizerLibraries(moduleProps));
-        
-        // versioning customizer
-        panels.put(versioning, new CustomizerVersioning(moduleProps));
-        
-        // compiling customizer
-        panels.put(compiling, new CustomizerCompiling(moduleProps));
-        
-        // packaging customizer
-        panels.put(packaging, new CustomizerPackaging(moduleProps));
-        
-        // documenting customizer
-        panels.put(documenting, new CustomizerDocumenting(moduleProps));
+        panels.put(libraries, new SuiteCustomizerLibraries(suiteProps));
         
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
             public JComponent create(ProjectCustomizer.Category category) {
@@ -246,7 +199,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             // Store properties
             Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    moduleProps.storeProperties();
+                    suiteProps.storeProperties();
                     return Boolean.TRUE;
                 }
             });

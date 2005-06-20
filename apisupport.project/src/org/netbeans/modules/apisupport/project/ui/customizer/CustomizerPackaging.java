@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import javax.swing.JFileChooser;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 
 /**
  * Represents <em>Packaging</em> panel in Netbeans Module customizer.
@@ -24,24 +23,24 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 final class CustomizerPackaging extends NbPropertyPanel {
     
     /** Creates new form CustomizerPackaging */
-    CustomizerPackaging(final NbModuleProperties moduleProps) {
+    CustomizerPackaging(final SingleModuleProperties moduleProps) {
         super(moduleProps);
         initComponents();
         // cluster
         NbPropertyPanel.setText(jarFileValue, moduleProps.getJarFile());
-        needsRestart.setSelected(getBooleanProperty(NbModuleProperties.NBM_NEEDS_RESTART));
-        isGlobal.setSelected(getBooleanProperty(NbModuleProperties.NBM_IS_GLOBAL));
-        NbPropertyPanel.setText(licenseValue, getProperty(NbModuleProperties.LICENSE_FILE));
-        NbPropertyPanel.setText(homePageValue, getProperty(NbModuleProperties.NBM_HOMEPAGE));
-        NbPropertyPanel.setText(authorValue, getProperty(NbModuleProperties.NBM_MODULE_AUTHOR));
+        needsRestart.setSelected(getBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART));
+        isGlobal.setSelected(getBooleanProperty(SingleModuleProperties.NBM_IS_GLOBAL));
+        NbPropertyPanel.setText(licenseValue, getProperty(SingleModuleProperties.LICENSE_FILE));
+        NbPropertyPanel.setText(homePageValue, getProperty(SingleModuleProperties.NBM_HOMEPAGE));
+        NbPropertyPanel.setText(authorValue, getProperty(SingleModuleProperties.NBM_MODULE_AUTHOR));
     }
 
     public void store() {
-        setBooleanProperty(NbModuleProperties.NBM_NEEDS_RESTART, needsRestart.isSelected());
-        setBooleanProperty(NbModuleProperties.NBM_IS_GLOBAL, isGlobal.isSelected());
-        setProperty(NbModuleProperties.LICENSE_FILE, licenseValue.getText());
-        setProperty(NbModuleProperties.NBM_HOMEPAGE, homePageValue.getText());
-        setProperty(NbModuleProperties.NBM_MODULE_AUTHOR, authorValue.getText());
+        setBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART, needsRestart.isSelected());
+        setBooleanProperty(SingleModuleProperties.NBM_IS_GLOBAL, isGlobal.isSelected());
+        setProperty(SingleModuleProperties.LICENSE_FILE, licenseValue.getText());
+        setProperty(SingleModuleProperties.NBM_HOMEPAGE, homePageValue.getText());
+        setProperty(SingleModuleProperties.NBM_MODULE_AUTHOR, authorValue.getText());
     }
     
     /** This method is called from within the constructor to
