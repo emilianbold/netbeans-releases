@@ -34,13 +34,10 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(PlatformDependencySatisfiedTest.class));
-    }
-    
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("org.netbeans.core.modules.NbInstaller.noAutoDeps", "true");
+        Main.getModuleSystem (); // init module system
         
         File tmp = File.createTempFile ("PlatformDependencySatisfiedModule", ".jar");
         moduleJarFile = tmp;
@@ -117,7 +114,6 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         os.close ();
         
         
-        Main.getModuleSystem (); // init module system
         final FakeEvents ev = new FakeEvents();
         org.netbeans.core.startup.NbInstaller installer = new org.netbeans.core.startup.NbInstaller(ev);
         ModuleManager mgr = new ModuleManager(installer, ev);
