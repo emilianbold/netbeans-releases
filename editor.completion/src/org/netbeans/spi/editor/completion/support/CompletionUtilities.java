@@ -73,8 +73,8 @@ public final class CompletionUtilities {
             if (leftHtmlText != null) {
                 width += BEFORE_RIGHT_TEXT_GAP;
             }
-            width += (int)PatchedHtmlRenderer.renderHTML(rightHtmlText, g, 0, 0, 0, 0,
-                    defaultFont, Color.black, PatchedHtmlRenderer.STYLE_TRUNCATE, false, true);
+            width += (int)PatchedHtmlRenderer.renderHTML(rightHtmlText, g, 0, 0, Integer.MAX_VALUE, 0,
+                    defaultFont, Color.black, PatchedHtmlRenderer.STYLE_CLIP, false, true);
         }
         return width;
     }
