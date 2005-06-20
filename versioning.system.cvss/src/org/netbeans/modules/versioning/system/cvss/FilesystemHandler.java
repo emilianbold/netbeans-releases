@@ -95,6 +95,25 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
      * Registers listeners to all disk filesystems.
      */ 
     void init() {
+        Set filesystems = getRootFilesystems();
+        for (Iterator i = filesystems.iterator(); i.hasNext();) {
+            FileSystem fileSystem = (FileSystem) i.next();
+            fileSystem.addFileChangeListener(this);
+        }
+    }
+
+    /**
+     * Unregisters listeners from all disk filesystems.
+     */ 
+    void shutdown() {
+        Set filesystems = getRootFilesystems();
+        for (Iterator i = filesystems.iterator(); i.hasNext();) {
+            FileSystem fileSystem = (FileSystem) i.next();
+            fileSystem.removeFileChangeListener(this);
+        }
+    }
+
+    private Set getRootFilesystems() {
         Set filesystems = new HashSet();
         File [] roots = File.listRoots();
         for (int i = 0; i < roots.length; i++) {
@@ -107,12 +126,9 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
                 // ignore invalid filesystems
             }
         }
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            fileSystem.addFileChangeListener(this);
-        }
+        return filesystems;
     }
-
+    
     // private methods ---------------------------
     
     private void fileCreatedImpl(File file) {

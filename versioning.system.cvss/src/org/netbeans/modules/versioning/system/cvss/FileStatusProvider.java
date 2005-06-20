@@ -41,6 +41,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     
     private static FileStatusProvider instance;
+    private boolean shutdown; 
 
     public FileStatusProvider() {
         instance = this;
@@ -68,6 +69,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
      * @return badged or original icon based on status of files in folders
      */ 
     public Image annotateIcon(Image icon, int iconType, Set files) {
+        if (shutdown) return icon;
         Set roots = new HashSet();
         boolean folderAnnotation = false;
         if (files instanceof NonRecursiveFolder) {
@@ -143,6 +145,23 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
             }
         } catch (FileStateInvalidException e) {
             // ignore files in invalid filesystems
+        }
+    }
+
+    void shutdown() {
+        shutdown = true;
+        refreshModifiedFiles();
+    }
+
+    void init() {
+        refreshModifiedFiles();
+    }
+
+    private void refreshModifiedFiles() {
+        Map files = CvsVersioningSystem.getInstance().getStatusCache().getAllModifiedFiles();
+        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            fireFileStatusEvent(file);
         }
     }
 }

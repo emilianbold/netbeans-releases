@@ -91,6 +91,7 @@ public class CvsVersioningSystem {
         // HACK: FileStatusProvider cannot do it itself
         if (FileStatusProvider.getInstance() != null) {
             fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
+            FileStatusProvider.getInstance().init();
         }
     }
 
@@ -510,5 +511,10 @@ public class CvsVersioningSystem {
      */ 
     InterceptionListener getFileSystemHandler() {
         return filesystemHandler;
+    }
+
+    void shutdown() {
+        filesystemHandler.shutdown();
+        FileStatusProvider.getInstance().shutdown();
     }
 }

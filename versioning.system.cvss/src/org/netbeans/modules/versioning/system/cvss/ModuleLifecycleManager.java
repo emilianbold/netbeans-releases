@@ -86,6 +86,7 @@ public final class ModuleLifecycleManager extends ModuleInstall {
     }
     
     public void uninstalled() {
+        CvsVersioningSystem.getInstance().shutdown();
         if (JOptionPane.showConfirmDialog(null, NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Uninstall_Warning"), 
                                           NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Uninstall_Warning_Title"), 
                                           JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) return;
