@@ -4,8 +4,10 @@ OpenIDE-Module-Layer: org/netbeans/modules/j2ee/sun/ide/j2ee/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/j2ee/sun/ide/Installer.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/ide/j2ee/Bundle.properties
 OpenIDE-Module-Module-Dependencies: 
+ org.openide.actions > 6.2,
  org.openide.awt > 6.2,
  org.openide.dialogs > 6.2,
+ org.openide.explorer > 6.2,
  org.openide.filesystems > 6.2,
  org.openide.io > 1.6,
  org.openide.loaders > 5.3,
