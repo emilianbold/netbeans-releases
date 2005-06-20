@@ -176,16 +176,22 @@ public final class CompletionLayout {
                             popup.getAnchorOffsetBounds(), docPopup.isDisplayAboveCaret());
                     popup.showPopup(bounds, docPopup.isDisplayAboveCaret());
                     // Check whether there would be overlap between doc and completion
-                    if (bounds.intersects(docPopup.getPopupBounds())) {
+                    // or whether the doc popup would be anchored elsewhere than completion
+                    if (bounds.intersects(docPopup.getPopupBounds())
+                        || popup.getAnchorOffset() != docPopup.getAnchorOffset()
+                    ) {
                         updateLayout(docPopup);
                     }
                     
                 } else { // doc popup was not displayed on the same side as completion
                     // Attempt to show completion at opposite side than documentation
                     boolean wantCompletionAboveCaret = !docPopup.isDisplayAboveCaret();
-                    if (popup.isEnoughSpace(popup.getAnchorOffsetBounds(), wantCompletionAboveCaret)) {
+                    if (popup.isEnoughSpace(popup.getAnchorOffsetBounds(), wantCompletionAboveCaret)
+                        && popup.getAnchorOffset() == docPopup.getAnchorOffset()
+                    ) {
                         popup.showAboveOrBelowCaret(wantCompletionAboveCaret);
-                    } else { // not enough space on the opposite side => redisplay
+                    } else { // not enough space on the opposite side (or anchoring differs)
+                        // Redisplay completion at optimal bounds and leave doc to follow
                         popup.showAtOptimalBounds();
                         updateLayout(docPopup);
                     }
@@ -197,13 +203,16 @@ public final class CompletionLayout {
             
         } else if (popup == docPopup) { // documentation popup
             if (isCompletionVisible()) {
+                // Documentation must sync anchoring with completion
+                popup.setAnchorOffset(completionPopup.getAnchorOffset());
+
                 boolean wantDocAboveCaret = !completionPopup.isDisplayAboveCaret();
                 // Display on opposite side if there is enough space on the opposite side
                 // or (even if not enough space on the opposite side)
                 // there is more space on the opposite side than on the same side
                 if (popup.isEnoughSpace(popup.getAnchorOffsetBounds(), wantDocAboveCaret)
                     || (popup.isMoreSpaceAbove(popup.getAnchorOffsetBounds().
-                        union(completionPopup.getPopupBounds())) == wantDocAboveCaret)
+                            union(completionPopup.getPopupBounds())) == wantDocAboveCaret)
                 ) {
                     // Enough space or more space -> display at opposite side
                     popup.showAboveOrBelowCaret(wantDocAboveCaret);
@@ -339,9 +348,11 @@ public final class CompletionLayout {
             }
             
             getDocumentationScrollPane().setData(doc);
-            setAnchorOffset(anchorOffset);
             
             if (!isVisible()) { // do not check for size as it should remain the same
+                // Set anchoring only if not displayed yet because completion
+                // may have overriden the anchoring
+                setAnchorOffset(anchorOffset);
                 getLayout().updateLayout(this);
             } // otherwise leave present doc displayed
         }
