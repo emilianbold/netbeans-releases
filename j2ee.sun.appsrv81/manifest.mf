@@ -7,6 +7,7 @@ OpenIDE-Module-Module-Dependencies:
  org.openide.actions > 6.2,
  org.openide.awt > 6.2,
  org.openide.dialogs > 6.2,
+ org.openide.execution > 1.6,
  org.openide.explorer > 6.2,
  org.openide.filesystems > 6.2,
  org.openide.io > 1.6,
