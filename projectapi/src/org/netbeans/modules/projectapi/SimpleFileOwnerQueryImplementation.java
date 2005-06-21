@@ -19,8 +19,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
@@ -99,7 +101,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
      */
     private static final Map/*<URI,WeakReference<FileObject>>*/ externalOwners =
         Collections.synchronizedMap(new WeakHashMap());
-    private static final Map/*<FileObject, URI>*/ project2External =
+    private static final Map/*<FileObject, Collection<URI>>*/ project2External =
         Collections.synchronizedMap(new WeakHashMap());
     
     /** @see FileOwnerQuery#reset */
@@ -126,8 +128,16 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     /** @see FileOwnerQuery#markExternalOwner */
     public static void markExternalOwnerTransient(URI root, Project owner) {
         if (owner != null) {
-            externalOwners.put(root, new WeakReference(owner.getProjectDirectory()));
-            project2External.put(owner.getProjectDirectory(), root);
+            externalOwners.put(root, new WeakReference(owner.getProjectDirectory()));            
+            synchronized (project2External) {
+                FileObject prjDir = owner.getProjectDirectory();
+                Collection/*<URI>*/ roots = (Collection/*<URI>*/) project2External.get (prjDir);
+                if (roots == null) {
+                    roots = new LinkedList ();
+                    project2External.put(prjDir, roots);
+                }
+                roots.add (root);                
+            }
         } else {
             WeakReference/*<FileObject>*/ ownerReference = (WeakReference/*<FileObject>*/) externalOwners.remove(root);
             
@@ -135,7 +145,15 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 FileObject ownerFO = (FileObject) ownerReference.get();
                 
                 if (ownerFO != null) {
-                    project2External.remove(ownerFO);
+                    synchronized (project2External) {
+                        Collection/*<URI>*/ roots = (Collection) project2External.get(ownerFO);
+                        if (roots != null) {
+                            roots.remove(root);
+                            if (roots.size() == 0) {
+                                project2External.remove(ownerFO);
+                            }
+                        }
+                    }
                 }
             }
         }
