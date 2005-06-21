@@ -432,6 +432,10 @@ public class FormUtils
             return new Rectangle((Rectangle)o);
         if (o instanceof Insets)
             return ((Insets)o).clone();
+        if (o instanceof GradientPaint) {
+            GradientPaint gp = (GradientPaint)o;
+            return new GradientPaint(gp.getPoint1(), gp.getColor1(), gp.getPoint2(), gp.getColor2(), gp.isCyclic());
+        }
         if (o instanceof Serializable)
             return cloneBeanInstance(o, null, formModel);
 
