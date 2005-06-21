@@ -89,6 +89,16 @@ public final class SuiteProject implements Project {
         return helper.getProjectDirectory();
     }
     
+    /** For unit tests purpose only. */
+    public AntProjectHelper getHelper() {
+        return helper;
+    }
+    
+    /** For unit tests purpose only. */
+    public PropertyEvaluator getEvaluator() {
+        return eval;
+    }
+    
     private PropertyEvaluator createEvaluator() {
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         File dir = FileUtil.toFile(getProjectDirectory());

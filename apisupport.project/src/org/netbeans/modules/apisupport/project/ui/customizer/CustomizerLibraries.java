@@ -83,7 +83,7 @@ public class CustomizerLibraries extends JPanel {
         addDepButton.setEnabled(modProps.isActivePlatformValid());
     }
 
-    ComponentFactory.DependencyListModel getDepListModel() {
+    private ComponentFactory.DependencyListModel getDepListModel() {
         return (ComponentFactory.DependencyListModel) dependencyList.getModel();
     }
     
