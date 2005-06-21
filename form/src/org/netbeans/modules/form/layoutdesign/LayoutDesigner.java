@@ -2216,7 +2216,7 @@ public class LayoutDesigner implements LayoutConstants {
 
         // add the intervals and their neighbors to the main aligned group
         toAlignWith = (LayoutInterval) aligned.get(0);
-        boolean resizing1 = LayoutInterval.wantResize(toAlignWith, false);
+        boolean resizing1 = LayoutInterval.wantResize(toAlignWith, false); // [should rather check all group content except interval]
         if (toAlignWith.getParent() != group) {
             if (toAlignWith.getParent() != null) {
                 layoutModel.removeInterval(toAlignWith);
@@ -2238,7 +2238,7 @@ public class LayoutDesigner implements LayoutConstants {
         else {
             layoutModel.setIntervalAlignment(interval, alignment);
         }
-        if (resizing2 && !resizing1) {
+        if (resizing2 && !resizing1 && indent == 0) {
             suppressGroupResizing(group);
             layoutModel.changeIntervalAttribute(interval, LayoutInterval.ATTRIBUTE_FILL, true);
         }
