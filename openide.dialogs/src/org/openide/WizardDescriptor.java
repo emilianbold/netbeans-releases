@@ -256,7 +256,7 @@ public class WizardDescriptor extends DialogDescriptor {
     private Map properties;
     ResourceBundle bundle = NbBundle.getBundle(WizardDescriptor.class);
 
-    private RequestProcessor.Task backgroundValidationTask;
+    private Thread backgroundValidationTask;
 
     {
         // button init
@@ -1135,7 +1135,8 @@ public class WizardDescriptor extends DialogDescriptor {
             AsynchronousValidatingPanel p = (AsynchronousValidatingPanel) panel;
             setValid(false);  // disable Next> Finish buttons
             p.prepareValidation();
-            backgroundValidationTask = RequestProcessor.getDefault().post(validationPeformer);
+            backgroundValidationTask = new Thread(validationPeformer);
+            backgroundValidationTask.start();
         } else if (panel instanceof ValidatingPanel) {
             validationPeformer.run();
         } else {
@@ -1645,7 +1646,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
             if (ev.getSource() == cancelButton) {
                 if (backgroundValidationTask != null) {
-                    backgroundValidationTask.cancel();
+                    backgroundValidationTask.interrupt();
                 }
                 Object oldValue = getValue();
                 setValueWithoutPCH(CANCEL_OPTION);
