@@ -129,17 +129,31 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
     
     protected Action[] createActions() {
         Action[] HTMLActions = new Action[] {
+                                   new HTMLDefaultKeyTypedAction(),
                                    new HTMLShiftBreakAction(),
                                    // replace MatchBraceAction with HtmlEditor own
                                    new MatchBraceAction(ExtKit.matchBraceAction, false),
                                    new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
                                    new HTMLGenerateFoldPopupAction(),
-                                    new CollapseAllCommentsFolds(),
-                                    new ExpandAllCommentsFolds()
+                                   new CollapseAllCommentsFolds(),
+                                   new ExpandAllCommentsFolds()
                                };
         return TextAction.augmentList(super.createActions(), HTMLActions);
     }
 
+    public static class HTMLDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
+
+        protected void insertString(BaseDocument doc, int dotPos,
+                                    Caret caret, String str,
+                                    boolean overwrite) throws BadLocationException {
+            super.insertString(doc, dotPos, caret, str, overwrite);
+            HTMLAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
+        }
+
+    }
+
+    
+    
     public static class HTMLShiftBreakAction extends BaseAction {
 
         static final long serialVersionUID =4004043376345356061L;
