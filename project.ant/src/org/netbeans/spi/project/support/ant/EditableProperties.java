@@ -287,6 +287,9 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
 
     /**
      * Create comment for the property.
+     * <p>Note: if a comment includes non-ISO-8859-1 characters, they will be written
+     * to disk using Unicode escapes (and {@link #getComment} will interpret
+     * such escapes), but of course they will be unreadable for humans.
      * @param key a property name; cannot be null nor empty
      * @param comment lines of comment which will be written just above
      *    the property; no reformatting; comment lines must start with 
@@ -477,12 +480,21 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         }
         
         public String[] getComment() {
-            return (String[])commentLines.toArray(new String[commentLines.size()]);
+            String[] res = new String[commentLines.size()];
+            for (int i = 0; i < res.length; i++) {
+                // #60249: the comment might have Unicode chars in escapes.
+                res[i] = decodeUnicode((String) commentLines.get(i));
+            }
+            return res;
         }
         
         public void setComment(String[] commentLines, boolean separate) {
             this.separate = separate;
-            this.commentLines = Arrays.asList(commentLines);
+            this.commentLines = new ArrayList(commentLines.length);
+            for (int i = 0; i < commentLines.length; i++) {
+                // #60249 again - write only ISO-8859-1.
+                this.commentLines.add(encodeUnicode(commentLines[i]));
+            }
         }
         
         public String getKey() {
@@ -671,6 +683,63 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
                         } else {
                             output.append(ch);
                         }
+                }
+            }
+            return output.toString();
+        }
+        
+        private static String decodeUnicode(String input) {
+            char ch;
+            int len = input.length();
+            StringBuffer output = new StringBuffer(len);
+            for (int x = 0; x < len; x++) {
+                ch = input.charAt(x);
+                if (ch != '\\') {
+                    output.append(ch);
+                    continue;
+                }
+                x++;
+                if (x==len) {
+                    // backslash at the end? syntax error: ignore it
+                    continue;
+                }
+                ch = input.charAt(x);
+                if (ch == 'u') {
+                    if (x+5>len) {
+                        // unicode character not finished? syntax error: ignore
+                        output.append(input.substring(x-1));
+                        x += 4;
+                        continue;
+                    }
+                    String val = input.substring(x+1, x+5);
+                    try {
+                        output.append((char)Integer.parseInt(val, 16));
+                    } catch (NumberFormatException e) {
+                        // #46234: handle gracefully
+                        output.append(input.substring(x - 1, x + 5));
+                    }
+                    x += 4;
+                } else {
+                    output.append(ch);
+                }
+            }
+            return output.toString();
+        }
+
+        private static String encodeUnicode(String input) {
+            int len = input.length();
+            StringBuffer output = new StringBuffer(len * 2);
+            for (int x = 0; x < len; x++) {
+                char ch = input.charAt(x);
+                if ((ch < 0x0020) || (ch > 0x007e)) {
+                    output.append("\\u"); // NOI18N
+                    String hex = Integer.toHexString(ch);
+                    for (int i = 0; i < 4 - hex.length(); i++) {
+                        output.append('0');
+                    }
+                    output.append(hex);
+                } else {
+                    output.append(ch);
                 }
             }
             return output.toString();

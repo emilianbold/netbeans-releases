@@ -25,6 +25,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -376,6 +378,21 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("Syntax error should be resolved", 1, ep.keySet().size());
         assertEquals("value without correct end", ep.getProperty("key"));
     }
+    
+    public void testNonLatinComments() throws Exception {
+        // #60249.
+        EditableProperties p = new EditableProperties();
+        p.setProperty("k", "v");
+        p.setComment("k", new String[] {"# \u0158ekni koment teda!"}, false);
+        String expected = "# \\u0158ekni koment teda!\nk=v\n";
+        assertEquals("Storing non-Latin chars in comments works", expected, getAsString(p));
+        p = new EditableProperties();
+        p.load(new ByteArrayInputStream(expected.getBytes("ISO-8859-1")));
+        assertEquals("Reading non-Latin chars in comments works", Collections.singletonList("# \u0158ekni koment teda!"), Arrays.asList(p.getComment("k")));
+        p.setProperty("k", "v2");
+        expected = "# \\u0158ekni koment teda!\nk=v2\n";
+        assertEquals("Reading and re-writing non-Latin chars in comments works", expected, getAsString(p));
+    }
 
     
     // helper methods:
@@ -442,7 +459,7 @@ public class EditablePropertiesTest extends NbTestCase {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ep.store(os);
         os.close();
-        return os.toString();
+        return os.toString("ISO-8859-1");
     }
     
 }
