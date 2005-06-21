@@ -188,7 +188,13 @@ public final class ModuleList {
                 continue;
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + kids[i].getName() : kids[i].getName();
-            scanPossibleProject(kids[i], entries, false, false, root, nbdestdir, newPathPrefix);
+            try {
+                scanPossibleProject(kids[i], entries, false, false, root, nbdestdir, newPathPrefix);
+            } catch (IOException e) {
+                // #60295: make it nonfatal.
+                Util.err.annotate(e, "Malformed project metadata in " + kids[i] + ", skipping..."); // XXX I18N
+                Util.err.notify(e);
+            }
             doScanNetBeansOrgSources(entries, kids[i], depth - 1, root, nbdestdir, newPathPrefix);
         }
     }
@@ -359,7 +365,12 @@ public final class ModuleList {
             Map/*<String,Entry>*/ entries = new HashMap();
             File[] modules = findModulesInSuite(root, eval);
             for (int i = 0; i < modules.length; i++) {
-                scanPossibleProject(modules[i], entries, true, false, null, nbdestdir, null);
+                try {
+                    scanPossibleProject(modules[i], entries, true, false, null, nbdestdir, null);
+                } catch (IOException e) {
+                    Util.err.annotate(e, "Malformed project metadata in " + modules[i] + ", skipping..."); // XXX I18N
+                    Util.err.notify(e);
+                }
             }
             sources = new ModuleList(entries);
             sourceLists.put(root, sources);

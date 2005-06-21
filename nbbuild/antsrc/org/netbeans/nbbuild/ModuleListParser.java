@@ -32,7 +32,6 @@ import org.apache.tools.ant.util.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Scans for known modules.
@@ -84,11 +83,7 @@ final class ModuleListParser {
                 continue;
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + kids[i].getName() : kids[i].getName();
-            try {
-                scanPossibleProject(kids[i], entries, properties, newPathPrefix, ParseProjectXml.TYPE_NB_ORG, project);
-            } catch (SAXException e) {
-                throw (IOException) new IOException(e.toString()).initCause(e);
-            }
+            scanPossibleProject(kids[i], entries, properties, newPathPrefix, ParseProjectXml.TYPE_NB_ORG, project);
             doScanNetBeansOrgSources(entries, kids[i], depth - 1, properties, newPathPrefix, project);
         }
     }
@@ -96,7 +91,7 @@ final class ModuleListParser {
     /**
      * Check a single dir to see if it is an NBM project, and if so, register it.
      */
-    private static boolean scanPossibleProject(File dir, Map/*<String,Entry>*/ entries, Hashtable properties, String path, int moduleType, Project project) throws IOException, SAXException {
+    private static boolean scanPossibleProject(File dir, Map/*<String,Entry>*/ entries, Hashtable properties, String path, int moduleType, Project project) throws IOException {
         File nbproject = new File(dir, "nbproject");
         File projectxml = new File(nbproject, "project.xml");
         if (!projectxml.isFile()) {
@@ -106,8 +101,9 @@ final class ModuleListParser {
         try {
             doc = XMLUtil.parse(new InputSource(projectxml.toURI().toString()),
                                      false, true, /*XXX*/null, null);
-        } catch (SAXException ex) {
-            throw (SAXException)new SAXException ("Error parsing " + projectxml + "\n" + ex.getMessage ()).initCause (ex);
+        } catch (Exception e) { // SAXException, IOException (#60295: e.g. encoding problem in XML)
+            // Include \n so that following line can be hyperlinked
+            throw (IOException) new IOException("Error parsing project file\n" + projectxml + ": " + e.getMessage()).initCause(e);
         }
         Element typeEl = XMLUtil.findElement(doc.getDocumentElement(), "type", ParseProjectXml.PROJECT_NS);
         if (!XMLUtil.findText(typeEl).equals("org.netbeans.modules.apisupport.project")) {
@@ -406,12 +402,8 @@ final class ModuleListParser {
             if (!module.isDirectory()) {
                 throw new IOException("No such module " + module + " referred to from " + suite);
             }
-            try {
-                if (!scanPossibleProject(module, entries, properties, null, ParseProjectXml.TYPE_SUITE, project)) {
-                    throw new IOException("No valid module found in " + module + " referred to from " + suite);
-                }
-            } catch (SAXException e) {
-                throw (IOException) new IOException(e.toString()).initCause(e);
+            if (!scanPossibleProject(module, entries, properties, null, ParseProjectXml.TYPE_SUITE, project)) {
+                throw new IOException("No valid module found in " + module + " referred to from " + suite);
             }
         }
     }
@@ -421,12 +413,8 @@ final class ModuleListParser {
         Entry entry = (Entry) STANDALONE_SCAN_CACHE.get(basedir);
         if (entry == null) {
             Map/*<String,Entries>*/ entries = new HashMap();
-            try {
-                if (!scanPossibleProject(basedir, entries, properties, null, ParseProjectXml.TYPE_STANDALONE, project)) {
-                    throw new IOException("No valid module found in " + basedir);
-                }
-            } catch (SAXException e) {
-                throw (IOException) new IOException(e.toString()).initCause(e);
+            if (!scanPossibleProject(basedir, entries, properties, null, ParseProjectXml.TYPE_STANDALONE, project)) {
+                throw new IOException("No valid module found in " + basedir);
             }
             assert entries.size() == 1;
             entry = (Entry) entries.values().iterator().next();
