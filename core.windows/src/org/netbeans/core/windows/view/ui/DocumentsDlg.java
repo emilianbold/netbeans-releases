@@ -494,6 +494,15 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
             tc.addPropertyChangeListener(WeakListeners.propertyChange(this, tc));
         }
         
+        public String getName() {
+            // #60263: apparently used by functional tests.
+            return tc.getName();
+        }
+        public String getDisplayName() {
+            // Also #60263. Forms do not have a tc.name??
+            return tc.getDisplayName();
+        }
+
         public String getHtmlDisplayName() {
             return WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
         }
