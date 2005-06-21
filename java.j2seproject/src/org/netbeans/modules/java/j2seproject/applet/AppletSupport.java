@@ -119,6 +119,11 @@ public class AppletSupport {
             String path = FileUtil.getRelativePath(sp.findOwnerRoot(appletFile), appletFile);
             path = path.substring(0, path.length()-5);
             fillInFile(writer, path + "." + CLASS_EXT, "codebase=\"" + classesDir.getURL() + "\""); // NOI18N
+            String codebase = FileUtil.getRelativePath(buildDir, classesDir);
+            if (codebase == null) {
+                codebase = classesDir.getURL().toString();
+            }
+            fillInFile(writer, path + "." + CLASS_EXT, "codebase=\"" + codebase + "\""); // NOI18N
         } finally {
             lock.releaseLock();
             if (writer != null)
