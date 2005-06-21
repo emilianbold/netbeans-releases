@@ -64,24 +64,6 @@ import java.util.*;
  * <CODE>RequestProcessor</CODE> instance with limited throughput (probably
  * set to 1), the IDE would try to run all your requests in parallel otherwise.
  *
- * <P>
- * Since version 6.3 there is a support for interruption of long running tasks.
- * There always was a way how to cancel not yet running task using {@link RequestProcessor.Task#cancel }
- * but if the task was already running, one was out of luck. Since version 6.3
- * the thread running the task is interrupted and the Runnable can check for that
- * and terminate its execution sooner. In the runnable one shall check for 
- * thread interruption (done from {@link RequestProcessor.Task#cancel }) and 
- * if true, return immediatelly as in this example:
- * <PRE>
- * public void run () {
- *     while (veryLongTimeLook) {
- *       doAPieceOfIt ();
- *
- *       if (Thread.interrupted ()) return;
- *     }
- * }
- * </PRE>
- * 
  * @author Petr Nejedly, Jaroslav Tulach
  */
 public final class RequestProcessor {
@@ -382,19 +364,21 @@ public final class RequestProcessor {
     }
 
     Task askForWork(Processor worker, String debug) {
-        if (stopped || queue.isEmpty()) { // no more work in this burst, return him
-            processors.remove(worker);
-            Processor.put(worker, debug);
-            running--;
+        synchronized (processorLock) {
+            if (stopped || queue.isEmpty()) { // no more work in this burst, return him
+                processors.remove(worker);
+                Processor.put(worker, debug);
+                running--;
 
-            return null;
-        } else { // we have some work for the worker, pass it
+                return null;
+            } else { // we have some work for the worker, pass it
 
-            Item i = (Item) queue.remove(0);
-            Task t = i.getTask();
-            i.clear(worker);
+                Item i = (Item) queue.remove(0);
+                Task t = i.getTask();
+                i.clear();
 
-            return t;
+                return t;
+            }
         }
     }
 
@@ -474,7 +458,7 @@ public final class RequestProcessor {
                 notifyRunning();
 
                 if (item != null) {
-                    item.clear(null);
+                    item.clear();
                 }
 
                 item = new Item(this, RequestProcessor.this);
@@ -506,19 +490,7 @@ public final class RequestProcessor {
         */
         public boolean cancel() {
             synchronized (processorLock) {
-                boolean success;
-
-                if (item == null) {
-                    success = false;
-                } else {
-                    Processor p = item.getProcessor();
-                    success = item.clear(null);
-
-                    if (p != null) {
-                        p.interruptTask(this);
-                        item = null;
-                    }
-                }
+                boolean success = (item == null) ? false : item.clear();
 
                 if (success) {
                     notifyFinished(); // mark it as finished
@@ -569,17 +541,17 @@ public final class RequestProcessor {
         */
         public void waitFinished() {
             if (isRequestProcessorThread()) { //System.err.println("Task.waitFinished on " + this + " from other task in RP: " + Thread.currentThread().getName());
+
                 boolean toRun;
 
                 synchronized (processorLock) {
                     // correct line:    toRun = (item == null) ? !isFinished (): (item.clear() && !isFinished ());
                     // the same:        toRun = !isFinished () && (item == null ? true : item.clear ());
-                    toRun = !isFinished() && ((item == null) || item.clear(null));
+                    toRun = !isFinished() && ((item == null) || item.clear());
                 }
 
                 if (toRun) { //System.err.println("    ## running it synchronously");
-                    Processor processor = (Processor)Thread.currentThread();
-                    processor.doEvaluate (this, processorLock);
+                    run();
                 } else { // it is already running in other thread of this RP
 
                     if (lastThread != Thread.currentThread()) {
@@ -614,7 +586,7 @@ public final class RequestProcessor {
                 boolean toRun;
 
                 synchronized (processorLock) {
-                    toRun = !isFinished() && ((item == null) || item.clear(null));
+                    toRun = !isFinished() && ((item == null) || item.clear());
                 }
 
                 if (toRun) {
@@ -642,7 +614,7 @@ public final class RequestProcessor {
     /* One item representing the task pending in the pending queue */
     private static class Item extends Exception {
         private final RequestProcessor owner;
-        private Object action;
+        private Task action;
         private boolean enqueued;
 
         Item(Task task, RequestProcessor rp) {
@@ -652,30 +624,22 @@ public final class RequestProcessor {
         }
 
         Task getTask() {
-            Object a = action;
-
-            return (a instanceof Task) ? (Task) a : null;
+            return action;
         }
 
         /** Annulate this request iff still possible.
          * @returns true if it was possible to skip this item, false
          * if the item was/is already processed */
-        boolean clear(Processor processor) {
+        boolean clear() {
             synchronized (owner.processorLock) {
-                action = processor;
+                action = null;
 
                 return enqueued ? owner.queue.remove(this) : true;
             }
         }
 
-        Processor getProcessor() {
-            Object a = action;
-
-            return (a instanceof Processor) ? (Processor) a : null;
-        }
-
         int getPriority() {
-            return getTask().getPriority();
+            return action.getPriority();
         }
 
         public Throwable fillInStackTrace() {
@@ -705,9 +669,6 @@ public final class RequestProcessor {
 
         //private Item task;
         private RequestProcessor source;
-
-        /** task we are working on */
-        private RequestProcessor.Task todo;
         private boolean idle = true;
 
         /** Waiting lock */
@@ -810,6 +771,7 @@ public final class RequestProcessor {
                     }
                 }
 
+                Task todo;
                 String debug = null;
 
                 ErrorManager em = logger();
@@ -820,12 +782,8 @@ public final class RequestProcessor {
                 }
 
                 // while we have something to do
-                for (;;) {
-                    // need the same sync as interruptTask
-                    synchronized (current.processorLock) {
-                        todo = current.askForWork(this, debug);
-                        if (todo == null) break;
-                    }
+                while ((todo = current.askForWork(this, debug)) != null) {
+                    // if(todo != null) {
                     setPrio(todo.getPriority());
 
                     try {
@@ -855,14 +813,10 @@ public final class RequestProcessor {
                         doNotify(todo, t);
                     }
 
-                    // need the same sync as interruptTask
-                    synchronized (current.processorLock) {
-                        // to improve GC
-                        todo = null;
-                        // and to clear any possible interrupted state
-                        // set by calling Task.cancel ()
-                        Thread.interrupted();
-                    }
+                    // to improve GC
+                    todo = null;
+
+                    // }
                 }
 
                 if (loggable) {
@@ -870,42 +824,13 @@ public final class RequestProcessor {
                 }
             }
         }
-        
-        /** Evaluates given task directly.
-         */
-        final void doEvaluate (Task t, Object processorLock) {
-            Task previous = todo;
-            boolean interrupted = Thread.interrupted();
-            try {
-                todo = t;
-                t.run ();
-            } finally {
-                synchronized (processorLock) {
-                    todo = previous;
-                    if (interrupted || todo.item == null) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-        }
-
-        /** Called under the processorLock */
-        public void interruptTask(Task t) {
-            if (t != todo) {
-                // not running this task so
-                return;
-            }
-
-            // otherwise interrupt this thread
-            interrupt();
-        }
 
         /** @see "#20467" */
         private static void doNotify(RequestProcessor.Task todo, Throwable ex) {
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(
                 ex, ErrorManager.EXCEPTION, null,
-                null, SLOW ? todo.item : null, null
+                NbBundle.getMessage(RequestProcessor.class, "EXC_IN_REQUEST_PROCESSOR"), SLOW ? todo.item : null, null
             );
             err.notify(ex);
         }
