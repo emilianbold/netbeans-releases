@@ -39,9 +39,8 @@ import org.netbeans.editor.ext.html.HTMLTokenContext;
  */
 class HTMLAutoCompletion {
     
-    //this semaphore signals that the HTML tag attribute quotes was inserted
-    //during last charInserted call
-    private static boolean equalsSignInserted = false;
+    //an index of lastly completed equals sign 
+    private static int  equalsSignInsertedOffset = -1;
     
     /**
      * A hook method called after a character was inserted into the
@@ -67,17 +66,27 @@ class HTMLAutoCompletion {
                 handleQuotationMark(doc, dotPos, caret, ch);
             } else {
                 //user has pressed a key so I need to cancel the "quotation consuming mode"
-                equalsSignInserted = false;
+                equalsSignInsertedOffset = -1;
             }
         }
     }
     
+    //called when user deleted something in the document
+    static void charDeleted(BaseDocument doc, int dotPos, Caret caret, char ch) {
+        equalsSignInsertedOffset = -1;
+    }
+    
     private static void handleQuotationMark(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException{
-        if(equalsSignInserted) {
-            //remove the quotation mark
-            doc.remove(dotPos,1);
-            caret.setDot(dotPos);
-            equalsSignInserted = true;
+        if(equalsSignInsertedOffset != -1) {
+            //test whether the cursor is between completed quotations: attrname="|"
+            //this situation can happen when user autocompletes ="|",
+            //moves cursor somewhere else and type "
+            if(dotPos == (equalsSignInsertedOffset + ("=\"".length()))) {
+                //remove the quotation mark
+                doc.remove(dotPos,1);
+                caret.setDot(dotPos);
+            } 
+            
         } else {
             //test whether the user typed an ending quotation in the attribute value
             TokenItem token = ((HTMLSyntaxSupport)doc.getSyntaxSupport()).getTokenChain(dotPos-1, dotPos);
@@ -95,7 +104,7 @@ class HTMLAutoCompletion {
             }
         }
         //reset the semaphore
-        equalsSignInserted = false;
+        equalsSignInsertedOffset = -1;
     }
     
     private static void completeQuotes(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException{
@@ -106,7 +115,8 @@ class HTMLAutoCompletion {
                 token.getTokenID() == HTMLTokenContext.ARGUMENT) {
             doc.insertString( dotPosAfterTypedChar, "\"\"" , null);
             caret.setDot(dotPosAfterTypedChar + 1);
-            equalsSignInserted = true;
+            //mark the last autocomplete position
+            equalsSignInsertedOffset = dotPos;
         }
     }
     

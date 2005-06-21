@@ -130,6 +130,8 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
     protected Action[] createActions() {
         Action[] HTMLActions = new Action[] {
                                    new HTMLDefaultKeyTypedAction(),
+                                   new HTMLDeleteCharAction(deletePrevCharAction, false),
+                                   new HTMLDeleteCharAction(deleteNextCharAction, true),
                                    new HTMLShiftBreakAction(),
                                    // replace MatchBraceAction with HtmlEditor own
                                    new MatchBraceAction(ExtKit.matchBraceAction, false),
@@ -151,7 +153,18 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
         }
 
     }
-
+    
+    public static class HTMLDeleteCharAction extends DeleteCharAction {
+        
+        public HTMLDeleteCharAction(String name, boolean nextChar) {
+            super(name, nextChar);
+        }
+        
+        protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
+            super.charBackspaced(doc, dotPos, caret, ch);
+            HTMLAutoCompletion.charDeleted(doc, dotPos, caret, ch);
+        }
+    }
     
     
     public static class HTMLShiftBreakAction extends BaseAction {
