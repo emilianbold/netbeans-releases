@@ -4872,6 +4872,7 @@ public class LayoutDesigner implements LayoutConstants {
                 imposeCurrentSize(subComp, null);
             }
             Dimension minimum = null;
+            Dimension preferred = null;
             for (int i=0; i < DIM_COUNT; i++) {
                 LayoutInterval outer = component.getLayoutInterval(i);
                 int currentSize = outer.getCurrentSpace().size(i);
@@ -4892,11 +4893,14 @@ public class LayoutDesigner implements LayoutConstants {
                 if (component.getParent() != null) {
                     if (minimum == null) {
                         minimum = visualMapper.getComponentMinimumSize(component.getId());
+                        preferred = visualMapper.getComponentPreferredSize(component.getId());
                     }
                     int min = i == HORIZONTAL ? minimum.width : minimum.height;
-                    boolean externalSize = visualMapper.hasExplicitPreferredSize(component.getId())
-                                           || currentSize < min
-                                           || (currentSize > min && !LayoutInterval.wantResize(root, false));
+                    boolean externalSize =
+                        (visualMapper.hasExplicitPreferredSize(component.getId())
+                         && currentSize != (i==HORIZONTAL ? preferred.width:preferred.height))
+                        || currentSize < min
+                        || (currentSize > min && !LayoutInterval.wantResize(root, false));
                     resizeInterval(outer, externalSize ? currentSize : NOT_EXPLICITLY_DEFINED);
                 }
             }
