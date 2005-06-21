@@ -245,8 +245,8 @@ is divided into following sections:
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
                             <xsl:if test ="not(/p:project/p:configuration/webproject3:data/webproject3:explicit-platform/@explicit-source-supported ='false')">
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                                <xsl:attribute name="target">${javac.target}</xsl:attribute>
                             </xsl:if>
-                            <xsl:attribute name="target">${javac.target}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>

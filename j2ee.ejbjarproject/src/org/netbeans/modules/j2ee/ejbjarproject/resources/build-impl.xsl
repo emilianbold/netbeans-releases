@@ -217,8 +217,10 @@ is divided into following sections:
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
-                            <xsl:attribute name="source">${javac.source}</xsl:attribute>
-                            <xsl:attribute name="target">${javac.target}</xsl:attribute>
+                            <xsl:if test="not(/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform/@explicit-source-supported = 'false')">
+                                <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                                <xsl:attribute name="target">${javac.target}</xsl:attribute>
+                            </xsl:if>
                             <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
