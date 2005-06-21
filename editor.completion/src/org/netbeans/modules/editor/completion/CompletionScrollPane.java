@@ -91,6 +91,13 @@ public class CompletionScrollPane extends JScrollPane {
     public void setData(List data, String title) {
         view.setData(data);
         setTitle(title);
+        // Force the viewport preferred size to be taken into account
+        // Otherwise the scroll pane attempts to retain its size
+        // so e.g. if the number of visible rows increases so the vertical
+        // scrollbar would be needed the scrollpane does not increase
+        // its preferred size.
+        // Resetting of viewport fixes the problem.
+        setViewportView(getViewport().getView());
     }
 
     public CompletionItem getSelectedCompletionItem() {
