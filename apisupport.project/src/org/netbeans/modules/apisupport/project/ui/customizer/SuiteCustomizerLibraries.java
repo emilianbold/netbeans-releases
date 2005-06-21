@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.util.Arrays;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
@@ -53,6 +54,10 @@ public class SuiteCustomizerLibraries extends JPanel
     
     public void store() {
         suiteProps.setActivePlatform((NbPlatform) platformValue.getSelectedItem());
+    }
+    
+    private ComponentFactory.SuiteSubModulesListModel getModuleListModel() {
+        return (ComponentFactory.SuiteSubModulesListModel) moduleList.getModel();
     }
     
     /** This method is called from within the constructor to
@@ -169,7 +174,11 @@ public class SuiteCustomizerLibraries extends JPanel
     // </editor-fold>//GEN-END:initComponents
     
     private void removeModule(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModule
-// TODO add your handling code here:
+        getModuleListModel().removeModules(Arrays.asList(moduleList.getSelectedValues()));
+        if (moduleList.getModel().getSize() > 0) {
+            moduleList.setSelectedIndex(0);
+        }
+        moduleList.requestFocus();
     }//GEN-LAST:event_removeModule
     
     private void addModule(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModule

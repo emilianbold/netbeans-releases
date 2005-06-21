@@ -33,8 +33,11 @@ abstract class ModuleProperties {
     private AntProjectHelper helper;
     private PropertyEvaluator evaluator;
     
-    /** Represent main modules's properties (nbproject/project.properties). */
+    /** Represent main module's properties (nbproject/project.properties). */
     private EditableProperties projectProperties;
+    
+    /** Represent module's private properties (nbproject/private/private.properties). */
+    private EditableProperties privateProperties;
     
     /** Creates a new instance of ModuleProperties */
     ModuleProperties(AntProjectHelper helper, PropertyEvaluator evaluator) {
@@ -42,6 +45,8 @@ abstract class ModuleProperties {
         this.evaluator = evaluator;
         this.projectProperties = helper.getProperties(
                 AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        this.privateProperties = helper.getProperties(
+                AntProjectHelper.PRIVATE_PROPERTIES_PATH);
     }
     
     /**
@@ -62,6 +67,10 @@ abstract class ModuleProperties {
         return projectProperties;
     }
     
+    EditableProperties getPrivateProperties() {
+        return privateProperties;
+    }
+    
     final String getProperty(String key) {
         String value = getProjectProperties().getProperty(key);
         return value != null ? value : (String) getDefaultValues().get(key);
@@ -71,6 +80,14 @@ abstract class ModuleProperties {
         String bValue = getProperty(key);
         return bValue != null &&  (bValue.equalsIgnoreCase("true") || // NOI18N
                 bValue.equalsIgnoreCase("yes")); // NOI18N
+    }
+    
+    final String removeProperty(String key) {
+        return (String) getProjectProperties().remove(key);
+    }
+    
+    final String removePrivateProperty(String key) {
+        return (String) getPrivateProperties().remove(key);
     }
     
     /**
@@ -88,6 +105,27 @@ abstract class ModuleProperties {
         } else {
             getProjectProperties().setProperty(key, value);
         }
+    }
+
+    /**
+     * The given property will be stored into the project's properties. If the
+     * given value is equals to the default value it will be removed from the
+     * properties.
+     */
+    final void setPrivateProperty(String key, String value) {
+        String def = (String) getDefaultValues().get(key);
+        if (def == null) {
+            def = ""; // NOI18N
+        }
+        if (def.equals(value)) {
+            getPrivateProperties().remove(key);
+        } else {
+            getPrivateProperties().setProperty(key, value);
+        }
+    }
+
+    void setProperty(String key, String[] value) {
+        getProjectProperties().setProperty(key, value);
     }
     
     final void setBooleanProperty(String key, boolean bProp) {
@@ -107,6 +145,9 @@ abstract class ModuleProperties {
         // Store changes into in nbproject/project.properties
         getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,
                 getProjectProperties());
+        // Store changes into in nbproject/private/private.properties
+        getHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH,
+                getPrivateProperties());
     }
     
     /**
