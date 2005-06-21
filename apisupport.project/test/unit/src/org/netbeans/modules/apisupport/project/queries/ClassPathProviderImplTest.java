@@ -255,7 +255,9 @@ public class ClassPathProviderImplTest extends TestBase {
         cp = ClassPath.getClassPath(src, ClassPath.EXECUTE);
         assertNotNull("have an EXECUTE classpath", cp);
         expectedRoots.add(urlForDir("autoupdate/build/test/unit/classes"));
-        assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots, urlsOfCp(cp));
+        // test.unit.run.cp.extra:
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/boot.jar"));
+        assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots.toString(), urlsOfCp(cp).toString());
         cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
         assertEquals("right SOURCE classpath", Collections.singleton(src), new HashSet(Arrays.asList(cp.getRoots())));
