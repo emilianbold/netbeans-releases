@@ -79,6 +79,12 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             }
         }
         else {
+            if (layoutSupport != null) { // clean the layout delegate and related code structre objects
+                try {
+                    layoutSupport.setLayoutDelegate(null, null, false);
+                }
+                catch (Exception ex) {} // nothing can happen - no new layout delegate initialized
+            }
             layoutSupport = null;
             setLayoutNodeReference(null);
         }
