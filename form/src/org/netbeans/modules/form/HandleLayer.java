@@ -810,8 +810,16 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
     // Highlighted panel
     private JPanel darkerPanel = null;
-    // Original color of the highlighted panel
-    private Color originalColor = null;
+    private static class HighlightBorder extends javax.swing.border.LineBorder {
+        HighlightBorder(Color color, int thickness) {
+            super(color, thickness);
+        }
+
+        public Insets getBorderInsets(Component c) {
+            // Hack - don't affect component's content
+            return new Insets(0, 0, 0, 0);
+        }
+    }
     
     // Highlights panel below mouse cursor.
     private void highlightPanel(MouseEvent e) {
@@ -831,25 +839,25 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         JPanel panel = (JPanel)comp;
         if (darkerPanel != panel) {
             if (darkerPanel != null) {
-                darkerPanel.setBackground(originalColor);
+                darkerPanel.setBorder(null);
                 darkerPanel = null;
-                originalColor = null;
             }
             if (shouldHighlightPanel(panel, radcomp)) {
-                Color color = panel.getBackground();
-                if (color instanceof javax.swing.plaf.UIResource) {
-                    panel.setBackground(darkerPanelColor(color));
-                    originalColor = color;
-                    darkerPanel = panel;
-                }
+                panel.setBorder(new HighlightBorder(darkerPanelColor(panel.getBackground()), 1));
+                darkerPanel = panel;
             }
         }
     }
     
     private boolean shouldHighlightPanel(JPanel panel, RADComponent radPanel) {
         if (panel != null) {
-            javax.swing.border.Border border = panel.getBorder();
-            if ((border != null) && !(border instanceof javax.swing.border.EmptyBorder)) {
+            if (panel.getBorder() != null) { // Maybe we should highlight also panels with EmptyBorder
+                return false;
+            }
+            if (!(panel.getBackground() instanceof javax.swing.plaf.UIResource)) {
+                return false;
+            }
+            if (radPanel == formDesigner.getTopDesignComponent()) {
                 return false;
             }
             if (radPanel instanceof RADVisualContainer) {
@@ -859,6 +867,16 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     LayoutSupportManager manager = parent.getLayoutSupport();
                     if ((manager != null) && manager.isDedicated()) {
                         return false;
+                    }
+                    JPanel realPanel = (JPanel)formDesigner.getComponent(radPanel);
+                    Component parentBean = (Component)parent.getBeanInstance();
+                    Component realParent = (Component)formDesigner.getComponent(parent);
+                    if (realParent.getSize().equals(realPanel.getSize()) && realPanel.getLocation().equals(new Point(0,0))) {
+                        if (parentBean instanceof JPanel) {
+                            return shouldHighlightPanel((JPanel)parentBean, parent);
+                        } else {
+                            return false;
+                        }
                     }
                 }
             }
