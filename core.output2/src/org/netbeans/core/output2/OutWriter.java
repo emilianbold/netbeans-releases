@@ -537,7 +537,7 @@ class OutWriter extends PrintWriter {
         }
 
         protected Storage getStorage() {
-            return OutWriter.this.storage;
+            return OutWriter.this.getStorage();
         }
 
         protected boolean isDisposed() {
