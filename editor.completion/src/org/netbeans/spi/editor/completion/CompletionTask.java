@@ -17,8 +17,8 @@ package org.netbeans.spi.editor.completion;
  * The inteface of a task performing a code completion query.
  * <br>
  * The support class 
- * {@link org.netbeans.spi.editor.completion.support.CompletionTaskProvider}
- * can be used for convenience.
+ * {@link org.netbeans.spi.editor.completion.support.AsyncCompletionTask}
+ * can be used for convenience when the task requires an asynchronous evaluation.
  *
  * @see CompletionProvider
  *

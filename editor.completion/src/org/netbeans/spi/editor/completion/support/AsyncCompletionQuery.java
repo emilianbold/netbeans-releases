@@ -25,7 +25,7 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
  * <br>
  * In addition filtering of the result set computed during querying
  * can be implemented by overriding the
- * {@link #canFilter(JTextComponent)} and {@link #refresh(CompletionResultSet)}.
+ * {@link #canFilter(JTextComponent)} and {@link #filter(CompletionResultSet)}.
  *
  * @author Miloslav Metelka, Dusan Balek
  * @version 1.00
@@ -60,8 +60,8 @@ public abstract class AsyncCompletionQuery {
      * Check whether the query results can successfully be filtered.
      * <br>
      * This method is invoked synchronously in response to call
-     * of {@link CompletionTask#refresh(CompletionResultSet)} in AWT thread.
-     * The asynchronous query method
+     * of {@link org.netbeans.spi.editor.completion.CompletionTask#refresh(CompletionResultSet)}
+     * in AWT thread. The asynchronous query method
      * {@link #query(CompletionResultSet, Document, int)}
      * may still be running when this method is invoked.
      *
@@ -112,7 +112,7 @@ public abstract class AsyncCompletionQuery {
      * {@link #query(CompletionResultSet, Document, int)} invocation.
      * <br>
      * This method is called in response
-     * to {@link CompletionTask#refresh(CompletionResultSet)} call.
+     * to {@link org.netbeans.spi.editor.completion.CompletionTask#refresh(CompletionResultSet)} call.
      * <br>
      * This method is always invoked in AWT thread and it is supposed
      * to finish quickly. It will only be invoked when a preceding

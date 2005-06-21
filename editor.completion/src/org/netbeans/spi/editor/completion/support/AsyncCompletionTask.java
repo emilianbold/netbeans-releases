@@ -21,18 +21,14 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.openide.util.RequestProcessor;
 
 /**
- * Provider of the completion task allowing asynchronous query execution.
+ * Asynchronous completion task allowing asynchronous query execution
+ * through {@link AsyncCompletionQuery}.
  * <br>
- * The {@link #query(CompletionResultSet, Document, int)} method needs to be defined
- * and {@link #refresh(CompletionResultSet, Document, int, int)} may be redefined
- * as well.
- * <br>
- * By default the task is executed asynchronously in {@link RequestProcessor}
- * ({@link #asynchronousQuery()} can be redefined for synchronous execution).
+ * This is a final class and all the logic must be defined 
+ * in an implementation of {@link AsyncCompletionQuery} that must
+ * be passed to constructor of this task.
  *
- * <p>
- * The {@link #getTask()} returns the task provided by this provider.
- *
+ * @see AsyncCompletionQuery
  * @author Miloslav Metelka, Dusan Balek
  * @version 1.00
  */
@@ -59,8 +55,10 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
     /**
      * Construct asynchronous task for the given component.
      *
+     * @param query non-null query implementation.
      * @param component text component to operate with. The completion infrastructure
      *  will cancel the task if the component or its associated document would change.
+     *  <br>
      *  It may be null to indicate that no component was provided.
      */
     public AsyncCompletionTask(AsyncCompletionQuery query, JTextComponent component) {
@@ -71,15 +69,17 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
     
     /**
      * Constructor for the case when there is no valid component
-     * which can happen when creating task for documentation or tooltip.
+     * which can happen when creating task for documentation or tooltip computation.
+     *
+     * @param query non-null query implementation.
      */
     public AsyncCompletionTask(AsyncCompletionQuery query) {
         this(query, null);
     }
 
     /**
-     * Query this task. This method is expected to be run
-     * only once and from AWT thread by the completion infrastructure.
+     * Called by completion infrastructure in AWT thread to populate
+     * the given result set with data.
      */
     public void query(CompletionResultSet resultSet) {
         assert (resultSet != null);
@@ -111,7 +111,7 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
     }
 
     /**
-     * Cancel the running task.
+     * Called by completion infrastructure to cancel the running task.
      */
     public void cancel() {
         cancelled = true;

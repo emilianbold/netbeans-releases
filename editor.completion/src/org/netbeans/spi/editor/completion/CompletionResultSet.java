@@ -111,7 +111,7 @@ public final class CompletionResultSet {
      * After the adding is completed @link #finish()} must be called to confirm
      * that the result set will no longer be modified.
      * 
-     * @param item non-null completion item.
+     * @param items collection of items to be added.
      * @return true if adding of the items can continue
      *  or false if there is already too many items
      *  to be practical to display in the listbox so subsequent
@@ -156,7 +156,7 @@ public final class CompletionResultSet {
      * Set the documentation to this result set.
      * <br>
      * Calling this method is only relevant for tasks
-     * created by {@link CompletionProvider#createTask(int)}
+     * created by {@link CompletionProvider#createTask(int, javax.swing.text.JTextComponent)}
      * with {@link CompletionProvider#DOCUMENTATION_QUERY_TYPE}
      * or for {@link CompletionItem#createDocumentationTask()}.
      */
@@ -168,7 +168,7 @@ public final class CompletionResultSet {
      * Set the tooltip to this result set.
      * <br>
      * Calling this method is only relevant for tasks
-     * created by {@link CompletionProvider#createTask(int)}
+     * created by {@link CompletionProvider#createTask(int, javax.swing.text.JTextComponent)}
      * with {@link CompletionProvider#TOOLTIP_QUERY_TYPE}
      * or for {@link CompletionItem#createToolTipTask()}.
      */

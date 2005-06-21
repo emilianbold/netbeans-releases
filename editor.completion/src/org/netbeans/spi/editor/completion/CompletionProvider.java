@@ -46,7 +46,7 @@ public interface CompletionProvider {
      * This method is invoked in AWT thread only and the returned task
      * may either be synchronous (if it's not complex)
      * or it may be asynchonous
-     * (see {@link org.netbeans.spi.editor.completion.support.CompletionTaskProvider}).
+     * (see {@link org.netbeans.spi.editor.completion.support.AsyncCompletionTask}).
      * <br>
      * The task usually inspects the component's document, the
      * text up to the caret position and returns the appropriate result.
