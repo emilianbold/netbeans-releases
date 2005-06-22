@@ -21,6 +21,7 @@ import com.installshield.wizard.WizardAction;
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.service.ServiceException;
+import org.netbeans.installer.Util;
 
 /** This class is used to initialize some system properties at beginning
  * of installation.
@@ -28,6 +29,7 @@ import com.installshield.wizard.service.ServiceException;
 public class SetSystemPropertiesAction extends WizardAction {
     
     public void build(WizardBuilderSupport support) {
+        super.build(support);
         try {
             support.putClass(Util.class.getName());
         } catch (Exception ex) {

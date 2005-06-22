@@ -17,9 +17,10 @@ Microsystems, Inc. All Rights Reserved.
   <property file="build.properties" />
   
   <property name="cluster.dir" location="profiler"/>
-  <property name="installer.basename" value="NetBeansProfiler"/>
   
-  <target name="init" />
+  <target name="init" depends="set-buildnumber, set-installer.basename" unless="inited">
+    <property name="inited" value="true" />
+  </target>
   
   <target name="set-ismp.cp" unless="ismp.cp-set">
     <path id="ismp.cp">        
@@ -30,10 +31,23 @@ Microsystems, Inc. All Rights Reserved.
           <include name="ppk/*.jar"/>
           <exclude name="lib/conversion.jar"/>
         </fileset>        
+        <fileset dir="../lib">
+          <include name="dist/*.jar"/>
+        </fileset>
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
-  
+
+   <target name="set-buildnumber" unless="buildnumber">
+    <tstamp>
+        <format property="buildnumber" pattern="yyMMdd"/>
+    </tstamp>
+  </target>
+                                                                                                  
+  <target name="set-installer.basename" unless="installer.basename" depends="set-buildnumber">
+    <property name="installer.basename" value="Profiler4.2dev-${buildnumber}"/>
+  </target>
+ 
   <macrodef name="transform-ml">
     <attribute name="input.ismp.project"/>
     <sequential>
@@ -136,7 +150,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="profiler-windows.xml-ml"/>
   </target>
   
-  <target name="compile" depends="init" description="compile custom beans and panels">
+  <target name="compile" depends="init, build-library" description="compile custom beans and panels">
     <mkdir dir="build/classes"/>
     
     <javac destdir="build/classes" srcdir="src" source="1.4" target="1.4" debug="true" deprecation="true">
@@ -149,6 +163,16 @@ Microsystems, Inc. All Rights Reserved.
             <include name="**/*.properties"/>
         </fileset>
     </copy>
+  </target>
+
+  <!-- Build library -->
+  <target name="build-library" description="compile shared library">
+    <ant antfile="../lib/build.xml" target="jar" inheritAll="false"/>
+  </target>
+                                                                                                                                  
+  <!-- Clean library -->
+  <target name="clean-library" description="clean shared library">
+    <ant antfile="../lib/build.xml" target="clean" inheritAll="false"/>
   </target>
 
   <target name="run" depends="init" description="run the installer">
@@ -166,7 +190,7 @@ Microsystems, Inc. All Rights Reserved.
     </java>
   </target>
   
-  <target name="clean" depends="init" description="Clean all build products and temp/backup files.">
+  <target name="clean" depends="init, clean-library" description="Clean all build products and temp/backup files.">
     <delete>
       <fileset dir=".">
         <include name="**/*~"/>
