@@ -506,14 +506,20 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     }
 
                     List res = new ArrayList(sortedResultItems);
+                    boolean noSuggestions = false;
                     if (res.size() == 0) {
                         res.add(NO_SUGGESTIONS);
+                        noSuggestions = true;
                     }
                     layout.showCompletion(res, displayTitle, displayAnchorOffset, CompletionImpl.this);
                     
                     // Show documentation as well if set by default
                     if (CompletionSettings.INSTANCE.documentationAutoPopup()) {
-                        restartDocumentationAutoPopupTimer();
+                        if (noSuggestions) {
+                            hideDoc();
+                        } else {
+                            restartDocumentationAutoPopupTimer();
+                        }
                     }
                 }
             }
