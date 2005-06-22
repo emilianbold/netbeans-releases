@@ -264,7 +264,7 @@ public class NbModuleProjectGenerator {
     }
     
     private static void createEmptyTestDir(FileObject projectDir) throws IOException {
-        projectDir.createFolder("test/unit/src"); // NOI18N
+        FileUtil.createFolder(projectDir, "test/unit/src"); // NOI18N
     }
     
     /**

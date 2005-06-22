@@ -592,37 +592,41 @@ public abstract class FileObject extends Object implements Serializable {
         return myObj;
     }
 
-    /** Create a new folder below this one with the specified name. Fires
-    * <code>fileCreated</code> event.
-    *
-    * @param name the name of folder to create. Periods in name are allowed.
-    * @return the new folder
-    * @exception IOException if the folder cannot be created (e.g. already exists)
-    */
+    /**
+     * Create a new folder below this one with the specified name.
+     * Fires {@link FileChangeListener#fileFolderCreated}.
+     *
+     * @param name the name of folder to create. Periods in name are allowed (but no slashes).
+     * @return the new folder
+     * @exception IOException if the folder cannot be created (e.g. already exists), or if <code>this</code> is not a folder
+     * @see FileUtil#createFolder
+     */
     public abstract FileObject createFolder(String name)
     throws IOException;
 
-    /** Create new data file in this folder with the specified name. Fires
-    * <code>fileCreated</code> event.
-    *
-    * @param name the name of data object to create (can contain a period)
-    * @param ext the extension of the file (or <code>null</code> or <code>""</code>)
-    *
-    * @return the new data file object
-    * @exception IOException if the file cannot be created (e.g. already exists)
-    */
+    /**
+     * Create new data file in this folder with the specified name.
+     * Fires {@link FileChangeListener#fileDataCreated}.
+     *
+     * @param name the name of data object to create (can contain a period, but no slashes)
+     * @param ext the extension of the file (or <code>null</code> or <code>""</code>)
+     * @return the new data file object
+     * @exception IOException if the file cannot be created (e.g. already exists), or if <code>this</code> is not a folder
+     * @see FileUtil#createData
+     */
     public abstract FileObject createData(String name, String ext)
     throws IOException;
 
-    /** Create new data file in this folder with the specified name. Fires
-    * <code>fileCreated</code> event.
-    *
-    * @param name the name of data object to create (can contain a period)
-    *
-    * @return the new data file object
-    * @exception IOException if the file cannot be created (e.g. already exists)
-    * @since 1.17
-    */
+    /**
+     * Create new data file in this folder with the specified name.
+     * Fires {@link FileChangeListener#fileDataCreated}.
+     *
+     * @param name the name of data object to create (can contain a period, but no slashes)
+     * @return the new data file object
+     * @exception IOException if the file cannot be created (e.g. already exists), or if <code>this</code> is not a folder
+     * @since 1.17
+     * @see FileUtil#createData
+     */
     public FileObject createData(String name) throws IOException {
         return createData(name, ""); // NOI18N        
     }
