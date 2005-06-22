@@ -739,7 +739,7 @@ public final class PatchedHtmlRenderer {
                 if (style == STYLE_TRUNCATE) {
                     double newWidth = widthPainted + r.getWidth();
                     if (newWidth > (w - dotsWidth)) {
-                        if (newWidth > w || _renderHTML(s, nextTag + 1, g, new Double(x + widthPainted + r.getWidth()).intValue(), y, w, h, f, defaultColor, style, false, background, disableColorChange) > w - newWidth) {
+                        if (newWidth > w || _renderHTML(s, 0, g.create(), x, y, Integer.MAX_VALUE, h, f, defaultColor, STYLE_CLIP, false, background, disableColorChange) > w) {
                             double pixelsOff = widthPainted + r.getWidth() - w - dotsWidth;
                             
                             double estCharsOver = pixelsOff / chWidth;
