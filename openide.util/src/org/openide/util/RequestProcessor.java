@@ -830,7 +830,7 @@ public final class RequestProcessor {
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(
                 ex, ErrorManager.EXCEPTION, null,
-                NbBundle.getMessage(RequestProcessor.class, "EXC_IN_REQUEST_PROCESSOR"), SLOW ? todo.item : null, null
+                null, SLOW ? todo.item : null, null
             );
             err.notify(ex);
         }
