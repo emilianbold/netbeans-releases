@@ -1766,6 +1766,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 {   // new layout support
                     // paint the component being moved
                     if (!isTopComponent()) {
+                        showingComponents[i].setBounds(movingBounds[i]);
+                        doLayout(showingComponents[i]);
                         if (showingComponents[i] instanceof JComponent) {
                             showingComponents[i].paint(gg);
                         } else {
@@ -1789,6 +1791,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 else if (showingComponents != null) { // non-visual area
                     Component comp = showingComponents[i];
                     if (!isOldLayoutSource()) { // don't paint if component dragged from old layout
+                        comp.setBounds(movingBounds[i]);
+                        doLayout(comp);
                         if (comp instanceof JComponent)
                             comp.paint(gg);
                         else
